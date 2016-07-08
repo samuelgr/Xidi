@@ -1,0 +1,28 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio 14
+VisualStudioVersion = 14.0.25123.0
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "XboxControllerDirectInput", "XboxControllerDirectInput.vcxproj", "{023441F6-2554-440F-9FFB-7E185AB7CF41}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|x64 = Debug|x64
+		Debug|x86 = Debug|x86
+		Release|x64 = Release|x64
+		Release|x86 = Release|x86
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{023441F6-2554-440F-9FFB-7E185AB7CF41}.Debug|x64.ActiveCfg = Debug|x64
+		{023441F6-2554-440F-9FFB-7E185AB7CF41}.Debug|x64.Build.0 = Debug|x64
+		{023441F6-2554-440F-9FFB-7E185AB7CF41}.Debug|x86.ActiveCfg = Debug|Win32
+		{023441F6-2554-440F-9FFB-7E185AB7CF41}.Debug|x86.Build.0 = Debug|Win32
+		{023441F6-2554-440F-9FFB-7E185AB7CF41}.Release|x64.ActiveCfg = Release|x64
+		{023441F6-2554-440F-9FFB-7E185AB7CF41}.Release|x64.Build.0 = Release|x64
+		{023441F6-2554-440F-9FFB-7E185AB7CF41}.Release|x86.ActiveCfg = Release|Win32
+		{023441F6-2554-440F-9FFB-7E185AB7CF41}.Release|x86.Build.0 = Release|Win32
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+EndGlobal
