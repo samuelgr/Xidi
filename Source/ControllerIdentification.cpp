@@ -25,7 +25,7 @@ const GUID ControllerIdentification::guidXboxOneController = {0x02FF045E, 0x0000
 // -------- CLASS METHODS -------------------------------------------------- //
 // See "ControllerIdentification.h" for documentation.
 
-BOOL ControllerIdentification::isXbox360Controller(const GUID& productGUID)
+BOOL ControllerIdentification::isXbox360Controller(REFGUID productGUID)
 {
     if (InlineIsEqualGUID(guidXbox360Controller, productGUID))
         return TRUE;
@@ -35,7 +35,7 @@ BOOL ControllerIdentification::isXbox360Controller(const GUID& productGUID)
 
 // ---------
 
-BOOL ControllerIdentification::isXboxOneController(const GUID& productGUID)
+BOOL ControllerIdentification::isXboxOneController(REFGUID productGUID)
 {
     if (InlineIsEqualGUID(guidXboxOneController, productGUID))
         return TRUE;
@@ -45,7 +45,7 @@ BOOL ControllerIdentification::isXboxOneController(const GUID& productGUID)
 
 // ---------
 
-XboxControllerType ControllerIdentification::xboxControllerType(const GUID& productGUID)
+XboxControllerType ControllerIdentification::xboxControllerType(REFGUID productGUID)
 {
     if (isXbox360Controller(productGUID))
         return CONTROLLER_XBOX360;

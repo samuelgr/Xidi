@@ -11,7 +11,7 @@
  *****************************************************************************/
 
 #include "XboxDirectInput8.h"
-#include "ControllerIdentification.h"
+#include "XboxDirectInputDevice8.h"
 
 using namespace XboxControllerDirectInput;
 
@@ -44,9 +44,7 @@ ULONG STDMETHODCALLTYPE XboxDirectInput8::Release(void)
     ULONG numRemainingRefs = underlyingDIObject->Release();
     
     if (0 == numRemainingRefs)
-    {
         delete this;
-    }
     
     return numRemainingRefs;
 }
@@ -57,7 +55,14 @@ ULONG STDMETHODCALLTYPE XboxDirectInput8::Release(void)
 
 HRESULT STDMETHODCALLTYPE XboxDirectInput8::CreateDevice(REFGUID rguid, LPDIRECTINPUTDEVICE8* lplpDirectInputDevice, LPUNKNOWN pUnkOuter)
 {
-    return underlyingDIObject->CreateDevice(rguid, lplpDirectInputDevice, pUnkOuter);
+    // Create the device, as requested by the application.
+    IDirectInputDevice8* createdDevice = NULL;
+    HRESULT result = underlyingDIObject->CreateDevice(rguid, &createdDevice, pUnkOuter);
+    if (DI_OK != result) return result;
+    
+    // Hook the device
+    *lplpDirectInputDevice = new XboxDirectInputDevice8(createdDevice);
+    return DI_OK;
 }
 
 // ---------

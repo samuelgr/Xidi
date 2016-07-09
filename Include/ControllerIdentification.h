@@ -51,13 +51,13 @@ namespace XboxControllerDirectInput
 
         // Returns TRUE if the specified controller is an Xbox 360 controller.
         // Pass in a reference to its product GUID.
-        static BOOL isXbox360Controller(const GUID& productGUID);
+        static BOOL isXbox360Controller(REFGUID productGUID);
 
         // Returns TRUE if the specified controller is an Xbox One controller.
         // Pass in a reference to its product GUID.
-        static BOOL isXboxOneController(const GUID& productGUID);
+        static BOOL isXboxOneController(REFGUID productGUID);
 
         // Identifies the type of controller based on its product GUID.
-        static XboxControllerType xboxControllerType(const GUID& productGUID);
+        static XboxControllerType xboxControllerType(REFGUID productGUID);
     };
 }
