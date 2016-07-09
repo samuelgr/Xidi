@@ -36,19 +36,19 @@ namespace XboxControllerDirectInput
 
 
         // -------- METHODS: IUnknown ---------------------------------------------- //
-        virtual HRESULT __stdcall QueryInterface(REFIID riid, LPVOID* ppvObj);
-        virtual ULONG __stdcall AddRef(void);
-        virtual ULONG __stdcall Release(void);
+        virtual HRESULT STDMETHODCALLTYPE QueryInterface(REFIID riid, LPVOID* ppvObj);
+        virtual ULONG STDMETHODCALLTYPE AddRef(void);
+        virtual ULONG STDMETHODCALLTYPE Release(void);
 
 
         // -------- METHODS: IDirectInput8 ----------------------------------------- //
-        virtual HRESULT __stdcall CreateDevice(REFGUID rguid, LPDIRECTINPUTDEVICE8* lplpDirectInputDevice, LPUNKNOWN pUnkOuter);
-        virtual HRESULT __stdcall ConfigureDevices(LPDICONFIGUREDEVICESCALLBACK lpdiCallback, LPDICONFIGUREDEVICESPARAMS lpdiCDParams, DWORD dwFlags, LPVOID pvRefData);
-        virtual HRESULT __stdcall EnumDevices(DWORD dwDevType, LPDIENUMDEVICESCALLBACK lpCallback, LPVOID pvRef, DWORD dwFlags);
-        virtual HRESULT __stdcall EnumDevicesBySemantics(LPCTSTR ptszUserName, LPDIACTIONFORMAT lpdiActionFormat, LPDIENUMDEVICESBYSEMANTICSCB lpCallback, LPVOID pvRef, DWORD dwFlags);
-        virtual HRESULT __stdcall FindDevice(REFGUID rguidClass, LPCTSTR ptszName, LPGUID pguidInstance);
-        virtual HRESULT __stdcall GetDeviceStatus(REFGUID rguidInstance);
-        virtual HRESULT __stdcall Initialize(HINSTANCE hinst, DWORD dwVersion);
-        virtual HRESULT __stdcall RunControlPanel(HWND hwndOwner, DWORD dwFlags);
+        virtual HRESULT STDMETHODCALLTYPE CreateDevice(REFGUID rguid, LPDIRECTINPUTDEVICE8* lplpDirectInputDevice, LPUNKNOWN pUnkOuter);
+        virtual HRESULT STDMETHODCALLTYPE ConfigureDevices(LPDICONFIGUREDEVICESCALLBACK lpdiCallback, LPDICONFIGUREDEVICESPARAMS lpdiCDParams, DWORD dwFlags, LPVOID pvRefData);
+        virtual HRESULT STDMETHODCALLTYPE EnumDevices(DWORD dwDevType, LPDIENUMDEVICESCALLBACK lpCallback, LPVOID pvRef, DWORD dwFlags);
+        virtual HRESULT STDMETHODCALLTYPE EnumDevicesBySemantics(LPCTSTR ptszUserName, LPDIACTIONFORMAT lpdiActionFormat, LPDIENUMDEVICESBYSEMANTICSCB lpCallback, LPVOID pvRef, DWORD dwFlags);
+        virtual HRESULT STDMETHODCALLTYPE FindDevice(REFGUID rguidClass, LPCTSTR ptszName, LPGUID pguidInstance);
+        virtual HRESULT STDMETHODCALLTYPE GetDeviceStatus(REFGUID rguidInstance);
+        virtual HRESULT STDMETHODCALLTYPE Initialize(HINSTANCE hinst, DWORD dwVersion);
+        virtual HRESULT STDMETHODCALLTYPE RunControlPanel(HWND hwndOwner, DWORD dwFlags);
     };
 }

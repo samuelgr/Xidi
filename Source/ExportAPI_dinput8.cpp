@@ -17,7 +17,7 @@
 // -------- DLL EXPORT FUNCTIONS ------------------------------------------- //
 // See DirectInput and COM documentation for more information.
 
-HRESULT __stdcall ExportAPI_dinput8_DirectInput8Create(HINSTANCE hinst, DWORD dwVersion, REFIID riidltf, LPVOID* ppvOut, LPUNKNOWN punkOuter)
+HRESULT STDMETHODCALLTYPE ExportAPI_dinput8_DirectInput8Create(HINSTANCE hinst, DWORD dwVersion, REFIID riidltf, LPVOID* ppvOut, LPUNKNOWN punkOuter)
 {
     IDirectInput8* diObject = NULL;
     HRESULT result = ImportAPI_dinput8::ImportedDirectInput8Create(hinst, dwVersion, riidltf, (LPVOID*)&diObject, punkOuter);
@@ -30,28 +30,28 @@ HRESULT __stdcall ExportAPI_dinput8_DirectInput8Create(HINSTANCE hinst, DWORD dw
 
 // ---------
 
-HRESULT __stdcall ExportAPI_dinput8_DllRegisterServer(void)
+HRESULT STDMETHODCALLTYPE ExportAPI_dinput8_DllRegisterServer(void)
 {
     return ImportAPI_dinput8::ImportedDllRegisterServer();
 }
 
 // ---------
 
-HRESULT __stdcall ExportAPI_dinput8_DllUnregisterServer(void)
+HRESULT STDMETHODCALLTYPE ExportAPI_dinput8_DllUnregisterServer(void)
 {
     return ImportAPI_dinput8::ImportedDllUnregisterServer();
 }
 
 // ---------
 
-HRESULT __stdcall ExportAPI_dinput8_DllCanUnloadNow(void)
+HRESULT STDMETHODCALLTYPE ExportAPI_dinput8_DllCanUnloadNow(void)
 {
     return ImportAPI_dinput8::ImportedDllCanUnloadNow();
 }
 
 // ---------
 
-HRESULT __stdcall ExportAPI_dinput8_DllGetClassObject(_In_ REFCLSID rclsid, _In_ REFIID riid, _Out_ LPVOID* ppv)
+HRESULT STDMETHODCALLTYPE ExportAPI_dinput8_DllGetClassObject(_In_ REFCLSID rclsid, _In_ REFIID riid, _Out_ LPVOID* ppv)
 {
     return ImportAPI_dinput8::ImportedDllGetClassObject(rclsid, riid, ppv);
 }
