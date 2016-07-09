@@ -23,24 +23,24 @@ namespace XboxControllerDirectInput
     {
     private:
         // -------- INSTANCE VARIABLES --------------------------------------------- //
-        
+
         // The underlying IDirectInput8 object that this instance wraps.
         IDirectInput8* underlyingDIObject;
 
-        
+
     public:
         // -------- CONSTRUCTION AND DESTRUCTION ----------------------------------- //
 
         // Constructs an XboxDirectInput8 object, given an underlying IDirectInput8 object to wrap.
         XboxDirectInput8(IDirectInput8* underlyingDIObject);
-        
-        
+
+
         // -------- METHODS: IUnknown ---------------------------------------------- //
         virtual HRESULT __stdcall QueryInterface(REFIID riid, LPVOID* ppvObj);
         virtual ULONG __stdcall AddRef(void);
         virtual ULONG __stdcall Release(void);
-        
-        
+
+
         // -------- METHODS: IDirectInput8 ----------------------------------------- //
         virtual HRESULT __stdcall CreateDevice(REFGUID rguid, LPDIRECTINPUTDEVICE8* lplpDirectInputDevice, LPUNKNOWN pUnkOuter);
         virtual HRESULT __stdcall ConfigureDevices(LPDICONFIGUREDEVICESCALLBACK lpdiCallback, LPDICONFIGUREDEVICESPARAMS lpdiCDParams, DWORD dwFlags, LPVOID pvRefData);
@@ -50,4 +50,5 @@ namespace XboxControllerDirectInput
         virtual HRESULT __stdcall GetDeviceStatus(REFGUID rguidInstance);
         virtual HRESULT __stdcall Initialize(HINSTANCE hinst, DWORD dwVersion);
         virtual HRESULT __stdcall RunControlPanel(HWND hwndOwner, DWORD dwFlags);
+    };
 }
