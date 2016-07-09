@@ -22,7 +22,7 @@ HRESULT __stdcall ExportAPI_dinput8_DirectInput8Create(HINSTANCE hinst, DWORD dw
     IDirectInput8* diObject = NULL;
     HRESULT result = ImportAPI_dinput8::ImportedDirectInput8Create(hinst, dwVersion, riidltf, (LPVOID*)&diObject, punkOuter);
 
-    diObject = new XboxDirectInput8(diObject);
+    diObject = new XboxControllerDirectInput::XboxDirectInput8(diObject);
     *ppvOut = (LPVOID)diObject;
 
     return result;

@@ -21,10 +21,12 @@
   <ItemGroup>
     <ClInclude Include="Include\API_DirectInput8.h" />
     <ClInclude Include="Include\API_Windows.h" />
+    <ClInclude Include="Include\ControllerIdentification.h" />
     <ClInclude Include="Include\ImportAPI_dinput8.h" />
     <ClInclude Include="Include\XboxDirectInput8.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="Source\ControllerIdentification.cpp" />
     <ClCompile Include="Source\ImportAPI_dinput8.cpp" />
     <ClCompile Include="Source\XboxDirectInput8.cpp" />
     <ClCompile Include="Source\ExportAPI_dinput8.cpp" />
@@ -120,6 +122,8 @@
       <Optimization>Disabled</Optimization>
       <PreprocessorDefinitions>WIN32;_DEBUG;_WINDOWS;_USRDLL;XBOXCONTROLLERDIRECTINPUT_EXPORTS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <SDLCheck>true</SDLCheck>
+      <MinimalRebuild>false</MinimalRebuild>
+      <MultiProcessorCompilation>true</MultiProcessorCompilation>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
@@ -135,6 +139,8 @@
       <Optimization>Disabled</Optimization>
       <PreprocessorDefinitions>_DEBUG;_WINDOWS;_USRDLL;XBOXCONTROLLERDIRECTINPUT_EXPORTS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <SDLCheck>true</SDLCheck>
+      <MinimalRebuild>false</MinimalRebuild>
+      <MultiProcessorCompilation>true</MultiProcessorCompilation>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
@@ -152,6 +158,7 @@
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <PreprocessorDefinitions>WIN32;NDEBUG;_WINDOWS;_USRDLL;XBOXCONTROLLERDIRECTINPUT_EXPORTS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <SDLCheck>true</SDLCheck>
+      <MultiProcessorCompilation>true</MultiProcessorCompilation>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
@@ -171,6 +178,7 @@
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <PreprocessorDefinitions>NDEBUG;_WINDOWS;_USRDLL;XBOXCONTROLLERDIRECTINPUT_EXPORTS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <SDLCheck>true</SDLCheck>
+      <MultiProcessorCompilation>true</MultiProcessorCompilation>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
