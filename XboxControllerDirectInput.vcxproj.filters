@@ -21,7 +21,10 @@
     <ClInclude Include="Include\API_Windows.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="Include\XboxOneDirectInput.h">
+    <ClInclude Include="Include\XboxDirectInput8.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Include\ImportAPI_dinput8.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
@@ -30,6 +33,12 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="Source\Main.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\XboxDirectInput8.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\ImportAPI_dinput8.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

@@ -21,9 +21,12 @@
   <ItemGroup>
     <ClInclude Include="Include\API_DirectInput8.h" />
     <ClInclude Include="Include\API_Windows.h" />
-    <ClInclude Include="Include\XboxOneDirectInput.h" />
+    <ClInclude Include="Include\ImportAPI_dinput8.h" />
+    <ClInclude Include="Include\XboxDirectInput8.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="Source\ImportAPI_dinput8.cpp" />
+    <ClCompile Include="Source\XboxDirectInput8.cpp" />
     <ClCompile Include="Source\ExportAPI_dinput8.cpp" />
     <ClCompile Include="Source\Main.cpp" />
   </ItemGroup>

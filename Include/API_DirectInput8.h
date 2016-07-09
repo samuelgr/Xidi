@@ -1,14 +1,14 @@
 /*****************************************************************************
-* XboxOneDirectInput
-*      Hook and helper for older DirectInput games.
-*      Fixes issues associated with Xbox One controllers.
-*****************************************************************************
-* Authored by Samuel Grossman
-* Copyright (c) 2016
-*****************************************************************************
-* API_DirectInput8.h
-*      Common header file for the DirectInput8 API.
-*****************************************************************************/
+ * XboxControllerDirectInput
+ *      Hook and helper for older DirectInput games.
+ *      Fixes issues associated with Xbox 360 and Xbox One controllers.
+ *****************************************************************************
+ * Authored by Samuel Grossman
+ * Copyright (c) 2016
+ *****************************************************************************
+ * API_DirectInput8.h
+ *      Common header file for the DirectInput8 API.
+ *****************************************************************************/
 
 #pragma once
 
