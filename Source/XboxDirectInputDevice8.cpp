@@ -26,7 +26,19 @@ XboxDirectInputDevice8::XboxDirectInputDevice8(IDirectInputDevice8* underlyingDI
 
 HRESULT STDMETHODCALLTYPE XboxDirectInputDevice8::QueryInterface(REFIID riid, LPVOID* ppvObj)
 {
-    return underlyingDIObject->QueryInterface(riid, ppvObj);
+    HRESULT result = S_OK;
+
+    if (IsEqualIID(riid, IID_IUnknown) || IsEqualIID(riid, IID_IDirectInputDevice8))
+    {
+        AddRef();
+        *ppvObj = this;
+    }
+    else
+    {
+        result = underlyingDIObject->QueryInterface(riid, ppvObj);
+    }
+
+    return result;
 }
 
 // ---------
@@ -236,7 +248,16 @@ HRESULT STDMETHODCALLTYPE XboxDirectInputDevice8::SetEventNotification(HANDLE hE
 
 HRESULT STDMETHODCALLTYPE XboxDirectInputDevice8::SetProperty(REFGUID rguidProp, LPCDIPROPHEADER pdiph)
 {
-    return underlyingDIObject->SetProperty(rguidProp, pdiph);
+    const GUID* propguid = &rguidProp;
+
+    const DIPROPPOINTER* proppointer = (const DIPROPPOINTER*)pdiph;
+    const DIPROPDWORD* propdword = (const DIPROPDWORD*)pdiph;
+    const DIPROPSTRING* propstring = (const DIPROPSTRING*)pdiph;
+    const DIPROPRANGE* proprange = (const DIPROPRANGE*)pdiph;
+    
+    HRESULT result = underlyingDIObject->SetProperty(rguidProp, pdiph);
+
+    return result;
 }
 
 // ---------

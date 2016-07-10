@@ -27,7 +27,19 @@ XboxDirectInput8::XboxDirectInput8(IDirectInput8* underlyingDIObject) : underlyi
 
 HRESULT STDMETHODCALLTYPE XboxDirectInput8::QueryInterface(REFIID riid, LPVOID* ppvObj)
 {
-    return underlyingDIObject->QueryInterface(riid, ppvObj);
+    HRESULT result = S_OK;
+    
+    if (IsEqualIID(riid, IID_IUnknown) || IsEqualIID(riid, IID_IDirectInput8))
+    {
+        AddRef();
+        *ppvObj = this;
+    }
+    else
+    {
+        result = underlyingDIObject->QueryInterface(riid, ppvObj);
+    }
+    
+    return result;
 }
 
 // ---------
