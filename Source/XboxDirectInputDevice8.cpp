@@ -15,6 +15,17 @@
 using namespace XboxControllerDirectInput;
 
 
+// -------- TYPE DEFINITIONS ----------------------------------------------- //
+
+// Contains all information required to intercept callbacks to EnumObjects.
+typedef struct _XDIENUMOBJCBINFO
+{
+    XboxDirectInputDevice8* instance;
+    LPDIENUMDEVICEOBJECTSCALLBACK lpCallback;
+    LPVOID pvRef;
+} XDIENUMOBJCBINFO, *LPXDIENUMOBJCBINFO;
+
+
 // -------- CONSTRUCTION AND DESTRUCTION ----------------------------------- //
 // See "XboxDirectInputDevice8.h" for documentation.
 
@@ -108,7 +119,12 @@ HRESULT STDMETHODCALLTYPE XboxDirectInputDevice8::EnumEffectsInFile(LPCTSTR lpts
 
 HRESULT STDMETHODCALLTYPE XboxDirectInputDevice8::EnumObjects(LPDIENUMDEVICEOBJECTSCALLBACK lpCallback, LPVOID pvRef, DWORD dwFlags)
 {
-    return underlyingDIObject->EnumObjects(lpCallback, pvRef, dwFlags);
+    XDIENUMOBJCBINFO callbackInfo;
+    callbackInfo.instance = this;
+    callbackInfo.lpCallback = lpCallback;
+    callbackInfo.pvRef = pvRef;
+    
+    return underlyingDIObject->EnumObjects(&XboxDirectInputDevice8::CallbackEnumObjects, (LPVOID)&callbackInfo, dwFlags);
 }
 
 // ---------
@@ -275,4 +291,15 @@ HRESULT STDMETHODCALLTYPE XboxDirectInputDevice8::Unacquire(void)
 HRESULT STDMETHODCALLTYPE XboxDirectInputDevice8::WriteEffectToFile(LPCTSTR lptszFileName, DWORD dwEntries, LPDIFILEEFFECT rgDiFileEft, DWORD dwFlags)
 {
     return underlyingDIObject->WriteEffectToFile(lptszFileName, dwEntries, rgDiFileEft, dwFlags);
+}
+
+
+// -------- CALLBACKS: IDirectInputDevice8 --------------------------------- //
+// See "XboxDirectInputDevice8.h" for documentation.
+
+BOOL STDMETHODCALLTYPE XboxDirectInputDevice8::CallbackEnumObjects(LPCDIDEVICEOBJECTINSTANCE lpddoi, LPVOID pvRef)
+{
+    LPXDIENUMOBJCBINFO callbackInfo = (LPXDIENUMOBJCBINFO)pvRef;
+    
+    return callbackInfo->lpCallback(lpddoi, callbackInfo->pvRef);
 }

@@ -23,24 +23,24 @@ namespace XboxControllerDirectInput
     {
     private:
         // -------- INSTANCE VARIABLES --------------------------------------------- //
-
+        
         // The underlying IDirectInputDevice8 object that this instance wraps.
         IDirectInputDevice8* underlyingDIObject;
-
-
+        
+        
     public:
         // -------- CONSTRUCTION AND DESTRUCTION ----------------------------------- //
-
+        
         // Constructs an XboxDirectInput8 object, given an underlying IDirectInput8 object to wrap.
         XboxDirectInputDevice8(IDirectInputDevice8* underlyingDIObject);
-
-
+        
+        
         // -------- METHODS: IUnknown ---------------------------------------------- //
         virtual HRESULT STDMETHODCALLTYPE QueryInterface(REFIID riid, LPVOID* ppvObj);
         virtual ULONG STDMETHODCALLTYPE AddRef(void);
         virtual ULONG STDMETHODCALLTYPE Release(void);
-
-
+        
+        
         // -------- METHODS: IDirectInputDevice8 ----------------------------------- //
         virtual HRESULT STDMETHODCALLTYPE Acquire(void);
         virtual HRESULT STDMETHODCALLTYPE BuildActionMap(LPDIACTIONFORMAT lpdiaf, LPCTSTR lpszUserName, DWORD dwFlags);
@@ -71,5 +71,10 @@ namespace XboxControllerDirectInput
         virtual HRESULT STDMETHODCALLTYPE SetProperty(REFGUID rguidProp, LPCDIPROPHEADER pdiph);
         virtual HRESULT STDMETHODCALLTYPE Unacquire(void);
         virtual HRESULT STDMETHODCALLTYPE WriteEffectToFile(LPCTSTR lptszFileName, DWORD dwEntries, LPDIFILEEFFECT rgDiFileEft, DWORD dwFlags);
+        
+        
+    private:
+        // -------- CALLBACKS: IDirectInputDevice8 --------------------------------- //
+        static BOOL STDMETHODCALLTYPE CallbackEnumObjects(LPCDIDEVICEOBJECTINSTANCE lpddoi, LPVOID pvRef);
     };
 }
