@@ -1,41 +1,41 @@
 /*****************************************************************************
- * XboxControllerDirectInput
+ * XinputControllerDirectInput
  *      Hook and helper for older DirectInput games.
- *      Fixes issues associated with Xbox 360 and Xbox One controllers.
+ *      Fixes issues associated with certain Xinput-based controllers.
  *****************************************************************************
  * Authored by Samuel Grossman
  * Copyright (c) 2016
  *****************************************************************************
- * XboxDirectInputDevice8.cpp
+ * WrapperIDirectInputDevice8.cpp
  *      Implementation of the wrapper class for IDirectInputDevice8.
  *****************************************************************************/
 
-#include "XboxDirectInputDevice8.h"
+#include "WrapperIDirectInputDevice8.h"
 
-using namespace XboxControllerDirectInput;
+using namespace XinputControllerDirectInput;
 
 
 // -------- TYPE DEFINITIONS ----------------------------------------------- //
 
 // Contains all information required to intercept callbacks to EnumObjects.
-typedef struct _XDIENUMOBJCBINFO
+struct sEnumObjectsCallbackInfo
 {
-    XboxDirectInputDevice8* instance;
+    WrapperIDirectInputDevice8* instance;
     LPDIENUMDEVICEOBJECTSCALLBACK lpCallback;
     LPVOID pvRef;
-} XDIENUMOBJCBINFO, *LPXDIENUMOBJCBINFO;
+};
 
 
 // -------- CONSTRUCTION AND DESTRUCTION ----------------------------------- //
-// See "XboxDirectInputDevice8.h" for documentation.
+// See "WrapperIDirectInputDevice8.h" for documentation.
 
-XboxDirectInputDevice8::XboxDirectInputDevice8(IDirectInputDevice8* underlyingDIObject) : underlyingDIObject(underlyingDIObject) {}
+WrapperIDirectInputDevice8::WrapperIDirectInputDevice8(IDirectInputDevice8* underlyingDIObject) : underlyingDIObject(underlyingDIObject) {}
 
 
 // -------- METHODS: IUnknown ---------------------------------------------- //
 // See IUnknown documentation for more information.
 
-HRESULT STDMETHODCALLTYPE XboxDirectInputDevice8::QueryInterface(REFIID riid, LPVOID* ppvObj)
+HRESULT STDMETHODCALLTYPE WrapperIDirectInputDevice8::QueryInterface(REFIID riid, LPVOID* ppvObj)
 {
     HRESULT result = S_OK;
 
@@ -54,14 +54,14 @@ HRESULT STDMETHODCALLTYPE XboxDirectInputDevice8::QueryInterface(REFIID riid, LP
 
 // ---------
 
-ULONG STDMETHODCALLTYPE XboxDirectInputDevice8::AddRef(void)
+ULONG STDMETHODCALLTYPE WrapperIDirectInputDevice8::AddRef(void)
 {
     return underlyingDIObject->AddRef();
 }
 
 // ---------
 
-ULONG STDMETHODCALLTYPE XboxDirectInputDevice8::Release(void)
+ULONG STDMETHODCALLTYPE WrapperIDirectInputDevice8::Release(void)
 {
     ULONG numRemainingRefs = underlyingDIObject->Release();
 
@@ -75,194 +75,194 @@ ULONG STDMETHODCALLTYPE XboxDirectInputDevice8::Release(void)
 // -------- METHODS: IDirectInputDevice8 ----------------------------------- //
 // See DirectInput documentation for more information.
 
-HRESULT STDMETHODCALLTYPE XboxDirectInputDevice8::Acquire(void)
+HRESULT STDMETHODCALLTYPE WrapperIDirectInputDevice8::Acquire(void)
 {
     return underlyingDIObject->Acquire();
 }
 
 // ---------
 
-HRESULT STDMETHODCALLTYPE XboxDirectInputDevice8::BuildActionMap(LPDIACTIONFORMAT lpdiaf, LPCTSTR lpszUserName, DWORD dwFlags)
+HRESULT STDMETHODCALLTYPE WrapperIDirectInputDevice8::BuildActionMap(LPDIACTIONFORMAT lpdiaf, LPCTSTR lpszUserName, DWORD dwFlags)
 {
     return underlyingDIObject->BuildActionMap(lpdiaf, lpszUserName, dwFlags);
 }
 
 // ---------
 
-HRESULT STDMETHODCALLTYPE XboxDirectInputDevice8::CreateEffect(REFGUID rguid, LPCDIEFFECT lpeff, LPDIRECTINPUTEFFECT* ppdeff, LPUNKNOWN punkOuter)
+HRESULT STDMETHODCALLTYPE WrapperIDirectInputDevice8::CreateEffect(REFGUID rguid, LPCDIEFFECT lpeff, LPDIRECTINPUTEFFECT* ppdeff, LPUNKNOWN punkOuter)
 {
     return underlyingDIObject->CreateEffect(rguid, lpeff, ppdeff, punkOuter);
 }
 
 // ---------
 
-HRESULT STDMETHODCALLTYPE XboxDirectInputDevice8::EnumCreatedEffectObjects(LPDIENUMCREATEDEFFECTOBJECTSCALLBACK lpCallback, LPVOID pvRef, DWORD fl)
+HRESULT STDMETHODCALLTYPE WrapperIDirectInputDevice8::EnumCreatedEffectObjects(LPDIENUMCREATEDEFFECTOBJECTSCALLBACK lpCallback, LPVOID pvRef, DWORD fl)
 {
     return underlyingDIObject->EnumCreatedEffectObjects(lpCallback, pvRef, fl);
 }
 
 // ---------
 
-HRESULT STDMETHODCALLTYPE XboxDirectInputDevice8::EnumEffects(LPDIENUMEFFECTSCALLBACK lpCallback, LPVOID pvRef, DWORD dwEffType)
+HRESULT STDMETHODCALLTYPE WrapperIDirectInputDevice8::EnumEffects(LPDIENUMEFFECTSCALLBACK lpCallback, LPVOID pvRef, DWORD dwEffType)
 {
     return underlyingDIObject->EnumEffects(lpCallback, pvRef, dwEffType);
 }
 
 // ---------
 
-HRESULT STDMETHODCALLTYPE XboxDirectInputDevice8::EnumEffectsInFile(LPCTSTR lptszFileName, LPDIENUMEFFECTSINFILECALLBACK pec, LPVOID pvRef, DWORD dwFlags)
+HRESULT STDMETHODCALLTYPE WrapperIDirectInputDevice8::EnumEffectsInFile(LPCTSTR lptszFileName, LPDIENUMEFFECTSINFILECALLBACK pec, LPVOID pvRef, DWORD dwFlags)
 {
     return underlyingDIObject->EnumEffectsInFile(lptszFileName, pec, pvRef, dwFlags);
 }
 
 // ---------
 
-HRESULT STDMETHODCALLTYPE XboxDirectInputDevice8::EnumObjects(LPDIENUMDEVICEOBJECTSCALLBACK lpCallback, LPVOID pvRef, DWORD dwFlags)
+HRESULT STDMETHODCALLTYPE WrapperIDirectInputDevice8::EnumObjects(LPDIENUMDEVICEOBJECTSCALLBACK lpCallback, LPVOID pvRef, DWORD dwFlags)
 {
-    XDIENUMOBJCBINFO callbackInfo;
+    sEnumObjectsCallbackInfo callbackInfo;
     callbackInfo.instance = this;
     callbackInfo.lpCallback = lpCallback;
     callbackInfo.pvRef = pvRef;
     
-    return underlyingDIObject->EnumObjects(&XboxDirectInputDevice8::CallbackEnumObjects, (LPVOID)&callbackInfo, dwFlags);
+    return underlyingDIObject->EnumObjects(&WrapperIDirectInputDevice8::CallbackEnumObjects, (LPVOID)&callbackInfo, dwFlags);
 }
 
 // ---------
 
-HRESULT STDMETHODCALLTYPE XboxDirectInputDevice8::Escape(LPDIEFFESCAPE pesc)
+HRESULT STDMETHODCALLTYPE WrapperIDirectInputDevice8::Escape(LPDIEFFESCAPE pesc)
 {
     return underlyingDIObject->Escape(pesc);
 }
 
 // ---------
 
-HRESULT STDMETHODCALLTYPE XboxDirectInputDevice8::GetCapabilities(LPDIDEVCAPS lpDIDevCaps)
+HRESULT STDMETHODCALLTYPE WrapperIDirectInputDevice8::GetCapabilities(LPDIDEVCAPS lpDIDevCaps)
 {
     return underlyingDIObject->GetCapabilities(lpDIDevCaps);
 }
 
 // ---------
 
-HRESULT STDMETHODCALLTYPE XboxDirectInputDevice8::GetDeviceData(DWORD cbObjectData, LPDIDEVICEOBJECTDATA rgdod, LPDWORD pdwInOut, DWORD dwFlags)
+HRESULT STDMETHODCALLTYPE WrapperIDirectInputDevice8::GetDeviceData(DWORD cbObjectData, LPDIDEVICEOBJECTDATA rgdod, LPDWORD pdwInOut, DWORD dwFlags)
 {
     return underlyingDIObject->GetDeviceData(cbObjectData, rgdod, pdwInOut, dwFlags);
 }
 
 // ---------
 
-HRESULT STDMETHODCALLTYPE XboxDirectInputDevice8::GetDeviceInfo(LPDIDEVICEINSTANCE pdidi)
+HRESULT STDMETHODCALLTYPE WrapperIDirectInputDevice8::GetDeviceInfo(LPDIDEVICEINSTANCE pdidi)
 {
     return underlyingDIObject->GetDeviceInfo(pdidi);
 }
 
 // ---------
 
-HRESULT STDMETHODCALLTYPE XboxDirectInputDevice8::GetDeviceState(DWORD cbData, LPVOID lpvData)
+HRESULT STDMETHODCALLTYPE WrapperIDirectInputDevice8::GetDeviceState(DWORD cbData, LPVOID lpvData)
 {
     return underlyingDIObject->GetDeviceState(cbData, lpvData);
 }
 
 // ---------
 
-HRESULT STDMETHODCALLTYPE XboxDirectInputDevice8::GetEffectInfo(LPDIEFFECTINFO pdei, REFGUID rguid)
+HRESULT STDMETHODCALLTYPE WrapperIDirectInputDevice8::GetEffectInfo(LPDIEFFECTINFO pdei, REFGUID rguid)
 {
     return underlyingDIObject->GetEffectInfo(pdei, rguid);
 }
 
 // ---------
 
-HRESULT STDMETHODCALLTYPE XboxDirectInputDevice8::GetForceFeedbackState(LPDWORD pdwOut)
+HRESULT STDMETHODCALLTYPE WrapperIDirectInputDevice8::GetForceFeedbackState(LPDWORD pdwOut)
 {
     return underlyingDIObject->GetForceFeedbackState(pdwOut);
 }
 
 // ---------
 
-HRESULT STDMETHODCALLTYPE XboxDirectInputDevice8::GetImageInfo(LPDIDEVICEIMAGEINFOHEADER lpdiDevImageInfoHeader)
+HRESULT STDMETHODCALLTYPE WrapperIDirectInputDevice8::GetImageInfo(LPDIDEVICEIMAGEINFOHEADER lpdiDevImageInfoHeader)
 {
     return underlyingDIObject->GetImageInfo(lpdiDevImageInfoHeader);
 }
 
 // ---------
 
-HRESULT STDMETHODCALLTYPE XboxDirectInputDevice8::GetObjectInfo(LPDIDEVICEOBJECTINSTANCE pdidoi, DWORD dwObj, DWORD dwHow)
+HRESULT STDMETHODCALLTYPE WrapperIDirectInputDevice8::GetObjectInfo(LPDIDEVICEOBJECTINSTANCE pdidoi, DWORD dwObj, DWORD dwHow)
 {
     return underlyingDIObject->GetObjectInfo(pdidoi, dwObj, dwHow);
 }
 
 // ---------
 
-HRESULT STDMETHODCALLTYPE XboxDirectInputDevice8::GetProperty(REFGUID rguidProp, LPDIPROPHEADER pdiph)
+HRESULT STDMETHODCALLTYPE WrapperIDirectInputDevice8::GetProperty(REFGUID rguidProp, LPDIPROPHEADER pdiph)
 {
     return underlyingDIObject->GetProperty(rguidProp, pdiph);
 }
 
 // ---------
 
-HRESULT STDMETHODCALLTYPE XboxDirectInputDevice8::Initialize(HINSTANCE hinst, DWORD dwVersion, REFGUID rguid)
+HRESULT STDMETHODCALLTYPE WrapperIDirectInputDevice8::Initialize(HINSTANCE hinst, DWORD dwVersion, REFGUID rguid)
 {
     return underlyingDIObject->Initialize(hinst, dwVersion, rguid);
 }
 
 // ---------
 
-HRESULT STDMETHODCALLTYPE XboxDirectInputDevice8::Poll(void)
+HRESULT STDMETHODCALLTYPE WrapperIDirectInputDevice8::Poll(void)
 {
     return underlyingDIObject->Poll();
 }
 
 // ---------
 
-HRESULT STDMETHODCALLTYPE XboxDirectInputDevice8::RunControlPanel(HWND hwndOwner, DWORD dwFlags)
+HRESULT STDMETHODCALLTYPE WrapperIDirectInputDevice8::RunControlPanel(HWND hwndOwner, DWORD dwFlags)
 {
     return underlyingDIObject->RunControlPanel(hwndOwner, dwFlags);
 }
 
 // ---------
 
-HRESULT STDMETHODCALLTYPE XboxDirectInputDevice8::SendDeviceData(DWORD cbObjectData, LPCDIDEVICEOBJECTDATA rgdod, LPDWORD pdwInOut, DWORD fl)
+HRESULT STDMETHODCALLTYPE WrapperIDirectInputDevice8::SendDeviceData(DWORD cbObjectData, LPCDIDEVICEOBJECTDATA rgdod, LPDWORD pdwInOut, DWORD fl)
 {
     return underlyingDIObject->SendDeviceData(cbObjectData, rgdod, pdwInOut, fl);
 }
 
 // ---------
 
-HRESULT STDMETHODCALLTYPE XboxDirectInputDevice8::SendForceFeedbackCommand(DWORD dwFlags)
+HRESULT STDMETHODCALLTYPE WrapperIDirectInputDevice8::SendForceFeedbackCommand(DWORD dwFlags)
 {
     return underlyingDIObject->SendForceFeedbackCommand(dwFlags);
 }
 
 // ---------
 
-HRESULT STDMETHODCALLTYPE XboxDirectInputDevice8::SetActionMap(LPDIACTIONFORMAT lpdiActionFormat, LPCTSTR lptszUserName, DWORD dwFlags)
+HRESULT STDMETHODCALLTYPE WrapperIDirectInputDevice8::SetActionMap(LPDIACTIONFORMAT lpdiActionFormat, LPCTSTR lptszUserName, DWORD dwFlags)
 {
     return underlyingDIObject->SetActionMap(lpdiActionFormat, lptszUserName, dwFlags);
 }
 
 // ---------
 
-HRESULT STDMETHODCALLTYPE XboxDirectInputDevice8::SetCooperativeLevel(HWND hwnd, DWORD dwFlags)
+HRESULT STDMETHODCALLTYPE WrapperIDirectInputDevice8::SetCooperativeLevel(HWND hwnd, DWORD dwFlags)
 {
     return underlyingDIObject->SetCooperativeLevel(hwnd, dwFlags);
 }
 
 // ---------
 
-HRESULT STDMETHODCALLTYPE XboxDirectInputDevice8::SetDataFormat(LPCDIDATAFORMAT lpdf)
+HRESULT STDMETHODCALLTYPE WrapperIDirectInputDevice8::SetDataFormat(LPCDIDATAFORMAT lpdf)
 {
     return underlyingDIObject->SetDataFormat(lpdf);
 }
 
 // ---------
 
-HRESULT STDMETHODCALLTYPE XboxDirectInputDevice8::SetEventNotification(HANDLE hEvent)
+HRESULT STDMETHODCALLTYPE WrapperIDirectInputDevice8::SetEventNotification(HANDLE hEvent)
 {
     return underlyingDIObject->SetEventNotification(hEvent);
 }
 
 // ---------
 
-HRESULT STDMETHODCALLTYPE XboxDirectInputDevice8::SetProperty(REFGUID rguidProp, LPCDIPROPHEADER pdiph)
+HRESULT STDMETHODCALLTYPE WrapperIDirectInputDevice8::SetProperty(REFGUID rguidProp, LPCDIPROPHEADER pdiph)
 {
     // Demo: compare the address against the predefined property values
     const size_t propguid = (size_t)&rguidProp;
@@ -281,25 +281,25 @@ HRESULT STDMETHODCALLTYPE XboxDirectInputDevice8::SetProperty(REFGUID rguidProp,
 
 // ---------
 
-HRESULT STDMETHODCALLTYPE XboxDirectInputDevice8::Unacquire(void)
+HRESULT STDMETHODCALLTYPE WrapperIDirectInputDevice8::Unacquire(void)
 {
     return underlyingDIObject->Unacquire();
 }
 
 // ---------
 
-HRESULT STDMETHODCALLTYPE XboxDirectInputDevice8::WriteEffectToFile(LPCTSTR lptszFileName, DWORD dwEntries, LPDIFILEEFFECT rgDiFileEft, DWORD dwFlags)
+HRESULT STDMETHODCALLTYPE WrapperIDirectInputDevice8::WriteEffectToFile(LPCTSTR lptszFileName, DWORD dwEntries, LPDIFILEEFFECT rgDiFileEft, DWORD dwFlags)
 {
     return underlyingDIObject->WriteEffectToFile(lptszFileName, dwEntries, rgDiFileEft, dwFlags);
 }
 
 
 // -------- CALLBACKS: IDirectInputDevice8 --------------------------------- //
-// See "XboxDirectInputDevice8.h" for documentation.
+// See "WrapperIDirectInputDevice8.h" for documentation.
 
-BOOL STDMETHODCALLTYPE XboxDirectInputDevice8::CallbackEnumObjects(LPCDIDEVICEOBJECTINSTANCE lpddoi, LPVOID pvRef)
+BOOL STDMETHODCALLTYPE WrapperIDirectInputDevice8::CallbackEnumObjects(LPCDIDEVICEOBJECTINSTANCE lpddoi, LPVOID pvRef)
 {
-    LPXDIENUMOBJCBINFO callbackInfo = (LPXDIENUMOBJCBINFO)pvRef;
+    sEnumObjectsCallbackInfo* callbackInfo = (sEnumObjectsCallbackInfo*)pvRef;
     
     return callbackInfo->lpCallback(lpddoi, callbackInfo->pvRef);
 }

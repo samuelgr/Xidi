@@ -1,25 +1,25 @@
 /*****************************************************************************
- * XboxControllerDirectInput
+ * XinputControllerDirectInput
  *      Hook and helper for older DirectInput games.
- *      Fixes issues associated with Xbox 360 and Xbox One controllers.
+ *      Fixes issues associated with certain Xinput-based controllers.
  *****************************************************************************
  * Authored by Samuel Grossman
  * Copyright (c) 2016
  *****************************************************************************
- * XboxDirectInput8.h
+ * WrapperIDirectInput8.h
  *      Declaration of the wrapper class for IDirectInput8.
  *****************************************************************************/
 
 #pragma once
 
-#include "API_DirectInput8.h"
+#include "ApiDirectInput8.h"
 
 
-namespace XboxControllerDirectInput
+namespace XinputControllerDirectInput
 {
     // Wraps the IDirectInput8 interface to hook into all calls to it.
     // Holds an underlying instance of an IDirectInput8 object but wraps all method invocations.
-    struct XboxDirectInput8 : IDirectInput8
+    struct WrapperIDirectInput8 : IDirectInput8
     {
     private:
         // -------- INSTANCE VARIABLES --------------------------------------------- //
@@ -31,8 +31,8 @@ namespace XboxControllerDirectInput
     public:
         // -------- CONSTRUCTION AND DESTRUCTION ----------------------------------- //
 
-        // Constructs an XboxDirectInput8 object, given an underlying IDirectInput8 object to wrap.
-        XboxDirectInput8(IDirectInput8* underlyingDIObject);
+        // Constructs an WrapperIDirectInput8 object, given an underlying IDirectInput8 object to wrap.
+        WrapperIDirectInput8(IDirectInput8* underlyingDIObject);
 
 
         // -------- METHODS: IUnknown ---------------------------------------------- //

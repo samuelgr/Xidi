@@ -19,21 +19,21 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="Include\API_DirectInput8.h" />
-    <ClInclude Include="Include\API_Windows.h" />
+    <ClInclude Include="Include\ApiDirectInput8.h" />
+    <ClInclude Include="Include\ApiWindows.h" />
     <ClInclude Include="Include\ControllerIdentification.h" />
-    <ClInclude Include="Include\ImportAPI_dinput8.h" />
-    <ClInclude Include="Include\XboxDirectInput8.h" />
-    <ClInclude Include="Source\XboxDirectInputDevice8.h" />
+    <ClInclude Include="Include\Dinput8ImportApi.h" />
+    <ClInclude Include="Include\WrapperIDirectInput8.h" />
+    <ClInclude Include="Source\WrapperIDirectInputDevice8.h" />
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="Source\API_DirectInput8.cpp" />
+    <ClCompile Include="Source\ApiDirectInput8.cpp" />
     <ClCompile Include="Source\ControllerIdentification.cpp" />
-    <ClCompile Include="Source\ImportAPI_dinput8.cpp" />
-    <ClCompile Include="Source\XboxDirectInput8.cpp" />
-    <ClCompile Include="Source\ExportAPI_dinput8.cpp" />
-    <ClCompile Include="Source\Main.cpp" />
-    <ClCompile Include="Source\XboxDirectInputDevice8.cpp" />
+    <ClCompile Include="Source\Dinput8ImportApi.cpp" />
+    <ClCompile Include="Source\WrapperIDirectInput8.cpp" />
+    <ClCompile Include="Source\Dinput8ExportApi.cpp" />
+    <ClCompile Include="Source\DllMain.cpp" />
+    <ClCompile Include="Source\WrapperIDirectInputDevice8.cpp" />
   </ItemGroup>
   <ItemGroup>
     <None Include="dinput8.def" />
@@ -41,8 +41,9 @@
   <PropertyGroup Label="Globals">
     <ProjectGuid>{023441F6-2554-440F-9FFB-7E185AB7CF41}</ProjectGuid>
     <Keyword>Win32Proj</Keyword>
-    <RootNamespace>XboxControllerDirectInput</RootNamespace>
+    <RootNamespace>XinputControllerDirectInput</RootNamespace>
     <WindowsTargetPlatformVersion>8.1</WindowsTargetPlatformVersion>
+    <ProjectName>XinputControllerDirectInput</ProjectName>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
@@ -123,7 +124,7 @@
       </PrecompiledHeader>
       <WarningLevel>Level3</WarningLevel>
       <Optimization>Disabled</Optimization>
-      <PreprocessorDefinitions>WIN32;_DEBUG;_WINDOWS;_USRDLL;XBOXCONTROLLERDIRECTINPUT_EXPORTS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>WIN32;_DEBUG;_WINDOWS;_USRDLL;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <SDLCheck>true</SDLCheck>
       <MinimalRebuild>false</MinimalRebuild>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
@@ -141,7 +142,7 @@
       </PrecompiledHeader>
       <WarningLevel>Level3</WarningLevel>
       <Optimization>Disabled</Optimization>
-      <PreprocessorDefinitions>_DEBUG;_WINDOWS;_USRDLL;XBOXCONTROLLERDIRECTINPUT_EXPORTS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>_DEBUG;_WINDOWS;_USRDLL;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <SDLCheck>true</SDLCheck>
       <MinimalRebuild>false</MinimalRebuild>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
@@ -161,7 +162,7 @@
       <Optimization>MaxSpeed</Optimization>
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
-      <PreprocessorDefinitions>WIN32;NDEBUG;_WINDOWS;_USRDLL;XBOXCONTROLLERDIRECTINPUT_EXPORTS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>WIN32;NDEBUG;_WINDOWS;_USRDLL;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <SDLCheck>true</SDLCheck>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
     </ClCompile>
@@ -182,7 +183,7 @@
       <Optimization>MaxSpeed</Optimization>
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
-      <PreprocessorDefinitions>NDEBUG;_WINDOWS;_USRDLL;XBOXCONTROLLERDIRECTINPUT_EXPORTS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>NDEBUG;_WINDOWS;_USRDLL;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <SDLCheck>true</SDLCheck>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
     </ClCompile>

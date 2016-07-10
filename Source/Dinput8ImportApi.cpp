@@ -1,17 +1,19 @@
 /*****************************************************************************
- * XboxControllerDirectInput
+ * XinputControllerDirectInput
  *      Hook and helper for older DirectInput games.
- *      Fixes issues associated with Xbox 360 and Xbox One controllers.
+ *      Fixes issues associated with certain Xinput-based controllers.
  *****************************************************************************
  * Authored by Samuel Grossman
  * Copyright (c) 2016
  *****************************************************************************
- * ImportAPI_dinput8.cpp
+ * Dinput8ImportApi.cpp
  *      Implementation of importing the API from "dinput8.dll".
  *****************************************************************************/
 
-#include "API_Windows.h"
-#include "ImportAPI_dinput8.h"
+#include "ApiWindows.h"
+#include "Dinput8ImportApi.h"
+
+using namespace XinputControllerDirectInput;
 
 
 // -------- LOCALS --------------------------------------------------------- //
@@ -33,7 +35,7 @@ static BOOL importTableIsInitialized = FALSE;
 // -------- CLASS METHODS -------------------------------------------------- //
 // See "ImportAPI_dinput8.h" for documentation.
 
-HRESULT ImportAPI_dinput8::Initialize(void)
+HRESULT Dinput8ImportApi::Initialize(void)
 {
     if (FALSE == importTableIsInitialized)
     {
@@ -77,35 +79,40 @@ HRESULT ImportAPI_dinput8::Initialize(void)
 
 // ---------
 
-HRESULT ImportAPI_dinput8::ImportedDirectInput8Create(HINSTANCE hinst, DWORD dwVersion, REFIID riidltf, LPVOID* ppvOut, LPUNKNOWN punkOuter)
+HRESULT Dinput8ImportApi::ImportedDirectInput8Create(HINSTANCE hinst, DWORD dwVersion, REFIID riidltf, LPVOID* ppvOut, LPUNKNOWN punkOuter)
 {
+    if (FALSE == importTableIsInitialized) return E_NOT_VALID_STATE;
     return importTable.DirectInput8Create(hinst, dwVersion, riidltf, ppvOut, punkOuter);
 }
 
 // ---------
 
-HRESULT ImportAPI_dinput8::ImportedDllRegisterServer(void)
+HRESULT Dinput8ImportApi::ImportedDllRegisterServer(void)
 {
+    if (FALSE == importTableIsInitialized) return E_NOT_VALID_STATE;
     return importTable.DllRegisterServer();
 }
 
 // ---------
 
-HRESULT ImportAPI_dinput8::ImportedDllUnregisterServer(void)
+HRESULT Dinput8ImportApi::ImportedDllUnregisterServer(void)
 {
+    if (FALSE == importTableIsInitialized) return E_NOT_VALID_STATE;
     return importTable.DllUnregisterServer();
 }
 
 // ---------
 
-HRESULT ImportAPI_dinput8::ImportedDllCanUnloadNow(void)
+HRESULT Dinput8ImportApi::ImportedDllCanUnloadNow(void)
 {
+    if (FALSE == importTableIsInitialized) return E_NOT_VALID_STATE;
     return importTable.DllCanUnloadNow();
 }
 
 // ---------
 
-HRESULT ImportAPI_dinput8::ImportedDllGetClassObject(_In_ REFCLSID rclsid, _In_ REFIID riid, _Out_ LPVOID* ppv)
+HRESULT Dinput8ImportApi::ImportedDllGetClassObject(REFCLSID rclsid, REFIID riid, LPVOID* ppv)
 {
+    if (FALSE == importTableIsInitialized) return E_NOT_VALID_STATE;
     return importTable.DllGetClassObject(rclsid, riid, ppv);
 }

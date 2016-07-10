@@ -1,17 +1,19 @@
 /*****************************************************************************
- * XboxControllerDirectInput
+ * XinputControllerDirectInput
  *      Hook and helper for older DirectInput games.
- *      Fixes issues associated with Xbox 360 and Xbox One controllers.
+ *      Fixes issues associated with certain Xinput-based controllers.
  *****************************************************************************
  * Authored by Samuel Grossman
  * Copyright (c) 2016
  *****************************************************************************
- * Main.cpp
+ * DllMain.cpp
  *      Entry point when loading or unloading this dynamic library.
  *****************************************************************************/
 
-#include "API_Windows.h"
-#include "ImportAPI_dinput8.h"
+#include "ApiWindows.h"
+#include "Dinput8ImportApi.h"
+
+using namespace XinputControllerDirectInput;
 
 
 // -------- FUNCTIONS ------------------------------------------------------ //
@@ -25,7 +27,8 @@ BOOL APIENTRY DllMain(HMODULE hModule, DWORD  ul_reason_for_call, LPVOID lpReser
     {
         case DLL_PROCESS_ATTACH:
         case DLL_THREAD_ATTACH:
-            if (S_OK != ImportAPI_dinput8::Initialize()) result = FALSE;
+            if (S_OK != Dinput8ImportApi::Initialize())
+                result = FALSE;
             break;
 
         case DLL_THREAD_DETACH:

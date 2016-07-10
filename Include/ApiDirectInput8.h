@@ -1,15 +1,21 @@
 /*****************************************************************************
- * XboxControllerDirectInput
+ * XinputControllerDirectInput
  *      Hook and helper for older DirectInput games.
- *      Fixes issues associated with Xbox 360 and Xbox One controllers.
+ *      Fixes issues associated with certain Xinput-based controllers.
  *****************************************************************************
  * Authored by Samuel Grossman
  * Copyright (c) 2016
  *****************************************************************************
- * API_DirectInput8.h
- *      Pulls in all DirectInput GUID definitions to avoid linking with
- *      the "dinput8.lib" library.
+ * ApiDirectInput8.h
+ *      Common header file for the DirectInput8 API.
  *****************************************************************************/
 
-#define INITGUID
-#include "API_DirectInput8.h"
+#pragma once
+
+#include "ApiWindows.h"
+
+
+// -------- DIRECTINPUT 8 API ---------------------------------------------- //
+
+#define DIRECTINPUT_VERSION                     0x0800
+#include <dinput.h>
