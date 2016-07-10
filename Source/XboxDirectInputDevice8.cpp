@@ -248,13 +248,16 @@ HRESULT STDMETHODCALLTYPE XboxDirectInputDevice8::SetEventNotification(HANDLE hE
 
 HRESULT STDMETHODCALLTYPE XboxDirectInputDevice8::SetProperty(REFGUID rguidProp, LPCDIPROPHEADER pdiph)
 {
-    const GUID* propguid = &rguidProp;
+    // Demo: compare the address against the predefined property values
+    const size_t propguid = (size_t)&rguidProp;
 
+    // Demo: header is at the start of the type-specific property structure, so convert to the correct type depending on the property in question
     const DIPROPPOINTER* proppointer = (const DIPROPPOINTER*)pdiph;
     const DIPROPDWORD* propdword = (const DIPROPDWORD*)pdiph;
     const DIPROPSTRING* propstring = (const DIPROPSTRING*)pdiph;
     const DIPROPRANGE* proprange = (const DIPROPRANGE*)pdiph;
     
+    // Demo: if the property is not of interest, or once the property is intercepted and mapped, forward to the underlying object
     HRESULT result = underlyingDIObject->SetProperty(rguidProp, pdiph);
 
     return result;

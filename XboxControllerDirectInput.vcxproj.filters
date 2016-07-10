@@ -53,6 +53,9 @@
     <ClCompile Include="Source\XboxDirectInputDevice8.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="Source\API_DirectInput8.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <None Include="dinput8.def" />

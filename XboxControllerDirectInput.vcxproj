@@ -27,6 +27,7 @@
     <ClInclude Include="Source\XboxDirectInputDevice8.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="Source\API_DirectInput8.cpp" />
     <ClCompile Include="Source\ControllerIdentification.cpp" />
     <ClCompile Include="Source\ImportAPI_dinput8.cpp" />
     <ClCompile Include="Source\XboxDirectInput8.cpp" />
