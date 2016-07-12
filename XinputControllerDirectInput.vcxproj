@@ -22,22 +22,25 @@
     <ClInclude Include="Include\ApiDirectInput8.h" />
     <ClInclude Include="Include\ApiWindows.h" />
     <ClInclude Include="Include\Controller.h" />
-    <ClInclude Include="Include\ControllerIdentification.h" />
+    <ClInclude Include="Include\XinputControllerIdentification.h" />
     <ClInclude Include="Include\Dinput8ImportApi.h" />
+    <ClInclude Include="Include\Hashers.h" />
     <ClInclude Include="Include\Mapper.h" />
     <ClInclude Include="Include\WrapperIDirectInput8.h" />
     <ClInclude Include="Include\WrapperIDirectInputDevice8.h" />
+    <ClInclude Include="Include\XinputObjectFactory.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Source\ApiDirectInput8.cpp" />
     <ClCompile Include="Source\Controller.cpp" />
-    <ClCompile Include="Source\ControllerIdentification.cpp" />
+    <ClCompile Include="Source\XinputControllerIdentification.cpp" />
     <ClCompile Include="Source\Dinput8ImportApi.cpp" />
     <ClCompile Include="Source\Mapper.cpp" />
     <ClCompile Include="Source\WrapperIDirectInput8.cpp" />
     <ClCompile Include="Source\Dinput8ExportApi.cpp" />
     <ClCompile Include="Source\DllMain.cpp" />
     <ClCompile Include="Source\WrapperIDirectInputDevice8.cpp" />
+    <ClCompile Include="Source\XinputObjectFactory.cpp" />
   </ItemGroup>
   <ItemGroup>
     <None Include="dinput8.def" />

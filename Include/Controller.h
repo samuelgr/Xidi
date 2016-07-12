@@ -19,7 +19,9 @@ namespace XinputControllerDirectInput
 {
     // Represents the state of an Xinput-based controller.
     // State information from DirectInput will be filled into structures of this type for use by application mappers.
-    struct sControllerState
+    // For non-binary values (sticks, triggers, and dpad) the value reported is as read from the controller.
+    // For binary values, the value is 0x80 (upper bit set) if pressed or 0x00 (no bits set) if not.
+    struct SControllerState
     {
         LONG stickLeftX;                        // horizontal position of the left stick
         LONG stickLeftY;                        // vertical position of the left stick
@@ -44,23 +46,23 @@ namespace XinputControllerDirectInput
     };
 
     // Identifies each input component of an Xinput-based controller.
-    enum eControllerInput
+    enum EControllerInput: USHORT
     {
-        CONTROLLERINPUT_STICK_LEFT,
-        CONTROLLERINPUT_STICK_RIGHT,
-        CONTROLLERINPUT_DPAD,
-        CONTROLLERINPUT_TRIGGER_LEFT,
-        CONTROLLERINPUT_TRIGGER_RIGHT,
-        CONTROLLERINPUT_BUTTON_A,
-        CONTROLLERINPUT_BUTTON_B,
-        CONTROLLERINPUT_BUTTON_X,
-        CONTROLLERINPUT_BUTTON_Y,
-        CONTROLLERINPUT_BUTTON_LB,
-        CONTROLLERINPUT_BUTTON_RB,
-        CONTROLLERINPUT_BUTTON_BACK,
-        CONTROLLERINPUT_BUTTON_START,
-        CONTROLLERINPUT_BUTTON_LS,
-        CONTROLLERINPUT_BUTTON_RS
+        StickLeft,
+        StickRight,
+        Dpad,
+        TriggerLT,
+        TriggerRT,
+        ButtonA,
+        ButtonB,
+        ButtonX,
+        ButtonY,
+        ButtonLB,
+        ButtonRB,
+        ButtonBack,
+        ButtonStart,
+        ButtonLeftStick,
+        ButtonRightStick
     };
     
     // Abstract base class representing a supported hardware controller.
@@ -70,16 +72,19 @@ namespace XinputControllerDirectInput
     public:
         // -------- CONSTANTS ------------------------------------------------------ //
         
-        // Minimum value of readings from the left and right sticks, based on Xinput documentation.
+        // Minimum value of readings from the left and right sticks, from the Xinput documentation.
         static const LONG kStickRangeMin = -32768;
         
-        // Maximum value of readings from the left and right sticks, based on Xinput documentation.
-        static const LONG kStickRangeMax = 32768;
+        // Maximum value of readings from the left and right sticks, from the Xinput documentation.
+        static const LONG kStickRangeMax = 32767;
+
+        // Neutral position value for the left and right sticks.
+        static const LONG kStickNeutral = 0;
         
-        // Minimum value of readings from the LT and RT triggers, based on Xinput documentation.
+        // Minimum value of readings from the LT and RT triggers, from the Xinput documentation.
         static const LONG kTriggerRangeMin = 0;
         
-        // Maximum value of readings from the LT and RT triggers, based on Xinput documentation.
+        // Maximum value of readings from the LT and RT triggers, from the Xinput documentation.
         static const LONG kTriggerRangeMax = 255;
         
         
@@ -106,7 +111,7 @@ namespace XinputControllerDirectInput
         // Maps the specified controller input to a DirectInput instance number for the corresponding class.
         // For example, if DirectInput considers the A button to be button 2, then passing CONTROLLERINPUT_BUTTON_A results in a return value of 2.
         // Must be implemented by subclasses.
-        virtual WORD ControllerInputToDirectInputInstanceNumber(eControllerInput controllerInput) = 0;
+        virtual WORD ControllerInputToDirectInputInstanceNumber(EControllerInput controllerInput) = 0;
 
         // Retrieves data from a controller.
         // Uses the mapper to interpose between raw controller data and data presented to the application.

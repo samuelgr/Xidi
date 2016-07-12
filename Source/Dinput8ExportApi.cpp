@@ -10,6 +10,7 @@
  *      Implementation of primary exported functions for "dinput8.dll".
  *****************************************************************************/
 
+#include "Hashers.h"
 #include "Dinput8ImportApi.h"
 #include "WrapperIDirectInput8.h"
 
@@ -22,11 +23,13 @@ using namespace XinputControllerDirectInput;
 HRESULT STDMETHODCALLTYPE Dinput8ExportDirectInput8Create(HINSTANCE hinst, DWORD dwVersion, REFIID riidltf, LPVOID* ppvOut, LPUNKNOWN punkOuter)
 {
     IDirectInput8* diObject = NULL;
+    
     HRESULT result = Dinput8ImportApi::ImportedDirectInput8Create(hinst, dwVersion, riidltf, (LPVOID*)&diObject, punkOuter);
-
+    if (DI_OK != result) return result;
+    
     diObject = new XinputControllerDirectInput::WrapperIDirectInput8(diObject);
     *ppvOut = (LPVOID)diObject;
-
+    
     return result;
 }
 

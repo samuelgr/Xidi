@@ -21,6 +21,10 @@ namespace XinputControllerDirectInput
     // Holds an underlying instance of an IDirectInput8 object but wraps all method invocations.
     struct WrapperIDirectInputDevice8 : IDirectInputDevice8
     {
+        // -------- FRIENDS -------------------------------------------------------- //
+        friend class XinputObjectFactory;
+        
+        
     private:
         // -------- INSTANCE VARIABLES --------------------------------------------- //
         
@@ -28,13 +32,13 @@ namespace XinputControllerDirectInput
         IDirectInputDevice8* underlyingDIObject;
         
         
-    public:
         // -------- CONSTRUCTION AND DESTRUCTION ----------------------------------- //
         
         // Constructs an WrapperIDirectInput8 object, given an underlying IDirectInput8 object to wrap.
         WrapperIDirectInputDevice8(IDirectInputDevice8* underlyingDIObject);
         
         
+    public:
         // -------- METHODS: IUnknown ---------------------------------------------- //
         virtual HRESULT STDMETHODCALLTYPE QueryInterface(REFIID riid, LPVOID* ppvObj);
         virtual ULONG STDMETHODCALLTYPE AddRef(void);
@@ -75,6 +79,8 @@ namespace XinputControllerDirectInput
         
     private:
         // -------- CALLBACKS: IDirectInputDevice8 --------------------------------- //
+        
+        // Intercepts callbacks invoked as part of a call to EnumObjects.
         static BOOL STDMETHODCALLTYPE CallbackEnumObjects(LPCDIDEVICEOBJECTINSTANCE lpddoi, LPVOID pvRef);
     };
 }

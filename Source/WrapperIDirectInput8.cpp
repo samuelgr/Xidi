@@ -10,10 +10,30 @@
  *      Implementation of the wrapper class for IDirectInput8.
  *****************************************************************************/
 
+#include "Hashers.h"
 #include "WrapperIDirectInput8.h"
 #include "WrapperIDirectInputDevice8.h"
 
 using namespace XinputControllerDirectInput;
+
+
+// -------- TYPE DEFINITIONS ----------------------------------------------- //
+
+// Contains all information required to intercept callbacks to EnumDevices.
+struct SEnumDevicesCallbackInfo
+{
+    WrapperIDirectInput8* instance;
+    LPDIENUMDEVICESCALLBACK lpCallback;
+    LPVOID pvRef;
+};
+
+// Contains all information required to intercept callbacks to EnumDevicesBySemantics.
+struct SEnumDevicesBySemanticsCallbackInfo
+{
+    WrapperIDirectInput8* instance;
+    LPDIENUMDEVICESBYSEMANTICSCB lpCallback;
+    LPVOID pvRef;
+};
 
 
 // -------- CONSTRUCTION AND DESTRUCTION ----------------------------------- //
@@ -72,8 +92,8 @@ HRESULT STDMETHODCALLTYPE WrapperIDirectInput8::CreateDevice(REFGUID rguid, LPDI
     HRESULT result = underlyingDIObject->CreateDevice(rguid, &createdDevice, pUnkOuter);
     if (DI_OK != result) return result;
     
-    // Hook the device
-    *lplpDirectInputDevice = new WrapperIDirectInputDevice8(createdDevice);
+    // Supply the application with the correct interface, potentially intercepted.
+    *lplpDirectInputDevice = objectFactory.CreateDirectInputDeviceForController(createdDevice, rguid);
     return DI_OK;
 }
 
@@ -88,14 +108,26 @@ HRESULT STDMETHODCALLTYPE WrapperIDirectInput8::ConfigureDevices(LPDICONFIGUREDE
 
 HRESULT STDMETHODCALLTYPE WrapperIDirectInput8::EnumDevices(DWORD dwDevType, LPDIENUMDEVICESCALLBACK lpCallback, LPVOID pvRef, DWORD dwFlags)
 {
-    return underlyingDIObject->EnumDevices(dwDevType, lpCallback, pvRef, dwFlags);
+    SEnumDevicesCallbackInfo callbackInfo;
+    callbackInfo.instance = this;
+    callbackInfo.lpCallback = lpCallback;
+    callbackInfo.pvRef = pvRef;
+    
+    objectFactory.ResetEnumeratedControllers();
+    return underlyingDIObject->EnumDevices(dwDevType, &WrapperIDirectInput8::CallbackEnumDevices, (LPVOID)&callbackInfo, dwFlags);
 }
 
 // ---------
 
 HRESULT STDMETHODCALLTYPE WrapperIDirectInput8::EnumDevicesBySemantics(LPCTSTR ptszUserName, LPDIACTIONFORMAT lpdiActionFormat, LPDIENUMDEVICESBYSEMANTICSCB lpCallback, LPVOID pvRef, DWORD dwFlags)
 {
-    return underlyingDIObject->EnumDevicesBySemantics(ptszUserName, lpdiActionFormat, lpCallback, pvRef, dwFlags);
+    SEnumDevicesBySemanticsCallbackInfo callbackInfo;
+    callbackInfo.instance = this;
+    callbackInfo.lpCallback = lpCallback;
+    callbackInfo.pvRef = pvRef;
+    
+    objectFactory.ResetEnumeratedControllers();
+    return underlyingDIObject->EnumDevicesBySemantics(ptszUserName, lpdiActionFormat, &WrapperIDirectInput8::CallbackEnumDevicesBySemantics, (LPVOID)&callbackInfo, dwFlags);
 }
 
 // ---------
@@ -124,4 +156,26 @@ HRESULT STDMETHODCALLTYPE WrapperIDirectInput8::Initialize(HINSTANCE hinst, DWOR
 HRESULT STDMETHODCALLTYPE WrapperIDirectInput8::RunControlPanel(HWND hwndOwner, DWORD dwFlags)
 {
     return underlyingDIObject->RunControlPanel(hwndOwner, dwFlags);
+}
+
+
+// -------- CALLBACKS: IDirectInput8 --------------------------------------- //
+// See "WrapperIDirectInput8.h" for documentation.
+
+BOOL STDMETHODCALLTYPE WrapperIDirectInput8::CallbackEnumDevices(LPCDIDEVICEINSTANCE lpddi, LPVOID pvRef)
+{
+    SEnumDevicesCallbackInfo* callbackInfo = (SEnumDevicesCallbackInfo*)pvRef;
+    callbackInfo->instance->objectFactory.SubmitEnumeratedController(lpddi->guidProduct, lpddi->guidInstance);
+
+    return callbackInfo->lpCallback(lpddi, callbackInfo->pvRef);
+}
+
+// ---------
+
+BOOL STDMETHODCALLTYPE WrapperIDirectInput8::CallbackEnumDevicesBySemantics(LPCDIDEVICEINSTANCE lpddi, LPDIRECTINPUTDEVICE8 lpdid, DWORD dwFlags, DWORD dwRemaining, LPVOID pvRef)
+{
+    SEnumDevicesBySemanticsCallbackInfo* callbackInfo = (SEnumDevicesBySemanticsCallbackInfo*)pvRef;
+    callbackInfo->instance->objectFactory.SubmitEnumeratedController(lpddi->guidProduct, lpddi->guidInstance);
+
+    return callbackInfo->lpCallback(lpddi, lpdid, dwFlags, dwRemaining, callbackInfo->pvRef);
 }

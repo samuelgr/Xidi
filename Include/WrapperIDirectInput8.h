@@ -13,6 +13,7 @@
 #pragma once
 
 #include "ApiDirectInput8.h"
+#include "XinputObjectFactory.h"
 
 
 namespace XinputControllerDirectInput
@@ -23,14 +24,17 @@ namespace XinputControllerDirectInput
     {
     private:
         // -------- INSTANCE VARIABLES --------------------------------------------- //
-
+        
         // The underlying IDirectInput8 object that this instance wraps.
         IDirectInput8* underlyingDIObject;
-
-
+        
+        // Factory for creating Xinput objects associated with this instance of IDirectInput8.
+        XinputObjectFactory objectFactory;
+        
+        
     public:
         // -------- CONSTRUCTION AND DESTRUCTION ----------------------------------- //
-
+        
         // Constructs an WrapperIDirectInput8 object, given an underlying IDirectInput8 object to wrap.
         WrapperIDirectInput8(IDirectInput8* underlyingDIObject);
 
@@ -50,5 +54,14 @@ namespace XinputControllerDirectInput
         virtual HRESULT STDMETHODCALLTYPE GetDeviceStatus(REFGUID rguidInstance);
         virtual HRESULT STDMETHODCALLTYPE Initialize(HINSTANCE hinst, DWORD dwVersion);
         virtual HRESULT STDMETHODCALLTYPE RunControlPanel(HWND hwndOwner, DWORD dwFlags);
+
+
+        // -------- CALLBACKS: IDirectInput8 --------------------------------------- //
+        
+        // Intercepts callbacks invoked as part of a call to EnumDevices.
+        static BOOL STDMETHODCALLTYPE CallbackEnumDevices(LPCDIDEVICEINSTANCE lpddi, LPVOID pvRef);
+
+        // Intercepts callbacks invoked as part of a call to EnumDevicesBySemantics.
+        static BOOL STDMETHODCALLTYPE CallbackEnumDevicesBySemantics(LPCDIDEVICEINSTANCE lpddi, LPDIRECTINPUTDEVICE8 lpdid, DWORD dwFlags, DWORD dwRemaining, LPVOID pvRef);
     };
 }

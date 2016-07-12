@@ -18,7 +18,7 @@ using namespace XinputControllerDirectInput;
 // -------- TYPE DEFINITIONS ----------------------------------------------- //
 
 // Contains all information required to intercept callbacks to EnumObjects.
-struct sEnumObjectsCallbackInfo
+struct SEnumObjectsCallbackInfo
 {
     WrapperIDirectInputDevice8* instance;
     LPDIENUMDEVICEOBJECTSCALLBACK lpCallback;
@@ -119,7 +119,7 @@ HRESULT STDMETHODCALLTYPE WrapperIDirectInputDevice8::EnumEffectsInFile(LPCTSTR 
 
 HRESULT STDMETHODCALLTYPE WrapperIDirectInputDevice8::EnumObjects(LPDIENUMDEVICEOBJECTSCALLBACK lpCallback, LPVOID pvRef, DWORD dwFlags)
 {
-    sEnumObjectsCallbackInfo callbackInfo;
+    SEnumObjectsCallbackInfo callbackInfo;
     callbackInfo.instance = this;
     callbackInfo.lpCallback = lpCallback;
     callbackInfo.pvRef = pvRef;
@@ -299,7 +299,7 @@ HRESULT STDMETHODCALLTYPE WrapperIDirectInputDevice8::WriteEffectToFile(LPCTSTR 
 
 BOOL STDMETHODCALLTYPE WrapperIDirectInputDevice8::CallbackEnumObjects(LPCDIDEVICEOBJECTINSTANCE lpddoi, LPVOID pvRef)
 {
-    sEnumObjectsCallbackInfo* callbackInfo = (sEnumObjectsCallbackInfo*)pvRef;
+    SEnumObjectsCallbackInfo* callbackInfo = (SEnumObjectsCallbackInfo*)pvRef;
     
     return callbackInfo->lpCallback(lpddoi, callbackInfo->pvRef);
 }
