@@ -22,6 +22,7 @@
     <ClInclude Include="Include\ApiDirectInput8.h" />
     <ClInclude Include="Include\ApiWindows.h" />
     <ClInclude Include="Include\Controller.h" />
+    <ClInclude Include="Include\Mappers\OldGamepad.h" />
     <ClInclude Include="Include\XinputControllerIdentification.h" />
     <ClInclude Include="Include\Dinput8ImportApi.h" />
     <ClInclude Include="Include\Hashers.h" />
@@ -33,6 +34,7 @@
   <ItemGroup>
     <ClCompile Include="Source\ApiDirectInput8.cpp" />
     <ClCompile Include="Source\Controller.cpp" />
+    <ClCompile Include="Source\Mappers\OldGamepad.cpp" />
     <ClCompile Include="Source\XinputControllerIdentification.cpp" />
     <ClCompile Include="Source\Dinput8ImportApi.cpp" />
     <ClCompile Include="Source\Mapper.cpp" />

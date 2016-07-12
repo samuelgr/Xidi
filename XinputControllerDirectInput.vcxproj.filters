@@ -13,6 +13,12 @@
       <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
       <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav;mfcribbon-ms</Extensions>
     </Filter>
+    <Filter Include="Header Files\Mappers">
+      <UniqueIdentifier>{9023cd2c-b447-4c41-97aa-9ddb0baad13d}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\Mappers">
+      <UniqueIdentifier>{3b4cb058-31d6-4fb6-a455-fd41ff3f2d86}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Include\ApiDirectInput8.h">
@@ -45,6 +51,9 @@
     <ClInclude Include="Include\XinputObjectFactory.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="Include\Mappers\OldGamepad.h">
+      <Filter>Header Files\Mappers</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Source\ApiDirectInput8.cpp">
@@ -76,6 +85,9 @@
     </ClCompile>
     <ClCompile Include="Source\XinputObjectFactory.cpp">
       <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\Mappers\OldGamepad.cpp">
+      <Filter>Source Files\Mappers</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
