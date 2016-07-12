@@ -44,32 +44,35 @@ namespace XinputControllerDirectInput
         BYTE buttonLS;                          // LS button (pushing down on the left stick)
         BYTE buttonRS;                          // RS button (pushing down on the right stick)
     };
-
-    // Identifies each input component of an Xinput-based controller.
-    enum EControllerInput: USHORT
-    {
-        StickLeft,
-        StickRight,
-        Dpad,
-        TriggerLT,
-        TriggerRT,
-        ButtonA,
-        ButtonB,
-        ButtonX,
-        ButtonY,
-        ButtonLB,
-        ButtonRB,
-        ButtonBack,
-        ButtonStart,
-        ButtonLeftStick,
-        ButtonRightStick
-    };
     
     // Abstract base class representing a supported hardware controller.
     // Subclasses communicate with DirectInput, define an Xinput-specific data format, and provides state information.
     class Controller
     {
     public:
+        // -------- TYPE DEFINITIONS ----------------------------------------------- //
+        
+        // Identifies each input component of an Xinput-based controller.
+        enum EControllerInput : USHORT
+        {
+            StickLeft,
+            StickRight,
+            Dpad,
+            TriggerLT,
+            TriggerRT,
+            ButtonA,
+            ButtonB,
+            ButtonX,
+            ButtonY,
+            ButtonLB,
+            ButtonRB,
+            ButtonBack,
+            ButtonStart,
+            ButtonLeftStick,
+            ButtonRightStick
+        };
+
+
         // -------- CONSTANTS ------------------------------------------------------ //
         
         // Minimum value of readings from the left and right sticks, from the Xinput documentation.

@@ -11,6 +11,7 @@
  *****************************************************************************/
 
 #include "WrapperIDirectInputDevice8.h"
+#include "Mapper/OldGamepad.h"
 
 using namespace XinputControllerDirectInput;
 
@@ -253,6 +254,9 @@ HRESULT STDMETHODCALLTYPE WrapperIDirectInputDevice8::SetCooperativeLevel(HWND h
 
 HRESULT STDMETHODCALLTYPE WrapperIDirectInputDevice8::SetDataFormat(LPCDIDATAFORMAT lpdf)
 {
+    Mapper::OldGamepad* test = new Mapper::OldGamepad();
+    test->ParseApplicationDataFormat(lpdf);
+    
     return underlyingDIObject->SetDataFormat(lpdf);
 }
 
