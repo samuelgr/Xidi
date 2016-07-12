@@ -14,6 +14,8 @@
 
 #include "ApiWindows.h"
 
+#include <unordered_map>
+
 
 namespace XinputControllerDirectInput
 {
@@ -31,6 +33,12 @@ namespace XinputControllerDirectInput
     class XinputControllerIdentification
     {
     private:
+        // -------- CONSTANTS ------------------------------------------------------ //
+
+        // Maps each known controller's product GUID to its controller type.
+        static const std::unordered_map<const GUID, EControllerType> knownControllers;
+
+        
         // -------- CONSTRUCTION AND DESTRUCTION ----------------------------------- //
         
         // Default constructor. Should never be invoked.

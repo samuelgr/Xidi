@@ -17,23 +17,29 @@
 using namespace XinputControllerDirectInput;
 
 
-// -------- TYPE DEFINITIONS ----------------------------------------------- //
+// -------- LOCAL TYPES ---------------------------------------------------- //
 
 // Contains all information required to intercept callbacks to EnumDevices.
-struct SEnumDevicesCallbackInfo
+namespace XinputControllerDirectInput
 {
-    WrapperIDirectInput8* instance;
-    LPDIENUMDEVICESCALLBACK lpCallback;
-    LPVOID pvRef;
-};
+    struct SEnumDevicesCallbackInfo
+    {
+        WrapperIDirectInput8* instance;
+        LPDIENUMDEVICESCALLBACK lpCallback;
+        LPVOID pvRef;
+    };
+}
 
 // Contains all information required to intercept callbacks to EnumDevicesBySemantics.
-struct SEnumDevicesBySemanticsCallbackInfo
+namespace XinputControllerDirectInput
 {
-    WrapperIDirectInput8* instance;
-    LPDIENUMDEVICESBYSEMANTICSCB lpCallback;
-    LPVOID pvRef;
-};
+    struct SEnumDevicesBySemanticsCallbackInfo
+    {
+        WrapperIDirectInput8* instance;
+        LPDIENUMDEVICESBYSEMANTICSCB lpCallback;
+        LPVOID pvRef;
+    };
+}
 
 
 // -------- CONSTRUCTION AND DESTRUCTION ----------------------------------- //

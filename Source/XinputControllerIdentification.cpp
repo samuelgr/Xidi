@@ -22,7 +22,7 @@ using namespace XinputControllerDirectInput;
 // -------- LOCALS --------------------------------------------------------- //
 
 // Maps each known controller's product GUID to its controller type.
-static const std::unordered_map<const GUID, EControllerType> knownControllers = {
+const std::unordered_map<const GUID, EControllerType> XinputControllerIdentification::knownControllers = {
     
     // Xbox 360 controller
     { {0x028E045E, 0x0000, 0x0000, {0x00, 0x00, 0x50, 0x49, 0x44, 0x56, 0x49, 0x44}}, EControllerType::Xbox360 },

@@ -16,24 +16,15 @@
 using namespace XinputControllerDirectInput;
 
 
-// -------- LOCALS --------------------------------------------------------- //
+// -------- CLASS VARIABLES ------------------------------------------------ //
+// See "Dinput8ImportApi.h" for documentation.
 
-// Holds the addresses of all imported API functions.
-static struct importTable
-{
-    HRESULT (__stdcall *DirectInput8Create)(HINSTANCE, DWORD, REFIID, LPVOID*, LPUNKNOWN);
-    HRESULT (__stdcall *DllRegisterServer)(void);
-    HRESULT (__stdcall *DllUnregisterServer)(void);
-    HRESULT (__stdcall *DllCanUnloadNow)(void);
-    HRESULT (__stdcall *DllGetClassObject)(_In_ REFCLSID, _In_ REFIID, _Out_ LPVOID*);
-} importTable;
-
-// Specifies whether or not the import table has been initialized.
-static BOOL importTableIsInitialized = FALSE;
+SImportTable Dinput8ImportApi::importTable = {NULL, NULL, NULL, NULL, NULL};
+BOOL Dinput8ImportApi::importTableIsInitialized = FALSE;
 
 
 // -------- CLASS METHODS -------------------------------------------------- //
-// See "ImportAPI_dinput8.h" for documentation.
+// See "Dinput8ImportApi.h" for documentation.
 
 HRESULT Dinput8ImportApi::Initialize(void)
 {

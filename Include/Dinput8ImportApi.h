@@ -17,16 +17,37 @@
 
 namespace XinputControllerDirectInput
 {
+    // Fields specify the addresses of the imported "dinput8.dll" API functions.
+    struct SImportTable
+    {
+        HRESULT(__stdcall *DirectInput8Create)(HINSTANCE, DWORD, REFIID, LPVOID*, LPUNKNOWN);
+        HRESULT(__stdcall *DllRegisterServer)(void);
+        HRESULT(__stdcall *DllUnregisterServer)(void);
+        HRESULT(__stdcall *DllCanUnloadNow)(void);
+        HRESULT(__stdcall *DllGetClassObject)(_In_ REFCLSID, _In_ REFIID, _Out_ LPVOID*);
+    };
+    
+    
     // Enables access to the underlying system's "dinput8.dll" API.
     // Dynamically loads the library and holds pointers to all of its methods.
     // Methods are intended to be called directly rather than through an instance.
     class Dinput8ImportApi
     {
     private:
+        // -------- CLASS VARIABLES ------------------------------------------------ //
+
+        // Holds the imported "dinput8.dll" API function addresses.
+        static SImportTable importTable;
+
+        // Specifies whether or not the import table has been initialized.
+        static BOOL importTableIsInitialized;
+
+        
         // -------- CONSTRUCTION AND DESTRUCTION ----------------------------------- //
 
-            // Default constructor. Should never be invoked.
+        // Default constructor. Should never be invoked.
         Dinput8ImportApi();
+
 
     public:
         // -------- CLASS METHODS -------------------------------------------------- //

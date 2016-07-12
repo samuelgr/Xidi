@@ -15,15 +15,18 @@
 using namespace XinputControllerDirectInput;
 
 
-// -------- TYPE DEFINITIONS ----------------------------------------------- //
+// -------- LOCAL TYPES ---------------------------------------------------- //
 
 // Contains all information required to intercept callbacks to EnumObjects.
-struct SEnumObjectsCallbackInfo
+namespace XinputControllerDirectInput
 {
-    WrapperIDirectInputDevice8* instance;
-    LPDIENUMDEVICEOBJECTSCALLBACK lpCallback;
-    LPVOID pvRef;
-};
+    struct SEnumObjectsCallbackInfo
+    {
+        WrapperIDirectInputDevice8* instance;
+        LPDIENUMDEVICEOBJECTSCALLBACK lpCallback;
+        LPVOID pvRef;
+    };
+}
 
 
 // -------- CONSTRUCTION AND DESTRUCTION ----------------------------------- //

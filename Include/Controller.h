@@ -113,6 +113,10 @@ namespace XinputControllerDirectInput
         // Must be implemented by subclasses.
         virtual WORD ControllerInputToDirectInputInstanceNumber(EControllerInput controllerInput) = 0;
 
+        // Initializes the specified DirectInput device with the data format required to communicate with it properly.
+        // Must be implemented by subclasses.
+        virtual HRESULT InitializeDirectInputDeviceDataFormat(IDirectInputDevice8* device) = 0;
+        
         // Retrieves data from a controller.
         // Uses the mapper to interpose between raw controller data and data presented to the application.
         // Directly corresponds to the IDirectInputDevice8 interface's "GetDeviceData" method.
