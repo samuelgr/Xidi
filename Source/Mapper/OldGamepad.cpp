@@ -50,7 +50,7 @@ TInstanceCount OldGamepad::AxisTypeCount(REFGUID axisGUID)
 // -------- CONCRETE INSTANCE METHODS -------------------------------------- //
 // See "Mapper/Base.h" for documentation.
 
-TInstanceCount OldGamepad::NumberOfInstancesOfType(EInstanceType type)
+TInstanceCount OldGamepad::NumInstancesOfType(EInstanceType type)
 {
     TInstanceCount numInstances = 0;
     

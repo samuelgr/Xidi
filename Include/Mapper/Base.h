@@ -27,11 +27,13 @@ namespace XinputControllerDirectInput
         typedef SHORT TInstanceIdx;
 
         // Specifies the type to use for identifying controller element types.
-        typedef USHORT TInstanceType;
+        // Valid types are numbered from 0 and must be positive; negatives used as return codes represent invalid types, typically indicating some kind of error.
+        typedef SHORT TInstanceType;
 
         // Specifies the type to use for uniquely identifying a controller element.
         // TInstanceIdx and TInstanceType are combined into a single value of this type.
-        typedef ULONG TInstance;
+        // Valid identifiers are positive; negatives used as return codes represent invalid identifiers, typically indicating some kind of error.
+        typedef LONG TInstance;
 
         // Specifies the type to use for counting numbers of instances.
         typedef TInstanceIdx TInstanceCount;
@@ -52,7 +54,7 @@ namespace XinputControllerDirectInput
         // Subclasses define the button layout to present to the application and convert data received from a Controller to the format requested by the application.
         class Base
         {
-        protected:
+        private:
             // -------- INSTANCE VARIABLES --------------------------------------------- //
 
             // Maps from instance identifier to base offset in the application-specified data format.
@@ -66,26 +68,34 @@ namespace XinputControllerDirectInput
             // -------- CLASS METHODS -------------------------------------------------- //
 
             // Helper to combine an instance type and index into an instance identifier.
-            static inline TInstance InstanceTypeAndIndexToIdentifier(TInstanceType type, TInstanceIdx idx)
+            static inline TInstance MakeInstanceIdentifier(EInstanceType type, TInstanceIdx idx)
             {
-                return (TInstance)(type << (8 * sizeof(TInstanceIdx))) | idx;
+                return (TInstance)((TInstanceType)type << (8 * sizeof(TInstanceIdx))) | idx;
             }
 
             // Helper to extract the instance type from an instance identifier.
-            static inline TInstanceType InstanceTypeFromIdentifier(TInstance id)
+            static inline EInstanceType ExtractIdentifierInstanceType(TInstance id)
             {
-                return (TInstanceType)(id >> (8 * sizeof(TInstanceIdx)));
+                return (EInstanceType)(id >> (8 * sizeof(TInstanceIdx)));
             }
 
             // Helper to extract the instance index from an index identifier.
-            static inline TInstanceIdx InstanceIndexFromIdentifier(TInstance id)
+            static inline TInstanceIdx ExtractIdentifierInstanceIndex(TInstance id)
             {
                 return (TInstanceIdx)(id & ((8 * sizeof(TInstanceIdx)) - 1));
             }
 
+            // Specifies the number of bytes consumed by an instance of an object of the specified type.
+            static DWORD SizeofInstance(EInstanceType type);
+
 
             // -------- INSTANCE METHODS ----------------------------------------------- //
-
+        private:
+            BOOL CheckAndSetOffsets(BOOL* base, DWORD count);
+            
+            TInstance SelectInstance(EInstanceType instanceType, BOOL* instanceUsed, TInstanceCount instanceCount, TInstanceIdx instanceToSelect);
+            
+        public:
             // Parses an application-supplied DirectInput data format.
             // Return code will either be DI_OK (succeeded) or DIERR_INVALIDPARAM (failed due to an issue with the proposed data format).
             HRESULT ParseApplicationDataFormat(LPCDIDATAFORMAT lpdf);
@@ -95,7 +105,7 @@ namespace XinputControllerDirectInput
 
             // Specifies the number of instances that exist in the mapping of the given type.
             // Must be implemented by subclasses.
-            virtual TInstanceCount NumberOfInstancesOfType(EInstanceType type) = 0;
+            virtual TInstanceCount NumInstancesOfType(EInstanceType type) = 0;
 
             virtual TInstanceIdx AxisInstanceIndex(REFGUID axisGUID, DWORD instanceNumber) = 0;
 

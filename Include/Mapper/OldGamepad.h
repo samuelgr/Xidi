@@ -89,7 +89,7 @@ namespace XinputControllerDirectInput
             // -------- CONCRETE INSTANCE METHODS -------------------------------------- //
             // See "Mapper.h" for documentation.
 
-            virtual TInstanceCount NumberOfInstancesOfType(EInstanceType type);
+            virtual TInstanceCount NumInstancesOfType(EInstanceType type);
         };
     }
 }
