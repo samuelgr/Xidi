@@ -15,6 +15,8 @@
 
 #include "Mapper/Base.h"
 
+#include <unordered_map>
+
 
 namespace XinputControllerDirectInput
 {
@@ -30,7 +32,7 @@ namespace XinputControllerDirectInput
             
             // Identifies each button modelled by this mapper.
             // Values specify DirectInput instance number.
-            enum EButton : USHORT
+            enum EButton : TInstanceIdx
             {
                 ButtonA                         = 0,
                 ButtonB                         = 1,
@@ -44,30 +46,40 @@ namespace XinputControllerDirectInput
                 ButtonStart                     = 9,
                 ButtonLeftStick                 = 10,
                 ButtonRightStick                = 11,
+                
                 ButtonCount                     = 12
             };
 
             // Identifies each axis modelled by this mapper.
             // Values specify DirectInput instance number.
-            enum EAxis : USHORT
+            enum EAxis : TInstanceIdx
             {
                 AxisX                           = 0,
                 AxisY                           = 1,
                 AxisZ                           = 2,
                 AxisRZ                          = 3,
+                
                 AxisCount                       = 4
             };
 
             // Identifies each point-of-view controller modelled by this mapper.
             // Values specify DirectInput instance number.
-            enum EPov : USHORT
+            enum EPov : TInstanceIdx
             {
                 PovDpad                         = 0,
+                
                 PovCount                        = 1
             };
             
 
-            DWORD AxisInstanceIndex(REFGUID axisGUID, DWORD instanceNumber);
+            // -------- INSTANCE VARIABLES --------------------------------------------- //
+
+            
+
+            
+            // -------- INSTANCE METHODS ----------------------------------------------- //
+            
+            TInstanceIdx AxisInstanceIndex(REFGUID axisGUID, DWORD instanceNumber);
 
             BOOL AxisInstanceExists(REFGUID axisGUID, DWORD instanceNumber);
 

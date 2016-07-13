@@ -17,7 +17,7 @@ using namespace XinputControllerDirectInput;
 using namespace XinputControllerDirectInput::Mapper;
 
 
-DWORD OldGamepad::AxisInstanceIndex(REFGUID axisGUID, DWORD instanceNumber)
+TInstanceIdx OldGamepad::AxisInstanceIndex(REFGUID axisGUID, DWORD instanceNumber)
 {
     // Only one axis of each type exists in this mapping.
     if (0 == instanceNumber)
@@ -39,10 +39,9 @@ BOOL OldGamepad::AxisInstanceExists(REFGUID axisGUID, DWORD instanceNumber)
 DWORD OldGamepad::AxisTypeCount(REFGUID axisGUID)
 {
     // Only one axis of each type exists in this mapping.
-    if (IsEqualGUID(GUID_XAxis, axisGUID)) return 1;
-    if (IsEqualGUID(GUID_YAxis, axisGUID)) return 1;
-    if (IsEqualGUID(GUID_ZAxis, axisGUID)) return 1;
-    if (IsEqualGUID(GUID_RzAxis, axisGUID)) return 1;
+    // See if the first instance of the specified type exists and, if so, indicate as much.
+    if (EAxis::AxisCount != AxisInstanceIndex(axisGUID, 0))
+        return 1;
 
     return 0;
 }
@@ -73,16 +72,16 @@ HRESULT OldGamepad::ParseApplicationDataFormat(LPCDIDATAFORMAT lpdf)
     for (DWORD i = 0; i < EPov::PovCount; ++i) povUsed[i] = FALSE;
     for (DWORD i = 0; i < lpdf->dwDataSize; ++i) offsetUsed[i] = FALSE;
 
-    DWORD nextUnusedButton = 0;
-    DWORD nextUnusedAxis = 0;
-    DWORD nextUnusedPov = 0;
+    TInstanceIdx nextUnusedButton = 0;
+    TInstanceIdx nextUnusedAxis = 0;
+    TInstanceIdx nextUnusedPov = 0;
 
 
     for (DWORD i = 0; i < lpdf->dwNumObjs; ++i)
     {
         LPDIOBJECTDATAFORMAT dataFormat = &lpdf->rgodf[i];
         const BOOL allowAnyInstance = ((dataFormat->dwType & DIDFT_INSTANCEMASK) == DIDFT_ANYINSTANCE);
-        const DWORD specificInstance = DIDFT_GETINSTANCE(dataFormat->dwType);
+        const TInstanceIdx specificInstance = (TInstanceIdx)DIDFT_GETINSTANCE(dataFormat->dwType);
         BOOL invalidParamsDetected = FALSE;
         
         if ((dataFormat->dwType & DIDFT_ABSAXIS) && (nextUnusedAxis < EAxis::AxisCount))
@@ -99,6 +98,11 @@ HRESULT OldGamepad::ParseApplicationDataFormat(LPCDIDATAFORMAT lpdf)
                     axisUsed[nextUnusedAxis] = TRUE;
                     if (FALSE == CheckAndSetOffsets(&offsetUsed[dataFormat->dwOfs], 4))
                         invalidParamsDetected = TRUE;
+                    else
+                    {
+                        instanceToOffset.insert({InstanceTypeAndIndexToIdentifier(EInstanceType::InstanceTypeAxis, nextUnusedAxis), dataFormat->dwOfs});
+                        offsetToInstance.insert({dataFormat->dwOfs, InstanceTypeAndIndexToIdentifier(EInstanceType::InstanceTypeAxis, nextUnusedAxis)});
+                    }
                 }
                 else
                 {
@@ -110,6 +114,11 @@ HRESULT OldGamepad::ParseApplicationDataFormat(LPCDIDATAFORMAT lpdf)
                         axisUsed[specificInstance] = TRUE;
                         if (FALSE == CheckAndSetOffsets(&offsetUsed[dataFormat->dwOfs], 4))
                             invalidParamsDetected = TRUE;
+                        else
+                        {
+                            instanceToOffset.insert({InstanceTypeAndIndexToIdentifier(EInstanceType::InstanceTypeAxis, specificInstance), dataFormat->dwOfs});
+                            offsetToInstance.insert({dataFormat->dwOfs, InstanceTypeAndIndexToIdentifier(EInstanceType::InstanceTypeAxis, specificInstance)});
+                        }
                     }
                     else
                     {
@@ -129,8 +138,8 @@ HRESULT OldGamepad::ParseApplicationDataFormat(LPCDIDATAFORMAT lpdf)
                     if (allowAnyInstance)
                     {
                         // Any instance allowed, so find the first of this type that is unused, if any
-                        DWORD instanceIndex = 0;
-                        DWORD axisIndex = AxisInstanceIndex(*dataFormat->pguid, instanceIndex++);
+                        TInstanceIdx instanceIndex = 0;
+                        TInstanceIdx axisIndex = AxisInstanceIndex(*dataFormat->pguid, instanceIndex++);
                         while (TRUE == axisUsed[axisIndex] && axisIndex < EAxis::AxisCount) axisIndex = AxisInstanceIndex(*dataFormat->pguid, instanceIndex++);
 
                         if (axisIndex < EAxis::AxisCount)
@@ -139,12 +148,17 @@ HRESULT OldGamepad::ParseApplicationDataFormat(LPCDIDATAFORMAT lpdf)
                             axisUsed[axisIndex] = TRUE;
                             if (FALSE == CheckAndSetOffsets(&offsetUsed[dataFormat->dwOfs], 4))
                                 invalidParamsDetected = TRUE;
+                            else
+                            {
+                                instanceToOffset.insert({InstanceTypeAndIndexToIdentifier(EInstanceType::InstanceTypeAxis, axisIndex), dataFormat->dwOfs});
+                                offsetToInstance.insert({dataFormat->dwOfs, InstanceTypeAndIndexToIdentifier(EInstanceType::InstanceTypeAxis, axisIndex)});
+                            }
                         }
                     }
                     else
                     {
                         // Specific instance required, so check if it is available
-                        DWORD axisIndex = AxisInstanceIndex(*dataFormat->pguid, specificInstance);
+                        TInstanceIdx axisIndex = AxisInstanceIndex(*dataFormat->pguid, specificInstance);
 
                         if (axisIndex < EAxis::AxisCount && FALSE == axisUsed[axisIndex])
                         {
@@ -152,6 +166,11 @@ HRESULT OldGamepad::ParseApplicationDataFormat(LPCDIDATAFORMAT lpdf)
                             axisUsed[axisIndex] = TRUE;
                             if (FALSE == CheckAndSetOffsets(&offsetUsed[dataFormat->dwOfs], 4))
                                 invalidParamsDetected = TRUE;
+                            else
+                            {
+                                instanceToOffset.insert({InstanceTypeAndIndexToIdentifier(EInstanceType::InstanceTypeAxis, axisIndex), dataFormat->dwOfs});
+                                offsetToInstance.insert({dataFormat->dwOfs, InstanceTypeAndIndexToIdentifier(EInstanceType::InstanceTypeAxis, axisIndex)});
+                            }
                         }
                         else
                         {
@@ -187,6 +206,11 @@ HRESULT OldGamepad::ParseApplicationDataFormat(LPCDIDATAFORMAT lpdf)
                     buttonUsed[nextUnusedButton] = TRUE;
                     if (FALSE == CheckAndSetOffsets(&offsetUsed[dataFormat->dwOfs], 1))
                         invalidParamsDetected = TRUE;
+                    else
+                    {
+                        instanceToOffset.insert({InstanceTypeAndIndexToIdentifier(EInstanceType::InstanceTypeButton, nextUnusedButton), dataFormat->dwOfs});
+                        offsetToInstance.insert({dataFormat->dwOfs, InstanceTypeAndIndexToIdentifier(EInstanceType::InstanceTypeButton, nextUnusedButton)});
+                    }
                 }
                 else
                 {
@@ -198,6 +222,11 @@ HRESULT OldGamepad::ParseApplicationDataFormat(LPCDIDATAFORMAT lpdf)
                         buttonUsed[specificInstance] = TRUE;
                         if (FALSE == CheckAndSetOffsets(&offsetUsed[dataFormat->dwOfs], 1))
                             invalidParamsDetected = TRUE;
+                        else
+                        {
+                            instanceToOffset.insert({InstanceTypeAndIndexToIdentifier(EInstanceType::InstanceTypeButton, specificInstance), dataFormat->dwOfs});
+                            offsetToInstance.insert({dataFormat->dwOfs, InstanceTypeAndIndexToIdentifier(EInstanceType::InstanceTypeButton, specificInstance)});
+                        }
                     }
                     else
                     {
@@ -223,10 +252,15 @@ HRESULT OldGamepad::ParseApplicationDataFormat(LPCDIDATAFORMAT lpdf)
 
                 if (allowAnyInstance)
                 {
-                    // Any button instance allowed, just pick the next one
+                    // Any POV instance allowed, just pick the next one
                     povUsed[nextUnusedPov] = TRUE;
                     if (FALSE == CheckAndSetOffsets(&offsetUsed[dataFormat->dwOfs], 4))
                         invalidParamsDetected = TRUE;
+                    else
+                    {
+                        instanceToOffset.insert({InstanceTypeAndIndexToIdentifier(EInstanceType::InstanceTypePov, nextUnusedPov), dataFormat->dwOfs});
+                        offsetToInstance.insert({dataFormat->dwOfs, InstanceTypeAndIndexToIdentifier(EInstanceType::InstanceTypePov, nextUnusedPov)});
+                    }
                 }
                 else
                 {
@@ -234,10 +268,15 @@ HRESULT OldGamepad::ParseApplicationDataFormat(LPCDIDATAFORMAT lpdf)
 
                     if (FALSE == povUsed[specificInstance])
                     {
-                        // Button is available, use it
+                        // POV is available, use it
                         povUsed[specificInstance] = TRUE;
                         if (FALSE == CheckAndSetOffsets(&offsetUsed[dataFormat->dwOfs], 4))
                             invalidParamsDetected = TRUE;
+                        else
+                        {
+                            instanceToOffset.insert({InstanceTypeAndIndexToIdentifier(EInstanceType::InstanceTypePov, specificInstance), dataFormat->dwOfs});
+                            offsetToInstance.insert({dataFormat->dwOfs, InstanceTypeAndIndexToIdentifier(EInstanceType::InstanceTypePov, specificInstance)});
+                        }
                     }
                     else
                     {
@@ -279,8 +318,6 @@ HRESULT OldGamepad::ParseApplicationDataFormat(LPCDIDATAFORMAT lpdf)
         while (TRUE == buttonUsed[nextUnusedButton] && nextUnusedButton < EButton::ButtonCount) nextUnusedButton += 1;
         while (TRUE == povUsed[nextUnusedPov] && nextUnusedPov < EPov::PovCount) nextUnusedPov += 1;
     }
-    
-    int j = 0;
 
     delete[] buttonUsed;
     delete[] axisUsed;
