@@ -17,10 +17,24 @@ using namespace XinputControllerDirectInput;
 using namespace XinputControllerDirectInput::Mapper;
 
 
+// -------- CONSTRUCTION AND DESTRUCTION ----------------------------------- //
+// See "Mapper/Base.h" for documentation.
+
+Base::Base() : instanceToOffset(), offsetToInstance(), mapsValid(FALSE) {}
+
+// ---------
+
+Base::~Base()
+{
+    instanceToOffset.clear();
+    offsetToInstance.clear();
+}
+
+
 // -------- CLASS METHODS -------------------------------------------------- //
 // See "Mapper/Base.h" for documentation.
 
-DWORD Base::SizeofInstance(EInstanceType type)
+DWORD Base::SizeofInstance(const EInstanceType type)
 {
     DWORD szInstance = 0;
     
@@ -28,11 +42,11 @@ DWORD Base::SizeofInstance(EInstanceType type)
     {
     case InstanceTypeAxis:
     case InstanceTypePov:
-        szInstance = 4;
+        szInstance = sizeof(LONG);
         break;
 
     case InstanceTypeButton:
-        szInstance = 1;
+        szInstance = sizeof(BYTE);
         break;
     }
 
@@ -40,10 +54,12 @@ DWORD Base::SizeofInstance(EInstanceType type)
 }
 
 
-// -------- INSTANCE METHODS ----------------------------------------------- //
-// See "Mapper/Base.h" for documentation.
+// -------- HELPERS -------------------------------------------------------- //
 
-BOOL Base::CheckAndSetOffsets(BOOL* base, DWORD count)
+// Given an array of offsets and a count, checks that they are all unset (FALSE).
+// If they are all unset, sets them (to TRUE) and returns TRUE.
+// Otherwise, leaves them alone and returns FALSE.
+static BOOL CheckAndSetOffsets(BOOL* base, const DWORD count)
 {
     for (DWORD i = 0; i < count; ++i)
         if (base[i] != FALSE) return FALSE;
@@ -56,22 +72,44 @@ BOOL Base::CheckAndSetOffsets(BOOL* base, DWORD count)
 
 // ---------
 
-TInstance Base::SelectInstance(EInstanceType instanceType, BOOL* instanceUsed, TInstanceCount instanceCount, TInstanceIdx instanceToSelect)
+// Given an instance type, list of instances that are used, number of instances in total, and a desired instance to select, attempts to select that instance.
+// Checks that the specified instance (by index) is currently unset (FALSE) and, if so, sets it (to TRUE).
+// If this operation succeeds, makes and returns an instance identifier using the type and index.
+// Otherwise, returns -1 cast to an instance identifier type.
+static TInstance SelectInstance(const EInstanceType instanceType, BOOL* instanceUsed, const TInstanceCount instanceCount, const TInstanceIdx instanceToSelect)
 {
     TInstance selectedInstance = (TInstance)-1;
 
     if ((instanceToSelect < instanceCount) && (FALSE == instanceUsed[instanceToSelect]))
     {
         instanceUsed[instanceToSelect] = TRUE;
-        selectedInstance = MakeInstanceIdentifier(instanceType, instanceToSelect);
+        selectedInstance = Base::MakeInstanceIdentifier(instanceType, instanceToSelect);
     }
     
     return selectedInstance;
 }
 
+
+// -------- INSTANCE METHODS ----------------------------------------------- //
+// See "Mapper/Base.h" for documentation.
+
+void Base::FillDeviceCapabilities(LPDIDEVCAPS lpDIDevCaps)
+{
+    lpDIDevCaps->dwAxes = (DWORD)NumInstancesOfType(EInstanceType::InstanceTypeAxis);
+    lpDIDevCaps->dwButtons = (DWORD)NumInstancesOfType(EInstanceType::InstanceTypeButton);
+    lpDIDevCaps->dwPOVs = (DWORD)NumInstancesOfType(EInstanceType::InstanceTypePov);
+}
+
 // ---------
 
-HRESULT Base::ParseApplicationDataFormat(LPCDIDATAFORMAT lpdf)
+BOOL Base::IsApplicationDataFormatSet(void)
+{
+    return mapsValid;
+}
+
+// ---------
+
+HRESULT Base::SetApplicationDataFormat(LPCDIDATAFORMAT lpdf)
 {
     // Obtain the number of instances of each type in the mapping by asking the subclass.
     const TInstanceCount numButtons = NumInstancesOfType(EInstanceType::InstanceTypeButton);
@@ -94,6 +132,11 @@ HRESULT Base::ParseApplicationDataFormat(LPCDIDATAFORMAT lpdf)
     for (TInstanceCount i = 0; i < numPov; ++i) povUsed[i] = FALSE;
     for (DWORD i = 0; i < lpdf->dwDataSize; ++i) offsetUsed[i] = FALSE;
 
+    // Initialize the maps by clearing them and marking them invalid
+    instanceToOffset.clear();
+    offsetToInstance.clear();
+    mapsValid = FALSE;
+    
     // Iterate over each of the object specifications provided by the application.
     for (DWORD i = 0; i < lpdf->dwNumObjs; ++i)
     {
@@ -148,7 +191,7 @@ HRESULT Base::ParseApplicationDataFormat(LPCDIDATAFORMAT lpdf)
                             TInstanceIdx axisIndex = AxisInstanceIndex(*dataFormat->pguid, instanceIndex++);
                             TInstance selectedInstance = SelectInstance(EInstanceType::InstanceTypeAxis, axisUsed, numAxes, axisIndex);
 
-                            while (selectedInstance < 0 && axisIndex < numAxes)
+                            while (selectedInstance < 0 && axisIndex >= 0)
                             {
                                 axisIndex = AxisInstanceIndex(*dataFormat->pguid, instanceIndex++);
                                 selectedInstance = SelectInstance(EInstanceType::InstanceTypeAxis, axisUsed, numAxes, axisIndex);
@@ -166,7 +209,7 @@ HRESULT Base::ParseApplicationDataFormat(LPCDIDATAFORMAT lpdf)
                             // Specific instance required, so check if it is available
                             TInstanceIdx axisIndex = AxisInstanceIndex(*dataFormat->pguid, specificInstance);
 
-                            if (axisIndex < numAxes && FALSE == axisUsed[axisIndex])
+                            if (axisIndex >= 0 && FALSE == axisUsed[axisIndex])
                             {
                                 // Axis available, use it
                                 axisUsed[axisIndex] = TRUE;
@@ -279,11 +322,12 @@ HRESULT Base::ParseApplicationDataFormat(LPCDIDATAFORMAT lpdf)
         while (TRUE == buttonUsed[nextUnusedButton] && nextUnusedButton < numButtons) nextUnusedButton += 1;
         while (TRUE == povUsed[nextUnusedPov] && nextUnusedPov < numPov) nextUnusedPov += 1;
     }
-
+    
     delete[] buttonUsed;
     delete[] axisUsed;
     delete[] povUsed;
     delete[] offsetUsed;
 
+    mapsValid = TRUE;
     return S_OK;
 }

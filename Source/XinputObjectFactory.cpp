@@ -16,6 +16,7 @@
 #include "WrapperIDirectInputDevice8.h"
 #include "XinputControllerIdentification.h"
 #include "XinputObjectFactory.h"
+#include "Mapper/OldGamepad.h"
 
 #include <unordered_map>
 
@@ -23,7 +24,20 @@
 using namespace XinputControllerDirectInput;
 
 
-// -------- CLASS METHODS -------------------------------------------------- //
+// -------- CONSTRUCTION AND DESTRUCTION ----------------------------------- //
+// See "XinputObjectFactory.h" for documentation.
+
+XinputObjectFactory::XinputObjectFactory() : enumeratedControllers() {}
+
+// ---------
+
+XinputObjectFactory::~XinputObjectFactory()
+{
+    enumeratedControllers.clear();
+}
+
+
+// -------- INSTANCE METHODS ----------------------------------------------- //
 // See "XinputObjectFactory.h" for documentation.
 
 IDirectInputDevice8* XinputObjectFactory::CreateDirectInputDeviceForController(IDirectInputDevice8* underlyingController, REFGUID instanceGUID)
@@ -37,7 +51,7 @@ IDirectInputDevice8* XinputObjectFactory::CreateDirectInputDeviceForController(I
         switch (it->second)
         {
         case EControllerType::XboxOne:
-            return new WrapperIDirectInputDevice8(underlyingController);
+            return new WrapperIDirectInputDevice8(underlyingController, new Mapper::OldGamepad);
         }
     }
 

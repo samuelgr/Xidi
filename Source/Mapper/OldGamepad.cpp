@@ -17,24 +17,24 @@ using namespace XinputControllerDirectInput;
 using namespace XinputControllerDirectInput::Mapper;
 
 
-TInstanceIdx OldGamepad::AxisInstanceIndex(REFGUID axisGUID, DWORD instanceNumber)
+// -------- CONCRETE INSTANCE METHODS -------------------------------------- //
+// See "Mapper/Base.h" for documentation.
+
+TInstanceIdx OldGamepad::AxisInstanceIndex(REFGUID axisGUID, const TInstanceIdx instanceNumber)
 {
     // Only one axis of each type exists in this mapping.
     if (0 == instanceNumber)
     {
-        if (IsEqualGUID(GUID_XAxis, axisGUID)) return (DWORD)EAxis::AxisX;
-        if (IsEqualGUID(GUID_YAxis, axisGUID)) return (DWORD)EAxis::AxisY;
-        if (IsEqualGUID(GUID_ZAxis, axisGUID)) return (DWORD)EAxis::AxisZ;
-        if (IsEqualGUID(GUID_RzAxis, axisGUID)) return (DWORD)EAxis::AxisRZ;
+        if (IsEqualGUID(GUID_XAxis, axisGUID)) return (TInstanceIdx)EAxis::AxisX;
+        if (IsEqualGUID(GUID_YAxis, axisGUID)) return (TInstanceIdx)EAxis::AxisY;
+        if (IsEqualGUID(GUID_ZAxis, axisGUID)) return (TInstanceIdx)EAxis::AxisZ;
+        if (IsEqualGUID(GUID_RzAxis, axisGUID)) return (TInstanceIdx)EAxis::AxisRZ;
     }
 
-    return (DWORD)EAxis::AxisCount;
+    return (TInstanceIdx)-1;
 }
 
-BOOL OldGamepad::AxisInstanceExists(REFGUID axisGUID, DWORD instanceNumber)
-{
-    return (EAxis::AxisCount != AxisInstanceIndex(axisGUID, instanceNumber));
-}
+// ---------
 
 TInstanceCount OldGamepad::AxisTypeCount(REFGUID axisGUID)
 {
@@ -46,11 +46,9 @@ TInstanceCount OldGamepad::AxisTypeCount(REFGUID axisGUID)
     return 0;
 }
 
+// ---------
 
-// -------- CONCRETE INSTANCE METHODS -------------------------------------- //
-// See "Mapper/Base.h" for documentation.
-
-TInstanceCount OldGamepad::NumInstancesOfType(EInstanceType type)
+TInstanceCount OldGamepad::NumInstancesOfType(const EInstanceType type)
 {
     TInstanceCount numInstances = 0;
     

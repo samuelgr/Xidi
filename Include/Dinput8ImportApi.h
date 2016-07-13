@@ -52,8 +52,8 @@ namespace XinputControllerDirectInput
     public:
         // -------- CLASS METHODS -------------------------------------------------- //
 
-            // Dynamically loads the "dinput8.dll" library and sets up all imported function calls.
-            // Returns S_OK on success and E_FAIL on failure.
+        // Dynamically loads the "dinput8.dll" library and sets up all imported function calls.
+        // Returns S_OK on success and E_FAIL on failure.
         static HRESULT Initialize(void);
 
         // Calls the imported function DirectInput8Create.

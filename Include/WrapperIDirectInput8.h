@@ -37,8 +37,8 @@ namespace XinputControllerDirectInput
         
         // Constructs an WrapperIDirectInput8 object, given an underlying IDirectInput8 object to wrap.
         WrapperIDirectInput8(IDirectInput8* underlyingDIObject);
-
-
+        
+        
         // -------- METHODS: IUnknown ---------------------------------------------- //
         virtual HRESULT STDMETHODCALLTYPE QueryInterface(REFIID riid, LPVOID* ppvObj);
         virtual ULONG STDMETHODCALLTYPE AddRef(void);

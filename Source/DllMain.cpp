@@ -16,9 +16,8 @@
 using namespace XinputControllerDirectInput;
 
 
-// -------- FUNCTIONS ------------------------------------------------------ //
+// -------- ENTRY POINT ---------------------------------------------------- //
 
-// Main DLL entry and exit point.
 BOOL APIENTRY DllMain(HMODULE hModule, DWORD  ul_reason_for_call, LPVOID lpReserved)
 {
     BOOL result = TRUE;

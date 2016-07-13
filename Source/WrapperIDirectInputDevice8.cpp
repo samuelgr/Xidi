@@ -11,7 +11,7 @@
  *****************************************************************************/
 
 #include "WrapperIDirectInputDevice8.h"
-#include "Mapper/OldGamepad.h"
+#include "Mapper/Base.h"
 
 using namespace XinputControllerDirectInput;
 
@@ -33,7 +33,14 @@ namespace XinputControllerDirectInput
 // -------- CONSTRUCTION AND DESTRUCTION ----------------------------------- //
 // See "WrapperIDirectInputDevice8.h" for documentation.
 
-WrapperIDirectInputDevice8::WrapperIDirectInputDevice8(IDirectInputDevice8* underlyingDIObject) : underlyingDIObject(underlyingDIObject) {}
+WrapperIDirectInputDevice8::WrapperIDirectInputDevice8(IDirectInputDevice8* underlyingDIObject, Mapper::Base* mapper) : underlyingDIObject(underlyingDIObject), mapper(mapper) {}
+
+// ---------
+
+WrapperIDirectInputDevice8::~WrapperIDirectInputDevice8()
+{
+    delete mapper;
+}
 
 
 // -------- METHODS: IUnknown ---------------------------------------------- //
@@ -142,7 +149,12 @@ HRESULT STDMETHODCALLTYPE WrapperIDirectInputDevice8::Escape(LPDIEFFESCAPE pesc)
 
 HRESULT STDMETHODCALLTYPE WrapperIDirectInputDevice8::GetCapabilities(LPDIDEVCAPS lpDIDevCaps)
 {
-    return underlyingDIObject->GetCapabilities(lpDIDevCaps);
+    HRESULT result = underlyingDIObject->GetCapabilities(lpDIDevCaps);
+
+    if (DI_OK == result)
+        mapper->FillDeviceCapabilities(lpDIDevCaps);
+    
+    return result;
 }
 
 // ---------
@@ -254,9 +266,6 @@ HRESULT STDMETHODCALLTYPE WrapperIDirectInputDevice8::SetCooperativeLevel(HWND h
 
 HRESULT STDMETHODCALLTYPE WrapperIDirectInputDevice8::SetDataFormat(LPCDIDATAFORMAT lpdf)
 {
-    Mapper::OldGamepad* test = new Mapper::OldGamepad();
-    test->ParseApplicationDataFormat(lpdf);
-    
     return underlyingDIObject->SetDataFormat(lpdf);
 }
 

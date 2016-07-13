@@ -32,7 +32,16 @@ namespace XinputControllerDirectInput
         
         
     public:
-        // -------- CLASS METHODS -------------------------------------------------- //
+        // -------- CONSTRUCTION AND DESTRUCTION ----------------------------------- //
+        
+        // Default constructor.
+        XinputObjectFactory();
+
+        // Default destructor.
+        ~XinputObjectFactory();
+
+        
+        // -------- INSTANCE METHODS ----------------------------------------------- //
 
         // Supplies a pointer to an object that complies with the IDirectInputDevice8 interface.
         // Requires an instance of IDirectInputDevice8 and the instance GUID of the controller with which to interface.

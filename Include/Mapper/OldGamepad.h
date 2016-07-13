@@ -71,27 +71,13 @@ namespace XinputControllerDirectInput
                 PovCount                        = 1
             };
             
-
-            // -------- INSTANCE VARIABLES --------------------------------------------- //
-
-            
-
-            
-            // -------- INSTANCE METHODS ----------------------------------------------- //
-            
-            virtual TInstanceIdx AxisInstanceIndex(REFGUID axisGUID, DWORD instanceNumber);
-
-            virtual BOOL AxisInstanceExists(REFGUID axisGUID, DWORD instanceNumber);
-
-            virtual TInstanceCount AxisTypeCount(REFGUID axisGUID);
-
             
             // -------- CONCRETE INSTANCE METHODS -------------------------------------- //
-            // See "Mapper.h" for documentation.
-
-            virtual TInstanceCount NumInstancesOfType(EInstanceType type);
+            // See "Mapper/Base.h" for documentation.
+            
+            virtual TInstanceIdx AxisInstanceIndex(REFGUID axisGUID, const TInstanceIdx instanceNumber);
+            virtual TInstanceCount AxisTypeCount(REFGUID axisGUID);
+            virtual TInstanceCount NumInstancesOfType(const EInstanceType type);
         };
     }
 }
-
-#include <dinput.h>

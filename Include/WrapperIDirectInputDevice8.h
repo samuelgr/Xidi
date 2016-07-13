@@ -13,6 +13,7 @@
 #pragma once
 
 #include "ApiDirectInput8.h"
+#include "Mapper/Base.h"
 
 
 namespace XinputControllerDirectInput
@@ -30,12 +31,18 @@ namespace XinputControllerDirectInput
         
         // The underlying IDirectInputDevice8 object that this instance wraps.
         IDirectInputDevice8* underlyingDIObject;
+
+        // Mapping scheme to be applied to the wrapped DirectInput device.
+        Mapper::Base* mapper;
         
         
         // -------- CONSTRUCTION AND DESTRUCTION ----------------------------------- //
         
         // Constructs an WrapperIDirectInput8 object, given an underlying IDirectInput8 object to wrap.
-        WrapperIDirectInputDevice8(IDirectInputDevice8* underlyingDIObject);
+        WrapperIDirectInputDevice8(IDirectInputDevice8* underlyingDIObject, Mapper::Base* mapper);
+
+        // Default destructor. Should not be called externally.
+        ~WrapperIDirectInputDevice8();
         
         
     public:

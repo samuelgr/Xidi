@@ -45,7 +45,7 @@ namespace XinputControllerDirectInput
 // -------- CONSTRUCTION AND DESTRUCTION ----------------------------------- //
 // See "WrapperIDirectInput8.h" for documentation.
 
-WrapperIDirectInput8::WrapperIDirectInput8(IDirectInput8* underlyingDIObject) : underlyingDIObject(underlyingDIObject) {}
+WrapperIDirectInput8::WrapperIDirectInput8(IDirectInput8* underlyingDIObject) : objectFactory(), underlyingDIObject(underlyingDIObject) {}
 
 
 // -------- METHODS: IUnknown ---------------------------------------------- //

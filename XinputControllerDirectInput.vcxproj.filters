@@ -54,6 +54,9 @@
     <ClInclude Include="Include\Mapper\Base.h">
       <Filter>Header Files\Mapper</Filter>
     </ClInclude>
+    <ClInclude Include="Include\Dinput8ExportApi.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Source\ApiDirectInput8.cpp">
@@ -88,6 +91,9 @@
     </ClCompile>
     <ClCompile Include="Source\Mapper\Base.cpp">
       <Filter>Source Files\Mapper</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\TestApplication.cpp">
+      <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

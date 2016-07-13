@@ -11,6 +11,8 @@ Global
 		Debug-DirectInput8|x64 = Debug-DirectInput8|x64
 		Release-DirectInput8|Win32 = Release-DirectInput8|Win32
 		Release-DirectInput8|x64 = Release-DirectInput8|x64
+		TestApplication|Win32 = TestApplication|Win32
+		TestApplication|x64 = TestApplication|x64
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
 		{023441F6-2554-440F-9FFB-7E185AB7CF41}.Debug-DirectInput8|Win32.ActiveCfg = Debug-DirectInput8|Win32
@@ -21,6 +23,10 @@ Global
 		{023441F6-2554-440F-9FFB-7E185AB7CF41}.Release-DirectInput8|Win32.Build.0 = Release-DirectInput8|Win32
 		{023441F6-2554-440F-9FFB-7E185AB7CF41}.Release-DirectInput8|x64.ActiveCfg = Release-DirectInput8|x64
 		{023441F6-2554-440F-9FFB-7E185AB7CF41}.Release-DirectInput8|x64.Build.0 = Release-DirectInput8|x64
+		{023441F6-2554-440F-9FFB-7E185AB7CF41}.TestApplication|Win32.ActiveCfg = TestApplication|Win32
+		{023441F6-2554-440F-9FFB-7E185AB7CF41}.TestApplication|Win32.Build.0 = TestApplication|Win32
+		{023441F6-2554-440F-9FFB-7E185AB7CF41}.TestApplication|x64.ActiveCfg = TestApplication|x64
+		{023441F6-2554-440F-9FFB-7E185AB7CF41}.TestApplication|x64.Build.0 = TestApplication|x64
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
