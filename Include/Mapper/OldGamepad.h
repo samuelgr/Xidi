@@ -79,17 +79,17 @@ namespace XinputControllerDirectInput
             
             // -------- INSTANCE METHODS ----------------------------------------------- //
             
-            TInstanceIdx AxisInstanceIndex(REFGUID axisGUID, DWORD instanceNumber);
+            virtual TInstanceIdx AxisInstanceIndex(REFGUID axisGUID, DWORD instanceNumber);
 
-            BOOL AxisInstanceExists(REFGUID axisGUID, DWORD instanceNumber);
+            virtual BOOL AxisInstanceExists(REFGUID axisGUID, DWORD instanceNumber);
 
-            DWORD AxisTypeCount(REFGUID axisGUID);
+            virtual TInstanceCount AxisTypeCount(REFGUID axisGUID);
 
             
             // -------- CONCRETE INSTANCE METHODS -------------------------------------- //
             // See "Mapper.h" for documentation.
-            
-            virtual HRESULT ParseApplicationDataFormat(LPCDIDATAFORMAT lpdf);
+
+            virtual TInstanceCount NumberOfInstancesOfType(EInstanceType type);
         };
     }
 }

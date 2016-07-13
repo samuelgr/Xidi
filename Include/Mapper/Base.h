@@ -1,14 +1,15 @@
 /*****************************************************************************
-* XinputControllerDirectInput
-*      Hook and helper for older DirectInput games.
-*      Fixes issues associated with certain Xinput-based controllers.
-*****************************************************************************
-* Authored by Samuel Grossman
-* Copyright (c) 2016
-*****************************************************************************
-* Mapper.h
-*      Abstract base class for supported control mapping schemes.
-*****************************************************************************/
+ * XinputControllerDirectInput
+ *      Hook and helper for older DirectInput games.
+ *      Fixes issues associated with certain Xinput-based controllers.
+ *****************************************************************************
+ * Authored by Samuel Grossman
+ * Copyright (c) 2016
+ *****************************************************************************
+ * Base.h
+ *      Abstract base class for supported control mapping schemes.
+ *      Provides common implementations of most core functionality.
+ *****************************************************************************/
 
 #pragma once
 
@@ -31,6 +32,9 @@ namespace XinputControllerDirectInput
         // Specifies the type to use for uniquely identifying a controller element.
         // TInstanceIdx and TInstanceType are combined into a single value of this type.
         typedef ULONG TInstance;
+
+        // Specifies the type to use for counting numbers of instances.
+        typedef TInstanceIdx TInstanceCount;
 
 
         // Enumerates supported types of elements to be the targets of mapping.
@@ -82,15 +86,22 @@ namespace XinputControllerDirectInput
 
             // -------- INSTANCE METHODS ----------------------------------------------- //
 
-            //
+            // Parses an application-supplied DirectInput data format.
+            // Return code will either be DI_OK (succeeded) or DIERR_INVALIDPARAM (failed due to an issue with the proposed data format).
+            HRESULT ParseApplicationDataFormat(LPCDIDATAFORMAT lpdf);
 
 
             // -------- ABSTRACT INSTANCE METHODS -------------------------------------- //
 
-            // Parses an application-supplied DirectInput data format.
-            // Return code will either be DI_OK (succeeded) or DIERR_INVALIDPARAM (failed due to an issue with the proposed data format).
+            // Specifies the number of instances that exist in the mapping of the given type.
             // Must be implemented by subclasses.
-            virtual HRESULT ParseApplicationDataFormat(LPCDIDATAFORMAT lpdf) = 0;
+            virtual TInstanceCount NumberOfInstancesOfType(EInstanceType type) = 0;
+
+            virtual TInstanceIdx AxisInstanceIndex(REFGUID axisGUID, DWORD instanceNumber) = 0;
+
+            virtual BOOL AxisInstanceExists(REFGUID axisGUID, DWORD instanceNumber) = 0;
+
+            virtual TInstanceCount AxisTypeCount(REFGUID axisGUID) = 0;
         };
     }
 }

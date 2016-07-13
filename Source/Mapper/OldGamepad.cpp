@@ -36,7 +36,7 @@ BOOL OldGamepad::AxisInstanceExists(REFGUID axisGUID, DWORD instanceNumber)
     return (EAxis::AxisCount != AxisInstanceIndex(axisGUID, instanceNumber));
 }
 
-DWORD OldGamepad::AxisTypeCount(REFGUID axisGUID)
+TInstanceCount OldGamepad::AxisTypeCount(REFGUID axisGUID)
 {
     // Only one axis of each type exists in this mapping.
     // See if the first instance of the specified type exists and, if so, indicate as much.
@@ -46,283 +46,27 @@ DWORD OldGamepad::AxisTypeCount(REFGUID axisGUID)
     return 0;
 }
 
-BOOL CheckAndSetOffsets(BOOL* base, DWORD count)
-{
-    for (DWORD i = 0; i < count; ++i)
-        if (base[i] != FALSE) return FALSE;
-
-    for (DWORD i = 0; i < count; ++i)
-        base[i] = TRUE;
-
-    return TRUE;
-}
-
 
 // -------- CONCRETE INSTANCE METHODS -------------------------------------- //
-// See "Mapper.h" for documentation.
+// See "Mapper/Base.h" for documentation.
 
-HRESULT OldGamepad::ParseApplicationDataFormat(LPCDIDATAFORMAT lpdf)
+TInstanceCount OldGamepad::NumberOfInstancesOfType(EInstanceType type)
 {
-    BOOL* buttonUsed = new BOOL[EButton::ButtonCount];
-    BOOL* axisUsed = new BOOL[EAxis::AxisCount];
-    BOOL* povUsed = new BOOL[EPov::PovCount];
-    BOOL* offsetUsed = new BOOL[lpdf->dwDataSize];
-    for (DWORD i = 0; i < EButton::ButtonCount; ++i) buttonUsed[i] = FALSE;
-    for (DWORD i = 0; i < EAxis::AxisCount; ++i) axisUsed[i] = FALSE;
-    for (DWORD i = 0; i < EPov::PovCount; ++i) povUsed[i] = FALSE;
-    for (DWORD i = 0; i < lpdf->dwDataSize; ++i) offsetUsed[i] = FALSE;
-
-    TInstanceIdx nextUnusedButton = 0;
-    TInstanceIdx nextUnusedAxis = 0;
-    TInstanceIdx nextUnusedPov = 0;
-
-
-    for (DWORD i = 0; i < lpdf->dwNumObjs; ++i)
+    TInstanceCount numInstances = 0;
+    
+    switch (type)
     {
-        LPDIOBJECTDATAFORMAT dataFormat = &lpdf->rgodf[i];
-        const BOOL allowAnyInstance = ((dataFormat->dwType & DIDFT_INSTANCEMASK) == DIDFT_ANYINSTANCE);
-        const TInstanceIdx specificInstance = (TInstanceIdx)DIDFT_GETINSTANCE(dataFormat->dwType);
-        BOOL invalidParamsDetected = FALSE;
-        
-        if ((dataFormat->dwType & DIDFT_ABSAXIS) && (nextUnusedAxis < EAxis::AxisCount))
-        {
-            // Pick an axis
-            
-            if (NULL == dataFormat->pguid)
-            {
-                // Any axis type allowed
+    case EInstanceType::InstanceTypeAxis:
+        numInstances = EAxis::AxisCount;
+        break;
 
-                if (allowAnyInstance)
-                {
-                    // Any axis instance allowed, just pick the next one
-                    axisUsed[nextUnusedAxis] = TRUE;
-                    if (FALSE == CheckAndSetOffsets(&offsetUsed[dataFormat->dwOfs], 4))
-                        invalidParamsDetected = TRUE;
-                    else
-                    {
-                        instanceToOffset.insert({InstanceTypeAndIndexToIdentifier(EInstanceType::InstanceTypeAxis, nextUnusedAxis), dataFormat->dwOfs});
-                        offsetToInstance.insert({dataFormat->dwOfs, InstanceTypeAndIndexToIdentifier(EInstanceType::InstanceTypeAxis, nextUnusedAxis)});
-                    }
-                }
-                else
-                {
-                    // A specific instance was specified, pick it if it is available
+    case EInstanceType::InstanceTypePov:
+        numInstances = EPov::PovCount;
+        break;
 
-                    if (FALSE == axisUsed[specificInstance])
-                    {
-                        // Axis is available, use it
-                        axisUsed[specificInstance] = TRUE;
-                        if (FALSE == CheckAndSetOffsets(&offsetUsed[dataFormat->dwOfs], 4))
-                            invalidParamsDetected = TRUE;
-                        else
-                        {
-                            instanceToOffset.insert({InstanceTypeAndIndexToIdentifier(EInstanceType::InstanceTypeAxis, specificInstance), dataFormat->dwOfs});
-                            offsetToInstance.insert({dataFormat->dwOfs, InstanceTypeAndIndexToIdentifier(EInstanceType::InstanceTypeAxis, specificInstance)});
-                        }
-                    }
-                    else
-                    {
-                        // Axis is unavailable, this is an error
-                        invalidParamsDetected = TRUE;
-                    }
-                }
-            }
-            else
-            {
-                // Specified an axis type
-
-                if (0 != AxisTypeCount(*dataFormat->pguid))
-                {
-                    // Axis exists in the mapping presented to the application
-
-                    if (allowAnyInstance)
-                    {
-                        // Any instance allowed, so find the first of this type that is unused, if any
-                        TInstanceIdx instanceIndex = 0;
-                        TInstanceIdx axisIndex = AxisInstanceIndex(*dataFormat->pguid, instanceIndex++);
-                        while (TRUE == axisUsed[axisIndex] && axisIndex < EAxis::AxisCount) axisIndex = AxisInstanceIndex(*dataFormat->pguid, instanceIndex++);
-
-                        if (axisIndex < EAxis::AxisCount)
-                        {
-                            // Unused instance found, use it
-                            axisUsed[axisIndex] = TRUE;
-                            if (FALSE == CheckAndSetOffsets(&offsetUsed[dataFormat->dwOfs], 4))
-                                invalidParamsDetected = TRUE;
-                            else
-                            {
-                                instanceToOffset.insert({InstanceTypeAndIndexToIdentifier(EInstanceType::InstanceTypeAxis, axisIndex), dataFormat->dwOfs});
-                                offsetToInstance.insert({dataFormat->dwOfs, InstanceTypeAndIndexToIdentifier(EInstanceType::InstanceTypeAxis, axisIndex)});
-                            }
-                        }
-                    }
-                    else
-                    {
-                        // Specific instance required, so check if it is available
-                        TInstanceIdx axisIndex = AxisInstanceIndex(*dataFormat->pguid, specificInstance);
-
-                        if (axisIndex < EAxis::AxisCount && FALSE == axisUsed[axisIndex])
-                        {
-                            // Axis available, use it
-                            axisUsed[axisIndex] = TRUE;
-                            if (FALSE == CheckAndSetOffsets(&offsetUsed[dataFormat->dwOfs], 4))
-                                invalidParamsDetected = TRUE;
-                            else
-                            {
-                                instanceToOffset.insert({InstanceTypeAndIndexToIdentifier(EInstanceType::InstanceTypeAxis, axisIndex), dataFormat->dwOfs});
-                                offsetToInstance.insert({dataFormat->dwOfs, InstanceTypeAndIndexToIdentifier(EInstanceType::InstanceTypeAxis, axisIndex)});
-                            }
-                        }
-                        else
-                        {
-                            // Axis unavailable, this is an error
-                            invalidParamsDetected = TRUE;
-                        }
-                    }
-                    
-                }
-                else
-                {
-                    // Axis does not exist in the mapping
-
-                    if (!allowAnyInstance)
-                    {
-                        // Specified an instance of a non-existant axis, this is an error
-                        invalidParamsDetected = TRUE;
-                    }
-                }
-            }
-        }
-        else if ((dataFormat->dwType & DIDFT_PSHBUTTON) && (nextUnusedButton < EButton::ButtonCount))
-        {
-            // Pick a button
-
-            if (NULL == dataFormat->pguid || IsEqualGUID(GUID_Button, *dataFormat->pguid))
-            {
-                // Type unspecified or specified as a button
-
-                if (allowAnyInstance)
-                {
-                    // Any button instance allowed, just pick the next one
-                    buttonUsed[nextUnusedButton] = TRUE;
-                    if (FALSE == CheckAndSetOffsets(&offsetUsed[dataFormat->dwOfs], 1))
-                        invalidParamsDetected = TRUE;
-                    else
-                    {
-                        instanceToOffset.insert({InstanceTypeAndIndexToIdentifier(EInstanceType::InstanceTypeButton, nextUnusedButton), dataFormat->dwOfs});
-                        offsetToInstance.insert({dataFormat->dwOfs, InstanceTypeAndIndexToIdentifier(EInstanceType::InstanceTypeButton, nextUnusedButton)});
-                    }
-                }
-                else
-                {
-                    // A specific instance was specified, pick it if it is available
-
-                    if (FALSE == buttonUsed[specificInstance])
-                    {
-                        // Button is available, use it
-                        buttonUsed[specificInstance] = TRUE;
-                        if (FALSE == CheckAndSetOffsets(&offsetUsed[dataFormat->dwOfs], 1))
-                            invalidParamsDetected = TRUE;
-                        else
-                        {
-                            instanceToOffset.insert({InstanceTypeAndIndexToIdentifier(EInstanceType::InstanceTypeButton, specificInstance), dataFormat->dwOfs});
-                            offsetToInstance.insert({dataFormat->dwOfs, InstanceTypeAndIndexToIdentifier(EInstanceType::InstanceTypeButton, specificInstance)});
-                        }
-                    }
-                    else
-                    {
-                        // Button is unavailable, this is an error
-                        invalidParamsDetected = TRUE;
-                    }
-                }
-            }
-            else
-            {
-                // Type specified as a non-button, this is an error
-                invalidParamsDetected = TRUE;
-            }
-            
-        }
-        else if ((dataFormat->dwType & DIDFT_POV) && (nextUnusedPov < EPov::PovCount))
-        {
-            // Pick a POV
-
-            if (NULL == dataFormat->pguid || IsEqualGUID(GUID_POV, *dataFormat->pguid))
-            {
-                // Type unspecified or specified as a POV
-
-                if (allowAnyInstance)
-                {
-                    // Any POV instance allowed, just pick the next one
-                    povUsed[nextUnusedPov] = TRUE;
-                    if (FALSE == CheckAndSetOffsets(&offsetUsed[dataFormat->dwOfs], 4))
-                        invalidParamsDetected = TRUE;
-                    else
-                    {
-                        instanceToOffset.insert({InstanceTypeAndIndexToIdentifier(EInstanceType::InstanceTypePov, nextUnusedPov), dataFormat->dwOfs});
-                        offsetToInstance.insert({dataFormat->dwOfs, InstanceTypeAndIndexToIdentifier(EInstanceType::InstanceTypePov, nextUnusedPov)});
-                    }
-                }
-                else
-                {
-                    // A specific instance was specified, pick it if it is available
-
-                    if (FALSE == povUsed[specificInstance])
-                    {
-                        // POV is available, use it
-                        povUsed[specificInstance] = TRUE;
-                        if (FALSE == CheckAndSetOffsets(&offsetUsed[dataFormat->dwOfs], 4))
-                            invalidParamsDetected = TRUE;
-                        else
-                        {
-                            instanceToOffset.insert({InstanceTypeAndIndexToIdentifier(EInstanceType::InstanceTypePov, specificInstance), dataFormat->dwOfs});
-                            offsetToInstance.insert({dataFormat->dwOfs, InstanceTypeAndIndexToIdentifier(EInstanceType::InstanceTypePov, specificInstance)});
-                        }
-                    }
-                    else
-                    {
-                        // Button is unavailable, this is an error
-                        invalidParamsDetected = TRUE;
-                    }
-                }
-            }
-            else
-            {
-                // Type specified as a non-button, this is an error
-                invalidParamsDetected = TRUE;
-            }
-            
-        }
-        else if (allowAnyInstance)
-        {
-            // No objects available, but no instance specified, so do not do anything this iteration
-        }
-        else
-        {
-            // An instance was specified of an object that is not available, this is an error
-            invalidParamsDetected = TRUE;
-        }
-
-        // Bail in the event of an error
-        if (invalidParamsDetected)
-        {
-            delete[] buttonUsed;
-            delete[] axisUsed;
-            delete[] povUsed;
-            delete[] offsetUsed;
-
-            return DIERR_INVALIDPARAM;
-        }
-
-        // Increment all next-unused indices
-        while (TRUE == axisUsed[nextUnusedAxis] && nextUnusedAxis < EAxis::AxisCount) nextUnusedAxis += 1;
-        while (TRUE == buttonUsed[nextUnusedButton] && nextUnusedButton < EButton::ButtonCount) nextUnusedButton += 1;
-        while (TRUE == povUsed[nextUnusedPov] && nextUnusedPov < EPov::PovCount) nextUnusedPov += 1;
+    case EInstanceType::InstanceTypeButton:
+        numInstances = EButton::ButtonCount;
     }
 
-    delete[] buttonUsed;
-    delete[] axisUsed;
-    delete[] povUsed;
-    delete[] offsetUsed;
-
-    return S_OK;
+    return numInstances;
 }
