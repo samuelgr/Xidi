@@ -15,6 +15,7 @@
 #include "Dinput8ExportApi.h"
 #include "Dinput8ImportApi.h"
 #include "XinputControllerIdentification.h"
+#include "Mapper/Base.h"
 
 #include <cstdlib>
 #include <iostream>
@@ -498,6 +499,119 @@ int RunTestApp(int argc, char* argv[])
     // Finished checking objects.
     tout << _T("End IDirectInputDevice8->GetObjectInfo") << endl << endl;
     
+    
+    ////////////////////////////////////
+    ////////   Device Properties
+
+    tout << _T("Begin IDirectInputDevice8->[Set|Get]Property") << endl;
+    
+    DIPROPRANGE rangeTest;
+    DIPROPDWORD deadzoneTest;
+
+    ZeroMemory(&rangeTest, sizeof(rangeTest));
+    ZeroMemory(&deadzoneTest, sizeof(deadzoneTest));
+
+    // First, test range without setting header size properly but setting everything else.
+    rangeTest.diph.dwHow = DIPH_BYID;
+    rangeTest.diph.dwObj = DIDFT_ABSAXIS | DIDFT_MAKEINSTANCE(0);
+    rangeTest.diph.dwSize = sizeof(rangeTest);
+    result = directInputDeviceIface->GetProperty(DIPROP_RANGE, &rangeTest.diph);
+    if (DIERR_INVALIDPARAM != result || Mapper::Base::kDefaultAxisRangeMax == rangeTest.lMax)
+        tout << _T("FAIL: Invalid header size test.") << endl;
+    else
+        tout << _T("PASS: Invalid header size test.") << endl;
+
+    // Same, but now set header size and not overall size
+    rangeTest.diph.dwSize = 0;
+    rangeTest.diph.dwHeaderSize = sizeof(rangeTest.diph);
+    result = directInputDeviceIface->GetProperty(DIPROP_RANGE, &rangeTest.diph);
+    if (DIERR_INVALIDPARAM != result || Mapper::Base::kDefaultAxisRangeMax == rangeTest.lMax)
+        tout << _T("FAIL: Invalid structure size test.") << endl;
+    else
+        tout << _T("PASS: Invalid structure size test.") << endl;
+
+    // Set sizes and expect to get default values back.
+    rangeTest.diph.dwSize = sizeof(rangeTest);
+    result = directInputDeviceIface->GetProperty(DIPROP_RANGE, &rangeTest.diph);
+    if (DI_OK != result || Mapper::Base::kDefaultAxisRangeMax != rangeTest.lMax || Mapper::Base::kDefaultAxisRangeMin != rangeTest.lMin)
+        tout << _T("FAIL: Default range test.") << endl;
+    else
+        tout << _T("PASS: Default range test.") << endl;
+
+    // Set an invalid range and expect it to be rejected.
+    rangeTest.lMax = -1000;
+    rangeTest.lMin = 1000;
+    result = directInputDeviceIface->SetProperty(DIPROP_RANGE, &rangeTest.diph);
+    if (DIERR_INVALIDPARAM != result)
+        tout << _T("FAIL: Set invalid range test 1.") << endl;
+    else
+        tout << _T("PASS: Set invalid range test 1.") << endl;
+
+    // Another invalid range to be rejected.
+    rangeTest.lMax = 1000;
+    rangeTest.lMin = 1000;
+    result = directInputDeviceIface->SetProperty(DIPROP_RANGE, &rangeTest.diph);
+    if (DIERR_INVALIDPARAM != result)
+        tout << _T("FAIL: Set invalid range test 2.") << endl;
+    else
+        tout << _T("PASS: Set invalid range test 2.") << endl;
+
+    // This range is valid and should be accepted.
+    rangeTest.lMax = 1000;
+    rangeTest.lMin = -1000;
+    result = directInputDeviceIface->SetProperty(DIPROP_RANGE, &rangeTest.diph);
+    if (DI_OK != result)
+        tout << _T("FAIL: Set valid range test.") << endl;
+    else
+        tout << _T("PASS: Set valid range test.") << endl;
+
+    // Expect to read back that range.
+    rangeTest.lMax = 0;
+    rangeTest.lMin = 0;
+    result = directInputDeviceIface->GetProperty(DIPROP_RANGE, &rangeTest.diph);
+    if (DI_OK != result || 1000 != rangeTest.lMax || -1000 != rangeTest.lMin)
+        tout << _T("FAIL: Get valid range test.") << endl;
+    else
+        tout << _T("PASS: Get valid range test.") << endl;
+
+    // Get a valid deadzone but targetting a button, should be rejected.
+    deadzoneTest.diph.dwHow = DIPH_BYID;
+    deadzoneTest.diph.dwObj = DIDFT_PSHBUTTON | DIDFT_MAKEINSTANCE(0);
+    deadzoneTest.diph.dwSize = sizeof(deadzoneTest);
+    deadzoneTest.diph.dwHeaderSize = sizeof(deadzoneTest.diph);
+    deadzoneTest.dwData = 1000;
+    result = directInputDeviceIface->GetProperty(DIPROP_DEADZONE, &deadzoneTest.diph);
+    if (DIERR_UNSUPPORTED != result || 1000 != deadzoneTest.dwData)
+        tout << _T("FAIL: Bad deadzone target test.") << endl;
+    else
+        tout << _T("PASS: Bad deadzone target test.") << endl;
+
+    // Set an actual valid deadzone.
+    deadzoneTest.diph.dwObj = DIDFT_ABSAXIS | DIDFT_MAKEINSTANCE(0);
+    result = directInputDeviceIface->SetProperty(DIPROP_DEADZONE, &deadzoneTest.diph);
+    if (DI_OK != result || 1000 != deadzoneTest.dwData)
+        tout << _T("FAIL: Set valid deadzone test.") << endl;
+    else
+        tout << _T("PASS: Set valid deadzone test.") << endl;
+
+    // Read it back.
+    deadzoneTest.dwData = 1000000;
+    result = directInputDeviceIface->GetProperty(DIPROP_DEADZONE, &deadzoneTest.diph);
+    if (DI_OK != result || 1000 != deadzoneTest.dwData)
+        tout << _T("FAIL: Get valid deadzone test.") << endl;
+    else
+        tout << _T("PASS: Get valid deadzone test.") << endl;
+
+    // Write a deadzone out of range.
+    deadzoneTest.dwData = Mapper::Base::kMaxAxisDeadzoneSaturation * 2;
+    result = directInputDeviceIface->SetProperty(DIPROP_DEADZONE, &deadzoneTest.diph);
+    if (DIERR_INVALIDPARAM != result)
+        tout << _T("FAIL: Set out-of-range deadzone test.") << endl;
+    else
+        tout << _T("PASS: Set out-of-range deadzone test.") << endl;
+
+    tout << _T("End IDirectInputDevice8->[Set|Get]Property") << endl << endl;
+
     
     ////////////////////////////////////
     ////////   Cleanup and Exit

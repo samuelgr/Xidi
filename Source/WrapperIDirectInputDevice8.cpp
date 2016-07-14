@@ -192,7 +192,10 @@ HRESULT STDMETHODCALLTYPE WrapperIDirectInputDevice8::GetObjectInfo(LPDIDEVICEOB
 
 HRESULT STDMETHODCALLTYPE WrapperIDirectInputDevice8::GetProperty(REFGUID rguidProp, LPDIPROPHEADER pdiph)
 {
-    return underlyingDIObject->GetProperty(rguidProp, pdiph);
+    if (mapper->IsPropertyHandledByMapper(rguidProp))
+        return mapper->GetMappedProperty(rguidProp, pdiph);
+    else
+        return underlyingDIObject->GetProperty(rguidProp, pdiph);
 }
 
 // ---------
@@ -262,19 +265,10 @@ HRESULT STDMETHODCALLTYPE WrapperIDirectInputDevice8::SetEventNotification(HANDL
 
 HRESULT STDMETHODCALLTYPE WrapperIDirectInputDevice8::SetProperty(REFGUID rguidProp, LPCDIPROPHEADER pdiph)
 {
-    // Demo: compare the address against the predefined property values
-    const size_t propguid = (size_t)&rguidProp;
-
-    // Demo: header is at the start of the type-specific property structure, so convert to the correct type depending on the property in question
-    const DIPROPPOINTER* proppointer = (const DIPROPPOINTER*)pdiph;
-    const DIPROPDWORD* propdword = (const DIPROPDWORD*)pdiph;
-    const DIPROPSTRING* propstring = (const DIPROPSTRING*)pdiph;
-    const DIPROPRANGE* proprange = (const DIPROPRANGE*)pdiph;
-    
-    // Demo: if the property is not of interest, or once the property is intercepted and mapped, forward to the underlying object
-    HRESULT result = underlyingDIObject->SetProperty(rguidProp, pdiph);
-
-    return result;
+    if (mapper->IsPropertyHandledByMapper(rguidProp))
+        return mapper->SetMappedProperty(rguidProp, pdiph);
+    else
+        return underlyingDIObject->SetProperty(rguidProp, pdiph);
 }
 
 // ---------

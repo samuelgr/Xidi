@@ -92,34 +92,6 @@ BOOL Base::CheckAndSetOffsets(BOOL* base, const DWORD count)
 
 // ---------
 
-TInstance Base::DirectInputIdentifierToMapperIdentifier(DWORD diIdentifier)
-{
-    EInstanceType type = (EInstanceType)-1;
-    TInstanceIdx idx = (TInstanceIdx)DIDFT_GETINSTANCE(diIdentifier);
-    
-    switch (DIDFT_GETTYPE(diIdentifier))
-    {
-    case DIDFT_ABSAXIS:
-        type = EInstanceType::InstanceTypeAxis;
-        break;
-
-    case DIDFT_PSHBUTTON:
-        type = EInstanceType::InstanceTypeButton;
-        break;
-
-    case DIDFT_POV:
-        type = EInstanceType::InstanceTypePov;
-        break;
-    }
-
-    if (type < 0)
-        return (TInstance)-1;
-
-    return MakeInstanceIdentifier(type, idx);
-}
-
-// ---------
-
 void Base::FillObjectInstanceInfo(LPDIDEVICEOBJECTINSTANCE instanceInfo, EInstanceType instanceType, TInstanceIdx instanceNumber)
 {
     // Obtain the number of objects of each type.
@@ -167,18 +139,67 @@ void Base::InitializeAxisProperties(void)
     {
         const TInstanceCount numAxes = NumInstancesOfType(EInstanceType::InstanceTypeAxis);
 
-        SAxisProperties* newAxisProperties = new SAxisProperties[numAxes];
+        axisProperties = new SAxisProperties[numAxes];
 
         for (TInstanceIdx i = 0; i < (TInstanceIdx)numAxes; ++i)
         {
-            newAxisProperties[i].rangeMin = kDefaultAxisRangeMin;
-            newAxisProperties[i].rangeMax = kDefaultAxisRangeMax;
-            newAxisProperties[i].deadzone = kDefaultAxisDeadzone;
-            newAxisProperties[i].saturation = kDefaultAxisSaturation;
+            axisProperties[i].rangeMin = kDefaultAxisRangeMin;
+            axisProperties[i].rangeMax = kDefaultAxisRangeMax;
+            axisProperties[i].deadzone = kDefaultAxisDeadzone;
+            axisProperties[i].saturation = kDefaultAxisSaturation;
         }
-
-        axisProperties = newAxisProperties;
     }
+}
+
+// ---------
+
+TInstance Base::InstanceIdentifierFromDirectInputIdentifier(DWORD diIdentifier)
+{
+    EInstanceType type = (EInstanceType)-1;
+    TInstanceIdx idx = (TInstanceIdx)DIDFT_GETINSTANCE(diIdentifier);
+
+    switch (DIDFT_GETTYPE(diIdentifier))
+    {
+    case DIDFT_ABSAXIS:
+        type = EInstanceType::InstanceTypeAxis;
+        break;
+
+    case DIDFT_PSHBUTTON:
+        type = EInstanceType::InstanceTypeButton;
+        break;
+
+    case DIDFT_POV:
+        type = EInstanceType::InstanceTypePov;
+        break;
+    }
+
+    if (type < 0 || idx >= NumInstancesOfType(type))
+        return (TInstance)-1;
+
+    return MakeInstanceIdentifier(type, idx);
+}
+
+// ---------
+
+TInstance Base::InstanceIdentifierFromDirectInputSpec(DWORD dwObj, DWORD dwHow)
+{
+    TInstance instance = (TInstance)-1;
+
+    // Select an instance based on the specifics provided by the application.
+    // The methods called to get this instance also check for validity of the input and the current object state.
+    // Only these methods for "dwHow" are supported, others return an invalid result.
+    switch (dwHow)
+    {
+    case DIPH_BYOFFSET:
+        instance = InstanceForOffset(dwObj);
+        break;
+
+    case DIPH_BYID:
+        instance = InstanceIdentifierFromDirectInputIdentifier(dwObj);
+        break;
+    }
+
+    return instance;
 }
 
 // ---------
@@ -305,35 +326,93 @@ void Base::FillDeviceCapabilities(LPDIDEVCAPS lpDIDevCaps)
 
 HRESULT Base::GetMappedObjectInfo(LPDIDEVICEOBJECTINSTANCE pdidoi, DWORD dwObj, DWORD dwHow)
 {
+    TInstance instance = InstanceIdentifierFromDirectInputSpec(dwObj, dwHow);
+    
     // Verify that the structure size is corect, as required by the DirectInput API.
     if (pdidoi->dwSize != sizeof(*pdidoi)) return DIERR_INVALIDPARAM;
     
-    TInstance instance = (TInstance)-1;
-
-    // Select an instance based on the specifics provided by the application.
-    switch (dwHow)
-    {
-    case DIPH_BYOFFSET:
-        if (IsApplicationDataFormatSet())
-            instance = InstanceForOffset(dwObj);
-        break;
-
-    case DIPH_BYID:
-        instance = DirectInputIdentifierToMapperIdentifier(dwObj);
-        
-        // Verify that the instance exists; if not, revert back to -1
-        if (ExtractIdentifierInstanceIndex(instance) >= NumInstancesOfType(ExtractIdentifierInstanceType(instance)))
-            instance = (TInstance)-1;
-        
-        break;
-    }
-
     // Check if an instance was identifiable above, if not then the object could not be located
     if (instance < 0)
         return DIERR_OBJECTNOTFOUND;
-
+    
     // Fill the specified structure with information about the specified object.
     FillObjectInstanceInfo(pdidoi, ExtractIdentifierInstanceType(instance), ExtractIdentifierInstanceIndex(instance));
+    
+    return DI_OK;
+}
+
+// ---------
+
+HRESULT Base::GetMappedProperty(REFGUID rguidProp, LPDIPROPHEADER pdiph)
+{
+    // Lazily initialize the axis properties (this is idempotent).
+    InitializeAxisProperties();
+    
+    // First verify that this property is handled by this mapper.
+    if (!IsPropertyHandledByMapper(rguidProp))
+        return DIERR_UNSUPPORTED;
+
+    // Verify the correct header size.
+    if (pdiph->dwHeaderSize != sizeof(DIPROPHEADER))
+        return DIERR_INVALIDPARAM;
+    
+    // Branch based on the property requested.
+    if (&DIPROP_AXISMODE == &rguidProp)
+    {
+        // Axis mode is easy: there is only one mode supported by the mapper.
+        
+        // Verify correct size. This one needs to be DIPROPDWORD.
+        if (pdiph->dwSize != sizeof(DIPROPDWORD))
+            return DIERR_INVALIDPARAM;
+        
+        // Provide output that the axis mode is absolute.
+        ((LPDIPROPDWORD)pdiph)->dwData = DIPROPAXISMODE_ABS;
+    }
+    else if (&DIPROP_DEADZONE == &rguidProp || &DIPROP_SATURATION == &rguidProp || &DIPROP_RANGE == &rguidProp)
+    {
+        // Either deadzone, saturation, or range, and the logic is substantially similar for all of them.
+
+        // Expected size depends on the actual property, so get that here.
+        DWORD expectedSize = 0;
+
+        if (&DIPROP_DEADZONE == &rguidProp || &DIPROP_SATURATION == &rguidProp)
+            expectedSize = sizeof(DIPROPDWORD);
+        else
+            expectedSize = sizeof(DIPROPRANGE);
+
+        // Verify correct size.
+        if (pdiph->dwSize != expectedSize)
+            return DIERR_INVALIDPARAM;
+
+        // Verify that the target is specific, not the whole device.
+        if (DIPH_DEVICE == pdiph->dwHow)
+            return DIERR_UNSUPPORTED;
+
+        // Attempt to locate the instance.
+        TInstance instance = InstanceIdentifierFromDirectInputSpec(pdiph->dwObj, pdiph->dwHow);
+        if (instance < 0)
+            return DIERR_OBJECTNOTFOUND;
+
+        // Verify that the instance target is an axis.
+        if (EInstanceType::InstanceTypeAxis != ExtractIdentifierInstanceType(instance))
+            return DIERR_UNSUPPORTED;
+        
+        // Provide the requested data, branching by specific property.
+        if (&DIPROP_DEADZONE == &rguidProp)
+            ((LPDIPROPDWORD)pdiph)->dwData = axisProperties[ExtractIdentifierInstanceIndex(instance)].deadzone;
+        else if (&DIPROP_SATURATION == &rguidProp)
+            ((LPDIPROPDWORD)pdiph)->dwData = axisProperties[ExtractIdentifierInstanceIndex(instance)].saturation;
+        else
+        {
+            ((LPDIPROPRANGE)pdiph)->lMin = axisProperties[ExtractIdentifierInstanceIndex(instance)].rangeMin;
+            ((LPDIPROPRANGE)pdiph)->lMax = axisProperties[ExtractIdentifierInstanceIndex(instance)].rangeMax;
+        }
+    }
+    else
+    {
+        // Should never get here.
+        return DIERR_UNSUPPORTED;
+    }
 
     return DI_OK;
 }
@@ -344,10 +423,13 @@ TInstance Base::InstanceForOffset(DWORD offset)
 {
     TInstance result = (TInstance)-1;
     
-    auto it = offsetToInstance.find(offset);
+    if (IsApplicationDataFormatSet())
+    {
+        auto it = offsetToInstance.find(offset);
 
-    if (offsetToInstance.end() != it)
-        result = it->second;
+        if (offsetToInstance.end() != it)
+            result = it->second;
+    }
 
     return result;
 }
@@ -365,7 +447,7 @@ BOOL Base::IsPropertyHandledByMapper(REFGUID guidProperty)
 {
     BOOL propertyHandled = FALSE;
 
-    if (guidProperty == DIPROP_AXISMODE || guidProperty == DIPROP_DEADZONE || guidProperty == DIPROP_RANGE || guidProperty == DIPROP_SATURATION)
+    if (&guidProperty == &DIPROP_AXISMODE || &guidProperty == &DIPROP_DEADZONE || &guidProperty == &DIPROP_RANGE || &guidProperty == &DIPROP_SATURATION)
         propertyHandled = TRUE;
     
     return propertyHandled;
@@ -377,10 +459,13 @@ DWORD Base::OffsetForInstance(TInstance instance)
 {
     DWORD result = (DWORD)~0;
 
-    auto it = instanceToOffset.find(instance);
+    if (IsApplicationDataFormatSet())
+    {
+        auto it = instanceToOffset.find(instance);
 
-    if (instanceToOffset.end() != it)
-        result = it->second;
+        if (instanceToOffset.end() != it)
+            result = it->second;
+    }
 
     return result;
 }
@@ -608,6 +693,96 @@ HRESULT Base::SetApplicationDataFormat(LPCDIDATAFORMAT lpdf)
 
     mapsValid = TRUE;
     return S_OK;
+}
+
+// ---------
+
+HRESULT Base::SetMappedProperty(REFGUID rguidProp, LPCDIPROPHEADER pdiph)
+{
+    // Lazily initialize the axis properties (this is idempotent).
+    InitializeAxisProperties();
+
+    // First verify that this property is handled by this mapper.
+    if (!IsPropertyHandledByMapper(rguidProp))
+        return DIERR_UNSUPPORTED;
+
+    // Verify the correct header size.
+    if (pdiph->dwHeaderSize != sizeof(DIPROPHEADER))
+        return DIERR_INVALIDPARAM;
+
+    // Branch based on the property requested.
+    if (&DIPROP_AXISMODE == &rguidProp)
+    {
+        // Axis mode is easy: it is read-only, so just reject it.
+        return DIERR_UNSUPPORTED;
+    }
+    else if (&DIPROP_DEADZONE == &rguidProp || &DIPROP_SATURATION == &rguidProp || &DIPROP_RANGE == &rguidProp)
+    {
+        // Either deadzone, saturation, or range, and the logic is substantially similar for all of them.
+
+        // Expected size depends on the actual property, so get that here.
+        DWORD expectedSize = 0;
+
+        if (&DIPROP_DEADZONE == &rguidProp || &DIPROP_SATURATION == &rguidProp)
+            expectedSize = sizeof(DIPROPDWORD);
+        else
+            expectedSize = sizeof(DIPROPRANGE);
+
+        // Verify correct size.
+        if (pdiph->dwSize != expectedSize)
+            return DIERR_INVALIDPARAM;
+
+        // Verify that the target is specific, not the whole device.
+        if (DIPH_DEVICE == pdiph->dwHow)
+            return DIERR_UNSUPPORTED;
+
+        // Attempt to locate the instance.
+        TInstance instance = InstanceIdentifierFromDirectInputSpec(pdiph->dwObj, pdiph->dwHow);
+        if (instance < 0)
+            return DIERR_OBJECTNOTFOUND;
+
+        // Verify that the instance target is an axis.
+        if (EInstanceType::InstanceTypeAxis != ExtractIdentifierInstanceType(instance))
+            return DIERR_UNSUPPORTED;
+
+        // Verify the provided data and, if valid, write it.
+        if (&DIPROP_DEADZONE == &rguidProp)
+        {
+            DWORD newDeadzone = ((LPDIPROPDWORD)pdiph)->dwData;
+
+            if (newDeadzone < kMinAxisDeadzoneSaturation || newDeadzone > kMaxAxisDeadzoneSaturation)
+                return DIERR_INVALIDPARAM;
+            
+            axisProperties[ExtractIdentifierInstanceIndex(instance)].deadzone = newDeadzone;
+        }
+        else if (&DIPROP_SATURATION == &rguidProp)
+        {
+            DWORD newSaturation = ((LPDIPROPDWORD)pdiph)->dwData;
+
+            if (newSaturation < kMinAxisDeadzoneSaturation || newSaturation > kMaxAxisDeadzoneSaturation)
+                return DIERR_INVALIDPARAM;
+
+            axisProperties[ExtractIdentifierInstanceIndex(instance)].saturation = newSaturation;
+        }
+        else
+        {
+            LONG newRangeMin = ((LPDIPROPRANGE)pdiph)->lMin;
+            LONG newRangeMax = ((LPDIPROPRANGE)pdiph)->lMax;
+            
+            if (!(newRangeMin < newRangeMax))
+                return DIERR_INVALIDPARAM;
+
+            axisProperties[ExtractIdentifierInstanceIndex(instance)].rangeMin = newRangeMin;
+            axisProperties[ExtractIdentifierInstanceIndex(instance)].rangeMax = newRangeMax;
+        }
+    }
+    else
+    {
+        // Should never get here.
+        return DIERR_UNSUPPORTED;
+    }
+
+    return DI_OK;
 }
 
 // ---------

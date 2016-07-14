@@ -66,17 +66,23 @@ namespace XinputControllerDirectInput
         public:
             // -------- CONSTANTS ------------------------------------------------------ //
             
-            // Specifies the default minimum axis range value (based on DirectInput behavior).
-            const static LONG kDefaultAxisRangeMin = 0x00000;
+            // Specifies the default minimum axis range value (based on DirectInput documentation).
+            const static LONG kDefaultAxisRangeMin = 0x00000000;
             
-            // Specifies the default maximum axis range value (based on DirectInput behavior).
-            const static LONG kDefaultAxisRangeMax = 0x0ffff;
+            // Specifies the default maximum axis range value (based on DirectInput documentation).
+            const static LONG kDefaultAxisRangeMax = 0x0000ffff;
             
-            // Specifies the default axis deadzone (based on DirectInput behavior).
+            // Specifies the default axis deadzone (based on DirectInput documentation).
             const static DWORD kDefaultAxisDeadzone = 0;
             
-            // Specifies the default axis saturation (based on DirectInput behavior).
+            // Specifies the default axis saturation (based on DirectInput documentation).
             const static DWORD kDefaultAxisSaturation = 10000;
+
+            // Specifies the minimum axis deadzone and saturation (based on DirectInput documentation).
+            const static DWORD kMinAxisDeadzoneSaturation = 0;
+
+            // Specifies the maximum axis deadzone and saturation (based on DirectInput documentation).
+            const static DWORD kMaxAxisDeadzoneSaturation = 10000;
             
             
         private:
@@ -92,7 +98,7 @@ namespace XinputControllerDirectInput
             BOOL mapsValid;
 
             // Holds the properties of all axes present in this mapper.
-            const SAxisProperties* axisProperties;
+            SAxisProperties* axisProperties;
             
             
         public:
@@ -139,14 +145,20 @@ namespace XinputControllerDirectInput
             // If they are all unset, sets them (to TRUE) and returns TRUE.
             // Otherwise, leaves them alone and returns FALSE.
             BOOL CheckAndSetOffsets(BOOL* base, const DWORD count);
-
-            TInstance DirectInputIdentifierToMapperIdentifier(DWORD diIdentifier);
             
             // Given a DirectInput object instance info structure pointer, instance type, and instance number, fills the structure appropriately.
             void FillObjectInstanceInfo(LPDIDEVICEOBJECTINSTANCE instanceInfo, EInstanceType instanceType, TInstanceIdx instanceNumber);
             
             // Initializes all axis properties. Idempotent; intended for lazy instantiation on first access.
             void InitializeAxisProperties(void);
+
+            // Given a DirectInput-style identifier (combination of DIDFT_* flags), provides a mapper-style identifier.
+            // Returns a negative identifier in the event of an error.
+            TInstance InstanceIdentifierFromDirectInputIdentifier(DWORD diIdentifier);
+
+            // Given a DirectInput-style instance specification (dwObj, dwHow), provides a mapper-style identifier.
+            // Returns a negative identifier in the event of an error.
+            TInstance InstanceIdentifierFromDirectInputSpec(DWORD dwObj, DWORD dwHow);
             
             // Given an instance type, list of instances that are used, number of instances in total, and a desired instance to select, attempts to select that instance.
             // Checks that the specified instance (by index) is currently unset (FALSE) and, if so, sets it (to TRUE).
@@ -169,6 +181,10 @@ namespace XinputControllerDirectInput
             // Fills in a DirectInput object information structure with information about a specific object of the mapped game controller.
             // Corresponds directly to IDirectInputDevice8's GetObjectInfo method.
             HRESULT GetMappedObjectInfo(LPDIDEVICEOBJECTINSTANCE pdidoi, DWORD dwObj, DWORD dwHow);
+
+            // Retrieves a DirectInput property that this mapper is intended to intercept and handle.
+            // Corresponds directly to IDirectInputDevice8's GetProperty method for those properties handled by the mapper (see IsPropertyHandledByMapper).
+            HRESULT GetMappedProperty(REFGUID rguidProp, LPDIPROPHEADER pdiph);
             
             // Returns the instance that corresponds to the specified offset in the application's data format.
             TInstance InstanceForOffset(DWORD offset);
@@ -186,6 +202,10 @@ namespace XinputControllerDirectInput
             // Parses an application-supplied DirectInput data format.
             // Return code will either be DI_OK (succeeded) or DIERR_INVALIDPARAM (failed due to an issue with the proposed data format).
             HRESULT SetApplicationDataFormat(LPCDIDATAFORMAT lpdf);
+
+            // Sets a DirectInput property that this mapper is intended to intercept and handle.
+            // Corresponds directly to IDirectInputDevice8's SetProperty method for those properties handled by the mapper (see IsPropertyHandledByMapper).
+            HRESULT SetMappedProperty(REFGUID rguidProp, LPCDIPROPHEADER pdiph);
 
             // Resets the application-supplied DirectInput data format to an uninitialized state.
             void ResetApplicationDataFormat(void);
