@@ -175,7 +175,7 @@ BOOL STDMETHODCALLTYPE EnumObjectsAxesTestCallback(LPCDIDEVICEOBJECTINSTANCE lpd
     if (NULL == axisString)
         tout << _T("[guidType fail] ");
     
-    tout << _T("Instance ") << DIDFT_GETINSTANCE(lpddoi->dwType) << _T("@") << lpddoi->dwOfs << _T(": ");
+    tout << _T("Instance ") << DIDFT_GETINSTANCE(lpddoi->dwType) << _T(" @") << lpddoi->dwOfs << _T(": ");
     if (NULL == axisString)
         tout << _T("UNKNOWN") << endl;
     else
@@ -199,7 +199,7 @@ BOOL STDMETHODCALLTYPE EnumObjectsButtonsTestCallback(LPCDIDEVICEOBJECTINSTANCE 
     if (lpddoi->guidType != GUID_Button)
         tout << _T("[guidType fail] ");
 
-    tout << _T("Instance ") << DIDFT_GETINSTANCE(lpddoi->dwType) << _T("@") << lpddoi->dwOfs << endl;
+    tout << _T("Instance ") << DIDFT_GETINSTANCE(lpddoi->dwType) << _T(" @") << lpddoi->dwOfs << endl;
 
     testCounter += 1;
     return DIENUM_CONTINUE;
@@ -219,7 +219,7 @@ BOOL STDMETHODCALLTYPE EnumObjectsPovTestCallback(LPCDIDEVICEOBJECTINSTANCE lpdd
     if (lpddoi->guidType != GUID_POV)
         tout << _T("[guidType fail] ");
 
-    tout << _T("Instance ") << DIDFT_GETINSTANCE(lpddoi->dwType) << _T("@") << lpddoi->dwOfs << endl;
+    tout << _T("Instance ") << DIDFT_GETINSTANCE(lpddoi->dwType) << _T(" @") << lpddoi->dwOfs << endl;
 
     testCounter += 1;
     return DIENUM_CONTINUE;
@@ -390,6 +390,107 @@ int RunTestApp(int argc, char* argv[])
 
     // Finished enumerating objects.
     tout << _T("End IDirectInputDevice8->EnumObjects") << endl << endl;
+
+
+    ////////////////////////////////////
+    ////////   Device Object Information
+
+    tout << _T("Begin IDirectInputDevice8->GetObjectInfo") << endl;
+
+    // Attempt to iterate over axes.
+    tout << _T("  Axes...") << endl;
+    for (DWORD i = 0; i < deviceCapabilities.dwAxes; ++i)
+    {
+        tout << _T("    ") << i << _T(": ");
+
+        DIDEVICEOBJECTINSTANCE objectInfo;
+        objectInfo.dwSize = sizeof(objectInfo);
+
+        result = directInputDeviceIface->GetObjectInfo(&objectInfo, DIDFT_ABSAXIS | DIDFT_MAKEINSTANCE(i), DIPH_BYID);
+        if (DI_OK != result)
+        {
+            tout << _T("FAILED") << endl;
+            continue;
+        }
+
+        tout << _T("OK: ") << objectInfo.tszName << _T(" (") << DirectInputAxisTypeToString(objectInfo.guidType) << _T(" @") << objectInfo.dwOfs << _T(")") << endl;
+    }
+
+    // Attempt to iterate over buttons.
+    tout << _T("  Buttons...") << endl;
+    for (DWORD i = 0; i < deviceCapabilities.dwButtons; ++i)
+    {
+        tout << _T("    ") << i << _T(": ");
+
+        DIDEVICEOBJECTINSTANCE objectInfo;
+        objectInfo.dwSize = sizeof(objectInfo);
+
+        result = directInputDeviceIface->GetObjectInfo(&objectInfo, DIDFT_PSHBUTTON | DIDFT_MAKEINSTANCE(i), DIPH_BYID);
+        if (DI_OK != result)
+        {
+            tout << _T("FAILED") << endl;
+            continue;
+        }
+
+        tout << _T("OK: ") << objectInfo.tszName << _T(" (@") << objectInfo.dwOfs << _T(")") << endl;
+    }
+
+    // Attempt to iterate over POVs.
+    tout << _T("  POVs...") << endl;
+    for (DWORD i = 0; i < deviceCapabilities.dwPOVs; ++i)
+    {
+        tout << _T("    ") << i << _T(": ");
+
+        DIDEVICEOBJECTINSTANCE objectInfo;
+        objectInfo.dwSize = sizeof(objectInfo);
+
+        result = directInputDeviceIface->GetObjectInfo(&objectInfo, DIDFT_POV | DIDFT_MAKEINSTANCE(i), DIPH_BYID);
+        if (DI_OK != result)
+        {
+            tout << _T("FAILED") << endl;
+            continue;
+        }
+
+        tout << _T("OK: ") << objectInfo.tszName << _T(" (@") << objectInfo.dwOfs << _T(")") << endl;
+    }
+
+    // Attempt to request information on objects that should not be available or are otherwise invalid requests.
+    DIDEVICEOBJECTINSTANCE objectInfo;
+    ZeroMemory(&objectInfo, sizeof(objectInfo));
+
+    result = directInputDeviceIface->GetObjectInfo(&objectInfo, DIDFT_ABSAXIS | DIDFT_MAKEINSTANCE(0), DIPH_BYID);
+    if (DI_OK == result)
+        tout << _T("FAIL: Invalid DIDEVICEOBJECTINSTANCE dwSize test.") << endl;
+    else
+        tout << _T("PASS: Invalid DIDEVICEOBJECTINSTANCE dwSize test.") << endl;
+
+    objectInfo.dwSize = sizeof(objectInfo);
+    result = directInputDeviceIface->GetObjectInfo(&objectInfo, DIDFT_ABSAXIS | DIDFT_MAKEINSTANCE(deviceCapabilities.dwAxes), DIPH_BYID);
+    if (DI_OK == result)
+        tout << _T("FAIL: Invalid axis object info test.") << endl;
+    else
+        tout << _T("PASS: Invalid axis object info test.") << endl;
+
+    result = directInputDeviceIface->GetObjectInfo(&objectInfo, DIDFT_PSHBUTTON | DIDFT_MAKEINSTANCE(deviceCapabilities.dwButtons), DIPH_BYID);
+    if (DI_OK == result)
+        tout << _T("FAIL: Invalid button object info test.") << endl;
+    else
+        tout << _T("PASS: Invalid button object info test.") << endl;
+
+    result = directInputDeviceIface->GetObjectInfo(&objectInfo, DIDFT_POV | DIDFT_MAKEINSTANCE(deviceCapabilities.dwPOVs), DIPH_BYID);
+    if (DI_OK == result)
+        tout << _T("FAIL: Invalid POV object info test.") << endl;
+    else
+        tout << _T("PASS: Invalid POV object info test.") << endl;
+
+    result = directInputDeviceIface->GetObjectInfo(&objectInfo, 0, DIPH_BYOFFSET);
+    if (DI_OK == result)
+        tout << _T("FAIL: Uninitialized data format object info test.") << endl;
+    else
+        tout << _T("PASS: Uninitialized data format object info test.") << endl;
+    
+    // Finished checking objects.
+    tout << _T("End IDirectInputDevice8->GetObjectInfo") << endl << endl;
     
     
     ////////////////////////////////////

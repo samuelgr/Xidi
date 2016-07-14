@@ -38,7 +38,6 @@ namespace XinputControllerDirectInput
         // Specifies the type to use for counting numbers of instances.
         typedef TInstanceIdx TInstanceCount;
         
-        
         // Enumerates supported types of elements to be the targets of mapping.
         enum EInstanceType : TInstanceType
         {
@@ -48,12 +47,38 @@ namespace XinputControllerDirectInput
             
             InstanceTypeCount                   = 3
         };
+
+        // Holds all properties required to configure an axis (range, deadzone, and saturation).
+        // See DirectInput documentation for more information on the meaning of each field.
+        struct SAxisProperties
+        {
+            LONG rangeMin;
+            LONG rangeMax;
+            DWORD deadzone;
+            DWORD saturation;
+        };
         
         
         // Abstract base class representing a mapped controller to the application.
         // Subclasses define the button layout to present to the application and convert data received from a Controller to the format requested by the application.
         class Base
         {
+        public:
+            // -------- CONSTANTS ------------------------------------------------------ //
+            
+            // Specifies the default minimum axis range value (based on DirectInput behavior).
+            const static LONG kDefaultAxisRangeMin = 0x00000;
+            
+            // Specifies the default maximum axis range value (based on DirectInput behavior).
+            const static LONG kDefaultAxisRangeMax = 0x0ffff;
+            
+            // Specifies the default axis deadzone (based on DirectInput behavior).
+            const static DWORD kDefaultAxisDeadzone = 0;
+            
+            // Specifies the default axis saturation (based on DirectInput behavior).
+            const static DWORD kDefaultAxisSaturation = 10000;
+            
+            
         private:
             // -------- INSTANCE VARIABLES --------------------------------------------- //
             
@@ -65,6 +90,9 @@ namespace XinputControllerDirectInput
             
             // Specifies if the maps have been initialized and contain valid data.
             BOOL mapsValid;
+
+            // Holds the properties of all axes present in this mapper.
+            const SAxisProperties* axisProperties;
             
             
         public:
@@ -101,6 +129,32 @@ namespace XinputControllerDirectInput
             static DWORD SizeofInstance(const EInstanceType type);
             
             
+        private:
+            // -------- HELPERS -------------------------------------------------------- //
+            
+            // Returns a friendly name string for the specified axis type by GUID.
+            LPTSTR AxisTypeToString(REFGUID axisTypeGUID);
+            
+            // Given an array of offsets and a count, checks that they are all unset (FALSE).
+            // If they are all unset, sets them (to TRUE) and returns TRUE.
+            // Otherwise, leaves them alone and returns FALSE.
+            BOOL CheckAndSetOffsets(BOOL* base, const DWORD count);
+
+            TInstance DirectInputIdentifierToMapperIdentifier(DWORD diIdentifier);
+            
+            // Given a DirectInput object instance info structure pointer, instance type, and instance number, fills the structure appropriately.
+            void FillObjectInstanceInfo(LPDIDEVICEOBJECTINSTANCE instanceInfo, EInstanceType instanceType, TInstanceIdx instanceNumber);
+            
+            // Initializes all axis properties. Idempotent; intended for lazy instantiation on first access.
+            void InitializeAxisProperties(void);
+            
+            // Given an instance type, list of instances that are used, number of instances in total, and a desired instance to select, attempts to select that instance.
+            // Checks that the specified instance (by index) is currently unset (FALSE) and, if so, sets it (to TRUE).
+            // If this operation succeeds, makes and returns an instance identifier using the type and index.
+            // Otherwise, returns -1 cast to an instance identifier type.
+            TInstance SelectInstance(const EInstanceType instanceType, BOOL* instanceUsed, const TInstanceCount instanceCount, const TInstanceIdx instanceToSelect);
+            
+            
         public:
             // -------- INSTANCE METHODS ----------------------------------------------- //
             
@@ -111,6 +165,13 @@ namespace XinputControllerDirectInput
             // Fills in a DirectInput device capabilities structure with information about the mapped game controller's buttons and axes.
             // Intended to be invoked with a structure pre-filled with other device information from IDirectInputDevice8's GetCapabilities method.
             void FillDeviceCapabilities(LPDIDEVCAPS lpDIDevCaps);
+
+            // Fills in a DirectInput object information structure with information about a specific object of the mapped game controller.
+            // Corresponds directly to IDirectInputDevice8's GetObjectInfo method.
+            HRESULT GetMappedObjectInfo(LPDIDEVICEOBJECTINSTANCE pdidoi, DWORD dwObj, DWORD dwHow);
+            
+            // Returns the instance that corresponds to the specified offset in the application's data format.
+            TInstance InstanceForOffset(DWORD offset);
             
             // Returns TRUE if the application's data format has been successfully set, FALSE otherwise.
             BOOL IsApplicationDataFormatSet(void);
@@ -118,6 +179,9 @@ namespace XinputControllerDirectInput
             // Returns TRUE if the supplied DirectInput property is handled by the mapper, FALSE if the device should handle it directly.
             // These properties are typically accessed and mutated through IDirectInputDevice8's GetProperty and SetProperty methods respectively.
             BOOL IsPropertyHandledByMapper(REFGUID guidProperty);
+
+            // Returns the offset in an application's data format that corresponds to the specified instance.
+            DWORD OffsetForInstance(TInstance instance);
             
             // Parses an application-supplied DirectInput data format.
             // Return code will either be DI_OK (succeeded) or DIERR_INVALIDPARAM (failed due to an issue with the proposed data format).

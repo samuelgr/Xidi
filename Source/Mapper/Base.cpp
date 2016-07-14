@@ -20,7 +20,7 @@ using namespace XinputControllerDirectInput::Mapper;
 // -------- CONSTRUCTION AND DESTRUCTION ----------------------------------- //
 // See "Mapper/Base.h" for documentation.
 
-Base::Base() : instanceToOffset(), offsetToInstance(), mapsValid(FALSE) {}
+Base::Base() : instanceToOffset(), offsetToInstance(), mapsValid(FALSE), axisProperties(NULL) {}
 
 // ---------
 
@@ -28,6 +28,8 @@ Base::~Base()
 {
     instanceToOffset.clear();
     offsetToInstance.clear();
+
+    if (NULL != axisProperties) delete[] axisProperties;
 }
 
 
@@ -55,9 +57,9 @@ DWORD Base::SizeofInstance(const EInstanceType type)
 
 
 // -------- HELPERS -------------------------------------------------------- //
+// See "Mapper/Base.h" for documentation.
 
-// Returns a friendly name string for the specified axis type by GUID.
-LPTSTR AxisTypeToString(REFGUID axisTypeGUID)
+LPTSTR Base::AxisTypeToString(REFGUID axisTypeGUID)
 {
     if (axisTypeGUID == GUID_XAxis)
         return _T("X Axis");
@@ -75,10 +77,9 @@ LPTSTR AxisTypeToString(REFGUID axisTypeGUID)
     return _T("Unknown Axis");
 }
 
-// Given an array of offsets and a count, checks that they are all unset (FALSE).
-// If they are all unset, sets them (to TRUE) and returns TRUE.
-// Otherwise, leaves them alone and returns FALSE.
-static BOOL CheckAndSetOffsets(BOOL* base, const DWORD count)
+// ---------
+
+BOOL Base::CheckAndSetOffsets(BOOL* base, const DWORD count)
 {
     for (DWORD i = 0; i < count; ++i)
         if (base[i] != FALSE) return FALSE;
@@ -91,11 +92,98 @@ static BOOL CheckAndSetOffsets(BOOL* base, const DWORD count)
 
 // ---------
 
-// Given an instance type, list of instances that are used, number of instances in total, and a desired instance to select, attempts to select that instance.
-// Checks that the specified instance (by index) is currently unset (FALSE) and, if so, sets it (to TRUE).
-// If this operation succeeds, makes and returns an instance identifier using the type and index.
-// Otherwise, returns -1 cast to an instance identifier type.
-static TInstance SelectInstance(const EInstanceType instanceType, BOOL* instanceUsed, const TInstanceCount instanceCount, const TInstanceIdx instanceToSelect)
+TInstance Base::DirectInputIdentifierToMapperIdentifier(DWORD diIdentifier)
+{
+    EInstanceType type = (EInstanceType)-1;
+    TInstanceIdx idx = (TInstanceIdx)DIDFT_GETINSTANCE(diIdentifier);
+    
+    switch (DIDFT_GETTYPE(diIdentifier))
+    {
+    case DIDFT_ABSAXIS:
+        type = EInstanceType::InstanceTypeAxis;
+        break;
+
+    case DIDFT_PSHBUTTON:
+        type = EInstanceType::InstanceTypeButton;
+        break;
+
+    case DIDFT_POV:
+        type = EInstanceType::InstanceTypePov;
+        break;
+    }
+
+    if (type < 0)
+        return (TInstance)-1;
+
+    return MakeInstanceIdentifier(type, idx);
+}
+
+// ---------
+
+void Base::FillObjectInstanceInfo(LPDIDEVICEOBJECTINSTANCE instanceInfo, EInstanceType instanceType, TInstanceIdx instanceNumber)
+{
+    // Obtain the number of objects of each type.
+    const TInstanceCount numAxes = NumInstancesOfType(EInstanceType::InstanceTypeAxis);
+    const TInstanceCount numPov = NumInstancesOfType(EInstanceType::InstanceTypePov);
+    const TInstanceCount numButtons = NumInstancesOfType(EInstanceType::InstanceTypeButton);
+
+    // Initialize the structure and fill out common parts.
+    ZeroMemory(instanceInfo, sizeof(*instanceInfo));
+    instanceInfo->dwSize = sizeof(*instanceInfo);
+    instanceInfo->dwType = DIDFT_MAKEINSTANCE(instanceNumber);
+    instanceInfo->dwFlags = 0;
+    
+    // Fill in the rest of the structure based on the instance type.
+    switch (instanceType)
+    {
+    case EInstanceType::InstanceTypeAxis:
+        instanceInfo->dwOfs = (instanceNumber * SizeofInstance(instanceType));
+        instanceInfo->guidType = AxisTypeFromInstanceNumber(instanceNumber);
+        instanceInfo->dwType |= DIDFT_ABSAXIS;
+        _tcscpy_s(instanceInfo->tszName, _countof(instanceInfo->tszName), AxisTypeToString(instanceInfo->guidType));
+        break;
+    
+    case EInstanceType::InstanceTypePov:
+        instanceInfo->dwOfs = (numAxes * SizeofInstance(EInstanceType::InstanceTypeAxis)) + (instanceNumber * SizeofInstance(instanceType));
+        instanceInfo->guidType = GUID_POV;
+        instanceInfo->dwType |= DIDFT_POV;
+        _stprintf_s(instanceInfo->tszName, _countof(instanceInfo->tszName), _T("POV %u"), (unsigned)instanceNumber);
+        break;
+    
+    case EInstanceType::InstanceTypeButton:
+        instanceInfo->dwOfs = (numAxes * SizeofInstance(EInstanceType::InstanceTypeAxis)) + (numPov * SizeofInstance(EInstanceType::InstanceTypePov)) + (instanceNumber * SizeofInstance(instanceType));
+        instanceInfo->guidType = GUID_Button;
+        instanceInfo->dwType |= DIDFT_PSHBUTTON;
+        _stprintf_s(instanceInfo->tszName, _countof(instanceInfo->tszName), _T("Button %u"), (unsigned)instanceNumber);
+        break;
+    }
+}
+
+// ---------
+
+void Base::InitializeAxisProperties(void)
+{
+    if (NULL == axisProperties)
+    {
+        const TInstanceCount numAxes = NumInstancesOfType(EInstanceType::InstanceTypeAxis);
+
+        SAxisProperties* newAxisProperties = new SAxisProperties[numAxes];
+
+        for (TInstanceIdx i = 0; i < (TInstanceIdx)numAxes; ++i)
+        {
+            newAxisProperties[i].rangeMin = kDefaultAxisRangeMin;
+            newAxisProperties[i].rangeMax = kDefaultAxisRangeMax;
+            newAxisProperties[i].deadzone = kDefaultAxisDeadzone;
+            newAxisProperties[i].saturation = kDefaultAxisSaturation;
+        }
+
+        axisProperties = newAxisProperties;
+    }
+}
+
+// ---------
+
+TInstance Base::SelectInstance(const EInstanceType instanceType, BOOL* instanceUsed, const TInstanceCount instanceCount, const TInstanceIdx instanceToSelect)
 {
     TInstance selectedInstance = (TInstance)-1;
 
@@ -122,27 +210,18 @@ HRESULT Base::EnumerateMappedObjects(LPDIENUMDEVICEOBJECTSCALLBACK appCallback, 
     // If requested, enumerate axes.
     if (DIDFT_ALL == enumerationFlags || enumerationFlags & DIDFT_AXIS)
     {
-        const DWORD baseOffset = 0;
-        
         for (TInstanceCount i = 0; i < numAxes; ++i)
         {
             // Allocate and fill a structure to submit to the application, using the heap for security purposes.
             DIDEVICEOBJECTINSTANCE* objectDescriptor = new DIDEVICEOBJECTINSTANCE();
-            ZeroMemory(objectDescriptor, sizeof(*objectDescriptor));
-
-            objectDescriptor->dwSize = sizeof(*objectDescriptor);
-            objectDescriptor->guidType = AxisTypeFromInstanceNumber((TInstanceIdx)i);
-            objectDescriptor->dwOfs = baseOffset + (i * SizeofInstance(EInstanceType::InstanceTypeAxis));
-            objectDescriptor->dwType = DIDFT_ABSAXIS | DIDFT_MAKEINSTANCE(i);
-            objectDescriptor->dwFlags = 0;
-            _tcscpy_s(objectDescriptor->tszName, _countof(objectDescriptor->tszName), AxisTypeToString(objectDescriptor->guidType));
-
+            FillObjectInstanceInfo(objectDescriptor, EInstanceType::InstanceTypeAxis, (TInstanceIdx)i);
+            
             // Submit the button to the application.
             BOOL appResponse = appCallback(objectDescriptor, appCbParam);
-
+            
             // Free previously-allocated memory.
             delete objectDescriptor;
-
+            
             // See if the application requested that the enumeration stop and, if so, honor that request
             switch (appResponse)
             {
@@ -159,27 +238,18 @@ HRESULT Base::EnumerateMappedObjects(LPDIENUMDEVICEOBJECTSCALLBACK appCallback, 
     // If requested, enumerate POVs.
     if (DIDFT_ALL == enumerationFlags || enumerationFlags & DIDFT_POV)
     {
-        const DWORD baseOffset = (numAxes * SizeofInstance(EInstanceType::InstanceTypeAxis));
-
         for (TInstanceCount i = 0; i < numPov; ++i)
         {
             // Allocate and fill a structure to submit to the application, using the heap for security purposes.
             DIDEVICEOBJECTINSTANCE* objectDescriptor = new DIDEVICEOBJECTINSTANCE();
-            ZeroMemory(objectDescriptor, sizeof(*objectDescriptor));
-
-            objectDescriptor->dwSize = sizeof(*objectDescriptor);
-            objectDescriptor->guidType = GUID_POV;
-            objectDescriptor->dwOfs = baseOffset + (i * SizeofInstance(EInstanceType::InstanceTypePov));
-            objectDescriptor->dwType = DIDFT_POV | DIDFT_MAKEINSTANCE(i);
-            objectDescriptor->dwFlags = 0;
-            _stprintf_s(objectDescriptor->tszName, _countof(objectDescriptor->tszName), _T("POV %u"), (unsigned)i);
-
+            FillObjectInstanceInfo(objectDescriptor, EInstanceType::InstanceTypePov, (TInstanceIdx)i);
+            
             // Submit the button to the application.
             BOOL appResponse = appCallback(objectDescriptor, appCbParam);
             
             // Free previously-allocated memory.
             delete objectDescriptor;
-
+            
             // See if the application requested that the enumeration stop and, if so, honor that request
             switch (appResponse)
             {
@@ -196,27 +266,18 @@ HRESULT Base::EnumerateMappedObjects(LPDIENUMDEVICEOBJECTSCALLBACK appCallback, 
     // If requested, enumerate buttons.
     if (DIDFT_ALL == enumerationFlags || enumerationFlags & DIDFT_BUTTON)
     {
-        const DWORD baseOffset = (numAxes * SizeofInstance(EInstanceType::InstanceTypeAxis)) + (numPov * SizeofInstance(EInstanceType::InstanceTypePov));
-
         for (TInstanceCount i = 0; i < numButtons; ++i)
         {
             // Allocate and fill a structure to submit to the application, using the heap for security purposes.
             DIDEVICEOBJECTINSTANCE* objectDescriptor = new DIDEVICEOBJECTINSTANCE();
-            ZeroMemory(objectDescriptor, sizeof(*objectDescriptor));
-
-            objectDescriptor->dwSize = sizeof(*objectDescriptor);
-            objectDescriptor->guidType = GUID_Button;
-            objectDescriptor->dwOfs = baseOffset + (i * SizeofInstance(EInstanceType::InstanceTypeButton));
-            objectDescriptor->dwType = DIDFT_PSHBUTTON | DIDFT_MAKEINSTANCE(i);
-            objectDescriptor->dwFlags = 0;
-            _stprintf_s(objectDescriptor->tszName, _countof(objectDescriptor->tszName), _T("Button %u"), (unsigned)i);
-
+            FillObjectInstanceInfo(objectDescriptor, EInstanceType::InstanceTypeButton, (TInstanceIdx)i);
+            
             // Submit the button to the application.
             BOOL appResponse = appCallback(objectDescriptor, appCbParam);
-
+            
             // Free previously-allocated memory.
             delete objectDescriptor;
-
+            
             // See if the application requested that the enumeration stop and, if so, honor that request
             switch (appResponse)
             {
@@ -242,6 +303,55 @@ void Base::FillDeviceCapabilities(LPDIDEVCAPS lpDIDevCaps)
     lpDIDevCaps->dwPOVs = (DWORD)NumInstancesOfType(EInstanceType::InstanceTypePov);
 }
 
+HRESULT Base::GetMappedObjectInfo(LPDIDEVICEOBJECTINSTANCE pdidoi, DWORD dwObj, DWORD dwHow)
+{
+    // Verify that the structure size is corect, as required by the DirectInput API.
+    if (pdidoi->dwSize != sizeof(*pdidoi)) return DIERR_INVALIDPARAM;
+    
+    TInstance instance = (TInstance)-1;
+
+    // Select an instance based on the specifics provided by the application.
+    switch (dwHow)
+    {
+    case DIPH_BYOFFSET:
+        if (IsApplicationDataFormatSet())
+            instance = InstanceForOffset(dwObj);
+        break;
+
+    case DIPH_BYID:
+        instance = DirectInputIdentifierToMapperIdentifier(dwObj);
+        
+        // Verify that the instance exists; if not, revert back to -1
+        if (ExtractIdentifierInstanceIndex(instance) >= NumInstancesOfType(ExtractIdentifierInstanceType(instance)))
+            instance = (TInstance)-1;
+        
+        break;
+    }
+
+    // Check if an instance was identifiable above, if not then the object could not be located
+    if (instance < 0)
+        return DIERR_OBJECTNOTFOUND;
+
+    // Fill the specified structure with information about the specified object.
+    FillObjectInstanceInfo(pdidoi, ExtractIdentifierInstanceType(instance), ExtractIdentifierInstanceIndex(instance));
+
+    return DI_OK;
+}
+
+// ---------
+
+TInstance Base::InstanceForOffset(DWORD offset)
+{
+    TInstance result = (TInstance)-1;
+    
+    auto it = offsetToInstance.find(offset);
+
+    if (offsetToInstance.end() != it)
+        result = it->second;
+
+    return result;
+}
+
 // ---------
 
 BOOL Base::IsApplicationDataFormatSet(void)
@@ -259,6 +369,20 @@ BOOL Base::IsPropertyHandledByMapper(REFGUID guidProperty)
         propertyHandled = TRUE;
     
     return propertyHandled;
+}
+
+// ---------
+
+DWORD Base::OffsetForInstance(TInstance instance)
+{
+    DWORD result = (DWORD)~0;
+
+    auto it = instanceToOffset.find(instance);
+
+    if (instanceToOffset.end() != it)
+        result = it->second;
+
+    return result;
 }
 
 // ---------
@@ -394,7 +518,7 @@ HRESULT Base::SetApplicationDataFormat(LPCDIDATAFORMAT lpdf)
         {
             // Pick a button
 
-            if (NULL == dataFormat->pguid || IsEqualGUID(GUID_Button, *dataFormat->pguid))
+            if (NULL == dataFormat->pguid || GUID_Button == *dataFormat->pguid)
             {
                 // Type unspecified or specified as a button
 
@@ -424,7 +548,7 @@ HRESULT Base::SetApplicationDataFormat(LPCDIDATAFORMAT lpdf)
         {
             // Pick a POV
 
-            if (NULL == dataFormat->pguid || IsEqualGUID(GUID_POV, *dataFormat->pguid))
+            if (NULL == dataFormat->pguid || GUID_POV == *dataFormat->pguid)
             {
                 // Type unspecified or specified as a POV
 

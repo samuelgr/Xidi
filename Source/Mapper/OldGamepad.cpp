@@ -26,10 +26,10 @@ const TInstanceIdx OldGamepad::AxisInstanceIndex(REFGUID axisGUID, const TInstan
     // Only one axis of each type exists in this mapping.
     if (0 == instanceNumber)
     {
-        if (IsEqualGUID(GUID_XAxis, axisGUID)) return (TInstanceIdx)EAxis::AxisX;
-        if (IsEqualGUID(GUID_YAxis, axisGUID)) return (TInstanceIdx)EAxis::AxisY;
-        if (IsEqualGUID(GUID_ZAxis, axisGUID)) return (TInstanceIdx)EAxis::AxisZ;
-        if (IsEqualGUID(GUID_RzAxis, axisGUID)) return (TInstanceIdx)EAxis::AxisRZ;
+        if (GUID_XAxis == axisGUID) return (TInstanceIdx)EAxis::AxisX;
+        if (GUID_YAxis == axisGUID) return (TInstanceIdx)EAxis::AxisY;
+        if (GUID_ZAxis == axisGUID) return (TInstanceIdx)EAxis::AxisZ;
+        if (GUID_RzAxis == axisGUID) return (TInstanceIdx)EAxis::AxisRZ;
     }
 
     return (TInstanceIdx)-1;

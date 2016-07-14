@@ -185,7 +185,7 @@ HRESULT STDMETHODCALLTYPE WrapperIDirectInputDevice8::GetImageInfo(LPDIDEVICEIMA
 
 HRESULT STDMETHODCALLTYPE WrapperIDirectInputDevice8::GetObjectInfo(LPDIDEVICEOBJECTINSTANCE pdidoi, DWORD dwObj, DWORD dwHow)
 {
-    return underlyingDIObject->GetObjectInfo(pdidoi, dwObj, dwHow);
+    return mapper->GetMappedObjectInfo(pdidoi, dwObj, dwHow);
 }
 
 // ---------
