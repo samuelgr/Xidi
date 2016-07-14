@@ -488,6 +488,12 @@ int RunTestApp(int argc, char* argv[])
         tout << _T("FAIL: Uninitialized data format object info test.") << endl;
     else
         tout << _T("PASS: Uninitialized data format object info test.") << endl;
+
+    result = directInputDeviceIface->GetObjectInfo(&objectInfo, 0, DIPH_BYUSAGE);
+    if (DI_OK == result)
+        tout << _T("FAIL: Unsupported request type object info test.") << endl;
+    else
+        tout << _T("PASS: Unsupported request type object info test.") << endl;
     
     // Finished checking objects.
     tout << _T("End IDirectInputDevice8->GetObjectInfo") << endl << endl;
