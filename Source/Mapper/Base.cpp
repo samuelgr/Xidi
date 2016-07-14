@@ -56,6 +56,25 @@ DWORD Base::SizeofInstance(const EInstanceType type)
 
 // -------- HELPERS -------------------------------------------------------- //
 
+// Returns a friendly name string for the specified axis type by GUID.
+LPTSTR AxisTypeToString(REFGUID axisTypeGUID)
+{
+    if (axisTypeGUID == GUID_XAxis)
+        return _T("X Axis");
+    if (axisTypeGUID == GUID_YAxis)
+        return _T("Y Axis");
+    if (axisTypeGUID == GUID_ZAxis)
+        return _T("Z Axis");
+    if (axisTypeGUID == GUID_RxAxis)
+        return _T("X Rotation");
+    if (axisTypeGUID == GUID_RyAxis)
+        return _T("Y Rotation");
+    if (axisTypeGUID == GUID_RzAxis)
+        return _T("Z Rotation");
+
+    return _T("Unknown Axis");
+}
+
 // Given an array of offsets and a count, checks that they are all unset (FALSE).
 // If they are all unset, sets them (to TRUE) and returns TRUE.
 // Otherwise, leaves them alone and returns FALSE.
@@ -92,6 +111,129 @@ static TInstance SelectInstance(const EInstanceType instanceType, BOOL* instance
 
 // -------- INSTANCE METHODS ----------------------------------------------- //
 // See "Mapper/Base.h" for documentation.
+
+HRESULT Base::EnumerateMappedObjects(LPDIENUMDEVICEOBJECTSCALLBACK appCallback, LPVOID appCbParam, DWORD enumerationFlags)
+{
+    // Obtain the number of objects of each type.
+    const TInstanceCount numAxes = NumInstancesOfType(EInstanceType::InstanceTypeAxis);
+    const TInstanceCount numPov = NumInstancesOfType(EInstanceType::InstanceTypePov);
+    const TInstanceCount numButtons = NumInstancesOfType(EInstanceType::InstanceTypeButton);
+    
+    // If requested, enumerate axes.
+    if (DIDFT_ALL == enumerationFlags || enumerationFlags & DIDFT_AXIS)
+    {
+        const DWORD baseOffset = 0;
+        
+        for (TInstanceCount i = 0; i < numAxes; ++i)
+        {
+            // Allocate and fill a structure to submit to the application, using the heap for security purposes.
+            DIDEVICEOBJECTINSTANCE* objectDescriptor = new DIDEVICEOBJECTINSTANCE();
+            ZeroMemory(objectDescriptor, sizeof(*objectDescriptor));
+
+            objectDescriptor->dwSize = sizeof(*objectDescriptor);
+            objectDescriptor->guidType = AxisTypeFromInstanceNumber((TInstanceIdx)i);
+            objectDescriptor->dwOfs = baseOffset + (i * SizeofInstance(EInstanceType::InstanceTypeAxis));
+            objectDescriptor->dwType = DIDFT_ABSAXIS | DIDFT_MAKEINSTANCE(i);
+            objectDescriptor->dwFlags = 0;
+            _tcscpy_s(objectDescriptor->tszName, _countof(objectDescriptor->tszName), AxisTypeToString(objectDescriptor->guidType));
+
+            // Submit the button to the application.
+            BOOL appResponse = appCallback(objectDescriptor, appCbParam);
+
+            // Free previously-allocated memory.
+            delete objectDescriptor;
+
+            // See if the application requested that the enumeration stop and, if so, honor that request
+            switch (appResponse)
+            {
+            case DIENUM_CONTINUE:
+                break;
+            case DIENUM_STOP:
+                return DI_OK;
+            default:
+                return DIERR_INVALIDPARAM;
+            }
+        }
+    }
+
+    // If requested, enumerate POVs.
+    if (DIDFT_ALL == enumerationFlags || enumerationFlags & DIDFT_POV)
+    {
+        const DWORD baseOffset = (numAxes * SizeofInstance(EInstanceType::InstanceTypeAxis));
+
+        for (TInstanceCount i = 0; i < numPov; ++i)
+        {
+            // Allocate and fill a structure to submit to the application, using the heap for security purposes.
+            DIDEVICEOBJECTINSTANCE* objectDescriptor = new DIDEVICEOBJECTINSTANCE();
+            ZeroMemory(objectDescriptor, sizeof(*objectDescriptor));
+
+            objectDescriptor->dwSize = sizeof(*objectDescriptor);
+            objectDescriptor->guidType = GUID_POV;
+            objectDescriptor->dwOfs = baseOffset + (i * SizeofInstance(EInstanceType::InstanceTypePov));
+            objectDescriptor->dwType = DIDFT_POV | DIDFT_MAKEINSTANCE(i);
+            objectDescriptor->dwFlags = 0;
+            _stprintf_s(objectDescriptor->tszName, _countof(objectDescriptor->tszName), _T("POV %u"), (unsigned)i);
+
+            // Submit the button to the application.
+            BOOL appResponse = appCallback(objectDescriptor, appCbParam);
+            
+            // Free previously-allocated memory.
+            delete objectDescriptor;
+
+            // See if the application requested that the enumeration stop and, if so, honor that request
+            switch (appResponse)
+            {
+            case DIENUM_CONTINUE:
+                break;
+            case DIENUM_STOP:
+                return DI_OK;
+            default:
+                return DIERR_INVALIDPARAM;
+            }
+        }
+    }
+
+    // If requested, enumerate buttons.
+    if (DIDFT_ALL == enumerationFlags || enumerationFlags & DIDFT_BUTTON)
+    {
+        const DWORD baseOffset = (numAxes * SizeofInstance(EInstanceType::InstanceTypeAxis)) + (numPov * SizeofInstance(EInstanceType::InstanceTypePov));
+
+        for (TInstanceCount i = 0; i < numButtons; ++i)
+        {
+            // Allocate and fill a structure to submit to the application, using the heap for security purposes.
+            DIDEVICEOBJECTINSTANCE* objectDescriptor = new DIDEVICEOBJECTINSTANCE();
+            ZeroMemory(objectDescriptor, sizeof(*objectDescriptor));
+
+            objectDescriptor->dwSize = sizeof(*objectDescriptor);
+            objectDescriptor->guidType = GUID_Button;
+            objectDescriptor->dwOfs = baseOffset + (i * SizeofInstance(EInstanceType::InstanceTypeButton));
+            objectDescriptor->dwType = DIDFT_PSHBUTTON | DIDFT_MAKEINSTANCE(i);
+            objectDescriptor->dwFlags = 0;
+            _stprintf_s(objectDescriptor->tszName, _countof(objectDescriptor->tszName), _T("Button %u"), (unsigned)i);
+
+            // Submit the button to the application.
+            BOOL appResponse = appCallback(objectDescriptor, appCbParam);
+
+            // Free previously-allocated memory.
+            delete objectDescriptor;
+
+            // See if the application requested that the enumeration stop and, if so, honor that request
+            switch (appResponse)
+            {
+            case DIENUM_CONTINUE:
+                break;
+            case DIENUM_STOP:
+                return DI_OK;
+            default:
+                return DIERR_INVALIDPARAM;
+            }
+        }
+    }
+    
+    return DI_OK;
+}
+
+// ---------
 
 void Base::FillDeviceCapabilities(LPDIDEVCAPS lpDIDevCaps)
 {

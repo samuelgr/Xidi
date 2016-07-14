@@ -16,20 +16,6 @@
 using namespace XinputControllerDirectInput;
 
 
-// -------- LOCAL TYPES ---------------------------------------------------- //
-
-// Contains all information required to intercept callbacks to EnumObjects.
-namespace XinputControllerDirectInput
-{
-    struct SEnumObjectsCallbackInfo
-    {
-        WrapperIDirectInputDevice8* instance;
-        LPDIENUMDEVICEOBJECTSCALLBACK lpCallback;
-        LPVOID pvRef;
-    };
-}
-
-
 // -------- CONSTRUCTION AND DESTRUCTION ----------------------------------- //
 // See "WrapperIDirectInputDevice8.h" for documentation.
 
@@ -130,12 +116,8 @@ HRESULT STDMETHODCALLTYPE WrapperIDirectInputDevice8::EnumEffectsInFile(LPCTSTR 
 
 HRESULT STDMETHODCALLTYPE WrapperIDirectInputDevice8::EnumObjects(LPDIENUMDEVICEOBJECTSCALLBACK lpCallback, LPVOID pvRef, DWORD dwFlags)
 {
-    SEnumObjectsCallbackInfo callbackInfo;
-    callbackInfo.instance = this;
-    callbackInfo.lpCallback = lpCallback;
-    callbackInfo.pvRef = pvRef;
-    
-    return underlyingDIObject->EnumObjects(&WrapperIDirectInputDevice8::CallbackEnumObjects, (LPVOID)&callbackInfo, dwFlags);
+    return mapper->EnumerateMappedObjects(lpCallback, pvRef, dwFlags);
+    //return underlyingDIObject->EnumObjects(lpCallback, pvRef, dwFlags);
 }
 
 // ---------
@@ -307,15 +289,4 @@ HRESULT STDMETHODCALLTYPE WrapperIDirectInputDevice8::Unacquire(void)
 HRESULT STDMETHODCALLTYPE WrapperIDirectInputDevice8::WriteEffectToFile(LPCTSTR lptszFileName, DWORD dwEntries, LPDIFILEEFFECT rgDiFileEft, DWORD dwFlags)
 {
     return underlyingDIObject->WriteEffectToFile(lptszFileName, dwEntries, rgDiFileEft, dwFlags);
-}
-
-
-// -------- CALLBACKS: IDirectInputDevice8 --------------------------------- //
-// See "WrapperIDirectInputDevice8.h" for documentation.
-
-BOOL STDMETHODCALLTYPE WrapperIDirectInputDevice8::CallbackEnumObjects(LPCDIDEVICEOBJECTINSTANCE lpddoi, LPVOID pvRef)
-{
-    SEnumObjectsCallbackInfo* callbackInfo = (SEnumObjectsCallbackInfo*)pvRef;
-    
-    return callbackInfo->lpCallback(lpddoi, callbackInfo->pvRef);
 }

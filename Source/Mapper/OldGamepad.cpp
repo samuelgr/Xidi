@@ -11,6 +11,7 @@
  *      DirectInput-compatible gamepad.
  *****************************************************************************/
 
+#include "ApiDirectInput8.h"
 #include "Mapper/OldGamepad.h"
 
 using namespace XinputControllerDirectInput;
@@ -20,7 +21,7 @@ using namespace XinputControllerDirectInput::Mapper;
 // -------- CONCRETE INSTANCE METHODS -------------------------------------- //
 // See "Mapper/Base.h" for documentation.
 
-TInstanceIdx OldGamepad::AxisInstanceIndex(REFGUID axisGUID, const TInstanceIdx instanceNumber)
+const TInstanceIdx OldGamepad::AxisInstanceIndex(REFGUID axisGUID, const TInstanceIdx instanceNumber)
 {
     // Only one axis of each type exists in this mapping.
     if (0 == instanceNumber)
@@ -36,7 +37,7 @@ TInstanceIdx OldGamepad::AxisInstanceIndex(REFGUID axisGUID, const TInstanceIdx 
 
 // ---------
 
-TInstanceCount OldGamepad::AxisTypeCount(REFGUID axisGUID)
+const TInstanceCount OldGamepad::AxisTypeCount(REFGUID axisGUID)
 {
     // Only one axis of each type exists in this mapping.
     // See if the first instance of the specified type exists and, if so, indicate as much.
@@ -46,9 +47,28 @@ TInstanceCount OldGamepad::AxisTypeCount(REFGUID axisGUID)
     return 0;
 }
 
+GUID OldGamepad::AxisTypeFromInstanceNumber(TInstanceIdx instanceNumber)
+{
+    EAxis axisNumber = (EAxis)instanceNumber;
+
+    switch (axisNumber)
+    {
+    case EAxis::AxisX:
+        return GUID_XAxis;
+    case EAxis::AxisY:
+        return GUID_YAxis;
+    case EAxis::AxisZ:
+        return GUID_ZAxis;
+    case EAxis::AxisRZ:
+        return GUID_RzAxis;
+    }
+
+    return GUID_Unknown;
+}
+
 // ---------
 
-TInstanceCount OldGamepad::NumInstancesOfType(const EInstanceType type)
+const TInstanceCount OldGamepad::NumInstancesOfType(const EInstanceType type)
 {
     TInstanceCount numInstances = 0;
     

@@ -75,9 +75,10 @@ namespace XinputControllerDirectInput
             // -------- CONCRETE INSTANCE METHODS -------------------------------------- //
             // See "Mapper/Base.h" for documentation.
             
-            virtual TInstanceIdx AxisInstanceIndex(REFGUID axisGUID, const TInstanceIdx instanceNumber);
-            virtual TInstanceCount AxisTypeCount(REFGUID axisGUID);
-            virtual TInstanceCount NumInstancesOfType(const EInstanceType type);
+            virtual const TInstanceIdx AxisInstanceIndex(REFGUID axisGUID, const TInstanceIdx instanceNumber);
+            virtual const TInstanceCount AxisTypeCount(REFGUID axisGUID);
+            virtual GUID AxisTypeFromInstanceNumber(TInstanceIdx instanceNumber);
+            virtual const TInstanceCount NumInstancesOfType(const EInstanceType type);
         };
     }
 }

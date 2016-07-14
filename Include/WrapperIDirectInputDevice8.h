@@ -82,12 +82,5 @@ namespace XinputControllerDirectInput
         virtual HRESULT STDMETHODCALLTYPE SetProperty(REFGUID rguidProp, LPCDIPROPHEADER pdiph);
         virtual HRESULT STDMETHODCALLTYPE Unacquire(void);
         virtual HRESULT STDMETHODCALLTYPE WriteEffectToFile(LPCTSTR lptszFileName, DWORD dwEntries, LPDIFILEEFFECT rgDiFileEft, DWORD dwFlags);
-        
-        
-    private:
-        // -------- CALLBACKS: IDirectInputDevice8 --------------------------------- //
-        
-        // Intercepts callbacks invoked as part of a call to EnumObjects.
-        static BOOL STDMETHODCALLTYPE CallbackEnumObjects(LPCDIDEVICEOBJECTINSTANCE lpddoi, LPVOID pvRef);
     };
 }

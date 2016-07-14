@@ -17,7 +17,6 @@
 #include "XinputControllerIdentification.h"
 
 #include <cstdlib>
-#include <dinput.h>
 #include <iostream>
 
 using namespace XinputControllerDirectInput;
@@ -176,7 +175,7 @@ BOOL STDMETHODCALLTYPE EnumObjectsAxesTestCallback(LPCDIDEVICEOBJECTINSTANCE lpd
     if (NULL == axisString)
         tout << _T("[guidType fail] ");
     
-    tout << _T("Instance ") << DIDFT_GETINSTANCE(lpddoi->dwType) << _T(": ");
+    tout << _T("Instance ") << DIDFT_GETINSTANCE(lpddoi->dwType) << _T("@") << lpddoi->dwOfs << _T(": ");
     if (NULL == axisString)
         tout << _T("UNKNOWN") << endl;
     else
@@ -200,7 +199,7 @@ BOOL STDMETHODCALLTYPE EnumObjectsButtonsTestCallback(LPCDIDEVICEOBJECTINSTANCE 
     if (lpddoi->guidType != GUID_Button)
         tout << _T("[guidType fail] ");
 
-    tout << _T("Instance ") << DIDFT_GETINSTANCE(lpddoi->dwType) << endl;
+    tout << _T("Instance ") << DIDFT_GETINSTANCE(lpddoi->dwType) << _T("@") << lpddoi->dwOfs << endl;
 
     testCounter += 1;
     return DIENUM_CONTINUE;
@@ -220,7 +219,7 @@ BOOL STDMETHODCALLTYPE EnumObjectsPovTestCallback(LPCDIDEVICEOBJECTINSTANCE lpdd
     if (lpddoi->guidType != GUID_POV)
         tout << _T("[guidType fail] ");
 
-    tout << _T("Instance ") << DIDFT_GETINSTANCE(lpddoi->dwType) << endl;
+    tout << _T("Instance ") << DIDFT_GETINSTANCE(lpddoi->dwType) << _T("@") << lpddoi->dwOfs << endl;
 
     testCounter += 1;
     return DIENUM_CONTINUE;
@@ -391,14 +390,14 @@ int RunTestApp(int argc, char* argv[])
 
     // Finished enumerating objects.
     tout << _T("End IDirectInputDevice8->EnumObjects") << endl << endl;
-
-
+    
+    
     ////////////////////////////////////
     ////////   Cleanup and Exit
-
+    
     directInputDeviceIface->Release();
     directInputIface->Release();
-
+    
     return 0;
 }
 

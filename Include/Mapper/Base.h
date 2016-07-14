@@ -104,6 +104,10 @@ namespace XinputControllerDirectInput
         public:
             // -------- INSTANCE METHODS ----------------------------------------------- //
             
+            // Enumerates objects present in the mapping in the way DirectInput would.
+            // Intended to replace IDirectInputDevice8's EnumObjects method.
+            HRESULT EnumerateMappedObjects(LPDIENUMDEVICEOBJECTSCALLBACK appCallback, LPVOID appCbParam, DWORD enumerationFlags);
+            
             // Fills in a DirectInput device capabilities structure with information about the mapped game controller's buttons and axes.
             // Intended to be invoked with a structure pre-filled with other device information from IDirectInputDevice8's GetCapabilities method.
             void FillDeviceCapabilities(LPDIDEVCAPS lpDIDevCaps);
@@ -122,17 +126,22 @@ namespace XinputControllerDirectInput
             // For example, if the GUID specifies "X axis" and the instance number is 2, returns the overall axis index of the 3rd X axis (instance numbers start at 0).
             // If the specified instance number does not exist, returns a negative value.
             // Must be implemented by subclasses.
-            virtual TInstanceIdx AxisInstanceIndex(REFGUID axisGUID, const TInstanceIdx instanceNumber) = 0;
+            virtual const TInstanceIdx AxisInstanceIndex(REFGUID axisGUID, const TInstanceIdx instanceNumber) = 0;
             
             // Returns the number of axes that exist of the specified type.
             // Most controllers will return 1 if the axis type exists or 0 otherwise, since it is uncommon for a controller to support, for example, more than one X axis.
             // Must be implemented by subclasses.
-            virtual TInstanceCount AxisTypeCount(REFGUID axisGUID) = 0;
+            virtual const TInstanceCount AxisTypeCount(REFGUID axisGUID) = 0;
+
+            // Given an axis instance number, returns a reference to the GUID that corresponds to the axis type.
+            // For example, if the specified overall axis instance is an X axis, this method should return GUID_Xaxis.
+            // Must be implemented by subclasses.
+            virtual GUID AxisTypeFromInstanceNumber(TInstanceIdx instanceNumber) = 0;
             
             // Specifies the number of instances that exist in the mapping of the given type.
             // For example, returns the number of buttons that exist when the input parameter is EInstanceType::InstanceTypeButton.
             // Must be implemented by subclasses.
-            virtual TInstanceCount NumInstancesOfType(const EInstanceType type) = 0;
+            virtual const TInstanceCount NumInstancesOfType(const EInstanceType type) = 0;
         };
     }
 }
