@@ -114,10 +114,17 @@ namespace XinputControllerDirectInput
             
             // Returns TRUE if the application's data format has been successfully set, FALSE otherwise.
             BOOL IsApplicationDataFormatSet(void);
+
+            // Returns TRUE if the supplied DirectInput property is handled by the mapper, FALSE if the device should handle it directly.
+            // These properties are typically accessed and mutated through IDirectInputDevice8's GetProperty and SetProperty methods respectively.
+            BOOL IsPropertyHandledByMapper(REFGUID guidProperty);
             
             // Parses an application-supplied DirectInput data format.
             // Return code will either be DI_OK (succeeded) or DIERR_INVALIDPARAM (failed due to an issue with the proposed data format).
             HRESULT SetApplicationDataFormat(LPCDIDATAFORMAT lpdf);
+
+            // Resets the application-supplied DirectInput data format to an uninitialized state.
+            void ResetApplicationDataFormat(void);
 
 
             // -------- ABSTRACT INSTANCE METHODS -------------------------------------- //

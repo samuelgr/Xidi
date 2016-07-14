@@ -251,6 +251,18 @@ BOOL Base::IsApplicationDataFormatSet(void)
 
 // ---------
 
+BOOL Base::IsPropertyHandledByMapper(REFGUID guidProperty)
+{
+    BOOL propertyHandled = FALSE;
+
+    if (guidProperty == DIPROP_AXISMODE || guidProperty == DIPROP_DEADZONE || guidProperty == DIPROP_RANGE || guidProperty == DIPROP_SATURATION)
+        propertyHandled = TRUE;
+    
+    return propertyHandled;
+}
+
+// ---------
+
 HRESULT Base::SetApplicationDataFormat(LPCDIDATAFORMAT lpdf)
 {
     // Obtain the number of instances of each type in the mapping by asking the subclass.
@@ -472,4 +484,14 @@ HRESULT Base::SetApplicationDataFormat(LPCDIDATAFORMAT lpdf)
 
     mapsValid = TRUE;
     return S_OK;
+}
+
+// ---------
+
+void Base::ResetApplicationDataFormat(void)
+{
+    instanceToOffset.clear();
+    offsetToInstance.clear();
+
+    mapsValid = FALSE;
 }
