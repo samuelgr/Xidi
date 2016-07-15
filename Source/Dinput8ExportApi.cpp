@@ -10,7 +10,6 @@
  *      Implementation of primary exported functions for "dinput8.dll".
  *****************************************************************************/
 
-#include "Hashers.h"
 #include "Dinput8ImportApi.h"
 #include "WrapperIDirectInput8.h"
 

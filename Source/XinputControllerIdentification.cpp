@@ -10,7 +10,6 @@
  *      Implementation of helpers for identifying controller types.
  *****************************************************************************/
 
-#include "Hashers.h"
 #include "XinputControllerIdentification.h"
 
 #include <unordered_map>

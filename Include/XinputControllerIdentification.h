@@ -13,6 +13,7 @@
 #pragma once
 
 #include "ApiWindows.h"
+#include "Hashers.h"
 
 #include <unordered_map>
 

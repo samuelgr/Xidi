@@ -30,6 +30,7 @@
     <ClInclude Include="Include\ApiDirectInput8.h" />
     <ClInclude Include="Include\ApiWindows.h" />
     <ClInclude Include="Include\Controller\Base.h" />
+    <ClInclude Include="Include\Controller\DirectInputBase.h" />
     <ClInclude Include="Include\Dinput8ExportApi.h" />
     <ClInclude Include="Include\Mapper\OldGamepad.h" />
     <ClInclude Include="Include\XinputControllerIdentification.h" />
@@ -43,6 +44,7 @@
   <ItemGroup>
     <ClCompile Include="Source\ApiDirectInput8.cpp" />
     <ClCompile Include="Source\Controller\BaseController.cpp" />
+    <ClCompile Include="Source\Controller\DirectInputBase.cpp" />
     <ClCompile Include="Source\Mapper\OldGamepad.cpp" />
     <ClCompile Include="Source\TestApplication.cpp">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug-DirectInput8|Win32'">true</ExcludedFromBuild>

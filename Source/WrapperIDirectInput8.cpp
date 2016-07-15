@@ -10,7 +10,6 @@
  *      Implementation of the wrapper class for IDirectInput8.
  *****************************************************************************/
 
-#include "Hashers.h"
 #include "WrapperIDirectInput8.h"
 #include "WrapperIDirectInputDevice8.h"
 

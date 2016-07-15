@@ -19,7 +19,7 @@ using namespace XinputControllerDirectInput;
 // -------- CONSTRUCTION AND DESTRUCTION ----------------------------------- //
 // See "WrapperIDirectInputDevice8.h" for documentation.
 
-WrapperIDirectInputDevice8::WrapperIDirectInputDevice8(IDirectInputDevice8* underlyingDIObject, Mapper::Base* mapper) : underlyingDIObject(underlyingDIObject), mapper(mapper) {}
+WrapperIDirectInputDevice8::WrapperIDirectInputDevice8(IDirectInputDevice8* underlyingDIObject, Controller::Base* controller, Mapper::Base* mapper) : underlyingDIObject(underlyingDIObject), controller(controller), mapper(mapper) {}
 
 // ---------
 
@@ -74,7 +74,7 @@ ULONG STDMETHODCALLTYPE WrapperIDirectInputDevice8::Release(void)
 
 HRESULT STDMETHODCALLTYPE WrapperIDirectInputDevice8::Acquire(void)
 {
-    return underlyingDIObject->Acquire();
+    return controller->AcquireController();
 }
 
 // ---------
@@ -117,7 +117,6 @@ HRESULT STDMETHODCALLTYPE WrapperIDirectInputDevice8::EnumEffectsInFile(LPCTSTR 
 HRESULT STDMETHODCALLTYPE WrapperIDirectInputDevice8::EnumObjects(LPDIENUMDEVICEOBJECTSCALLBACK lpCallback, LPVOID pvRef, DWORD dwFlags)
 {
     return mapper->EnumerateMappedObjects(lpCallback, pvRef, dwFlags);
-    //return underlyingDIObject->EnumObjects(lpCallback, pvRef, dwFlags);
 }
 
 // ---------
@@ -195,7 +194,7 @@ HRESULT STDMETHODCALLTYPE WrapperIDirectInputDevice8::GetProperty(REFGUID rguidP
     if (mapper->IsPropertyHandledByMapper(rguidProp))
         return mapper->GetMappedProperty(rguidProp, pdiph);
     else
-        return underlyingDIObject->GetProperty(rguidProp, pdiph);
+        return controller->GetControllerProperty(rguidProp, pdiph);
 }
 
 // ---------
@@ -278,14 +277,14 @@ HRESULT STDMETHODCALLTYPE WrapperIDirectInputDevice8::SetProperty(REFGUID rguidP
     if (mapper->IsPropertyHandledByMapper(rguidProp))
         return mapper->SetMappedProperty(rguidProp, pdiph);
     else
-        return underlyingDIObject->SetProperty(rguidProp, pdiph);
+        return controller->SetControllerProperty(rguidProp, pdiph);
 }
 
 // ---------
 
 HRESULT STDMETHODCALLTYPE WrapperIDirectInputDevice8::Unacquire(void)
 {
-    return underlyingDIObject->Unacquire();
+    return controller->UnacquireController();
 }
 
 // ---------

@@ -32,9 +32,12 @@ namespace XinputControllerDirectInput
         XinputObjectFactory objectFactory;
         
         
-    public:
         // -------- CONSTRUCTION AND DESTRUCTION ----------------------------------- //
         
+        // Default constructor. Should never be invoked.
+        WrapperIDirectInput8();
+
+    public:
         // Constructs an WrapperIDirectInput8 object, given an underlying IDirectInput8 object to wrap.
         WrapperIDirectInput8(IDirectInput8* underlyingDIObject);
         

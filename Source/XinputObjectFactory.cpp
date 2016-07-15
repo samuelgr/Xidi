@@ -12,10 +12,10 @@
  *****************************************************************************/
 
 #include "ApiDirectInput8.h"
-#include "Hashers.h"
 #include "WrapperIDirectInputDevice8.h"
 #include "XinputControllerIdentification.h"
 #include "XinputObjectFactory.h"
+#include "Controller/DirectInputBase.h"
 #include "Mapper/OldGamepad.h"
 
 #include <unordered_map>
@@ -51,7 +51,7 @@ IDirectInputDevice8* XinputObjectFactory::CreateDirectInputDeviceForController(I
         switch (it->second)
         {
         case EControllerType::XboxOne:
-            return new WrapperIDirectInputDevice8(underlyingController, new Mapper::OldGamepad);
+            return new WrapperIDirectInputDevice8(underlyingController, new Controller::DirectInputBase(underlyingController),  new Mapper::OldGamepad());
         }
     }
 
