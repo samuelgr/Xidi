@@ -6,7 +6,7 @@
  * Authored by Samuel Grossman
  * Copyright (c) 2016
  *****************************************************************************
- * Base.cpp
+ * BaseMapper.cpp
  *      Abstract base class for supported control mapping schemes.
  *      Provides common implementations of most core functionality.
  *****************************************************************************/
@@ -354,6 +354,10 @@ HRESULT Base::GetMappedProperty(REFGUID rguidProp, LPDIPROPHEADER pdiph)
 
     // Verify the correct header size.
     if (pdiph->dwHeaderSize != sizeof(DIPROPHEADER))
+        return DIERR_INVALIDPARAM;
+
+    // Verify whole-device properties have the correct value for object identification.
+    if (DIPH_DEVICE == pdiph->dwHow && 0 != pdiph->dwObj)
         return DIERR_INVALIDPARAM;
     
     // Branch based on the property requested.
@@ -710,6 +714,10 @@ HRESULT Base::SetMappedProperty(REFGUID rguidProp, LPCDIPROPHEADER pdiph)
     if (pdiph->dwHeaderSize != sizeof(DIPROPHEADER))
         return DIERR_INVALIDPARAM;
 
+    // Verify whole-device properties have the correct value for object identification.
+    if (DIPH_DEVICE == pdiph->dwHow && 0 != pdiph->dwObj)
+        return DIERR_INVALIDPARAM;
+
     // Branch based on the property requested.
     if (&DIPROP_AXISMODE == &rguidProp)
     {
@@ -732,18 +740,35 @@ HRESULT Base::SetMappedProperty(REFGUID rguidProp, LPCDIPROPHEADER pdiph)
         if (pdiph->dwSize != expectedSize)
             return DIERR_INVALIDPARAM;
 
-        // Verify that the target is specific, not the whole device.
+        // Locate a range of instances to set based on the input specification.
+        TInstanceIdx startInstance = 0;
+        TInstanceIdx endInstance = 0;
+
         if (DIPH_DEVICE == pdiph->dwHow)
-            return DIERR_UNSUPPORTED;
+        {
+            // Targetting the whole device, so start at index 0 and end at the highest axis index that exists.
+            startInstance = 0;
+            endInstance = NumInstancesOfType(EInstanceType::InstanceTypeAxis) - 1;
 
-        // Attempt to locate the instance.
-        TInstance instance = InstanceIdentifierFromDirectInputSpec(pdiph->dwObj, pdiph->dwHow);
-        if (instance < 0)
-            return DIERR_OBJECTNOTFOUND;
+            // There should be axes on the device, but in case there are none return an error.
+            if (endInstance < startInstance)
+                return DIERR_OBJECTNOTFOUND;
+        }
+        else
+        {
+            // Targetting a specific instance, so locate that instance
+            TInstance instance = InstanceIdentifierFromDirectInputSpec(pdiph->dwObj, pdiph->dwHow);
+            if (instance < 0)
+                return DIERR_OBJECTNOTFOUND;
 
-        // Verify that the instance target is an axis.
-        if (EInstanceType::InstanceTypeAxis != ExtractIdentifierInstanceType(instance))
-            return DIERR_UNSUPPORTED;
+            // Verify that the instance target is an axis
+            if (EInstanceType::InstanceTypeAxis != ExtractIdentifierInstanceType(instance))
+                return DIERR_UNSUPPORTED;
+
+            // Start and end at the specified instance.
+            startInstance = ExtractIdentifierInstanceIndex(instance);
+            endInstance = startInstance;
+        }
 
         // Verify the provided data and, if valid, write it.
         if (&DIPROP_DEADZONE == &rguidProp)
@@ -753,7 +778,10 @@ HRESULT Base::SetMappedProperty(REFGUID rguidProp, LPCDIPROPHEADER pdiph)
             if (newDeadzone < kMinAxisDeadzoneSaturation || newDeadzone > kMaxAxisDeadzoneSaturation)
                 return DIERR_INVALIDPARAM;
             
-            axisProperties[ExtractIdentifierInstanceIndex(instance)].deadzone = newDeadzone;
+            for (TInstanceIdx instance = startInstance; instance <= endInstance; ++instance)
+            {
+                axisProperties[ExtractIdentifierInstanceIndex(instance)].deadzone = newDeadzone;
+            }
         }
         else if (&DIPROP_SATURATION == &rguidProp)
         {
@@ -762,7 +790,10 @@ HRESULT Base::SetMappedProperty(REFGUID rguidProp, LPCDIPROPHEADER pdiph)
             if (newSaturation < kMinAxisDeadzoneSaturation || newSaturation > kMaxAxisDeadzoneSaturation)
                 return DIERR_INVALIDPARAM;
 
-            axisProperties[ExtractIdentifierInstanceIndex(instance)].saturation = newSaturation;
+            for (TInstanceIdx instance = startInstance; instance <= endInstance; ++instance)
+            {
+                axisProperties[ExtractIdentifierInstanceIndex(instance)].saturation = newSaturation;
+            }
         }
         else
         {
@@ -772,8 +803,11 @@ HRESULT Base::SetMappedProperty(REFGUID rguidProp, LPCDIPROPHEADER pdiph)
             if (!(newRangeMin < newRangeMax))
                 return DIERR_INVALIDPARAM;
 
-            axisProperties[ExtractIdentifierInstanceIndex(instance)].rangeMin = newRangeMin;
-            axisProperties[ExtractIdentifierInstanceIndex(instance)].rangeMax = newRangeMax;
+            for (TInstanceIdx instance = startInstance; instance <= endInstance; ++instance)
+            {
+                axisProperties[ExtractIdentifierInstanceIndex(instance)].rangeMin = newRangeMin;
+                axisProperties[ExtractIdentifierInstanceIndex(instance)].rangeMax = newRangeMax;
+            }
         }
     }
     else

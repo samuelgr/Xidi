@@ -245,6 +245,7 @@ BOOL STDMETHODCALLTYPE EnumObjectsOverallTestCallback(LPCDIDEVICEOBJECTINSTANCE 
 int RunTestApp(int argc, char* argv[])
 {
     HRESULT result;
+    DWORD numErrors;
     IDirectInput8* directInputIface;
     IDirectInputDevice8* directInputDeviceIface;
     
@@ -602,6 +603,20 @@ int RunTestApp(int argc, char* argv[])
     else
         tout << _T("PASS: Get valid deadzone test.") << endl;
 
+    // Make sure the scope was limited to just that axis and it didn't go elsewhere.
+    numErrors = 0;
+    for (WORD i = 1; i < deviceCapabilities.dwAxes; ++i)
+    {
+        deadzoneTest.diph.dwObj = DIDFT_ABSAXIS | DIDFT_MAKEINSTANCE(i);
+        result = directInputDeviceIface->GetProperty(DIPROP_DEADZONE, &deadzoneTest.diph);
+        if (DI_OK != result || 1000 == deadzoneTest.dwData)
+            numErrors += 1;
+    }
+    if (0 != numErrors)
+        tout << _T("FAIL: Single axis valid deadzone test.") << endl;
+    else
+        tout << _T("PASS: Single axis valid deadzone test.") << endl;
+
     // Write a deadzone out of range.
     deadzoneTest.dwData = Mapper::Base::kMaxAxisDeadzoneSaturation * 2;
     result = directInputDeviceIface->SetProperty(DIPROP_DEADZONE, &deadzoneTest.diph);
@@ -609,10 +624,44 @@ int RunTestApp(int argc, char* argv[])
         tout << _T("FAIL: Set out-of-range deadzone test.") << endl;
     else
         tout << _T("PASS: Set out-of-range deadzone test.") << endl;
+    
+    // Write a deadzone for the whole device, but use an invalid "dwObj".
+    deadzoneTest.dwData = 51;
+    deadzoneTest.diph.dwHow = DIPH_DEVICE;
+    deadzoneTest.diph.dwObj = DIDFT_ABSAXIS | DIDFT_MAKEINSTANCE(1);
+    result = directInputDeviceIface->SetProperty(DIPROP_DEADZONE, &deadzoneTest.diph);
+    if (DIERR_INVALIDPARAM != result)
+        tout << _T("FAIL: Set invalid whole device deadzone test.") << endl;
+    else
+        tout << _T("PASS: Set invalid whole device deadzone test.") << endl;
+
+    // Write a valid deadzone for the whole device.
+    deadzoneTest.dwData = 54;
+    deadzoneTest.diph.dwObj = 0;
+    result = directInputDeviceIface->SetProperty(DIPROP_DEADZONE, &deadzoneTest.diph);
+    if (DI_OK != result)
+        tout << _T("FAIL: Set valid whole device deadzone test.") << endl;
+    else
+        tout << _T("PASS: Set valid whole device deadzone test.") << endl;
+
+    // Read back the deadzone from the whole device.
+    numErrors = 0;
+    deadzoneTest.diph.dwHow = DIPH_BYID;
+    for (WORD i = 0; i < deviceCapabilities.dwAxes; ++i)
+    {
+        deadzoneTest.diph.dwObj = DIDFT_ABSAXIS | DIDFT_MAKEINSTANCE(i);
+        result = directInputDeviceIface->GetProperty(DIPROP_DEADZONE, &deadzoneTest.diph);
+        if (DI_OK != result || 54 != deadzoneTest.dwData)
+            numErrors += 1;
+    }
+    if (0 != numErrors)
+        tout << _T("FAIL: Whole device valid deadzone test.") << endl;
+    else
+        tout << _T("PASS: Whole device valid deadzone test.") << endl;
 
     tout << _T("End IDirectInputDevice8->[Set|Get]Property") << endl << endl;
 
-    
+
     ////////////////////////////////////
     ////////   Cleanup and Exit
     

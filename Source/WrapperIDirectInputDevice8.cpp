@@ -251,7 +251,17 @@ HRESULT STDMETHODCALLTYPE WrapperIDirectInputDevice8::SetCooperativeLevel(HWND h
 
 HRESULT STDMETHODCALLTYPE WrapperIDirectInputDevice8::SetDataFormat(LPCDIDATAFORMAT lpdf)
 {
-    return underlyingDIObject->SetDataFormat(lpdf);
+    HRESULT result = mapper->SetApplicationDataFormat(lpdf);
+
+    if (DI_OK != result)
+        return result;
+    
+    result = underlyingDIObject->SetDataFormat(lpdf);
+
+    if (DI_OK != result)
+        mapper->ResetApplicationDataFormat();
+
+    return result;
 }
 
 // ---------
