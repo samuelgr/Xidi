@@ -29,22 +29,14 @@ namespace XinputControllerDirectInput
     };
 }
 
-// Contains all information required to intercept callbacks to EnumDevicesBySemantics.
-namespace XinputControllerDirectInput
-{
-    struct SEnumDevicesBySemanticsCallbackInfo
-    {
-        WrapperIDirectInput8* instance;
-        LPDIENUMDEVICESBYSEMANTICSCB lpCallback;
-        LPVOID pvRef;
-    };
-}
-
 
 // -------- CONSTRUCTION AND DESTRUCTION ----------------------------------- //
 // See "WrapperIDirectInput8.h" for documentation.
 
-WrapperIDirectInput8::WrapperIDirectInput8(IDirectInput8* underlyingDIObject) : objectFactory(), underlyingDIObject(underlyingDIObject) {}
+WrapperIDirectInput8::WrapperIDirectInput8(IDirectInput8* underlyingDIObject) : objectFactory(), underlyingDIObject(underlyingDIObject) //{}
+{
+    
+}
 
 
 // -------- METHODS: IUnknown ---------------------------------------------- //
@@ -126,13 +118,8 @@ HRESULT STDMETHODCALLTYPE WrapperIDirectInput8::EnumDevices(DWORD dwDevType, LPD
 
 HRESULT STDMETHODCALLTYPE WrapperIDirectInput8::EnumDevicesBySemantics(LPCTSTR ptszUserName, LPDIACTIONFORMAT lpdiActionFormat, LPDIENUMDEVICESBYSEMANTICSCB lpCallback, LPVOID pvRef, DWORD dwFlags)
 {
-    SEnumDevicesBySemanticsCallbackInfo callbackInfo;
-    callbackInfo.instance = this;
-    callbackInfo.lpCallback = lpCallback;
-    callbackInfo.pvRef = pvRef;
-    
-    objectFactory.ResetEnumeratedControllers();
-    return underlyingDIObject->EnumDevicesBySemantics(ptszUserName, lpdiActionFormat, &WrapperIDirectInput8::CallbackEnumDevicesBySemantics, (LPVOID)&callbackInfo, dwFlags);
+    // Operation not supported.
+    return DIERR_UNSUPPORTED;
 }
 
 // ---------
@@ -173,14 +160,4 @@ BOOL STDMETHODCALLTYPE WrapperIDirectInput8::CallbackEnumDevices(LPCDIDEVICEINST
     callbackInfo->instance->objectFactory.SubmitEnumeratedController(lpddi->guidProduct, lpddi->guidInstance);
 
     return callbackInfo->lpCallback(lpddi, callbackInfo->pvRef);
-}
-
-// ---------
-
-BOOL STDMETHODCALLTYPE WrapperIDirectInput8::CallbackEnumDevicesBySemantics(LPCDIDEVICEINSTANCE lpddi, LPDIRECTINPUTDEVICE8 lpdid, DWORD dwFlags, DWORD dwRemaining, LPVOID pvRef)
-{
-    SEnumDevicesBySemanticsCallbackInfo* callbackInfo = (SEnumDevicesBySemanticsCallbackInfo*)pvRef;
-    callbackInfo->instance->objectFactory.SubmitEnumeratedController(lpddi->guidProduct, lpddi->guidInstance);
-
-    return callbackInfo->lpCallback(lpddi, lpdid, dwFlags, dwRemaining, callbackInfo->pvRef);
 }

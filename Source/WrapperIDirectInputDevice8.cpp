@@ -81,35 +81,40 @@ HRESULT STDMETHODCALLTYPE WrapperIDirectInputDevice8::Acquire(void)
 
 HRESULT STDMETHODCALLTYPE WrapperIDirectInputDevice8::BuildActionMap(LPDIACTIONFORMAT lpdiaf, LPCTSTR lpszUserName, DWORD dwFlags)
 {
-    return underlyingDIObject->BuildActionMap(lpdiaf, lpszUserName, dwFlags);
+    // Operation not supported.
+    return DIERR_UNSUPPORTED;
 }
 
 // ---------
 
 HRESULT STDMETHODCALLTYPE WrapperIDirectInputDevice8::CreateEffect(REFGUID rguid, LPCDIEFFECT lpeff, LPDIRECTINPUTEFFECT* ppdeff, LPUNKNOWN punkOuter)
 {
-    return underlyingDIObject->CreateEffect(rguid, lpeff, ppdeff, punkOuter);
+    // Operation not supported.
+    return DIERR_UNSUPPORTED;
 }
 
 // ---------
 
 HRESULT STDMETHODCALLTYPE WrapperIDirectInputDevice8::EnumCreatedEffectObjects(LPDIENUMCREATEDEFFECTOBJECTSCALLBACK lpCallback, LPVOID pvRef, DWORD fl)
 {
-    return underlyingDIObject->EnumCreatedEffectObjects(lpCallback, pvRef, fl);
+    // Operation not supported.
+    return DIERR_UNSUPPORTED;
 }
 
 // ---------
 
 HRESULT STDMETHODCALLTYPE WrapperIDirectInputDevice8::EnumEffects(LPDIENUMEFFECTSCALLBACK lpCallback, LPVOID pvRef, DWORD dwEffType)
 {
-    return underlyingDIObject->EnumEffects(lpCallback, pvRef, dwEffType);
+    // Operation not supported.
+    return DIERR_UNSUPPORTED;
 }
 
 // ---------
 
 HRESULT STDMETHODCALLTYPE WrapperIDirectInputDevice8::EnumEffectsInFile(LPCTSTR lptszFileName, LPDIENUMEFFECTSINFILECALLBACK pec, LPVOID pvRef, DWORD dwFlags)
 {
-    return underlyingDIObject->EnumEffectsInFile(lptszFileName, pec, pvRef, dwFlags);
+    // Operation not supported.
+    return DIERR_UNSUPPORTED;
 }
 
 // ---------
@@ -123,7 +128,8 @@ HRESULT STDMETHODCALLTYPE WrapperIDirectInputDevice8::EnumObjects(LPDIENUMDEVICE
 
 HRESULT STDMETHODCALLTYPE WrapperIDirectInputDevice8::Escape(LPDIEFFESCAPE pesc)
 {
-    return underlyingDIObject->Escape(pesc);
+    // Operation not supported.
+    return DIERR_UNSUPPORTED;
 }
 
 // ---------
@@ -163,21 +169,24 @@ HRESULT STDMETHODCALLTYPE WrapperIDirectInputDevice8::GetDeviceState(DWORD cbDat
 
 HRESULT STDMETHODCALLTYPE WrapperIDirectInputDevice8::GetEffectInfo(LPDIEFFECTINFO pdei, REFGUID rguid)
 {
-    return underlyingDIObject->GetEffectInfo(pdei, rguid);
+    // Operation not supported.
+    return DIERR_UNSUPPORTED;
 }
 
 // ---------
 
 HRESULT STDMETHODCALLTYPE WrapperIDirectInputDevice8::GetForceFeedbackState(LPDWORD pdwOut)
 {
-    return underlyingDIObject->GetForceFeedbackState(pdwOut);
+    // Operation not supported.
+    return DIERR_UNSUPPORTED;
 }
 
 // ---------
 
 HRESULT STDMETHODCALLTYPE WrapperIDirectInputDevice8::GetImageInfo(LPDIDEVICEIMAGEINFOHEADER lpdiDevImageInfoHeader)
 {
-    return underlyingDIObject->GetImageInfo(lpdiDevImageInfoHeader);
+    // Operation not supported.
+    return DIERR_UNSUPPORTED;
 }
 
 // ---------
@@ -201,7 +210,8 @@ HRESULT STDMETHODCALLTYPE WrapperIDirectInputDevice8::GetProperty(REFGUID rguidP
 
 HRESULT STDMETHODCALLTYPE WrapperIDirectInputDevice8::Initialize(HINSTANCE hinst, DWORD dwVersion, REFGUID rguid)
 {
-    return underlyingDIObject->Initialize(hinst, dwVersion, rguid);
+    // Operation not necessary.
+    return S_FALSE;
 }
 
 // ---------
@@ -215,28 +225,32 @@ HRESULT STDMETHODCALLTYPE WrapperIDirectInputDevice8::Poll(void)
 
 HRESULT STDMETHODCALLTYPE WrapperIDirectInputDevice8::RunControlPanel(HWND hwndOwner, DWORD dwFlags)
 {
-    return underlyingDIObject->RunControlPanel(hwndOwner, dwFlags);
+    // Operation not supported.
+    return DIERR_UNSUPPORTED;
 }
 
 // ---------
 
 HRESULT STDMETHODCALLTYPE WrapperIDirectInputDevice8::SendDeviceData(DWORD cbObjectData, LPCDIDEVICEOBJECTDATA rgdod, LPDWORD pdwInOut, DWORD fl)
 {
-    return underlyingDIObject->SendDeviceData(cbObjectData, rgdod, pdwInOut, fl);
+    // Operation not supported.
+    return DIERR_UNSUPPORTED;
 }
 
 // ---------
 
 HRESULT STDMETHODCALLTYPE WrapperIDirectInputDevice8::SendForceFeedbackCommand(DWORD dwFlags)
 {
-    return underlyingDIObject->SendForceFeedbackCommand(dwFlags);
+    // Operation not supported.
+    return DIERR_UNSUPPORTED;
 }
 
 // ---------
 
 HRESULT STDMETHODCALLTYPE WrapperIDirectInputDevice8::SetActionMap(LPDIACTIONFORMAT lpdiActionFormat, LPCTSTR lptszUserName, DWORD dwFlags)
 {
-    return underlyingDIObject->SetActionMap(lpdiActionFormat, lptszUserName, dwFlags);
+    // Operation not supported.
+    return DIERR_UNSUPPORTED;
 }
 
 // ---------

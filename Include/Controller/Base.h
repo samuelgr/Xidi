@@ -136,41 +136,6 @@ namespace XinputControllerDirectInput
             // Causes the device to be removed from an "acquired" state.
             // Must be implemented by subclasses.
             virtual HRESULT UnacquireController(void) = 0;
-
-
-            // -------- DIRECTINPUTDEVICE8 INTERFACE METHODS --------------------------- //
-            // See DirectInput documentation for more information.
-            /*
-            HRESULT DirectInputAcquire(void);
-            HRESULT DirectInputBuildActionMap(LPDIACTIONFORMAT lpdiaf, LPCTSTR lpszUserName, DWORD dwFlags);
-            HRESULT DirectInputCreateEffect(REFGUID rguid, LPCDIEFFECT lpeff, LPDIRECTINPUTEFFECT* ppdeff, LPUNKNOWN punkOuter);
-            HRESULT DirectInputEnumCreatedEffectObjects(LPDIENUMCREATEDEFFECTOBJECTSCALLBACK lpCallback, LPVOID pvRef, DWORD fl);
-            HRESULT DirectInputEnumEffects(LPDIENUMEFFECTSCALLBACK lpCallback, LPVOID pvRef, DWORD dwEffType);
-            HRESULT DirectInputEnumEffectsInFile(LPCTSTR lptszFileName, LPDIENUMEFFECTSINFILECALLBACK pec, LPVOID pvRef, DWORD dwFlags);
-            HRESULT DirectInputEnumObjects(LPDIENUMDEVICEOBJECTSCALLBACK lpCallback, LPVOID pvRef, DWORD dwFlags);
-            HRESULT DirectInputEscape(LPDIEFFESCAPE pesc);
-            HRESULT DirectInputGetCapabilities(LPDIDEVCAPS lpDIDevCaps);
-            HRESULT DirectInputGetDeviceData(DWORD cbObjectData, LPDIDEVICEOBJECTDATA rgdod, LPDWORD pdwInOut, DWORD dwFlags);
-            HRESULT DirectInputGetDeviceInfo(LPDIDEVICEINSTANCE pdidi);
-            HRESULT DirectInputGetDeviceState(DWORD cbData, LPVOID lpvData);
-            HRESULT DirectInputGetEffectInfo(LPDIEFFECTINFO pdei, REFGUID rguid);
-            HRESULT DirectInputGetForceFeedbackState(LPDWORD pdwOut);
-            HRESULT DirectInputGetImageInfo(LPDIDEVICEIMAGEINFOHEADER lpdiDevImageInfoHeader);
-            HRESULT DirectInputGetObjectInfo(LPDIDEVICEOBJECTINSTANCE pdidoi, DWORD dwObj, DWORD dwHow);
-            HRESULT DirectInputGetProperty(REFGUID rguidProp, LPDIPROPHEADER pdiph);
-            HRESULT DirectInputInitialize(HINSTANCE hinst, DWORD dwVersion, REFGUID rguid);
-            HRESULT DirectInputPoll(void);
-            HRESULT DirectInputRunControlPanel(HWND hwndOwner, DWORD dwFlags);
-            HRESULT DirectInputSendDeviceData(DWORD cbObjectData, LPCDIDEVICEOBJECTDATA rgdod, LPDWORD pdwInOut, DWORD fl);
-            HRESULT DirectInputSendForceFeedbackCommand(DWORD dwFlags);
-            HRESULT DirectInputSetActionMap(LPDIACTIONFORMAT lpdiActionFormat, LPCTSTR lptszUserName, DWORD dwFlags);
-            HRESULT DirectInputSetCooperativeLevel(HWND hwnd, DWORD dwFlags);
-            HRESULT DirectInputSetDataFormat(LPCDIDATAFORMAT lpdf);
-            HRESULT DirectInputSetEventNotification(HANDLE hEvent);
-            HRESULT DirectInputSetProperty(REFGUID rguidProp, LPCDIPROPHEADER pdiph);
-            HRESULT DirectInputUnacquire(void);
-            HRESULT DirectInputWriteEffectToFile(LPCTSTR lptszFileName, DWORD dwEntries, LPDIFILEEFFECT rgDiFileEft, DWORD dwFlags);
-            */
         };
     }
 }
