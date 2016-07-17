@@ -11,8 +11,10 @@
  *****************************************************************************/
 
 #include "ControllerIdentification.h"
+#include "Mapper/OldGamepad.h"
 #include "WrapperIDirectInput8.h"
 #include "WrapperIDirectInputDevice8.h"
+#include "XInputController.h"
 
 using namespace Xidi;
 
@@ -34,7 +36,7 @@ namespace Xidi
 // -------- CONSTRUCTION AND DESTRUCTION ----------------------------------- //
 // See "WrapperIDirectInput8.h" for documentation.
 
-WrapperIDirectInput8::WrapperIDirectInput8(IDirectInput8* underlyingDIObject) : underlyingDIObject(underlyingDIObject) {}
+WrapperIDirectInput8::WrapperIDirectInput8(IDirectInput8* underlyingDIObject, BOOL underlyingDIObjectUsesUnicode) : underlyingDIObject(underlyingDIObject), underlyingDIObjectUsesUnicode(underlyingDIObjectUsesUnicode) {}
 
 
 // -------- METHODS: IUnknown ---------------------------------------------- //
@@ -82,14 +84,20 @@ ULONG STDMETHODCALLTYPE WrapperIDirectInput8::Release(void)
 
 HRESULT STDMETHODCALLTYPE WrapperIDirectInput8::CreateDevice(REFGUID rguid, LPDIRECTINPUTDEVICE8* lplpDirectInputDevice, LPUNKNOWN pUnkOuter)
 {
-    // Create the device, as requested by the application.
-    IDirectInputDevice8* createdDevice = NULL;
-    HRESULT result = underlyingDIObject->CreateDevice(rguid, &createdDevice, pUnkOuter);
-    if (DI_OK != result) return result;
-    
-    // Supply the application with the correct interface, potentially intercepted.
-    //*lplpDirectInputDevice = objectFactory.CreateDirectInputDeviceForController(createdDevice, rguid);
-    return DIERR_INVALIDPARAM;
+    // Check if the specified instance GUID is an XInput GUID.
+    LONG xinputIndex = ControllerIdentification::XInputControllerIndexForInstanceGUID(rguid);
+
+    if (-1 == xinputIndex)
+    {
+        // Not an XInput GUID, so just create the device as requested by the application.
+        return underlyingDIObject->CreateDevice(rguid, lplpDirectInputDevice, pUnkOuter);
+    }
+    else
+    {
+        // Is an XInput GUID, so create a fake device that will communicate with the XInput controller of the specified index.
+        *lplpDirectInputDevice = new WrapperIDirectInputDevice8(underlyingDIObjectUsesUnicode, new XInputController(xinputIndex), new Mapper::OldGamepad());
+        return DI_OK;
+    }
 }
 
 // ---------
@@ -115,7 +123,12 @@ HRESULT STDMETHODCALLTYPE WrapperIDirectInput8::EnumDevices(DWORD dwDevType, LPD
     {
         // Currently force feedback is not suported.
         if (!(dwFlags & DIEDFL_FORCEFEEDBACK))
-            xinputEnumResult = ControllerIdentification::EnumerateXInputControllers(lpCallback, pvRef);
+        {
+            if (underlyingDIObjectUsesUnicode)
+                xinputEnumResult = ControllerIdentification::EnumerateXInputControllersW((LPDIENUMDEVICESCALLBACKW)lpCallback, pvRef);
+            else
+                xinputEnumResult = ControllerIdentification::EnumerateXInputControllersA((LPDIENUMDEVICESCALLBACKA)lpCallback, pvRef);
+        }
     }
 
     // If either no XInput devices were enumerated or the application wants to continue enumeration, hand the process off to the native DirectInput library.

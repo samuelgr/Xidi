@@ -70,7 +70,45 @@ BOOL ControllerIdentification::DoesDirectInputControllerSupportXInput(IDirectInp
 
 // ---------
 
-BOOL ControllerIdentification::EnumerateXInputControllers(LPDIENUMDEVICESCALLBACK lpCallback, LPVOID pvRef)
+BOOL ControllerIdentification::EnumerateXInputControllersA(LPDIENUMDEVICESCALLBACKA lpCallback, LPVOID pvRef)
+{
+    for (DWORD idx = 0; idx < 4; ++idx)
+    {
+        XINPUT_STATE dummyState;
+        DWORD result = XInputGetState(idx, &dummyState);
+
+        // If the controller is connected, the result is ERROR_SUCCESS, otherwise ERROR_DEVICE_NOT_CONNECTED.
+        // The state is not needed, just the return code to determine if there is a controller at the specified index or not.
+        if (ERROR_SUCCESS == result)
+        {
+            // Create a DirectInput device structure
+            DIDEVICEINSTANCEA* instanceInfo = new DIDEVICEINSTANCEA;
+            ZeroMemory(instanceInfo, sizeof(*instanceInfo));
+            instanceInfo->dwSize = sizeof(*instanceInfo);
+            instanceInfo->guidInstance = kXInputInstGUID[idx];
+            instanceInfo->guidProduct = kXInputProductGUID;
+            instanceInfo->dwDevType = DI8DEVTYPE_GAMEPAD;
+            sprintf_s(instanceInfo->tszInstanceName, _countof(instanceInfo->tszInstanceName), "XInput Controller %u", (unsigned)(idx + 1));
+            sprintf_s(instanceInfo->tszProductName, _countof(instanceInfo->tszProductName), "XInput Controller %u", (unsigned)(idx + 1));
+
+            // Submit the device to the application.
+            HRESULT appResult = lpCallback(instanceInfo, pvRef);
+
+            // Clean up.
+            delete instanceInfo;
+
+            // See if the application wants to enumerate more devices.
+            if (DIENUM_CONTINUE != appResult)
+                return DIENUM_STOP;
+        }
+    }
+
+    return DIENUM_CONTINUE;
+}
+
+// ---------
+
+BOOL ControllerIdentification::EnumerateXInputControllersW(LPDIENUMDEVICESCALLBACKW lpCallback, LPVOID pvRef)
 {
     for (DWORD idx = 0; idx < 4; ++idx)
     {
@@ -82,14 +120,14 @@ BOOL ControllerIdentification::EnumerateXInputControllers(LPDIENUMDEVICESCALLBAC
         if (ERROR_SUCCESS == result)
         {
             // Create a DirectInput device structure
-            DIDEVICEINSTANCE* instanceInfo = new DIDEVICEINSTANCE();
+            DIDEVICEINSTANCEW* instanceInfo = new DIDEVICEINSTANCEW;
             ZeroMemory(instanceInfo, sizeof(*instanceInfo));
             instanceInfo->dwSize = sizeof(*instanceInfo);
             instanceInfo->guidInstance = kXInputInstGUID[idx];
             instanceInfo->guidProduct = kXInputProductGUID;
             instanceInfo->dwDevType = DI8DEVTYPE_GAMEPAD;
-            _stprintf_s(instanceInfo->tszInstanceName, _countof(instanceInfo->tszInstanceName), _T("XInput Controller %u"), (unsigned)(idx + 1));
-            _stprintf_s(instanceInfo->tszProductName, _countof(instanceInfo->tszProductName), _T("XInput Controller %u"), (unsigned)(idx + 1));
+            swprintf_s(instanceInfo->tszInstanceName, _countof(instanceInfo->tszInstanceName), L"XInput Controller %u", (unsigned)(idx + 1));
+            swprintf_s(instanceInfo->tszProductName, _countof(instanceInfo->tszProductName), L"XInput Controller %u", (unsigned)(idx + 1));
 
             // Submit the device to the application.
             HRESULT appResult = lpCallback(instanceInfo, pvRef);
@@ -104,4 +142,17 @@ BOOL ControllerIdentification::EnumerateXInputControllers(LPDIENUMDEVICESCALLBAC
     }
 
     return DIENUM_CONTINUE;
+}
+
+// ---------
+
+LONG ControllerIdentification::XInputControllerIndexForInstanceGUID(REFGUID instanceGUID)
+{
+    for (LONG i = 0; i < _countof(kXInputInstGUID); ++i)
+    {
+        if (kXInputInstGUID[i] == instanceGUID)
+            return i;
+    }
+    
+    return -1;
 }

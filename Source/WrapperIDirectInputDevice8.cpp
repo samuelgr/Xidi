@@ -18,12 +18,13 @@ using namespace Xidi;
 // -------- CONSTRUCTION AND DESTRUCTION ----------------------------------- //
 // See "WrapperIDirectInputDevice8.h" for documentation.
 
-WrapperIDirectInputDevice8::WrapperIDirectInputDevice8(IDirectInputDevice8* underlyingDIObject, Controller::Base* controller, Mapper::Base* mapper) : underlyingDIObject(underlyingDIObject), controller(controller), mapper(mapper) {}
+WrapperIDirectInputDevice8::WrapperIDirectInputDevice8(BOOL useUnicode, XInputController* controller, Mapper::Base* mapper) : controller(controller), mapper(mapper), refcount(0), useUnicode(useUnicode) {}
 
 // ---------
 
 WrapperIDirectInputDevice8::~WrapperIDirectInputDevice8()
 {
+    delete controller;
     delete mapper;
 }
 
@@ -41,9 +42,7 @@ HRESULT STDMETHODCALLTYPE WrapperIDirectInputDevice8::QueryInterface(REFIID riid
         *ppvObj = this;
     }
     else
-    {
-        result = underlyingDIObject->QueryInterface(riid, ppvObj);
-    }
+        result = E_NOINTERFACE;
 
     return result;
 }
@@ -52,17 +51,20 @@ HRESULT STDMETHODCALLTYPE WrapperIDirectInputDevice8::QueryInterface(REFIID riid
 
 ULONG STDMETHODCALLTYPE WrapperIDirectInputDevice8::AddRef(void)
 {
-    return underlyingDIObject->AddRef();
+    refcount += 1;
+    return refcount;
 }
 
 // ---------
 
 ULONG STDMETHODCALLTYPE WrapperIDirectInputDevice8::Release(void)
 {
-    ULONG numRemainingRefs = underlyingDIObject->Release();
+    ULONG numRemainingRefs = refcount - 1;
 
     if (0 == numRemainingRefs)
         delete this;
+    else
+        refcount = numRemainingRefs;
 
     return numRemainingRefs;
 }
@@ -120,7 +122,7 @@ HRESULT STDMETHODCALLTYPE WrapperIDirectInputDevice8::EnumEffectsInFile(LPCTSTR 
 
 HRESULT STDMETHODCALLTYPE WrapperIDirectInputDevice8::EnumObjects(LPDIENUMDEVICEOBJECTSCALLBACK lpCallback, LPVOID pvRef, DWORD dwFlags)
 {
-    return mapper->EnumerateMappedObjects(lpCallback, pvRef, dwFlags);
+    return mapper->EnumerateMappedObjects(useUnicode, lpCallback, pvRef, dwFlags);
 }
 
 // ---------
@@ -135,33 +137,37 @@ HRESULT STDMETHODCALLTYPE WrapperIDirectInputDevice8::Escape(LPDIEFFESCAPE pesc)
 
 HRESULT STDMETHODCALLTYPE WrapperIDirectInputDevice8::GetCapabilities(LPDIDEVCAPS lpDIDevCaps)
 {
-    HRESULT result = underlyingDIObject->GetCapabilities(lpDIDevCaps);
-
-    if (DI_OK == result)
-        mapper->FillDeviceCapabilities(lpDIDevCaps);
+    if (sizeof(*lpDIDevCaps) != lpDIDevCaps->dwSize)
+        return DIERR_INVALIDPARAM;
     
-    return result;
+    controller->FillDeviceCapabilities(lpDIDevCaps);
+    mapper->FillDeviceCapabilities(lpDIDevCaps);
+
+    return DI_OK;
 }
 
 // ---------
 
 HRESULT STDMETHODCALLTYPE WrapperIDirectInputDevice8::GetDeviceData(DWORD cbObjectData, LPDIDEVICEOBJECTDATA rgdod, LPDWORD pdwInOut, DWORD dwFlags)
 {
-    return underlyingDIObject->GetDeviceData(cbObjectData, rgdod, pdwInOut, dwFlags);
+    // Not yet implemented.
+    return DIERR_UNSUPPORTED;
 }
 
 // ---------
 
 HRESULT STDMETHODCALLTYPE WrapperIDirectInputDevice8::GetDeviceInfo(LPDIDEVICEINSTANCE pdidi)
 {
-    return underlyingDIObject->GetDeviceInfo(pdidi);
+    // Not yet implemented.
+    return DIERR_UNSUPPORTED;
 }
 
 // ---------
 
 HRESULT STDMETHODCALLTYPE WrapperIDirectInputDevice8::GetDeviceState(DWORD cbData, LPVOID lpvData)
 {
-    return underlyingDIObject->GetDeviceState(cbData, lpvData);
+    // Not yet implemented.
+    return DIERR_UNSUPPORTED;
 }
 
 // ---------
@@ -192,7 +198,7 @@ HRESULT STDMETHODCALLTYPE WrapperIDirectInputDevice8::GetImageInfo(LPDIDEVICEIMA
 
 HRESULT STDMETHODCALLTYPE WrapperIDirectInputDevice8::GetObjectInfo(LPDIDEVICEOBJECTINSTANCE pdidoi, DWORD dwObj, DWORD dwHow)
 {
-    return mapper->GetMappedObjectInfo(pdidoi, dwObj, dwHow);
+    return mapper->GetMappedObjectInfo(useUnicode, pdidoi, dwObj, dwHow);
 }
 
 // ---------
@@ -217,7 +223,7 @@ HRESULT STDMETHODCALLTYPE WrapperIDirectInputDevice8::Initialize(HINSTANCE hinst
 
 HRESULT STDMETHODCALLTYPE WrapperIDirectInputDevice8::Poll(void)
 {
-    return underlyingDIObject->Poll();
+    return controller->RefreshControllerState();
 }
 
 // ---------
@@ -256,31 +262,22 @@ HRESULT STDMETHODCALLTYPE WrapperIDirectInputDevice8::SetActionMap(LPDIACTIONFOR
 
 HRESULT STDMETHODCALLTYPE WrapperIDirectInputDevice8::SetCooperativeLevel(HWND hwnd, DWORD dwFlags)
 {
-    return underlyingDIObject->SetCooperativeLevel(hwnd, dwFlags);
+    // Ineffective at present, but this may change.
+    return DI_OK;
 }
 
 // ---------
 
 HRESULT STDMETHODCALLTYPE WrapperIDirectInputDevice8::SetDataFormat(LPCDIDATAFORMAT lpdf)
 {
-    HRESULT result = mapper->SetApplicationDataFormat(lpdf);
-
-    if (DI_OK != result)
-        return result;
-    
-    result = underlyingDIObject->SetDataFormat(lpdf);
-
-    if (DI_OK != result)
-        mapper->ResetApplicationDataFormat();
-
-    return result;
+    return mapper->SetApplicationDataFormat(lpdf);
 }
 
 // ---------
 
 HRESULT STDMETHODCALLTYPE WrapperIDirectInputDevice8::SetEventNotification(HANDLE hEvent)
 {
-    return underlyingDIObject->SetEventNotification(hEvent);
+    return controller->SetControllerStateChangedEvent(hEvent);
 }
 
 // ---------
@@ -304,5 +301,6 @@ HRESULT STDMETHODCALLTYPE WrapperIDirectInputDevice8::Unacquire(void)
 
 HRESULT STDMETHODCALLTYPE WrapperIDirectInputDevice8::WriteEffectToFile(LPCTSTR lptszFileName, DWORD dwEntries, LPDIFILEEFFECT rgDiFileEft, DWORD dwFlags)
 {
-    return underlyingDIObject->WriteEffectToFile(lptszFileName, dwEntries, rgDiFileEft, dwFlags);
+    // Operation not supported.
+    return DIERR_UNSUPPORTED;
 }

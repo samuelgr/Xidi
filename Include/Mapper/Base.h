@@ -138,7 +138,12 @@ namespace Xidi
             // -------- HELPERS -------------------------------------------------------- //
             
             // Returns a friendly name string for the specified axis type by GUID.
-            LPTSTR AxisTypeToString(REFGUID axisTypeGUID);
+            // This is the non-Unicode version.
+            LPCSTR AxisTypeToStringA(REFGUID axisTypeGUID);
+
+            // Returns a friendly name string for the specified axis type by GUID.
+            // This is the Unicode version.
+            LPWSTR AxisTypeToStringW(REFGUID axisTypeGUID);
             
             // Given an array of offsets and a count, checks that they are all unset (FALSE).
             // If they are all unset, sets them (to TRUE) and returns TRUE.
@@ -146,7 +151,12 @@ namespace Xidi
             BOOL CheckAndSetOffsets(BOOL* base, const DWORD count);
             
             // Given a DirectInput object instance info structure pointer, instance type, and instance number, fills the structure appropriately.
-            void FillObjectInstanceInfo(LPDIDEVICEOBJECTINSTANCE instanceInfo, EInstanceType instanceType, TInstanceIdx instanceNumber);
+            // This is the non-Unicode version.
+            void FillObjectInstanceInfoA(LPDIDEVICEOBJECTINSTANCEA instanceInfo, EInstanceType instanceType, TInstanceIdx instanceNumber);
+
+            // Given a DirectInput object instance info structure pointer, instance type, and instance number, fills the structure appropriately.
+            // This is the Unicode version.
+            void FillObjectInstanceInfoW(LPDIDEVICEOBJECTINSTANCEW instanceInfo, EInstanceType instanceType, TInstanceIdx instanceNumber);
             
             // Initializes all axis properties. Idempotent; intended for lazy instantiation on first access.
             void InitializeAxisProperties(void);
@@ -171,7 +181,7 @@ namespace Xidi
             
             // Enumerates objects present in the mapping in the way DirectInput would.
             // Intended to replace IDirectInputDevice8's EnumObjects method.
-            HRESULT EnumerateMappedObjects(LPDIENUMDEVICEOBJECTSCALLBACK appCallback, LPVOID appCbParam, DWORD enumerationFlags);
+            HRESULT EnumerateMappedObjects(BOOL useUnicode, LPDIENUMDEVICEOBJECTSCALLBACK appCallback, LPVOID appCbParam, DWORD enumerationFlags);
             
             // Fills in a DirectInput device capabilities structure with information about the mapped game controller's buttons and axes.
             // Intended to be invoked with a structure pre-filled with other device information from IDirectInputDevice8's GetCapabilities method.
@@ -179,7 +189,7 @@ namespace Xidi
 
             // Fills in a DirectInput object information structure with information about a specific object of the mapped game controller.
             // Corresponds directly to IDirectInputDevice8's GetObjectInfo method.
-            HRESULT GetMappedObjectInfo(LPDIDEVICEOBJECTINSTANCE pdidoi, DWORD dwObj, DWORD dwHow);
+            HRESULT GetMappedObjectInfo(BOOL useUnicode, LPDIDEVICEOBJECTINSTANCE pdidoi, DWORD dwObj, DWORD dwHow);
 
             // Retrieves a DirectInput property that this mapper is intended to intercept and handle.
             // Corresponds directly to IDirectInputDevice8's GetProperty method for those properties handled by the mapper (see IsPropertyHandledByMapper).

@@ -25,7 +25,7 @@ HRESULT STDMETHODCALLTYPE Dinput8ExportDirectInput8Create(HINSTANCE hinst, DWORD
     HRESULT result = Dinput8ImportApi::ImportedDirectInput8Create(hinst, dwVersion, riidltf, (LPVOID*)&diObject, punkOuter);
     if (DI_OK != result) return result;
     
-    diObject = new Xidi::WrapperIDirectInput8(diObject);
+    diObject = new Xidi::WrapperIDirectInput8(diObject, (IID_IDirectInput8W == riidltf));
     *ppvOut = (LPVOID)diObject;
     
     return result;

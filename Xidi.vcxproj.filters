@@ -19,12 +19,6 @@
     <Filter Include="Source Files\Mapper">
       <UniqueIdentifier>{3b4cb058-31d6-4fb6-a455-fd41ff3f2d86}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Header Files\Controller">
-      <UniqueIdentifier>{09e89446-7f64-4f68-9c8c-a3001577eb35}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Source Files\Controller">
-      <UniqueIdentifier>{ce8562c0-7d27-413e-ba8f-f466a6b59756}</UniqueIdentifier>
-    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Include\ApiDirectInput8.h">
@@ -51,16 +45,13 @@
     <ClInclude Include="Include\Dinput8ExportApi.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="Include\Controller\Base.h">
-      <Filter>Header Files\Controller</Filter>
-    </ClInclude>
     <ClInclude Include="Include\Mapper\Base.h">
       <Filter>Header Files\Mapper</Filter>
     </ClInclude>
-    <ClInclude Include="Include\Controller\DirectInputBase.h">
-      <Filter>Header Files\Controller</Filter>
-    </ClInclude>
     <ClInclude Include="Include\ControllerIdentification.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Include\XInputController.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
@@ -89,16 +80,13 @@
     <ClCompile Include="Source\TestApplication.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="Source\Mapper\BaseMapper.cpp">
+    <ClCompile Include="Source\ControllerIdentification.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\Mapper\Base.cpp">
       <Filter>Source Files\Mapper</Filter>
     </ClCompile>
-    <ClCompile Include="Source\Controller\BaseController.cpp">
-      <Filter>Source Files\Controller</Filter>
-    </ClCompile>
-    <ClCompile Include="Source\Controller\DirectInputBase.cpp">
-      <Filter>Source Files\Controller</Filter>
-    </ClCompile>
-    <ClCompile Include="Source\ControllerIdentification.cpp">
+    <ClCompile Include="Source\XInputController.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

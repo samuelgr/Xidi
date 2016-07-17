@@ -25,6 +25,9 @@ namespace Xidi
         
         // The underlying IDirectInput8 object that this instance wraps.
         IDirectInput8* underlyingDIObject;
+
+        // Specifies whether or not the underlying DirectInput object is Unicode-based.
+        BOOL underlyingDIObjectUsesUnicode;
         
         
         // -------- CONSTRUCTION AND DESTRUCTION ----------------------------------- //
@@ -34,7 +37,7 @@ namespace Xidi
 
     public:
         // Constructs an WrapperIDirectInput8 object, given an underlying IDirectInput8 object to wrap.
-        WrapperIDirectInput8(IDirectInput8* underlyingDIObject);
+        WrapperIDirectInput8(IDirectInput8* underlyingDIObject, BOOL underlyingDIObjectUsesUnicode);
         
         
         // -------- METHODS: IUnknown ---------------------------------------------- //

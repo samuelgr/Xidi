@@ -49,6 +49,16 @@ namespace Xidi
 
         // Performs a DirectInput8-style controller enumeration of connected XInput controllers.
         // Returns DIENUM_CONTINUE or DIENUM_STOP depending on what the application requested.
-        static BOOL EnumerateXInputControllers(LPDIENUMDEVICESCALLBACK lpCallback, LPVOID pvRef);
+        // This is the non-Unicode version.
+        static BOOL EnumerateXInputControllersA(LPDIENUMDEVICESCALLBACKA lpCallback, LPVOID pvRef);
+        
+        // Performs a DirectInput8-style controller enumeration of connected XInput controllers.
+        // Returns DIENUM_CONTINUE or DIENUM_STOP depending on what the application requested.
+        // This is the Unicode version.
+        static BOOL EnumerateXInputControllersW(LPDIENUMDEVICESCALLBACKW lpCallback, LPVOID pvRef);
+
+        // Retrieves the XInput controller index of the specified instance GUID.
+        // If the instance GUID does not correspond to a valid XInput controller, returns -1.
+        static LONG XInputControllerIndexForInstanceGUID(REFGUID instanceGUID);
     };
 }

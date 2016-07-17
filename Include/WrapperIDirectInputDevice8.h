@@ -12,8 +12,8 @@
 #pragma once
 
 #include "ApiDirectInput8.h"
-#include "Controller/Base.h"
 #include "Mapper/Base.h"
+#include "XInputController.h"
 
 
 namespace Xidi
@@ -25,14 +25,17 @@ namespace Xidi
     private:
         // -------- INSTANCE VARIABLES --------------------------------------------- //
         
-        // The underlying IDirectInputDevice8 object that this instance wraps.
-        IDirectInputDevice8* underlyingDIObject;
-
         // Controller with which to interface.
-        Controller::Base* controller;
+        XInputController* controller;
         
         // Mapping scheme to be applied to the wrapped DirectInput device.
         Mapper::Base* mapper;
+
+        // Reference count.
+        DWORD refcount;
+
+        // Specifies whether or not to use Unicode (this depends on the application configuration).
+        BOOL useUnicode;
         
         
         // -------- CONSTRUCTION AND DESTRUCTION ----------------------------------- //
@@ -42,7 +45,7 @@ namespace Xidi
         
     public:
         // Constructs a WrapperIDirectInput8 object, given an underlying IDirectInput8 object to wrap.
-        WrapperIDirectInputDevice8(IDirectInputDevice8* underlyingDIObject, Controller::Base* controller, Mapper::Base* mapper);
+        WrapperIDirectInputDevice8(BOOL useUnicode, XInputController* controller, Mapper::Base* mapper);
 
         // Default destructor.
         ~WrapperIDirectInputDevice8();
