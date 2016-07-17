@@ -1,7 +1,7 @@
 /*****************************************************************************
- * XinputControllerDirectInput
+ * XInputControllerDirectInput
  *      Hook and helper for older DirectInput games.
- *      Fixes issues associated with certain Xinput-based controllers.
+ *      Fixes issues associated with certain XInput-based controllers.
  *****************************************************************************
  * Authored by Samuel Grossman
  * Copyright (c) 2016
@@ -13,10 +13,10 @@
 #pragma once
 
 #include "ApiDirectInput8.h"
-#include "XinputObjectFactory.h"
+#include "XInputObjectFactory.h"
 
 
-namespace XinputControllerDirectInput
+namespace XInputControllerDirectInput
 {
     // Wraps the IDirectInput8 interface to hook into all calls to it.
     // Holds an underlying instance of an IDirectInput8 object but wraps all method invocations.
@@ -28,8 +28,8 @@ namespace XinputControllerDirectInput
         // The underlying IDirectInput8 object that this instance wraps.
         IDirectInput8* underlyingDIObject;
         
-        // Factory for creating Xinput objects associated with this instance of IDirectInput8.
-        XinputObjectFactory objectFactory;
+        // Factory for creating XInput objects associated with this instance of IDirectInput8.
+        XInputObjectFactory objectFactory;
         
         
         // -------- CONSTRUCTION AND DESTRUCTION ----------------------------------- //

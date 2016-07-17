@@ -1,7 +1,7 @@
 /*****************************************************************************
- * XinputControllerDirectInput
+ * XInputControllerDirectInput
  *      Hook and helper for older DirectInput games.
- *      Fixes issues associated with certain Xinput-based controllers.
+ *      Fixes issues associated with certain XInput-based controllers.
  *****************************************************************************
  * Authored by Samuel Grossman
  * Copyright (c) 2016
@@ -14,8 +14,8 @@
 #include "ApiDirectInput8.h"
 #include "Mapper/OldGamepad.h"
 
-using namespace XinputControllerDirectInput;
-using namespace XinputControllerDirectInput::Mapper;
+using namespace XInputControllerDirectInput;
+using namespace XInputControllerDirectInput::Mapper;
 
 
 // -------- CONCRETE INSTANCE METHODS -------------------------------------- //

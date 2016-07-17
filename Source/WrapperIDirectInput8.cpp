@@ -1,7 +1,7 @@
 /*****************************************************************************
- * XinputControllerDirectInput
+ * XInputControllerDirectInput
  *      Hook and helper for older DirectInput games.
- *      Fixes issues associated with certain Xinput-based controllers.
+ *      Fixes issues associated with certain XInput-based controllers.
  *****************************************************************************
  * Authored by Samuel Grossman
  * Copyright (c) 2016
@@ -13,13 +13,13 @@
 #include "WrapperIDirectInput8.h"
 #include "WrapperIDirectInputDevice8.h"
 
-using namespace XinputControllerDirectInput;
+using namespace XInputControllerDirectInput;
 
 
 // -------- LOCAL TYPES ---------------------------------------------------- //
 
 // Contains all information required to intercept callbacks to EnumDevices.
-namespace XinputControllerDirectInput
+namespace XInputControllerDirectInput
 {
     struct SEnumDevicesCallbackInfo
     {
@@ -33,10 +33,7 @@ namespace XinputControllerDirectInput
 // -------- CONSTRUCTION AND DESTRUCTION ----------------------------------- //
 // See "WrapperIDirectInput8.h" for documentation.
 
-WrapperIDirectInput8::WrapperIDirectInput8(IDirectInput8* underlyingDIObject) : objectFactory(), underlyingDIObject(underlyingDIObject) //{}
-{
-    
-}
+WrapperIDirectInput8::WrapperIDirectInput8(IDirectInput8* underlyingDIObject) : objectFactory(), underlyingDIObject(underlyingDIObject) {}
 
 
 // -------- METHODS: IUnknown ---------------------------------------------- //
@@ -158,6 +155,6 @@ BOOL STDMETHODCALLTYPE WrapperIDirectInput8::CallbackEnumDevices(LPCDIDEVICEINST
 {
     SEnumDevicesCallbackInfo* callbackInfo = (SEnumDevicesCallbackInfo*)pvRef;
     callbackInfo->instance->objectFactory.SubmitEnumeratedController(lpddi->guidProduct, lpddi->guidInstance);
-
+    
     return callbackInfo->lpCallback(lpddi, callbackInfo->pvRef);
 }

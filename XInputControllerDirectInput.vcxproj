@@ -33,13 +33,13 @@
     <ClInclude Include="Include\Controller\DirectInputBase.h" />
     <ClInclude Include="Include\Dinput8ExportApi.h" />
     <ClInclude Include="Include\Mapper\OldGamepad.h" />
-    <ClInclude Include="Include\XinputControllerIdentification.h" />
+    <ClInclude Include="Include\XInputControllerIdentification.h" />
     <ClInclude Include="Include\Dinput8ImportApi.h" />
     <ClInclude Include="Include\Hashers.h" />
     <ClInclude Include="Include\Mapper\Base.h" />
     <ClInclude Include="Include\WrapperIDirectInput8.h" />
     <ClInclude Include="Include\WrapperIDirectInputDevice8.h" />
-    <ClInclude Include="Include\XinputObjectFactory.h" />
+    <ClInclude Include="Include\XInputObjectFactory.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Source\ApiDirectInput8.cpp" />
@@ -52,7 +52,7 @@
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release-DirectInput8|Win32'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release-DirectInput8|x64'">true</ExcludedFromBuild>
     </ClCompile>
-    <ClCompile Include="Source\XinputControllerIdentification.cpp" />
+    <ClCompile Include="Source\XInputControllerIdentification.cpp" />
     <ClCompile Include="Source\Dinput8ImportApi.cpp" />
     <ClCompile Include="Source\Mapper\BaseMapper.cpp" />
     <ClCompile Include="Source\WrapperIDirectInput8.cpp" />
@@ -62,7 +62,7 @@
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='TestApplication|x64'">true</ExcludedFromBuild>
     </ClCompile>
     <ClCompile Include="Source\WrapperIDirectInputDevice8.cpp" />
-    <ClCompile Include="Source\XinputObjectFactory.cpp" />
+    <ClCompile Include="Source\XInputObjectFactory.cpp" />
   </ItemGroup>
   <ItemGroup>
     <None Include="dinput8.def" />
@@ -70,9 +70,9 @@
   <PropertyGroup Label="Globals">
     <ProjectGuid>{023441F6-2554-440F-9FFB-7E185AB7CF41}</ProjectGuid>
     <Keyword>Win32Proj</Keyword>
-    <RootNamespace>XinputControllerDirectInput</RootNamespace>
+    <RootNamespace>XInputControllerDirectInput</RootNamespace>
     <WindowsTargetPlatformVersion>8.1</WindowsTargetPlatformVersion>
-    <ProjectName>XinputControllerDirectInput</ProjectName>
+    <ProjectName>XInputControllerDirectInput</ProjectName>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug-DirectInput8|Win32'" Label="Configuration">

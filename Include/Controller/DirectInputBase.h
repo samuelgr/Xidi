@@ -1,14 +1,14 @@
 /*****************************************************************************
- * XinputControllerDirectInput
+ * XInputControllerDirectInput
  *      Hook and helper for older DirectInput games.
- *      Fixes issues associated with certain Xinput-based controllers.
+ *      Fixes issues associated with certain XInput-based controllers.
  *****************************************************************************
  * Authored by Samuel Grossman
  * Copyright (c) 2016
  *****************************************************************************
  * DirectInputBase.h
  *      Abstract base class for all implementations that communicate with
- *      Xinput-based controllers via DirectInput.
+ *      XInput-based controllers via DirectInput.
  *      Provides common implementations of most core functionality.
  *****************************************************************************/
 
@@ -17,11 +17,11 @@
 #include "Controller/Base.h"
 
 
-namespace XinputControllerDirectInput
+namespace XInputControllerDirectInput
 {
     namespace Controller
     {
-        // Provides a common implementation for communicating with Xinput-based controllers using DirectInput.
+        // Provides a common implementation for communicating with XInput-based controllers using DirectInput.
         // Subclasses are required to provide controller-specific functionality, each representing a specific supported controller.
         class DirectInputBase : public Base
         {

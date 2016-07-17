@@ -1,13 +1,13 @@
 /*****************************************************************************
- * XinputControllerDirectInput
+ * XInputControllerDirectInput
  *      Hook and helper for older DirectInput games.
- *      Fixes issues associated with certain Xinput-based controllers.
+ *      Fixes issues associated with certain XInput-based controllers.
  *****************************************************************************
  * Authored by Samuel Grossman
  * Copyright (c) 2016
  *****************************************************************************
  * Base.h
- *      Abstract base class for supported Xinput-based controllers.
+ *      Abstract base class for supported XInput-based controllers.
  *****************************************************************************/
 
 #pragma once
@@ -17,10 +17,10 @@
 #include <Xinput.h>
 
 
-namespace XinputControllerDirectInput
+namespace XInputControllerDirectInput
 {
     namespace Controller {
-        // Identifies each input component of an Xinput-based controller.
+        // Identifies each input component of an XInput-based controller.
         enum EControllerElement
         {
             StickLeft,
@@ -40,7 +40,7 @@ namespace XinputControllerDirectInput
             ButtonRightStick
         };
         
-        // Represents the state of an Xinput-based controller.
+        // Represents the state of an XInput-based controller.
         // State information will be filled into structures of this type for use by application mappers.
         // For non-binary values (sticks, triggers, and dpad) the value reported is as read from the controller.
         // For binary values, the value is 0x80 (upper bit set) if pressed or 0x00 (no bits set) if not.
@@ -85,22 +85,22 @@ namespace XinputControllerDirectInput
         public:
             // -------- CONSTANTS ------------------------------------------------------ //
             
-            // Minimum value of readings from the left and right sticks, from the Xinput documentation.
+            // Minimum value of readings from the left and right sticks, from the XInput documentation.
             static const LONG kStickRangeMin = -32768;
             
-            // Maximum value of readings from the left and right sticks, from the Xinput documentation.
+            // Maximum value of readings from the left and right sticks, from the XInput documentation.
             static const LONG kStickRangeMax = 32767;
             
-            // Neutral position value for the left and right sticks, from the Xinput documentation.
+            // Neutral position value for the left and right sticks, from the XInput documentation.
             static const LONG kStickNeutral = 0;
             
-            // Minimum value of readings from the LT and RT triggers, from the Xinput documentation.
+            // Minimum value of readings from the LT and RT triggers, from the XInput documentation.
             static const LONG kTriggerRangeMin = 0;
             
-            // Maximum value of readings from the LT and RT triggers, from the Xinput documentation.
+            // Maximum value of readings from the LT and RT triggers, from the XInput documentation.
             static const LONG kTriggerRangeMax = 255;
             
-            // Neutral position value for the LT and RT triggers, from the Xinput documentation.
+            // Neutral position value for the LT and RT triggers, from the XInput documentation.
             static const LONG kTriggerNeutral = 0;
             
             

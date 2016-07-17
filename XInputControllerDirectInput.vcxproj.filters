@@ -45,10 +45,10 @@
     <ClInclude Include="Include\Hashers.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="Include\XinputControllerIdentification.h">
+    <ClInclude Include="Include\XInputControllerIdentification.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="Include\XinputObjectFactory.h">
+    <ClInclude Include="Include\XInputObjectFactory.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="Include\Mapper\OldGamepad.h">
@@ -86,10 +86,10 @@
     <ClCompile Include="Source\DllMain.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="Source\XinputControllerIdentification.cpp">
+    <ClCompile Include="Source\XInputControllerIdentification.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="Source\XinputObjectFactory.cpp">
+    <ClCompile Include="Source\XInputObjectFactory.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="Source\Mapper\OldGamepad.cpp">

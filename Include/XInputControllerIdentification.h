@@ -1,12 +1,12 @@
 /*****************************************************************************
- * XinputControllerDirectInput
+ * XInputControllerDirectInput
  *      Hook and helper for older DirectInput games.
- *      Fixes issues associated with certain Xinput-based controllers.
+ *      Fixes issues associated with certain XInput-based controllers.
  *****************************************************************************
  * Authored by Samuel Grossman
  * Copyright (c) 2016
  *****************************************************************************
- * XinputControllerIdentification.h
+ * XInputControllerIdentification.h
  *      Declaration of helpers for identifying controller types.
  *****************************************************************************/
 
@@ -18,7 +18,7 @@
 #include <unordered_map>
 
 
-namespace XinputControllerDirectInput
+namespace XInputControllerDirectInput
 {
     // Enumerates the known types of Xbox controllers.
     enum EControllerType: USHORT
@@ -31,7 +31,7 @@ namespace XinputControllerDirectInput
     
     // Encapsulates all constants and logic for identifying the controller type.
     // Methods are intended to be called directly rather than through an instance.
-    class XinputControllerIdentification
+    class XInputControllerIdentification
     {
     private:
         // -------- CONSTANTS ------------------------------------------------------ //
@@ -43,14 +43,14 @@ namespace XinputControllerDirectInput
         // -------- CONSTRUCTION AND DESTRUCTION ----------------------------------- //
         
         // Default constructor. Should never be invoked.
-        XinputControllerIdentification();
+        XInputControllerIdentification();
         
         
     public:
         // -------- CLASS METHODS -------------------------------------------------- //
         
         // Returns TRUE if the specified controller is of a known type.
-        static BOOL XinputControllerIdentification::IsControllerTypeKnown(REFGUID productGUID);
+        static BOOL XInputControllerIdentification::IsControllerTypeKnown(REFGUID productGUID);
         
         // Identifies the type of controller based on its product GUID.
         static EControllerType GetControllerType(REFGUID productGUID);

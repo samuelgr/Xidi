@@ -1,30 +1,30 @@
 /*****************************************************************************
- * XinputControllerDirectInput
+ * XInputControllerDirectInput
  *      Hook and helper for older DirectInput games.
- *      Fixes issues associated with certain Xinput-based controllers.
+ *      Fixes issues associated with certain XInput-based controllers.
  *****************************************************************************
  * Authored by Samuel Grossman
  * Copyright (c) 2016
  *****************************************************************************
- * XinputObjectFactory.h
+ * XInputObjectFactory.h
  *      Declaration of methods used to construct objects that interface
- *      with Xinput-based controllers.
+ *      with XInput-based controllers.
  *****************************************************************************/
 
 #pragma once
 
 #include "ApiDirectInput8.h"
-#include "XinputControllerIdentification.h"
+#include "XInputControllerIdentification.h"
 
 #include <unordered_map>
 
 
-namespace XinputControllerDirectInput
+namespace XInputControllerDirectInput
 {
-    // Encapsulates all constants and logic for creating objects that interface with Xinput-based controllers.
+    // Encapsulates all constants and logic for creating objects that interface with XInput-based controllers.
     // Objects created are presented through the IDirectInput8 interface with which an application can communicate.
     // As a result, each instance is associated with a particular IDirectInput8 interface.
-    class XinputObjectFactory
+    class XInputObjectFactory
     {
     private:
         // -------- INSTANCE VARIABLES --------------------------------------------- //
@@ -35,10 +35,10 @@ namespace XinputControllerDirectInput
         // -------- CONSTRUCTION AND DESTRUCTION ----------------------------------- //
         
         // Default constructor.
-        XinputObjectFactory();
+        XInputObjectFactory();
 
         // Default destructor.
-        ~XinputObjectFactory();
+        ~XInputObjectFactory();
 
         
         // -------- INSTANCE METHODS ----------------------------------------------- //

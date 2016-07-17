@@ -1,27 +1,27 @@
 /*****************************************************************************
- * XinputControllerDirectInput
+ * XInputControllerDirectInput
  *      Hook and helper for older DirectInput games.
- *      Fixes issues associated with certain Xinput-based controllers.
+ *      Fixes issues associated with certain XInput-based controllers.
  *****************************************************************************
  * Authored by Samuel Grossman
  * Copyright (c) 2016
  *****************************************************************************
- * XinputControllerIdentification.cpp
+ * XInputControllerIdentification.cpp
  *      Implementation of helpers for identifying controller types.
  *****************************************************************************/
 
-#include "XinputControllerIdentification.h"
+#include "XInputControllerIdentification.h"
 
 #include <unordered_map>
 
 
-using namespace XinputControllerDirectInput;
+using namespace XInputControllerDirectInput;
 
 
 // -------- LOCALS --------------------------------------------------------- //
 
 // Maps each known controller's product GUID to its controller type.
-const std::unordered_map<const GUID, EControllerType> XinputControllerIdentification::knownControllers = {
+const std::unordered_map<const GUID, EControllerType> XInputControllerIdentification::knownControllers = {
     
     // Xbox 360 controller
     { {0x028E045E, 0x0000, 0x0000, {0x00, 0x00, 0x50, 0x49, 0x44, 0x56, 0x49, 0x44}}, EControllerType::Xbox360 },
@@ -35,14 +35,14 @@ const std::unordered_map<const GUID, EControllerType> XinputControllerIdentifica
 // -------- CLASS METHODS -------------------------------------------------- //
 // See "ControllerIdentification.h" for documentation.
 
-BOOL XinputControllerIdentification::IsControllerTypeKnown(REFGUID productGUID)
+BOOL XInputControllerIdentification::IsControllerTypeKnown(REFGUID productGUID)
 {
     return (0 != knownControllers.count(productGUID));
 }
 
 // ---------
 
-EControllerType XinputControllerIdentification::GetControllerType(REFGUID productGUID)
+EControllerType XInputControllerIdentification::GetControllerType(REFGUID productGUID)
 {
     auto it = knownControllers.find(productGUID);
 

@@ -1,7 +1,7 @@
 /*****************************************************************************
- * XinputControllerDirectInput
+ * XInputControllerDirectInput
  *      Hook and helper for older DirectInput games.
- *      Fixes issues associated with certain Xinput-based controllers.
+ *      Fixes issues associated with certain XInput-based controllers.
  *****************************************************************************
  * Authored by Samuel Grossman
  * Copyright (c) 2016
@@ -17,14 +17,14 @@
 #include "Mapper/Base.h"
 
 
-namespace XinputControllerDirectInput
+namespace XInputControllerDirectInput
 {
     // Wraps the IDirectInput8 interface to hook into all calls to it.
     // Holds an underlying instance of an IDirectInput8 object but wraps all method invocations.
     struct WrapperIDirectInputDevice8 : IDirectInputDevice8
     {
         // -------- FRIENDS -------------------------------------------------------- //
-        friend class XinputObjectFactory;
+        friend class XInputObjectFactory;
         
         
     private:

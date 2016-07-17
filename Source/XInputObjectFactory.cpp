@@ -1,46 +1,46 @@
 /*****************************************************************************
- * XinputControllerDirectInput
+ * XInputControllerDirectInput
  *      Hook and helper for older DirectInput games.
- *      Fixes issues associated with certain Xinput-based controllers.
+ *      Fixes issues associated with certain XInput-based controllers.
  *****************************************************************************
  * Authored by Samuel Grossman
  * Copyright (c) 2016
  *****************************************************************************
- * XinputObjectFactory.cpp
+ * XInputObjectFactory.cpp
  *      Implementation of methods used to construct objects that interface
- *      with Xinput-based controllers.
+ *      with XInput-based controllers.
  *****************************************************************************/
 
 #include "ApiDirectInput8.h"
 #include "WrapperIDirectInputDevice8.h"
-#include "XinputControllerIdentification.h"
-#include "XinputObjectFactory.h"
+#include "XInputControllerIdentification.h"
+#include "XInputObjectFactory.h"
 #include "Controller/DirectInputBase.h"
 #include "Mapper/OldGamepad.h"
 
 #include <unordered_map>
 
 
-using namespace XinputControllerDirectInput;
+using namespace XInputControllerDirectInput;
 
 
 // -------- CONSTRUCTION AND DESTRUCTION ----------------------------------- //
-// See "XinputObjectFactory.h" for documentation.
+// See "XInputObjectFactory.h" for documentation.
 
-XinputObjectFactory::XinputObjectFactory() : enumeratedControllers() {}
+XInputObjectFactory::XInputObjectFactory() : enumeratedControllers() {}
 
 // ---------
 
-XinputObjectFactory::~XinputObjectFactory()
+XInputObjectFactory::~XInputObjectFactory()
 {
     enumeratedControllers.clear();
 }
 
 
 // -------- INSTANCE METHODS ----------------------------------------------- //
-// See "XinputObjectFactory.h" for documentation.
+// See "XInputObjectFactory.h" for documentation.
 
-IDirectInputDevice8* XinputObjectFactory::CreateDirectInputDeviceForController(IDirectInputDevice8* underlyingController, REFGUID instanceGUID)
+IDirectInputDevice8* XInputObjectFactory::CreateDirectInputDeviceForController(IDirectInputDevice8* underlyingController, REFGUID instanceGUID)
 {
     auto it = enumeratedControllers.find(instanceGUID);
 
@@ -60,17 +60,17 @@ IDirectInputDevice8* XinputObjectFactory::CreateDirectInputDeviceForController(I
 
 // ---------
 
-void XinputObjectFactory::ResetEnumeratedControllers(void)
+void XInputObjectFactory::ResetEnumeratedControllers(void)
 {
     enumeratedControllers.clear();
 }
 
 // ---------
 
-void XinputObjectFactory::SubmitEnumeratedController(REFGUID productGUID, REFGUID instanceGUID)
+void XInputObjectFactory::SubmitEnumeratedController(REFGUID productGUID, REFGUID instanceGUID)
 {
-    if (TRUE == XinputControllerIdentification::IsControllerTypeKnown(productGUID))
+    if (TRUE == XInputControllerIdentification::IsControllerTypeKnown(productGUID))
     {
-        enumeratedControllers.insert({instanceGUID, XinputControllerIdentification::GetControllerType(productGUID)});
+        enumeratedControllers.insert({instanceGUID, XInputControllerIdentification::GetControllerType(productGUID)});
     }
 }

@@ -1,7 +1,7 @@
 /*****************************************************************************
- * XinputControllerDirectInput
+ * XInputControllerDirectInput
  *      Hook and helper for older DirectInput games.
- *      Fixes issues associated with certain Xinput-based controllers.
+ *      Fixes issues associated with certain XInput-based controllers.
  *****************************************************************************
  * Authored by Samuel Grossman
  * Copyright (c) 2016
@@ -13,7 +13,7 @@
 #include "Dinput8ImportApi.h"
 #include "WrapperIDirectInput8.h"
 
-using namespace XinputControllerDirectInput;
+using namespace XInputControllerDirectInput;
 
 
 // -------- DLL EXPORT FUNCTIONS ------------------------------------------- //
@@ -26,7 +26,7 @@ HRESULT STDMETHODCALLTYPE Dinput8ExportDirectInput8Create(HINSTANCE hinst, DWORD
     HRESULT result = Dinput8ImportApi::ImportedDirectInput8Create(hinst, dwVersion, riidltf, (LPVOID*)&diObject, punkOuter);
     if (DI_OK != result) return result;
     
-    diObject = new XinputControllerDirectInput::WrapperIDirectInput8(diObject);
+    diObject = new XInputControllerDirectInput::WrapperIDirectInput8(diObject);
     *ppvOut = (LPVOID)diObject;
     
     return result;

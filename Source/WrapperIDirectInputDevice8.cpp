@@ -1,7 +1,7 @@
 /*****************************************************************************
- * XinputControllerDirectInput
+ * XInputControllerDirectInput
  *      Hook and helper for older DirectInput games.
- *      Fixes issues associated with certain Xinput-based controllers.
+ *      Fixes issues associated with certain XInput-based controllers.
  *****************************************************************************
  * Authored by Samuel Grossman
  * Copyright (c) 2016
@@ -13,7 +13,7 @@
 #include "WrapperIDirectInputDevice8.h"
 #include "Mapper/Base.h"
 
-using namespace XinputControllerDirectInput;
+using namespace XInputControllerDirectInput;
 
 
 // -------- CONSTRUCTION AND DESTRUCTION ----------------------------------- //

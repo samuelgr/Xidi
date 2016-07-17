@@ -1,7 +1,7 @@
 /*****************************************************************************
- * XinputControllerDirectInput
+ * XInputControllerDirectInput
  *      Hook and helper for older DirectInput games.
- *      Fixes issues associated with certain Xinput-based controllers.
+ *      Fixes issues associated with certain XInput-based controllers.
  *****************************************************************************
  * Authored by Samuel Grossman
  * Copyright (c) 2016
@@ -18,7 +18,7 @@
 #include <unordered_map>
 
 
-namespace XinputControllerDirectInput
+namespace XInputControllerDirectInput
 {
     namespace Mapper
     {
