@@ -23,10 +23,6 @@ namespace XInputControllerDirectInput
     // Holds an underlying instance of an IDirectInput8 object but wraps all method invocations.
     struct WrapperIDirectInputDevice8 : IDirectInputDevice8
     {
-        // -------- FRIENDS -------------------------------------------------------- //
-        friend class XInputObjectFactory;
-        
-        
     private:
         // -------- INSTANCE VARIABLES --------------------------------------------- //
         
@@ -45,10 +41,11 @@ namespace XInputControllerDirectInput
         // Default constructor. Should never be invoked.
         WrapperIDirectInputDevice8();
         
+    public:
         // Constructs a WrapperIDirectInput8 object, given an underlying IDirectInput8 object to wrap.
         WrapperIDirectInputDevice8(IDirectInputDevice8* underlyingDIObject, Controller::Base* controller, Mapper::Base* mapper);
 
-        // Default destructor. Should not be called externally.
+        // Default destructor.
         ~WrapperIDirectInputDevice8();
         
         

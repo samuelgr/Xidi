@@ -146,12 +146,12 @@ BOOL STDMETHODCALLTYPE EnumDevicesTestCallback(LPCDIDEVICEINSTANCE lpddi, LPVOID
     
     tout << _T("Found ") << DirectInputDeviceTypeToString(GET_DIDEVICE_TYPE(lpddi->dwDevType)) << ": " << lpddi->tszProductName;
 
-    if (DI8DEVTYPE_GAMEPAD == GET_DIDEVICE_TYPE(lpddi->dwDevType) && XInputControllerIdentification::IsControllerTypeKnown(lpddi->guidProduct))
+    if (DI8DEVTYPE_GAMEPAD == GET_DIDEVICE_TYPE(lpddi->dwDevType) && IsEqualGUID(lpddi->guidProduct, XInputControllerIdentification::kXInputProductGUID))
     {
         instanceGuidToTest = lpddi->guidInstance;
         flagInstanceGuidToTestFound = TRUE;
         flagCallbackExpected = FALSE;
-
+    
         tout << _T(", supported") << endl;
     }
     else

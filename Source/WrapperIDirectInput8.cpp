@@ -12,6 +12,7 @@
 
 #include "WrapperIDirectInput8.h"
 #include "WrapperIDirectInputDevice8.h"
+#include "XInputControllerIdentification.h"
 
 using namespace XInputControllerDirectInput;
 
@@ -33,7 +34,7 @@ namespace XInputControllerDirectInput
 // -------- CONSTRUCTION AND DESTRUCTION ----------------------------------- //
 // See "WrapperIDirectInput8.h" for documentation.
 
-WrapperIDirectInput8::WrapperIDirectInput8(IDirectInput8* underlyingDIObject) : objectFactory(), underlyingDIObject(underlyingDIObject) {}
+WrapperIDirectInput8::WrapperIDirectInput8(IDirectInput8* underlyingDIObject) : underlyingDIObject(underlyingDIObject) {}
 
 
 // -------- METHODS: IUnknown ---------------------------------------------- //
@@ -87,8 +88,8 @@ HRESULT STDMETHODCALLTYPE WrapperIDirectInput8::CreateDevice(REFGUID rguid, LPDI
     if (DI_OK != result) return result;
     
     // Supply the application with the correct interface, potentially intercepted.
-    *lplpDirectInputDevice = objectFactory.CreateDirectInputDeviceForController(createdDevice, rguid);
-    return DI_OK;
+    //*lplpDirectInputDevice = objectFactory.CreateDirectInputDeviceForController(createdDevice, rguid);
+    return DIERR_INVALIDPARAM;
 }
 
 // ---------
@@ -107,8 +108,22 @@ HRESULT STDMETHODCALLTYPE WrapperIDirectInput8::EnumDevices(DWORD dwDevType, LPD
     callbackInfo.lpCallback = lpCallback;
     callbackInfo.pvRef = pvRef;
     
-    objectFactory.ResetEnumeratedControllers();
-    return underlyingDIObject->EnumDevices(dwDevType, &WrapperIDirectInput8::CallbackEnumDevices, (LPVOID)&callbackInfo, dwFlags);
+    BOOL xinputEnumResult = DIENUM_CONTINUE;
+
+    // Only enumerate XInput controllers if the application requests a type that includes game controllers.
+    if (DI8DEVCLASS_ALL == dwDevType || DI8DEVCLASS_GAMECTRL == dwDevType)
+    {
+        // Currently force feedback is not suported.
+        if (!(dwFlags & DIEDFL_FORCEFEEDBACK))
+            xinputEnumResult = XInputControllerIdentification::EnumerateXInputControllers(lpCallback, pvRef);
+    }
+
+    // If either no XInput devices were enumerated or the application wants to continue enumeration, hand the process off to the native DirectInput library.
+    // The callback below will filter out any DirectInput devices that are also XInput-based devices.
+    if (DIENUM_CONTINUE == xinputEnumResult)
+        return underlyingDIObject->EnumDevices(dwDevType, &WrapperIDirectInput8::CallbackEnumDevices, (LPVOID)&callbackInfo, dwFlags);
+    else
+        return DI_OK;
 }
 
 // ---------
@@ -154,7 +169,10 @@ HRESULT STDMETHODCALLTYPE WrapperIDirectInput8::RunControlPanel(HWND hwndOwner, 
 BOOL STDMETHODCALLTYPE WrapperIDirectInput8::CallbackEnumDevices(LPCDIDEVICEINSTANCE lpddi, LPVOID pvRef)
 {
     SEnumDevicesCallbackInfo* callbackInfo = (SEnumDevicesCallbackInfo*)pvRef;
-    callbackInfo->instance->objectFactory.SubmitEnumeratedController(lpddi->guidProduct, lpddi->guidInstance);
+    
+    // Do not enumerate controllers that support XInput; these are enumerated separately.
+    if (XInputControllerIdentification::DoesDirectInputControllerSupportXInput(callbackInfo->instance->underlyingDIObject, lpddi->guidInstance))
+        return DIENUM_CONTINUE;
     
     return callbackInfo->lpCallback(lpddi, callbackInfo->pvRef);
 }

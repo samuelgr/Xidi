@@ -7,47 +7,102 @@
  * Copyright (c) 2016
  *****************************************************************************
  * XInputControllerIdentification.cpp
- *      Implementation of helpers for identifying controller types.
+ *      Implementation of helpers for identifying and enumerating
+ *      XInput-based game controllers.
  *****************************************************************************/
 
+#include "ApiDirectInput8.h"
 #include "XInputControllerIdentification.h"
 
-#include <unordered_map>
+#include <guiddef.h>
+#include <Xinput.h>
 
 
 using namespace XInputControllerDirectInput;
 
 
-// -------- LOCALS --------------------------------------------------------- //
+// -------- CONSTANTS ------------------------------------------------------ //
+// See "XInputControllerIdentification.h" for documentation.
 
-// Maps each known controller's product GUID to its controller type.
-const std::unordered_map<const GUID, EControllerType> XInputControllerIdentification::knownControllers = {
-    
-    // Xbox 360 controller
-    { {0x028E045E, 0x0000, 0x0000, {0x00, 0x00, 0x50, 0x49, 0x44, 0x56, 0x49, 0x44}}, EControllerType::Xbox360 },
+const GUID XInputControllerIdentification::kXInputProductGUID = { 0xffffffff, 0x0000, 0x0000,{ 0x00, 0x00, 'X', 'I', 'N', 'P', 'U', 'T' } };
 
-    // Xbox One controller
-    { {0x02FF045E, 0x0000, 0x0000, {0x00, 0x00, 0x50, 0x49, 0x44, 0x56, 0x49, 0x44}}, EControllerType::XboxOne },
-
+const GUID XInputControllerIdentification::kXInputInstGUID[4] = {
+    { 0xffffffff, 0x0000, 0x0000,{ 0x00, 'X', 'I', 'N', 'P', 'U', 'T', '1' } },
+    { 0xffffffff, 0x0000, 0x0000,{ 0x00, 'X', 'I', 'N', 'P', 'U', 'T', '2' } },
+    { 0xffffffff, 0x0000, 0x0000,{ 0x00, 'X', 'I', 'N', 'P', 'U', 'T', '3' } },
+    { 0xffffffff, 0x0000, 0x0000,{ 0x00, 'X', 'I', 'N', 'P', 'U', 'T', '4' } },
 };
 
 
 // -------- CLASS METHODS -------------------------------------------------- //
-// See "ControllerIdentification.h" for documentation.
+// See "XInputControllerIdentification.h" for documentation.
 
-BOOL XInputControllerIdentification::IsControllerTypeKnown(REFGUID productGUID)
+BOOL XInputControllerIdentification::DoesDirectInputControllerSupportXInput(IDirectInput8* dicontext, REFGUID instanceGUID)
 {
-    return (0 != knownControllers.count(productGUID));
+    BOOL deviceSupportsXInput = FALSE;
+    
+    IDirectInputDevice8* didevice = NULL;
+    HRESULT result = dicontext->CreateDevice(instanceGUID, &didevice, NULL);
+
+    if (DI_OK == result)
+    {
+        // Get the GUID and device path of the DirectInput device.
+        DIPROPGUIDANDPATH devinfo;
+        ZeroMemory(&devinfo, sizeof(devinfo));
+        
+        devinfo.diph.dwHeaderSize = sizeof(devinfo.diph);
+        devinfo.diph.dwSize = sizeof(devinfo);
+        devinfo.diph.dwHow = DIPH_DEVICE;
+
+        result = didevice->GetProperty(DIPROP_GUIDANDPATH, &devinfo.diph);
+
+        if (DI_OK == result)
+        {
+            // The documented "best" way of determining if a device supports XInput is to look for "&IG_" in the device path string.
+            if (NULL != wcsstr(devinfo.wszPath, L"&IG_") || NULL != wcsstr(devinfo.wszPath, L"&ig_"))
+                deviceSupportsXInput = TRUE;
+        }
+
+        didevice->Release();
+    }
+
+    return deviceSupportsXInput;
 }
 
 // ---------
 
-EControllerType XInputControllerIdentification::GetControllerType(REFGUID productGUID)
+BOOL XInputControllerIdentification::EnumerateXInputControllers(LPDIENUMDEVICESCALLBACK lpCallback, LPVOID pvRef)
 {
-    auto it = knownControllers.find(productGUID);
+    for (DWORD idx = 0; idx < 4; ++idx)
+    {
+        XINPUT_STATE dummyState;
+        DWORD result = XInputGetState(idx, &dummyState);
+        
+        // If the controller is connected, the result is ERROR_SUCCESS, otherwise ERROR_DEVICE_NOT_CONNECTED.
+        // The state is not needed, just the return code to determine if there is a controller at the specified index or not.
+        if (ERROR_SUCCESS == result)
+        {
+            // Create a DirectInput device structure
+            DIDEVICEINSTANCE* instanceInfo = new DIDEVICEINSTANCE();
+            ZeroMemory(instanceInfo, sizeof(*instanceInfo));
+            instanceInfo->dwSize = sizeof(*instanceInfo);
+            instanceInfo->guidInstance = kXInputInstGUID[idx];
+            instanceInfo->guidProduct = kXInputProductGUID;
+            instanceInfo->dwDevType = DI8DEVTYPE_GAMEPAD;
+            _stprintf_s(instanceInfo->tszInstanceName, _countof(instanceInfo->tszInstanceName), _T("XInput Controller %u"), (unsigned)(idx + 1));
+            _stprintf_s(instanceInfo->tszProductName, _countof(instanceInfo->tszProductName), _T("XInput Controller %u"), (unsigned)(idx + 1));
 
-    if (knownControllers.end() != it)
-        return it->second;
-    
-    return EControllerType::Unknown;
+            // Submit the device to the application.
+            HRESULT appResult = lpCallback(instanceInfo, pvRef);
+            
+            // Clean up.
+            delete instanceInfo;
+
+            // See if the application wants to enumerate more devices.
+            if (DIENUM_CONTINUE != appResult)
+                return DIENUM_STOP;
+        }
+    }
+
+    return DIENUM_CONTINUE;
 }

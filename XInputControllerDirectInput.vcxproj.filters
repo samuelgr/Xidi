@@ -48,9 +48,6 @@
     <ClInclude Include="Include\XInputControllerIdentification.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="Include\XInputObjectFactory.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="Include\Mapper\OldGamepad.h">
       <Filter>Header Files\Mapper</Filter>
     </ClInclude>
@@ -87,9 +84,6 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="Source\XInputControllerIdentification.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="Source\XInputObjectFactory.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="Source\Mapper\OldGamepad.cpp">

@@ -13,7 +13,6 @@
 #pragma once
 
 #include "ApiDirectInput8.h"
-#include "XInputObjectFactory.h"
 
 
 namespace XInputControllerDirectInput
@@ -27,9 +26,6 @@ namespace XInputControllerDirectInput
         
         // The underlying IDirectInput8 object that this instance wraps.
         IDirectInput8* underlyingDIObject;
-        
-        // Factory for creating XInput objects associated with this instance of IDirectInput8.
-        XInputObjectFactory objectFactory;
         
         
         // -------- CONSTRUCTION AND DESTRUCTION ----------------------------------- //

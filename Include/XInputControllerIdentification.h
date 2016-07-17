@@ -7,12 +7,13 @@
  * Copyright (c) 2016
  *****************************************************************************
  * XInputControllerIdentification.h
- *      Declaration of helpers for identifying controller types.
+ *      Declaration of helpers for identifying and enumerating
+ *      XInput-based game controllers.
  *****************************************************************************/
 
 #pragma once
 
-#include "ApiWindows.h"
+#include "ApiDirectInput8.h"
 #include "Hashers.h"
 
 #include <unordered_map>
@@ -20,26 +21,21 @@
 
 namespace XInputControllerDirectInput
 {
-    // Enumerates the known types of Xbox controllers.
-    enum EControllerType: USHORT
-    {
-        Unknown,                                // Something unknown
-        
-        Xbox360,                                // Xbox 360 controller
-        XboxOne,                                // Xbox One controller
-    };
-    
     // Encapsulates all constants and logic for identifying the controller type.
     // Methods are intended to be called directly rather than through an instance.
     class XInputControllerIdentification
     {
-    private:
+    public:
         // -------- CONSTANTS ------------------------------------------------------ //
-
-        // Maps each known controller's product GUID to its controller type.
-        static const std::unordered_map<const GUID, EControllerType> knownControllers;
-
         
+        // Dummy product GUID for XInput controllers.
+        static const GUID kXInputProductGUID;
+
+        // Dummy instance GUID for XInput controllers, indexed by controller port.
+        static const GUID kXInputInstGUID[4];
+        
+        
+    private:
         // -------- CONSTRUCTION AND DESTRUCTION ----------------------------------- //
         
         // Default constructor. Should never be invoked.
@@ -49,10 +45,11 @@ namespace XInputControllerDirectInput
     public:
         // -------- CLASS METHODS -------------------------------------------------- //
         
-        // Returns TRUE if the specified controller is of a known type.
-        static BOOL XInputControllerIdentification::IsControllerTypeKnown(REFGUID productGUID);
-        
-        // Identifies the type of controller based on its product GUID.
-        static EControllerType GetControllerType(REFGUID productGUID);
+        // Returns TRUE if the specified DirectInput controller supports XInput, FALSE if not or this information could not be determined.
+        static BOOL DoesDirectInputControllerSupportXInput(IDirectInput8* dicontext, REFGUID instanceGUID);
+
+        // Performs a DirectInput8-style controller enumeration of connected XInput controllers.
+        // Returns DIENUM_CONTINUE or DIENUM_STOP depending on what the application requested.
+        static BOOL EnumerateXInputControllers(LPDIENUMDEVICESCALLBACK lpCallback, LPVOID pvRef);
     };
 }
