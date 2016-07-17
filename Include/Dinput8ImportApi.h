@@ -1,7 +1,6 @@
 /*****************************************************************************
- * XInputControllerDirectInput
- *      Hook and helper for older DirectInput games.
- *      Fixes issues associated with certain XInput-based controllers.
+ * Xidi
+ *      DirectInput interface for XInput controllers.
  *****************************************************************************
  * Authored by Samuel Grossman
  * Copyright (c) 2016
@@ -15,7 +14,7 @@
 #include "ApiDirectInput8.h"
 
 
-namespace XInputControllerDirectInput
+namespace Xidi
 {
     // Fields specify the addresses of the imported "dinput8.dll" API functions.
     struct SImportTable

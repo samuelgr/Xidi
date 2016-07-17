@@ -1,6 +1,6 @@
 /*****************************************************************************
- * XInputControllerDirectInput
- *      Hook and helper for older DirectInput games.
+ * Xidi
+ *      DirectInput interface for XInput controllers.
  *      Fixes issues associated with certain XInput-based controllers.
  *****************************************************************************
  * Authored by Samuel Grossman
@@ -10,17 +10,17 @@
  *      Implementation of the wrapper class for IDirectInput8.
  *****************************************************************************/
 
+#include "ControllerIdentification.h"
 #include "WrapperIDirectInput8.h"
 #include "WrapperIDirectInputDevice8.h"
-#include "XInputControllerIdentification.h"
 
-using namespace XInputControllerDirectInput;
+using namespace Xidi;
 
 
 // -------- LOCAL TYPES ---------------------------------------------------- //
 
 // Contains all information required to intercept callbacks to EnumDevices.
-namespace XInputControllerDirectInput
+namespace Xidi
 {
     struct SEnumDevicesCallbackInfo
     {
@@ -115,7 +115,7 @@ HRESULT STDMETHODCALLTYPE WrapperIDirectInput8::EnumDevices(DWORD dwDevType, LPD
     {
         // Currently force feedback is not suported.
         if (!(dwFlags & DIEDFL_FORCEFEEDBACK))
-            xinputEnumResult = XInputControllerIdentification::EnumerateXInputControllers(lpCallback, pvRef);
+            xinputEnumResult = ControllerIdentification::EnumerateXInputControllers(lpCallback, pvRef);
     }
 
     // If either no XInput devices were enumerated or the application wants to continue enumeration, hand the process off to the native DirectInput library.
@@ -171,7 +171,7 @@ BOOL STDMETHODCALLTYPE WrapperIDirectInput8::CallbackEnumDevices(LPCDIDEVICEINST
     SEnumDevicesCallbackInfo* callbackInfo = (SEnumDevicesCallbackInfo*)pvRef;
     
     // Do not enumerate controllers that support XInput; these are enumerated separately.
-    if (XInputControllerIdentification::DoesDirectInputControllerSupportXInput(callbackInfo->instance->underlyingDIObject, lpddi->guidInstance))
+    if (ControllerIdentification::DoesDirectInputControllerSupportXInput(callbackInfo->instance->underlyingDIObject, lpddi->guidInstance))
         return DIENUM_CONTINUE;
     
     return callbackInfo->lpCallback(lpddi, callbackInfo->pvRef);

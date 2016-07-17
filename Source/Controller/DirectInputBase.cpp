@@ -1,7 +1,6 @@
 /*****************************************************************************
- * XInputControllerDirectInput
- *      Hook and helper for older DirectInput games.
- *      Fixes issues associated with certain XInput-based controllers.
+ * Xidi
+ *      DirectInput interface for XInput controllers.
  *****************************************************************************
  * Authored by Samuel Grossman
  * Copyright (c) 2016
@@ -16,8 +15,8 @@
 #include "Controller/Base.h"
 #include "Controller/DirectInputBase.h"
 
-using namespace XInputControllerDirectInput;
-using namespace XInputControllerDirectInput::Controller;
+using namespace Xidi;
+using namespace Xidi::Controller;
 
 
 // -------- CONSTRUCTION AND DESTRUCTION ----------------------------------- //

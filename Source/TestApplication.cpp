@@ -1,7 +1,6 @@
 /*****************************************************************************
- * XInputControllerDirectInput
- *      Hook and helper for older DirectInput games.
- *      Fixes issues associated with certain XInput-based controllers.
+ * Xidi
+ *      DirectInput interface for XInput controllers.
  *****************************************************************************
  * Authored by Samuel Grossman
  * Copyright (c) 2016
@@ -12,15 +11,15 @@
  *****************************************************************************/
 
 #include "ApiWindows.h"
+#include "ControllerIdentification.h"
 #include "Dinput8ExportApi.h"
 #include "Dinput8ImportApi.h"
-#include "XInputControllerIdentification.h"
 #include "Mapper/Base.h"
 
 #include <cstdlib>
 #include <iostream>
 
-using namespace XInputControllerDirectInput;
+using namespace Xidi;
 using namespace std;
 
 
@@ -146,7 +145,7 @@ BOOL STDMETHODCALLTYPE EnumDevicesTestCallback(LPCDIDEVICEINSTANCE lpddi, LPVOID
     
     tout << _T("Found ") << DirectInputDeviceTypeToString(GET_DIDEVICE_TYPE(lpddi->dwDevType)) << ": " << lpddi->tszProductName;
 
-    if (DI8DEVTYPE_GAMEPAD == GET_DIDEVICE_TYPE(lpddi->dwDevType) && IsEqualGUID(lpddi->guidProduct, XInputControllerIdentification::kXInputProductGUID))
+    if (DI8DEVTYPE_GAMEPAD == GET_DIDEVICE_TYPE(lpddi->dwDevType) && IsEqualGUID(lpddi->guidProduct, ControllerIdentification::kXInputProductGUID))
     {
         instanceGuidToTest = lpddi->guidInstance;
         flagInstanceGuidToTestFound = TRUE;

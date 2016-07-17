@@ -1,7 +1,6 @@
 /*****************************************************************************
- * XInputControllerDirectInput
- *      Hook and helper for older DirectInput games.
- *      Fixes issues associated with certain XInput-based controllers.
+ * Xidi
+ *      DirectInput interface for XInput controllers.
  *****************************************************************************
  * Authored by Samuel Grossman
  * Copyright (c) 2016
@@ -12,21 +11,21 @@
  *****************************************************************************/
 
 #include "ApiDirectInput8.h"
-#include "XInputControllerIdentification.h"
+#include "ControllerIdentification.h"
 
 #include <guiddef.h>
 #include <Xinput.h>
 
 
-using namespace XInputControllerDirectInput;
+using namespace Xidi;
 
 
 // -------- CONSTANTS ------------------------------------------------------ //
 // See "XInputControllerIdentification.h" for documentation.
 
-const GUID XInputControllerIdentification::kXInputProductGUID = { 0xffffffff, 0x0000, 0x0000,{ 0x00, 0x00, 'X', 'I', 'N', 'P', 'U', 'T' } };
+const GUID ControllerIdentification::kXInputProductGUID = { 0xffffffff, 0x0000, 0x0000,{ 0x00, 0x00, 'X', 'I', 'N', 'P', 'U', 'T' } };
 
-const GUID XInputControllerIdentification::kXInputInstGUID[4] = {
+const GUID ControllerIdentification::kXInputInstGUID[4] = {
     { 0xffffffff, 0x0000, 0x0000,{ 0x00, 'X', 'I', 'N', 'P', 'U', 'T', '1' } },
     { 0xffffffff, 0x0000, 0x0000,{ 0x00, 'X', 'I', 'N', 'P', 'U', 'T', '2' } },
     { 0xffffffff, 0x0000, 0x0000,{ 0x00, 'X', 'I', 'N', 'P', 'U', 'T', '3' } },
@@ -37,7 +36,7 @@ const GUID XInputControllerIdentification::kXInputInstGUID[4] = {
 // -------- CLASS METHODS -------------------------------------------------- //
 // See "XInputControllerIdentification.h" for documentation.
 
-BOOL XInputControllerIdentification::DoesDirectInputControllerSupportXInput(IDirectInput8* dicontext, REFGUID instanceGUID)
+BOOL ControllerIdentification::DoesDirectInputControllerSupportXInput(IDirectInput8* dicontext, REFGUID instanceGUID)
 {
     BOOL deviceSupportsXInput = FALSE;
     
@@ -71,7 +70,7 @@ BOOL XInputControllerIdentification::DoesDirectInputControllerSupportXInput(IDir
 
 // ---------
 
-BOOL XInputControllerIdentification::EnumerateXInputControllers(LPDIENUMDEVICESCALLBACK lpCallback, LPVOID pvRef)
+BOOL ControllerIdentification::EnumerateXInputControllers(LPDIENUMDEVICESCALLBACK lpCallback, LPVOID pvRef)
 {
     for (DWORD idx = 0; idx < 4; ++idx)
     {

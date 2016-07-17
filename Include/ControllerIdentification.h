@@ -1,12 +1,11 @@
 /*****************************************************************************
- * XInputControllerDirectInput
- *      Hook and helper for older DirectInput games.
- *      Fixes issues associated with certain XInput-based controllers.
+ * Xidi
+ *      DirectInput interface for XInput controllers.
  *****************************************************************************
  * Authored by Samuel Grossman
  * Copyright (c) 2016
  *****************************************************************************
- * XInputControllerIdentification.h
+ * ControllerIdentification.h
  *      Declaration of helpers for identifying and enumerating
  *      XInput-based game controllers.
  *****************************************************************************/
@@ -19,11 +18,11 @@
 #include <unordered_map>
 
 
-namespace XInputControllerDirectInput
+namespace Xidi
 {
     // Encapsulates all constants and logic for identifying the controller type.
     // Methods are intended to be called directly rather than through an instance.
-    class XInputControllerIdentification
+    class ControllerIdentification
     {
     public:
         // -------- CONSTANTS ------------------------------------------------------ //
@@ -39,7 +38,7 @@ namespace XInputControllerDirectInput
         // -------- CONSTRUCTION AND DESTRUCTION ----------------------------------- //
         
         // Default constructor. Should never be invoked.
-        XInputControllerIdentification();
+        ControllerIdentification();
         
         
     public:
