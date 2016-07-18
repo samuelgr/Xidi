@@ -51,6 +51,12 @@
     <ClInclude Include="Include\Mapper\StandardGamepad.h">
       <Filter>Header Files\Mapper</Filter>
     </ClInclude>
+    <ClInclude Include="Include\Mapper\NativeXInput.h">
+      <Filter>Header Files\Mapper</Filter>
+    </ClInclude>
+    <ClInclude Include="Include\Mapper\NativeXInputSharedTriggers.h">
+      <Filter>Header Files\Mapper</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Source\ApiDirectInput8.cpp">
@@ -84,6 +90,12 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="Source\Mapper\StandardGamepad.cpp">
+      <Filter>Source Files\Mapper</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\Mapper\NativeXInput.cpp">
+      <Filter>Source Files\Mapper</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\Mapper\NativeXInputSharedTriggers.cpp">
       <Filter>Source Files\Mapper</Filter>
     </ClCompile>
   </ItemGroup>

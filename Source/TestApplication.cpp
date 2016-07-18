@@ -722,6 +722,7 @@ int RunTestApp(int argc, char* argv[])
         tout << _T("FAILED") << endl << _T("Unable to set deadzone.") << endl;
         return 1;
     }
+    deadzoneTest.dwData = 7500;
     result = directInputDeviceIface->SetProperty(DIPROP_SATURATION, &deadzoneTest.diph);
     if (DI_OK != result)
     {
@@ -736,7 +737,7 @@ int RunTestApp(int argc, char* argv[])
     rangeTest.lMax = 100;
     rangeTest.lMin = -100;
 
-    for (int i = 0; i < deviceCapabilities.dwAxes; ++i)
+    for (DWORD i = 0; i < deviceCapabilities.dwAxes; ++i)
     {
         rangeTest.diph.dwObj = DIDFT_ABSAXIS | DIDFT_MAKEINSTANCE(i);
         result = directInputDeviceIface->SetProperty(DIPROP_RANGE, &rangeTest.diph);

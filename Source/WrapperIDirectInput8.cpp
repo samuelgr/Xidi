@@ -11,10 +11,12 @@
  *****************************************************************************/
 
 #include "ControllerIdentification.h"
-#include "Mapper/StandardGamepad.h"
 #include "WrapperIDirectInput8.h"
 #include "WrapperIDirectInputDevice8.h"
 #include "XInputController.h"
+#include "Mapper/StandardGamepad.h"
+#include "Mapper/NativeXInput.h"
+#include "Mapper/NativeXInputSharedTriggers.h"
 
 using namespace Xidi;
 
@@ -95,7 +97,7 @@ HRESULT STDMETHODCALLTYPE WrapperIDirectInput8::CreateDevice(REFGUID rguid, LPDI
     else
     {
         // Is an XInput GUID, so create a fake device that will communicate with the XInput controller of the specified index.
-        *lplpDirectInputDevice = new WrapperIDirectInputDevice8(underlyingDIObjectUsesUnicode, new XInputController(xinputIndex), new Mapper::StandardGamepad());
+        *lplpDirectInputDevice = new WrapperIDirectInputDevice8(underlyingDIObjectUsesUnicode, new XInputController(xinputIndex), new Mapper::NativeXInputSharedTriggers());
         return DI_OK;
     }
 }

@@ -12,8 +12,8 @@
 #pragma once
 
 #include "ApiDirectInput8.h"
-#include "Mapper/Base.h"
 #include "XInputController.h"
+#include "Mapper/Base.h"
 
 
 namespace Xidi

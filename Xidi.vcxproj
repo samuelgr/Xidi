@@ -30,6 +30,8 @@
     <ClInclude Include="Include\ApiDirectInput8.h" />
     <ClInclude Include="Include\ApiWindows.h" />
     <ClInclude Include="Include\Dinput8ExportApi.h" />
+    <ClInclude Include="Include\Mapper\NativeXInput.h" />
+    <ClInclude Include="Include\Mapper\NativeXInputSharedTriggers.h" />
     <ClInclude Include="Include\Mapper\StandardGamepad.h" />
     <ClInclude Include="Include\ControllerIdentification.h" />
     <ClInclude Include="Include\Dinput8ImportApi.h" />
@@ -40,6 +42,8 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Source\ApiDirectInput8.cpp" />
+    <ClCompile Include="Source\Mapper\NativeXInput.cpp" />
+    <ClCompile Include="Source\Mapper\NativeXInputSharedTriggers.cpp" />
     <ClCompile Include="Source\Mapper\StandardGamepad.cpp" />
     <ClCompile Include="Source\TestApplication.cpp">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug-DirectInput8|Win32'">true</ExcludedFromBuild>
