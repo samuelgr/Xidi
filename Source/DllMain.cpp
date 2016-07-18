@@ -25,8 +25,6 @@ BOOL APIENTRY DllMain(HMODULE hModule, DWORD  ul_reason_for_call, LPVOID lpReser
     {
         case DLL_PROCESS_ATTACH:
         case DLL_THREAD_ATTACH:
-            if (S_OK != Dinput8ImportApi::Initialize())
-                result = FALSE;
             break;
 
         case DLL_THREAD_DETACH:

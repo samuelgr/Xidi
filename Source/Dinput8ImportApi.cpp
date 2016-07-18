@@ -71,7 +71,9 @@ HRESULT Dinput8ImportApi::Initialize(void)
 
 HRESULT Dinput8ImportApi::ImportedDirectInput8Create(HINSTANCE hinst, DWORD dwVersion, REFIID riidltf, LPVOID* ppvOut, LPUNKNOWN punkOuter)
 {
-    if (FALSE == importTableIsInitialized) return E_NOT_VALID_STATE;
+    if (S_OK != Initialize())
+        return E_NOT_VALID_STATE;
+    
     return importTable.DirectInput8Create(hinst, dwVersion, riidltf, ppvOut, punkOuter);
 }
 
@@ -79,7 +81,9 @@ HRESULT Dinput8ImportApi::ImportedDirectInput8Create(HINSTANCE hinst, DWORD dwVe
 
 HRESULT Dinput8ImportApi::ImportedDllRegisterServer(void)
 {
-    if (FALSE == importTableIsInitialized) return E_NOT_VALID_STATE;
+    if (S_OK != Initialize())
+        return E_NOT_VALID_STATE;
+
     return importTable.DllRegisterServer();
 }
 
@@ -87,7 +91,9 @@ HRESULT Dinput8ImportApi::ImportedDllRegisterServer(void)
 
 HRESULT Dinput8ImportApi::ImportedDllUnregisterServer(void)
 {
-    if (FALSE == importTableIsInitialized) return E_NOT_VALID_STATE;
+    if (S_OK != Initialize())
+        return E_NOT_VALID_STATE;
+
     return importTable.DllUnregisterServer();
 }
 
@@ -95,7 +101,9 @@ HRESULT Dinput8ImportApi::ImportedDllUnregisterServer(void)
 
 HRESULT Dinput8ImportApi::ImportedDllCanUnloadNow(void)
 {
-    if (FALSE == importTableIsInitialized) return E_NOT_VALID_STATE;
+    if (S_OK != Initialize())
+        return E_NOT_VALID_STATE;
+
     return importTable.DllCanUnloadNow();
 }
 
@@ -103,6 +111,8 @@ HRESULT Dinput8ImportApi::ImportedDllCanUnloadNow(void)
 
 HRESULT Dinput8ImportApi::ImportedDllGetClassObject(REFCLSID rclsid, REFIID riid, LPVOID* ppv)
 {
-    if (FALSE == importTableIsInitialized) return E_NOT_VALID_STATE;
+    if (S_OK != Initialize())
+        return E_NOT_VALID_STATE;
+
     return importTable.DllGetClassObject(rclsid, riid, ppv);
 }
