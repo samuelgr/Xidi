@@ -60,7 +60,10 @@
     <ClCompile Include="Source\XInputController.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="dinput8.def" />
+    <None Include="dinput8.def">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='TestApplication|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='TestApplication|x64'">true</ExcludedFromBuild>
+    </None>
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <ProjectGuid>{023441F6-2554-440F-9FFB-7E185AB7CF41}</ProjectGuid>

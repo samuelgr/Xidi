@@ -68,22 +68,26 @@ namespace Xidi
             // -------- CONSTANTS ------------------------------------------------------ //
             
             // Specifies the default minimum axis range value (based on DirectInput documentation).
-            const static LONG kDefaultAxisRangeMin = 0x00000000;
+            static const LONG kDefaultAxisRangeMin = 0x00000000;
             
             // Specifies the default maximum axis range value (based on DirectInput documentation).
-            const static LONG kDefaultAxisRangeMax = 0x0000ffff;
+            static const LONG kDefaultAxisRangeMax = 0x0000ffff;
             
             // Specifies the default axis deadzone (based on DirectInput documentation).
-            const static DWORD kDefaultAxisDeadzone = 0;
+            static const DWORD kDefaultAxisDeadzone = 0;
             
             // Specifies the default axis saturation (based on DirectInput documentation).
-            const static DWORD kDefaultAxisSaturation = 10000;
+            static const DWORD kDefaultAxisSaturation = 10000;
 
             // Specifies the minimum axis deadzone and saturation (based on DirectInput documentation).
-            const static DWORD kMinAxisDeadzoneSaturation = 0;
+            static const DWORD kMinAxisDeadzoneSaturation = 0;
 
             // Specifies the maximum axis deadzone and saturation (based on DirectInput documentation).
-            const static DWORD kMaxAxisDeadzoneSaturation = 10000;
+            static const DWORD kMaxAxisDeadzoneSaturation = 10000;
+
+            // Specifies the maximum size of an application data packet, in bytes.
+            // Value is equal to 1MB.
+            static const DWORD kMaxDataPacketSize = 1048576;
             
             
         private:
@@ -174,6 +178,12 @@ namespace Xidi
             // Returns a negative identifier in the event of an error.
             TInstance InstanceIdentifierFromDirectInputSpec(DWORD dwObj, DWORD dwHow);
 
+            // Inverts the direction of an axis reading, given a value and original range.
+            LONG InvertAxisValue(LONG originalValue, LONG rangeMin, LONG rangeMax);
+
+            // Adds a mapping between a specific instance and offset.
+            void MapInstanceAndOffset(TInstance instance, DWORD offset);
+            
             // Maps a value from one range to another.
             // Does not check for range errors; garbage in results in garbage out.
             LONG MapValueInRangeToRange(const LONG originalValue, const LONG originalMin, const LONG originalMax, const LONG newMin, const LONG newMax);
@@ -183,6 +193,18 @@ namespace Xidi
             // If this operation succeeds, makes and returns an instance identifier using the type and index.
             // Otherwise, returns -1 cast to an instance identifier type.
             TInstance SelectInstance(const EInstanceType instanceType, BOOL* instanceUsed, const TInstanceCount instanceCount, const TInstanceIdx instanceToSelect);
+
+            // Given an axis instance, scaled axis value, and application data structure base address, writes the value for an axis into the application data structure.
+            // Applies axis properties like saturation and and deadzone, but assumes the input value is already in range.
+            void WriteAxisValueToApplicationDataStructure(const TInstance axisInstance, const LONG value, LPVOID appData);
+
+            // Given a button instance, value, and application data structure base address, writes the value for a button into the application data structure.
+            // Button value should be nonzero if the button is pressed, zero otherwise.
+            void WriteButtonValueToApplicationDataStructure(const TInstance buttonInstance, const BYTE value, LPVOID appData);
+
+            // Given a POV instance, value, and application data structure base address, writes the value for a POV into the application data structure.
+            // Performs no processing on the value, so assumes it is already correct for DirectInput style.
+            void WritePovValueToApplicationDataStructure(const TInstance povInstance, const LONG value, LPVOID appData);
             
             
         public:
@@ -274,7 +296,7 @@ namespace Xidi
             // Otherwise return a positive value; it is an error to return 0.
             // The default implementation maps LT to the positive direction and RT to the negative direction; this is the default behavior of an Xbox 360 controller when accessed over DirectInput.
             // May be overridden by subclasses if the default behavior is unsuitable.
-            virtual DWORD XInputTriggerSharedAxisDirection(EXInputControllerElement trigger);
+            virtual LONG XInputTriggerSharedAxisDirection(EXInputControllerElement trigger);
         };
     }
 }

@@ -268,6 +268,22 @@ TInstance Base::InstanceIdentifierFromDirectInputSpec(DWORD dwObj, DWORD dwHow)
 
 // ---------
 
+LONG Base::InvertAxisValue(LONG originalValue, LONG rangeMin, LONG rangeMax)
+{
+    const LONG rangeCenter = (rangeMax + rangeMin) / 2;
+    return (rangeCenter + (rangeCenter - originalValue));
+}
+
+// ---------
+
+void Base::MapInstanceAndOffset(TInstance instance, DWORD offset)
+{
+    instanceToOffset.insert({instance, offset});
+    offsetToInstance.insert({offset, instance});
+}
+
+// ---------
+
 LONG Base::MapValueInRangeToRange(const LONG originalValue, const LONG originalMin, const LONG originalMax, const LONG newMin, const LONG newMax)
 {
     // Calculate the original value's position within the original range spread.
@@ -287,13 +303,73 @@ TInstance Base::SelectInstance(const EInstanceType instanceType, BOOL* instanceU
 {
     TInstance selectedInstance = (TInstance)-1;
 
-    if ((instanceToSelect < instanceCount) && (FALSE == instanceUsed[instanceToSelect]))
+    if ((instanceToSelect >= 0) && (instanceToSelect < instanceCount) && (FALSE == instanceUsed[instanceToSelect]))
     {
         instanceUsed[instanceToSelect] = TRUE;
         selectedInstance = Base::MakeInstanceIdentifier(instanceType, instanceToSelect);
     }
     
     return selectedInstance;
+}
+
+// ---------
+
+void Base::WriteAxisValueToApplicationDataStructure(const TInstance axisInstance, const LONG value, LPVOID appData)
+{
+    // Verify that the application cares about the axis in question.
+    if (0 == instanceToOffset.count(axisInstance)) return;
+    
+    // Calculate axis physical range of motion, center axis position and the value's displacement from it.
+    TInstanceIdx axisIndex = ExtractIdentifierInstanceIndex(axisInstance);
+    const double axisCenterPosition = (double)(axisProperties[axisIndex].rangeMax + axisProperties[axisIndex].rangeMin) / 2.0;
+    const double axisPhysicalRange = (double)(axisProperties[axisIndex].rangeMax) - axisCenterPosition;
+    const double axisValueDisp = (double)value - axisCenterPosition;
+    const double axisValueDispAbs = abs(axisValueDisp);
+
+    // Calculate the value's displacement as a percentage of the axis' physical range of motion, mapped to a saturation and deadzone range (0 to 10000).
+    // Use this to figure out what its percentage should be, given the axis properties of deadzone and saturation.
+    DWORD axisValuePctRange = (DWORD)(axisValueDispAbs / axisPhysicalRange * 10000.0);
+    if (axisValuePctRange <= axisProperties[axisIndex].deadzone)
+        axisValuePctRange = 0;
+    else if (axisValuePctRange >= axisProperties[axisIndex].saturation)
+        axisValuePctRange = 10000;
+    else
+        axisValuePctRange = (DWORD)MapValueInRangeToRange(axisValuePctRange, axisProperties[axisIndex].deadzone, axisProperties[axisIndex].saturation, 0, 10000);
+
+    // Compute the final value for the axis, taking into consideration deadzone and saturation.
+    LONG axisFinalValue;
+    if (axisValueDisp > 0)
+        axisFinalValue = (LONG)(axisCenterPosition + (axisPhysicalRange * (axisValuePctRange / 10000.0)));
+    else
+        axisFinalValue = (LONG)(axisCenterPosition - (axisPhysicalRange * (axisValuePctRange / 10000.0)));
+
+    // Write the axis value to the specified offset.
+    const DWORD offset = instanceToOffset.find(axisInstance)->second;
+    *((LONG*)(&((BYTE*)appData)[offset])) = value;
+}
+
+// ---------
+
+void Base::WriteButtonValueToApplicationDataStructure(const TInstance buttonInstance, const BYTE value, LPVOID appData)
+{
+    // Verify that the application cares about the button in question.
+    if (0 == instanceToOffset.count(buttonInstance)) return;
+
+    // Write the button value to the specified offset.
+    const DWORD offset = instanceToOffset.find(buttonInstance)->second;
+    *((BYTE*)(&((BYTE*)appData)[offset])) = (value ? 0x80 : 0);
+}
+
+// ---------
+
+void Base::WritePovValueToApplicationDataStructure(const TInstance povInstance, const LONG value, LPVOID appData)
+{
+    // Verify that the application cares about the button in question.
+    if (0 == instanceToOffset.count(povInstance)) return;
+
+    // Write the button value to the specified offset.
+    const DWORD offset = instanceToOffset.find(povInstance)->second;
+    *((LONG*)(&((BYTE*)appData)[offset])) = value;
 }
 
 
@@ -587,13 +663,15 @@ DWORD Base::OffsetForInstance(TInstance instance)
 
 HRESULT Base::SetApplicationDataFormat(LPCDIDATAFORMAT lpdf)
 {
-    // Initialize the maps by clearing them and marking them invalid
-    instanceToOffset.clear();
-    offsetToInstance.clear();
-    mapsValid = FALSE;
+    // Initialize the maps.
+    ResetApplicationDataFormat();
     
-    // Ensure the data packet size is a multiple of 4, as required by DirectInput
+    // Ensure the data packet size is a multiple of 4, as required by DirectInput.
     if (0 != (lpdf->dwDataSize % 4))
+        return DIERR_INVALIDPARAM;
+
+    // Ensure the data packet size is within bounds.
+    if (kMaxDataPacketSize < lpdf->dwDataSize)
         return DIERR_INVALIDPARAM;
 
     // Save the application's data packet size.
@@ -635,41 +713,40 @@ HRESULT Base::SetApplicationDataFormat(LPCDIDATAFORMAT lpdf)
         {
             // Pick an axis
 
-            // First check the offsets for overlap with something previously selected and for sufficient space in the data packet
+            // First check the offsets for overlap with something previously selected and for sufficient space in the data packet.
             if (!(dataFormat->dwOfs + SizeofInstance(EInstanceType::InstanceTypeAxis) < lpdf->dwDataSize) || FALSE == CheckAndSetOffsets(&offsetUsed[dataFormat->dwOfs], SizeofInstance(EInstanceType::InstanceTypeAxis)))
                 invalidParamsDetected = TRUE;
             else
             {
                 if (NULL == dataFormat->pguid)
                 {
-                    // Any axis type allowed
+                    // Any axis type allowed.
 
                     const TInstanceIdx instanceToSelect = allowAnyInstance ? nextUnusedAxis : specificInstance;
                     const TInstance selectedInstance = SelectInstance(EInstanceType::InstanceTypeAxis, axisUsed, numAxes, instanceToSelect);
 
                     if (selectedInstance > 0)
                     {
-                        // Instance was selected successfully, add a mapping
-                        instanceToOffset.insert({ selectedInstance, dataFormat->dwOfs });
-                        offsetToInstance.insert({ dataFormat->dwOfs, selectedInstance });
+                        // Instance was selected successfully, add a mapping.
+                        MapInstanceAndOffset(selectedInstance, dataFormat->dwOfs);
                     }
                     else if (!allowAnyInstance)
                     {
-                        // Instance was unable to be selected, and a specific instance was specified, so this is an error
+                        // Instance was unable to be selected, and a specific instance was specified, so this is an error.
                         invalidParamsDetected = TRUE;
                     }
                 }
                 else
                 {
-                    // Specific axis type required
+                    // Specific axis type required.
 
                     if (0 != AxisTypeCount(*dataFormat->pguid))
                     {
-                        // Axis type exists in the mapping
+                        // Axis type exists in the mapping.
 
                         if (allowAnyInstance)
                         {
-                            // Any instance allowed, so find the first of this type that is unused, if any
+                            // Any instance allowed, so find the first of this type that is unused, if any.
                             TInstanceIdx instanceIndex = 0;
                             TInstanceIdx axisIndex = AxisInstanceIndex(*dataFormat->pguid, instanceIndex++);
                             TInstance selectedInstance = SelectInstance(EInstanceType::InstanceTypeAxis, axisUsed, numAxes, axisIndex);
@@ -682,37 +759,35 @@ HRESULT Base::SetApplicationDataFormat(LPCDIDATAFORMAT lpdf)
 
                             if (selectedInstance >= 0)
                             {
-                                // Unused instance found, create a mapping
-                                instanceToOffset.insert({ MakeInstanceIdentifier(EInstanceType::InstanceTypeAxis, axisIndex), dataFormat->dwOfs });
-                                offsetToInstance.insert({ dataFormat->dwOfs, MakeInstanceIdentifier(EInstanceType::InstanceTypeAxis, axisIndex) });
+                                // Unused instance found, create a mapping.
+                                MapInstanceAndOffset(MakeInstanceIdentifier(EInstanceType::InstanceTypeAxis, axisIndex), dataFormat->dwOfs);
                             }
                         }
                         else
                         {
-                            // Specific instance required, so check if it is available
+                            // Specific instance required, so check if it is available and select it if so.
                             TInstanceIdx axisIndex = AxisInstanceIndex(*dataFormat->pguid, specificInstance);
+                            TInstance axisInstance = SelectInstance(EInstanceType::InstanceTypeAxis, axisUsed, numAxes, axisIndex);
 
-                            if (axisIndex >= 0 && FALSE == axisUsed[axisIndex])
+                            if (axisInstance >= 0)
                             {
-                                // Axis available, use it
-                                axisUsed[axisIndex] = TRUE;
-                                instanceToOffset.insert({ MakeInstanceIdentifier(EInstanceType::InstanceTypeAxis, axisIndex), dataFormat->dwOfs });
-                                offsetToInstance.insert({ dataFormat->dwOfs, MakeInstanceIdentifier(EInstanceType::InstanceTypeAxis, axisIndex) });
+                                // Instance was selected successfully, add a mapping.
+                                MapInstanceAndOffset(axisInstance, dataFormat->dwOfs);
                             }
                             else
                             {
-                                // Axis unavailable, this is an error
+                                // Axis unavailable, this is an error.
                                 invalidParamsDetected = TRUE;
                             }
                         }
                     }
                     else
                     {
-                        // Axis type does not exist in the mapping
+                        // Axis type does not exist in the mapping.
 
                         if (!allowAnyInstance)
                         {
-                            // Specified an instance of a non-existant axis, this is an error
+                            // Specified an instance of a non-existant axis, this is an error.
                             invalidParamsDetected = TRUE;
                         }
                     }
@@ -721,36 +796,35 @@ HRESULT Base::SetApplicationDataFormat(LPCDIDATAFORMAT lpdf)
         }
         else if ((dataFormat->dwType & DIDFT_PSHBUTTON) && (nextUnusedButton < numButtons))
         {
-            // Pick a button
+            // Pick a button.
 
             if (NULL == dataFormat->pguid || GUID_Button == *dataFormat->pguid)
             {
-                // Type unspecified or specified as a button
+                // Type unspecified or specified as a button.
 
                 const TInstanceIdx instanceToSelect = allowAnyInstance ? nextUnusedButton : specificInstance;
                 const TInstance selectedInstance = SelectInstance(EInstanceType::InstanceTypeButton, buttonUsed, numButtons, instanceToSelect);
 
                 if (selectedInstance > 0)
                 {
-                    // Check the offsets for overlap with something previously selected and for sufficient space in the data packet
+                    // Check the offsets for overlap with something previously selected and for sufficient space in the data packet.
                     if (!(dataFormat->dwOfs + SizeofInstance(EInstanceType::InstanceTypeButton) < lpdf->dwDataSize) || FALSE == CheckAndSetOffsets(&offsetUsed[dataFormat->dwOfs], SizeofInstance(EInstanceType::InstanceTypeButton)))
                         invalidParamsDetected = TRUE;
                     else
                     {
-                        // Instance was selected successfully, add a mapping
-                        instanceToOffset.insert({ selectedInstance, dataFormat->dwOfs });
-                        offsetToInstance.insert({ dataFormat->dwOfs, selectedInstance });
+                        // Instance was selected successfully, add a mapping.
+                        MapInstanceAndOffset(selectedInstance, dataFormat->dwOfs);
                     }
                 }
                 else if (!allowAnyInstance)
                 {
-                    // Instance was unable to be selected, and a specific instance was specified, so this is an error
+                    // Instance was unable to be selected, and a specific instance was specified, so this is an error.
                     invalidParamsDetected = TRUE;
                 }
             }
             else
             {
-                // Type specified as a non-button, this is an error
+                // Type specified as a non-button, this is an error.
                 invalidParamsDetected = TRUE;
             }
 
@@ -761,47 +835,46 @@ HRESULT Base::SetApplicationDataFormat(LPCDIDATAFORMAT lpdf)
 
             if (NULL == dataFormat->pguid || GUID_POV == *dataFormat->pguid)
             {
-                // Type unspecified or specified as a POV
+                // Type unspecified or specified as a POV.
 
                 const TInstanceIdx instanceToSelect = allowAnyInstance ? nextUnusedPov : specificInstance;
                 const TInstance selectedInstance = SelectInstance(EInstanceType::InstanceTypePov, povUsed, numPov, instanceToSelect);
 
                 if (selectedInstance > 0)
                 {
-                    // Check the offsets for overlap with something previously selected and for sufficient space in the data packet
+                    // Check the offsets for overlap with something previously selected and for sufficient space in the data packet.
                     if (!(dataFormat->dwOfs + SizeofInstance(EInstanceType::InstanceTypePov) < lpdf->dwDataSize) || FALSE == CheckAndSetOffsets(&offsetUsed[dataFormat->dwOfs], SizeofInstance(EInstanceType::InstanceTypePov)))
                         invalidParamsDetected = TRUE;
                     else
                     {
-                        // Instance was selected successfully, add a mapping
-                        instanceToOffset.insert({ selectedInstance, dataFormat->dwOfs });
-                        offsetToInstance.insert({ dataFormat->dwOfs, selectedInstance });
+                        // Instance was selected successfully, add a mapping.
+                        MapInstanceAndOffset(selectedInstance, dataFormat->dwOfs);
                     }
                 }
                 else if (!allowAnyInstance)
                 {
-                    // Instance was unable to be selected, and a specific instance was specified, so this is an error
+                    // Instance was unable to be selected, and a specific instance was specified, so this is an error.
                     invalidParamsDetected = TRUE;
                 }
             }
             else
             {
-                // Type specified as a non-POV, this is an error
+                // Type specified as a non-POV, this is an error.
                 invalidParamsDetected = TRUE;
             }
 
         }
         else if (allowAnyInstance)
         {
-            // No objects available, but no instance specified, so do not do anything this iteration
+            // No objects available, but no instance specified, so do not do anything this iteration.
         }
         else
         {
-            // An instance was specified of an object that is not available, this is an error
+            // An instance was specified of an object that is not available, this is an error.
             invalidParamsDetected = TRUE;
         }
 
-        // Bail in the event of an error
+        // Bail in the event of an error.
         if (invalidParamsDetected)
         {
             delete[] buttonUsed;
@@ -812,7 +885,7 @@ HRESULT Base::SetApplicationDataFormat(LPCDIDATAFORMAT lpdf)
             return DIERR_INVALIDPARAM;
         }
 
-        // Increment all next-unused indices
+        // Increment all next-unused indices.
         while (TRUE == axisUsed[nextUnusedAxis] && nextUnusedAxis < numAxes) nextUnusedAxis += 1;
         while (TRUE == buttonUsed[nextUnusedButton] && nextUnusedButton < numButtons) nextUnusedButton += 1;
         while (TRUE == povUsed[nextUnusedPov] && nextUnusedPov < numPov) nextUnusedPov += 1;
@@ -824,6 +897,7 @@ HRESULT Base::SetApplicationDataFormat(LPCDIDATAFORMAT lpdf)
     delete[] offsetUsed;
 
     mapsValid = TRUE;
+
     return S_OK;
 }
 
@@ -961,18 +1035,380 @@ void Base::ResetApplicationDataFormat(void)
 
 HRESULT Base::WriteApplicationControllerState(XINPUT_GAMEPAD& xState, LPVOID appDataBuf, DWORD appDataSize)
 {
+    // Lazily initialize the axis properties (this is idempotent).
+    InitializeAxisProperties();
+    
     // First verify sufficient buffer space.
     if (appDataSize < dataPacketSize)
         return DIERR_INVALIDPARAM;
 
     // Keep track of instances already mapped, for error checking.
-    std::unordered_set<TInstance>;
+    std::unordered_set<TInstance> mappedInstances;
     
     // Initialize the application structure. Everything not explicitly written will return 0.
     ZeroMemory(appDataBuf, appDataSize);
 
+    // Triggers are handled differently, so handle them first as a special case.
+    {
+        TInstance instanceLT = MapXInputElementToDirectInputInstance(EXInputControllerElement::TriggerLT);
+        TInstance instanceRT = MapXInputElementToDirectInputInstance(EXInputControllerElement::TriggerRT);
+
+        if (instanceLT >= 0 && instanceRT >= 0 && instanceLT == instanceRT)
+        {
+            // LT and RT are part of the mapping and share an instance.
+
+            // It is an error for the triggers to share a non-axis controller element.
+            if (EInstanceType::InstanceTypeAxis != ExtractIdentifierInstanceType(instanceLT))
+                return DIERR_GENERIC;
+
+            // Verify the axis is in bounds.
+            if (ExtractIdentifierInstanceIndex(instanceLT) >= NumInstancesOfType(EInstanceType::InstanceTypeAxis))
+                return DIERR_GENERIC;
+
+            // For sharing an axis, figure out which trigger contributes to which direction.
+            // This function must not return 0, otherwise there is an error.
+            LONG leftTriggerMultiplier = XInputTriggerSharedAxisDirection(EXInputControllerElement::TriggerLT);
+            if (0 > leftTriggerMultiplier)
+                leftTriggerMultiplier = -1;
+            else if (0 < leftTriggerMultiplier)
+                leftTriggerMultiplier = 1;
+            else
+            return DIERR_GENERIC;
+            
+            // Compute the axis value for the shared axis.
+            LONG triggerSharedAxisValue = (leftTriggerMultiplier * (LONG)xState.bLeftTrigger) + (leftTriggerMultiplier * -1 * (LONG)xState.bRightTrigger);
+            triggerSharedAxisValue = MapValueInRangeToRange(triggerSharedAxisValue, XInputController::kTriggerRangeMax * -1, XInputController::kTriggerRangeMax, axisProperties[ExtractIdentifierInstanceIndex(instanceLT)].rangeMin, axisProperties[ExtractIdentifierInstanceIndex(instanceLT)].rangeMax);
+            
+            // Add the shared axis to the set.
+            mappedInstances.insert(instanceLT);
+            
+            // Write the shared axis value to the application data structure.
+            WriteAxisValueToApplicationDataStructure(instanceLT, triggerSharedAxisValue, appDataBuf);
+        }
+        else
+        {
+            // LT and RT need to be handled separately, so handle them like any other controller elements.
+            // Unlike other elements these can be mapped to buttons or axes.
+
+            if (instanceLT >= 0)
+            {
+                if (EInstanceType::InstanceTypeAxis == ExtractIdentifierInstanceType(instanceLT))
+                {
+                    // Verify the axis is in bounds.
+                    if (ExtractIdentifierInstanceIndex(instanceLT) >= NumInstancesOfType(EInstanceType::InstanceTypeAxis))
+                        return DIERR_GENERIC;
+
+                    // Compute the axis value.
+                    LONG triggerAxisValue = MapValueInRangeToRange((LONG)xState.bLeftTrigger, XInputController::kTriggerRangeMin, XInputController::kTriggerRangeMax, axisProperties[ExtractIdentifierInstanceIndex(instanceLT)].rangeMin, axisProperties[ExtractIdentifierInstanceIndex(instanceLT)].rangeMax);
+
+                    // Add the axis to the set.
+                    mappedInstances.insert(instanceLT);
+
+                    // Write the axis value to the application data structure.
+                    WriteAxisValueToApplicationDataStructure(instanceLT, triggerAxisValue, appDataBuf);
+                }
+                else if (EInstanceType::InstanceTypeButton == ExtractIdentifierInstanceType(instanceLT))
+                {
+                    // Verify the button is in bounds.
+                    if (ExtractIdentifierInstanceIndex(instanceLT) >= NumInstancesOfType(EInstanceType::InstanceTypeButton))
+                        return DIERR_GENERIC;
+
+                    // Compute the button value.
+                    BYTE triggerButtonValue = (xState.bLeftTrigger > XINPUT_GAMEPAD_TRIGGER_THRESHOLD);
+
+                    // Add the button to the set.
+                    mappedInstances.insert(instanceLT);
+
+                    // Write the button value to the application data structure.
+                    WriteButtonValueToApplicationDataStructure(instanceLT, triggerButtonValue, appDataBuf);
+                }
+                else
+                    return DIERR_GENERIC;
+            }
+
+            if (instanceRT >= 0)
+            {
+                if (EInstanceType::InstanceTypeAxis == ExtractIdentifierInstanceType(instanceRT))
+                {
+                    // Verify the axis is in bounds.
+                    if (ExtractIdentifierInstanceIndex(instanceRT) >= NumInstancesOfType(EInstanceType::InstanceTypeAxis))
+                        return DIERR_GENERIC;
+
+                    // Compute the axis value.
+                    LONG triggerAxisValue = MapValueInRangeToRange((LONG)xState.bRightTrigger, XInputController::kTriggerRangeMin, XInputController::kTriggerRangeMax, axisProperties[ExtractIdentifierInstanceIndex(instanceRT)].rangeMin, axisProperties[ExtractIdentifierInstanceIndex(instanceRT)].rangeMax);
+
+                    // Add the axis to the set.
+                    mappedInstances.insert(instanceRT);
+
+                    // Write the axis value to the application data structure.
+                    WriteAxisValueToApplicationDataStructure(instanceRT, triggerAxisValue, appDataBuf);
+                }
+                else if (EInstanceType::InstanceTypeButton == ExtractIdentifierInstanceType(instanceRT))
+                {
+                    // Verify the button is in bounds.
+                    if (ExtractIdentifierInstanceIndex(instanceRT) >= NumInstancesOfType(EInstanceType::InstanceTypeButton))
+                        return DIERR_GENERIC;
+
+                    // Compute the button value.
+                    BYTE triggerButtonValue = (xState.bRightTrigger > XINPUT_GAMEPAD_TRIGGER_THRESHOLD);
+
+                    // Add the button to the set.
+                    mappedInstances.insert(instanceRT);
+
+                    // Write the button value to the application data structure.
+                    WriteButtonValueToApplicationDataStructure(instanceRT, triggerButtonValue, appDataBuf);
+                }
+                else
+                    return DIERR_GENERIC;
+            }
+        }
+    }
+
+    // Left and right analog sticks
+    {
+        TInstance instanceAxis;
+
+        // Left stick horizontal
+        instanceAxis = MapXInputElementToDirectInputInstance(EXInputControllerElement::StickLeftHorizontal);
+        if (instanceAxis >= 0)
+        {
+            if (EInstanceType::InstanceTypeAxis != ExtractIdentifierInstanceType(instanceAxis))
+                return DIERR_GENERIC;
+            if (ExtractIdentifierInstanceIndex(instanceAxis) >= NumInstancesOfType(EInstanceType::InstanceTypeAxis))
+                return DIERR_GENERIC;
+            if (0 != mappedInstances.count(instanceAxis))
+                return DIERR_GENERIC;
+
+            mappedInstances.insert(instanceAxis);
+            
+            LONG axisValue = MapValueInRangeToRange((LONG)xState.sThumbLX, XInputController::kStickRangeMin, XInputController::kStickRangeMax, axisProperties[ExtractIdentifierInstanceIndex(instanceAxis)].rangeMin, axisProperties[ExtractIdentifierInstanceIndex(instanceAxis)].rangeMax);
+            WriteAxisValueToApplicationDataStructure(instanceAxis, axisValue, appDataBuf);
+        }
+
+        // Left stick vertical
+        instanceAxis = MapXInputElementToDirectInputInstance(EXInputControllerElement::StickLeftVertical);
+        if (instanceAxis >= 0)
+        {
+            if (EInstanceType::InstanceTypeAxis != ExtractIdentifierInstanceType(instanceAxis))
+                return DIERR_GENERIC;
+            if (ExtractIdentifierInstanceIndex(instanceAxis) >= NumInstancesOfType(EInstanceType::InstanceTypeAxis))
+                return DIERR_GENERIC;
+            if (0 != mappedInstances.count(instanceAxis))
+                return DIERR_GENERIC;
+
+            mappedInstances.insert(instanceAxis);
+
+            LONG axisValue = MapValueInRangeToRange(InvertAxisValue((LONG)xState.sThumbLY, XInputController::kStickRangeMin, XInputController::kStickRangeMax), XInputController::kStickRangeMin, XInputController::kStickRangeMax, axisProperties[ExtractIdentifierInstanceIndex(instanceAxis)].rangeMin, axisProperties[ExtractIdentifierInstanceIndex(instanceAxis)].rangeMax);
+            WriteAxisValueToApplicationDataStructure(instanceAxis, axisValue, appDataBuf);
+        }
+
+        // Right stick horizontal
+        instanceAxis = MapXInputElementToDirectInputInstance(EXInputControllerElement::StickRightHorizontal);
+        if (instanceAxis >= 0)
+        {
+            if (EInstanceType::InstanceTypeAxis != ExtractIdentifierInstanceType(instanceAxis))
+                return DIERR_GENERIC;
+            if (ExtractIdentifierInstanceIndex(instanceAxis) >= NumInstancesOfType(EInstanceType::InstanceTypeAxis))
+                return DIERR_GENERIC;
+            if (0 != mappedInstances.count(instanceAxis))
+                return DIERR_GENERIC;
+
+            mappedInstances.insert(instanceAxis);
+
+            LONG axisValue = MapValueInRangeToRange((LONG)xState.sThumbRX, XInputController::kStickRangeMin, XInputController::kStickRangeMax, axisProperties[ExtractIdentifierInstanceIndex(instanceAxis)].rangeMin, axisProperties[ExtractIdentifierInstanceIndex(instanceAxis)].rangeMax);
+            WriteAxisValueToApplicationDataStructure(instanceAxis, axisValue, appDataBuf);
+        }
+
+        // Right stick vertical
+        instanceAxis = MapXInputElementToDirectInputInstance(EXInputControllerElement::StickRightVertical);
+        if (instanceAxis >= 0)
+        {
+            if (EInstanceType::InstanceTypeAxis != ExtractIdentifierInstanceType(instanceAxis))
+                return DIERR_GENERIC;
+            if (ExtractIdentifierInstanceIndex(instanceAxis) >= NumInstancesOfType(EInstanceType::InstanceTypeAxis))
+                return DIERR_GENERIC;
+            if (0 != mappedInstances.count(instanceAxis))
+                return DIERR_GENERIC;
+
+            mappedInstances.insert(instanceAxis);
+
+            LONG axisValue = MapValueInRangeToRange(InvertAxisValue((LONG)xState.sThumbRY, XInputController::kStickRangeMin, XInputController::kStickRangeMax), XInputController::kStickRangeMin, XInputController::kStickRangeMax, axisProperties[ExtractIdentifierInstanceIndex(instanceAxis)].rangeMin, axisProperties[ExtractIdentifierInstanceIndex(instanceAxis)].rangeMax);
+            WriteAxisValueToApplicationDataStructure(instanceAxis, axisValue, appDataBuf);
+        }
+    }
+
+    // Dpad
+    {
+        TInstance instanceDpad = MapXInputElementToDirectInputInstance(EXInputControllerElement::Dpad);
+        if (instanceDpad >= 0)
+        {
+            if (EInstanceType::InstanceTypePov != ExtractIdentifierInstanceType(instanceDpad))
+                return DIERR_GENERIC;
+            if (ExtractIdentifierInstanceIndex(instanceDpad) >= NumInstancesOfType(EInstanceType::InstanceTypePov))
+                return DIERR_GENERIC;
+            if (0 != mappedInstances.count(instanceDpad))
+                return DIERR_GENERIC;
+
+            mappedInstances.insert(instanceDpad);
+            WritePovValueToApplicationDataStructure(instanceDpad, XInputController::DirectInputPovStateFromXInputButtonState(xState.wButtons), appDataBuf);
+        }
+    }
     
-    
+    // Buttons A, B, X, Y, LB, RB, Back, Start, Left stick, and Right stick
+    {
+        TInstance instanceButton;
+
+        // A
+        instanceButton = MapXInputElementToDirectInputInstance(EXInputControllerElement::ButtonA);
+        if (instanceButton >= 0)
+        {
+            if (EInstanceType::InstanceTypeButton != ExtractIdentifierInstanceType(instanceButton))
+                return DIERR_GENERIC;
+            if (ExtractIdentifierInstanceIndex(instanceButton) >= NumInstancesOfType(EInstanceType::InstanceTypeButton))
+                return DIERR_GENERIC;
+            if (0 != mappedInstances.count(instanceButton))
+                return DIERR_GENERIC;
+
+            mappedInstances.insert(instanceButton);
+            WriteButtonValueToApplicationDataStructure(instanceButton, (xState.wButtons & XINPUT_GAMEPAD_A ? 1 : 0), appDataBuf);
+        }
+
+        // B
+        instanceButton = MapXInputElementToDirectInputInstance(EXInputControllerElement::ButtonB);
+        if (instanceButton >= 0)
+        {
+            if (EInstanceType::InstanceTypeButton != ExtractIdentifierInstanceType(instanceButton))
+                return DIERR_GENERIC;
+            if (ExtractIdentifierInstanceIndex(instanceButton) >= NumInstancesOfType(EInstanceType::InstanceTypeButton))
+                return DIERR_GENERIC;
+            if (0 != mappedInstances.count(instanceButton))
+                return DIERR_GENERIC;
+
+            mappedInstances.insert(instanceButton);
+            WriteButtonValueToApplicationDataStructure(instanceButton, (xState.wButtons & XINPUT_GAMEPAD_B ? 1 : 0), appDataBuf);
+        }
+
+        // X
+        instanceButton = MapXInputElementToDirectInputInstance(EXInputControllerElement::ButtonX);
+        if (instanceButton >= 0)
+        {
+            if (EInstanceType::InstanceTypeButton != ExtractIdentifierInstanceType(instanceButton))
+                return DIERR_GENERIC;
+            if (ExtractIdentifierInstanceIndex(instanceButton) >= NumInstancesOfType(EInstanceType::InstanceTypeButton))
+                return DIERR_GENERIC;
+            if (0 != mappedInstances.count(instanceButton))
+                return DIERR_GENERIC;
+
+            mappedInstances.insert(instanceButton);
+            WriteButtonValueToApplicationDataStructure(instanceButton, (xState.wButtons & XINPUT_GAMEPAD_X ? 1 : 0), appDataBuf);
+        }
+
+        // Y
+        instanceButton = MapXInputElementToDirectInputInstance(EXInputControllerElement::ButtonY);
+        if (instanceButton >= 0)
+        {
+            if (EInstanceType::InstanceTypeButton != ExtractIdentifierInstanceType(instanceButton))
+                return DIERR_GENERIC;
+            if (ExtractIdentifierInstanceIndex(instanceButton) >= NumInstancesOfType(EInstanceType::InstanceTypeButton))
+                return DIERR_GENERIC;
+            if (0 != mappedInstances.count(instanceButton))
+                return DIERR_GENERIC;
+
+            mappedInstances.insert(instanceButton);
+            WriteButtonValueToApplicationDataStructure(instanceButton, (xState.wButtons & XINPUT_GAMEPAD_Y ? 1 : 0), appDataBuf);
+        }
+
+        // LB
+        instanceButton = MapXInputElementToDirectInputInstance(EXInputControllerElement::ButtonLB);
+        if (instanceButton >= 0)
+        {
+            if (EInstanceType::InstanceTypeButton != ExtractIdentifierInstanceType(instanceButton))
+                return DIERR_GENERIC;
+            if (ExtractIdentifierInstanceIndex(instanceButton) >= NumInstancesOfType(EInstanceType::InstanceTypeButton))
+                return DIERR_GENERIC;
+            if (0 != mappedInstances.count(instanceButton))
+                return DIERR_GENERIC;
+
+            mappedInstances.insert(instanceButton);
+            WriteButtonValueToApplicationDataStructure(instanceButton, (xState.wButtons & XINPUT_GAMEPAD_LEFT_SHOULDER ? 1 : 0), appDataBuf);
+        }
+
+        // RB
+        instanceButton = MapXInputElementToDirectInputInstance(EXInputControllerElement::ButtonRB);
+        if (instanceButton >= 0)
+        {
+            if (EInstanceType::InstanceTypeButton != ExtractIdentifierInstanceType(instanceButton))
+                return DIERR_GENERIC;
+            if (ExtractIdentifierInstanceIndex(instanceButton) >= NumInstancesOfType(EInstanceType::InstanceTypeButton))
+                return DIERR_GENERIC;
+            if (0 != mappedInstances.count(instanceButton))
+                return DIERR_GENERIC;
+
+            mappedInstances.insert(instanceButton);
+            WriteButtonValueToApplicationDataStructure(instanceButton, (xState.wButtons & XINPUT_GAMEPAD_RIGHT_SHOULDER ? 1 : 0), appDataBuf);
+        }
+
+        // Back
+        instanceButton = MapXInputElementToDirectInputInstance(EXInputControllerElement::ButtonBack);
+        if (instanceButton >= 0)
+        {
+            if (EInstanceType::InstanceTypeButton != ExtractIdentifierInstanceType(instanceButton))
+                return DIERR_GENERIC;
+            if (ExtractIdentifierInstanceIndex(instanceButton) >= NumInstancesOfType(EInstanceType::InstanceTypeButton))
+                return DIERR_GENERIC;
+            if (0 != mappedInstances.count(instanceButton))
+                return DIERR_GENERIC;
+
+            mappedInstances.insert(instanceButton);
+            WriteButtonValueToApplicationDataStructure(instanceButton, (xState.wButtons & XINPUT_GAMEPAD_BACK ? 1 : 0), appDataBuf);
+        }
+
+        // Start
+        instanceButton = MapXInputElementToDirectInputInstance(EXInputControllerElement::ButtonStart);
+        if (instanceButton >= 0)
+        {
+            if (EInstanceType::InstanceTypeButton != ExtractIdentifierInstanceType(instanceButton))
+                return DIERR_GENERIC;
+            if (ExtractIdentifierInstanceIndex(instanceButton) >= NumInstancesOfType(EInstanceType::InstanceTypeButton))
+                return DIERR_GENERIC;
+            if (0 != mappedInstances.count(instanceButton))
+                return DIERR_GENERIC;
+
+            mappedInstances.insert(instanceButton);
+            WriteButtonValueToApplicationDataStructure(instanceButton, (xState.wButtons & XINPUT_GAMEPAD_START ? 1 : 0), appDataBuf);
+        }
+
+        // Left stick
+        instanceButton = MapXInputElementToDirectInputInstance(EXInputControllerElement::ButtonLeftStick);
+        if (instanceButton >= 0)
+        {
+            if (EInstanceType::InstanceTypeButton != ExtractIdentifierInstanceType(instanceButton))
+                return DIERR_GENERIC;
+            if (ExtractIdentifierInstanceIndex(instanceButton) >= NumInstancesOfType(EInstanceType::InstanceTypeButton))
+                return DIERR_GENERIC;
+            if (0 != mappedInstances.count(instanceButton))
+                return DIERR_GENERIC;
+
+            mappedInstances.insert(instanceButton);
+            WriteButtonValueToApplicationDataStructure(instanceButton, (xState.wButtons & XINPUT_GAMEPAD_LEFT_THUMB ? 1 : 0), appDataBuf);
+        }
+
+        // Right stick
+        instanceButton = MapXInputElementToDirectInputInstance(EXInputControllerElement::ButtonRightStick);
+        if (instanceButton >= 0)
+        {
+            if (EInstanceType::InstanceTypeButton != ExtractIdentifierInstanceType(instanceButton))
+                return DIERR_GENERIC;
+            if (ExtractIdentifierInstanceIndex(instanceButton) >= NumInstancesOfType(EInstanceType::InstanceTypeButton))
+                return DIERR_GENERIC;
+            if (0 != mappedInstances.count(instanceButton))
+                return DIERR_GENERIC;
+
+            mappedInstances.insert(instanceButton);
+            WriteButtonValueToApplicationDataStructure(instanceButton, (xState.wButtons & XINPUT_GAMEPAD_RIGHT_THUMB ? 1 : 0), appDataBuf);
+        }
+    }
+
     return DI_OK;
 }
 
@@ -980,7 +1416,7 @@ HRESULT Base::WriteApplicationControllerState(XINPUT_GAMEPAD& xState, LPVOID app
 // -------- CONCRETE INSTANCE METHODS -------------------------------------- //
 // See "Mapper/Base.h" for documentation.
 
-DWORD Base::XInputTriggerSharedAxisDirection(EXInputControllerElement trigger)
+LONG Base::XInputTriggerSharedAxisDirection(EXInputControllerElement trigger)
 {
     if (EXInputControllerElement::TriggerLT == trigger)
         return 1;
