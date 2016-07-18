@@ -16,6 +16,7 @@
 #include "XInputController.h"
 
 #include <unordered_map>
+#include <Xinput.h>
 
 
 namespace Xidi
@@ -88,17 +89,20 @@ namespace Xidi
         private:
             // -------- INSTANCE VARIABLES --------------------------------------------- //
             
+            // Holds the properties of all axes present in this mapper.
+            SAxisProperties* axisProperties;
+            
+            // Specifies the size of an application data packet, in bytes.
+            DWORD dataPacketSize;
+
             // Maps from instance identifier to base offset in the application-specified data format.
             std::unordered_map<TInstance, DWORD> instanceToOffset;
             
-            // Maps from base offset in the application-specified data format to instance identifier.
-            std::unordered_map<DWORD, TInstance> offsetToInstance;
-            
             // Specifies if the maps have been initialized and contain valid data.
             BOOL mapsValid;
-
-            // Holds the properties of all axes present in this mapper.
-            SAxisProperties* axisProperties;
+            
+            // Maps from base offset in the application-specified data format to instance identifier.
+            std::unordered_map<DWORD, TInstance> offsetToInstance;
             
             
         public:
@@ -169,6 +173,10 @@ namespace Xidi
             // Given a DirectInput-style instance specification (dwObj, dwHow), provides a mapper-style identifier.
             // Returns a negative identifier in the event of an error.
             TInstance InstanceIdentifierFromDirectInputSpec(DWORD dwObj, DWORD dwHow);
+
+            // Maps a value from one range to another.
+            // Does not check for range errors; garbage in results in garbage out.
+            LONG MapValueInRangeToRange(const LONG originalValue, const LONG originalMin, const LONG originalMax, const LONG newMin, const LONG newMax);
             
             // Given an instance type, list of instances that are used, number of instances in total, and a desired instance to select, attempts to select that instance.
             // Checks that the specified instance (by index) is currently unset (FALSE) and, if so, sets it (to TRUE).
@@ -221,7 +229,7 @@ namespace Xidi
             void ResetApplicationDataFormat(void);
 
             // Writes controller state to an application data structure, given an XInput controller's state structure.
-            HRESULT WriteApplicationControllerState();
+            HRESULT WriteApplicationControllerState(XINPUT_GAMEPAD& xState, LPVOID appDataBuf, DWORD appDataSize);
 
 
             // -------- ABSTRACT INSTANCE METHODS -------------------------------------- //
@@ -247,8 +255,8 @@ namespace Xidi
             // Each XInput control element may only map to a single DirectInput instance, and with one exception there may not be any overlap.
             // Triggers may both be mapped to the same axis, in which case they will share that axis. If this happens, the directionality will be determined by calling XInputTriggerSharedAxisDirection (default implementation provided, may be overridden).
             // Instance numbers for each type must be from 0 to (NumInstancesOfType - 1) for that type.
-            // Additionally, types must match: XInput buttons must map to DirectInput buttons, and the XInput dpad must map to a DirectInput POV.
-            // XInput axes, however, may map to DirectInput buttons. This will cause the axis to be mapped to a button that is either pressed or not depending on its current position with a default threshold.
+            // Additionally, types must match: XInput buttons must map to DirectInput buttons, XInput sticks must map to DirectInput axes, and the XInput dpad must map to a DirectInput POV.
+            // XInput triggers, however, may map to either DirectInput axes or DirectInput buttons.
             // Subclasses may return a negative value if they wish to omit the particular XInput controller element from the mapping, in which case the application will not receive any updates for that XInput controller element.
             // Must be implemented by subclasses.
             virtual const TInstance MapXInputElementToDirectInputInstance(EXInputControllerElement element) = 0;

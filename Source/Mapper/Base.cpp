@@ -10,7 +10,10 @@
  *      Provides common implementations of most core functionality.
  *****************************************************************************/
 
+#include "ApiDirectInput8.h"
 #include "Mapper/Base.h"
+
+#include <Xinput.h>
 
 using namespace Xidi;
 using namespace Xidi::Mapper;
@@ -19,7 +22,7 @@ using namespace Xidi::Mapper;
 // -------- CONSTRUCTION AND DESTRUCTION ----------------------------------- //
 // See "Mapper/Base.h" for documentation.
 
-Base::Base() : instanceToOffset(), offsetToInstance(), mapsValid(FALSE), axisProperties(NULL) {}
+Base::Base() : axisProperties(NULL), dataPacketSize(0), instanceToOffset(), mapsValid(FALSE), offsetToInstance() {}
 
 // ---------
 
@@ -260,6 +263,21 @@ TInstance Base::InstanceIdentifierFromDirectInputSpec(DWORD dwObj, DWORD dwHow)
     }
 
     return instance;
+}
+
+// ---------
+
+LONG Base::MapValueInRangeToRange(const LONG originalValue, const LONG originalMin, const LONG originalMax, const LONG newMin, const LONG newMax)
+{
+    // Calculate the original value's position within the original range spread.
+    const double originalSpread = (double)(originalMax - originalMin);
+    const double originalFraction = (double)(originalValue - originalMin) / originalSpread;
+    
+    // Calculate the new range spread.
+    const double newSpread = (double)(newMax - newMin);
+
+    // Calculate and return the new scaled value.
+    return (LONG)(originalFraction * newSpread) + newMin;
 }
 
 // ---------
@@ -576,6 +594,9 @@ HRESULT Base::SetApplicationDataFormat(LPCDIDATAFORMAT lpdf)
     // Ensure the data packet size is a multiple of 4, as required by DirectInput
     if (0 != (lpdf->dwDataSize % 4))
         return DIERR_INVALIDPARAM;
+
+    // Save the application's data packet size.
+    dataPacketSize = lpdf->dwDataSize;
     
     // Obtain the number of instances of each type in the mapping by asking the subclass.
     const TInstanceCount numButtons = NumInstancesOfType(EInstanceType::InstanceTypeButton);
@@ -935,8 +956,25 @@ void Base::ResetApplicationDataFormat(void)
     mapsValid = FALSE;
 }
 
+// ---------
+
+HRESULT Base::WriteApplicationControllerState(XINPUT_GAMEPAD& xState, LPVOID appDataBuf, DWORD appDataSize)
+{
+    // First verify sufficient buffer space.
+    if (appDataSize < dataPacketSize)
+        return DIERR_INVALIDPARAM;
+
+    // Initialize the application structure. Everything not explicitly written will return 0.
+    ZeroMemory(appDataBuf, appDataSize);
+
+    
+    
+    return DI_OK;
+}
+
 
 // -------- CONCRETE INSTANCE METHODS -------------------------------------- //
+// See "Mapper/Base.h" for documentation.
 
 DWORD Base::XInputTriggerSharedAxisDirection(EXInputControllerElement trigger)
 {

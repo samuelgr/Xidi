@@ -177,9 +177,7 @@ HRESULT STDMETHODCALLTYPE WrapperIDirectInputDevice8::GetDeviceState(DWORD cbDat
         return result;
 
     // Submit the state to the mapper, which will in turn map XInput device state to application device state and fill in the application's data structure.
-
-
-    return DIERR_UNSUPPORTED;
+    return mapper->WriteApplicationControllerState(currentControllerState.Gamepad, lpvData, cbData);
 }
 
 // ---------
