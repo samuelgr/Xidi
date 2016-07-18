@@ -10,5 +10,5 @@
  *      the "dinput8.lib" library.
  *****************************************************************************/
 
-#define INITGUID
+#include <initguid.h>
 #include "ApiDirectInput8.h"

@@ -5,13 +5,13 @@
  * Authored by Samuel Grossman
  * Copyright (c) 2016
  *****************************************************************************
- * OldGamepad.cpp
+ * StandardGamepad.cpp
  *      Implements a mapper that maps to the button layout of an older
  *      DirectInput-compatible gamepad.
  *****************************************************************************/
 
 #include "ApiDirectInput8.h"
-#include "Mapper/OldGamepad.h"
+#include "Mapper/StandardGamepad.h"
 #include "XInputController.h"
 
 using namespace Xidi;
@@ -21,7 +21,7 @@ using namespace Xidi::Mapper;
 // -------- CONCRETE INSTANCE METHODS -------------------------------------- //
 // See "Mapper/Base.h" for documentation.
 
-const TInstanceIdx OldGamepad::AxisInstanceIndex(REFGUID axisGUID, const TInstanceIdx instanceNumber)
+const TInstanceIdx StandardGamepad::AxisInstanceIndex(REFGUID axisGUID, const TInstanceIdx instanceNumber)
 {
     // Only one axis of each type exists in this mapping.
     if (0 == instanceNumber)
@@ -37,7 +37,7 @@ const TInstanceIdx OldGamepad::AxisInstanceIndex(REFGUID axisGUID, const TInstan
 
 // ---------
 
-const TInstanceCount OldGamepad::AxisTypeCount(REFGUID axisGUID)
+const TInstanceCount StandardGamepad::AxisTypeCount(REFGUID axisGUID)
 {
     // Only one axis of each type exists in this mapping.
     // See if the first instance of the specified type exists and, if so, indicate as much.
@@ -47,7 +47,7 @@ const TInstanceCount OldGamepad::AxisTypeCount(REFGUID axisGUID)
     return 0;
 }
 
-const GUID OldGamepad::AxisTypeFromInstanceNumber(const TInstanceIdx instanceNumber)
+const GUID StandardGamepad::AxisTypeFromInstanceNumber(const TInstanceIdx instanceNumber)
 {
     EAxis axisNumber = (EAxis)instanceNumber;
 
@@ -68,7 +68,7 @@ const GUID OldGamepad::AxisTypeFromInstanceNumber(const TInstanceIdx instanceNum
 
 // ---------
 
-const TInstance OldGamepad::MapXInputElementToDirectInputInstance(EXInputControllerElement element)
+const TInstance StandardGamepad::MapXInputElementToDirectInputInstance(EXInputControllerElement element)
 {
     switch (element)
     {
@@ -129,7 +129,7 @@ const TInstance OldGamepad::MapXInputElementToDirectInputInstance(EXInputControl
 
 // ---------
 
-const TInstanceCount OldGamepad::NumInstancesOfType(const EInstanceType type)
+const TInstanceCount StandardGamepad::NumInstancesOfType(const EInstanceType type)
 {
     TInstanceCount numInstances = 0;
     

@@ -36,9 +36,6 @@
     <ClInclude Include="Include\WrapperIDirectInputDevice8.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="Include\Mapper\OldGamepad.h">
-      <Filter>Header Files\Mapper</Filter>
-    </ClInclude>
     <ClInclude Include="Include\Dinput8ExportApi.h">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -50,6 +47,9 @@
     </ClInclude>
     <ClInclude Include="Include\XInputController.h">
       <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Include\Mapper\StandardGamepad.h">
+      <Filter>Header Files\Mapper</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -71,9 +71,6 @@
     <ClCompile Include="Source\DllMain.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="Source\Mapper\OldGamepad.cpp">
-      <Filter>Source Files\Mapper</Filter>
-    </ClCompile>
     <ClCompile Include="Source\TestApplication.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -85,6 +82,9 @@
     </ClCompile>
     <ClCompile Include="Source\XInputController.cpp">
       <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\Mapper\StandardGamepad.cpp">
+      <Filter>Source Files\Mapper</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

@@ -5,7 +5,7 @@
  * Authored by Samuel Grossman
  * Copyright (c) 2016
  *****************************************************************************
- * OldGamepad.h
+ * StandardGamepad.h
  *      Declares a mapper that maps to the button layout of an older
  *      DirectInput-compatible gamepad.
  *****************************************************************************/
@@ -21,10 +21,10 @@ namespace Xidi
 {
     namespace Mapper
     {
-        // Provides a mapping to the button layout of an older DirectInput-compatible gamepad.
-        // LT and RT triggers are mapped to buttons.
+        // Provides a mapping to the button layout of a standard DirectInput-compatible gamepad.
+        // LT and RT triggers are mapped to their own buttons.
         // Right stick is mapped to the Z and Z-Rot axes.
-        class OldGamepad : public Base
+        class StandardGamepad : public Base
         {
         public:
             // -------- TYPE DEFINITIONS ----------------------------------------------- //

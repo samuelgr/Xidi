@@ -23,6 +23,21 @@ using namespace Xidi;
 using namespace std;
 
 
+// -------- TYPE DEFINITIONS ----------------------------------------------- //
+
+struct SInteractiveTestData
+{
+    LONG axisX;
+    LONG axisY;
+    LONG axisZ;
+    LONG axisRx;
+    LONG axisRy;
+    LONG axisRz;
+    LONG pov;
+    BYTE buttons[16];
+};
+
+
 // -------- MACROS --------------------------------------------------------- //
 
 // Helper for iostream input and output when using unicode.
@@ -55,6 +70,36 @@ static DWORD testCounter = 0;
 // Flag that specifies whether or not a callback is expected to be executed.
 // Used to verify that callbacks are invoked only the number of times required, no more and no less.
 static BOOL flagCallbackExpected = FALSE;
+
+// Object format definition for interactive test mode.
+static DIOBJECTDATAFORMAT objectFormats[] = {
+    { &GUID_XAxis, offsetof(SInteractiveTestData, axisX), DIDFT_AXIS | DIDFT_ANYINSTANCE, 0 },
+    { &GUID_YAxis, offsetof(SInteractiveTestData, axisY), DIDFT_AXIS | DIDFT_ANYINSTANCE, 0 },
+    { &GUID_ZAxis, offsetof(SInteractiveTestData, axisZ), DIDFT_AXIS | DIDFT_ANYINSTANCE, 0 },
+    { &GUID_RxAxis, offsetof(SInteractiveTestData, axisRx), DIDFT_AXIS | DIDFT_ANYINSTANCE, 0 },
+    { &GUID_RyAxis, offsetof(SInteractiveTestData, axisRy), DIDFT_AXIS | DIDFT_ANYINSTANCE, 0 },
+    { &GUID_RzAxis, offsetof(SInteractiveTestData, axisRz), DIDFT_AXIS | DIDFT_ANYINSTANCE, 0 },
+    { &GUID_POV, offsetof(SInteractiveTestData, pov), DIDFT_POV| DIDFT_ANYINSTANCE, 0 },
+    { &GUID_Button, offsetof(SInteractiveTestData, buttons) + 0, DIDFT_BUTTON | DIDFT_ANYINSTANCE, 0 },
+    { &GUID_Button, offsetof(SInteractiveTestData, buttons) + 1, DIDFT_BUTTON | DIDFT_ANYINSTANCE, 0 },
+    { &GUID_Button, offsetof(SInteractiveTestData, buttons) + 2, DIDFT_BUTTON | DIDFT_ANYINSTANCE, 0 },
+    { &GUID_Button, offsetof(SInteractiveTestData, buttons) + 3, DIDFT_BUTTON | DIDFT_ANYINSTANCE, 0 },
+    { &GUID_Button, offsetof(SInteractiveTestData, buttons) + 4, DIDFT_BUTTON | DIDFT_ANYINSTANCE, 0 },
+    { &GUID_Button, offsetof(SInteractiveTestData, buttons) + 5, DIDFT_BUTTON | DIDFT_ANYINSTANCE, 0 },
+    { &GUID_Button, offsetof(SInteractiveTestData, buttons) + 6, DIDFT_BUTTON | DIDFT_ANYINSTANCE, 0 },
+    { &GUID_Button, offsetof(SInteractiveTestData, buttons) + 7, DIDFT_BUTTON | DIDFT_ANYINSTANCE, 0 },
+    { &GUID_Button, offsetof(SInteractiveTestData, buttons) + 8, DIDFT_BUTTON | DIDFT_ANYINSTANCE, 0 },
+    { &GUID_Button, offsetof(SInteractiveTestData, buttons) + 9, DIDFT_BUTTON | DIDFT_ANYINSTANCE, 0 },
+    { &GUID_Button, offsetof(SInteractiveTestData, buttons) + 10, DIDFT_BUTTON | DIDFT_ANYINSTANCE, 0 },
+    { &GUID_Button, offsetof(SInteractiveTestData, buttons) + 11, DIDFT_BUTTON | DIDFT_ANYINSTANCE, 0 },
+    { &GUID_Button, offsetof(SInteractiveTestData, buttons) + 12, DIDFT_BUTTON | DIDFT_ANYINSTANCE, 0 },
+    { &GUID_Button, offsetof(SInteractiveTestData, buttons) + 13, DIDFT_BUTTON | DIDFT_ANYINSTANCE, 0 },
+    { &GUID_Button, offsetof(SInteractiveTestData, buttons) + 14, DIDFT_BUTTON | DIDFT_ANYINSTANCE, 0 },
+    { &GUID_Button, offsetof(SInteractiveTestData, buttons) + 15, DIDFT_BUTTON | DIDFT_ANYINSTANCE, 0 },
+};
+
+// Overall format definition for interactive test mode.
+static const DIDATAFORMAT dataFormat = {sizeof(DIDATAFORMAT), sizeof(DIOBJECTDATAFORMAT), 0, 44, 23, objectFormats};
 
 
 // -------- HELPERS -------------------------------------------------------- //
@@ -662,7 +707,125 @@ int RunTestApp(int argc, char* argv[])
 
 
     ////////////////////////////////////
+    ////////   Interactive Mode Preparation
+
+    tout << _T("Preparing to launch interactive mode... ");
+
+    
+    // Set deadzone and saturation for the whole device.
+    deadzoneTest.dwData = 2500;
+    deadzoneTest.diph.dwHow = DIPH_DEVICE;
+    deadzoneTest.diph.dwObj = 0;
+    result = directInputDeviceIface->SetProperty(DIPROP_DEADZONE, &deadzoneTest.diph);
+    if (DI_OK != result)
+    {
+        tout << _T("FAILED") << endl << _T("Unable to set deadzone.") << endl;
+        return 1;
+    }
+    result = directInputDeviceIface->SetProperty(DIPROP_SATURATION, &deadzoneTest.diph);
+    if (DI_OK != result)
+    {
+        tout << _T("FAILED") << endl << _T("Unable to set saturation.") << endl;
+        return 1;
+    }
+
+    // Set range for all axes to between -100 and 100 for easy reading.
+    rangeTest.diph.dwHeaderSize = sizeof(rangeTest.diph);
+    rangeTest.diph.dwSize = sizeof(rangeTest);
+    rangeTest.diph.dwHow = DIPH_BYID;
+    rangeTest.lMax = 100;
+    rangeTest.lMin = -100;
+
+    for (int i = 0; i < deviceCapabilities.dwAxes; ++i)
+    {
+        rangeTest.diph.dwObj = DIDFT_ABSAXIS | DIDFT_MAKEINSTANCE(i);
+        result = directInputDeviceIface->SetProperty(DIPROP_RANGE, &rangeTest.diph);
+        if (DI_OK != result)
+        {
+            tout << _T("FAILED") << endl << _T("Unable to set range.") << endl;
+            return 1;
+        }
+    }
+
+
+    result = directInputDeviceIface->SetDataFormat(&dataFormat);
+    if (DI_OK != result)
+    {
+        tout << _T("FAILED") << endl << _T("Unable to set data format.") << endl;
+        return 1;
+    }
+
+    result = directInputDeviceIface->Acquire();
+    if (DI_OK != result)
+    {
+        tout << _T("FAILED") << endl << _T("Unable to acquire device.") << endl;
+        return 1;
+    }
+
+    tout << _T("DONE") << endl;
+    tout << _T("After every character typed, the device's state will be read and reported.") << endl;
+    tout << _T("To quit, type Q and press RETURN.") << endl;
+    tout << _T("To re-read the device's state, type any other character and press RETURN.") << endl;
+    system("pause");
+    system("cls");
+
+    SInteractiveTestData testData;
+    TCHAR inputchar = _T('\0');
+
+    while (_T('Q') != inputchar && _T('q') != inputchar)
+    {
+        system("cls");
+        
+        result = directInputDeviceIface->Poll();
+        if (DI_OK != result)
+        {
+            tout << _T("Failed to poll device.") << endl;
+            return 1;
+        }
+
+        result = directInputDeviceIface->GetDeviceState(sizeof(testData), (LPVOID)&testData);
+        if (DI_OK != result)
+        {
+            tout << _T("Failed to retrieve device state.") << endl;
+            return 1;
+        }
+
+        tout << _T("Device state:") << endl;
+
+        tout << endl;
+
+        tout << _T("   X Axis  = ") << testData.axisX << endl;
+        tout << _T("   Y Axis  = ") << testData.axisY << endl;
+        tout << _T("   Z Axis  = ") << testData.axisZ << endl;
+        
+        tout << endl;
+        
+        tout << _T("   Rx Axis = ") << testData.axisRx << endl;
+        tout << _T("   Ry Axis = ") << testData.axisRy << endl;
+        tout << _T("   Rz Axis = ") << testData.axisRz << endl;
+        
+        tout << endl;
+
+        tout << _T("   Dpad    = ") << testData.pov << endl;
+
+        tout << endl;
+
+        tout << _T("   Buttons pressed:");
+        for (int i = 0; i < _countof(testData.buttons); ++i)
+        {
+            if (0x80 == testData.buttons[i])
+                tout << _T(" ") << (i + 1);
+        }
+        
+        tout << endl << endl << _T("Awaiting input (character then RETURN)... ");
+        tin >> inputchar;
+    }
+
+    
+    ////////////////////////////////////
     ////////   Cleanup and Exit
+    
+    tout << _T("Exiting.") << endl;
     
     directInputDeviceIface->Release();
     directInputIface->Release();

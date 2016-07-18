@@ -331,10 +331,10 @@ void Base::WriteAxisValueToApplicationDataStructure(const TInstance axisInstance
     DWORD axisValuePctRange = (DWORD)(axisValueDispAbs / axisPhysicalRange * 10000.0);
     if (axisValuePctRange <= axisProperties[axisIndex].deadzone)
         axisValuePctRange = 0;
-    else if (axisValuePctRange >= axisProperties[axisIndex].saturation)
+    else if (axisValuePctRange >= (10000 - axisProperties[axisIndex].saturation))
         axisValuePctRange = 10000;
     else
-        axisValuePctRange = (DWORD)MapValueInRangeToRange(axisValuePctRange, axisProperties[axisIndex].deadzone, axisProperties[axisIndex].saturation, 0, 10000);
+        axisValuePctRange = (DWORD)MapValueInRangeToRange(axisValuePctRange, axisProperties[axisIndex].deadzone, (10000 - axisProperties[axisIndex].saturation), 0, 10000);
 
     // Compute the final value for the axis, taking into consideration deadzone and saturation.
     LONG axisFinalValue;
@@ -345,7 +345,7 @@ void Base::WriteAxisValueToApplicationDataStructure(const TInstance axisInstance
 
     // Write the axis value to the specified offset.
     const DWORD offset = instanceToOffset.find(axisInstance)->second;
-    *((LONG*)(&((BYTE*)appData)[offset])) = value;
+    *((LONG*)(&((BYTE*)appData)[offset])) = axisFinalValue;
 }
 
 // ---------
