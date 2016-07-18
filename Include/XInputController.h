@@ -21,7 +21,7 @@
 namespace Xidi
 {
     // Identifies each input component of an XInput-based controller.
-    enum EControllerElement
+    enum EXInputControllerElement
     {
         StickLeftHorizontal,
         StickLeftVertical,
@@ -46,10 +46,10 @@ namespace Xidi
     // Fields are based on DirectInput event format.
     struct SControllerEvent
     {
-        EControllerElement controllerElement;   // Controller element identifier
-        LONG value;                             // Controller element value
-        DWORD timestamp;                        // Event timestamp (system time at which the event occurred), in milliseconds
-        DWORD sequenceNumber;                   // Monotonically increasing event sequence number, may wrap around
+        EXInputControllerElement controllerElement; // Controller element identifier
+        LONG value;                                 // Controller element value
+        DWORD timestamp;                            // Event timestamp (system time at which the event occurred), in milliseconds
+        DWORD sequenceNumber;                       // Monotonically increasing event sequence number, may wrap around
     };
 
     // Represents and interfaces with an XInput-based controller, providing a DirectInput-like interface.
@@ -190,7 +190,7 @@ namespace Xidi
         void ClearBufferedEvents(void);
         
         // Submits a new event to the buffer. Simply enqueues it to the event buffer queue.
-        void SubmitBufferedEvent(EControllerElement controllerElement, LONG value, DWORD timestamp);
+        void SubmitBufferedEvent(EXInputControllerElement controllerElement, LONG value, DWORD timestamp);
 
 
     public:

@@ -568,6 +568,15 @@ DWORD Base::OffsetForInstance(TInstance instance)
 
 HRESULT Base::SetApplicationDataFormat(LPCDIDATAFORMAT lpdf)
 {
+    // Initialize the maps by clearing them and marking them invalid
+    instanceToOffset.clear();
+    offsetToInstance.clear();
+    mapsValid = FALSE;
+    
+    // Ensure the data packet size is a multiple of 4, as required by DirectInput
+    if (0 != (lpdf->dwDataSize % 4))
+        return DIERR_INVALIDPARAM;
+    
     // Obtain the number of instances of each type in the mapping by asking the subclass.
     const TInstanceCount numButtons = NumInstancesOfType(EInstanceType::InstanceTypeButton);
     const TInstanceCount numAxes = NumInstancesOfType(EInstanceType::InstanceTypeAxis);
@@ -588,11 +597,6 @@ HRESULT Base::SetApplicationDataFormat(LPCDIDATAFORMAT lpdf)
     for (TInstanceCount i = 0; i < numAxes; ++i) axisUsed[i] = FALSE;
     for (TInstanceCount i = 0; i < numPov; ++i) povUsed[i] = FALSE;
     for (DWORD i = 0; i < lpdf->dwDataSize; ++i) offsetUsed[i] = FALSE;
-
-    // Initialize the maps by clearing them and marking them invalid
-    instanceToOffset.clear();
-    offsetToInstance.clear();
-    mapsValid = FALSE;
     
     // Iterate over each of the object specifications provided by the application.
     for (DWORD i = 0; i < lpdf->dwNumObjs; ++i)
@@ -609,8 +613,8 @@ HRESULT Base::SetApplicationDataFormat(LPCDIDATAFORMAT lpdf)
         {
             // Pick an axis
 
-            // First check the offsets for overlap with something previously selected
-            if (FALSE == CheckAndSetOffsets(&offsetUsed[dataFormat->dwOfs], SizeofInstance(EInstanceType::InstanceTypeAxis)))
+            // First check the offsets for overlap with something previously selected and for sufficient space in the data packet
+            if (!(dataFormat->dwOfs + SizeofInstance(EInstanceType::InstanceTypeAxis) < lpdf->dwDataSize) || FALSE == CheckAndSetOffsets(&offsetUsed[dataFormat->dwOfs], SizeofInstance(EInstanceType::InstanceTypeAxis)))
                 invalidParamsDetected = TRUE;
             else
             {
@@ -706,9 +710,15 @@ HRESULT Base::SetApplicationDataFormat(LPCDIDATAFORMAT lpdf)
 
                 if (selectedInstance > 0)
                 {
-                    // Instance was selected successfully, add a mapping
-                    instanceToOffset.insert({ selectedInstance, dataFormat->dwOfs });
-                    offsetToInstance.insert({ dataFormat->dwOfs, selectedInstance });
+                    // Check the offsets for overlap with something previously selected and for sufficient space in the data packet
+                    if (!(dataFormat->dwOfs + SizeofInstance(EInstanceType::InstanceTypeButton) < lpdf->dwDataSize) || FALSE == CheckAndSetOffsets(&offsetUsed[dataFormat->dwOfs], SizeofInstance(EInstanceType::InstanceTypeButton)))
+                        invalidParamsDetected = TRUE;
+                    else
+                    {
+                        // Instance was selected successfully, add a mapping
+                        instanceToOffset.insert({ selectedInstance, dataFormat->dwOfs });
+                        offsetToInstance.insert({ dataFormat->dwOfs, selectedInstance });
+                    }
                 }
                 else if (!allowAnyInstance)
                 {
@@ -736,9 +746,15 @@ HRESULT Base::SetApplicationDataFormat(LPCDIDATAFORMAT lpdf)
 
                 if (selectedInstance > 0)
                 {
-                    // Instance was selected successfully, add a mapping
-                    instanceToOffset.insert({ selectedInstance, dataFormat->dwOfs });
-                    offsetToInstance.insert({ dataFormat->dwOfs, selectedInstance });
+                    // Check the offsets for overlap with something previously selected and for sufficient space in the data packet
+                    if (!(dataFormat->dwOfs + SizeofInstance(EInstanceType::InstanceTypePov) < lpdf->dwDataSize) || FALSE == CheckAndSetOffsets(&offsetUsed[dataFormat->dwOfs], SizeofInstance(EInstanceType::InstanceTypePov)))
+                        invalidParamsDetected = TRUE;
+                    else
+                    {
+                        // Instance was selected successfully, add a mapping
+                        instanceToOffset.insert({ selectedInstance, dataFormat->dwOfs });
+                        offsetToInstance.insert({ dataFormat->dwOfs, selectedInstance });
+                    }
                 }
                 else if (!allowAnyInstance)
                 {
@@ -917,4 +933,15 @@ void Base::ResetApplicationDataFormat(void)
     offsetToInstance.clear();
 
     mapsValid = FALSE;
+}
+
+
+// -------- CONCRETE INSTANCE METHODS -------------------------------------- //
+
+DWORD Base::XInputTriggerSharedAxisDirection(EXInputControllerElement trigger)
+{
+    if (EXInputControllerElement::TriggerLT == trigger)
+        return 1;
+
+    return -1;
 }

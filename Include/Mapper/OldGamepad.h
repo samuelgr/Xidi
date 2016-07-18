@@ -76,7 +76,8 @@ namespace Xidi
             
             virtual const TInstanceIdx AxisInstanceIndex(REFGUID axisGUID, const TInstanceIdx instanceNumber);
             virtual const TInstanceCount AxisTypeCount(REFGUID axisGUID);
-            virtual GUID AxisTypeFromInstanceNumber(TInstanceIdx instanceNumber);
+            virtual const GUID AxisTypeFromInstanceNumber(const TInstanceIdx instanceNumber);
+            virtual const TInstance MapXInputElementToDirectInputInstance(EXInputControllerElement element);
             virtual const TInstanceCount NumInstancesOfType(const EInstanceType type);
         };
     }

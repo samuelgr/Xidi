@@ -12,6 +12,7 @@
 
 #include "ApiDirectInput8.h"
 #include "Mapper/OldGamepad.h"
+#include "XInputController.h"
 
 using namespace Xidi;
 using namespace Xidi::Mapper;
@@ -46,7 +47,7 @@ const TInstanceCount OldGamepad::AxisTypeCount(REFGUID axisGUID)
     return 0;
 }
 
-GUID OldGamepad::AxisTypeFromInstanceNumber(TInstanceIdx instanceNumber)
+const GUID OldGamepad::AxisTypeFromInstanceNumber(const TInstanceIdx instanceNumber)
 {
     EAxis axisNumber = (EAxis)instanceNumber;
 
@@ -63,6 +64,67 @@ GUID OldGamepad::AxisTypeFromInstanceNumber(TInstanceIdx instanceNumber)
     }
 
     return GUID_Unknown;
+}
+
+// ---------
+
+const TInstance OldGamepad::MapXInputElementToDirectInputInstance(EXInputControllerElement element)
+{
+    switch (element)
+    {
+    case EXInputControllerElement::StickLeftHorizontal:
+        return MakeInstanceIdentifier(EInstanceType::InstanceTypeAxis, (TInstanceIdx)EAxis::AxisX);
+        
+    case EXInputControllerElement::StickLeftVertical:
+        return MakeInstanceIdentifier(EInstanceType::InstanceTypeAxis, (TInstanceIdx)EAxis::AxisY);
+        
+    case EXInputControllerElement::StickRightHorizontal:
+        return MakeInstanceIdentifier(EInstanceType::InstanceTypeAxis, (TInstanceIdx)EAxis::AxisZ);
+        
+    case EXInputControllerElement::StickRightVertical:
+        return MakeInstanceIdentifier(EInstanceType::InstanceTypeAxis, (TInstanceIdx)EAxis::AxisRZ);
+        
+    case EXInputControllerElement::TriggerLT:
+        return MakeInstanceIdentifier(EInstanceType::InstanceTypeButton, (TInstanceIdx)EButton::ButtonL2);
+        
+    case EXInputControllerElement::TriggerRT:
+        return MakeInstanceIdentifier(EInstanceType::InstanceTypeButton, (TInstanceIdx)EButton::ButtonR2);
+        
+    case EXInputControllerElement::Dpad:
+        return MakeInstanceIdentifier(EInstanceType::InstanceTypePov, (TInstanceIdx)EPov::PovDpad);
+        
+    case EXInputControllerElement::ButtonA:
+        return MakeInstanceIdentifier(EInstanceType::InstanceTypeButton, (TInstanceIdx)EButton::ButtonA);
+        
+    case EXInputControllerElement::ButtonB:
+        return MakeInstanceIdentifier(EInstanceType::InstanceTypeButton, (TInstanceIdx)EButton::ButtonB);
+        
+    case EXInputControllerElement::ButtonX:
+        return MakeInstanceIdentifier(EInstanceType::InstanceTypeButton, (TInstanceIdx)EButton::ButtonX);
+        
+    case EXInputControllerElement::ButtonY:
+        return MakeInstanceIdentifier(EInstanceType::InstanceTypeButton, (TInstanceIdx)EButton::ButtonY);
+        
+    case EXInputControllerElement::ButtonLB:
+        return MakeInstanceIdentifier(EInstanceType::InstanceTypeButton, (TInstanceIdx)EButton::ButtonL1);
+        
+    case EXInputControllerElement::ButtonRB:
+        return MakeInstanceIdentifier(EInstanceType::InstanceTypeButton, (TInstanceIdx)EButton::ButtonR1);
+        
+    case EXInputControllerElement::ButtonBack:
+        return MakeInstanceIdentifier(EInstanceType::InstanceTypeButton, (TInstanceIdx)EButton::ButtonBack);
+        
+    case EXInputControllerElement::ButtonStart:
+        return MakeInstanceIdentifier(EInstanceType::InstanceTypeButton, (TInstanceIdx)EButton::ButtonStart);
+        
+    case EXInputControllerElement::ButtonLeftStick:
+        return MakeInstanceIdentifier(EInstanceType::InstanceTypeButton, (TInstanceIdx)EButton::ButtonLeftStick);
+        
+    case EXInputControllerElement::ButtonRightStick:
+        return MakeInstanceIdentifier(EInstanceType::InstanceTypeButton, (TInstanceIdx)EButton::ButtonRightStick);
+    }
+    
+    return (TInstance)-1;
 }
 
 // ---------

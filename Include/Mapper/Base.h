@@ -13,6 +13,7 @@
 #pragma once
 
 #include "ApiDirectInput8.h"
+#include "XInputController.h"
 
 #include <unordered_map>
 
@@ -219,6 +220,9 @@ namespace Xidi
             // Resets the application-supplied DirectInput data format to an uninitialized state.
             void ResetApplicationDataFormat(void);
 
+            // Writes controller state to an application data structure, given an XInput controller's state structure.
+            HRESULT WriteApplicationControllerState();
+
 
             // -------- ABSTRACT INSTANCE METHODS -------------------------------------- //
             
@@ -236,12 +240,33 @@ namespace Xidi
             // Given an axis instance number, returns a reference to the GUID that corresponds to the axis type.
             // For example, if the specified overall axis instance is an X axis, this method should return GUID_Xaxis.
             // Must be implemented by subclasses.
-            virtual GUID AxisTypeFromInstanceNumber(TInstanceIdx instanceNumber) = 0;
+            virtual const GUID AxisTypeFromInstanceNumber(const TInstanceIdx instanceNumber) = 0;
+            
+            // Given an element of an XInput controller, returns the corresponding DirectInput instance.
+            // Type and bounds rules are enforced: this method is called when updating controller state, and errors in the mapping will cause an error to be signalled to the application.
+            // Each XInput control element may only map to a single DirectInput instance, and with one exception there may not be any overlap.
+            // Triggers may both be mapped to the same axis, in which case they will share that axis. If this happens, the directionality will be determined by calling XInputTriggerSharedAxisDirection (default implementation provided, may be overridden).
+            // Instance numbers for each type must be from 0 to (NumInstancesOfType - 1) for that type.
+            // Additionally, types must match: XInput buttons must map to DirectInput buttons, and the XInput dpad must map to a DirectInput POV.
+            // XInput axes, however, may map to DirectInput buttons. This will cause the axis to be mapped to a button that is either pressed or not depending on its current position with a default threshold.
+            // Subclasses may return a negative value if they wish to omit the particular XInput controller element from the mapping, in which case the application will not receive any updates for that XInput controller element.
+            // Must be implemented by subclasses.
+            virtual const TInstance MapXInputElementToDirectInputInstance(EXInputControllerElement element) = 0;
             
             // Specifies the number of instances that exist in the mapping of the given type.
             // For example, returns the number of buttons that exist when the input parameter is EInstanceType::InstanceTypeButton.
             // Must be implemented by subclasses.
             virtual const TInstanceCount NumInstancesOfType(const EInstanceType type) = 0;
+
+            
+            // -------- CONCRETE INSTANCE METHODS -------------------------------------- //
+            
+            // Called with one trigger as input when both XInput triggers map to the same shared axis.
+            // If that trigger should be mapped to the negative direction of the shared axis, return a negative value.
+            // Otherwise return a positive value; it is an error to return 0.
+            // The default implementation maps LT to the positive direction and RT to the negative direction; this is the default behavior of an Xbox 360 controller when accessed over DirectInput.
+            // May be overridden by subclasses if the default behavior is unsuitable.
+            virtual DWORD XInputTriggerSharedAxisDirection(EXInputControllerElement trigger);
         };
     }
 }

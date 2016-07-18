@@ -75,7 +75,11 @@ ULONG STDMETHODCALLTYPE WrapperIDirectInputDevice8::Release(void)
 
 HRESULT STDMETHODCALLTYPE WrapperIDirectInputDevice8::Acquire(void)
 {
-    return controller->AcquireController();
+    // Can only acquire the device once the data format has been set.
+    if (mapper->IsApplicationDataFormatSet())
+        return controller->AcquireController();
+
+    return DIERR_INVALIDPARAM;
 }
 
 // ---------
@@ -166,7 +170,15 @@ HRESULT STDMETHODCALLTYPE WrapperIDirectInputDevice8::GetDeviceInfo(LPDIDEVICEIN
 
 HRESULT STDMETHODCALLTYPE WrapperIDirectInputDevice8::GetDeviceState(DWORD cbData, LPVOID lpvData)
 {
-    // Not yet implemented.
+    // Get the current state from the controller.
+    XINPUT_STATE currentControllerState;
+    HRESULT result = controller->GetCurrentDeviceState(&currentControllerState);
+    if (DI_OK != result)
+        return result;
+
+    // Submit the state to the mapper, which will in turn map XInput device state to application device state and fill in the application's data structure.
+
+
     return DIERR_UNSUPPORTED;
 }
 
