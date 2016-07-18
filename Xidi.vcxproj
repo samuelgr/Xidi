@@ -33,7 +33,6 @@
     <ClInclude Include="Include\Mapper\OldGamepad.h" />
     <ClInclude Include="Include\ControllerIdentification.h" />
     <ClInclude Include="Include\Dinput8ImportApi.h" />
-    <ClInclude Include="Include\Hashers.h" />
     <ClInclude Include="Include\Mapper\Base.h" />
     <ClInclude Include="Include\WrapperIDirectInput8.h" />
     <ClInclude Include="Include\WrapperIDirectInputDevice8.h" />

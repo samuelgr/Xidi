@@ -13,7 +13,6 @@
 #pragma once
 
 #include "ApiDirectInput8.h"
-#include "Hashers.h"
 
 #include <unordered_map>
 

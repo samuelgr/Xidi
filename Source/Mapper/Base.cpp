@@ -13,6 +13,7 @@
 #include "ApiDirectInput8.h"
 #include "Mapper/Base.h"
 
+#include <unordered_set>
 #include <Xinput.h>
 
 using namespace Xidi;
@@ -964,6 +965,9 @@ HRESULT Base::WriteApplicationControllerState(XINPUT_GAMEPAD& xState, LPVOID app
     if (appDataSize < dataPacketSize)
         return DIERR_INVALIDPARAM;
 
+    // Keep track of instances already mapped, for error checking.
+    std::unordered_set<TInstance>;
+    
     // Initialize the application structure. Everything not explicitly written will return 0.
     ZeroMemory(appDataBuf, appDataSize);
 

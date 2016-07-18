@@ -36,9 +36,6 @@
     <ClInclude Include="Include\WrapperIDirectInputDevice8.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="Include\Hashers.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="Include\Mapper\OldGamepad.h">
       <Filter>Header Files\Mapper</Filter>
     </ClInclude>
