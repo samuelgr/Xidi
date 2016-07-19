@@ -370,7 +370,7 @@ int RunTestApp(int argc, char* argv[])
         return -1;
     }
 
-    terr << _T("Device presents ") << deviceCapabilities.dwAxes << _T(" axes, ") << deviceCapabilities.dwButtons << _T(" buttons, and ") << deviceCapabilities.dwPOVs << _T(" POV controllers.") << endl << endl;
+    tout << _T("Device presents ") << deviceCapabilities.dwAxes << _T(" axes, ") << deviceCapabilities.dwButtons << _T(" buttons, and ") << deviceCapabilities.dwPOVs << _T(" POV controllers.") << endl << endl;
     
 
     ////////////////////////////////////
@@ -791,6 +791,10 @@ int RunTestApp(int argc, char* argv[])
             return 1;
         }
 
+        tout << _T("Device presents ") << deviceCapabilities.dwAxes << _T(" axes, ") << deviceCapabilities.dwButtons << _T(" buttons, and ") << deviceCapabilities.dwPOVs << _T(" POV controllers.") << endl;
+
+        tout << endl;
+        
         tout << _T("Device state:") << endl;
 
         tout << endl;
@@ -839,8 +843,5 @@ int RunTestApp(int argc, char* argv[])
 
 int main(int argc, char* argv[])
 {
-    int testAppResult = RunTestApp(argc, argv);
-
-    system("pause");
-    return testAppResult;
+    return RunTestApp(argc, argv);
 }
