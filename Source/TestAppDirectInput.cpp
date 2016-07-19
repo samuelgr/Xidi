@@ -5,15 +5,15 @@
  * Authored by Samuel Grossman
  * Copyright (c) 2016
  *****************************************************************************
- * TestApplication.cpp
+ * TestAppDirectInput.cpp
  *      Entry point and other implementation for a simple console application
- *      for testing the functionality of this library.
+ *      for testing the functionality of this library via DirectInput.
  *****************************************************************************/
 
 #include "ApiDirectInput.h"
 #include "ControllerIdentification.h"
-#include "DinputExportApi.h"
-#include "DinputImportApi.h"
+#include "ExportApiDirectInput.h"
+#include "ImportApiDirectInput.h"
 #include "Mapper/Base.h"
 
 #include <cstdlib>
@@ -42,10 +42,10 @@ struct SInteractiveTestData
 
 // Routes calls to exported methods based on the DirectInput version.
 #if DIRECTINPUT_VERSION >= 0x0800
-#define ExportedDirectInputCreateMethod         DinputExportDirectInput8Create
+#define ExportedDirectInputCreateMethod         ExportApiDirectInputDirectInput8Create
 #define Use_IID_IDirectInput                    IID_IDirectInput8
 #else
-#define ExportedDirectInputCreateMethod         DinputExportDirectInputCreateEx
+#define ExportedDirectInputCreateMethod         ExportApiDirectInputDirectInputCreateEx
 #define Use_IID_IDirectInput                    IID_IDirectInput7
 #endif
 
@@ -334,7 +334,7 @@ int RunTestApp(int argc, char* argv[])
     ////////   Initialization
     
     // Initialize the imported DirectInput8 API.
-    if (S_OK != DinputImportApi::Initialize())
+    if (S_OK != ImportApiDirectInput::Initialize())
     {
         terr << _T("Unable to initialize DirectInput8 API.") << endl;
         return -1;

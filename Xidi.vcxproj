@@ -53,12 +53,12 @@
   <ItemGroup>
     <ClInclude Include="Include\ApiDirectInput.h" />
     <ClInclude Include="Include\ApiWindows.h" />
-    <ClInclude Include="Include\DinputExportApi.h" />
+    <ClInclude Include="Include\ExportApiDirectInput.h" />
     <ClInclude Include="Include\Mapper\NativeXInput.h" />
     <ClInclude Include="Include\Mapper\NativeXInputSharedTriggers.h" />
     <ClInclude Include="Include\Mapper\StandardGamepad.h" />
     <ClInclude Include="Include\ControllerIdentification.h" />
-    <ClInclude Include="Include\DinputImportApi.h" />
+    <ClInclude Include="Include\ImportApiDirectInput.h" />
     <ClInclude Include="Include\Mapper\Base.h" />
     <ClInclude Include="Include\WrapperIDirectInput.h" />
     <ClInclude Include="Include\WrapperIDirectInputDevice.h" />
@@ -69,7 +69,7 @@
     <ClCompile Include="Source\Mapper\NativeXInput.cpp" />
     <ClCompile Include="Source\Mapper\NativeXInputSharedTriggers.cpp" />
     <ClCompile Include="Source\Mapper\StandardGamepad.cpp" />
-    <ClCompile Include="Source\TestApp.cpp">
+    <ClCompile Include="Source\TestAppDirectInput.cpp">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug-DInput8|Win32'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug-DInput|Win32'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug-DInput8|x64'">true</ExcludedFromBuild>
@@ -80,10 +80,10 @@
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release-DInput|x64'">true</ExcludedFromBuild>
     </ClCompile>
     <ClCompile Include="Source\ControllerIdentification.cpp" />
-    <ClCompile Include="Source\DinputImportApi.cpp" />
+    <ClCompile Include="Source\ImportApiDirectInput.cpp" />
     <ClCompile Include="Source\Mapper\Base.cpp" />
     <ClCompile Include="Source\WrapperIDirectInput.cpp" />
-    <ClCompile Include="Source\DinputExportApi.cpp" />
+    <ClCompile Include="Source\ExportApiDirectInput.cpp" />
     <ClCompile Include="Source\DllMain.cpp">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='TestApp-DInput8|Win32'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='TestApp-DInput|Win32'">true</ExcludedFromBuild>

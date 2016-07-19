@@ -51,17 +51,14 @@
     <ClInclude Include="Include\WrapperIDirectInput.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="Include\DinputExportApi.h">
+    <ClInclude Include="Include\ExportApiDirectInput.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="Include\DinputImportApi.h">
+    <ClInclude Include="Include\ImportApiDirectInput.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="Source\DllMain.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="Source\ControllerIdentification.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -89,13 +86,16 @@
     <ClCompile Include="Source\WrapperIDirectInput.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="Source\DinputExportApi.cpp">
+    <ClCompile Include="Source\TestAppDirectInput.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="Source\DinputImportApi.cpp">
+    <ClCompile Include="Source\DllMain.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="Source\TestApp.cpp">
+    <ClCompile Include="Source\ExportApiDirectInput.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\ImportApiDirectInput.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

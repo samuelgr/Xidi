@@ -5,7 +5,7 @@
  * Authored by Samuel Grossman
  * Copyright (c) 2016
  *****************************************************************************
- * DinputImportApi.h
+ * ImportApiDirectInput.h
  *      Declarations related to importing the API from the DirectInput
  *      library.
  *****************************************************************************/
@@ -17,29 +17,31 @@
 
 namespace Xidi
 {
-    // Fields specify the addresses of the imported DirectInput API functions.
-    struct SImportTable
-    {
-#if DIRECTINPUT_VERSION >= 0x0800
-        HRESULT(__stdcall *DirectInput8Create)(HINSTANCE, DWORD, REFIID, LPVOID*, LPUNKNOWN);
-#else
-        HRESULT(__stdcall *DirectInputCreateA)(HINSTANCE, DWORD, LPDIRECTINPUTA*, LPUNKNOWN);
-        HRESULT(__stdcall *DirectInputCreateW)(HINSTANCE, DWORD, LPDIRECTINPUTW*, LPUNKNOWN);
-        HRESULT(__stdcall *DirectInputCreateEx)(HINSTANCE, DWORD, REFIID, LPVOID*, LPUNKNOWN);
-#endif
-        HRESULT(__stdcall *DllRegisterServer)(void);
-        HRESULT(__stdcall *DllUnregisterServer)(void);
-        HRESULT(__stdcall *DllCanUnloadNow)(void);
-        HRESULT(__stdcall *DllGetClassObject)(_In_ REFCLSID, _In_ REFIID, _Out_ LPVOID*);
-    };
-    
-    
     // Enables access to the underlying system's DirectInput API.
     // Dynamically loads the library and holds pointers to all of its methods.
     // Methods are intended to be called directly rather than through an instance.
-    class DinputImportApi
+    class ImportApiDirectInput
     {
     public:
+        // -------- TYPE DEFINITIONS ----------------------------------------------- //
+        
+        // Fields specify the addresses of the imported DirectInput API functions.
+        struct SImportTable
+        {
+#if DIRECTINPUT_VERSION >= 0x0800
+            HRESULT(__stdcall *DirectInput8Create)(HINSTANCE, DWORD, REFIID, LPVOID*, LPUNKNOWN);
+#else
+            HRESULT(__stdcall *DirectInputCreateA)(HINSTANCE, DWORD, LPDIRECTINPUTA*, LPUNKNOWN);
+            HRESULT(__stdcall *DirectInputCreateW)(HINSTANCE, DWORD, LPDIRECTINPUTW*, LPUNKNOWN);
+            HRESULT(__stdcall *DirectInputCreateEx)(HINSTANCE, DWORD, REFIID, LPVOID*, LPUNKNOWN);
+#endif
+            HRESULT(__stdcall *DllRegisterServer)(void);
+            HRESULT(__stdcall *DllUnregisterServer)(void);
+            HRESULT(__stdcall *DllCanUnloadNow)(void);
+            HRESULT(__stdcall *DllGetClassObject)(_In_ REFCLSID, _In_ REFIID, _Out_ LPVOID*);
+        };
+        
+
         // -------- CONSTANTS ------------------------------------------------------ //
 
         // Holds the name of the library to load from the system directory.
@@ -62,7 +64,7 @@ namespace Xidi
         // -------- CONSTRUCTION AND DESTRUCTION ----------------------------------- //
 
         // Default constructor. Should never be invoked.
-        DinputImportApi();
+        ImportApiDirectInput();
 
 
     public:
@@ -74,28 +76,28 @@ namespace Xidi
 
 #if DIRECTINPUT_VERSION >= 0x0800
         // Calls the imported function DirectInput8Create.
-        static HRESULT ImportedDirectInput8Create(HINSTANCE hinst, DWORD dwVersion, REFIID riidltf, LPVOID* ppvOut, LPUNKNOWN punkOuter);
+        static HRESULT DirectInput8Create(HINSTANCE hinst, DWORD dwVersion, REFIID riidltf, LPVOID* ppvOut, LPUNKNOWN punkOuter);
 #else
         // Calls the imported function DirectInputCreateA.
-        static HRESULT ImportedDirectInputCreateA(HINSTANCE hinst, DWORD dwVersion, LPDIRECTINPUTA* ppDI, LPUNKNOWN punkOuter);
+        static HRESULT DirectInputCreateA(HINSTANCE hinst, DWORD dwVersion, LPDIRECTINPUTA* ppDI, LPUNKNOWN punkOuter);
 
         // Calls the imported function DirectInputCreateW.
-        static HRESULT ImportedDirectInputCreateW(HINSTANCE hinst, DWORD dwVersion, LPDIRECTINPUTW* ppDI, LPUNKNOWN punkOuter);
+        static HRESULT DirectInputCreateW(HINSTANCE hinst, DWORD dwVersion, LPDIRECTINPUTW* ppDI, LPUNKNOWN punkOuter);
 
         // Calls the imported function DirectInputCreateEx.
-        static HRESULT ImportedDirectInputCreateEx(HINSTANCE hinst, DWORD dwVersion, REFIID riidltf, LPVOID* ppvOut, LPUNKNOWN punkOuter);
+        static HRESULT DirectInputCreateEx(HINSTANCE hinst, DWORD dwVersion, REFIID riidltf, LPVOID* ppvOut, LPUNKNOWN punkOuter);
 #endif
 
         // Calls the imported function DllRegisterServer.
-        static HRESULT ImportedDllRegisterServer(void);
+        static HRESULT DllRegisterServer(void);
 
         // Calls the imported function DllUnregisterServer.
-        static HRESULT ImportedDllUnregisterServer(void);
+        static HRESULT DllUnregisterServer(void);
 
         // Calls the imported function DllCanUnloadNow.
-        static HRESULT ImportedDllCanUnloadNow(void);
+        static HRESULT DllCanUnloadNow(void);
 
         // Calls the imported function DllGetClassObject.
-        static HRESULT ImportedDllGetClassObject(REFCLSID rclsid, REFIID riid, LPVOID* ppv);
+        static HRESULT DllGetClassObject(REFCLSID rclsid, REFIID riid, LPVOID* ppv);
     };
 }

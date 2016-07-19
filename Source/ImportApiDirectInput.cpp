@@ -5,39 +5,39 @@
  * Authored by Samuel Grossman
  * Copyright (c) 2016
  *****************************************************************************
- * DinputImportApi.cpp
+ * ImportApiDirectInput.cpp
  *      Implementation of importing the API from the DirectInput library.
  *****************************************************************************/
 
 #include "ApiWindows.h"
-#include "DinputImportApi.h"
+#include "ImportApiDirectInput.h"
 
 using namespace Xidi;
 
 
 // -------- CONSTANTS ------------------------------------------------------ //
-// See "DinputImportApi.h" for documentation.
+// See "ImportApiDirectInput.h" for documentation.
 
 #if DIRECTINPUT_VERSION >= 0x0800
-const TCHAR* const DinputImportApi::kDirectInputLibraryName = _T("\\dinput8.dll");
-const DWORD DinputImportApi::kDirectInputLibraryLength = 12;
+const TCHAR* const ImportApiDirectInput::kDirectInputLibraryName = _T("\\dinput8.dll");
+const DWORD ImportApiDirectInput::kDirectInputLibraryLength = 12;
 #else
-const TCHAR* const DinputImportApi::kDirectInputLibraryName = _T("\\dinput.dll");
-const DWORD DinputImportApi::kDirectInputLibraryLength = 11;
+const TCHAR* const ImportApiDirectInput::kDirectInputLibraryName = _T("\\dinput.dll");
+const DWORD ImportApiDirectInput::kDirectInputLibraryLength = 11;
 #endif
 
 
 // -------- CLASS VARIABLES ------------------------------------------------ //
-// See "DinputImportApi.h" for documentation.
+// See "ImportApiDirectInput.h" for documentation.
 
-SImportTable DinputImportApi::importTable = {NULL, NULL, NULL, NULL, NULL};
-BOOL DinputImportApi::importTableIsInitialized = FALSE;
+ImportApiDirectInput::SImportTable ImportApiDirectInput::importTable = {NULL, NULL, NULL, NULL, NULL};
+BOOL ImportApiDirectInput::importTableIsInitialized = FALSE;
 
 
 // -------- CLASS METHODS -------------------------------------------------- //
-// See "DinputImportApi.h" for documentation.
+// See "ImportApiDirectInput.h" for documentation.
 
-HRESULT DinputImportApi::Initialize(void)
+HRESULT ImportApiDirectInput::Initialize(void)
 {
     if (FALSE == importTableIsInitialized)
     {
@@ -98,7 +98,7 @@ HRESULT DinputImportApi::Initialize(void)
 // ---------
 
 #if DIRECTINPUT_VERSION >= 0x0800
-HRESULT DinputImportApi::ImportedDirectInput8Create(HINSTANCE hinst, DWORD dwVersion, REFIID riidltf, LPVOID* ppvOut, LPUNKNOWN punkOuter)
+HRESULT ImportApiDirectInput::DirectInput8Create(HINSTANCE hinst, DWORD dwVersion, REFIID riidltf, LPVOID* ppvOut, LPUNKNOWN punkOuter)
 {
     if (S_OK != Initialize())
         return E_NOT_VALID_STATE;
@@ -106,7 +106,7 @@ HRESULT DinputImportApi::ImportedDirectInput8Create(HINSTANCE hinst, DWORD dwVer
     return importTable.DirectInput8Create(hinst, dwVersion, riidltf, ppvOut, punkOuter);
 }
 #else
-HRESULT DinputImportApi::ImportedDirectInputCreateA(HINSTANCE hinst, DWORD dwVersion, LPDIRECTINPUTA*ppDI, LPUNKNOWN punkOuter)
+HRESULT ImportApiDirectInput::DirectInputCreateA(HINSTANCE hinst, DWORD dwVersion, LPDIRECTINPUTA*ppDI, LPUNKNOWN punkOuter)
 {
     if (S_OK != Initialize())
         return E_NOT_VALID_STATE;
@@ -116,7 +116,7 @@ HRESULT DinputImportApi::ImportedDirectInputCreateA(HINSTANCE hinst, DWORD dwVer
 
 // ---------
 
-HRESULT DinputImportApi::ImportedDirectInputCreateW(HINSTANCE hinst, DWORD dwVersion, LPDIRECTINPUTW*ppDI, LPUNKNOWN punkOuter)
+HRESULT ImportApiDirectInput::DirectInputCreateW(HINSTANCE hinst, DWORD dwVersion, LPDIRECTINPUTW*ppDI, LPUNKNOWN punkOuter)
 {
     if (S_OK != Initialize())
         return E_NOT_VALID_STATE;
@@ -126,7 +126,7 @@ HRESULT DinputImportApi::ImportedDirectInputCreateW(HINSTANCE hinst, DWORD dwVer
 
 // ---------
 
-HRESULT DinputImportApi::ImportedDirectInputCreateEx(HINSTANCE hinst, DWORD dwVersion, REFIID riidltf, LPVOID* ppvOut, LPUNKNOWN punkOuter)
+HRESULT ImportApiDirectInput::DirectInputCreateEx(HINSTANCE hinst, DWORD dwVersion, REFIID riidltf, LPVOID* ppvOut, LPUNKNOWN punkOuter)
 {
     if (S_OK != Initialize())
         return E_NOT_VALID_STATE;
@@ -137,7 +137,7 @@ HRESULT DinputImportApi::ImportedDirectInputCreateEx(HINSTANCE hinst, DWORD dwVe
 
 // ---------
 
-HRESULT DinputImportApi::ImportedDllRegisterServer(void)
+HRESULT ImportApiDirectInput::DllRegisterServer(void)
 {
     if (S_OK != Initialize())
         return E_NOT_VALID_STATE;
@@ -147,7 +147,7 @@ HRESULT DinputImportApi::ImportedDllRegisterServer(void)
 
 // ---------
 
-HRESULT DinputImportApi::ImportedDllUnregisterServer(void)
+HRESULT ImportApiDirectInput::DllUnregisterServer(void)
 {
     if (S_OK != Initialize())
         return E_NOT_VALID_STATE;
@@ -157,7 +157,7 @@ HRESULT DinputImportApi::ImportedDllUnregisterServer(void)
 
 // ---------
 
-HRESULT DinputImportApi::ImportedDllCanUnloadNow(void)
+HRESULT ImportApiDirectInput::DllCanUnloadNow(void)
 {
     if (S_OK != Initialize())
         return E_NOT_VALID_STATE;
@@ -167,7 +167,7 @@ HRESULT DinputImportApi::ImportedDllCanUnloadNow(void)
 
 // ---------
 
-HRESULT DinputImportApi::ImportedDllGetClassObject(REFCLSID rclsid, REFIID riid, LPVOID* ppv)
+HRESULT ImportApiDirectInput::DllGetClassObject(REFCLSID rclsid, REFIID riid, LPVOID* ppv)
 {
     if (S_OK != Initialize())
         return E_NOT_VALID_STATE;
