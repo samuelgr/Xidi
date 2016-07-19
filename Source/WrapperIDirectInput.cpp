@@ -89,7 +89,7 @@ ULONG STDMETHODCALLTYPE WrapperIDirectInput::Release(void)
 // -------- METHODS: IDirectInput8 ----------------------------------------- //
 // See DirectInput documentation for more information.
 
-HRESULT STDMETHODCALLTYPE WrapperIDirectInput::CreateDevice(REFGUID rguid, LPDIRECTINPUTDEVICE8* lplpDirectInputDevice, LPUNKNOWN pUnkOuter)
+HRESULT STDMETHODCALLTYPE WrapperIDirectInput::CreateDevice(REFGUID rguid, VersionedIDirectInputDevice** lplpDirectInputDevice, LPUNKNOWN pUnkOuter)
 {
     // Check if the specified instance GUID is an XInput GUID.
     LONG xinputIndex = ControllerIdentification::XInputControllerIndexForInstanceGUID(rguid);

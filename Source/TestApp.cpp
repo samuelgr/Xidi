@@ -111,6 +111,7 @@ static const DIDATAFORMAT dataFormat = {sizeof(DIDATAFORMAT), sizeof(DIOBJECTDAT
 
 // -------- HELPERS -------------------------------------------------------- //
 
+#if DIRECTINPUT_VERSION >= 0x0800
 LPTSTR DirectInputDeviceTypeToString(BYTE type)
 {
     switch (type)
@@ -155,6 +156,28 @@ LPTSTR DirectInputDeviceTypeToString(BYTE type)
         return _T("UNKNOWN");
     }
 }
+#else
+LPTSTR DirectInputDeviceTypeToString(BYTE type)
+{
+    switch (type)
+    {
+    case DIDEVTYPE_DEVICE:
+        return _T("DEVICE");
+
+    case DIDEVTYPE_MOUSE:
+        return _T("MOUSE");
+
+    case DIDEVTYPE_KEYBOARD:
+        return _T("KEYBOARD");
+
+    case DIDEVTYPE_JOYSTICK:
+        return _T("JOYSTICK");
+
+    default:
+        return _T("UNKNOWN");
+    }
+}
+#endif
 
 LPTSTR DirectInputAxisTypeToString(REFGUID axisTypeGUID)
 {
@@ -772,6 +795,7 @@ int RunTestApp(int argc, char* argv[])
 
     tout << _T("DONE") << endl;
     tout << _T("After every character typed, the device's state will be read and reported.") << endl;
+    tout << _T("All axes are set to a range of -100 to +100, with 25% each deadzone/saturation.") << endl;
     tout << _T("To quit, type Q and press RETURN.") << endl;
     tout << _T("To re-read the device's state, type any other character and press RETURN.") << endl;
     system("pause");

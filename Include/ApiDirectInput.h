@@ -23,10 +23,14 @@
 
 #if DIRECTINPUT_VERSION >= 0x0800
 
+#define DINPUT_DEVTYPE_XINPUT_GAMEPAD           DI8DEVTYPE_GAMEPAD
+
 typedef IDirectInput8                           VersionedIDirectInput;
 typedef IDirectInputDevice8                     VersionedIDirectInputDevice;
 
 #else
+
+#define DINPUT_DEVTYPE_XINPUT_GAMEPAD           ((DIDEVTYPE_JOYSTICK) | ((DIDEVTYPEJOYSTICK_GAMEPAD) << 8))
 
 typedef IDirectInput7                           VersionedIDirectInput;
 typedef IDirectInputDevice7                     VersionedIDirectInputDevice;

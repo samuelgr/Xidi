@@ -23,8 +23,8 @@ namespace Xidi
 #if DIRECTINPUT_VERSION >= 0x0800
         HRESULT(__stdcall *DirectInput8Create)(HINSTANCE, DWORD, REFIID, LPVOID*, LPUNKNOWN);
 #else
-        HRESULT(__stdcall *DirectInputCreateA)(HINSTANCE, DWORD, LPDIRECTINPUTA, LPUNKNOWN);
-        HRESULT(__stdcall *DirectInputCreateW)(HINSTANCE, DWORD, LPDIRECTINPUTW, LPUNKNOWN);
+        HRESULT(__stdcall *DirectInputCreateA)(HINSTANCE, DWORD, LPDIRECTINPUTA*, LPUNKNOWN);
+        HRESULT(__stdcall *DirectInputCreateW)(HINSTANCE, DWORD, LPDIRECTINPUTW*, LPUNKNOWN);
         HRESULT(__stdcall *DirectInputCreateEx)(HINSTANCE, DWORD, REFIID, LPVOID*, LPUNKNOWN);
 #endif
         HRESULT(__stdcall *DllRegisterServer)(void);
@@ -72,8 +72,19 @@ namespace Xidi
         // Returns S_OK on success and E_FAIL on failure.
         static HRESULT Initialize(void);
 
+#if DIRECTINPUT_VERSION >= 0x0800
         // Calls the imported function DirectInput8Create.
         static HRESULT ImportedDirectInput8Create(HINSTANCE hinst, DWORD dwVersion, REFIID riidltf, LPVOID* ppvOut, LPUNKNOWN punkOuter);
+#else
+        // Calls the imported function DirectInputCreateA.
+        static HRESULT ImportedDirectInputCreateA(HINSTANCE hinst, DWORD dwVersion, LPDIRECTINPUTA* ppDI, LPUNKNOWN punkOuter);
+
+        // Calls the imported function DirectInputCreateW.
+        static HRESULT ImportedDirectInputCreateW(HINSTANCE hinst, DWORD dwVersion, LPDIRECTINPUTW* ppDI, LPUNKNOWN punkOuter);
+
+        // Calls the imported function DirectInputCreateEx.
+        static HRESULT ImportedDirectInputCreateEx(HINSTANCE hinst, DWORD dwVersion, REFIID riidltf, LPVOID* ppvOut, LPUNKNOWN punkOuter);
+#endif
 
         // Calls the imported function DllRegisterServer.
         static HRESULT ImportedDllRegisterServer(void);

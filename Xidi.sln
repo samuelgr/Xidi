@@ -11,6 +11,8 @@ Global
 		Debug-DInput8|x64 = Debug-DInput8|x64
 		Release-DInput8|Win32 = Release-DInput8|Win32
 		Release-DInput8|x64 = Release-DInput8|x64
+		TestApp-DInput|Win32 = TestApp-DInput|Win32
+		TestApp-DInput|x64 = TestApp-DInput|x64
 		TestApp-DInput8|Win32 = TestApp-DInput8|Win32
 		TestApp-DInput8|x64 = TestApp-DInput8|x64
 	EndGlobalSection
@@ -23,6 +25,10 @@ Global
 		{023441F6-2554-440F-9FFB-7E185AB7CF41}.Release-DInput8|Win32.Build.0 = Release-DInput8|Win32
 		{023441F6-2554-440F-9FFB-7E185AB7CF41}.Release-DInput8|x64.ActiveCfg = Release-DInput8|x64
 		{023441F6-2554-440F-9FFB-7E185AB7CF41}.Release-DInput8|x64.Build.0 = Release-DInput8|x64
+		{023441F6-2554-440F-9FFB-7E185AB7CF41}.TestApp-DInput|Win32.ActiveCfg = TestApp-DInput|Win32
+		{023441F6-2554-440F-9FFB-7E185AB7CF41}.TestApp-DInput|Win32.Build.0 = TestApp-DInput|Win32
+		{023441F6-2554-440F-9FFB-7E185AB7CF41}.TestApp-DInput|x64.ActiveCfg = TestApp-DInput|x64
+		{023441F6-2554-440F-9FFB-7E185AB7CF41}.TestApp-DInput|x64.Build.0 = TestApp-DInput|x64
 		{023441F6-2554-440F-9FFB-7E185AB7CF41}.TestApp-DInput8|Win32.ActiveCfg = TestApp-DInput8|Win32
 		{023441F6-2554-440F-9FFB-7E185AB7CF41}.TestApp-DInput8|Win32.Build.0 = TestApp-DInput8|Win32
 		{023441F6-2554-440F-9FFB-7E185AB7CF41}.TestApp-DInput8|x64.ActiveCfg = TestApp-DInput8|x64

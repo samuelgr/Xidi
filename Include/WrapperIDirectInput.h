@@ -24,7 +24,7 @@ namespace Xidi
         // -------- INSTANCE VARIABLES --------------------------------------------- //
         
         // The underlying IDirectInput8 object that this instance wraps.
-        IDirectInput8* underlyingDIObject;
+        VersionedIDirectInput* underlyingDIObject;
 
         // Specifies whether or not the underlying DirectInput object is Unicode-based.
         BOOL underlyingDIObjectUsesUnicode;
@@ -47,7 +47,7 @@ namespace Xidi
 
 
         // -------- METHODS: IDirectInput ------------------------------------------ //
-        virtual HRESULT STDMETHODCALLTYPE CreateDevice(REFGUID rguid, LPDIRECTINPUTDEVICE8* lplpDirectInputDevice, LPUNKNOWN pUnkOuter);
+        virtual HRESULT STDMETHODCALLTYPE CreateDevice(REFGUID rguid, VersionedIDirectInputDevice** lplpDirectInputDevice, LPUNKNOWN pUnkOuter);
         virtual HRESULT STDMETHODCALLTYPE ConfigureDevices(LPDICONFIGUREDEVICESCALLBACK lpdiCallback, LPDICONFIGUREDEVICESPARAMS lpdiCDParams, DWORD dwFlags, LPVOID pvRefData);
         virtual HRESULT STDMETHODCALLTYPE EnumDevices(DWORD dwDevType, LPDIENUMDEVICESCALLBACK lpCallback, LPVOID pvRef, DWORD dwFlags);
         virtual HRESULT STDMETHODCALLTYPE EnumDevicesBySemantics(LPCTSTR ptszUserName, LPDIACTIONFORMAT lpdiActionFormat, LPDIENUMDEVICESBYSEMANTICSCB lpCallback, LPVOID pvRef, DWORD dwFlags);

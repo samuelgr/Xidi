@@ -87,7 +87,7 @@ BOOL ControllerIdentification::EnumerateXInputControllersA(LPDIENUMDEVICESCALLBA
             instanceInfo->dwSize = sizeof(*instanceInfo);
             instanceInfo->guidInstance = kXInputInstGUID[idx];
             instanceInfo->guidProduct = kXInputProductGUID;
-            instanceInfo->dwDevType = DI8DEVTYPE_GAMEPAD;
+            instanceInfo->dwDevType = DINPUT_DEVTYPE_XINPUT_GAMEPAD;
             sprintf_s(instanceInfo->tszInstanceName, _countof(instanceInfo->tszInstanceName), "XInput Controller %u", (unsigned)(idx + 1));
             sprintf_s(instanceInfo->tszProductName, _countof(instanceInfo->tszProductName), "XInput Controller %u", (unsigned)(idx + 1));
 
@@ -125,7 +125,7 @@ BOOL ControllerIdentification::EnumerateXInputControllersW(LPDIENUMDEVICESCALLBA
             instanceInfo->dwSize = sizeof(*instanceInfo);
             instanceInfo->guidInstance = kXInputInstGUID[idx];
             instanceInfo->guidProduct = kXInputProductGUID;
-            instanceInfo->dwDevType = DI8DEVTYPE_GAMEPAD;
+            instanceInfo->dwDevType = DINPUT_DEVTYPE_XINPUT_GAMEPAD;
             swprintf_s(instanceInfo->tszInstanceName, _countof(instanceInfo->tszInstanceName), L"XInput Controller %u", (unsigned)(idx + 1));
             swprintf_s(instanceInfo->tszProductName, _countof(instanceInfo->tszProductName), L"XInput Controller %u", (unsigned)(idx + 1));
 

@@ -61,15 +61,15 @@ HRESULT DinputImportApi::Initialize(void)
 #else
         procAddress = GetProcAddress(loadedLibrary, "DirectInputCreateA");
         if (NULL == procAddress) return E_FAIL;
-        importTable.DirectInputCreateA = (HRESULT(__stdcall *)(HINSTANCE, DWORD, LPDIRECTINPUTA, LPUNKNOWN))procAddress;
+        importTable.DirectInputCreateA = (HRESULT(__stdcall *)(HINSTANCE, DWORD, LPDIRECTINPUTA*, LPUNKNOWN))procAddress;
 
         procAddress = GetProcAddress(loadedLibrary, "DirectInputCreateW");
         if (NULL == procAddress) return E_FAIL;
-        importTable.DirectInputCreateA = (HRESULT(__stdcall *)(HINSTANCE, DWORD, LPDIRECTINPUTW, LPUNKNOWN))procAddress;
+        importTable.DirectInputCreateW = (HRESULT(__stdcall *)(HINSTANCE, DWORD, LPDIRECTINPUTW*, LPUNKNOWN))procAddress;
 
         procAddress = GetProcAddress(loadedLibrary, "DirectInputCreateEx");
         if (NULL == procAddress) return E_FAIL;
-        importTable.DirectInput8Create = (HRESULT(__stdcall *)(HINSTANCE, DWORD, REFIID, LPVOID*, LPUNKNOWN))procAddress;
+        importTable.DirectInputCreateEx = (HRESULT(__stdcall *)(HINSTANCE, DWORD, REFIID, LPVOID*, LPUNKNOWN))procAddress;
 #endif
 
         procAddress = GetProcAddress(loadedLibrary, "DllRegisterServer");
@@ -97,6 +97,7 @@ HRESULT DinputImportApi::Initialize(void)
 
 // ---------
 
+#if DIRECTINPUT_VERSION >= 0x0800
 HRESULT DinputImportApi::ImportedDirectInput8Create(HINSTANCE hinst, DWORD dwVersion, REFIID riidltf, LPVOID* ppvOut, LPUNKNOWN punkOuter)
 {
     if (S_OK != Initialize())
@@ -104,6 +105,35 @@ HRESULT DinputImportApi::ImportedDirectInput8Create(HINSTANCE hinst, DWORD dwVer
     
     return importTable.DirectInput8Create(hinst, dwVersion, riidltf, ppvOut, punkOuter);
 }
+#else
+HRESULT DinputImportApi::ImportedDirectInputCreateA(HINSTANCE hinst, DWORD dwVersion, LPDIRECTINPUTA*ppDI, LPUNKNOWN punkOuter)
+{
+    if (S_OK != Initialize())
+        return E_NOT_VALID_STATE;
+
+    return importTable.DirectInputCreateA(hinst, dwVersion, ppDI, punkOuter);
+}
+
+// ---------
+
+HRESULT DinputImportApi::ImportedDirectInputCreateW(HINSTANCE hinst, DWORD dwVersion, LPDIRECTINPUTW*ppDI, LPUNKNOWN punkOuter)
+{
+    if (S_OK != Initialize())
+        return E_NOT_VALID_STATE;
+
+    return importTable.DirectInputCreateW(hinst, dwVersion, ppDI, punkOuter);
+}
+
+// ---------
+
+HRESULT DinputImportApi::ImportedDirectInputCreateEx(HINSTANCE hinst, DWORD dwVersion, REFIID riidltf, LPVOID* ppvOut, LPUNKNOWN punkOuter)
+{
+    if (S_OK != Initialize())
+        return E_NOT_VALID_STATE;
+
+    return importTable.DirectInputCreateEx(hinst, dwVersion, riidltf, ppvOut, punkOuter);
+}
+#endif
 
 // ---------
 
