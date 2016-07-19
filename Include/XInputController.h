@@ -207,7 +207,7 @@ namespace Xidi
         // May also remove the events from the buffer.
         // On input, count specifies the size of the events buffer.
         // On output, count specifies the number of events written to the buffer.
-        HRESULT GetBufferedEvents(SControllerEvent* events, DWORD& count, BOOL removeFromBuffer = TRUE);
+        HRESULT GetBufferedEvents(SControllerEvent* events, DWORD& count, BOOL removeFromBuffer);
 
         // Retrieves a DirectInput property on this controller.
         // Corresponds directly to IDirectInputDevice8's GetProperty method.

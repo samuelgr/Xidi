@@ -235,9 +235,14 @@ namespace Xidi
             // Returns TRUE if the supplied DirectInput property is handled by the mapper, FALSE if the device should handle it directly.
             // These properties are typically accessed and mutated through IDirectInputDevice8's GetProperty and SetProperty methods respectively.
             BOOL IsPropertyHandledByMapper(REFGUID guidProperty);
-
+            
             // Returns the offset in an application's data format that corresponds to the specified instance.
-            DWORD OffsetForInstance(TInstance instance);
+            // If the offset does not exist, returns -1.
+            LONG OffsetForInstance(TInstance instance);
+
+            // Returns the offset in an application's data format that corresponds to an XInput controller element.
+            // If the offset does not exist, returns -1.
+            LONG OffsetForXInputControllerElement(EXInputControllerElement xElement);
             
             // Parses an application-supplied DirectInput data format.
             // Return code will either be DI_OK (succeeded) or DIERR_INVALIDPARAM (failed due to an issue with the proposed data format).

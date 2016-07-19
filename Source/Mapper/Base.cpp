@@ -644,9 +644,9 @@ BOOL Base::IsPropertyHandledByMapper(REFGUID guidProperty)
 
 // ---------
 
-DWORD Base::OffsetForInstance(TInstance instance)
+LONG Base::OffsetForInstance(TInstance instance)
 {
-    DWORD result = (DWORD)~0;
+    LONG result = -1;
 
     if (IsApplicationDataFormatSet())
     {
@@ -655,6 +655,19 @@ DWORD Base::OffsetForInstance(TInstance instance)
         if (instanceToOffset.end() != it)
             result = it->second;
     }
+
+    return result;
+}
+
+// ---------
+
+LONG Base::OffsetForXInputControllerElement(EXInputControllerElement xElement)
+{
+    LONG result = -1;
+    
+    TInstance xInstance = MapXInputElementToDirectInputInstance(xElement);
+    if (xInstance >= 0)
+        result = OffsetForInstance(xInstance);
 
     return result;
 }

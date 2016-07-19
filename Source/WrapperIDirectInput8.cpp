@@ -97,7 +97,7 @@ HRESULT STDMETHODCALLTYPE WrapperIDirectInput8::CreateDevice(REFGUID rguid, LPDI
     else
     {
         // Is an XInput GUID, so create a fake device that will communicate with the XInput controller of the specified index.
-        *lplpDirectInputDevice = new WrapperIDirectInputDevice8(underlyingDIObjectUsesUnicode, new XInputController(xinputIndex), new Mapper::NativeXInputSharedTriggers());
+        *lplpDirectInputDevice = new WrapperIDirectInputDevice8(underlyingDIObjectUsesUnicode, new XInputController(xinputIndex), new Mapper::StandardGamepad());
         return DI_OK;
     }
 }

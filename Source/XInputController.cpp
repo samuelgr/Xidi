@@ -101,8 +101,34 @@ void XInputController::FillDeviceCapabilities(LPDIDEVCAPS lpDIDevCaps)
 HRESULT XInputController::GetBufferedEvents(SControllerEvent* events, DWORD& count, BOOL removeFromBuffer)
 {
     if (!IsAcquired()) return DIERR_NOTACQUIRED;
+
+    // Read events from the buffer and keep track of how many were read, stopping either at the application-requested number or the maximum number available.
+    DWORD idx;
+    for (idx = 0; idx < count && idx < bufferedEvents.size(); ++idx)
+        events[idx] = bufferedEvents[idx];
+
+    // Tell the application how many events were read.
+    count = idx;
+
+    // Optionally remove events from the buffer, based on the number of events read out of it.
+    if (removeFromBuffer)
+    {
+        switch (count)
+        {
+        case 0:
+            break;
+
+        case 1:
+            bufferedEvents.erase(bufferedEvents.begin());
+            break;
+
+        default:
+            bufferedEvents.erase(bufferedEvents.begin(), bufferedEvents.begin() + idx);
+            break;
+        }
+    }
     
-    return S_OK;
+    return DI_OK;
 }
 
 // ---------

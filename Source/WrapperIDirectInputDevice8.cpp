@@ -154,7 +154,31 @@ HRESULT STDMETHODCALLTYPE WrapperIDirectInputDevice8::GetCapabilities(LPDIDEVCAP
 
 HRESULT STDMETHODCALLTYPE WrapperIDirectInputDevice8::GetDeviceData(DWORD cbObjectData, LPDIDEVICEOBJECTDATA rgdod, LPDWORD pdwInOut, DWORD dwFlags)
 {
-    // Not yet implemented.
+    // Verify the correct sizes of each structure.
+    if (sizeof(DIDEVICEOBJECTDATA) != cbObjectData)
+        return DIERR_INVALIDPARAM;
+
+    // Verify that the controller has been acquired.
+    // This avoids allocating memory in the face of a known error case.
+    if (!controller->IsAcquired())
+        return DIERR_NOTACQUIRED;
+    
+    // Allocate an array of events and obtain information from the controller.
+    SControllerEvent* controllerEvents = new SControllerEvent[*pdwInOut];
+    DWORD numControllerEvents = *pdwInOut;
+    HRESULT result = controller->GetBufferedEvents(controllerEvents, numControllerEvents, dwFlags);
+    if (DI_OK != result)
+    {
+        delete[] controllerEvents;
+        return result;
+    }
+
+    // Initialize the application's event array and cause events to be written to it.
+    ZeroMemory(rgdod, sizeof(DIDEVICEOBJECTDATA) * numControllerEvents);
+    
+    delete[] controllerEvents;
+    
+    // Not yet fully implemented.
     return DIERR_UNSUPPORTED;
 }
 
