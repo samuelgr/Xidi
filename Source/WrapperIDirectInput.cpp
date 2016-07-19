@@ -39,7 +39,7 @@ namespace Xidi
 // -------- CONSTRUCTION AND DESTRUCTION ----------------------------------- //
 // See "WrapperIDirectInput.h" for documentation.
 
-WrapperIDirectInput::WrapperIDirectInput(VersionedIDirectInput* underlyingDIObject, BOOL underlyingDIObjectUsesUnicode) : underlyingDIObject(underlyingDIObject), underlyingDIObjectUsesUnicode(underlyingDIObjectUsesUnicode) {}
+WrapperIDirectInput::WrapperIDirectInput(LatestIDirectInput* underlyingDIObject, BOOL underlyingDIObjectUsesUnicode) : underlyingDIObject(underlyingDIObject), underlyingDIObjectUsesUnicode(underlyingDIObjectUsesUnicode) {}
 
 
 // -------- METHODS: IUnknown ---------------------------------------------- //
@@ -86,10 +86,10 @@ ULONG STDMETHODCALLTYPE WrapperIDirectInput::Release(void)
 }
 
 
-// -------- METHODS: IDirectInput8 ----------------------------------------- //
+// -------- METHODS: IDirectInput COMMON ----------------------------------- //
 // See DirectInput documentation for more information.
 
-HRESULT STDMETHODCALLTYPE WrapperIDirectInput::CreateDevice(REFGUID rguid, VersionedIDirectInputDevice** lplpDirectInputDevice, LPUNKNOWN pUnkOuter)
+HRESULT STDMETHODCALLTYPE WrapperIDirectInput::CreateDevice(REFGUID rguid, EarliestIDirectInputDevice** lplpDirectInputDevice, LPUNKNOWN pUnkOuter)
 {
     // Check if the specified instance GUID is an XInput GUID.
     LONG xinputIndex = ControllerIdentification::XInputControllerIndexForInstanceGUID(rguid);
@@ -109,13 +109,6 @@ HRESULT STDMETHODCALLTYPE WrapperIDirectInput::CreateDevice(REFGUID rguid, Versi
 
 // ---------
 
-HRESULT STDMETHODCALLTYPE WrapperIDirectInput::ConfigureDevices(LPDICONFIGUREDEVICESCALLBACK lpdiCallback, LPDICONFIGUREDEVICESPARAMS lpdiCDParams, DWORD dwFlags, LPVOID pvRefData)
-{
-    return underlyingDIObject->ConfigureDevices(lpdiCallback, lpdiCDParams, dwFlags, pvRefData);
-}
-
-// ---------
-
 HRESULT STDMETHODCALLTYPE WrapperIDirectInput::EnumDevices(DWORD dwDevType, LPDIENUMDEVICESCALLBACK lpCallback, LPVOID pvRef, DWORD dwFlags)
 {
     SEnumDevicesCallbackInfo callbackInfo;
@@ -126,7 +119,11 @@ HRESULT STDMETHODCALLTYPE WrapperIDirectInput::EnumDevices(DWORD dwDevType, LPDI
     BOOL xinputEnumResult = DIENUM_CONTINUE;
 
     // Only enumerate XInput controllers if the application requests a type that includes game controllers.
-    if (DI8DEVCLASS_ALL == dwDevType || DI8DEVCLASS_GAMECTRL == dwDevType)
+#if DIRECTINPUT_VERSION >= 0x0800
+    if (DI8DEVCLASS_ALL == dwDevType || DI8DEVCLASS_GAMECTRL == dwDevType || DI8DEVTYPE_GAMEPAD == GET_DIDEVICE_TYPE(dwDevType))
+#else
+    if (0 == dwDevType || (DIDEVTYPE_JOYSTICK == GET_DIDEVICE_TYPE(dwDevType) && (0 == GET_DIDEVICE_SUBTYPE(dwDevType) || DIDEVTYPEJOYSTICK_GAMEPAD == GET_DIDEVICE_TYPE(dwDevType))))
+#endif
     {
         // Currently force feedback is not suported.
         if (!(dwFlags & DIEDFL_FORCEFEEDBACK))
@@ -144,14 +141,6 @@ HRESULT STDMETHODCALLTYPE WrapperIDirectInput::EnumDevices(DWORD dwDevType, LPDI
         return underlyingDIObject->EnumDevices(dwDevType, &WrapperIDirectInput::CallbackEnumDevices, (LPVOID)&callbackInfo, dwFlags);
     else
         return DI_OK;
-}
-
-// ---------
-
-HRESULT STDMETHODCALLTYPE WrapperIDirectInput::EnumDevicesBySemantics(LPCTSTR ptszUserName, LPDIACTIONFORMAT lpdiActionFormat, LPDIENUMDEVICESBYSEMANTICSCB lpCallback, LPVOID pvRef, DWORD dwFlags)
-{
-    // Operation not supported.
-    return DIERR_UNSUPPORTED;
 }
 
 // ---------
@@ -183,7 +172,7 @@ HRESULT STDMETHODCALLTYPE WrapperIDirectInput::RunControlPanel(HWND hwndOwner, D
 }
 
 
-// -------- CALLBACKS: IDirectInput8 --------------------------------------- //
+// -------- CALLBACKS: IDirectInput COMMON --------------------------------- //
 // See "WrapperIDirectInput.h" for documentation.
 
 BOOL STDMETHODCALLTYPE WrapperIDirectInput::CallbackEnumDevices(LPCDIDEVICEINSTANCE lpddi, LPVOID pvRef)
@@ -196,3 +185,44 @@ BOOL STDMETHODCALLTYPE WrapperIDirectInput::CallbackEnumDevices(LPCDIDEVICEINSTA
     
     return callbackInfo->lpCallback(lpddi, callbackInfo->pvRef);
 }
+
+
+#if DIRECTINPUT_VERSION >= 0x0800
+// -------- METHODS: IDirectInput8 ONLY ------------------------------------ //
+// See DirectInput documentation for more information.
+
+HRESULT STDMETHODCALLTYPE WrapperIDirectInput::ConfigureDevices(LPDICONFIGUREDEVICESCALLBACK lpdiCallback, LPDICONFIGUREDEVICESPARAMS lpdiCDParams, DWORD dwFlags, LPVOID pvRefData)
+{
+    return underlyingDIObject->ConfigureDevices(lpdiCallback, lpdiCDParams, dwFlags, pvRefData);
+}
+
+// ---------
+
+HRESULT STDMETHODCALLTYPE WrapperIDirectInput::EnumDevicesBySemantics(LPCTSTR ptszUserName, LPDIACTIONFORMAT lpdiActionFormat, LPDIENUMDEVICESBYSEMANTICSCB lpCallback, LPVOID pvRef, DWORD dwFlags)
+{
+    // Operation not supported.
+    return DIERR_UNSUPPORTED;
+}
+#else
+// -------- METHODS: IDirectInput LEGACY ----------------------------------- //
+// See DirectInput documentation for more information.
+
+HRESULT STDMETHODCALLTYPE WrapperIDirectInput::CreateDeviceEx(REFGUID rguid, REFIID riid, LPVOID* lplpDirectInputDevice, LPUNKNOWN pUnkOuter)
+{
+    // Make sure the supplied IID is valid.
+    if (underlyingDIObjectUsesUnicode)
+    {
+        if (!(IsEqualIID(riid, IID_IDirectInputDevice2W) || IsEqualIID(riid, IID_IDirectInputDevice7W)))
+            return E_INVALIDARG;
+    }
+    else
+    {
+        if (!(IsEqualIID(riid, IID_IDirectInputDevice2A) || IsEqualIID(riid, IID_IDirectInputDevice7A)))
+            return E_INVALIDARG;
+    }
+
+    // Create a device the normal way.
+    return CreateDevice(rguid, (EarliestIDirectInputDevice**)lplpDirectInputDevice, pUnkOuter);
+    
+}
+#endif

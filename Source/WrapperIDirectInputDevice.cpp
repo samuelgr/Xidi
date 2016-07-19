@@ -75,7 +75,7 @@ ULONG STDMETHODCALLTYPE WrapperIDirectInputDevice::Release(void)
 }
 
 
-// -------- METHODS: IDirectInputDevice ------------------------------------ //
+// -------- METHODS: IDirectInputDevice COMMON ----------------------------- //
 // See DirectInput documentation for more information.
 
 HRESULT STDMETHODCALLTYPE WrapperIDirectInputDevice::Acquire(void)
@@ -85,14 +85,6 @@ HRESULT STDMETHODCALLTYPE WrapperIDirectInputDevice::Acquire(void)
         return controller->AcquireController();
 
     return DIERR_INVALIDPARAM;
-}
-
-// ---------
-
-HRESULT STDMETHODCALLTYPE WrapperIDirectInputDevice::BuildActionMap(LPDIACTIONFORMAT lpdiaf, LPCTSTR lpszUserName, DWORD dwFlags)
-{
-    // Operation not supported.
-    return DIERR_UNSUPPORTED;
 }
 
 // ---------
@@ -227,14 +219,6 @@ HRESULT STDMETHODCALLTYPE WrapperIDirectInputDevice::GetForceFeedbackState(LPDWO
 
 // ---------
 
-HRESULT STDMETHODCALLTYPE WrapperIDirectInputDevice::GetImageInfo(LPDIDEVICEIMAGEINFOHEADER lpdiDevImageInfoHeader)
-{
-    // Operation not supported.
-    return DIERR_UNSUPPORTED;
-}
-
-// ---------
-
 HRESULT STDMETHODCALLTYPE WrapperIDirectInputDevice::GetObjectInfo(LPDIDEVICEOBJECTINSTANCE pdidoi, DWORD dwObj, DWORD dwHow)
 {
     return mapper->GetMappedObjectInfo(useUnicode, pdidoi, dwObj, dwHow);
@@ -291,14 +275,6 @@ HRESULT STDMETHODCALLTYPE WrapperIDirectInputDevice::SendForceFeedbackCommand(DW
 
 // ---------
 
-HRESULT STDMETHODCALLTYPE WrapperIDirectInputDevice::SetActionMap(LPDIACTIONFORMAT lpdiActionFormat, LPCTSTR lptszUserName, DWORD dwFlags)
-{
-    // Operation not supported.
-    return DIERR_UNSUPPORTED;
-}
-
-// ---------
-
 HRESULT STDMETHODCALLTYPE WrapperIDirectInputDevice::SetCooperativeLevel(HWND hwnd, DWORD dwFlags)
 {
     // Ineffective at present, but this may change.
@@ -343,3 +319,31 @@ HRESULT STDMETHODCALLTYPE WrapperIDirectInputDevice::WriteEffectToFile(LPCTSTR l
     // Operation not supported.
     return DIERR_UNSUPPORTED;
 }
+
+
+#if DIRECTINPUT_VERSION >= 0x0800
+// -------- METHODS: IDirectInputDevice8 ONLY ------------------------------ //
+// See DirectInput documentation for more information.
+
+HRESULT STDMETHODCALLTYPE WrapperIDirectInputDevice::BuildActionMap(LPDIACTIONFORMAT lpdiaf, LPCTSTR lpszUserName, DWORD dwFlags)
+{
+    // Operation not supported.
+    return DIERR_UNSUPPORTED;
+}
+
+// ---------
+
+HRESULT STDMETHODCALLTYPE WrapperIDirectInputDevice::GetImageInfo(LPDIDEVICEIMAGEINFOHEADER lpdiDevImageInfoHeader)
+{
+    // Operation not supported.
+    return DIERR_UNSUPPORTED;
+}
+
+// ---------
+
+HRESULT STDMETHODCALLTYPE WrapperIDirectInputDevice::SetActionMap(LPDIACTIONFORMAT lpdiActionFormat, LPCTSTR lptszUserName, DWORD dwFlags)
+{
+    // Operation not supported.
+    return DIERR_UNSUPPORTED;
+}
+#endif

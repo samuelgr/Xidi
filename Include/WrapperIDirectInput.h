@@ -18,13 +18,13 @@ namespace Xidi
 {
     // Wraps the IDirectInput8 interface to hook into all calls to it.
     // Holds an underlying instance of an IDirectInput object but wraps all method invocations.
-    struct WrapperIDirectInput : VersionedIDirectInput
+    struct WrapperIDirectInput : LatestIDirectInput
     {
     private:
         // -------- INSTANCE VARIABLES --------------------------------------------- //
         
         // The underlying IDirectInput8 object that this instance wraps.
-        VersionedIDirectInput* underlyingDIObject;
+        LatestIDirectInput* underlyingDIObject;
 
         // Specifies whether or not the underlying DirectInput object is Unicode-based.
         BOOL underlyingDIObjectUsesUnicode;
@@ -37,7 +37,7 @@ namespace Xidi
 
     public:
         // Constructs an WrapperIDirectInput object, given an underlying IDirectInput8 object to wrap.
-        WrapperIDirectInput(VersionedIDirectInput* underlyingDIObject, BOOL underlyingDIObjectUsesUnicode);
+        WrapperIDirectInput(LatestIDirectInput* underlyingDIObject, BOOL underlyingDIObjectUsesUnicode);
         
         
         // -------- METHODS: IUnknown ---------------------------------------------- //
@@ -46,23 +46,28 @@ namespace Xidi
         virtual ULONG STDMETHODCALLTYPE Release(void);
 
 
-        // -------- METHODS: IDirectInput ------------------------------------------ //
-        virtual HRESULT STDMETHODCALLTYPE CreateDevice(REFGUID rguid, VersionedIDirectInputDevice** lplpDirectInputDevice, LPUNKNOWN pUnkOuter);
-        virtual HRESULT STDMETHODCALLTYPE ConfigureDevices(LPDICONFIGUREDEVICESCALLBACK lpdiCallback, LPDICONFIGUREDEVICESPARAMS lpdiCDParams, DWORD dwFlags, LPVOID pvRefData);
+        // -------- METHODS: IDirectInput COMMON ----------------------------------- //
+        virtual HRESULT STDMETHODCALLTYPE CreateDevice(REFGUID rguid, EarliestIDirectInputDevice** lplpDirectInputDevice, LPUNKNOWN pUnkOuter);
         virtual HRESULT STDMETHODCALLTYPE EnumDevices(DWORD dwDevType, LPDIENUMDEVICESCALLBACK lpCallback, LPVOID pvRef, DWORD dwFlags);
-        virtual HRESULT STDMETHODCALLTYPE EnumDevicesBySemantics(LPCTSTR ptszUserName, LPDIACTIONFORMAT lpdiActionFormat, LPDIENUMDEVICESBYSEMANTICSCB lpCallback, LPVOID pvRef, DWORD dwFlags);
         virtual HRESULT STDMETHODCALLTYPE FindDevice(REFGUID rguidClass, LPCTSTR ptszName, LPGUID pguidInstance);
         virtual HRESULT STDMETHODCALLTYPE GetDeviceStatus(REFGUID rguidInstance);
         virtual HRESULT STDMETHODCALLTYPE Initialize(HINSTANCE hinst, DWORD dwVersion);
         virtual HRESULT STDMETHODCALLTYPE RunControlPanel(HWND hwndOwner, DWORD dwFlags);
 
 
-        // -------- CALLBACKS: IDirectInput ---------------------------------------- //
+        // -------- CALLBACKS: IDirectInput COMMON --------------------------------- //
         
         // Intercepts callbacks invoked as part of a call to EnumDevices.
         static BOOL STDMETHODCALLTYPE CallbackEnumDevices(LPCDIDEVICEINSTANCE lpddi, LPVOID pvRef);
 
-        // Intercepts callbacks invoked as part of a call to EnumDevicesBySemantics.
-        static BOOL STDMETHODCALLTYPE CallbackEnumDevicesBySemantics(LPCDIDEVICEINSTANCE lpddi, LPDIRECTINPUTDEVICE8 lpdid, DWORD dwFlags, DWORD dwRemaining, LPVOID pvRef);
+
+#if DIRECTINPUT_VERSION >= 0x0800
+        // -------- METHODS: IDirectInput8 ONLY ------------------------------------ //
+        virtual HRESULT STDMETHODCALLTYPE ConfigureDevices(LPDICONFIGUREDEVICESCALLBACK lpdiCallback, LPDICONFIGUREDEVICESPARAMS lpdiCDParams, DWORD dwFlags, LPVOID pvRefData);
+        virtual HRESULT STDMETHODCALLTYPE EnumDevicesBySemantics(LPCTSTR ptszUserName, LPDIACTIONFORMAT lpdiActionFormat, LPDIENUMDEVICESBYSEMANTICSCB lpCallback, LPVOID pvRef, DWORD dwFlags);
+#else
+        // -------- METHODS: IDirectInput LEGACY ----------------------------------- //
+        virtual HRESULT STDMETHODCALLTYPE CreateDeviceEx(REFGUID rguid, REFIID riid, LPVOID* lplpDirectInputDevice, LPUNKNOWN pUnkOuter);
+#endif
     };
 }

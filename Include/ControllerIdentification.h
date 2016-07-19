@@ -44,7 +44,7 @@ namespace Xidi
         // -------- CLASS METHODS -------------------------------------------------- //
         
         // Returns TRUE if the specified DirectInput controller supports XInput, FALSE if not or this information could not be determined.
-        static BOOL DoesDirectInputControllerSupportXInput(VersionedIDirectInput* dicontext, REFGUID instanceGUID);
+        static BOOL DoesDirectInputControllerSupportXInput(EarliestIDirectInput* dicontext, REFGUID instanceGUID);
 
         // Performs a DirectInput-style controller enumeration of connected XInput controllers.
         // Returns DIENUM_CONTINUE or DIENUM_STOP depending on what the application requested.

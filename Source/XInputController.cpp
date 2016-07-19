@@ -90,7 +90,7 @@ HRESULT XInputController::AcquireController(void)
 void XInputController::FillDeviceCapabilities(LPDIDEVCAPS lpDIDevCaps)
 {
     lpDIDevCaps->dwFlags = (DIDC_ATTACHED | DIDC_EMULATED | DIDC_POLLEDDATAFORMAT);
-    lpDIDevCaps->dwDevType = DI8DEVTYPE_GAMEPAD;
+    lpDIDevCaps->dwDevType = DINPUT_DEVTYPE_XINPUT_GAMEPAD;
     lpDIDevCaps->dwFFSamplePeriod = 0;
     lpDIDevCaps->dwFFMinTimeResolution = 0;
     lpDIDevCaps->dwFirmwareRevision = 0;

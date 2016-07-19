@@ -36,11 +36,11 @@ const GUID ControllerIdentification::kXInputInstGUID[4] = {
 // -------- CLASS METHODS -------------------------------------------------- //
 // See "XInputControllerIdentification.h" for documentation.
 
-BOOL ControllerIdentification::DoesDirectInputControllerSupportXInput(VersionedIDirectInput* dicontext, REFGUID instanceGUID)
+BOOL ControllerIdentification::DoesDirectInputControllerSupportXInput(EarliestIDirectInput* dicontext, REFGUID instanceGUID)
 {
     BOOL deviceSupportsXInput = FALSE;
     
-    VersionedIDirectInputDevice* didevice = NULL;
+    EarliestIDirectInputDevice* didevice = NULL;
     HRESULT result = dicontext->CreateDevice(instanceGUID, &didevice, NULL);
 
     if (DI_OK == result)

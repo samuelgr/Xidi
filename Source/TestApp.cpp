@@ -43,8 +43,10 @@ struct SInteractiveTestData
 // Routes calls to exported methods based on the DirectInput version.
 #if DIRECTINPUT_VERSION >= 0x0800
 #define ExportedDirectInputCreateMethod         DinputExportDirectInput8Create
+#define Use_IID_IDirectInput                    IID_IDirectInput8
 #else
 #define ExportedDirectInputCreateMethod         DinputExportDirectInputCreateEx
+#define Use_IID_IDirectInput                    IID_IDirectInput7
 #endif
 
 // Helper for iostream input and output when using unicode.
@@ -220,7 +222,11 @@ BOOL STDMETHODCALLTYPE EnumDevicesTestCallback(LPCDIDEVICEINSTANCE lpddi, LPVOID
     
     tout << _T("Found ") << DirectInputDeviceTypeToString(GET_DIDEVICE_TYPE(lpddi->dwDevType)) << ": " << lpddi->tszProductName;
 
+#if DIRECTINPUT_VERSION >= 0x0800
     if (DI8DEVTYPE_GAMEPAD == GET_DIDEVICE_TYPE(lpddi->dwDevType) && IsEqualGUID(lpddi->guidProduct, ControllerIdentification::kXInputProductGUID))
+#else
+    if (DIDEVTYPE_JOYSTICK == GET_DIDEVICE_TYPE(lpddi->dwDevType) && IsEqualGUID(lpddi->guidProduct, ControllerIdentification::kXInputProductGUID))
+#endif
     {
         instanceGuidToTest = lpddi->guidInstance;
         flagInstanceGuidToTestFound = TRUE;
@@ -320,8 +326,8 @@ int RunTestApp(int argc, char* argv[])
 {
     HRESULT result;
     DWORD numErrors;
-    VersionedIDirectInput* directInputIface;
-    VersionedIDirectInputDevice* directInputDeviceIface;
+    LatestIDirectInput* directInputIface;
+    LatestIDirectInputDevice* directInputDeviceIface;
     
     
     ////////////////////////////////////
@@ -335,10 +341,10 @@ int RunTestApp(int argc, char* argv[])
     }
 
     // Create the main interface to DirectInput.
-    result = ExportedDirectInputCreateMethod(GetModuleHandle(NULL), 0x0800, IID_IDirectInput8, (LPVOID*)&directInputIface, NULL);
+    result = ExportedDirectInputCreateMethod(GetModuleHandle(NULL), DIRECTINPUT_VERSION, Use_IID_IDirectInput, (LPVOID*)&directInputIface, NULL);
     if (DI_OK != result)
     {
-        terr << _T("Unable to obtain IDirectInput8 interface pointer: code ") << result << _T(".") << endl;
+        terr << _T("Unable to obtain IDirectInput interface pointer: code ") << result << _T(".") << endl;
         return -1;
     }
 
@@ -349,9 +355,9 @@ int RunTestApp(int argc, char* argv[])
     // Enumerate all devices attached to the system.
     flagCallbackExpected = TRUE;
     
-    tout << _T("Begin IDirectInput8->EnumDevices") << endl;
+    tout << _T("Begin IDirectInput->EnumDevices") << endl;
     
-    result = directInputIface->EnumDevices(DI8DEVCLASS_ALL, &EnumDevicesTestCallback, (LPVOID)&testValue, DIEDFL_ATTACHEDONLY);
+    result = directInputIface->EnumDevices(0, &EnumDevicesTestCallback, (LPVOID)&testValue, DIEDFL_ATTACHEDONLY);
     if (DI_OK != result)
     {
         terr << _T("Unable to enumerate attached devices: code ") << result << _T(".") << endl;
@@ -360,11 +366,11 @@ int RunTestApp(int argc, char* argv[])
     
     // Test that the callback was invoked the required number of times.
     if (flagCallbackExpected && flagInstanceGuidToTestFound)
-        tout << _T("FAIL: IDirectInput8->EnumDevices callback test") << endl;
+        tout << _T("FAIL: IDirectInput->EnumDevices callback test") << endl;
     else
-        tout << _T("PASS: IDirectInput8->EnumDevices callback test") << endl;
+        tout << _T("PASS: IDirectInput->EnumDevices callback test") << endl;
 
-    tout << _T("End IDirectInput8->EnumDevices") << endl << endl;
+    tout << _T("End IDirectInput->EnumDevices") << endl << endl;
 
     // Verify that a supported device was found
     if (!flagInstanceGuidToTestFound)
@@ -378,10 +384,11 @@ int RunTestApp(int argc, char* argv[])
     ////////   Device Creation
 
     // Obtain a pointer to the interface of the device.
-    result = directInputIface->CreateDevice(instanceGuidToTest, &directInputDeviceIface, NULL);
+    result = directInputIface->CreateDevice(instanceGuidToTest, (EarliestIDirectInputDevice**)&directInputDeviceIface, NULL);
+    
     if (DI_OK != result)
     {
-        terr << _T("Unable to obtain IDirectInputDevice8 interface pointer: code ") << result << _T(".") << endl;
+        terr << _T("Unable to obtain IDirectInputDevice interface pointer: code ") << result << _T(".") << endl;
         return -1;
     }
 
@@ -406,7 +413,7 @@ int RunTestApp(int argc, char* argv[])
     ////////////////////////////////////
     ////////   Device Object Enumeration
 
-    tout << _T("Begin IDirectInputDevice8->EnumObjects") << endl;
+    tout << _T("Begin IDirectInputDevice->EnumObjects") << endl;
     
     // Attempt to enumerate axes.
     tout << _T("  Axes...") << endl;
@@ -419,9 +426,9 @@ int RunTestApp(int argc, char* argv[])
         return -1;
     }
     if (testCounter == (deviceCapabilities.dwAxes))
-        tout << _T("PASS: IDirectInputDevice8->EnumObjects axis consistency check.") << endl;
+        tout << _T("PASS: IDirectInputDevice->EnumObjects axis consistency check.") << endl;
     else
-        tout << _T("FAIL: IDirectInputDevice8->EnumObjects axis consistency check.") << endl;
+        tout << _T("FAIL: IDirectInputDevice->EnumObjects axis consistency check.") << endl;
 
     // Attempt to enumerate buttons.
     tout << _T("  Buttons...") << endl;
@@ -433,9 +440,9 @@ int RunTestApp(int argc, char* argv[])
         return -1;
     }
     if (testCounter == (deviceCapabilities.dwButtons))
-        tout << _T("PASS: IDirectInputDevice8->EnumObjects button consistency check.") << endl;
+        tout << _T("PASS: IDirectInputDevice->EnumObjects button consistency check.") << endl;
     else
-        tout << _T("FAIL: IDirectInputDevice8->EnumObjects button consistency check.") << endl;
+        tout << _T("FAIL: IDirectInputDevice->EnumObjects button consistency check.") << endl;
 
     // Attempt to enumerate POVs.
     tout << _T("  POVs...") << endl;
@@ -447,9 +454,9 @@ int RunTestApp(int argc, char* argv[])
         return -1;
     }
     if (testCounter == (deviceCapabilities.dwPOVs))
-        tout << _T("PASS: IDirectInputDevice8->EnumObjects POV consistency check.") << endl;
+        tout << _T("PASS: IDirectInputDevice->EnumObjects POV consistency check.") << endl;
     else
-        tout << _T("FAIL: IDirectInputDevice8->EnumObjects POV consistency check.") << endl;
+        tout << _T("FAIL: IDirectInputDevice->EnumObjects POV consistency check.") << endl;
 
     // Attempt to enumerate everything to verify consistency.
     testCounter = 0;
@@ -460,18 +467,18 @@ int RunTestApp(int argc, char* argv[])
         return -1;
     }
     if (testCounter == (deviceCapabilities.dwAxes + deviceCapabilities.dwButtons + deviceCapabilities.dwPOVs))
-        tout << _T("PASS: IDirectInputDevice8->EnumObjects overall consistency check.") << endl;
+        tout << _T("PASS: IDirectInputDevice->EnumObjects overall consistency check.") << endl;
     else
-        tout << _T("FAIL: IDirectInputDevice8->EnumObjects overall consistency check.") << endl;
+        tout << _T("FAIL: IDirectInputDevice->EnumObjects overall consistency check.") << endl;
 
     // Finished enumerating objects.
-    tout << _T("End IDirectInputDevice8->EnumObjects") << endl << endl;
+    tout << _T("End IDirectInputDevice->EnumObjects") << endl << endl;
 
 
     ////////////////////////////////////
     ////////   Device Object Information
 
-    tout << _T("Begin IDirectInputDevice8->GetObjectInfo") << endl;
+    tout << _T("Begin IDirectInputDevice->GetObjectInfo") << endl;
 
     // Attempt to iterate over axes.
     tout << _T("  Axes...") << endl;
@@ -572,13 +579,13 @@ int RunTestApp(int argc, char* argv[])
         tout << _T("PASS: Unsupported request type object info test.") << endl;
     
     // Finished checking objects.
-    tout << _T("End IDirectInputDevice8->GetObjectInfo") << endl << endl;
+    tout << _T("End IDirectInputDevice->GetObjectInfo") << endl << endl;
     
     
     ////////////////////////////////////
     ////////   Device Properties
 
-    tout << _T("Begin IDirectInputDevice8->[Set|Get]Property") << endl;
+    tout << _T("Begin IDirectInputDevice->[Set|Get]Property") << endl;
     
     DIPROPRANGE rangeTest;
     DIPROPDWORD deadzoneTest;
@@ -733,7 +740,7 @@ int RunTestApp(int argc, char* argv[])
     else
         tout << _T("PASS: Whole device valid deadzone test.") << endl;
 
-    tout << _T("End IDirectInputDevice8->[Set|Get]Property") << endl << endl;
+    tout << _T("End IDirectInputDevice->[Set|Get]Property") << endl << endl;
 
 
     ////////////////////////////////////
@@ -874,5 +881,8 @@ int RunTestApp(int argc, char* argv[])
 
 int main(int argc, char* argv[])
 {
-    return RunTestApp(argc, argv);
+    int result = RunTestApp(argc, argv);
+
+    system("pause");
+    return result;
 }
