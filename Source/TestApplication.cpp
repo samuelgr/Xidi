@@ -10,10 +10,10 @@
  *      for testing the functionality of this library.
  *****************************************************************************/
 
-#include "ApiWindows.h"
+#include "ApiDirectInput.h"
 #include "ControllerIdentification.h"
-#include "Dinput8ExportApi.h"
-#include "Dinput8ImportApi.h"
+#include "DinputExportApi.h"
+#include "DinputImportApi.h"
 #include "Mapper/Base.h"
 
 #include <cstdlib>
@@ -39,6 +39,13 @@ struct SInteractiveTestData
 
 
 // -------- MACROS --------------------------------------------------------- //
+
+// Routes calls to exported methods based on the DirectInput version.
+#if DIRECTINPUT_VERSION >= 0x0800
+#define ExportedDirectInputCreateMethod         DinputExportDirectInput8Create
+#else
+#define ExportedDirectInputCreateMethod         DinputExportDirectInputCreateEx
+#endif
 
 // Helper for iostream input and output when using unicode.
 #ifdef UNICODE
@@ -175,7 +182,7 @@ LPTSTR DirectInputAxisTypeToString(REFGUID axisTypeGUID)
 
 // -------- CALLBACKS ------------------------------------------------------ //
 
-// Callback for enumerating DirectInput devices via the IDirectInput8 interface.
+// Callback for enumerating DirectInput devices via the IDirectInput interface.
 BOOL STDMETHODCALLTYPE EnumDevicesTestCallback(LPCDIDEVICEINSTANCE lpddi, LPVOID pvRef)
 {
     DWORD* testValuePtr = (DWORD*)pvRef;
@@ -204,7 +211,7 @@ BOOL STDMETHODCALLTYPE EnumDevicesTestCallback(LPCDIDEVICEINSTANCE lpddi, LPVOID
     return flagCallbackExpected ? DIENUM_CONTINUE : DIENUM_STOP;
 }
 
-// Callback for enumerating DirectInput device axes via the IDirectInputDevice8 interface.
+// Callback for enumerating DirectInput device axes via the IDirectInputDevice interface.
 BOOL STDMETHODCALLTYPE EnumObjectsAxesTestCallback(LPCDIDEVICEOBJECTINSTANCE lpddoi, LPVOID pvRef)
 {
     DWORD* testValuePtr = (DWORD*)pvRef;
@@ -230,7 +237,7 @@ BOOL STDMETHODCALLTYPE EnumObjectsAxesTestCallback(LPCDIDEVICEOBJECTINSTANCE lpd
     return DIENUM_CONTINUE;
 }
 
-// Callback for enumerating DirectInput device buttons via the IDirectInputDevice8 interface.
+// Callback for enumerating DirectInput device buttons via the IDirectInputDevice interface.
 BOOL STDMETHODCALLTYPE EnumObjectsButtonsTestCallback(LPCDIDEVICEOBJECTINSTANCE lpddoi, LPVOID pvRef)
 {
     DWORD* testValuePtr = (DWORD*)pvRef;
@@ -250,7 +257,7 @@ BOOL STDMETHODCALLTYPE EnumObjectsButtonsTestCallback(LPCDIDEVICEOBJECTINSTANCE 
     return DIENUM_CONTINUE;
 }
 
-// Callback for enumerating DirectInput device POVs via the IDirectInputDevice8 interface.
+// Callback for enumerating DirectInput device POVs via the IDirectInputDevice interface.
 BOOL STDMETHODCALLTYPE EnumObjectsPovTestCallback(LPCDIDEVICEOBJECTINSTANCE lpddoi, LPVOID pvRef)
 {
     DWORD* testValuePtr = (DWORD*)pvRef;
@@ -270,7 +277,7 @@ BOOL STDMETHODCALLTYPE EnumObjectsPovTestCallback(LPCDIDEVICEOBJECTINSTANCE lpdd
     return DIENUM_CONTINUE;
 }
 
-// Callback for enumerating DirectInput device objects via the IDirectInputDevice8 interface.
+// Callback for enumerating DirectInput device objects via the IDirectInputDevice interface.
 BOOL STDMETHODCALLTYPE EnumObjectsOverallTestCallback(LPCDIDEVICEOBJECTINSTANCE lpddoi, LPVOID pvRef)
 {
     DWORD* testValuePtr = (DWORD*)pvRef;
@@ -290,22 +297,22 @@ int RunTestApp(int argc, char* argv[])
 {
     HRESULT result;
     DWORD numErrors;
-    IDirectInput8* directInputIface;
-    IDirectInputDevice8* directInputDeviceIface;
+    VersionedIDirectInput* directInputIface;
+    VersionedIDirectInputDevice* directInputDeviceIface;
     
     
     ////////////////////////////////////
     ////////   Initialization
     
     // Initialize the imported DirectInput8 API.
-    if (S_OK != Dinput8ImportApi::Initialize())
+    if (S_OK != DinputImportApi::Initialize())
     {
         terr << _T("Unable to initialize DirectInput8 API.") << endl;
         return -1;
     }
 
-    // Create the main interface to DirectInput8.
-    result = Dinput8ExportDirectInput8Create(GetModuleHandle(NULL), 0x0800, IID_IDirectInput8, (LPVOID*)&directInputIface, NULL);
+    // Create the main interface to DirectInput.
+    result = ExportedDirectInputCreateMethod(GetModuleHandle(NULL), 0x0800, IID_IDirectInput8, (LPVOID*)&directInputIface, NULL);
     if (DI_OK != result)
     {
         terr << _T("Unable to obtain IDirectInput8 interface pointer: code ") << result << _T(".") << endl;

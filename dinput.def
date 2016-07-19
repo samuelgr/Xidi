@@ -1,6 +1,8 @@
-LIBRARY dinput8
+LIBRARY dinput
 EXPORTS
-    DirectInput8Create=DinputExportDirectInput8Create                       @1
+    DirectInputCreateA=DinputExportDirectInputCreateA                       @1
+    DirectInputCreateW=DinputExportDirectInputCreateW                       @2
+    DirectInputCreateEx=DinputExportDirectInputCreateEx                     @3
     DllRegisterServer=DinputExportDllRegisterServer                         PRIVATE
     DllUnregisterServer=DinputExportDllUnregisterServer                     PRIVATE
     DllCanUnloadNow=DinputExportDllCanUnloadNow                             PRIVATE

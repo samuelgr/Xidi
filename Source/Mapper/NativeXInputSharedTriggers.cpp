@@ -11,7 +11,7 @@
  *      that the LT and RT triggers share the Z axis.
  *****************************************************************************/
 
-#include "ApiDirectInput8.h"
+#include "ApiDirectInput.h"
 #include "XInputController.h"
 #include "Mapper/NativeXInputSharedTriggers.h"
 

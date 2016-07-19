@@ -10,7 +10,7 @@
  *      Provides common implementations of most core functionality.
  *****************************************************************************/
 
-#include "ApiDirectInput8.h"
+#include "ApiDirectInput.h"
 #include "Mapper/Base.h"
 
 #include <unordered_set>

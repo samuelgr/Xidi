@@ -5,22 +5,21 @@
  * Authored by Samuel Grossman
  * Copyright (c) 2016
  *****************************************************************************
- * WrapperIDirectInputDevice8.h
+ * WrapperIDirectInputDevice.h
  *      Declaration of the wrapper class for IDirectInputDevice8.
  *****************************************************************************/
 
 #pragma once
 
-#include "ApiDirectInput8.h"
+#include "ApiDirectInput.h"
 #include "XInputController.h"
 #include "Mapper/Base.h"
 
 
 namespace Xidi
 {
-    // Wraps the IDirectInput8 interface to hook into all calls to it.
-    // Holds an underlying instance of an IDirectInput8 object but wraps all method invocations.
-    struct WrapperIDirectInputDevice8 : IDirectInputDevice8
+    // Wraps the IDirectInput interface to hook into all calls to it.
+    struct WrapperIDirectInputDevice : VersionedIDirectInputDevice
     {
     private:
         // -------- INSTANCE VARIABLES --------------------------------------------- //
@@ -41,14 +40,14 @@ namespace Xidi
         // -------- CONSTRUCTION AND DESTRUCTION ----------------------------------- //
         
         // Default constructor. Should never be invoked.
-        WrapperIDirectInputDevice8();
+        WrapperIDirectInputDevice();
         
     public:
-        // Constructs a WrapperIDirectInput8 object, given an underlying IDirectInput8 object to wrap.
-        WrapperIDirectInputDevice8(BOOL useUnicode, XInputController* controller, Mapper::Base* mapper);
+        // Constructs a WrapperIDirectInput object, given an underlying IDirectInput8 object to wrap.
+        WrapperIDirectInputDevice(BOOL useUnicode, XInputController* controller, Mapper::Base* mapper);
 
         // Default destructor.
-        ~WrapperIDirectInputDevice8();
+        ~WrapperIDirectInputDevice();
         
         
     public:

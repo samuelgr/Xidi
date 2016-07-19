@@ -5,44 +5,72 @@
  * Authored by Samuel Grossman
  * Copyright (c) 2016
  *****************************************************************************
- * Dinput8ImportApi.cpp
- *      Implementation of importing the API from "dinput8.dll".
+ * DinputImportApi.cpp
+ *      Implementation of importing the API from the DirectInput library.
  *****************************************************************************/
 
 #include "ApiWindows.h"
-#include "Dinput8ImportApi.h"
+#include "DinputImportApi.h"
 
 using namespace Xidi;
 
 
-// -------- CLASS VARIABLES ------------------------------------------------ //
-// See "Dinput8ImportApi.h" for documentation.
+// -------- CONSTANTS ------------------------------------------------------ //
+// See "DinputImportApi.h" for documentation.
 
-SImportTable Dinput8ImportApi::importTable = {NULL, NULL, NULL, NULL, NULL};
-BOOL Dinput8ImportApi::importTableIsInitialized = FALSE;
+#if DIRECTINPUT_VERSION >= 0x0800
+const TCHAR* const DinputImportApi::kDirectInputLibraryName = _T("\\dinput8.dll");
+const DWORD DinputImportApi::kDirectInputLibraryLength = 12;
+#else
+const TCHAR* const DinputImportApi::kDirectInputLibraryName = _T("\\dinput.dll");
+const DWORD DinputImportApi::kDirectInputLibraryLength = 11;
+#endif
+
+
+// -------- CLASS VARIABLES ------------------------------------------------ //
+// See "DinputImportApi.h" for documentation.
+
+SImportTable DinputImportApi::importTable = {NULL, NULL, NULL, NULL, NULL};
+BOOL DinputImportApi::importTableIsInitialized = FALSE;
 
 
 // -------- CLASS METHODS -------------------------------------------------- //
-// See "Dinput8ImportApi.h" for documentation.
+// See "DinputImportApi.h" for documentation.
 
-HRESULT Dinput8ImportApi::Initialize(void)
+HRESULT DinputImportApi::Initialize(void)
 {
     if (FALSE == importTableIsInitialized)
     {
-        // Obtain the %windows%\system32\dinput8.dll string.
+        // Obtain the full library path string.
         // A path must be specified directly since the system has already loaded this DLL of the same name.
         TCHAR libraryName[1024];
         GetSystemDirectory(libraryName, 512);
-        _tcsncat_s(libraryName, _countof(libraryName), _T("\\dinput8.dll"), 12);
+        _tcsncat_s(libraryName, _countof(libraryName), kDirectInputLibraryName, kDirectInputLibraryLength);
         
         // Attempt to load the library.
         HMODULE loadedLibrary = LoadLibraryEx(libraryName, NULL, 0);
         if (NULL == loadedLibrary) return E_FAIL;
 
         // Attempt to obtain the addresses of all imported API functions.
-        FARPROC procAddress = GetProcAddress(loadedLibrary, "DirectInput8Create");
+        FARPROC procAddress = NULL;
+        
+#if DIRECTINPUT_VERSION >= 0x0800
+        procAddress = GetProcAddress(loadedLibrary, "DirectInput8Create");
         if (NULL == procAddress) return E_FAIL;
         importTable.DirectInput8Create = (HRESULT(__stdcall *)(HINSTANCE, DWORD, REFIID, LPVOID*, LPUNKNOWN))procAddress;
+#else
+        procAddress = GetProcAddress(loadedLibrary, "DirectInputCreateA");
+        if (NULL == procAddress) return E_FAIL;
+        importTable.DirectInputCreateA = (HRESULT(__stdcall *)(HINSTANCE, DWORD, LPDIRECTINPUTA, LPUNKNOWN))procAddress;
+
+        procAddress = GetProcAddress(loadedLibrary, "DirectInputCreateW");
+        if (NULL == procAddress) return E_FAIL;
+        importTable.DirectInputCreateA = (HRESULT(__stdcall *)(HINSTANCE, DWORD, LPDIRECTINPUTW, LPUNKNOWN))procAddress;
+
+        procAddress = GetProcAddress(loadedLibrary, "DirectInputCreateEx");
+        if (NULL == procAddress) return E_FAIL;
+        importTable.DirectInput8Create = (HRESULT(__stdcall *)(HINSTANCE, DWORD, REFIID, LPVOID*, LPUNKNOWN))procAddress;
+#endif
 
         procAddress = GetProcAddress(loadedLibrary, "DllRegisterServer");
         if (NULL == procAddress) return E_FAIL;
@@ -69,7 +97,7 @@ HRESULT Dinput8ImportApi::Initialize(void)
 
 // ---------
 
-HRESULT Dinput8ImportApi::ImportedDirectInput8Create(HINSTANCE hinst, DWORD dwVersion, REFIID riidltf, LPVOID* ppvOut, LPUNKNOWN punkOuter)
+HRESULT DinputImportApi::ImportedDirectInput8Create(HINSTANCE hinst, DWORD dwVersion, REFIID riidltf, LPVOID* ppvOut, LPUNKNOWN punkOuter)
 {
     if (S_OK != Initialize())
         return E_NOT_VALID_STATE;
@@ -79,7 +107,7 @@ HRESULT Dinput8ImportApi::ImportedDirectInput8Create(HINSTANCE hinst, DWORD dwVe
 
 // ---------
 
-HRESULT Dinput8ImportApi::ImportedDllRegisterServer(void)
+HRESULT DinputImportApi::ImportedDllRegisterServer(void)
 {
     if (S_OK != Initialize())
         return E_NOT_VALID_STATE;
@@ -89,7 +117,7 @@ HRESULT Dinput8ImportApi::ImportedDllRegisterServer(void)
 
 // ---------
 
-HRESULT Dinput8ImportApi::ImportedDllUnregisterServer(void)
+HRESULT DinputImportApi::ImportedDllUnregisterServer(void)
 {
     if (S_OK != Initialize())
         return E_NOT_VALID_STATE;
@@ -99,7 +127,7 @@ HRESULT Dinput8ImportApi::ImportedDllUnregisterServer(void)
 
 // ---------
 
-HRESULT Dinput8ImportApi::ImportedDllCanUnloadNow(void)
+HRESULT DinputImportApi::ImportedDllCanUnloadNow(void)
 {
     if (S_OK != Initialize())
         return E_NOT_VALID_STATE;
@@ -109,7 +137,7 @@ HRESULT Dinput8ImportApi::ImportedDllCanUnloadNow(void)
 
 // ---------
 
-HRESULT Dinput8ImportApi::ImportedDllGetClassObject(REFCLSID rclsid, REFIID riid, LPVOID* ppv)
+HRESULT DinputImportApi::ImportedDllGetClassObject(REFCLSID rclsid, REFIID riid, LPVOID* ppv)
 {
     if (S_OK != Initialize())
         return E_NOT_VALID_STATE;

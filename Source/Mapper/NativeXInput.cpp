@@ -10,7 +10,7 @@
  *      XInput controller when accessed via DirectInput.
  *****************************************************************************/
 
-#include "ApiDirectInput8.h"
+#include "ApiDirectInput.h"
 #include "XInputController.h"
 #include "Mapper/NativeXInput.h"
 

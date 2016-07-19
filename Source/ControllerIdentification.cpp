@@ -10,7 +10,7 @@
  *      XInput-based game controllers.
  *****************************************************************************/
 
-#include "ApiDirectInput8.h"
+#include "ApiDirectInput.h"
 #include "ControllerIdentification.h"
 
 #include <guiddef.h>
@@ -36,11 +36,11 @@ const GUID ControllerIdentification::kXInputInstGUID[4] = {
 // -------- CLASS METHODS -------------------------------------------------- //
 // See "XInputControllerIdentification.h" for documentation.
 
-BOOL ControllerIdentification::DoesDirectInputControllerSupportXInput(IDirectInput8* dicontext, REFGUID instanceGUID)
+BOOL ControllerIdentification::DoesDirectInputControllerSupportXInput(VersionedIDirectInput* dicontext, REFGUID instanceGUID)
 {
     BOOL deviceSupportsXInput = FALSE;
     
-    IDirectInputDevice8* didevice = NULL;
+    VersionedIDirectInputDevice* didevice = NULL;
     HRESULT result = dicontext->CreateDevice(instanceGUID, &didevice, NULL);
 
     if (DI_OK == result)

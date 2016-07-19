@@ -10,7 +10,7 @@
  *      XInput-based controller and exposes a DirectInput-like interface.
  *****************************************************************************/
 
-#include "ApiDirectInput8.h"
+#include "ApiDirectInput.h"
 #include "XInputController.h"
 
 #include <Xinput.h>

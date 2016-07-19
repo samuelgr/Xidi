@@ -12,7 +12,7 @@
 
 #pragma once
 
-#include "ApiDirectInput8.h"
+#include "ApiDirectInput.h"
 
 #include <unordered_map>
 
@@ -44,14 +44,14 @@ namespace Xidi
         // -------- CLASS METHODS -------------------------------------------------- //
         
         // Returns TRUE if the specified DirectInput controller supports XInput, FALSE if not or this information could not be determined.
-        static BOOL DoesDirectInputControllerSupportXInput(IDirectInput8* dicontext, REFGUID instanceGUID);
+        static BOOL DoesDirectInputControllerSupportXInput(VersionedIDirectInput* dicontext, REFGUID instanceGUID);
 
-        // Performs a DirectInput8-style controller enumeration of connected XInput controllers.
+        // Performs a DirectInput-style controller enumeration of connected XInput controllers.
         // Returns DIENUM_CONTINUE or DIENUM_STOP depending on what the application requested.
         // This is the non-Unicode version.
         static BOOL EnumerateXInputControllersA(LPDIENUMDEVICESCALLBACKA lpCallback, LPVOID pvRef);
         
-        // Performs a DirectInput8-style controller enumeration of connected XInput controllers.
+        // Performs a DirectInput-style controller enumeration of connected XInput controllers.
         // Returns DIENUM_CONTINUE or DIENUM_STOP depending on what the application requested.
         // This is the Unicode version.
         static BOOL EnumerateXInputControllersW(LPDIENUMDEVICESCALLBACKW lpCallback, LPVOID pvRef);

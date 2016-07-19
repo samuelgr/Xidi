@@ -5,10 +5,10 @@
  * Authored by Samuel Grossman
  * Copyright (c) 2016
  *****************************************************************************
- * ApiDirectInput8.h
+ * ApiDirectInput.h
  *      Pulls in all DirectInput GUID definitions to avoid linking with
- *      the "dinput8.lib" library.
+ *      the DirectInput library.
  *****************************************************************************/
 
 #include <initguid.h>
-#include "ApiDirectInput8.h"
+#include "ApiDirectInput.h"

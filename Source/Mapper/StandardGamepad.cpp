@@ -10,7 +10,7 @@
  *      DirectInput-compatible gamepad.
  *****************************************************************************/
 
-#include "ApiDirectInput8.h"
+#include "ApiDirectInput.h"
 #include "XInputController.h"
 #include "Mapper/StandardGamepad.h"
 

@@ -12,7 +12,7 @@
 
 #pragma once
 
-#include "ApiDirectInput8.h"
+#include "ApiDirectInput.h"
 
 #include <vector>
 #include <Xinput.h>
@@ -210,7 +210,7 @@ namespace Xidi
         HRESULT GetBufferedEvents(SControllerEvent* events, DWORD& count, BOOL removeFromBuffer);
 
         // Retrieves a DirectInput property on this controller.
-        // Corresponds directly to IDirectInputDevice8's GetProperty method.
+        // Corresponds directly to IDirectInputDevice's GetProperty method.
         HRESULT GetControllerProperty(REFGUID rguidProp, LPDIPROPHEADER pdiph);
 
         // Queries the controller for information on its current state (buttons, axes, etc.).
@@ -226,7 +226,7 @@ namespace Xidi
         HRESULT RefreshControllerState(void);
         
         // Sets a DirectInput property on this controller.
-        // Corresponds directly to IDirectInputDevice8's SetProperty method.
+        // Corresponds directly to IDirectInputDevice's SetProperty method.
         HRESULT SetControllerProperty(REFGUID rguidProp, LPCDIPROPHEADER pdiph);
 
         // Sets the event to be notified if the controller's state changes.

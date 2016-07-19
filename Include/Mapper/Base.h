@@ -12,7 +12,7 @@
 
 #pragma once
 
-#include "ApiDirectInput8.h"
+#include "ApiDirectInput.h"
 #include "XInputController.h"
 
 #include <unordered_map>
@@ -211,19 +211,19 @@ namespace Xidi
             // -------- INSTANCE METHODS ----------------------------------------------- //
             
             // Enumerates objects present in the mapping in the way DirectInput would.
-            // Intended to replace IDirectInputDevice8's EnumObjects method.
+            // Intended to replace VersionedIDirectInputDevice's EnumObjects method.
             HRESULT EnumerateMappedObjects(BOOL useUnicode, LPDIENUMDEVICEOBJECTSCALLBACK appCallback, LPVOID appCbParam, DWORD enumerationFlags);
             
             // Fills in a DirectInput device capabilities structure with information about the mapped game controller's buttons and axes.
-            // Intended to be invoked with a structure pre-filled with other device information from IDirectInputDevice8's GetCapabilities method.
+            // Intended to be invoked with a structure pre-filled with other device information from VersionedIDirectInputDevice's GetCapabilities method.
             void FillDeviceCapabilities(LPDIDEVCAPS lpDIDevCaps);
 
             // Fills in a DirectInput object information structure with information about a specific object of the mapped game controller.
-            // Corresponds directly to IDirectInputDevice8's GetObjectInfo method.
+            // Corresponds directly to VersionedIDirectInputDevice's GetObjectInfo method.
             HRESULT GetMappedObjectInfo(BOOL useUnicode, LPDIDEVICEOBJECTINSTANCE pdidoi, DWORD dwObj, DWORD dwHow);
 
             // Retrieves a DirectInput property that this mapper is intended to intercept and handle.
-            // Corresponds directly to IDirectInputDevice8's GetProperty method for those properties handled by the mapper (see IsPropertyHandledByMapper).
+            // Corresponds directly to VersionedIDirectInputDevice's GetProperty method for those properties handled by the mapper (see IsPropertyHandledByMapper).
             HRESULT GetMappedProperty(REFGUID rguidProp, LPDIPROPHEADER pdiph);
             
             // Returns the instance that corresponds to the specified offset in the application's data format.
@@ -233,7 +233,7 @@ namespace Xidi
             BOOL IsApplicationDataFormatSet(void);
 
             // Returns TRUE if the supplied DirectInput property is handled by the mapper, FALSE if the device should handle it directly.
-            // These properties are typically accessed and mutated through IDirectInputDevice8's GetProperty and SetProperty methods respectively.
+            // These properties are typically accessed and mutated through VersionedIDirectInputDevice's GetProperty and SetProperty methods respectively.
             BOOL IsPropertyHandledByMapper(REFGUID guidProperty);
             
             // Returns the offset in an application's data format that corresponds to the specified instance.
@@ -249,7 +249,7 @@ namespace Xidi
             HRESULT SetApplicationDataFormat(LPCDIDATAFORMAT lpdf);
 
             // Sets a DirectInput property that this mapper is intended to intercept and handle.
-            // Corresponds directly to IDirectInputDevice8's SetProperty method for those properties handled by the mapper (see IsPropertyHandledByMapper).
+            // Corresponds directly to VersionedIDirectInputDevice's SetProperty method for those properties handled by the mapper (see IsPropertyHandledByMapper).
             HRESULT SetMappedProperty(REFGUID rguidProp, LPCDIPROPHEADER pdiph);
 
             // Resets the application-supplied DirectInput data format to an uninitialized state.

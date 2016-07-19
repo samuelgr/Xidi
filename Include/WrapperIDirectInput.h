@@ -5,20 +5,20 @@
  * Authored by Samuel Grossman
  * Copyright (c) 2016
  *****************************************************************************
- * WrapperIDirectInput8.h
- *      Declaration of the wrapper class for IDirectInput8.
+ * WrapperIDirectInput.h
+ *      Declaration of the wrapper class for IDirectInput.
  *****************************************************************************/
 
 #pragma once
 
-#include "ApiDirectInput8.h"
+#include "ApiDirectInput.h"
 
 
 namespace Xidi
 {
     // Wraps the IDirectInput8 interface to hook into all calls to it.
-    // Holds an underlying instance of an IDirectInput8 object but wraps all method invocations.
-    struct WrapperIDirectInput8 : IDirectInput8
+    // Holds an underlying instance of an IDirectInput object but wraps all method invocations.
+    struct WrapperIDirectInput : VersionedIDirectInput
     {
     private:
         // -------- INSTANCE VARIABLES --------------------------------------------- //
@@ -33,11 +33,11 @@ namespace Xidi
         // -------- CONSTRUCTION AND DESTRUCTION ----------------------------------- //
         
         // Default constructor. Should never be invoked.
-        WrapperIDirectInput8();
+        WrapperIDirectInput();
 
     public:
-        // Constructs an WrapperIDirectInput8 object, given an underlying IDirectInput8 object to wrap.
-        WrapperIDirectInput8(IDirectInput8* underlyingDIObject, BOOL underlyingDIObjectUsesUnicode);
+        // Constructs an WrapperIDirectInput object, given an underlying IDirectInput8 object to wrap.
+        WrapperIDirectInput(VersionedIDirectInput* underlyingDIObject, BOOL underlyingDIObjectUsesUnicode);
         
         
         // -------- METHODS: IUnknown ---------------------------------------------- //
@@ -46,7 +46,7 @@ namespace Xidi
         virtual ULONG STDMETHODCALLTYPE Release(void);
 
 
-        // -------- METHODS: IDirectInput8 ----------------------------------------- //
+        // -------- METHODS: IDirectInput ------------------------------------------ //
         virtual HRESULT STDMETHODCALLTYPE CreateDevice(REFGUID rguid, LPDIRECTINPUTDEVICE8* lplpDirectInputDevice, LPUNKNOWN pUnkOuter);
         virtual HRESULT STDMETHODCALLTYPE ConfigureDevices(LPDICONFIGUREDEVICESCALLBACK lpdiCallback, LPDICONFIGUREDEVICESPARAMS lpdiCDParams, DWORD dwFlags, LPVOID pvRefData);
         virtual HRESULT STDMETHODCALLTYPE EnumDevices(DWORD dwDevType, LPDIENUMDEVICESCALLBACK lpCallback, LPVOID pvRef, DWORD dwFlags);
@@ -57,7 +57,7 @@ namespace Xidi
         virtual HRESULT STDMETHODCALLTYPE RunControlPanel(HWND hwndOwner, DWORD dwFlags);
 
 
-        // -------- CALLBACKS: IDirectInput8 --------------------------------------- //
+        // -------- CALLBACKS: IDirectInput ---------------------------------------- //
         
         // Intercepts callbacks invoked as part of a call to EnumDevices.
         static BOOL STDMETHODCALLTYPE CallbackEnumDevices(LPCDIDEVICEINSTANCE lpddi, LPVOID pvRef);
