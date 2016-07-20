@@ -19,6 +19,9 @@
     <Filter Include="Source Files\Mapper">
       <UniqueIdentifier>{3b4cb058-31d6-4fb6-a455-fd41ff3f2d86}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Module Definition Files">
+      <UniqueIdentifier>{992c1239-398a-4216-946f-f6f5f850dce1}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Include\ApiWindows.h">
@@ -124,10 +127,14 @@
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <None Include="dinput8.def" />
-    <None Include="dinput.def" />
+    <None Include="dinput.def">
+      <Filter>Module Definition Files</Filter>
+    </None>
+    <None Include="dinput8.def">
+      <Filter>Module Definition Files</Filter>
+    </None>
     <None Include="winmm.def">
-      <Filter>Source Files</Filter>
+      <Filter>Module Definition Files</Filter>
     </None>
   </ItemGroup>
 </Project>
