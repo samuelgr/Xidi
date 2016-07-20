@@ -10,6 +10,7 @@
  *****************************************************************************/
 
 #include "ImportApiWinMM.h"
+#include "WrapperJoyWinMM.h"
 
 using namespace Xidi;
 
@@ -61,70 +62,70 @@ MMRESULT WINAPI ExportApiWinMMAuxSetVolume(UINT uDeviceID, DWORD dwVolume)
 
 MMRESULT WINAPI ExportApiWinMMJoyConfigChanged(DWORD dwFlags)
 {
-    return ImportApiWinMM::joyConfigChanged(dwFlags);
+    return WrapperJoyWinMM::JoyConfigChanged(dwFlags);
 }
 
 // ---------
 
 MMRESULT WINAPI ExportApiWinMMJoyGetDevCapsA(UINT_PTR uJoyID, LPJOYCAPSA pjc, UINT cbjc)
 {
-    return ImportApiWinMM::joyGetDevCapsA(uJoyID, pjc, cbjc);
+    return WrapperJoyWinMM::JoyGetDevCapsA(uJoyID, pjc, cbjc);
 }
 
 // ---------
 
 MMRESULT WINAPI ExportApiWinMMJoyGetDevCapsW(UINT_PTR uJoyID, LPJOYCAPSW pjc, UINT cbjc)
 {
-    return ImportApiWinMM::joyGetDevCapsW(uJoyID, pjc, cbjc);
+    return WrapperJoyWinMM::JoyGetDevCapsW(uJoyID, pjc, cbjc);
 }
 
 // ---------
 
 UINT WINAPI ExportApiWinMMJoyGetNumDevs(void)
 {
-    return ImportApiWinMM::joyGetNumDevs();
+    return WrapperJoyWinMM::JoyGetNumDevs();
 }
 
 // ---------
 
 MMRESULT WINAPI ExportApiWinMMJoyGetPos(UINT uJoyID, LPJOYINFO pji)
 {
-    return ImportApiWinMM::joyGetPos(uJoyID, pji);
+    return WrapperJoyWinMM::JoyGetPos(uJoyID, pji);
 }
 
 // ---------
 
 MMRESULT WINAPI ExportApiWinMMJoyGetPosEx(UINT uJoyID, LPJOYINFOEX pji)
 {
-    return ImportApiWinMM::joyGetPosEx(uJoyID, pji);
+    return WrapperJoyWinMM::JoyGetPosEx(uJoyID, pji);
 }
 
 // ---------
 
 MMRESULT WINAPI ExportApiWinMMJoyGetThreshold(UINT uJoyID, LPUINT puThreshold)
 {
-    return ImportApiWinMM::joyGetThreshold(uJoyID, puThreshold);
+    return WrapperJoyWinMM::JoyGetThreshold(uJoyID, puThreshold);
 }
 
 // ---------
 
 MMRESULT WINAPI ExportApiWinMMJoyReleaseCapture(UINT uJoyID)
 {
-    return ImportApiWinMM::joyReleaseCapture(uJoyID);
+    return WrapperJoyWinMM::JoyReleaseCapture(uJoyID);
 }
 
 // ---------
 
 MMRESULT WINAPI ExportApiWinMMJoySetCapture(HWND hwnd, UINT uJoyID, UINT uPeriod, BOOL fChanged)
 {
-    return ImportApiWinMM::joySetCapture(hwnd, uJoyID, uPeriod, fChanged);
+    return WrapperJoyWinMM::JoySetCapture(hwnd, uJoyID, uPeriod, fChanged);
 }
 
 // ---------
 
 MMRESULT WINAPI ExportApiWinMMJoySetThreshold(UINT uJoyID, UINT uThreshold)
 {
-    return ImportApiWinMM::joySetThreshold(uJoyID, uThreshold);
+    return WrapperJoyWinMM::JoySetThreshold(uJoyID, uThreshold);
 }
 
 // ---------

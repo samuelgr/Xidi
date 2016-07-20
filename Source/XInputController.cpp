@@ -177,6 +177,16 @@ BOOL XInputController::IsAcquired(void)
 
 // ---------
 
+BOOL XInputController::IsConnected(void)
+{
+    XINPUT_CAPABILITIES dummyCapabilities;
+    DWORD result = XInputGetCapabilities(xinputUserIndex, 0, &dummyCapabilities);
+    
+    return (result == ERROR_SUCCESS);
+}
+
+// ---------
+
 HRESULT XInputController::RefreshControllerState(void)
 {
     if (!IsAcquired()) return DIERR_NOTACQUIRED;

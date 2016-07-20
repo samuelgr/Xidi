@@ -221,6 +221,9 @@ namespace Xidi
         // Returns TRUE if this controller is currently acquired.
         BOOL IsAcquired(void);
 
+        // Returns TRUE if this controller is currently connected (i.e. there is a controller physically present for the assigned device index).
+        BOOL IsConnected(void);
+
         // Refreshes the controller state information.
         // Polls the controller for updated state.
         HRESULT RefreshControllerState(void);

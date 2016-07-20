@@ -43,7 +43,7 @@ const TInstanceCount NativeXInput::AxisTypeCount(REFGUID axisGUID)
 {
     // Only one axis of each type exists in this mapping.
     // See if the first instance of the specified type exists and, if so, indicate as much.
-    if (EAxis::AxisCount != AxisInstanceIndex(axisGUID, 0))
+    if (AxisInstanceIndex(axisGUID, 0) >= 0)
         return 1;
 
     return 0;

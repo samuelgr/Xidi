@@ -18,39 +18,74 @@
 
 namespace Xidi
 {
-    // Wraps the IDirectInput8 interface to hook into all calls to it.
-    // Holds an underlying instance of an IDirectInput object but wraps all method invocations.
+    // Wraps the WinMM joystick interface.
+    // All methods are class methods, because the wrapped interface is not object-oriented.
     class WrapperJoyWinMM
     {
     private:
-        // -------- INSTANCE VARIABLES --------------------------------------------- //
+        // -------- TYPE DEFINITIONS ----------------------------------------------- //
+        
+        // Holds controller state information retrieved from the mapper.
+        struct SJoyStateData
+        {
+            LONG axisX;
+            LONG axisY;
+            LONG axisZ;
+            LONG axisRx;
+            LONG axisRy;
+            LONG axisRz;
+            LONG pov;
+            BYTE buttons[32];
+        };
+        
+        
+        // -------- CLASS VARIABLES ------------------------------------------------ //
         
         // Fixed set of four XInput controllers.
-        XInputController* controllers[4];
+        static XInputController* controllers[4];
         
         // Mapping scheme to be applied to all controllers.
-        Mapper::Base* mapper;
+        static Mapper::Base* mapper;
         
-    public:
+        // Specifies if the class is initialized.
+        static BOOL isInitialized;
+        
+        // Specifies the format of each field in SJoyStateData in DirectInput-compatible format.
+        static DIOBJECTDATAFORMAT joyStateObjectDataFormat[];
+        
+        // Specifies the overall data format of SJoyStateData in DirectInput-compatible format.
+        static const DIDATAFORMAT joyStateDataFormat;
+        
+        
         // -------- CONSTRUCTION AND DESTRUCTION ----------------------------------- //
         
-        // Default constructor.
+        // Default constructor. Should never be invoked.
         WrapperJoyWinMM();
         
-        // Default destructor.
-        ~WrapperJoyWinMM();
-
         
+        // -------- CLASS METHODS -------------------------------------------------- //
+        
+        // Initializes this class.
+        static void Initialize(void);
+
+
+        // -------- HELPERS -------------------------------------------------------- //
+        
+        // Communicates with the relevant controller and the mapper to fill the provided structure with device state information.
+        static MMRESULT FillDeviceState(UINT joyID, SJoyStateData* joyStateData);
+        
+        
+    public:
         // -------- METHODS: WinMM JOYSTICK ---------------------------------------- //
-        MMRESULT JoyConfigChanged(DWORD dwFlags);
-        MMRESULT JoyGetDevCapsA(UINT_PTR uJoyID, LPJOYCAPSA pjc, UINT cbjc);
-        MMRESULT JoyGetDevCapsW(UINT_PTR uJoyID, LPJOYCAPSW pjc, UINT cbjc);
-        UINT JoyGetNumDevs(void);
-        MMRESULT JoyGetPos(UINT uJoyID, LPJOYINFO pji);
-        MMRESULT JoyGetPosEx(UINT uJoyID, LPJOYINFOEX pji);
-        MMRESULT JoyGetThreshold(UINT uJoyID, LPUINT puThreshold);
-        MMRESULT JoyReleaseCapture(UINT uJoyID);
-        MMRESULT JoySetCapture(HWND hwnd, UINT uJoyID, UINT uPeriod, BOOL fChanged);
-        MMRESULT JoySetThreshold(UINT uJoyID, UINT uThreshold);
+        static MMRESULT JoyConfigChanged(DWORD dwFlags);
+        static MMRESULT JoyGetDevCapsA(UINT_PTR uJoyID, LPJOYCAPSA pjc, UINT cbjc);
+        static MMRESULT JoyGetDevCapsW(UINT_PTR uJoyID, LPJOYCAPSW pjc, UINT cbjc);
+        static UINT JoyGetNumDevs(void);
+        static MMRESULT JoyGetPos(UINT uJoyID, LPJOYINFO pji);
+        static MMRESULT JoyGetPosEx(UINT uJoyID, LPJOYINFOEX pji);
+        static MMRESULT JoyGetThreshold(UINT uJoyID, LPUINT puThreshold);
+        static MMRESULT JoyReleaseCapture(UINT uJoyID);
+        static MMRESULT JoySetCapture(HWND hwnd, UINT uJoyID, UINT uPeriod, BOOL fChanged);
+        static MMRESULT JoySetThreshold(UINT uJoyID, UINT uThreshold);
     };
 }

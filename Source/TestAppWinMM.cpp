@@ -100,6 +100,12 @@ int RunTestApp(int argc, char* argv[])
     }
 
     tout << _T("Device presents ") << joyCaps.wNumAxes << _T(" axes, ") << joyCaps.wNumButtons << _T(" buttons, and ") << (joyCaps.wCaps & JOYCAPS_HASPOV ? 1 : 0) << _T(" POV controllers.") << endl;
+    tout << _T("Axes present: X Y");
+    if (joyCaps.wCaps & JOYCAPS_HASZ) tout << _T(" Z");
+    if (joyCaps.wCaps & JOYCAPS_HASR) tout << _T(" R");
+    if (joyCaps.wCaps & JOYCAPS_HASU) tout << _T(" U");
+    if (joyCaps.wCaps & JOYCAPS_HASV) tout << _T(" V");
+    tout << endl;
     tout << _T("Max axes = ") << joyCaps.wMaxAxes << _T(", max buttons = ") << joyCaps.wMaxButtons << _T(", max period = ") << joyCaps.wPeriodMax << _T(", min period = ") << joyCaps.wPeriodMin << endl;
     tout << _T("X axis: max = ") << joyCaps.wXmax << _T(", min = ") << joyCaps.wXmin << endl;
     tout << _T("Y axis: max = ") << joyCaps.wYmax << _T(", min = ") << joyCaps.wYmin << endl;
@@ -107,6 +113,7 @@ int RunTestApp(int argc, char* argv[])
     tout << _T("R axis: max = ") << joyCaps.wRmax << _T(", min = ") << joyCaps.wRmin << endl;
     tout << _T("U axis: max = ") << joyCaps.wUmax << _T(", min = ") << joyCaps.wUmin << endl;
     tout << _T("V axis: max = ") << joyCaps.wVmax << _T(", min = ") << joyCaps.wVmin << endl;
+    tout << _T("Manufacturer ID = ") << joyCaps.wMid << _T(", product ID = ") << joyCaps.wPid << endl;
     tout << _T("Product name: ") << joyCaps.szPname << endl;
     tout << _T("OEM driver name: ") << joyCaps.szOEMVxD << endl;
     tout << _T("Registry key: ") << joyCaps.szRegKey << endl;
@@ -119,7 +126,6 @@ int RunTestApp(int argc, char* argv[])
     tout << _T("Preparing to launch interactive mode... ");
     tout << _T("DONE") << endl;
     tout << _T("After every character typed, the device's state will be read and reported.") << endl;
-    tout << _T("All axes are set to a range of -100 to +100, with 25% each deadzone/saturation.") << endl;
     tout << _T("To quit, type Q and press RETURN.") << endl;
     tout << _T("To re-read the device's state, type any other character and press RETURN.") << endl;
     system("pause");
