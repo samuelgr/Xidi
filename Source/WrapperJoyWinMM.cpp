@@ -310,7 +310,8 @@ MMRESULT WrapperJoyWinMM::JoyGetPosEx(UINT uJoyID, LPJOYINFOEX pji)
         return result;
 
     // Fill in the provided structure.
-    pji->dwPOV = joyStateData.pov;
+    // WinMM uses only 16 bits to indicate that the dpad is centered, whereas it is safe to use all 32 in DirectInput, hence the conversion (forgetting this can introduce bugs into games).
+    pji->dwPOV = ((DWORD)-1 == joyStateData.pov ? (DWORD)(JOY_POVCENTERED) : joyStateData.pov);
     pji->dwXpos = joyStateData.axisX;
     pji->dwYpos = joyStateData.axisY;
     pji->dwZpos = joyStateData.axisZ;

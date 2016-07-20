@@ -176,3 +176,276 @@ MMRESULT WINAPI ExportApiWinMMTimeSetEvent(UINT uDelay, UINT uResolution, LPTIME
 {
     return ImportApiWinMM::timeSetEvent(uDelay, uResolution, lpTimeProc, dwUser, fuEvent);
 }
+
+// ---------
+
+MMRESULT WINAPI ExportApiWinMMWaveInAddBuffer(HWAVEIN hwi, LPWAVEHDR pwh, UINT cbwh)
+{
+    return ImportApiWinMM::waveInAddBuffer(hwi, pwh, cbwh);
+}
+
+// ---------
+
+MMRESULT WINAPI ExportApiWinMMWaveInClose(HWAVEIN hwi)
+{
+    return ImportApiWinMM::waveInClose(hwi);
+}
+
+// ---------
+
+MMRESULT WINAPI ExportApiWinMMWaveInGetDevCapsA(UINT_PTR uDeviceID, LPWAVEINCAPSA pwic, UINT cbwic)
+{
+    return ImportApiWinMM::waveInGetDevCapsA(uDeviceID, pwic, cbwic);
+}
+
+// ---------
+
+MMRESULT WINAPI ExportApiWinMMWaveInGetDevCapsW(UINT_PTR uDeviceID, LPWAVEINCAPSW pwic, UINT cbwic)
+{
+    return ImportApiWinMM::waveInGetDevCapsW(uDeviceID, pwic, cbwic);
+}
+
+// ---------
+
+MMRESULT WINAPI ExportApiWinMMWaveInGetErrorTextA(MMRESULT mmrError, LPCSTR pszText, UINT cchText)
+{
+    return ImportApiWinMM::waveInGetErrorTextA(mmrError, pszText, cchText);
+}
+
+// ---------
+
+MMRESULT WINAPI ExportApiWinMMWaveInGetErrorTextW(MMRESULT mmrError, LPWSTR pszText, UINT cchText)
+{
+    return ImportApiWinMM::waveInGetErrorTextW(mmrError, pszText, cchText);
+}
+
+// ---------
+
+MMRESULT WINAPI ExportApiWinMMWaveInGetID(HWAVEIN hwi, LPUINT puDeviceID)
+{
+    return ImportApiWinMM::waveInGetID(hwi, puDeviceID);
+}
+
+// ---------
+
+UINT WINAPI ExportApiWinMMWaveInGetNumDevs(void)
+{
+    return ImportApiWinMM::waveInGetNumDevs();
+}
+
+// ---------
+
+MMRESULT WINAPI ExportApiWinMMWaveInGetPosition(HWAVEIN hwi, LPMMTIME pmmt, UINT cbmmt)
+{
+    return ImportApiWinMM::waveInGetPosition(hwi, pmmt, cbmmt);
+}
+
+// ---------
+
+DWORD WINAPI ExportApiWinMMWaveInMessage(HWAVEIN deviceID, UINT uMsg, DWORD_PTR dwParam1, DWORD_PTR dwParam2)
+{
+    return ImportApiWinMM::waveInMessage(deviceID, uMsg, dwParam1, dwParam2);
+}
+
+// ---------
+
+MMRESULT WINAPI ExportApiWinMMWaveInOpen(LPHWAVEIN phwi, UINT uDeviceID, LPCWAVEFORMATEX pwfx, DWORD_PTR dwCallback, DWORD_PTR dwCallbackInstance, DWORD fdwOpen)
+{
+    return ImportApiWinMM::waveInOpen(phwi, uDeviceID, pwfx, dwCallback, dwCallbackInstance, fdwOpen);
+}
+
+// ---------
+
+MMRESULT WINAPI ExportApiWinMMWaveInPrepareHeader(HWAVEIN hwi, LPWAVEHDR pwh, UINT cbwh)
+{
+    return ImportApiWinMM::waveInPrepareHeader(hwi, pwh, cbwh);
+}
+
+// ---------
+
+MMRESULT WINAPI ExportApiWinMMWaveInReset(HWAVEIN hwi)
+{
+    return ImportApiWinMM::waveInReset(hwi);
+}
+
+// ---------
+
+MMRESULT WINAPI ExportApiWinMMWaveInStart(HWAVEIN hwi)
+{
+    return ImportApiWinMM::waveInStart(hwi);
+}
+
+// ---------
+
+MMRESULT WINAPI ExportApiWinMMWaveInStop(HWAVEIN hwi)
+{
+    return ImportApiWinMM::waveInStop(hwi);
+}
+
+// ---------
+
+MMRESULT WINAPI ExportApiWinMMWaveInUnprepareHeader(HWAVEIN hwi, LPWAVEHDR pwh, UINT cbwh)
+{
+    return ImportApiWinMM::waveInUnprepareHeader(hwi, pwh, cbwh);
+}
+
+// ---------
+
+MMRESULT WINAPI ExportApiWinMMWaveOutBreakLoop(HWAVEOUT hwo)
+{
+    return ImportApiWinMM::waveOutBreakLoop(hwo);
+}
+
+// ---------
+
+MMRESULT WINAPI ExportApiWinMMWaveOutClose(HWAVEOUT hwo)
+{
+    return ImportApiWinMM::waveOutClose(hwo);
+}
+
+// ---------
+
+MMRESULT WINAPI ExportApiWinMMWaveOutGetDevCapsA(UINT_PTR uDeviceID, LPWAVEOUTCAPSA pwoc, UINT cbwoc)
+{
+    return ImportApiWinMM::waveOutGetDevCapsA(uDeviceID, pwoc, cbwoc);
+}
+
+// ---------
+
+MMRESULT WINAPI ExportApiWinMMWaveOutGetDevCapsW(UINT_PTR uDeviceID, LPWAVEOUTCAPSW pwoc, UINT cbwoc)
+{
+    return ImportApiWinMM::waveOutGetDevCapsW(uDeviceID, pwoc, cbwoc);
+}
+
+// ---------
+
+MMRESULT WINAPI ExportApiWinMMWaveOutGetErrorTextA(MMRESULT mmrError, LPCSTR pszText, UINT cchText)
+{
+    return ImportApiWinMM::waveOutGetErrorTextA(mmrError, pszText, cchText);
+}
+
+// ---------
+
+MMRESULT WINAPI ExportApiWinMMWaveOutGetErrorTextW(MMRESULT mmrError, LPWSTR pszText, UINT cchText)
+{
+    return ImportApiWinMM::waveOutGetErrorTextW(mmrError, pszText, cchText);
+}
+
+// ---------
+
+MMRESULT WINAPI ExportApiWinMMWaveOutGetID(HWAVEOUT hwo, LPUINT puDeviceID)
+{
+    return ImportApiWinMM::waveOutGetID(hwo, puDeviceID);
+}
+
+// ---------
+
+UINT WINAPI ExportApiWinMMWaveOutGetNumDevs(void)
+{
+    return ImportApiWinMM::waveOutGetNumDevs();
+}
+
+// ---------
+
+MMRESULT WINAPI ExportApiWinMMWaveOutGetPitch(HWAVEOUT hwo, LPDWORD pdwPitch)
+{
+    return ImportApiWinMM::waveOutGetPitch(hwo, pdwPitch);
+}
+
+// ---------
+
+MMRESULT WINAPI ExportApiWinMMWaveOutGetPlaybackRate(HWAVEOUT hwo, LPDWORD pdwRate)
+{
+    return ImportApiWinMM::waveOutGetPlaybackRate(hwo, pdwRate);
+}
+
+// ---------
+
+MMRESULT WINAPI ExportApiWinMMWaveOutGetPosition(HWAVEOUT hwo, LPMMTIME pmmt, UINT cbmmt)
+{
+    return ImportApiWinMM::waveOutGetPosition(hwo, pmmt, cbmmt);
+}
+
+// ---------
+
+MMRESULT WINAPI ExportApiWinMMWaveOutGetVolume(HWAVEOUT hwo, LPDWORD pdwVolume)
+{
+    return ImportApiWinMM::waveOutGetVolume(hwo, pdwVolume);
+}
+
+// ---------
+
+DWORD WINAPI ExportApiWinMMWaveOutMessage(HWAVEOUT deviceID, UINT uMsg, DWORD_PTR dwParam1, DWORD_PTR dwParam2)
+{
+    return ImportApiWinMM::waveOutMessage(deviceID, uMsg, dwParam1, dwParam2);
+}
+
+// ---------
+
+MMRESULT WINAPI ExportApiWinMMWaveOutOpen(LPHWAVEOUT phwo, UINT_PTR uDeviceID, LPWAVEFORMATEX pwfx, DWORD_PTR dwCallback, DWORD_PTR dwCallbackInstance, DWORD fdwOpen)
+{
+    return ImportApiWinMM::waveOutOpen(phwo, uDeviceID, pwfx, dwCallback, dwCallbackInstance, fdwOpen);
+}
+
+// ---------
+
+MMRESULT WINAPI ExportApiWinMMWaveOutPause(HWAVEOUT hwo)
+{
+    return ImportApiWinMM::waveOutPause(hwo);
+}
+
+// ---------
+
+MMRESULT WINAPI ExportApiWinMMWaveOutPrepareHeader(HWAVEOUT hwo, LPWAVEHDR pwh, UINT cbwh)
+{
+    return ImportApiWinMM::waveOutPrepareHeader(hwo, pwh, cbwh);
+}
+
+// ---------
+
+MMRESULT WINAPI ExportApiWinMMWaveOutReset(HWAVEOUT hwo)
+{
+    return ImportApiWinMM::waveOutReset(hwo);
+}
+
+// ---------
+
+MMRESULT WINAPI ExportApiWinMMWaveOutRestart(HWAVEOUT hwo)
+{
+    return ImportApiWinMM::waveOutRestart(hwo);
+}
+
+// ---------
+
+MMRESULT WINAPI ExportApiWinMMWaveOutSetPitch(HWAVEOUT hwo, DWORD dwPitch)
+{
+    return ImportApiWinMM::waveOutSetPitch(hwo, dwPitch);
+}
+
+// ---------
+
+MMRESULT WINAPI ExportApiWinMMWaveOutSetPlaybackRate(HWAVEOUT hwo, DWORD dwRate)
+{
+    return ImportApiWinMM::waveOutSetPlaybackRate(hwo, dwRate);
+}
+
+// ---------
+
+MMRESULT WINAPI ExportApiWinMMWaveOutSetVolume(HWAVEOUT hwo, DWORD dwVolume)
+{
+    return ImportApiWinMM::waveOutSetVolume(hwo, dwVolume);
+}
+
+// ---------
+
+MMRESULT WINAPI ExportApiWinMMWaveOutUnprepareHeader(HWAVEOUT hwo, LPWAVEHDR pwh, UINT cbwh)
+{
+    return ImportApiWinMM::waveOutUnprepareHeader(hwo, pwh, cbwh);
+}
+
+// ---------
+
+MMRESULT WINAPI ExportApiWinMMWaveOutWrite(HWAVEOUT hwo, LPWAVEHDR pwh, UINT cbwh)
+{
+    return ImportApiWinMM::waveOutWrite(hwo, pwh, cbwh);
+}
