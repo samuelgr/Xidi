@@ -15,6 +15,7 @@
 #include "WrapperIDirectInput.h"
 #include "WrapperIDirectInputDevice.h"
 #include "XInputController.h"
+#include "Mapper/Base.h"
 #include "Mapper/StandardGamepad.h"
 #include "Mapper/NativeXInput.h"
 #include "Mapper/NativeXInputSharedTriggers.h"

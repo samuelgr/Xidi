@@ -43,7 +43,7 @@ namespace Xidi
         WrapperIDirectInputDevice();
         
     public:
-        // Constructs a WrapperIDirectInput object, given an underlying IDirectInput8 object to wrap.
+        // Constructs a WrapperIDirectInput object, given a mapper and a controller.
         WrapperIDirectInputDevice(BOOL useUnicode, XInputController* controller, Mapper::Base* mapper);
 
         // Default destructor.

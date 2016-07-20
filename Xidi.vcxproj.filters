@@ -66,6 +66,9 @@
     <ClInclude Include="Include\ExportApiWinMM.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="Include\WrapperJoyWinMM.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Source\ControllerIdentification.cpp">
@@ -114,6 +117,9 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="Source\ExportApiWinMM.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\WrapperJoyWinMM.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

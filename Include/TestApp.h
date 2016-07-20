@@ -19,7 +19,7 @@ using namespace std;
 
 // -------- MACROS --------------------------------------------------------- //
 
-// Helper for iostream input and output when using Unicode.
+// Helpers for iostream input and output when using Unicode.
 #ifdef UNICODE
 #define terr                                    wcerr
 #define tin                                     wcin
