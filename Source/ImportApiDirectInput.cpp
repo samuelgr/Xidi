@@ -9,7 +9,7 @@
  *      Implementation of importing the API from the DirectInput library.
  *****************************************************************************/
 
-#include "ApiWindows.h"
+#include "ApiDirectInput.h"
 #include "ImportApiDirectInput.h"
 
 using namespace Xidi;
@@ -30,7 +30,7 @@ const DWORD ImportApiDirectInput::kDirectInputLibraryLength = 11;
 // -------- CLASS VARIABLES ------------------------------------------------ //
 // See "ImportApiDirectInput.h" for documentation.
 
-ImportApiDirectInput::SImportTable ImportApiDirectInput::importTable = {NULL, NULL, NULL, NULL, NULL};
+ImportApiDirectInput::SImportTable ImportApiDirectInput::importTable;
 BOOL ImportApiDirectInput::importTableIsInitialized = FALSE;
 
 
@@ -41,6 +41,9 @@ HRESULT ImportApiDirectInput::Initialize(void)
 {
     if (FALSE == importTableIsInitialized)
     {
+        // Initialize the import table.
+        ZeroMemory(&importTable, sizeof(importTable));
+        
         // Obtain the full library path string.
         // A path must be specified directly since the system has already loaded this DLL of the same name.
         TCHAR libraryName[1024];
@@ -57,36 +60,36 @@ HRESULT ImportApiDirectInput::Initialize(void)
 #if DIRECTINPUT_VERSION >= 0x0800
         procAddress = GetProcAddress(loadedLibrary, "DirectInput8Create");
         if (NULL == procAddress) return E_FAIL;
-        importTable.DirectInput8Create = (HRESULT(__stdcall *)(HINSTANCE, DWORD, REFIID, LPVOID*, LPUNKNOWN))procAddress;
+        importTable.DirectInput8Create = (HRESULT(STDMETHODCALLTYPE *)(HINSTANCE, DWORD, REFIID, LPVOID*, LPUNKNOWN))procAddress;
 #else
         procAddress = GetProcAddress(loadedLibrary, "DirectInputCreateA");
         if (NULL == procAddress) return E_FAIL;
-        importTable.DirectInputCreateA = (HRESULT(__stdcall *)(HINSTANCE, DWORD, LPDIRECTINPUTA*, LPUNKNOWN))procAddress;
+        importTable.DirectInputCreateA = (HRESULT(STDMETHODCALLTYPE *)(HINSTANCE, DWORD, LPDIRECTINPUTA*, LPUNKNOWN))procAddress;
 
         procAddress = GetProcAddress(loadedLibrary, "DirectInputCreateW");
         if (NULL == procAddress) return E_FAIL;
-        importTable.DirectInputCreateW = (HRESULT(__stdcall *)(HINSTANCE, DWORD, LPDIRECTINPUTW*, LPUNKNOWN))procAddress;
+        importTable.DirectInputCreateW = (HRESULT(STDMETHODCALLTYPE *)(HINSTANCE, DWORD, LPDIRECTINPUTW*, LPUNKNOWN))procAddress;
 
         procAddress = GetProcAddress(loadedLibrary, "DirectInputCreateEx");
         if (NULL == procAddress) return E_FAIL;
-        importTable.DirectInputCreateEx = (HRESULT(__stdcall *)(HINSTANCE, DWORD, REFIID, LPVOID*, LPUNKNOWN))procAddress;
+        importTable.DirectInputCreateEx = (HRESULT(STDMETHODCALLTYPE *)(HINSTANCE, DWORD, REFIID, LPVOID*, LPUNKNOWN))procAddress;
 #endif
 
         procAddress = GetProcAddress(loadedLibrary, "DllRegisterServer");
         if (NULL == procAddress) return E_FAIL;
-        importTable.DllRegisterServer = (HRESULT(__stdcall *)(void))procAddress;
+        importTable.DllRegisterServer = (HRESULT(STDMETHODCALLTYPE *)(void))procAddress;
 
         procAddress = GetProcAddress(loadedLibrary, "DllUnregisterServer");
         if (NULL == procAddress) return E_FAIL;
-        importTable.DllUnregisterServer = (HRESULT(__stdcall *)(void))procAddress;
+        importTable.DllUnregisterServer = (HRESULT(STDMETHODCALLTYPE *)(void))procAddress;
 
         procAddress = GetProcAddress(loadedLibrary, "DllCanUnloadNow");
         if (NULL == procAddress) return E_FAIL;
-        importTable.DllCanUnloadNow = (HRESULT(__stdcall *)(void))procAddress;
+        importTable.DllCanUnloadNow = (HRESULT(STDMETHODCALLTYPE *)(void))procAddress;
 
         procAddress = GetProcAddress(loadedLibrary, "DllGetClassObject");
         if (NULL == procAddress) return E_FAIL;
-        importTable.DllGetClassObject = (HRESULT(__stdcall *)(_In_ REFCLSID, _In_ REFIID, _Out_ LPVOID*))procAddress;
+        importTable.DllGetClassObject = (HRESULT(STDMETHODCALLTYPE *)(_In_ REFCLSID, _In_ REFIID, _Out_ LPVOID*))procAddress;
         
         // Initialization complete.
         importTableIsInitialized = TRUE;

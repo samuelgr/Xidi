@@ -1,0 +1,25 @@
+LIBRARY winmm
+EXPORTS
+    auxGetDevCapsA=ExportApiWinMMAuxGetDevCapsA
+    auxGetDevCapsW=ExportApiWinMMAuxGetDevCapsW
+    auxGetNumDevs=ExportApiWinMMAuxGetNumDevs
+    auxGetVolume=ExportApiWinMMAuxGetVolume
+    auxOutMessage=ExportApiWinMMAuxOutMessage
+    auxSetVolume=ExportApiWinMMAuxSetVolume
+    joyConfigChanged=ExportApiWinMMJoyConfigChanged
+    joyGetDevCapsA=ExportApiWinMMJoyGetDevCapsA
+    joyGetDevCapsW=ExportApiWinMMJoyGetDevCapsW
+    joyGetNumDevs=ExportApiWinMMJoyGetNumDevs
+    joyGetPos=ExportApiWinMMJoyGetPos
+    joyGetPosEx=ExportApiWinMMJoyGetPosEx
+    joyGetThreshold=ExportApiWinMMJoyGetThreshold
+    joyReleaseCapture=ExportApiWinMMJoyReleaseCapture
+    joySetCapture=ExportApiWinMMJoySetCapture
+    joySetThreshold=ExportApiWinMMJoySetThreshold
+    timeBeginPeriod=ExportApiWinMMTimeBeginPeriod
+    timeEndPeriod=ExportApiWinMMTimeEndPeriod
+    timeGetDevCaps=ExportApiWinMMTimeGetDevCaps
+    timeGetSystemTime=ExportApiWinMMTimeGetSystemTime
+    timeGetTime=ExportApiWinMMTimeGetTime
+    timeKillEvent=ExportApiWinMMTimeKillEvent
+    timeSetEvent=ExportApiWinMMTimeSetEvent

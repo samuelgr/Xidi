@@ -14,7 +14,6 @@
 
 // -------- WINDOWS API ---------------------------------------------------- //
 
-#define WIN32_LEAN_AND_MEAN
 #include <sdkddkver.h>
 #include <windows.h>
 #include <tchar.h>

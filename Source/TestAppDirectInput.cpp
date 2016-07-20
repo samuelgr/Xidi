@@ -14,13 +14,11 @@
 #include "ControllerIdentification.h"
 #include "ExportApiDirectInput.h"
 #include "ImportApiDirectInput.h"
+#include "TestApp.h"
 #include "Mapper/Base.h"
 
-#include <cstdlib>
-#include <iostream>
 
 using namespace Xidi;
-using namespace std;
 
 
 // -------- TYPE DEFINITIONS ----------------------------------------------- //
@@ -47,17 +45,6 @@ struct SInteractiveTestData
 #else
 #define ExportedDirectInputCreateMethod         ExportApiDirectInputDirectInputCreateEx
 #define Use_IID_IDirectInput                    IID_IDirectInput7
-#endif
-
-// Helper for iostream input and output when using unicode.
-#ifdef UNICODE
-#define terr                                    wcerr
-#define tin                                     wcin
-#define tout                                    wcout
-#else
-#define terr                                    cerr
-#define tin                                     cin
-#define tout                                    tout
 #endif
 
 

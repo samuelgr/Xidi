@@ -19,14 +19,14 @@
  // See DirectInput and COM documentation for more information.
 
 #if DIRECTINPUT_VERSION >= 0x0800
-HRESULT STDMETHODCALLTYPE ExportApiDirectInputDirectInput8Create(HINSTANCE hinst, DWORD dwVersion, REFIID riidltf, LPVOID* ppvOut, LPUNKNOWN punkOuter);
+HRESULT WINAPI ExportApiDirectInputDirectInput8Create(HINSTANCE hinst, DWORD dwVersion, REFIID riidltf, LPVOID* ppvOut, LPUNKNOWN punkOuter);
 #else
 HRESULT WINAPI ExportApiDirectInputDirectInputCreateA(HINSTANCE hinst, DWORD dwVersion, LPDIRECTINPUTA *ppDI, LPUNKNOWN punkOuter);
 HRESULT WINAPI ExportApiDirectInputDirectInputCreateW(HINSTANCE hinst, DWORD dwVersion, LPDIRECTINPUTW *ppDI, LPUNKNOWN punkOuter);
 HRESULT WINAPI ExportApiDirectInputDirectInputCreateEx(HINSTANCE hinst, DWORD dwVersion, REFIID riidltf, LPVOID *ppvOut, LPUNKNOWN punkOuter);
 #endif
 
-HRESULT STDMETHODCALLTYPE ExportApiDirectInputDllRegisterServer(void);
-HRESULT STDMETHODCALLTYPE ExportApiDirectInputDllUnregisterServer(void);
-HRESULT STDMETHODCALLTYPE ExportApiDirectInputDllCanUnloadNow(void);
-HRESULT STDMETHODCALLTYPE ExportApiDirectInputDllGetClassObject(_In_ REFCLSID rclsid, _In_ REFIID riid, _Out_ LPVOID* ppv);
+HRESULT WINAPI ExportApiDirectInputDllRegisterServer(void);
+HRESULT WINAPI ExportApiDirectInputDllUnregisterServer(void);
+HRESULT WINAPI ExportApiDirectInputDllCanUnloadNow(void);
+HRESULT WINAPI ExportApiDirectInputDllGetClassObject(_In_ REFCLSID rclsid, _In_ REFIID riid, _Out_ LPVOID* ppv);

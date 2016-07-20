@@ -29,16 +29,16 @@ namespace Xidi
         struct SImportTable
         {
 #if DIRECTINPUT_VERSION >= 0x0800
-            HRESULT(__stdcall *DirectInput8Create)(HINSTANCE, DWORD, REFIID, LPVOID*, LPUNKNOWN);
+            HRESULT (STDMETHODCALLTYPE* DirectInput8Create)(HINSTANCE, DWORD, REFIID, LPVOID*, LPUNKNOWN);
 #else
-            HRESULT(__stdcall *DirectInputCreateA)(HINSTANCE, DWORD, LPDIRECTINPUTA*, LPUNKNOWN);
-            HRESULT(__stdcall *DirectInputCreateW)(HINSTANCE, DWORD, LPDIRECTINPUTW*, LPUNKNOWN);
-            HRESULT(__stdcall *DirectInputCreateEx)(HINSTANCE, DWORD, REFIID, LPVOID*, LPUNKNOWN);
+            HRESULT (STDMETHODCALLTYPE* DirectInputCreateA)(HINSTANCE, DWORD, LPDIRECTINPUTA*, LPUNKNOWN);
+            HRESULT (STDMETHODCALLTYPE* DirectInputCreateW)(HINSTANCE, DWORD, LPDIRECTINPUTW*, LPUNKNOWN);
+            HRESULT (STDMETHODCALLTYPE* DirectInputCreateEx)(HINSTANCE, DWORD, REFIID, LPVOID*, LPUNKNOWN);
 #endif
-            HRESULT(__stdcall *DllRegisterServer)(void);
-            HRESULT(__stdcall *DllUnregisterServer)(void);
-            HRESULT(__stdcall *DllCanUnloadNow)(void);
-            HRESULT(__stdcall *DllGetClassObject)(_In_ REFCLSID, _In_ REFIID, _Out_ LPVOID*);
+            HRESULT (STDMETHODCALLTYPE* DllRegisterServer)(void);
+            HRESULT (STDMETHODCALLTYPE* DllUnregisterServer)(void);
+            HRESULT (STDMETHODCALLTYPE* DllCanUnloadNow)(void);
+            HRESULT (STDMETHODCALLTYPE* DllGetClassObject)(_In_ REFCLSID, _In_ REFIID, _Out_ LPVOID*);
         };
         
 

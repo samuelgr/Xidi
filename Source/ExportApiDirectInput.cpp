@@ -5,7 +5,7 @@
  * Authored by Samuel Grossman
  * Copyright (c) 2016
  *****************************************************************************
- * ExportApiDirectInputDirectInput.cpp
+ * ExportApiDirectInput.cpp
  *      Implementation of primary exported functions for the DirectInput
  *      library.
  *****************************************************************************/
@@ -20,7 +20,7 @@ using namespace Xidi;
 // See DirectInput and COM documentation for more information.
 
 #if DIRECTINPUT_VERSION >= 0x0800
-HRESULT STDMETHODCALLTYPE ExportApiDirectInputDirectInput8Create(HINSTANCE hinst, DWORD dwVersion, REFIID riidltf, LPVOID* ppvOut, LPUNKNOWN punkOuter)
+HRESULT WINAPI ExportApiDirectInputDirectInput8Create(HINSTANCE hinst, DWORD dwVersion, REFIID riidltf, LPVOID* ppvOut, LPUNKNOWN punkOuter)
 {
     IDirectInput8* diObject = NULL;
 
@@ -103,28 +103,28 @@ HRESULT WINAPI ExportApiDirectInputDirectInputCreateEx(HINSTANCE hinst, DWORD dw
 
 // ---------
 
-HRESULT STDMETHODCALLTYPE ExportApiDirectInputDllRegisterServer(void)
+HRESULT WINAPI ExportApiDirectInputDllRegisterServer(void)
 {
     return ImportApiDirectInput::DllRegisterServer();
 }
 
 // ---------
 
-HRESULT STDMETHODCALLTYPE ExportApiDirectInputDllUnregisterServer(void)
+HRESULT WINAPI ExportApiDirectInputDllUnregisterServer(void)
 {
     return ImportApiDirectInput::DllUnregisterServer();
 }
 
 // ---------
 
-HRESULT STDMETHODCALLTYPE ExportApiDirectInputDllCanUnloadNow(void)
+HRESULT WINAPI ExportApiDirectInputDllCanUnloadNow(void)
 {
     return ImportApiDirectInput::DllCanUnloadNow();
 }
 
 // ---------
 
-HRESULT STDMETHODCALLTYPE ExportApiDirectInputDllGetClassObject(_In_ REFCLSID rclsid, _In_ REFIID riid, _Out_ LPVOID* ppv)
+HRESULT WINAPI ExportApiDirectInputDllGetClassObject(_In_ REFCLSID rclsid, _In_ REFIID riid, _Out_ LPVOID* ppv)
 {
     return ImportApiDirectInput::DllGetClassObject(rclsid, riid, ppv);
 }
