@@ -5,7 +5,7 @@
  * Authored by Samuel Grossman
  * Copyright (c) 2016
  *****************************************************************************
- * Base.cpp
+ * Mapper/Base.cpp
  *      Abstract base class for supported control mapping schemes.
  *      Provides common implementations of most core functionality.
  *****************************************************************************/

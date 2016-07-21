@@ -5,7 +5,7 @@
  * Authored by Samuel Grossman
  * Copyright (c) 2016
  *****************************************************************************
- * NativeXInput.cpp
+ * Mapper/NativeXInput.cpp
  *      Implements a mapper that maps to the default configuration of an
  *      XInput controller when accessed via DirectInput.
  *****************************************************************************/

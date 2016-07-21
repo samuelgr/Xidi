@@ -113,6 +113,7 @@
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug-DInput8|x64'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='TestApp-DInput8|x64'">true</ExcludedFromBuild>
     </ClInclude>
+    <ClInclude Include="Include\MapperFactory.h" />
     <ClInclude Include="Include\Mapper\NativeXInput.h" />
     <ClInclude Include="Include\Mapper\NativeXInputSharedTriggers.h" />
     <ClInclude Include="Include\Mapper\StandardGamepad.h" />
@@ -202,6 +203,7 @@
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug-DInput8|x64'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='TestApp-DInput8|x64'">true</ExcludedFromBuild>
     </ClCompile>
+    <ClCompile Include="Source\MapperFactory.cpp" />
     <ClCompile Include="Source\Mapper\NativeXInput.cpp" />
     <ClCompile Include="Source\Mapper\NativeXInputSharedTriggers.cpp" />
     <ClCompile Include="Source\Mapper\StandardGamepad.cpp" />

@@ -5,7 +5,7 @@
  * Authored by Samuel Grossman
  * Copyright (c) 2016
  *****************************************************************************
- * StandardGamepad.cpp
+ * Mapper/StandardGamepad.cpp
  *      Implements a mapper that maps to the button layout of an older
  *      DirectInput-compatible gamepad.
  *****************************************************************************/

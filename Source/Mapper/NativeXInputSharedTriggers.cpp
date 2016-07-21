@@ -5,7 +5,7 @@
  * Authored by Samuel Grossman
  * Copyright (c) 2016
  *****************************************************************************
- * NativeXInputSharedTriggers.cpp
+ * Mapper/NativeXInputSharedTriggers.cpp
  *      Implements a mapper that maps to the default configuration of an
  *      XInput controller when accessed via DirectInput, with the exception
  *      that the LT and RT triggers share the Z axis.

@@ -5,7 +5,7 @@
  * Authored by Samuel Grossman
  * Copyright (c) 2016
  *****************************************************************************
- * Base.h
+ * Mapper/Base.h
  *      Abstract base class for supported control mapping schemes.
  *      Provides common implementations of most core functionality.
  *****************************************************************************/

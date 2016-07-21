@@ -5,7 +5,7 @@
  * Authored by Samuel Grossman
  * Copyright (c) 2016
  *****************************************************************************
- * StandardGamepad.h
+ * Mapper/StandardGamepad.h
  *      Declares a mapper that maps to the button layout of an older
  *      DirectInput-compatible gamepad.
  *****************************************************************************/

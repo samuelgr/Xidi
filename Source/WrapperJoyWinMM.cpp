@@ -12,12 +12,9 @@
 #include "ApiWindows.h"
 #include "ApiDirectInput.h"
 #include "ImportApiWinMM.h"
+#include "MapperFactory.h"
 #include "WrapperJoyWinMM.h"
 #include "XInputController.h"
-#include "Mapper/Base.h"
-#include "Mapper/StandardGamepad.h"
-#include "Mapper/NativeXInput.h"
-#include "Mapper/NativeXInputSharedTriggers.h"
 
 using namespace Xidi;
 
@@ -84,7 +81,7 @@ void WrapperJoyWinMM::Initialize(void)
     if (FALSE == isInitialized)
     {
         // Create a mapper and set its data format.
-        mapper = new Mapper::StandardGamepad();
+        mapper = MapperFactory::CreateMapper();
         mapper->SetApplicationDataFormat(&joyStateDataFormat);
         
         // Create controllers, one for each XInput position.
