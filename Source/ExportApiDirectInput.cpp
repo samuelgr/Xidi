@@ -30,7 +30,7 @@ HRESULT WINAPI ExportApiDirectInputDirectInput8Create(HINSTANCE hinst, DWORD dwV
     HRESULT result = ImportApiDirectInput::DirectInput8Create(hinst, dwVersion, riidltf, (LPVOID*)&diObject, punkOuter);
     if (DI_OK != result) return result;
 
-    diObject = new Xidi::WrapperIDirectInput(diObject, (IID_IDirectInput8W == riidltf));
+    diObject = new WrapperIDirectInput(diObject, (IID_IDirectInput8W == riidltf));
     *ppvOut = (LPVOID)diObject;
 
     return result;
@@ -46,7 +46,7 @@ HRESULT WINAPI ExportApiDirectInputDirectInputCreateA(HINSTANCE hinst, DWORD dwV
     HRESULT result = ImportApiDirectInput::DirectInputCreateA(hinst, DIRECTINPUT_VERSION, (LPDIRECTINPUTA*)&diObject, punkOuter);
     if (DI_OK != result) return result;
 
-    diObject = new Xidi::WrapperIDirectInput((LatestIDirectInput*)diObject, FALSE);
+    diObject = new WrapperIDirectInput((LatestIDirectInput*)diObject, FALSE);
     *ppDI = (LPDIRECTINPUTA)diObject;
 
     return result;
@@ -64,7 +64,7 @@ HRESULT WINAPI ExportApiDirectInputDirectInputCreateW(HINSTANCE hinst, DWORD dwV
     HRESULT result = ImportApiDirectInput::DirectInputCreateW(hinst, DIRECTINPUT_VERSION, (LPDIRECTINPUTW*)&diObject, punkOuter);
     if (DI_OK != result) return result;
 
-    diObject = new Xidi::WrapperIDirectInput((LatestIDirectInput*)diObject, TRUE);
+    diObject = new WrapperIDirectInput((LatestIDirectInput*)diObject, TRUE);
     *ppDI = (LPDIRECTINPUTW)diObject;
 
     return result;
@@ -94,7 +94,7 @@ HRESULT WINAPI ExportApiDirectInputDirectInputCreateEx(HINSTANCE hinst, DWORD dw
     
     if (DI_OK != result) return result;
     
-    diObject = new Xidi::WrapperIDirectInput((LatestIDirectInput*)diObject, useUnicode);
+    diObject = new WrapperIDirectInput((LatestIDirectInput*)diObject, useUnicode);
     *ppvOut = (LPVOID)diObject;
 
     return result;
