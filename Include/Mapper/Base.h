@@ -16,6 +16,7 @@
 #include "XInputController.h"
 
 #include <unordered_map>
+#include <vector>
 #include <Xinput.h>
 
 
@@ -107,6 +108,11 @@ namespace Xidi
             
             // Maps from base offset in the application-specified data format to instance identifier.
             std::unordered_map<DWORD, TInstance> offsetToInstance;
+
+            // Holds a list of offsets for POVs that are in the application data format but do not exist on the mapping.
+            // Some games do not check how many POVs are present and assume any offset set aside for a POV will be filled with a valid reading.
+            // To accomodate this behavior, make a list of POVs that have offsets but do not exist and set them to "centered" every time device state is requested.
+            std::vector<DWORD> povOffsetsToInitialize;
             
             
         public:
@@ -201,10 +207,16 @@ namespace Xidi
             // Given a button instance, value, and application data structure base address, writes the value for a button into the application data structure.
             // Button value should be nonzero if the button is pressed, zero otherwise.
             void WriteButtonValueToApplicationDataStructure(const TInstance buttonInstance, const BYTE value, LPVOID appData);
-
+            
             // Given a POV instance, value, and application data structure base address, writes the value for a POV into the application data structure.
             // Performs no processing on the value, so assumes it is already correct for DirectInput style.
             void WritePovValueToApplicationDataStructure(const TInstance povInstance, const LONG value, LPVOID appData);
+
+            // Given a value, offset, and application data structure base address, writes the specified value to the specified offset.
+            void WriteValueToApplicationOffset(const LONG value, const DWORD offset, LPVOID appData);
+            
+            // Given a value, offset, and application data structure base address, writes the specified value to the specified offset.
+            void WriteValueToApplicationOffset(const BYTE value, const DWORD offset, LPVOID appData);
             
             
         public:

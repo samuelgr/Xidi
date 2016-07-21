@@ -23,7 +23,7 @@ using namespace Xidi::Mapper;
 // -------- CONSTRUCTION AND DESTRUCTION ----------------------------------- //
 // See "Mapper/Base.h" for documentation.
 
-Base::Base() : axisProperties(NULL), dataPacketSize(0), instanceToOffset(), mapsValid(FALSE), offsetToInstance() {}
+Base::Base() : axisProperties(NULL), dataPacketSize(0), instanceToOffset(), mapsValid(FALSE), offsetToInstance(), povOffsetsToInitialize() {}
 
 // ---------
 
@@ -126,7 +126,7 @@ void Base::FillObjectInstanceInfoA(LPDIDEVICEOBJECTINSTANCEA instanceInfo, EInst
     ZeroMemory(instanceInfo, sizeof(*instanceInfo));
     instanceInfo->dwSize = sizeof(*instanceInfo);
     instanceInfo->dwType = DIDFT_MAKEINSTANCE(instanceNumber);
-    instanceInfo->dwFlags = 0;
+    instanceInfo->dwFlags = DIDOI_POLLED;
 
     // Fill in the rest of the structure based on the instance type.
     switch (instanceType)
@@ -135,6 +135,7 @@ void Base::FillObjectInstanceInfoA(LPDIDEVICEOBJECTINSTANCEA instanceInfo, EInst
         instanceInfo->dwOfs = (instanceNumber * SizeofInstance(instanceType));
         instanceInfo->guidType = AxisTypeFromInstanceNumber(instanceNumber);
         instanceInfo->dwType |= DIDFT_ABSAXIS;
+        instanceInfo->dwFlags |= DIDOI_ASPECTPOSITION;
         sprintf_s(instanceInfo->tszName, _countof(instanceInfo->tszName), AxisTypeToStringA(instanceInfo->guidType));
         break;
 
@@ -345,7 +346,7 @@ void Base::WriteAxisValueToApplicationDataStructure(const TInstance axisInstance
 
     // Write the axis value to the specified offset.
     const DWORD offset = instanceToOffset.find(axisInstance)->second;
-    *((LONG*)(&((BYTE*)appData)[offset])) = axisFinalValue;
+    WriteValueToApplicationOffset(axisFinalValue, offset, appData);
 }
 
 // ---------
@@ -357,7 +358,7 @@ void Base::WriteButtonValueToApplicationDataStructure(const TInstance buttonInst
 
     // Write the button value to the specified offset.
     const DWORD offset = instanceToOffset.find(buttonInstance)->second;
-    *((BYTE*)(&((BYTE*)appData)[offset])) = (value ? 0x80 : 0);
+    WriteValueToApplicationOffset((value ? (BYTE)0x80 : (BYTE)0x00), offset, appData);
 }
 
 // ---------
@@ -369,7 +370,21 @@ void Base::WritePovValueToApplicationDataStructure(const TInstance povInstance, 
 
     // Write the button value to the specified offset.
     const DWORD offset = instanceToOffset.find(povInstance)->second;
+    WriteValueToApplicationOffset(value, offset, appData);
+}
+
+// ---------
+
+void Base::WriteValueToApplicationOffset(const LONG value, const DWORD offset, LPVOID appData)
+{
     *((LONG*)(&((BYTE*)appData)[offset])) = value;
+}
+
+// ---------
+
+void Base::WriteValueToApplicationOffset(const BYTE value, const DWORD offset, LPVOID appData)
+{
+    *((BYTE*)(&((BYTE*)appData)[offset])) = value;
 }
 
 
@@ -879,7 +894,10 @@ HRESULT Base::SetApplicationDataFormat(LPCDIDATAFORMAT lpdf)
         }
         else if (allowAnyInstance)
         {
-            // No objects available, but no instance specified, so do not do anything this iteration.
+            // No objects available, but no instance specified.
+            // If asked for a POV, make note of its offset so it can be initialized later.
+            if (dataFormat->dwType & DIDFT_POV)
+                povOffsetsToInitialize.push_back(dataFormat->dwOfs);
         }
         else
         {
@@ -1040,6 +1058,7 @@ void Base::ResetApplicationDataFormat(void)
 {
     instanceToOffset.clear();
     offsetToInstance.clear();
+    povOffsetsToInitialize.clear();
 
     mapsValid = FALSE;
 }
@@ -1060,7 +1079,7 @@ HRESULT Base::WriteApplicationControllerState(XINPUT_GAMEPAD& xState, LPVOID app
     
     // Initialize the application structure. Everything not explicitly written will return 0.
     ZeroMemory(appDataBuf, appDataSize);
-
+    
     // Triggers are handled differently, so handle them first as a special case.
     {
         TInstance instanceLT = MapXInputElementToDirectInputInstance(EXInputControllerElement::TriggerLT);
@@ -1326,7 +1345,7 @@ HRESULT Base::WriteApplicationControllerState(XINPUT_GAMEPAD& xState, LPVOID app
                 return DIERR_GENERIC;
             if (0 != mappedInstances.count(instanceButton))
                 return DIERR_GENERIC;
-
+            
             mappedInstances.insert(instanceButton);
             WriteButtonValueToApplicationDataStructure(instanceButton, (xState.wButtons & XINPUT_GAMEPAD_Y ? 1 : 0), appDataBuf);
         }
@@ -1421,7 +1440,16 @@ HRESULT Base::WriteApplicationControllerState(XINPUT_GAMEPAD& xState, LPVOID app
             WriteButtonValueToApplicationDataStructure(instanceButton, (xState.wButtons & XINPUT_GAMEPAD_RIGHT_THUMB ? 1 : 0), appDataBuf);
         }
     }
-
+    
+    // Set to "centered" any other POVs in the application's data format.
+    if (povOffsetsToInitialize.size() > 0)
+    {
+        const LONG povCenteredValue = XInputController::DirectInputPovStateFromXInputButtonState(0);
+        
+        for (DWORD i = 0; i < povOffsetsToInitialize.size(); ++i)
+            WriteValueToApplicationOffset(povCenteredValue, povOffsetsToInitialize[i], appDataBuf);
+    }
+    
     return DI_OK;
 }
 
