@@ -32,8 +32,8 @@
     <ClInclude Include="Include\ExportApiWinMM.h" />
     <ClInclude Include="Include\ImportApiWinMM.h" />
     <ClInclude Include="Include\MapperFactory.h" />
-    <ClInclude Include="Include\Mapper\NativeXInput.h" />
-    <ClInclude Include="Include\Mapper\NativeXInputSharedTriggers.h" />
+    <ClInclude Include="Include\Mapper\XInputNative.h" />
+    <ClInclude Include="Include\Mapper\XInputSharedTriggers.h" />
     <ClInclude Include="Include\Mapper\StandardGamepad.h" />
     <ClInclude Include="Include\ControllerIdentification.h" />
     <ClInclude Include="Include\Mapper\Base.h" />
@@ -51,8 +51,8 @@
     <ClCompile Include="Source\ExportApiWinMM.cpp" />
     <ClCompile Include="Source\ImportApiWinMM.cpp" />
     <ClCompile Include="Source\MapperFactory.cpp" />
-    <ClCompile Include="Source\Mapper\NativeXInput.cpp" />
-    <ClCompile Include="Source\Mapper\NativeXInputSharedTriggers.cpp" />
+    <ClCompile Include="Source\Mapper\XInputNative.cpp" />
+    <ClCompile Include="Source\Mapper\XInputSharedTriggers.cpp" />
     <ClCompile Include="Source\Mapper\StandardGamepad.cpp" />
     <ClCompile Include="Source\ControllerIdentification.cpp" />
     <ClCompile Include="Source\Mapper\Base.cpp" />

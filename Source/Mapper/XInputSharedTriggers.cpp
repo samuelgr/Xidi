@@ -5,7 +5,7 @@
  * Authored by Samuel Grossman
  * Copyright (c) 2016
  *****************************************************************************
- * Mapper/NativeXInputSharedTriggers.cpp
+ * Mapper/XInputSharedTriggers.cpp
  *      Implements a mapper that maps to the default configuration of an
  *      XInput controller when accessed via DirectInput, with the exception
  *      that the LT and RT triggers share the Z axis.
@@ -13,7 +13,7 @@
 
 #include "ApiDirectInput.h"
 #include "XInputController.h"
-#include "Mapper/NativeXInputSharedTriggers.h"
+#include "Mapper/XInputSharedTriggers.h"
 
 using namespace Xidi;
 using namespace Xidi::Mapper;
@@ -22,7 +22,7 @@ using namespace Xidi::Mapper;
 // -------- CONCRETE INSTANCE METHODS -------------------------------------- //
 // See "Mapper/Base.h" for documentation.
 
-const TInstanceIdx NativeXInputSharedTriggers::AxisInstanceIndex(REFGUID axisGUID, const TInstanceIdx instanceNumber)
+const TInstanceIdx XInputSharedTriggers::AxisInstanceIndex(REFGUID axisGUID, const TInstanceIdx instanceNumber)
 {
     // Only one axis of each type exists in this mapping.
     if (0 == instanceNumber)
@@ -39,7 +39,7 @@ const TInstanceIdx NativeXInputSharedTriggers::AxisInstanceIndex(REFGUID axisGUI
 
 // ---------
 
-const TInstanceCount NativeXInputSharedTriggers::AxisTypeCount(REFGUID axisGUID)
+const TInstanceCount XInputSharedTriggers::AxisTypeCount(REFGUID axisGUID)
 {
     // Only one axis of each type exists in this mapping.
     // See if the first instance of the specified type exists and, if so, indicate as much.
@@ -49,7 +49,7 @@ const TInstanceCount NativeXInputSharedTriggers::AxisTypeCount(REFGUID axisGUID)
     return 0;
 }
 
-const GUID NativeXInputSharedTriggers::AxisTypeFromInstanceNumber(const TInstanceIdx instanceNumber)
+const GUID XInputSharedTriggers::AxisTypeFromInstanceNumber(const TInstanceIdx instanceNumber)
 {
     EAxis axisNumber = (EAxis)instanceNumber;
 
@@ -72,7 +72,7 @@ const GUID NativeXInputSharedTriggers::AxisTypeFromInstanceNumber(const TInstanc
 
 // ---------
 
-const TInstance NativeXInputSharedTriggers::MapXInputElementToDirectInputInstance(EXInputControllerElement element)
+const TInstance XInputSharedTriggers::MapXInputElementToDirectInputInstance(EXInputControllerElement element)
 {
     switch (element)
     {
@@ -133,7 +133,7 @@ const TInstance NativeXInputSharedTriggers::MapXInputElementToDirectInputInstanc
 
 // ---------
 
-const TInstanceCount NativeXInputSharedTriggers::NumInstancesOfType(const EInstanceType type)
+const TInstanceCount XInputSharedTriggers::NumInstancesOfType(const EInstanceType type)
 {
     TInstanceCount numInstances = 0;
 

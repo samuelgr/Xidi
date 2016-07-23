@@ -5,7 +5,7 @@
  * Authored by Samuel Grossman
  * Copyright (c) 2016
  *****************************************************************************
- * Mapper/NativeXInput.h
+ * Mapper/XInputNative.h
  *      Declares a mapper that maps to the default configuration of an
  *      XInput controller when accessed via DirectInput.
  *****************************************************************************/
@@ -24,7 +24,7 @@ namespace Xidi
         // Provides a mapping to the default button layout of an XInput controller when accessed via DirectInput.
         // Right stick is mapped to Rx and Ry axes, and triggers are mapped to their own axes (Z and Rz).
         // Matches the behavior of an Xbox One controller with the latest drivers.
-        class NativeXInput : public Base
+        class XInputNative : public Base
         {
         public:
             // -------- TYPE DEFINITIONS ----------------------------------------------- //

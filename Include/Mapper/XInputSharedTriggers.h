@@ -5,7 +5,7 @@
  * Authored by Samuel Grossman
  * Copyright (c) 2016
  *****************************************************************************
- * Mapper/NativeXInputSharedTriggers.h
+ * Mapper/XInputSharedTriggers.h
  *      Declares a mapper that maps to the default configuration of an
  *      XInput controller when accessed via DirectInput, with the exception
  *      that the LT and RT triggers share the Z axis.
@@ -25,7 +25,7 @@ namespace Xidi
         // Provides a mapping to the default button layout of an XInput controller when accessed via DirectInput, with the triggers sharing an axis.
         // Right stick is mapped to Rx and Ry axes, and triggers are mapped to share the Z axis.
         // Matches the behavior of an Xbox 360 controller with the latest drivers.
-        class NativeXInputSharedTriggers : public Base
+        class XInputSharedTriggers : public Base
         {
         public:
             // -------- TYPE DEFINITIONS ----------------------------------------------- //

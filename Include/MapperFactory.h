@@ -20,8 +20,8 @@ namespace Xidi
     enum EMapper
     {
         DefaultMapper,
-        NativeXInputMapper,
-        NativeXInputSharedTriggersMapper,
+        XInputNativeMapper,
+        XInputSharedTriggersMapper,
         StandardGamepadMapper
     };
     

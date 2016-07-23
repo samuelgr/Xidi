@@ -5,14 +5,14 @@
  * Authored by Samuel Grossman
  * Copyright (c) 2016
  *****************************************************************************
- * Mapper/NativeXInput.cpp
+ * Mapper/XInputNative.cpp
  *      Implements a mapper that maps to the default configuration of an
  *      XInput controller when accessed via DirectInput.
  *****************************************************************************/
 
 #include "ApiDirectInput.h"
 #include "XInputController.h"
-#include "Mapper/NativeXInput.h"
+#include "Mapper/XInputNative.h"
 
 using namespace Xidi;
 using namespace Xidi::Mapper;
@@ -21,7 +21,7 @@ using namespace Xidi::Mapper;
 // -------- CONCRETE INSTANCE METHODS -------------------------------------- //
 // See "Mapper/Base.h" for documentation.
 
-const TInstanceIdx NativeXInput::AxisInstanceIndex(REFGUID axisGUID, const TInstanceIdx instanceNumber)
+const TInstanceIdx XInputNative::AxisInstanceIndex(REFGUID axisGUID, const TInstanceIdx instanceNumber)
 {
     // Only one axis of each type exists in this mapping.
     if (0 == instanceNumber)
@@ -39,7 +39,7 @@ const TInstanceIdx NativeXInput::AxisInstanceIndex(REFGUID axisGUID, const TInst
 
 // ---------
 
-const TInstanceCount NativeXInput::AxisTypeCount(REFGUID axisGUID)
+const TInstanceCount XInputNative::AxisTypeCount(REFGUID axisGUID)
 {
     // Only one axis of each type exists in this mapping.
     // See if the first instance of the specified type exists and, if so, indicate as much.
@@ -49,7 +49,7 @@ const TInstanceCount NativeXInput::AxisTypeCount(REFGUID axisGUID)
     return 0;
 }
 
-const GUID NativeXInput::AxisTypeFromInstanceNumber(const TInstanceIdx instanceNumber)
+const GUID XInputNative::AxisTypeFromInstanceNumber(const TInstanceIdx instanceNumber)
 {
     EAxis axisNumber = (EAxis)instanceNumber;
 
@@ -74,7 +74,7 @@ const GUID NativeXInput::AxisTypeFromInstanceNumber(const TInstanceIdx instanceN
 
 // ---------
 
-const TInstance NativeXInput::MapXInputElementToDirectInputInstance(EXInputControllerElement element)
+const TInstance XInputNative::MapXInputElementToDirectInputInstance(EXInputControllerElement element)
 {
     switch (element)
     {
@@ -135,7 +135,7 @@ const TInstance NativeXInput::MapXInputElementToDirectInputInstance(EXInputContr
 
 // ---------
 
-const TInstanceCount NativeXInput::NumInstancesOfType(const EInstanceType type)
+const TInstanceCount XInputNative::NumInstancesOfType(const EInstanceType type)
 {
     TInstanceCount numInstances = 0;
 

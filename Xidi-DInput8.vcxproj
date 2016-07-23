@@ -31,8 +31,8 @@
     <ClInclude Include="Include\ApiWindows.h" />
     <ClInclude Include="Include\ExportApiDirectInput.h" />
     <ClInclude Include="Include\MapperFactory.h" />
-    <ClInclude Include="Include\Mapper\NativeXInput.h" />
-    <ClInclude Include="Include\Mapper\NativeXInputSharedTriggers.h" />
+    <ClInclude Include="Include\Mapper\XInputNative.h" />
+    <ClInclude Include="Include\Mapper\XInputSharedTriggers.h" />
     <ClInclude Include="Include\Mapper\StandardGamepad.h" />
     <ClInclude Include="Include\ControllerIdentification.h" />
     <ClInclude Include="Include\ImportApiDirectInput.h" />
@@ -50,8 +50,8 @@
   <ItemGroup>
     <ClCompile Include="Source\ApiDirectInput.cpp" />
     <ClCompile Include="Source\MapperFactory.cpp" />
-    <ClCompile Include="Source\Mapper\NativeXInput.cpp" />
-    <ClCompile Include="Source\Mapper\NativeXInputSharedTriggers.cpp" />
+    <ClCompile Include="Source\Mapper\XInputNative.cpp" />
+    <ClCompile Include="Source\Mapper\XInputSharedTriggers.cpp" />
     <ClCompile Include="Source\Mapper\StandardGamepad.cpp" />
     <ClCompile Include="Source\TestAppDirectInput.cpp">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>

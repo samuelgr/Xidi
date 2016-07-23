@@ -11,8 +11,8 @@
 
 #include "MapperFactory.h"
 #include "Mapper/Base.h"
-#include "Mapper/NativeXInput.h"
-#include "Mapper/NativeXInputSharedTriggers.h"
+#include "Mapper/XInputNative.h"
+#include "Mapper/XInputSharedTriggers.h"
 #include "Mapper/StandardGamepad.h"
 
 using namespace Xidi;
@@ -33,12 +33,12 @@ Mapper::Base* MapperFactory::CreateMapper(void)
     
     switch (configuredMapperType)
     {
-    case EMapper::NativeXInputMapper:
-        newMapper = new Mapper::NativeXInput();
+    case EMapper::XInputNativeMapper:
+        newMapper = new Mapper::XInputNative();
         break;
 
-    case EMapper::NativeXInputSharedTriggersMapper:
-        newMapper = new Mapper::NativeXInputSharedTriggers();
+    case EMapper::XInputSharedTriggersMapper:
+        newMapper = new Mapper::XInputSharedTriggers();
         break;
 
     case EMapper::StandardGamepadMapper:
