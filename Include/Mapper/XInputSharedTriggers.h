@@ -54,9 +54,9 @@ namespace Xidi
             {
                 AxisX = 0,
                 AxisY = 1,
-                AxisRX = 2,
-                AxisRY = 3,
-                AxisZ = 4,
+                AxisZ = 2,
+                AxisRX = 3,
+                AxisRY = 4,
 
                 AxisCount = 5
             };

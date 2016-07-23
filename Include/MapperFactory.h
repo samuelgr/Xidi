@@ -56,6 +56,10 @@ namespace Xidi
         // Creates a new mapper of the configured type, using the "new" operator.
         // Returns NULL in the event of an error (i.e. invalid or unrecognized configured type).
         static Mapper::Base* CreateMapper(void);
+
+        // Creates a new mapper of the specified type, using the "new" operator.
+        // Returns NULL in the event of an error (i.e. invalid or unrecognized type).
+        static Mapper::Base* CreateMapperOfType(EMapper type);
         
         // Resets the mapper configuration to default.
         static void ResetMapperType(void);

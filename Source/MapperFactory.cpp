@@ -29,9 +29,16 @@ EMapper MapperFactory::configuredMapperType = kDefaultMapperType;
 
 Mapper::Base* MapperFactory::CreateMapper(void)
 {
+    return CreateMapperOfType(configuredMapperType);
+}
+
+// ---------
+
+Mapper::Base* MapperFactory::CreateMapperOfType(EMapper type)
+{
     Mapper::Base* newMapper = NULL;
-    
-    switch (configuredMapperType)
+
+    switch (type)
     {
     case EMapper::XInputNativeMapper:
         newMapper = new Mapper::XInputNative();
@@ -45,7 +52,7 @@ Mapper::Base* MapperFactory::CreateMapper(void)
         newMapper = new Mapper::StandardGamepad();
         break;
     }
-    
+
     return newMapper;
 }
 
