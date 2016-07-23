@@ -31,7 +31,7 @@ struct SInteractiveTestData
     LONG axisRx;
     LONG axisRy;
     LONG axisRz;
-    LONG pov;
+    LONG povs[4];
     BYTE buttons[16];
 };
 
@@ -75,27 +75,30 @@ static DIOBJECTDATAFORMAT objectFormats[] = {
     { &GUID_RxAxis, offsetof(SInteractiveTestData, axisRx), DIDFT_AXIS | DIDFT_ANYINSTANCE, 0 },
     { &GUID_RyAxis, offsetof(SInteractiveTestData, axisRy), DIDFT_AXIS | DIDFT_ANYINSTANCE, 0 },
     { &GUID_RzAxis, offsetof(SInteractiveTestData, axisRz), DIDFT_AXIS | DIDFT_ANYINSTANCE, 0 },
-    { &GUID_POV, offsetof(SInteractiveTestData, pov), DIDFT_POV| DIDFT_ANYINSTANCE, 0 },
-    { &GUID_Button, offsetof(SInteractiveTestData, buttons) + 0, DIDFT_BUTTON | DIDFT_ANYINSTANCE, 0 },
-    { &GUID_Button, offsetof(SInteractiveTestData, buttons) + 1, DIDFT_BUTTON | DIDFT_ANYINSTANCE, 0 },
-    { &GUID_Button, offsetof(SInteractiveTestData, buttons) + 2, DIDFT_BUTTON | DIDFT_ANYINSTANCE, 0 },
-    { &GUID_Button, offsetof(SInteractiveTestData, buttons) + 3, DIDFT_BUTTON | DIDFT_ANYINSTANCE, 0 },
-    { &GUID_Button, offsetof(SInteractiveTestData, buttons) + 4, DIDFT_BUTTON | DIDFT_ANYINSTANCE, 0 },
-    { &GUID_Button, offsetof(SInteractiveTestData, buttons) + 5, DIDFT_BUTTON | DIDFT_ANYINSTANCE, 0 },
-    { &GUID_Button, offsetof(SInteractiveTestData, buttons) + 6, DIDFT_BUTTON | DIDFT_ANYINSTANCE, 0 },
-    { &GUID_Button, offsetof(SInteractiveTestData, buttons) + 7, DIDFT_BUTTON | DIDFT_ANYINSTANCE, 0 },
-    { &GUID_Button, offsetof(SInteractiveTestData, buttons) + 8, DIDFT_BUTTON | DIDFT_ANYINSTANCE, 0 },
-    { &GUID_Button, offsetof(SInteractiveTestData, buttons) + 9, DIDFT_BUTTON | DIDFT_ANYINSTANCE, 0 },
-    { &GUID_Button, offsetof(SInteractiveTestData, buttons) + 10, DIDFT_BUTTON | DIDFT_ANYINSTANCE, 0 },
-    { &GUID_Button, offsetof(SInteractiveTestData, buttons) + 11, DIDFT_BUTTON | DIDFT_ANYINSTANCE, 0 },
-    { &GUID_Button, offsetof(SInteractiveTestData, buttons) + 12, DIDFT_BUTTON | DIDFT_ANYINSTANCE, 0 },
-    { &GUID_Button, offsetof(SInteractiveTestData, buttons) + 13, DIDFT_BUTTON | DIDFT_ANYINSTANCE, 0 },
-    { &GUID_Button, offsetof(SInteractiveTestData, buttons) + 14, DIDFT_BUTTON | DIDFT_ANYINSTANCE, 0 },
-    { &GUID_Button, offsetof(SInteractiveTestData, buttons) + 15, DIDFT_BUTTON | DIDFT_ANYINSTANCE, 0 },
+    { &GUID_POV, offsetof(SInteractiveTestData, povs) + (0 * sizeof(SInteractiveTestData::povs[0])), DIDFT_POV | DIDFT_ANYINSTANCE, 0 },
+    { &GUID_POV, offsetof(SInteractiveTestData, povs) + (1 * sizeof(SInteractiveTestData::povs[0])), DIDFT_POV | DIDFT_ANYINSTANCE, 0 },
+    { &GUID_POV, offsetof(SInteractiveTestData, povs) + (2 * sizeof(SInteractiveTestData::povs[0])), DIDFT_POV | DIDFT_ANYINSTANCE, 0 },
+    { &GUID_POV, offsetof(SInteractiveTestData, povs) + (3 * sizeof(SInteractiveTestData::povs[0])), DIDFT_POV | DIDFT_ANYINSTANCE, 0 },
+    { &GUID_Button, offsetof(SInteractiveTestData, buttons) + (0 * sizeof(SInteractiveTestData::buttons[0])), DIDFT_BUTTON | DIDFT_ANYINSTANCE, 0 },
+    { &GUID_Button, offsetof(SInteractiveTestData, buttons) + (1 * sizeof(SInteractiveTestData::buttons[0])), DIDFT_BUTTON | DIDFT_ANYINSTANCE, 0 },
+    { &GUID_Button, offsetof(SInteractiveTestData, buttons) + (2 * sizeof(SInteractiveTestData::buttons[0])), DIDFT_BUTTON | DIDFT_ANYINSTANCE, 0 },
+    { &GUID_Button, offsetof(SInteractiveTestData, buttons) + (3 * sizeof(SInteractiveTestData::buttons[0])), DIDFT_BUTTON | DIDFT_ANYINSTANCE, 0 },
+    { &GUID_Button, offsetof(SInteractiveTestData, buttons) + (4 * sizeof(SInteractiveTestData::buttons[0])), DIDFT_BUTTON | DIDFT_ANYINSTANCE, 0 },
+    { &GUID_Button, offsetof(SInteractiveTestData, buttons) + (5 * sizeof(SInteractiveTestData::buttons[0])), DIDFT_BUTTON | DIDFT_ANYINSTANCE, 0 },
+    { &GUID_Button, offsetof(SInteractiveTestData, buttons) + (6 * sizeof(SInteractiveTestData::buttons[0])), DIDFT_BUTTON | DIDFT_ANYINSTANCE, 0 },
+    { &GUID_Button, offsetof(SInteractiveTestData, buttons) + (7 * sizeof(SInteractiveTestData::buttons[0])), DIDFT_BUTTON | DIDFT_ANYINSTANCE, 0 },
+    { &GUID_Button, offsetof(SInteractiveTestData, buttons) + (8 * sizeof(SInteractiveTestData::buttons[0])), DIDFT_BUTTON | DIDFT_ANYINSTANCE, 0 },
+    { &GUID_Button, offsetof(SInteractiveTestData, buttons) + (9 * sizeof(SInteractiveTestData::buttons[0])), DIDFT_BUTTON | DIDFT_ANYINSTANCE, 0 },
+    { &GUID_Button, offsetof(SInteractiveTestData, buttons) + (10 * sizeof(SInteractiveTestData::buttons[0])), DIDFT_BUTTON | DIDFT_ANYINSTANCE, 0 },
+    { &GUID_Button, offsetof(SInteractiveTestData, buttons) + (11 * sizeof(SInteractiveTestData::buttons[0])), DIDFT_BUTTON | DIDFT_ANYINSTANCE, 0 },
+    { &GUID_Button, offsetof(SInteractiveTestData, buttons) + (12 * sizeof(SInteractiveTestData::buttons[0])), DIDFT_BUTTON | DIDFT_ANYINSTANCE, 0 },
+    { &GUID_Button, offsetof(SInteractiveTestData, buttons) + (13 * sizeof(SInteractiveTestData::buttons[0])), DIDFT_BUTTON | DIDFT_ANYINSTANCE, 0 },
+    { &GUID_Button, offsetof(SInteractiveTestData, buttons) + (14 * sizeof(SInteractiveTestData::buttons[0])), DIDFT_BUTTON | DIDFT_ANYINSTANCE, 0 },
+    { &GUID_Button, offsetof(SInteractiveTestData, buttons) + (15 * sizeof(SInteractiveTestData::buttons[0])), DIDFT_BUTTON | DIDFT_ANYINSTANCE, 0 },
 };
 
 // Overall format definition for interactive test mode.
-static const DIDATAFORMAT dataFormat = {sizeof(DIDATAFORMAT), sizeof(DIOBJECTDATAFORMAT), 0, 44, 23, objectFormats};
+static const DIDATAFORMAT dataFormat = {sizeof(DIDATAFORMAT), sizeof(DIOBJECTDATAFORMAT), 0, sizeof(SInteractiveTestData), _countof(objectFormats), objectFormats};
 
 
 // -------- HELPERS -------------------------------------------------------- //
@@ -344,7 +347,11 @@ int RunTestApp(int argc, char* argv[])
     
     tout << _T("Begin IDirectInput->EnumDevices") << endl;
     
-    result = directInputIface->EnumDevices(0, &EnumDevicesTestCallback, (LPVOID)&testValue, DIEDFL_ATTACHEDONLY);
+#if DIRECTINPUT_VERSION >= 0x0800
+    result = directInputIface->EnumDevices(DI8DEVCLASS_GAMECTRL, &EnumDevicesTestCallback, (LPVOID)&testValue, DIEDFL_ATTACHEDONLY);
+#else
+    result = directInputIface->EnumDevices(DIDEVTYPE_JOYSTICK, &EnumDevicesTestCallback, (LPVOID)&testValue, DIEDFL_ATTACHEDONLY);
+#endif
     if (DI_OK != result)
     {
         terr << _T("Unable to enumerate attached devices: code ") << result << _T(".") << endl;
@@ -744,14 +751,14 @@ int RunTestApp(int argc, char* argv[])
     if (DI_OK != result)
     {
         tout << _T("FAILED") << endl << _T("Unable to set deadzone.") << endl;
-        return 1;
+        return -1;
     }
     deadzoneTest.dwData = 7500;
     result = directInputDeviceIface->SetProperty(DIPROP_SATURATION, &deadzoneTest.diph);
     if (DI_OK != result)
     {
         tout << _T("FAILED") << endl << _T("Unable to set saturation.") << endl;
-        return 1;
+        return -1;
     }
 
     // Set range for all axes to between -100 and 100 for easy reading.
@@ -768,23 +775,24 @@ int RunTestApp(int argc, char* argv[])
         if (DI_OK != result)
         {
             tout << _T("FAILED") << endl << _T("Unable to set range.") << endl;
-            return 1;
+            return -1;
         }
     }
 
-
+    // Set the application's data format to that specified at the top of this file.
     result = directInputDeviceIface->SetDataFormat(&dataFormat);
     if (DI_OK != result)
     {
         tout << _T("FAILED") << endl << _T("Unable to set data format.") << endl;
-        return 1;
+        return -1;
     }
 
+    // Acquire the device.
     result = directInputDeviceIface->Acquire();
     if (DI_OK != result)
     {
         tout << _T("FAILED") << endl << _T("Unable to acquire device.") << endl;
-        return 1;
+        return -1;
     }
 
     tout << _T("DONE") << endl;
@@ -802,18 +810,30 @@ int RunTestApp(int argc, char* argv[])
     {
         system("cls");
         
+        // Poll the device to update its state.
         result = directInputDeviceIface->Poll();
         if (DI_OK != result)
         {
             tout << _T("Failed to poll device.") << endl;
-            return 1;
+            return -1;
         }
 
+        // Retrieve the device's new state.
         result = directInputDeviceIface->GetDeviceState(sizeof(testData), (LPVOID)&testData);
         if (DI_OK != result)
         {
             tout << _T("Failed to retrieve device state.") << endl;
-            return 1;
+            return -1;
+        }
+
+        // Verify that all POVs that are not present are centered.
+        for (DWORD i = deviceCapabilities.dwPOVs; i < _countof(testData.povs); ++i)
+        {
+            if ((DWORD)-1 != testData.povs[i])
+            {
+                tout << _T("Invalid POV data: those not present should be centered.") << endl;
+                return -1;
+            }
         }
 
         tout << _T("Device presents ") << deviceCapabilities.dwAxes << _T(" axes, ") << deviceCapabilities.dwButtons << _T(" buttons, and ") << deviceCapabilities.dwPOVs << _T(" POV controllers.") << endl;
@@ -836,7 +856,7 @@ int RunTestApp(int argc, char* argv[])
         
         tout << endl;
 
-        tout << _T("   Dpad    = ") << testData.pov << endl;
+        tout << _T("   Dpad    = ") << testData.povs[0] << endl;
 
         tout << endl;
 
