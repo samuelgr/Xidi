@@ -38,7 +38,7 @@ namespace Xidi
             HRESULT (STDMETHODCALLTYPE* DllRegisterServer)(void);
             HRESULT (STDMETHODCALLTYPE* DllUnregisterServer)(void);
             HRESULT (STDMETHODCALLTYPE* DllCanUnloadNow)(void);
-            HRESULT (STDMETHODCALLTYPE* DllGetClassObject)(_In_ REFCLSID, _In_ REFIID, _Out_ LPVOID*);
+            HRESULT (STDMETHODCALLTYPE* DllGetClassObject)(REFCLSID, REFIID, LPVOID*);
         };
         
 

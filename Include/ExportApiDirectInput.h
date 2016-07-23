@@ -29,4 +29,4 @@ HRESULT WINAPI ExportApiDirectInputDirectInputCreateEx(HINSTANCE hinst, DWORD dw
 HRESULT WINAPI ExportApiDirectInputDllRegisterServer(void);
 HRESULT WINAPI ExportApiDirectInputDllUnregisterServer(void);
 HRESULT WINAPI ExportApiDirectInputDllCanUnloadNow(void);
-HRESULT WINAPI ExportApiDirectInputDllGetClassObject(_In_ REFCLSID rclsid, _In_ REFIID riid, _Out_ LPVOID* ppv);
+HRESULT WINAPI ExportApiDirectInputDllGetClassObject(REFCLSID rclsid, REFIID riid, LPVOID* ppv);

@@ -89,7 +89,7 @@ HRESULT ImportApiDirectInput::Initialize(void)
 
         procAddress = GetProcAddress(loadedLibrary, "DllGetClassObject");
         if (NULL == procAddress) return E_FAIL;
-        importTable.DllGetClassObject = (HRESULT(STDMETHODCALLTYPE *)(_In_ REFCLSID, _In_ REFIID, _Out_ LPVOID*))procAddress;
+        importTable.DllGetClassObject = (HRESULT(STDMETHODCALLTYPE *)(REFCLSID, REFIID, LPVOID*))procAddress;
         
         // Initialization complete.
         importTableIsInitialized = TRUE;
