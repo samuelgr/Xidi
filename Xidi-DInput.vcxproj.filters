@@ -1,0 +1,114 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <Filter Include="Source Files">
+      <UniqueIdentifier>{4FC737F1-C7A5-4376-A066-2A32D752A2FF}</UniqueIdentifier>
+      <Extensions>cpp;c;cc;cxx;def;odl;idl;hpj;bat;asm;asmx</Extensions>
+    </Filter>
+    <Filter Include="Header Files">
+      <UniqueIdentifier>{93995380-89BD-4b04-88EB-625FBE52EBFB}</UniqueIdentifier>
+      <Extensions>h;hh;hpp;hxx;hm;inl;inc;xsd</Extensions>
+    </Filter>
+    <Filter Include="Resource Files">
+      <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
+      <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav;mfcribbon-ms</Extensions>
+    </Filter>
+    <Filter Include="Header Files\Mapper">
+      <UniqueIdentifier>{9023cd2c-b447-4c41-97aa-9ddb0baad13d}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\Mapper">
+      <UniqueIdentifier>{3b4cb058-31d6-4fb6-a455-fd41ff3f2d86}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="Include\ApiWindows.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Include\Mapper\Base.h">
+      <Filter>Header Files\Mapper</Filter>
+    </ClInclude>
+    <ClInclude Include="Include\ControllerIdentification.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Include\XInputController.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Include\Mapper\StandardGamepad.h">
+      <Filter>Header Files\Mapper</Filter>
+    </ClInclude>
+    <ClInclude Include="Include\Mapper\NativeXInput.h">
+      <Filter>Header Files\Mapper</Filter>
+    </ClInclude>
+    <ClInclude Include="Include\Mapper\NativeXInputSharedTriggers.h">
+      <Filter>Header Files\Mapper</Filter>
+    </ClInclude>
+    <ClInclude Include="Include\ApiDirectInput.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Include\WrapperIDirectInputDevice.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Include\WrapperIDirectInput.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Include\ExportApiDirectInput.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Include\ImportApiDirectInput.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Include\TestApp.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Include\MapperFactory.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="Source\ControllerIdentification.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\Mapper\Base.cpp">
+      <Filter>Source Files\Mapper</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\XInputController.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\Mapper\StandardGamepad.cpp">
+      <Filter>Source Files\Mapper</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\Mapper\NativeXInput.cpp">
+      <Filter>Source Files\Mapper</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\Mapper\NativeXInputSharedTriggers.cpp">
+      <Filter>Source Files\Mapper</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\ApiDirectInput.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\WrapperIDirectInputDevice.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\WrapperIDirectInput.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\TestAppDirectInput.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\DllMain.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\ExportApiDirectInput.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\ImportApiDirectInput.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\MapperFactory.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="dinput.def" />
+  </ItemGroup>
+</Project>
