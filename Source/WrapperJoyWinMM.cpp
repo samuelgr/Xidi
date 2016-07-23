@@ -11,6 +11,7 @@
 
 #include "ApiWindows.h"
 #include "ApiDirectInput.h"
+#include "ControllerIdentification.h"
 #include "ImportApiWinMM.h"
 #include "MapperFactory.h"
 #include "WrapperJoyWinMM.h"
@@ -188,6 +189,8 @@ MMRESULT WrapperJoyWinMM::JoyGetDevCapsA(UINT_PTR uJoyID, LPJOYCAPSA pjc, UINT c
     
     if (mappedDeviceCaps.dwAxes > 5)
         pjc->wCaps |= JOYCAPS_HASV;
+
+    ControllerIdentification::FillXInputControllerNameA(pjc->szPname, _countof(pjc->szPname), uJoyID);
     
     return JOYERR_NOERROR;
 }
@@ -248,6 +251,7 @@ MMRESULT WrapperJoyWinMM::JoyGetDevCapsW(UINT_PTR uJoyID, LPJOYCAPSW pjc, UINT c
     if (mapper->AxisTypeCount(GUID_RxAxis) > 0)
         pjc->wCaps |= JOYCAPS_HASV;
     
+    ControllerIdentification::FillXInputControllerNameW(pjc->szPname, _countof(pjc->szPname), uJoyID);
     
     return JOYERR_NOERROR;
 }

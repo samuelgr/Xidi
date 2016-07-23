@@ -201,6 +201,8 @@ LPTSTR DirectInputAxisTypeToString(REFGUID axisTypeGUID)
 BOOL STDMETHODCALLTYPE EnumDevicesTestCallback(LPCDIDEVICEINSTANCE lpddi, LPVOID pvRef)
 {
     DWORD* testValuePtr = (DWORD*)pvRef;
+    GUID xProductGUID;
+    ControllerIdentification::GetProductGUID(xProductGUID);
 
     tout << _T("    ");
     
@@ -213,9 +215,9 @@ BOOL STDMETHODCALLTYPE EnumDevicesTestCallback(LPCDIDEVICEINSTANCE lpddi, LPVOID
     tout << _T("Found ") << DirectInputDeviceTypeToString(GET_DIDEVICE_TYPE(lpddi->dwDevType)) << ": " << lpddi->tszProductName;
 
 #if DIRECTINPUT_VERSION >= 0x0800
-    if (DI8DEVTYPE_GAMEPAD == GET_DIDEVICE_TYPE(lpddi->dwDevType) && IsEqualGUID(lpddi->guidProduct, ControllerIdentification::kXInputProductGUID))
+    if (DI8DEVTYPE_GAMEPAD == GET_DIDEVICE_TYPE(lpddi->dwDevType) && (lpddi->guidProduct == xProductGUID))
 #else
-    if (DIDEVTYPE_JOYSTICK == GET_DIDEVICE_TYPE(lpddi->dwDevType) && IsEqualGUID(lpddi->guidProduct, ControllerIdentification::kXInputProductGUID))
+    if (DIDEVTYPE_JOYSTICK == GET_DIDEVICE_TYPE(lpddi->dwDevType) && (lpddi->guidProduct == xProductGUID))
 #endif
     {
         instanceGuidToTest = lpddi->guidInstance;

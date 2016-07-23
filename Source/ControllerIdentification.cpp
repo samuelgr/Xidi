@@ -12,6 +12,7 @@
 
 #include "ApiDirectInput.h"
 #include "ControllerIdentification.h"
+#include "XInputController.h"
 
 #include <guiddef.h>
 #include <Xinput.h>
@@ -23,14 +24,25 @@ using namespace Xidi;
 // -------- CONSTANTS ------------------------------------------------------ //
 // See "XInputControllerIdentification.h" for documentation.
 
-const GUID ControllerIdentification::kXInputProductGUID = { 0xffffffff, 0x0000, 0x0000,{ 0x00, 0x00, 'X', 'I', 'N', 'P', 'U', 'T' } };
+const GUID ControllerIdentification::kXInputProductGUID = { 0xffffffff, 0x0000, 0x0000, { 0x00, 0x00, 'X', 'I', 'N', 'P', 'U', 'T' } };
 
-const GUID ControllerIdentification::kXInputInstGUID[4] = {
-    { 0xffffffff, 0x0000, 0x0000,{ 0x00, 'X', 'I', 'N', 'P', 'U', 'T', '1' } },
-    { 0xffffffff, 0x0000, 0x0000,{ 0x00, 'X', 'I', 'N', 'P', 'U', 'T', '2' } },
-    { 0xffffffff, 0x0000, 0x0000,{ 0x00, 'X', 'I', 'N', 'P', 'U', 'T', '3' } },
-    { 0xffffffff, 0x0000, 0x0000,{ 0x00, 'X', 'I', 'N', 'P', 'U', 'T', '4' } },
-};
+const GUID ControllerIdentification::kXInputBaseInstGUID = { 0xffffffff, 0x0000, 0x0000, { 'X', 'I', 'N', 'P', 'U', 'T', 0x00, 0x00 } };
+
+
+// -------- HELPERS -------------------------------------------------------- //
+// See "XInputControllerIdentification.h" for documentation.
+
+WORD ControllerIdentification::ExtractInstanceFromXInputInstanceGUID(REFGUID xguid)
+{
+    return (*((WORD*)(&xguid.Data4[6])));
+}
+
+// ---------
+
+void ControllerIdentification::SetInstanceInXInputInstanceGUID(GUID& xguid, const WORD xindex)
+{
+    *((WORD*)(&xguid.Data4[6])) = xindex;
+}
 
 
 // -------- CLASS METHODS -------------------------------------------------- //
@@ -72,24 +84,19 @@ BOOL ControllerIdentification::DoesDirectInputControllerSupportXInput(EarliestID
 
 BOOL ControllerIdentification::EnumerateXInputControllersA(LPDIENUMDEVICESCALLBACKA lpCallback, LPVOID pvRef)
 {
-    for (DWORD idx = 0; idx < 4; ++idx)
+    for (WORD idx = 0; idx < XInputController::kMaxNumXInputControllers; ++idx)
     {
-        XINPUT_STATE dummyState;
-        DWORD result = XInputGetState(idx, &dummyState);
-
-        // If the controller is connected, the result is ERROR_SUCCESS, otherwise ERROR_DEVICE_NOT_CONNECTED.
-        // The state is not needed, just the return code to determine if there is a controller at the specified index or not.
-        if (ERROR_SUCCESS == result)
+        if (XInputController::IsControllerConnected(idx))
         {
             // Create a DirectInput device structure
             DIDEVICEINSTANCEA* instanceInfo = new DIDEVICEINSTANCEA;
             ZeroMemory(instanceInfo, sizeof(*instanceInfo));
             instanceInfo->dwSize = sizeof(*instanceInfo);
-            instanceInfo->guidInstance = kXInputInstGUID[idx];
+            MakeInstanceGUID(instanceInfo->guidInstance, idx);
             instanceInfo->guidProduct = kXInputProductGUID;
             instanceInfo->dwDevType = DINPUT_DEVTYPE_XINPUT_GAMEPAD;
-            sprintf_s(instanceInfo->tszInstanceName, _countof(instanceInfo->tszInstanceName), "XInput Controller %u", (unsigned)(idx + 1));
-            sprintf_s(instanceInfo->tszProductName, _countof(instanceInfo->tszProductName), "XInput Controller %u", (unsigned)(idx + 1));
+            FillXInputControllerNameA(instanceInfo->tszInstanceName, _countof(instanceInfo->tszInstanceName), idx);
+            FillXInputControllerNameA(instanceInfo->tszProductName, _countof(instanceInfo->tszProductName), idx);
 
             // Submit the device to the application.
             HRESULT appResult = lpCallback(instanceInfo, pvRef);
@@ -110,24 +117,19 @@ BOOL ControllerIdentification::EnumerateXInputControllersA(LPDIENUMDEVICESCALLBA
 
 BOOL ControllerIdentification::EnumerateXInputControllersW(LPDIENUMDEVICESCALLBACKW lpCallback, LPVOID pvRef)
 {
-    for (DWORD idx = 0; idx < 4; ++idx)
+    for (WORD idx = 0; idx < XInputController::kMaxNumXInputControllers; ++idx)
     {
-        XINPUT_STATE dummyState;
-        DWORD result = XInputGetState(idx, &dummyState);
-        
-        // If the controller is connected, the result is ERROR_SUCCESS, otherwise ERROR_DEVICE_NOT_CONNECTED.
-        // The state is not needed, just the return code to determine if there is a controller at the specified index or not.
-        if (ERROR_SUCCESS == result)
+        if (XInputController::IsControllerConnected(idx))
         {
             // Create a DirectInput device structure
             DIDEVICEINSTANCEW* instanceInfo = new DIDEVICEINSTANCEW;
             ZeroMemory(instanceInfo, sizeof(*instanceInfo));
             instanceInfo->dwSize = sizeof(*instanceInfo);
-            instanceInfo->guidInstance = kXInputInstGUID[idx];
+            MakeInstanceGUID(instanceInfo->guidInstance, idx);
             instanceInfo->guidProduct = kXInputProductGUID;
             instanceInfo->dwDevType = DINPUT_DEVTYPE_XINPUT_GAMEPAD;
-            swprintf_s(instanceInfo->tszInstanceName, _countof(instanceInfo->tszInstanceName), L"XInput Controller %u", (unsigned)(idx + 1));
-            swprintf_s(instanceInfo->tszProductName, _countof(instanceInfo->tszProductName), L"XInput Controller %u", (unsigned)(idx + 1));
+            FillXInputControllerNameW(instanceInfo->tszInstanceName, _countof(instanceInfo->tszInstanceName), idx);
+            FillXInputControllerNameW(instanceInfo->tszProductName, _countof(instanceInfo->tszProductName), idx);
 
             // Submit the device to the application.
             HRESULT appResult = lpCallback(instanceInfo, pvRef);
@@ -146,13 +148,48 @@ BOOL ControllerIdentification::EnumerateXInputControllersW(LPDIENUMDEVICESCALLBA
 
 // ---------
 
+void ControllerIdentification::FillXInputControllerNameA(LPSTR buf, const size_t bufcount, const DWORD controllerIndex)
+{
+    sprintf_s(buf, bufcount, "XInput Controller %u", (controllerIndex + 1));
+}
+
+// ---------
+
+void ControllerIdentification::FillXInputControllerNameW(LPWSTR buf, const size_t bufcount, const DWORD controllerIndex)
+{
+    swprintf_s(buf, bufcount, L"XInput Controller %u", (controllerIndex + 1));
+}
+
+// ---------
+
+void ControllerIdentification::GetProductGUID(GUID& xguid)
+{
+    xguid = kXInputProductGUID;
+}
+
+// ---------
+
+void ControllerIdentification::MakeInstanceGUID(GUID& xguid, const WORD xindex)
+{
+    xguid = kXInputBaseInstGUID;
+    SetInstanceInXInputInstanceGUID(xguid, xindex);
+}
+
+// ---------
+
 LONG ControllerIdentification::XInputControllerIndexForInstanceGUID(REFGUID instanceGUID)
 {
-    for (LONG i = 0; i < _countof(kXInputInstGUID); ++i)
+    LONG resultIndex = -1;
+    WORD xindex = ExtractInstanceFromXInputInstanceGUID(instanceGUID);
+
+    if (xindex < XInputController::kMaxNumXInputControllers)
     {
-        if (kXInputInstGUID[i] == instanceGUID)
-            return i;
+        GUID realXInputGUID;
+        MakeInstanceGUID(realXInputGUID, xindex);
+
+        if (realXInputGUID == instanceGUID)
+            resultIndex = (LONG)xindex;
     }
     
-    return -1;
+    return resultIndex;
 }

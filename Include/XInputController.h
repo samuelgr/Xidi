@@ -79,6 +79,10 @@ namespace Xidi
         // Mask for checking just the state of the dpad in an XINPUT_GAMEPAD structure.
         static const WORD kDpadStateMask = (XINPUT_GAMEPAD_DPAD_UP | XINPUT_GAMEPAD_DPAD_DOWN | XINPUT_GAMEPAD_DPAD_LEFT | XINPUT_GAMEPAD_DPAD_RIGHT);
 
+        // Maximum number of XInput controllers that can be plugged into the system.
+        // Valid user indices range from 0 to this number.
+        static const WORD kMaxNumXInputControllers = 4;
+
 
     private:
         // -------- INSTANCE VARIABLES --------------------------------------------- //
@@ -128,6 +132,9 @@ namespace Xidi
         
         // Given an XInput button state, extracts the dpad state and converts to a DirectInput-style POV reading.
         static LONG DirectInputPovStateFromXInputButtonState(const WORD buttonState);
+        
+        // Returns TRUE if the specified XInput controller is connected (i.e. there is a controller physically present for the specified device index).
+        static BOOL IsControllerConnected(const DWORD xinputUserIndex);
         
         
     private:

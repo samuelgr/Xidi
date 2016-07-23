@@ -42,7 +42,7 @@ namespace Xidi
         // -------- CLASS VARIABLES ------------------------------------------------ //
         
         // Fixed set of four XInput controllers.
-        static XInputController* controllers[4];
+        static XInputController* controllers[XInputController::kMaxNumXInputControllers];
         
         // Mapping scheme to be applied to all controllers.
         static Mapper::Base* mapper;

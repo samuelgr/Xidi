@@ -77,26 +77,36 @@ LONG XInputController::DirectInputPovStateFromXInputButtonState(const WORD butto
         switch (horizontalDpadComponent)
         {
         case -1:
-            if (-1 == verticalDpadComponent) dpadValue = 22500;        // down and left
-            else if (0 == verticalDpadComponent) dpadValue = 27000;        // left
-            else if (1 == verticalDpadComponent) dpadValue = 31500;        // up and left
+            if (-1 == verticalDpadComponent) dpadValue = 22500;             // down and left
+            else if (0 == verticalDpadComponent) dpadValue = 27000;         // left
+            else if (1 == verticalDpadComponent) dpadValue = 31500;         // up and left
             break;
 
         case 0:
-            if (-1 == verticalDpadComponent) dpadValue = 18000;        // down
-            else if (0 == verticalDpadComponent) dpadValue = -1;        // centered
-            else if (1 == verticalDpadComponent) dpadValue = 0;        // up
+            if (-1 == verticalDpadComponent) dpadValue = 18000;             // down
+            else if (0 == verticalDpadComponent) dpadValue = -1;            // centered
+            else if (1 == verticalDpadComponent) dpadValue = 0;             // up
             break;
 
         case 1:
-            if (-1 == verticalDpadComponent) dpadValue = 13500;        // down and right
-            else if (0 == verticalDpadComponent) dpadValue = 9000;        // right
-            else if (1 == verticalDpadComponent) dpadValue = 4500;        // up and right
+            if (-1 == verticalDpadComponent) dpadValue = 13500;             // down and right
+            else if (0 == verticalDpadComponent) dpadValue = 9000;          // right
+            else if (1 == verticalDpadComponent) dpadValue = 4500;          // up and right
             break;
         }
     }
 
     return dpadValue;
+}
+
+// ---------
+
+BOOL XInputController::IsControllerConnected(const DWORD xinputUserIndex)
+{
+    XINPUT_CAPABILITIES dummyCapabilities;
+    DWORD result = XInputGetCapabilities(xinputUserIndex, 0, &dummyCapabilities);
+
+    return (result == ERROR_SUCCESS);
 }
 
 
@@ -165,6 +175,8 @@ HRESULT XInputController::GetBufferedEvents(SControllerEvent* events, DWORD& cou
 {
     if (!IsAcquired()) return DIERR_NOTACQUIRED;
 
+    EnterCriticalSection(&eventChangeCriticalSection);
+    
     // Read events from the buffer and keep track of how many were read, stopping either at the application-requested number or the maximum number available.
     DWORD idx;
     for (idx = 0; idx < count && idx < bufferedEvents.size(); ++idx)
@@ -190,6 +202,8 @@ HRESULT XInputController::GetBufferedEvents(SControllerEvent* events, DWORD& cou
             break;
         }
     }
+
+    LeaveCriticalSection(&eventChangeCriticalSection);
     
     return DI_OK;
 }
@@ -242,10 +256,7 @@ BOOL XInputController::IsAcquired(void)
 
 BOOL XInputController::IsConnected(void)
 {
-    XINPUT_CAPABILITIES dummyCapabilities;
-    DWORD result = XInputGetCapabilities(xinputUserIndex, 0, &dummyCapabilities);
-    
-    return (result == ERROR_SUCCESS);
+    return IsControllerConnected(xinputUserIndex);
 }
 
 // ---------
