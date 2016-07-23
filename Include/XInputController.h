@@ -14,7 +14,7 @@
 
 #include "ApiDirectInput.h"
 
-#include <vector>
+#include <deque>
 #include <Xinput.h>
 
 
@@ -88,7 +88,7 @@ namespace Xidi
         // -------- INSTANCE VARIABLES --------------------------------------------- //
 
         // Holds buffered events obtained from the controller.
-        std::vector<SControllerEvent> bufferedEvents;
+        std::deque<SControllerEvent> bufferedEvents;
         
         // Specifies the next sequence number to use for reporting events in the buffer.
         DWORD bufferedEventsNextSequenceNumber;
@@ -154,6 +154,12 @@ namespace Xidi
         // DirectInput requires that devices be acquired before data can be read.
         HRESULT AcquireController(void);
 
+        // Retrieves the number of buffered events present.
+        DWORD BufferedEventsCount();
+
+        // Discards the first several buffered events, based on the specified parameter.
+        void DiscardBufferedEvents(DWORD numEvents);
+        
         // Fills in a DirectInput device capabilities structure with information about this controller's basic information.
         void FillDeviceCapabilities(LPDIDEVCAPS lpDIDevCaps);
         

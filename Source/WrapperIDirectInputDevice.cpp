@@ -154,22 +154,48 @@ HRESULT STDMETHODCALLTYPE WrapperIDirectInputDevice::GetDeviceData(DWORD cbObjec
     // Verify the correct sizes of each structure.
     if (sizeof(DIDEVICEOBJECTDATA) != cbObjectData)
         return DIERR_INVALIDPARAM;
-
+    
     // Verify that the controller has been acquired.
     // This avoids allocating memory in the face of a known error case.
     if (!controller->IsAcquired())
         return DIERR_NOTACQUIRED;
     
+    // Verify provided count. Cannot be NULL.
+    if (NULL == pdwInOut)
+        return DIERR_INVALIDPARAM;
+    
+    // Determine from the flags whether or not to remove elements from the event buffer as they are read.
+    const BOOL removeFromBuffer = !(dwFlags & DIGDD_PEEK);
+    
+    // Verify pointer and count.
+    // Technically the array pointer can be NULL, and the count could be zero.
+    if (NULL == rgdod || 0 == *pdwInOut)
+    {
+        HRESULT result;
+        
+        if (0 == controller->BufferedEventsCount())
+            result = DI_OK;
+        else
+        {
+            result = DI_BUFFEROVERFLOW;
+            
+            if (removeFromBuffer)
+                controller->DiscardBufferedEvents(*pdwInOut);
+        }
+        
+        return result;
+    }
+    
     // Allocate an array of events and obtain information from the controller.
     SControllerEvent* controllerEvents = new SControllerEvent[*pdwInOut];
     DWORD numControllerEvents = *pdwInOut;
-    HRESULT result = controller->GetBufferedEvents(controllerEvents, numControllerEvents, dwFlags);
-    if (DI_OK != result)
+    HRESULT result = controller->GetBufferedEvents(controllerEvents, numControllerEvents, removeFromBuffer);
+    if (!SUCCEEDED(result))
     {
         delete[] controllerEvents;
         return result;
     }
-
+    
     // Initialize the application's event array and cause events to be written to it.
     ZeroMemory(rgdod, sizeof(DIDEVICEOBJECTDATA) * numControllerEvents);
     

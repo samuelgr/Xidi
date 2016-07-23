@@ -13,6 +13,7 @@
 #include "ApiDirectInput.h"
 #include "XInputController.h"
 
+#include <deque>
 #include <Xinput.h>
 
 using namespace Xidi;
@@ -160,6 +161,47 @@ HRESULT XInputController::AcquireController(void)
 
 // ---------
 
+DWORD XInputController::BufferedEventsCount()
+{
+    DWORD numEvents = 0;
+    
+    EnterCriticalSection(&eventChangeCriticalSection);
+    numEvents = (DWORD)bufferedEvents.size();
+    LeaveCriticalSection(&eventChangeCriticalSection);
+    
+    return numEvents;
+}
+
+// ---------
+
+void XInputController::DiscardBufferedEvents(DWORD numEvents)
+{
+    EnterCriticalSection(&eventChangeCriticalSection);
+    
+    if (numEvents >= bufferedEvents.size())
+        bufferedEvents.clear();
+    else
+    {
+        switch (numEvents)
+        {
+        case 0:
+            break;
+            
+        case 1:
+            bufferedEvents.erase(bufferedEvents.begin());
+            break;
+            
+        default:
+            bufferedEvents.erase(bufferedEvents.begin(), bufferedEvents.begin() + numEvents);
+            break;
+        }
+    }
+
+    LeaveCriticalSection(&eventChangeCriticalSection);
+}
+
+// ---------
+
 void XInputController::FillDeviceCapabilities(LPDIDEVCAPS lpDIDevCaps)
 {
     lpDIDevCaps->dwFlags = (DIDC_ATTACHED | DIDC_EMULATED | DIDC_POLLEDDATAFORMAT);
@@ -185,25 +227,17 @@ HRESULT XInputController::GetBufferedEvents(SControllerEvent* events, DWORD& cou
     // Tell the application how many events were read.
     count = idx;
 
+    // Make note if this was all of them.
+    BOOL allEventsRead = (count == bufferedEvents.size());
+
     // Optionally remove events from the buffer, based on the number of events read out of it.
-    if (removeFromBuffer)
-    {
-        switch (count)
-        {
-        case 0:
-            break;
-
-        case 1:
-            bufferedEvents.erase(bufferedEvents.begin());
-            break;
-
-        default:
-            bufferedEvents.erase(bufferedEvents.begin(), bufferedEvents.begin() + idx);
-            break;
-        }
-    }
+    DiscardBufferedEvents(count);
 
     LeaveCriticalSection(&eventChangeCriticalSection);
+    
+    // If all events were read, no overflow, otherwise there was a buffer overflow.
+    if (TRUE != allEventsRead)
+        return DI_BUFFEROVERFLOW;
     
     return DI_OK;
 }
