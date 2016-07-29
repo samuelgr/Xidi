@@ -23,7 +23,7 @@ using namespace Xidi;
 // -------- CLASS VARIABLES ------------------------------------------------ //
 // See "WrapperJoyWinMM.h" for documentation.
 
-XInputController* WrapperJoyWinMM::controllers[4] = { NULL, NULL, NULL, NULL };
+XInputController* WrapperJoyWinMM::controllers[XInputController::kMaxNumXInputControllers];
 
 Mapper::Base* WrapperJoyWinMM::mapper = NULL;
 
@@ -112,11 +112,11 @@ MMRESULT WrapperJoyWinMM::FillDeviceState(UINT joyID, SJoyStateData* joyStateDat
 
     HRESULT result = controllers[joyID]->RefreshControllerState();
     if (DI_OK != result)
-        return JOYERR_UNPLUGGED;
+        return JOYERR_NOCANDO;
 
     result = controllers[joyID]->GetCurrentDeviceState(&currentControllerState);
     if (DI_OK != result)
-        return JOYERR_UNPLUGGED;
+        return JOYERR_NOCANDO;
 
     // Get mapped controller state from the mapper.
     return mapper->WriteApplicationControllerState(currentControllerState.Gamepad, (LPVOID)joyStateData, sizeof(*joyStateData));
@@ -146,10 +146,6 @@ MMRESULT WrapperJoyWinMM::JoyGetDevCapsA(UINT_PTR uJoyID, LPJOYCAPSA pjc, UINT c
     
     // Ensure the controller number is within bounds.
     if (!(uJoyID < JoyGetNumDevs()))
-        return JOYERR_PARMS;
-
-    // Ensure the controller is connected.
-    if (!controllers[uJoyID]->IsConnected())
         return JOYERR_PARMS;
     
     // Get information from the mapper on the mapped device's capabilities.
@@ -207,10 +203,6 @@ MMRESULT WrapperJoyWinMM::JoyGetDevCapsW(UINT_PTR uJoyID, LPJOYCAPSW pjc, UINT c
     
     // Ensure the controller number is within bounds.
     if (!(uJoyID < JoyGetNumDevs()))
-        return JOYERR_PARMS;
-
-    // Ensure the controller is connected.
-    if (!controllers[uJoyID]->IsConnected())
         return JOYERR_PARMS;
     
     // Get information from the mapper on the mapped device's capabilities.

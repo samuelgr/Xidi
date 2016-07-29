@@ -86,28 +86,26 @@ BOOL ControllerIdentification::EnumerateXInputControllersA(LPDIENUMDEVICESCALLBA
 {
     for (WORD idx = 0; idx < XInputController::kMaxNumXInputControllers; ++idx)
     {
-        if (XInputController::IsControllerConnected(idx))
-        {
-            // Create a DirectInput device structure
-            DIDEVICEINSTANCEA* instanceInfo = new DIDEVICEINSTANCEA;
-            ZeroMemory(instanceInfo, sizeof(*instanceInfo));
-            instanceInfo->dwSize = sizeof(*instanceInfo);
-            MakeInstanceGUID(instanceInfo->guidInstance, idx);
-            instanceInfo->guidProduct = kXInputProductGUID;
-            instanceInfo->dwDevType = DINPUT_DEVTYPE_XINPUT_GAMEPAD;
-            FillXInputControllerNameA(instanceInfo->tszInstanceName, _countof(instanceInfo->tszInstanceName), idx);
-            FillXInputControllerNameA(instanceInfo->tszProductName, _countof(instanceInfo->tszProductName), idx);
+        // Create a DirectInput device structure
+        DIDEVICEINSTANCEA* instanceInfo = new DIDEVICEINSTANCEA;
+        ZeroMemory(instanceInfo, sizeof(*instanceInfo));
+        instanceInfo->dwSize = sizeof(*instanceInfo);
+        MakeInstanceGUID(instanceInfo->guidInstance, idx);
+        instanceInfo->guidProduct = kXInputProductGUID;
+        instanceInfo->dwDevType = DINPUT_DEVTYPE_XINPUT_GAMEPAD;
+        FillXInputControllerNameA(instanceInfo->tszInstanceName, _countof(instanceInfo->tszInstanceName), idx);
+        FillXInputControllerNameA(instanceInfo->tszProductName, _countof(instanceInfo->tszProductName), idx);
 
-            // Submit the device to the application.
-            HRESULT appResult = lpCallback(instanceInfo, pvRef);
+        // Submit the device to the application.
+        HRESULT appResult = lpCallback(instanceInfo, pvRef);
 
-            // Clean up.
-            delete instanceInfo;
+        // Clean up.
+        delete instanceInfo;
 
-            // See if the application wants to enumerate more devices.
-            if (DIENUM_CONTINUE != appResult)
-                return DIENUM_STOP;
-        }
+        // See if the application wants to enumerate more devices.
+        if (DIENUM_CONTINUE != appResult)
+            return DIENUM_STOP;
+        
     }
 
     return DIENUM_CONTINUE;
@@ -119,28 +117,25 @@ BOOL ControllerIdentification::EnumerateXInputControllersW(LPDIENUMDEVICESCALLBA
 {
     for (WORD idx = 0; idx < XInputController::kMaxNumXInputControllers; ++idx)
     {
-        if (XInputController::IsControllerConnected(idx))
-        {
-            // Create a DirectInput device structure
-            DIDEVICEINSTANCEW* instanceInfo = new DIDEVICEINSTANCEW;
-            ZeroMemory(instanceInfo, sizeof(*instanceInfo));
-            instanceInfo->dwSize = sizeof(*instanceInfo);
-            MakeInstanceGUID(instanceInfo->guidInstance, idx);
-            instanceInfo->guidProduct = kXInputProductGUID;
-            instanceInfo->dwDevType = DINPUT_DEVTYPE_XINPUT_GAMEPAD;
-            FillXInputControllerNameW(instanceInfo->tszInstanceName, _countof(instanceInfo->tszInstanceName), idx);
-            FillXInputControllerNameW(instanceInfo->tszProductName, _countof(instanceInfo->tszProductName), idx);
+        // Create a DirectInput device structure
+        DIDEVICEINSTANCEW* instanceInfo = new DIDEVICEINSTANCEW;
+        ZeroMemory(instanceInfo, sizeof(*instanceInfo));
+        instanceInfo->dwSize = sizeof(*instanceInfo);
+        MakeInstanceGUID(instanceInfo->guidInstance, idx);
+        instanceInfo->guidProduct = kXInputProductGUID;
+        instanceInfo->dwDevType = DINPUT_DEVTYPE_XINPUT_GAMEPAD;
+        FillXInputControllerNameW(instanceInfo->tszInstanceName, _countof(instanceInfo->tszInstanceName), idx);
+        FillXInputControllerNameW(instanceInfo->tszProductName, _countof(instanceInfo->tszProductName), idx);
 
-            // Submit the device to the application.
-            HRESULT appResult = lpCallback(instanceInfo, pvRef);
-            
-            // Clean up.
-            delete instanceInfo;
+        // Submit the device to the application.
+        HRESULT appResult = lpCallback(instanceInfo, pvRef);
+        
+        // Clean up.
+        delete instanceInfo;
 
-            // See if the application wants to enumerate more devices.
-            if (DIENUM_CONTINUE != appResult)
-                return DIENUM_STOP;
-        }
+        // See if the application wants to enumerate more devices.
+        if (DIENUM_CONTINUE != appResult)
+            return DIENUM_STOP;
     }
 
     return DIENUM_CONTINUE;
@@ -150,14 +145,14 @@ BOOL ControllerIdentification::EnumerateXInputControllersW(LPDIENUMDEVICESCALLBA
 
 void ControllerIdentification::FillXInputControllerNameA(LPSTR buf, const size_t bufcount, const DWORD controllerIndex)
 {
-    sprintf_s(buf, bufcount, "XInput Controller %u", (controllerIndex + 1));
+    sprintf_s(buf, bufcount, "Xidi: Controller %u", (controllerIndex + 1));
 }
 
 // ---------
 
 void ControllerIdentification::FillXInputControllerNameW(LPWSTR buf, const size_t bufcount, const DWORD controllerIndex)
 {
-    swprintf_s(buf, bufcount, L"XInput Controller %u", (controllerIndex + 1));
+    swprintf_s(buf, bufcount, L"Xidi: Controller %u", (controllerIndex + 1));
 }
 
 // ---------

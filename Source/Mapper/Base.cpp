@@ -1065,6 +1065,60 @@ void Base::ResetApplicationDataFormat(void)
 
 // ---------
 
+HRESULT Base::WriteApplicationBufferedEvents(const SControllerEvent* xEventBuf, LPDIDEVICEOBJECTDATA appEventBuf, DWORD& eventCount)
+{
+    DWORD appEventIdx = 0;
+
+    for (DWORD xEventIdx = 0; xEventIdx < eventCount; ++xEventIdx)
+    {
+        const SControllerEvent* xEvent = &xEventBuf[xEventIdx];
+        LPDIDEVICEOBJECTDATA appEvent = &appEventBuf[appEventIdx];
+
+        // First figure out the instance to which the event target maps.
+        // If not present, discard the event.
+        const TInstance eventInstance = MapXInputElementToDirectInputInstance(xEvent->controllerElement);
+        if (eventInstance < 0)
+            continue;
+
+        // Get the offset (within the application's data format) for the event target.
+        // If the application has not registered an offset for this event, discard the event.
+        const LONG appEventOffset = OffsetForInstance(eventInstance);
+        if (appEventOffset < 0)
+            continue;
+
+        // Fill in the common aspects of the application's event structure.
+        appEvent->dwOfs = (DWORD)appEventOffset;
+        appEvent->dwSequence = xEvent->sequenceNumber;
+        appEvent->dwTimeStamp = xEvent->timestamp;
+        
+        // Get instance identifiers for the triggers, as they may share an axis which creates a special case.
+        const TInstance instanceLT = MapXInputElementToDirectInputInstance(EXInputControllerElement::TriggerLT);
+        const TInstance instanceRT = MapXInputElementToDirectInputInstance(EXInputControllerElement::TriggerRT);
+
+        // Check if the event targets a trigger and the triggers share a target instance.
+        if (eventInstance == instanceLT && instanceLT == instanceRT)
+        {
+            // Event targets a trigger and they both share an axis.
+            
+            // If this does not map to an axis, this is an error.
+            if (EInstanceType::InstanceTypeAxis != ExtractIdentifierInstanceType(instanceLT))
+                return DIERR_GENERIC;
+
+            // Recompute the new shared axis value.
+            // TODO
+        }
+        else
+        {
+            // Event targets any element, including triggers that do not share an axis.
+            // TODO
+        }
+    }
+    
+    return DI_OK;
+}
+
+// ---------
+
 HRESULT Base::WriteApplicationControllerState(XINPUT_GAMEPAD& xState, LPVOID appDataBuf, DWORD appDataSize)
 {
     // Lazily initialize the axis properties (this is idempotent).

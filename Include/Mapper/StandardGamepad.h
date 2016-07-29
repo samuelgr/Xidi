@@ -14,8 +14,6 @@
 
 #include "Mapper/Base.h"
 
-#include <unordered_map>
-
 
 namespace Xidi
 {

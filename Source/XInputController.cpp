@@ -303,12 +303,9 @@ HRESULT XInputController::RefreshControllerState(void)
     XINPUT_STATE newControllerState;
     DWORD result = XInputGetState(xinputUserIndex, &newControllerState);
 
-    // If the device was unplugged or otherwise has become unavailable, indicate this to the application.
+    // If the device was unplugged or otherwise has become unavailable, pretend that no change has taken place.
     if (ERROR_SUCCESS != result)
-    {
-        UnacquireController();
-        return DIERR_INPUTLOST;
-    }
+        return DI_OK;
 
     // If there has been no state change, there is nothing to do.
     if (newControllerState.dwPacketNumber != controllerState.dwPacketNumber)

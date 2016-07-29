@@ -189,20 +189,27 @@ HRESULT STDMETHODCALLTYPE WrapperIDirectInputDevice::GetDeviceData(DWORD cbObjec
     // Allocate an array of events and obtain information from the controller.
     SControllerEvent* controllerEvents = new SControllerEvent[*pdwInOut];
     DWORD numControllerEvents = *pdwInOut;
-    HRESULT result = controller->GetBufferedEvents(controllerEvents, numControllerEvents, removeFromBuffer);
-    if (!SUCCEEDED(result))
+    HRESULT xResult = controller->GetBufferedEvents(controllerEvents, numControllerEvents, removeFromBuffer);
+    if (!SUCCEEDED(xResult))
     {
         delete[] controllerEvents;
-        return result;
+        return xResult;
     }
     
-    // Initialize the application's event array and cause events to be written to it.
-    ZeroMemory(rgdod, sizeof(DIDEVICEOBJECTDATA) * numControllerEvents);
+    // Cause events to be written to the application data buffer.
+    HRESULT dResult = mapper->WriteApplicationBufferedEvents(controllerEvents, rgdod, numControllerEvents);
+    if (!SUCCEEDED(dResult))
+    {
+        delete[] controllerEvents;
+        return dResult;
+    }
     
+    // Inform the application how many buffered events were written.
+    *pdwInOut = numControllerEvents;
+
+    // Clean up and return.
     delete[] controllerEvents;
-    
-    // Not yet fully implemented.
-    return DIERR_UNSUPPORTED;
+    return xResult;
 }
 
 // ---------

@@ -267,6 +267,12 @@ namespace Xidi
             // Resets the application-supplied DirectInput data format to an uninitialized state.
             void ResetApplicationDataFormat(void);
 
+            // Writes buffered data to an application data buffer, given a set of buffered XInput controller events.
+            // Both application and XInput event counts are provided through the event count parameter.
+            // On input, it represents the number of events in the XInput buffer.
+            // On output, it represents the number of events written to the application buffer, which may be fewer or the same as the number of incoming events.
+            HRESULT WriteApplicationBufferedEvents(const SControllerEvent* xEventBuf, LPDIDEVICEOBJECTDATA appEventBuf, DWORD& eventCount);
+            
             // Writes controller state to an application data structure, given an XInput controller's state structure.
             HRESULT WriteApplicationControllerState(XINPUT_GAMEPAD& xState, LPVOID appDataBuf, DWORD appDataSize);
 
