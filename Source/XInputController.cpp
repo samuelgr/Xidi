@@ -303,79 +303,75 @@ HRESULT XInputController::RefreshControllerState(void)
     XINPUT_STATE newControllerState;
     DWORD result = XInputGetState(xinputUserIndex, &newControllerState);
 
-    // If the device was unplugged or otherwise has become unavailable, pretend that no change has taken place.
+    // If the device was unplugged or otherwise has become unavailable, reset its state to everything being neutral.
     if (ERROR_SUCCESS != result)
-        return DI_OK;
+        ZeroMemory(&newControllerState.Gamepad, sizeof(newControllerState.Gamepad));
+    
+    EnterCriticalSection(&eventChangeCriticalSection);
+    
+    // Capture the current event sequence number, which will be used to see if the application should be notified of a controller state change.
+    const DWORD currentEventSequenceNumber = bufferedEventsNextSequenceNumber;
+    
+    // All events get a timestamp, which in this case will be the current system time in milliseconds.
+    DWORD eventTimestamp = GetTickCount();
 
-    // If there has been no state change, there is nothing to do.
-    if (newControllerState.dwPacketNumber != controllerState.dwPacketNumber)
+    // For each controller component, check if there has been a change and, if so, add an event to the queue.
+    if (newControllerState.Gamepad.sThumbLX != controllerState.Gamepad.sThumbLX)
+        SubmitBufferedEvent(EXInputControllerElement::StickLeftHorizontal, (LONG)newControllerState.Gamepad.sThumbLX, eventTimestamp);
+    
+    if (newControllerState.Gamepad.sThumbLY != controllerState.Gamepad.sThumbLY)
+        SubmitBufferedEvent(EXInputControllerElement::StickLeftVertical, (LONG)newControllerState.Gamepad.sThumbLY, eventTimestamp);
+
+    if (newControllerState.Gamepad.sThumbRX != controllerState.Gamepad.sThumbRX)
+        SubmitBufferedEvent(EXInputControllerElement::StickRightHorizontal, (LONG)newControllerState.Gamepad.sThumbRX, eventTimestamp);
+
+    if (newControllerState.Gamepad.sThumbRY != controllerState.Gamepad.sThumbRY)
+        SubmitBufferedEvent(EXInputControllerElement::StickRightHorizontal, (LONG)newControllerState.Gamepad.sThumbRY, eventTimestamp);
+
+    if (newControllerState.Gamepad.bLeftTrigger != controllerState.Gamepad.bLeftTrigger)
+        SubmitBufferedEvent(EXInputControllerElement::TriggerLT, (LONG)newControllerState.Gamepad.bLeftTrigger, eventTimestamp);
+
+    if (newControllerState.Gamepad.bRightTrigger != controllerState.Gamepad.bRightTrigger)
+        SubmitBufferedEvent(EXInputControllerElement::TriggerRT, (LONG)newControllerState.Gamepad.bRightTrigger, eventTimestamp);
+
+    // For comparing buttons and dpad, will need to look at individual bits.
+    if (newControllerState.Gamepad.wButtons != controllerState.Gamepad.wButtons)
     {
-        EnterCriticalSection(&eventChangeCriticalSection);
-        
-        // Capture the current event sequence number, which will be used to see if the application should be notified of a controller state change.
-        const DWORD currentEventSequenceNumber = bufferedEventsNextSequenceNumber;
-        
-        // All events get a timestamp, which in this case will be the current system time in milliseconds.
-        DWORD eventTimestamp = GetTickCount();
+        // Dpad.
+        if ((newControllerState.Gamepad.wButtons & kDpadStateMask) != (controllerState.Gamepad.wButtons & kDpadStateMask))
+            SubmitBufferedEvent(EXInputControllerElement::Dpad, DirectInputPovStateFromXInputButtonState(newControllerState.Gamepad.wButtons), eventTimestamp);
 
-        // For each controller component, check if there has been a change and, if so, add an event to the queue.
-        if (newControllerState.Gamepad.sThumbLX != controllerState.Gamepad.sThumbLX)
-            SubmitBufferedEvent(EXInputControllerElement::StickLeftHorizontal, (LONG)newControllerState.Gamepad.sThumbLX, eventTimestamp);
-        
-        if (newControllerState.Gamepad.sThumbLY != controllerState.Gamepad.sThumbLY)
-            SubmitBufferedEvent(EXInputControllerElement::StickLeftVertical, (LONG)newControllerState.Gamepad.sThumbLY, eventTimestamp);
-
-        if (newControllerState.Gamepad.sThumbRX != controllerState.Gamepad.sThumbRX)
-            SubmitBufferedEvent(EXInputControllerElement::StickRightHorizontal, (LONG)newControllerState.Gamepad.sThumbRX, eventTimestamp);
-
-        if (newControllerState.Gamepad.sThumbRY != controllerState.Gamepad.sThumbRY)
-            SubmitBufferedEvent(EXInputControllerElement::StickRightHorizontal, (LONG)newControllerState.Gamepad.sThumbRY, eventTimestamp);
-
-        if (newControllerState.Gamepad.bLeftTrigger != controllerState.Gamepad.bLeftTrigger)
-            SubmitBufferedEvent(EXInputControllerElement::TriggerLT, (LONG)newControllerState.Gamepad.bLeftTrigger, eventTimestamp);
-
-        if (newControllerState.Gamepad.bRightTrigger != controllerState.Gamepad.bRightTrigger)
-            SubmitBufferedEvent(EXInputControllerElement::TriggerRT, (LONG)newControllerState.Gamepad.bRightTrigger, eventTimestamp);
-
-        // For comparing buttons and dpad, will need to look at individual bits.
-        if (newControllerState.Gamepad.wButtons != controllerState.Gamepad.wButtons)
-        {
-            // Dpad.
-            if ((newControllerState.Gamepad.wButtons & kDpadStateMask) != (controllerState.Gamepad.wButtons & kDpadStateMask))
-                SubmitBufferedEvent(EXInputControllerElement::Dpad, DirectInputPovStateFromXInputButtonState(newControllerState.Gamepad.wButtons), eventTimestamp);
-
-            // Each button in sequence.
-            if ((newControllerState.Gamepad.wButtons & XINPUT_GAMEPAD_A) != (controllerState.Gamepad.wButtons & XINPUT_GAMEPAD_A))
-                SubmitBufferedEvent(EXInputControllerElement::ButtonA, DirectInputButtonStateFromXInputButtonReading(newControllerState.Gamepad.wButtons, XINPUT_GAMEPAD_A), eventTimestamp);
-            if ((newControllerState.Gamepad.wButtons & XINPUT_GAMEPAD_B) != (controllerState.Gamepad.wButtons & XINPUT_GAMEPAD_B))
-                SubmitBufferedEvent(EXInputControllerElement::ButtonB, DirectInputButtonStateFromXInputButtonReading(newControllerState.Gamepad.wButtons, XINPUT_GAMEPAD_B), eventTimestamp);
-            if ((newControllerState.Gamepad.wButtons & XINPUT_GAMEPAD_X) != (controllerState.Gamepad.wButtons & XINPUT_GAMEPAD_X))
-                SubmitBufferedEvent(EXInputControllerElement::ButtonX, DirectInputButtonStateFromXInputButtonReading(newControllerState.Gamepad.wButtons, XINPUT_GAMEPAD_X), eventTimestamp);
-            if ((newControllerState.Gamepad.wButtons & XINPUT_GAMEPAD_Y) != (controllerState.Gamepad.wButtons & XINPUT_GAMEPAD_Y))
-                SubmitBufferedEvent(EXInputControllerElement::ButtonY, DirectInputButtonStateFromXInputButtonReading(newControllerState.Gamepad.wButtons, XINPUT_GAMEPAD_Y), eventTimestamp);
-            if ((newControllerState.Gamepad.wButtons & XINPUT_GAMEPAD_LEFT_SHOULDER) != (controllerState.Gamepad.wButtons & XINPUT_GAMEPAD_LEFT_SHOULDER))
-                SubmitBufferedEvent(EXInputControllerElement::ButtonLB, DirectInputButtonStateFromXInputButtonReading(newControllerState.Gamepad.wButtons, XINPUT_GAMEPAD_LEFT_SHOULDER), eventTimestamp);
-            if ((newControllerState.Gamepad.wButtons & XINPUT_GAMEPAD_RIGHT_SHOULDER) != (controllerState.Gamepad.wButtons & XINPUT_GAMEPAD_RIGHT_SHOULDER))
-                SubmitBufferedEvent(EXInputControllerElement::ButtonRB, DirectInputButtonStateFromXInputButtonReading(newControllerState.Gamepad.wButtons, XINPUT_GAMEPAD_RIGHT_SHOULDER), eventTimestamp);
-            if ((newControllerState.Gamepad.wButtons & XINPUT_GAMEPAD_BACK) != (controllerState.Gamepad.wButtons & XINPUT_GAMEPAD_BACK))
-                SubmitBufferedEvent(EXInputControllerElement::ButtonBack, DirectInputButtonStateFromXInputButtonReading(newControllerState.Gamepad.wButtons, XINPUT_GAMEPAD_BACK), eventTimestamp);
-            if ((newControllerState.Gamepad.wButtons & XINPUT_GAMEPAD_START) != (controllerState.Gamepad.wButtons & XINPUT_GAMEPAD_START))
-                SubmitBufferedEvent(EXInputControllerElement::ButtonStart, DirectInputButtonStateFromXInputButtonReading(newControllerState.Gamepad.wButtons, XINPUT_GAMEPAD_START), eventTimestamp);
-            if ((newControllerState.Gamepad.wButtons & XINPUT_GAMEPAD_LEFT_THUMB) != (controllerState.Gamepad.wButtons & XINPUT_GAMEPAD_LEFT_THUMB))
-                SubmitBufferedEvent(EXInputControllerElement::ButtonLeftStick, DirectInputButtonStateFromXInputButtonReading(newControllerState.Gamepad.wButtons, XINPUT_GAMEPAD_LEFT_THUMB), eventTimestamp);
-            if ((newControllerState.Gamepad.wButtons & XINPUT_GAMEPAD_RIGHT_THUMB) != (controllerState.Gamepad.wButtons & XINPUT_GAMEPAD_RIGHT_THUMB))
-                SubmitBufferedEvent(EXInputControllerElement::ButtonRightStick, DirectInputButtonStateFromXInputButtonReading(newControllerState.Gamepad.wButtons, XINPUT_GAMEPAD_RIGHT_THUMB), eventTimestamp);
-        }
-
-        // Copy the new controller state to the current controller state.
-        controllerState = newControllerState;
-
-        LeaveCriticalSection(&eventChangeCriticalSection);
-
-        // Notify the application if the controller state changed.
-        if (currentEventSequenceNumber != bufferedEventsNextSequenceNumber && NULL != controllerStateChangedEvent)
-            SetEvent(controllerStateChangedEvent);
+        // Each button in sequence.
+        if ((newControllerState.Gamepad.wButtons & XINPUT_GAMEPAD_A) != (controllerState.Gamepad.wButtons & XINPUT_GAMEPAD_A))
+            SubmitBufferedEvent(EXInputControllerElement::ButtonA, DirectInputButtonStateFromXInputButtonReading(newControllerState.Gamepad.wButtons, XINPUT_GAMEPAD_A), eventTimestamp);
+        if ((newControllerState.Gamepad.wButtons & XINPUT_GAMEPAD_B) != (controllerState.Gamepad.wButtons & XINPUT_GAMEPAD_B))
+            SubmitBufferedEvent(EXInputControllerElement::ButtonB, DirectInputButtonStateFromXInputButtonReading(newControllerState.Gamepad.wButtons, XINPUT_GAMEPAD_B), eventTimestamp);
+        if ((newControllerState.Gamepad.wButtons & XINPUT_GAMEPAD_X) != (controllerState.Gamepad.wButtons & XINPUT_GAMEPAD_X))
+            SubmitBufferedEvent(EXInputControllerElement::ButtonX, DirectInputButtonStateFromXInputButtonReading(newControllerState.Gamepad.wButtons, XINPUT_GAMEPAD_X), eventTimestamp);
+        if ((newControllerState.Gamepad.wButtons & XINPUT_GAMEPAD_Y) != (controllerState.Gamepad.wButtons & XINPUT_GAMEPAD_Y))
+            SubmitBufferedEvent(EXInputControllerElement::ButtonY, DirectInputButtonStateFromXInputButtonReading(newControllerState.Gamepad.wButtons, XINPUT_GAMEPAD_Y), eventTimestamp);
+        if ((newControllerState.Gamepad.wButtons & XINPUT_GAMEPAD_LEFT_SHOULDER) != (controllerState.Gamepad.wButtons & XINPUT_GAMEPAD_LEFT_SHOULDER))
+            SubmitBufferedEvent(EXInputControllerElement::ButtonLB, DirectInputButtonStateFromXInputButtonReading(newControllerState.Gamepad.wButtons, XINPUT_GAMEPAD_LEFT_SHOULDER), eventTimestamp);
+        if ((newControllerState.Gamepad.wButtons & XINPUT_GAMEPAD_RIGHT_SHOULDER) != (controllerState.Gamepad.wButtons & XINPUT_GAMEPAD_RIGHT_SHOULDER))
+            SubmitBufferedEvent(EXInputControllerElement::ButtonRB, DirectInputButtonStateFromXInputButtonReading(newControllerState.Gamepad.wButtons, XINPUT_GAMEPAD_RIGHT_SHOULDER), eventTimestamp);
+        if ((newControllerState.Gamepad.wButtons & XINPUT_GAMEPAD_BACK) != (controllerState.Gamepad.wButtons & XINPUT_GAMEPAD_BACK))
+            SubmitBufferedEvent(EXInputControllerElement::ButtonBack, DirectInputButtonStateFromXInputButtonReading(newControllerState.Gamepad.wButtons, XINPUT_GAMEPAD_BACK), eventTimestamp);
+        if ((newControllerState.Gamepad.wButtons & XINPUT_GAMEPAD_START) != (controllerState.Gamepad.wButtons & XINPUT_GAMEPAD_START))
+            SubmitBufferedEvent(EXInputControllerElement::ButtonStart, DirectInputButtonStateFromXInputButtonReading(newControllerState.Gamepad.wButtons, XINPUT_GAMEPAD_START), eventTimestamp);
+        if ((newControllerState.Gamepad.wButtons & XINPUT_GAMEPAD_LEFT_THUMB) != (controllerState.Gamepad.wButtons & XINPUT_GAMEPAD_LEFT_THUMB))
+            SubmitBufferedEvent(EXInputControllerElement::ButtonLeftStick, DirectInputButtonStateFromXInputButtonReading(newControllerState.Gamepad.wButtons, XINPUT_GAMEPAD_LEFT_THUMB), eventTimestamp);
+        if ((newControllerState.Gamepad.wButtons & XINPUT_GAMEPAD_RIGHT_THUMB) != (controllerState.Gamepad.wButtons & XINPUT_GAMEPAD_RIGHT_THUMB))
+            SubmitBufferedEvent(EXInputControllerElement::ButtonRightStick, DirectInputButtonStateFromXInputButtonReading(newControllerState.Gamepad.wButtons, XINPUT_GAMEPAD_RIGHT_THUMB), eventTimestamp);
     }
+
+    // Copy the new controller state to the current controller state.
+    controllerState = newControllerState;
+
+    LeaveCriticalSection(&eventChangeCriticalSection);
+
+    // Notify the application if the controller state changed.
+    if (currentEventSequenceNumber != bufferedEventsNextSequenceNumber && NULL != controllerStateChangedEvent)
+        SetEvent(controllerStateChangedEvent);
 
     return DI_OK;
 }
