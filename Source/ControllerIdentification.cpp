@@ -143,16 +143,16 @@ BOOL ControllerIdentification::EnumerateXInputControllersW(LPDIENUMDEVICESCALLBA
 
 // ---------
 
-void ControllerIdentification::FillXInputControllerNameA(LPSTR buf, const size_t bufcount, const DWORD controllerIndex)
+int ControllerIdentification::FillXInputControllerNameA(LPSTR buf, const size_t bufcount, const DWORD controllerIndex)
 {
-    sprintf_s(buf, bufcount, "Xidi: Controller %u", (controllerIndex + 1));
+    return sprintf_s(buf, bufcount, "Xidi: Controller %u", (controllerIndex + 1));
 }
 
 // ---------
 
-void ControllerIdentification::FillXInputControllerNameW(LPWSTR buf, const size_t bufcount, const DWORD controllerIndex)
+int ControllerIdentification::FillXInputControllerNameW(LPWSTR buf, const size_t bufcount, const DWORD controllerIndex)
 {
-    swprintf_s(buf, bufcount, L"Xidi: Controller %u", (controllerIndex + 1));
+    return swprintf_s(buf, bufcount, L"Xidi: Controller %u", (controllerIndex + 1));
 }
 
 // ---------

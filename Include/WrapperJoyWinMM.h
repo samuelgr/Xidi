@@ -73,6 +73,19 @@ namespace Xidi
         
         // Communicates with the relevant controller and the mapper to fill the provided structure with device state information.
         static MMRESULT FillDeviceState(UINT joyID, SJoyStateData* joyStateData);
+
+        // Fills in the specified buffer with the name of the registry key to use for referencing controller names.
+        // Returns the number of characters written, or negative in the event of an error.
+        // This is the non-Unicode version.
+        static int FillRegistryKeyStringA(LPSTR buf, const size_t bufcount);
+
+        // Fills in the specified buffer with the name of the registry key to use for referencing controller names.
+        // Returns the number of characters written, or negative in the event of an error.
+        // This is the Unicode version.
+        static int FillRegistryKeyStringW(LPWSTR buf, const size_t bufcount);
+
+        // Places the required keys and values into the registry so that WinMM-based applications can find the correct controller names.
+        static void SetControllerNameRegistryInfo(void);
         
         
     public:

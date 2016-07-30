@@ -68,12 +68,14 @@ namespace Xidi
         static BOOL EnumerateXInputControllersW(LPDIENUMDEVICESCALLBACKW lpCallback, LPVOID pvRef);
         
         // Generates and places a string representing the XInput controller's product name for the controller at the specified index.
+        // Returns the number of characters written, or negative in the event of an error.
         // This is the non-Unicode version.
-        static void FillXInputControllerNameA(LPSTR buf, const size_t bufcount, const DWORD controllerIndex);
+        static int FillXInputControllerNameA(LPSTR buf, const size_t bufcount, const DWORD controllerIndex);
         
         // Generates and places a string representing the XInput controller's product name for the controller at the specified index.
+        // Returns the number of characters written, or negative in the event of an error.
         // This is the Unicode version.
-        static void FillXInputControllerNameW(LPWSTR buf, const size_t bufcount, const DWORD controllerIndex);
+        static int FillXInputControllerNameW(LPWSTR buf, const size_t bufcount, const DWORD controllerIndex);
 
         // Writes the XInput product GUID to the specified GUID.
         static void GetProductGUID(GUID& xguid);

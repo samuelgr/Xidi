@@ -17,6 +17,8 @@
 #include "WrapperJoyWinMM.h"
 #include "XInputController.h"
 
+#include <RegStr.h>
+
 using namespace Xidi;
 
 
@@ -89,6 +91,9 @@ void WrapperJoyWinMM::Initialize(void)
         for (DWORD i = 0; i < _countof(controllers); ++i)
             controllers[i] = new XInputController(i);
         
+        // Ensure all controllers have their names published in the system registry.
+        SetControllerNameRegistryInfo();
+        
         // Initialization complete.
         isInitialized = TRUE;
     }
@@ -120,6 +125,72 @@ MMRESULT WrapperJoyWinMM::FillDeviceState(UINT joyID, SJoyStateData* joyStateDat
 
     // Get mapped controller state from the mapper.
     return mapper->WriteApplicationControllerState(currentControllerState.Gamepad, (LPVOID)joyStateData, sizeof(*joyStateData));
+}
+
+// ---------
+
+int WrapperJoyWinMM::FillRegistryKeyStringA(LPSTR buf, const size_t bufcount)
+{
+    return sprintf_s(buf, bufcount, "%s", "Xidi");
+}
+
+// ---------
+
+int WrapperJoyWinMM::FillRegistryKeyStringW(LPWSTR buf, const size_t bufcount)
+{
+    return swprintf_s(buf, bufcount, L"%s", L"Xidi");
+}
+
+// ---------
+
+void WrapperJoyWinMM::SetControllerNameRegistryInfo(void)
+{
+    HKEY registryKey;
+    TCHAR registryKeyName[32];
+    TCHAR registryPath[256];
+
+    // First, add OEM string references to HKCU\System\CurrentControlSet\Control\MediaResources\Joystick\Xidi.
+    // These will point a WinMM-based application to another part of the registry, by reference, which will actually contain the names.
+    FillRegistryKeyStringW(registryKeyName, _countof(registryKeyName));
+    _stprintf_s(registryPath, _countof(registryPath), REGSTR_PATH_JOYCONFIG _T("\\%s\\") REGSTR_KEY_JOYCURR, registryKeyName);
+    
+    LSTATUS result = RegCreateKeyEx(HKEY_CURRENT_USER, registryPath, 0, NULL, REG_OPTION_VOLATILE, KEY_ALL_ACCESS, NULL, &registryKey, NULL);
+    if (ERROR_SUCCESS != result) return;
+
+    for (DWORD i = 0; i < _countof(controllers); ++i)
+    {
+        TCHAR valueName[64];
+        TCHAR valueData[64];
+
+        const int valueNameCount = _stprintf_s(valueName, _countof(valueName), _T("Joystick%u") REGSTR_VAL_JOYOEMNAME, (i + 1));
+        const int valueDataCount = _stprintf_s(valueData, _countof(valueData), _T("%s%u"), registryKeyName, (i + 1));
+
+        result = RegSetValueEx(registryKey, valueName, 0, REG_SZ, (const BYTE*)valueData, (sizeof(TCHAR) * (valueDataCount + 1)));
+        if (ERROR_SUCCESS != result)
+        {
+            RegCloseKey(registryKey);
+            return;
+        }
+    }
+
+    RegCloseKey(registryKey);
+
+    // Next, place the names into the correct spots for the application to read.
+    // These will be in HKCU\System\CurrentControlSet\Control\MediaProperties\PrivateProperties\OEM\[valueData from above loop] and contain the name of the controller.
+    for (DWORD i = 0; i < _countof(controllers); ++i)
+    {
+        TCHAR valueData[64];
+        const int valueDataCount = ControllerIdentification::FillXInputControllerNameW(valueData, _countof(valueData), i);
+
+        _stprintf_s(registryPath, _countof(registryPath), REGSTR_PATH_JOYOEM _T("\\%s%u"), registryKeyName, i + 1);
+        result = RegCreateKeyEx(HKEY_CURRENT_USER, registryPath, 0, NULL, REG_OPTION_VOLATILE, KEY_ALL_ACCESS, NULL, &registryKey, NULL);
+        if (ERROR_SUCCESS != result) return;
+
+        result = RegSetValueEx(registryKey, REGSTR_VAL_JOYOEMNAME, 0, REG_SZ, (const BYTE*)valueData, (sizeof(TCHAR) * (valueDataCount + 1)));
+        RegCloseKey(registryKey);
+
+        if (ERROR_SUCCESS != result) return;
+    }
 }
 
 
@@ -185,7 +256,8 @@ MMRESULT WrapperJoyWinMM::JoyGetDevCapsA(UINT_PTR uJoyID, LPJOYCAPSA pjc, UINT c
     
     if (mappedDeviceCaps.dwAxes > 5)
         pjc->wCaps |= JOYCAPS_HASV;
-
+    
+    FillRegistryKeyStringA(pjc->szRegKey, _countof(pjc->szRegKey));
     ControllerIdentification::FillXInputControllerNameA(pjc->szPname, _countof(pjc->szPname), uJoyID);
     
     return JOYERR_NOERROR;
@@ -243,6 +315,7 @@ MMRESULT WrapperJoyWinMM::JoyGetDevCapsW(UINT_PTR uJoyID, LPJOYCAPSW pjc, UINT c
     if (mapper->AxisTypeCount(GUID_RxAxis) > 0)
         pjc->wCaps |= JOYCAPS_HASV;
     
+    FillRegistryKeyStringW(pjc->szRegKey, _countof(pjc->szRegKey));
     ControllerIdentification::FillXInputControllerNameW(pjc->szPname, _countof(pjc->szPname), uJoyID);
     
     return JOYERR_NOERROR;
