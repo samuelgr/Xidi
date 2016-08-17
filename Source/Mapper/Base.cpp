@@ -11,6 +11,7 @@
  *****************************************************************************/
 
 #include "ApiDirectInput.h"
+#include "Globals.h"
 #include "Mapper/Base.h"
 
 #include <unordered_set>
@@ -62,42 +63,42 @@ DWORD Base::SizeofInstance(const EInstanceType type)
 // -------- HELPERS -------------------------------------------------------- //
 // See "Mapper/Base.h" for documentation.
 
-LPCSTR Base::AxisTypeToStringA(REFGUID axisTypeGUID)
+void Base::AxisTypeToStringA(REFGUID axisTypeGUID, LPSTR buf, const int bufcount)
 {
     if (axisTypeGUID == GUID_XAxis)
-        return "X Axis";
-    if (axisTypeGUID == GUID_YAxis)
-        return "Y Axis";
-    if (axisTypeGUID == GUID_ZAxis)
-        return "Z Axis";
-    if (axisTypeGUID == GUID_RxAxis)
-        return "X Rotation";
-    if (axisTypeGUID == GUID_RyAxis)
-        return "Y Rotation";
-    if (axisTypeGUID == GUID_RzAxis)
-        return "Z Rotation";
-
-    return "Unknown Axis";
+        LoadStringA(Globals::GetInstanceHandle(), IDS_XIDI_MAPPER_BASE_AXISNAME_X, buf, bufcount);
+    else if (axisTypeGUID == GUID_YAxis)
+        LoadStringA(Globals::GetInstanceHandle(), IDS_XIDI_MAPPER_BASE_AXISNAME_Y, buf, bufcount);
+    else if (axisTypeGUID == GUID_ZAxis)
+        LoadStringA(Globals::GetInstanceHandle(), IDS_XIDI_MAPPER_BASE_AXISNAME_Z, buf, bufcount);
+    else if (axisTypeGUID == GUID_RxAxis)
+        LoadStringA(Globals::GetInstanceHandle(), IDS_XIDI_MAPPER_BASE_AXISNAME_RX, buf, bufcount);
+    else if (axisTypeGUID == GUID_RyAxis)
+        LoadStringA(Globals::GetInstanceHandle(), IDS_XIDI_MAPPER_BASE_AXISNAME_RY, buf, bufcount);
+    else if (axisTypeGUID == GUID_RzAxis)
+        LoadStringA(Globals::GetInstanceHandle(), IDS_XIDI_MAPPER_BASE_AXISNAME_RZ, buf, bufcount);
+    else
+        LoadStringA(Globals::GetInstanceHandle(), IDS_XIDI_MAPPER_BASE_AXISNAME_UNKNOWN, buf, bufcount);
 }
 
 // ---------
 
-LPWSTR Base::AxisTypeToStringW(REFGUID axisTypeGUID)
+void Base::AxisTypeToStringW(REFGUID axisTypeGUID, LPWSTR buf, const int bufcount)
 {
     if (axisTypeGUID == GUID_XAxis)
-        return L"X Axis";
-    if (axisTypeGUID == GUID_YAxis)
-        return L"Y Axis";
-    if (axisTypeGUID == GUID_ZAxis)
-        return L"Z Axis";
-    if (axisTypeGUID == GUID_RxAxis)
-        return L"X Rotation";
-    if (axisTypeGUID == GUID_RyAxis)
-        return L"Y Rotation";
-    if (axisTypeGUID == GUID_RzAxis)
-        return L"Z Rotation";
-
-    return L"Unknown Axis";
+        LoadStringW(Globals::GetInstanceHandle(), IDS_XIDI_MAPPER_BASE_AXISNAME_X, buf, bufcount);
+    else if (axisTypeGUID == GUID_YAxis)
+        LoadStringW(Globals::GetInstanceHandle(), IDS_XIDI_MAPPER_BASE_AXISNAME_Y, buf, bufcount);
+    else if (axisTypeGUID == GUID_ZAxis)
+        LoadStringW(Globals::GetInstanceHandle(), IDS_XIDI_MAPPER_BASE_AXISNAME_Z, buf, bufcount);
+    else if (axisTypeGUID == GUID_RxAxis)
+        LoadStringW(Globals::GetInstanceHandle(), IDS_XIDI_MAPPER_BASE_AXISNAME_RX, buf, bufcount);
+    else if (axisTypeGUID == GUID_RyAxis)
+        LoadStringW(Globals::GetInstanceHandle(), IDS_XIDI_MAPPER_BASE_AXISNAME_RY, buf, bufcount);
+    else if (axisTypeGUID == GUID_RzAxis)
+        LoadStringW(Globals::GetInstanceHandle(), IDS_XIDI_MAPPER_BASE_AXISNAME_RZ, buf, bufcount);
+    else
+        LoadStringW(Globals::GetInstanceHandle(), IDS_XIDI_MAPPER_BASE_AXISNAME_UNKNOWN, buf, bufcount);
 }
 
 // ---------
@@ -117,6 +118,8 @@ BOOL Base::CheckAndSetOffsets(BOOL* base, const DWORD count)
 
 void Base::FillObjectInstanceInfoA(LPDIDEVICEOBJECTINSTANCEA instanceInfo, EInstanceType instanceType, TInstanceIdx instanceNumber)
 {
+    CHAR instanceFormatString[128];
+    
     // Obtain the number of objects of each type.
     const TInstanceCount numAxes = NumInstancesOfType(EInstanceType::InstanceTypeAxis);
     const TInstanceCount numPov = NumInstancesOfType(EInstanceType::InstanceTypePov);
@@ -136,21 +139,23 @@ void Base::FillObjectInstanceInfoA(LPDIDEVICEOBJECTINSTANCEA instanceInfo, EInst
         instanceInfo->guidType = AxisTypeFromInstanceNumber(instanceNumber);
         instanceInfo->dwType |= DIDFT_ABSAXIS;
         instanceInfo->dwFlags |= DIDOI_ASPECTPOSITION;
-        sprintf_s(instanceInfo->tszName, _countof(instanceInfo->tszName), AxisTypeToStringA(instanceInfo->guidType));
+        AxisTypeToStringA(instanceInfo->guidType, instanceInfo->tszName, _countof(instanceInfo->tszName));
         break;
 
     case EInstanceType::InstanceTypePov:
         instanceInfo->dwOfs = (numAxes * SizeofInstance(EInstanceType::InstanceTypeAxis)) + (instanceNumber * SizeofInstance(instanceType));
         instanceInfo->guidType = GUID_POV;
         instanceInfo->dwType |= DIDFT_POV;
-        sprintf_s(instanceInfo->tszName, _countof(instanceInfo->tszName), "POV %u", (unsigned)instanceNumber);
+        LoadStringA(Globals::GetInstanceHandle(), IDS_XIDI_MAPPER_BASE_POVNAME_FORMAT, instanceFormatString, _countof(instanceFormatString));
+        sprintf_s(instanceInfo->tszName, _countof(instanceInfo->tszName), instanceFormatString, (unsigned)(1 + instanceNumber));
         break;
 
     case EInstanceType::InstanceTypeButton:
         instanceInfo->dwOfs = (numAxes * SizeofInstance(EInstanceType::InstanceTypeAxis)) + (numPov * SizeofInstance(EInstanceType::InstanceTypePov)) + (instanceNumber * SizeofInstance(instanceType));
         instanceInfo->guidType = GUID_Button;
         instanceInfo->dwType |= DIDFT_PSHBUTTON;
-        sprintf_s(instanceInfo->tszName, _countof(instanceInfo->tszName), "Button %u", (unsigned)instanceNumber);
+        LoadStringA(Globals::GetInstanceHandle(), IDS_XIDI_MAPPER_BASE_BUTTONNAME_FORMAT, instanceFormatString, _countof(instanceFormatString));
+        sprintf_s(instanceInfo->tszName, _countof(instanceInfo->tszName), instanceFormatString, (unsigned)(1 + instanceNumber));
         break;
     }
 }
@@ -159,6 +164,8 @@ void Base::FillObjectInstanceInfoA(LPDIDEVICEOBJECTINSTANCEA instanceInfo, EInst
 
 void Base::FillObjectInstanceInfoW(LPDIDEVICEOBJECTINSTANCEW instanceInfo, EInstanceType instanceType, TInstanceIdx instanceNumber)
 {
+    WCHAR instanceFormatString[128];
+    
     // Obtain the number of objects of each type.
     const TInstanceCount numAxes = NumInstancesOfType(EInstanceType::InstanceTypeAxis);
     const TInstanceCount numPov = NumInstancesOfType(EInstanceType::InstanceTypePov);
@@ -177,21 +184,23 @@ void Base::FillObjectInstanceInfoW(LPDIDEVICEOBJECTINSTANCEW instanceInfo, EInst
         instanceInfo->dwOfs = (instanceNumber * SizeofInstance(instanceType));
         instanceInfo->guidType = AxisTypeFromInstanceNumber(instanceNumber);
         instanceInfo->dwType |= DIDFT_ABSAXIS;
-        wcscpy_s(instanceInfo->tszName, _countof(instanceInfo->tszName), AxisTypeToStringW(instanceInfo->guidType));
+        AxisTypeToStringW(instanceInfo->guidType, instanceInfo->tszName, _countof(instanceInfo->tszName));
         break;
     
     case EInstanceType::InstanceTypePov:
         instanceInfo->dwOfs = (numAxes * SizeofInstance(EInstanceType::InstanceTypeAxis)) + (instanceNumber * SizeofInstance(instanceType));
         instanceInfo->guidType = GUID_POV;
         instanceInfo->dwType |= DIDFT_POV;
-        swprintf_s(instanceInfo->tszName, _countof(instanceInfo->tszName), L"POV %u", (unsigned)instanceNumber);
+        LoadStringW(Globals::GetInstanceHandle(), IDS_XIDI_MAPPER_BASE_POVNAME_FORMAT, instanceFormatString, _countof(instanceFormatString));
+        swprintf_s(instanceInfo->tszName, _countof(instanceInfo->tszName), instanceFormatString, (unsigned)(1 + instanceNumber));
         break;
     
     case EInstanceType::InstanceTypeButton:
         instanceInfo->dwOfs = (numAxes * SizeofInstance(EInstanceType::InstanceTypeAxis)) + (numPov * SizeofInstance(EInstanceType::InstanceTypePov)) + (instanceNumber * SizeofInstance(instanceType));
         instanceInfo->guidType = GUID_Button;
         instanceInfo->dwType |= DIDFT_PSHBUTTON;
-        swprintf_s(instanceInfo->tszName, _countof(instanceInfo->tszName), L"Button %u", (unsigned)instanceNumber);
+        LoadStringW(Globals::GetInstanceHandle(), IDS_XIDI_MAPPER_BASE_BUTTONNAME_FORMAT, instanceFormatString, _countof(instanceFormatString));
+        swprintf_s(instanceInfo->tszName, _countof(instanceInfo->tszName), instanceFormatString, (unsigned)(1 + instanceNumber));
         break;
     }
 }

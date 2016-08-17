@@ -12,6 +12,7 @@
 
 #include "ApiDirectInput.h"
 #include "ControllerIdentification.h"
+#include "Globals.h"
 #include "XInputController.h"
 
 #include <guiddef.h>
@@ -145,14 +146,20 @@ BOOL ControllerIdentification::EnumerateXInputControllersW(LPDIENUMDEVICESCALLBA
 
 int ControllerIdentification::FillXInputControllerNameA(LPSTR buf, const size_t bufcount, const DWORD controllerIndex)
 {
-    return sprintf_s(buf, bufcount, "Xidi: Controller %u", (controllerIndex + 1));
+    CHAR xidiControllerNameFormatString[128];
+    LoadStringA(Globals::GetInstanceHandle(), IDS_XIDI_CONTROLLERIDENTIFICATION_CONTROLLER_NAME_FORMAT, xidiControllerNameFormatString, _countof(xidiControllerNameFormatString));
+    
+    return sprintf_s(buf, bufcount, xidiControllerNameFormatString, (controllerIndex + 1));
 }
 
 // ---------
 
 int ControllerIdentification::FillXInputControllerNameW(LPWSTR buf, const size_t bufcount, const DWORD controllerIndex)
 {
-    return swprintf_s(buf, bufcount, L"Xidi: Controller %u", (controllerIndex + 1));
+    WCHAR xidiControllerNameFormatString[128];
+    LoadStringW(Globals::GetInstanceHandle(), IDS_XIDI_CONTROLLERIDENTIFICATION_CONTROLLER_NAME_FORMAT, xidiControllerNameFormatString, _countof(xidiControllerNameFormatString));
+    
+    return swprintf_s(buf, bufcount, xidiControllerNameFormatString, (controllerIndex + 1));
 }
 
 // ---------

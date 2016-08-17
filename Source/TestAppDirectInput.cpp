@@ -13,6 +13,7 @@
 #include "ApiDirectInput.h"
 #include "ControllerIdentification.h"
 #include "ExportApiDirectInput.h"
+#include "Globals.h"
 #include "ImportApiDirectInput.h"
 #include "TestApp.h"
 #include "Mapper/Base.h"
@@ -890,8 +891,10 @@ int RunTestApp(int argc, char* argv[])
 
 int main(int argc, char* argv[])
 {
+    Globals::SetInstanceHandle(GetModuleHandle(NULL));
+    
     int result = RunTestApp(argc, argv);
-
+    
     system("pause");
     return result;
 }

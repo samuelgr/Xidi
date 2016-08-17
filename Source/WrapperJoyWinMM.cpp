@@ -12,6 +12,7 @@
 #include "ApiWindows.h"
 #include "ApiDirectInput.h"
 #include "ControllerIdentification.h"
+#include "Globals.h"
 #include "ImportApiWinMM.h"
 #include "MapperFactory.h"
 #include "WrapperJoyWinMM.h"
@@ -131,14 +132,14 @@ MMRESULT WrapperJoyWinMM::FillDeviceState(UINT joyID, SJoyStateData* joyStateDat
 
 int WrapperJoyWinMM::FillRegistryKeyStringA(LPSTR buf, const size_t bufcount)
 {
-    return sprintf_s(buf, bufcount, "%s", "Xidi");
+    return LoadStringA(Globals::GetInstanceHandle(), IDS_XIDI_PRODUCT_NAME, buf, bufcount);
 }
 
 // ---------
 
 int WrapperJoyWinMM::FillRegistryKeyStringW(LPWSTR buf, const size_t bufcount)
 {
-    return swprintf_s(buf, bufcount, L"%s", L"Xidi");
+    return LoadStringW(Globals::GetInstanceHandle(), IDS_XIDI_PRODUCT_NAME, buf, bufcount);
 }
 
 // ---------
@@ -162,7 +163,7 @@ void WrapperJoyWinMM::SetControllerNameRegistryInfo(void)
         TCHAR valueName[64];
         TCHAR valueData[64];
 
-        const int valueNameCount = _stprintf_s(valueName, _countof(valueName), _T("Joystick%u") REGSTR_VAL_JOYOEMNAME, (i + 1));
+        const int valueNameCount = _stprintf_s(valueName, _countof(valueName), REGSTR_VAL_JOYNOEMNAME, (i + 1));
         const int valueDataCount = _stprintf_s(valueData, _countof(valueData), _T("%s%u"), registryKeyName, (i + 1));
 
         result = RegSetValueEx(registryKey, valueName, 0, REG_SZ, (const BYTE*)valueData, (sizeof(TCHAR) * (valueDataCount + 1)));

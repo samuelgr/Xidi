@@ -152,13 +152,15 @@ namespace Xidi
         private:
             // -------- HELPERS -------------------------------------------------------- //
             
-            // Returns a friendly name string for the specified axis type by GUID.
+            // Places a friendly name string for the specified axis type by GUID into the specified buffer.
+            // Requires the buffer size, measured in characters.
             // This is the non-Unicode version.
-            LPCSTR AxisTypeToStringA(REFGUID axisTypeGUID);
+            void AxisTypeToStringA(REFGUID axisTypeGUID, LPSTR buf, const int bufcount);
 
-            // Returns a friendly name string for the specified axis type by GUID.
+            // Places a friendly name string for the specified axis type by GUID into the specified buffer.
+            // Requires the buffer size, measured in characters.
             // This is the Unicode version.
-            LPWSTR AxisTypeToStringW(REFGUID axisTypeGUID);
+            void AxisTypeToStringW(REFGUID axisTypeGUID, LPWSTR buf, const int bufcount);
             
             // Given an array of offsets and a count, checks that they are all unset (FALSE).
             // If they are all unset, sets them (to TRUE) and returns TRUE.

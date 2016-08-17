@@ -12,6 +12,7 @@
 
 #include "ApiWindows.h"
 #include "ExportApiWinMM.h"
+#include "Globals.h"
 #include "ImportApiWinMM.h"
 #include "TestApp.h"
 
@@ -204,6 +205,8 @@ int RunTestApp(int argc, char* argv[])
 
 int main(int argc, char* argv[])
 {
+    Globals::SetInstanceHandle(GetModuleHandle(NULL));
+    
     int result = RunTestApp(argc, argv);
 
     system("pause");

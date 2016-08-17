@@ -10,6 +10,7 @@
  *****************************************************************************/
 
 #include "ApiWindows.h"
+#include "Globals.h"
 
 
 // -------- ENTRY POINT ---------------------------------------------------- //
@@ -21,6 +22,9 @@ BOOL APIENTRY DllMain(HMODULE hModule, DWORD  ul_reason_for_call, LPVOID lpReser
     switch (ul_reason_for_call)
     {
         case DLL_PROCESS_ATTACH:
+            Xidi::Globals::SetInstanceHandle(hModule);
+            break;
+
         case DLL_THREAD_ATTACH:
             break;
 

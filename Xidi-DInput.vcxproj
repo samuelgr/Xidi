@@ -30,6 +30,7 @@
     <ClInclude Include="Include\ApiDirectInput.h" />
     <ClInclude Include="Include\ApiWindows.h" />
     <ClInclude Include="Include\ExportApiDirectInput.h" />
+    <ClInclude Include="Include\Globals.h" />
     <ClInclude Include="Include\MapperFactory.h" />
     <ClInclude Include="Include\Mapper\XInputNative.h" />
     <ClInclude Include="Include\Mapper\XInputSharedTriggers.h" />
@@ -49,6 +50,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Source\ApiDirectInput.cpp" />
+    <ClCompile Include="Source\Globals.cpp" />
     <ClCompile Include="Source\MapperFactory.cpp" />
     <ClCompile Include="Source\Mapper\XInputNative.cpp" />
     <ClCompile Include="Source\Mapper\XInputSharedTriggers.cpp" />
@@ -198,7 +200,7 @@
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
       <WarningLevel>Level3</WarningLevel>
       <AdditionalIncludeDirectories>.;Include</AdditionalIncludeDirectories>
-      <ForcedIncludeFiles>Resources\$(ProjectName).h;%(ForcedIncludeFiles)</ForcedIncludeFiles>
+      <ForcedIncludeFiles>Resources\$(SolutionName).h;Resources\$(ProjectName).h;%(ForcedIncludeFiles)</ForcedIncludeFiles>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
@@ -218,7 +220,7 @@
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
       <WarningLevel>Level3</WarningLevel>
       <AdditionalIncludeDirectories>.;Include</AdditionalIncludeDirectories>
-      <ForcedIncludeFiles>Resources\$(ProjectName).h;%(ForcedIncludeFiles)</ForcedIncludeFiles>
+      <ForcedIncludeFiles>Resources\$(SolutionName).h;Resources\$(ProjectName).h;%(ForcedIncludeFiles)</ForcedIncludeFiles>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -237,7 +239,7 @@
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
       <WarningLevel>Level3</WarningLevel>
       <AdditionalIncludeDirectories>.;Include</AdditionalIncludeDirectories>
-      <ForcedIncludeFiles>Resources\$(ProjectName).h;%(ForcedIncludeFiles)</ForcedIncludeFiles>
+      <ForcedIncludeFiles>Resources\$(SolutionName).h;Resources\$(ProjectName).h;%(ForcedIncludeFiles)</ForcedIncludeFiles>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
@@ -257,7 +259,7 @@
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
       <WarningLevel>Level3</WarningLevel>
       <AdditionalIncludeDirectories>.;Include</AdditionalIncludeDirectories>
-      <ForcedIncludeFiles>Resources\$(ProjectName).h;%(ForcedIncludeFiles)</ForcedIncludeFiles>
+      <ForcedIncludeFiles>Resources\$(SolutionName).h;Resources\$(ProjectName).h;%(ForcedIncludeFiles)</ForcedIncludeFiles>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -278,7 +280,7 @@
       <RuntimeTypeInfo>false</RuntimeTypeInfo>
       <WarningLevel>Level3</WarningLevel>
       <AdditionalIncludeDirectories>.;Include</AdditionalIncludeDirectories>
-      <ForcedIncludeFiles>Resources\$(ProjectName).h;%(ForcedIncludeFiles)</ForcedIncludeFiles>
+      <ForcedIncludeFiles>Resources\$(SolutionName).h;Resources\$(ProjectName).h;%(ForcedIncludeFiles)</ForcedIncludeFiles>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
@@ -304,7 +306,7 @@
       <RuntimeTypeInfo>false</RuntimeTypeInfo>
       <WarningLevel>Level3</WarningLevel>
       <AdditionalIncludeDirectories>.;Include</AdditionalIncludeDirectories>
-      <ForcedIncludeFiles>Resources\$(ProjectName).h;%(ForcedIncludeFiles)</ForcedIncludeFiles>
+      <ForcedIncludeFiles>Resources\$(SolutionName).h;Resources\$(ProjectName).h;%(ForcedIncludeFiles)</ForcedIncludeFiles>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
