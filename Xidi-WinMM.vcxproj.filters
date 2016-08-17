@@ -105,4 +105,12 @@
   <ItemGroup>
     <None Include="winmm.def" />
   </ItemGroup>
+  <ItemGroup>
+    <ResourceCompile Include="Resources\Xidi.rc">
+      <Filter>Resource Files</Filter>
+    </ResourceCompile>
+    <ResourceCompile Include="Resources\Xidi-WinMM.rc">
+      <Filter>Resource Files</Filter>
+    </ResourceCompile>
+  </ItemGroup>
 </Project>
