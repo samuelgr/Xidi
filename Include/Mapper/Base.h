@@ -97,7 +97,15 @@ namespace Xidi
             // Holds the properties of all axes present in this mapper.
             SAxisProperties* axisProperties;
             
-            // Specifies the size of an application data packet, in bytes.
+			// Cached value for the state of the XInput controller LT trigger.
+			// Used to enable shared axis updates with buffered data.
+			LONG cachedValueXInputLT;
+
+			// Cached value for the state of the XInput controller RT trigger.
+			// Used to enable shared axis updates with buffered data.
+			LONG cachedValueXInputRT;
+			
+			// Specifies the size of an application data packet, in bytes.
             DWORD dataPacketSize;
 
             // Maps from instance identifier to base offset in the application-specified data format.
@@ -152,7 +160,11 @@ namespace Xidi
         private:
             // -------- HELPERS -------------------------------------------------------- //
             
-            // Places a friendly name string for the specified axis type by GUID into the specified buffer.
+            // Applies axis deadzone and saturation to a raw value within axis range.
+			// Returns the result of the calculation.
+			LONG ApplyAxisPropertiesToRawValue(const TInstance axisInstance, const LONG value);
+			
+			// Places a friendly name string for the specified axis type by GUID into the specified buffer.
             // Requires the buffer size, measured in characters.
             // This is the non-Unicode version.
             void AxisTypeToStringA(REFGUID axisTypeGUID, LPSTR buf, const int bufcount);
@@ -269,11 +281,10 @@ namespace Xidi
             // Resets the application-supplied DirectInput data format to an uninitialized state.
             void ResetApplicationDataFormat(void);
 
-            // Writes buffered data to an application data buffer, given a set of buffered XInput controller events.
-            // Both application and XInput event counts are provided through the event count parameter.
-            // On input, it represents the number of events in the XInput buffer.
-            // On output, it represents the number of events written to the application buffer, which may be fewer or the same as the number of incoming events.
-            HRESULT WriteApplicationBufferedEvents(const SControllerEvent* xEventBuf, LPDIDEVICEOBJECTDATA appEventBuf, DWORD& eventCount);
+            // Writes buffered data to an application data buffer, given an XInput controller, an application buffer size, and a mode.
+            // On input, the count represents the number of events that can fit in the application buffer.
+            // On output, the count represents the number of events written to the application buffer.
+            HRESULT WriteApplicationBufferedEvents(XInputController* xController, LPDIDEVICEOBJECTDATA appEventBuf, DWORD& eventCount, const BOOL peek);
             
             // Writes controller state to an application data structure, given an XInput controller's state structure.
             HRESULT WriteApplicationControllerState(XINPUT_GAMEPAD& xState, LPVOID appDataBuf, DWORD appDataSize);

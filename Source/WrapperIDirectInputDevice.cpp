@@ -164,52 +164,8 @@ HRESULT STDMETHODCALLTYPE WrapperIDirectInputDevice::GetDeviceData(DWORD cbObjec
     if (NULL == pdwInOut)
         return DIERR_INVALIDPARAM;
     
-    // Determine from the flags whether or not to remove elements from the event buffer as they are read.
-    const BOOL removeFromBuffer = !(dwFlags & DIGDD_PEEK);
-    
-    // Verify pointer and count.
-    // Technically the array pointer can be NULL, and the count could be zero.
-    if (NULL == rgdod || 0 == *pdwInOut)
-    {
-        HRESULT result;
-        
-        if (0 == controller->BufferedEventsCount())
-            result = DI_OK;
-        else
-        {
-            result = DI_BUFFEROVERFLOW;
-            
-            if (removeFromBuffer)
-                controller->DiscardBufferedEvents(*pdwInOut);
-        }
-        
-        return result;
-    }
-    
-    // Allocate an array of events and obtain information from the controller.
-    SControllerEvent* controllerEvents = new SControllerEvent[*pdwInOut];
-    DWORD numControllerEvents = *pdwInOut;
-    HRESULT xResult = controller->GetBufferedEvents(controllerEvents, numControllerEvents, removeFromBuffer);
-    if (!SUCCEEDED(xResult))
-    {
-        delete[] controllerEvents;
-        return xResult;
-    }
-    
-    // Cause events to be written to the application data buffer.
-    HRESULT dResult = mapper->WriteApplicationBufferedEvents(controllerEvents, rgdod, numControllerEvents);
-    if (!SUCCEEDED(dResult))
-    {
-        delete[] controllerEvents;
-        return dResult;
-    }
-    
-    // Inform the application how many buffered events were written.
-    *pdwInOut = numControllerEvents;
-
-    // Clean up and return.
-    delete[] controllerEvents;
-    return xResult;
+	// Cause the mapper to read events from the controller and map them to application events.
+	return mapper->WriteApplicationBufferedEvents(controller, rgdod, *pdwInOut, (0 != (dwFlags & DIGDD_PEEK)));
 }
 
 // ---------

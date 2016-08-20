@@ -15,6 +15,7 @@
 #include "ExportApiDirectInput.h"
 #include "Globals.h"
 #include "ImportApiDirectInput.h"
+#include "MapperFactory.h"
 #include "TestApp.h"
 #include "Mapper/Base.h"
 
@@ -341,6 +342,9 @@ int RunTestApp(int argc, char* argv[])
         return -1;
     }
 
+	// Specify the mapper type to use.
+	MapperFactory::SetMapperType(EMapper::XInputSharedTriggersMapper);
+	
     
     ////////////////////////////////////
     ////////   Enumeration
@@ -798,7 +802,33 @@ int RunTestApp(int argc, char* argv[])
         return -1;
     }
 
-    tout << _T("DONE") << endl;
+	// Initialize test data structures.
+	SInteractiveTestData testData;
+	SInteractiveTestData testBufferedData;
+	DIDEVICEOBJECTDATA bufferedData[1024];
+	DWORD bufferedDataCount = _countof(bufferedData);
+	ZeroMemory(&testData, sizeof(testData));
+	ZeroMemory(&testBufferedData, sizeof(testBufferedData));
+	ZeroMemory(bufferedData, sizeof(bufferedData));
+
+	// Perform an initial poll to set the correct state for both buffers.
+	result = directInputDeviceIface->Poll();
+	if (DI_OK != result)
+	{
+		tout << _T("Failed to poll device.") << endl;
+		return -1;
+	}
+
+	result = directInputDeviceIface->GetDeviceState(sizeof(testData), (LPVOID)&testData);
+	if (DI_OK != result)
+	{
+		tout << _T("Failed to retrieve device initial state.") << endl;
+		return -1;
+	}
+
+	CopyMemory(&testBufferedData, &testData, sizeof(testData));
+	
+	tout << _T("DONE") << endl;
     tout << _T("After every character typed, the device's state will be read and reported.") << endl;
     tout << _T("All axes are set to a range of -100 to +100, with 25% each deadzone/saturation.") << endl;
     tout << _T("To quit, type Q and press RETURN.") << endl;
@@ -806,7 +836,6 @@ int RunTestApp(int argc, char* argv[])
     system("pause");
     system("cls");
 
-    SInteractiveTestData testData;
     TCHAR inputchar = _T('\0');
 
     while (_T('Q') != inputchar && _T('q') != inputchar)
@@ -821,13 +850,54 @@ int RunTestApp(int argc, char* argv[])
             return -1;
         }
 
-        // Retrieve the device's new state.
+		// Retrieve the device's buffered input events.
+		bufferedDataCount = _countof(bufferedData);
+		result = directInputDeviceIface->GetDeviceData(sizeof(bufferedData[0]), bufferedData, &bufferedDataCount, DIGDD_PEEK);
+		if (DI_OK != result)
+		{
+			tout << _T("Failed to retrieve device buffered events.") << endl;
+			return -1;
+		}
+		
+		// Apply the buffered input events to the test buffer.
+		BYTE* bufptr = (BYTE*)&testBufferedData;
+		for (DWORD i = 0; i < bufferedDataCount; ++i)
+		{
+			if (bufferedData[i].dwOfs >= offsetof(SInteractiveTestData, buttons))
+			{
+				// Data element is a single byte
+				bufptr[bufferedData[i].dwOfs] = (BYTE)bufferedData[i].dwData;
+			}
+			else
+			{
+				// Data element is 4 bytes
+				*((DWORD*)(&bufptr[bufferedData[i].dwOfs])) = (DWORD)bufferedData[i].dwData;
+			}
+		}
+
+		// Flush the buffered input events (not strictly necessary but good for testing).
+		bufferedDataCount = INFINITE;
+		result = directInputDeviceIface->GetDeviceData(sizeof(bufferedData[0]), NULL, &bufferedDataCount, 0);
+		if (DI_OK != result)
+		{
+			tout << _T("Failed to flush device buffered events.") << endl;
+			return -1;
+		}
+		
+		// Retrieve the device's new state.
         result = directInputDeviceIface->GetDeviceState(sizeof(testData), (LPVOID)&testData);
         if (DI_OK != result)
         {
             tout << _T("Failed to retrieve device state.") << endl;
             return -1;
         }
+
+		// Compare buffer that results from device buffered event versus device state retrieval.
+		if (0 != memcmp(&testData, &testBufferedData, sizeof(testData)))
+		{
+			tout << _T("GetDeviceData() and GetDeviceState() consistency check failed.") << endl;
+			return -1;
+		}
 
         // Verify that all POVs that are not present are centered.
         for (DWORD i = deviceCapabilities.dwPOVs; i < _countof(testData.povs); ++i)

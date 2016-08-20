@@ -63,12 +63,6 @@
     <ClInclude Include="Include\MapperFactory.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="Resources\Xidi-DInput8.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="Resources\Xidi.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="Include\Globals.h">
       <Filter>Header Files</Filter>
     </ClInclude>

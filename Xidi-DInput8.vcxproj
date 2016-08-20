@@ -47,8 +47,6 @@
     <ClInclude Include="Include\WrapperIDirectInput.h" />
     <ClInclude Include="Include\WrapperIDirectInputDevice.h" />
     <ClInclude Include="Include\XInputController.h" />
-    <ClInclude Include="Resources\Xidi-DInput8.h" />
-    <ClInclude Include="Resources\Xidi.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Source\ApiDirectInput.cpp" />
