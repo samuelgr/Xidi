@@ -21,46 +21,46 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="Include\ApiWindows.h">
+    <ClInclude Include="Include\Xidi\ApiWindows.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="Include\Mapper\Base.h">
+    <ClInclude Include="Include\Xidi\Mapper\Base.h">
       <Filter>Header Files\Mapper</Filter>
     </ClInclude>
-    <ClInclude Include="Include\ControllerIdentification.h">
+    <ClInclude Include="Include\Xidi\ControllerIdentification.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="Include\XInputController.h">
+    <ClInclude Include="Include\Xidi\XInputController.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="Include\Mapper\StandardGamepad.h">
+    <ClInclude Include="Include\Xidi\Mapper\StandardGamepad.h">
       <Filter>Header Files\Mapper</Filter>
     </ClInclude>
-    <ClInclude Include="Include\Mapper\XInputNative.h">
+    <ClInclude Include="Include\Xidi\Mapper\XInputNative.h">
       <Filter>Header Files\Mapper</Filter>
     </ClInclude>
-    <ClInclude Include="Include\Mapper\XInputSharedTriggers.h">
+    <ClInclude Include="Include\Xidi\Mapper\XInputSharedTriggers.h">
       <Filter>Header Files\Mapper</Filter>
     </ClInclude>
-    <ClInclude Include="Include\ApiDirectInput.h">
+    <ClInclude Include="Include\Xidi\ApiDirectInput.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="Include\ImportApiWinMM.h">
+    <ClInclude Include="Include\Xidi\ImportApiWinMM.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="Include\TestApp.h">
+    <ClInclude Include="Include\Xidi\TestApp.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="Include\ExportApiWinMM.h">
+    <ClInclude Include="Include\Xidi\ExportApiWinMM.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="Include\WrapperJoyWinMM.h">
+    <ClInclude Include="Include\Xidi\WrapperJoyWinMM.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="Include\MapperFactory.h">
+    <ClInclude Include="Include\Xidi\MapperFactory.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="Include\Globals.h">
+    <ClInclude Include="Include\Xidi\Globals.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

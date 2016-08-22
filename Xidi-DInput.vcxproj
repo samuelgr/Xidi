@@ -27,26 +27,26 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="Include\ApiDirectInput.h" />
-    <ClInclude Include="Include\ApiWindows.h" />
-    <ClInclude Include="Include\ExportApiDirectInput.h" />
-    <ClInclude Include="Include\Globals.h" />
-    <ClInclude Include="Include\MapperFactory.h" />
-    <ClInclude Include="Include\Mapper\XInputNative.h" />
-    <ClInclude Include="Include\Mapper\XInputSharedTriggers.h" />
-    <ClInclude Include="Include\Mapper\StandardGamepad.h" />
-    <ClInclude Include="Include\ControllerIdentification.h" />
-    <ClInclude Include="Include\ImportApiDirectInput.h" />
-    <ClInclude Include="Include\Mapper\Base.h" />
-    <ClInclude Include="Include\TestApp.h">
+    <ClInclude Include="Include\Xidi\ApiDirectInput.h" />
+    <ClInclude Include="Include\Xidi\ApiWindows.h" />
+    <ClInclude Include="Include\Xidi\ExportApiDirectInput.h" />
+    <ClInclude Include="Include\Xidi\Globals.h" />
+    <ClInclude Include="Include\Xidi\MapperFactory.h" />
+    <ClInclude Include="Include\Xidi\Mapper\XInputNative.h" />
+    <ClInclude Include="Include\Xidi\Mapper\XInputSharedTriggers.h" />
+    <ClInclude Include="Include\Xidi\Mapper\StandardGamepad.h" />
+    <ClInclude Include="Include\Xidi\ControllerIdentification.h" />
+    <ClInclude Include="Include\Xidi\ImportApiDirectInput.h" />
+    <ClInclude Include="Include\Xidi\Mapper\Base.h" />
+    <ClInclude Include="Include\Xidi\TestApp.h">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
     </ClInclude>
-    <ClInclude Include="Include\WrapperIDirectInput.h" />
-    <ClInclude Include="Include\WrapperIDirectInputDevice.h" />
-    <ClInclude Include="Include\XInputController.h" />
+    <ClInclude Include="Include\Xidi\WrapperIDirectInput.h" />
+    <ClInclude Include="Include\Xidi\WrapperIDirectInputDevice.h" />
+    <ClInclude Include="Include\Xidi\XInputController.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Source\ApiDirectInput.cpp" />
@@ -158,6 +158,7 @@
     <OutDir>$(SolutionDir)Output\$(Platform)\$(Configuration)\</OutDir>
     <IntDir>Output\$(Platform)\$(Configuration)\Build\$(TargetName)\</IntDir>
     <TargetName>dinput</TargetName>
+    <EmbedManifest>false</EmbedManifest>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='TestApp|Win32'">
     <LinkIncremental>true</LinkIncremental>
@@ -170,6 +171,7 @@
     <OutDir>$(SolutionDir)Output\$(Platform)\$(Configuration)\</OutDir>
     <IntDir>Output\$(Platform)\$(Configuration)\Build\$(TargetName)\</IntDir>
     <TargetName>dinput</TargetName>
+    <EmbedManifest>false</EmbedManifest>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='TestApp|x64'">
     <LinkIncremental>true</LinkIncremental>
@@ -182,12 +184,14 @@
     <OutDir>$(SolutionDir)Output\$(Platform)\$(Configuration)\</OutDir>
     <IntDir>Output\$(Platform)\$(Configuration)\Build\$(TargetName)\</IntDir>
     <TargetName>dinput</TargetName>
+    <EmbedManifest>false</EmbedManifest>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <LinkIncremental>false</LinkIncremental>
     <OutDir>$(SolutionDir)Output\$(Platform)\$(Configuration)\</OutDir>
     <IntDir>Output\$(Platform)\$(Configuration)\Build\$(TargetName)\</IntDir>
     <TargetName>dinput</TargetName>
+    <EmbedManifest>false</EmbedManifest>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>
@@ -199,8 +203,8 @@
       <MinimalRebuild>false</MinimalRebuild>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
       <WarningLevel>Level3</WarningLevel>
-      <AdditionalIncludeDirectories>.;Include</AdditionalIncludeDirectories>
-      <ForcedIncludeFiles>Resources\$(SolutionName).h;Resources\$(ProjectName).h;%(ForcedIncludeFiles)</ForcedIncludeFiles>
+      <AdditionalIncludeDirectories>Include/$(SolutionName)</AdditionalIncludeDirectories>
+      <ForcedIncludeFiles>$(ProjectDir)Resources\$(SolutionName).h;$(ProjectDir)Resources\$(ProjectName).h;%(ForcedIncludeFiles)</ForcedIncludeFiles>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
@@ -208,6 +212,9 @@
       <AdditionalDependencies>kernel32.lib;user32.lib;gdi32.lib;winspool.lib;comdlg32.lib;advapi32.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;odbc32.lib;odbccp32.lib;xinput.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <GenerateDebugInformation>Debug</GenerateDebugInformation>
     </Link>
+    <Manifest>
+      <OutputManifestFile />
+    </Manifest>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='TestApp|Win32'">
     <ClCompile>
@@ -219,8 +226,8 @@
       <MinimalRebuild>false</MinimalRebuild>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
       <WarningLevel>Level3</WarningLevel>
-      <AdditionalIncludeDirectories>.;Include</AdditionalIncludeDirectories>
-      <ForcedIncludeFiles>Resources\$(SolutionName).h;Resources\$(ProjectName).h;%(ForcedIncludeFiles)</ForcedIncludeFiles>
+      <AdditionalIncludeDirectories>Include/$(SolutionName)</AdditionalIncludeDirectories>
+      <ForcedIncludeFiles>$(ProjectDir)Resources\$(SolutionName).h;$(ProjectDir)Resources\$(ProjectName).h;%(ForcedIncludeFiles)</ForcedIncludeFiles>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -238,8 +245,8 @@
       <MinimalRebuild>false</MinimalRebuild>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
       <WarningLevel>Level3</WarningLevel>
-      <AdditionalIncludeDirectories>.;Include</AdditionalIncludeDirectories>
-      <ForcedIncludeFiles>Resources\$(SolutionName).h;Resources\$(ProjectName).h;%(ForcedIncludeFiles)</ForcedIncludeFiles>
+      <AdditionalIncludeDirectories>Include/$(SolutionName)</AdditionalIncludeDirectories>
+      <ForcedIncludeFiles>$(ProjectDir)Resources\$(SolutionName).h;$(ProjectDir)Resources\$(ProjectName).h;%(ForcedIncludeFiles)</ForcedIncludeFiles>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
@@ -247,6 +254,9 @@
       <AdditionalDependencies>kernel32.lib;user32.lib;gdi32.lib;winspool.lib;comdlg32.lib;advapi32.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;odbc32.lib;odbccp32.lib;xinput.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <GenerateDebugInformation>Debug</GenerateDebugInformation>
     </Link>
+    <Manifest>
+      <OutputManifestFile />
+    </Manifest>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='TestApp|x64'">
     <ClCompile>
@@ -258,8 +268,8 @@
       <MinimalRebuild>false</MinimalRebuild>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
       <WarningLevel>Level3</WarningLevel>
-      <AdditionalIncludeDirectories>.;Include</AdditionalIncludeDirectories>
-      <ForcedIncludeFiles>Resources\$(SolutionName).h;Resources\$(ProjectName).h;%(ForcedIncludeFiles)</ForcedIncludeFiles>
+      <AdditionalIncludeDirectories>Include/$(SolutionName)</AdditionalIncludeDirectories>
+      <ForcedIncludeFiles>$(ProjectDir)Resources\$(SolutionName).h;$(ProjectDir)Resources\$(ProjectName).h;%(ForcedIncludeFiles)</ForcedIncludeFiles>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -279,8 +289,8 @@
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
       <RuntimeTypeInfo>false</RuntimeTypeInfo>
       <WarningLevel>Level3</WarningLevel>
-      <AdditionalIncludeDirectories>.;Include</AdditionalIncludeDirectories>
-      <ForcedIncludeFiles>Resources\$(SolutionName).h;Resources\$(ProjectName).h;%(ForcedIncludeFiles)</ForcedIncludeFiles>
+      <AdditionalIncludeDirectories>Include/$(SolutionName)</AdditionalIncludeDirectories>
+      <ForcedIncludeFiles>$(ProjectDir)Resources\$(SolutionName).h;$(ProjectDir)Resources\$(ProjectName).h;%(ForcedIncludeFiles)</ForcedIncludeFiles>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
@@ -291,6 +301,9 @@
       <AdditionalDependencies>kernel32.lib;user32.lib;gdi32.lib;winspool.lib;comdlg32.lib;advapi32.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;odbc32.lib;odbccp32.lib;xinput.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <ImageHasSafeExceptionHandlers />
     </Link>
+    <Manifest>
+      <OutputManifestFile />
+    </Manifest>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <ClCompile>
@@ -305,8 +318,8 @@
       <OmitFramePointers>false</OmitFramePointers>
       <RuntimeTypeInfo>false</RuntimeTypeInfo>
       <WarningLevel>Level3</WarningLevel>
-      <AdditionalIncludeDirectories>.;Include</AdditionalIncludeDirectories>
-      <ForcedIncludeFiles>Resources\$(SolutionName).h;Resources\$(ProjectName).h;%(ForcedIncludeFiles)</ForcedIncludeFiles>
+      <AdditionalIncludeDirectories>Include/$(SolutionName)</AdditionalIncludeDirectories>
+      <ForcedIncludeFiles>$(ProjectDir)Resources\$(SolutionName).h;$(ProjectDir)Resources\$(ProjectName).h;%(ForcedIncludeFiles)</ForcedIncludeFiles>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
@@ -316,6 +329,9 @@
       <ModuleDefinitionFile>dinput.def</ModuleDefinitionFile>
       <AdditionalDependencies>kernel32.lib;user32.lib;gdi32.lib;winspool.lib;comdlg32.lib;advapi32.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;odbc32.lib;odbccp32.lib;xinput.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
+    <Manifest>
+      <OutputManifestFile />
+    </Manifest>
   </ItemDefinitionGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
