@@ -11,6 +11,7 @@
 
 #include "ApiWindows.h"
 #include "Globals.h"
+#include "Log.h"
 
 
 // -------- ENTRY POINT ---------------------------------------------------- //
@@ -29,7 +30,10 @@ BOOL APIENTRY DllMain(HMODULE hModule, DWORD  ul_reason_for_call, LPVOID lpReser
             break;
 
         case DLL_THREAD_DETACH:
+            break;
+
         case DLL_PROCESS_DETACH:
+            Xidi::Log::FinalizeLog();
             break;
     }
 

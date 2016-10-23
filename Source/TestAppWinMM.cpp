@@ -14,6 +14,7 @@
 #include "ExportApiWinMM.h"
 #include "Globals.h"
 #include "ImportApiWinMM.h"
+#include "Log.h"
 #include "TestApp.h"
 
 
@@ -208,6 +209,10 @@ int main(int argc, char* argv[])
     Globals::SetInstanceHandle(GetModuleHandle(NULL));
     
     int result = RunTestApp(argc, argv);
+    Log::WriteLogMessage(ELogLevel::LogLevelForced, _T("Testing a basic log message."));
+    Log::WriteFormattedLogMessage(ELogLevel::LogLevelForced, _T("Testing a formatted log message: %d, %d, %s."), 55, 66, _T("hello"));
+
+    Log::FinalizeLog();
 
     system("pause");
     return result;

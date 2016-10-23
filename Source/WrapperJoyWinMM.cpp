@@ -132,14 +132,14 @@ MMRESULT WrapperJoyWinMM::FillDeviceState(UINT joyID, SJoyStateData* joyStateDat
 
 int WrapperJoyWinMM::FillRegistryKeyStringA(LPSTR buf, const size_t bufcount)
 {
-    return LoadStringA(Globals::GetInstanceHandle(), IDS_XIDI_PRODUCT_NAME, buf, bufcount);
+    return LoadStringA(Globals::GetInstanceHandle(), IDS_XIDI_PRODUCT_NAME, buf, (int)bufcount);
 }
 
 // ---------
 
 int WrapperJoyWinMM::FillRegistryKeyStringW(LPWSTR buf, const size_t bufcount)
 {
-    return LoadStringW(Globals::GetInstanceHandle(), IDS_XIDI_PRODUCT_NAME, buf, bufcount);
+    return LoadStringW(Globals::GetInstanceHandle(), IDS_XIDI_PRODUCT_NAME, buf, (int)bufcount);
 }
 
 // ---------
@@ -259,7 +259,7 @@ MMRESULT WrapperJoyWinMM::JoyGetDevCapsA(UINT_PTR uJoyID, LPJOYCAPSA pjc, UINT c
         pjc->wCaps |= JOYCAPS_HASV;
     
     FillRegistryKeyStringA(pjc->szRegKey, _countof(pjc->szRegKey));
-    ControllerIdentification::FillXInputControllerNameA(pjc->szPname, _countof(pjc->szPname), uJoyID);
+    ControllerIdentification::FillXInputControllerNameA(pjc->szPname, _countof(pjc->szPname), (DWORD)uJoyID);
     
     return JOYERR_NOERROR;
 }
@@ -317,7 +317,7 @@ MMRESULT WrapperJoyWinMM::JoyGetDevCapsW(UINT_PTR uJoyID, LPJOYCAPSW pjc, UINT c
         pjc->wCaps |= JOYCAPS_HASV;
     
     FillRegistryKeyStringW(pjc->szRegKey, _countof(pjc->szRegKey));
-    ControllerIdentification::FillXInputControllerNameW(pjc->szPname, _countof(pjc->szPname), uJoyID);
+    ControllerIdentification::FillXInputControllerNameW(pjc->szPname, _countof(pjc->szPname), (DWORD)uJoyID);
     
     return JOYERR_NOERROR;
 }

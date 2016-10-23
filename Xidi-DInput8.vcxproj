@@ -31,6 +31,7 @@
     <ClInclude Include="Include\Xidi\ApiWindows.h" />
     <ClInclude Include="Include\Xidi\ExportApiDirectInput.h" />
     <ClInclude Include="Include\Xidi\Globals.h" />
+    <ClInclude Include="Include\Xidi\Log.h" />
     <ClInclude Include="Include\Xidi\MapperFactory.h" />
     <ClInclude Include="Include\Xidi\Mapper\XInputNative.h" />
     <ClInclude Include="Include\Xidi\Mapper\XInputSharedTriggers.h" />
@@ -47,10 +48,12 @@
     <ClInclude Include="Include\Xidi\WrapperIDirectInput.h" />
     <ClInclude Include="Include\Xidi\WrapperIDirectInputDevice.h" />
     <ClInclude Include="Include\Xidi\XInputController.h" />
+    <ClInclude Include="Resources\Xidi.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Source\ApiDirectInput.cpp" />
     <ClCompile Include="Source\Globals.cpp" />
+    <ClCompile Include="Source\Log.cpp" />
     <ClCompile Include="Source\MapperFactory.cpp" />
     <ClCompile Include="Source\Mapper\XInputNative.cpp" />
     <ClCompile Include="Source\Mapper\XInputSharedTriggers.cpp" />
@@ -219,10 +222,10 @@
       <NullTerminateStrings>true</NullTerminateStrings>
     </ResourceCompile>
     <Manifest>
-      <OutputManifestFile />
+      <OutputManifestFile>$(IntDir)$(TargetName)$(TargetExt).embed.manifest</OutputManifestFile>
     </Manifest>
     <ManifestResourceCompile>
-      <ResourceOutputFileName />
+      <ResourceOutputFileName>$(IntDir)$(TargetName)$(TargetExt).embed.manifest.res</ResourceOutputFileName>
     </ManifestResourceCompile>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='TestApp|Win32'">
@@ -276,10 +279,10 @@
       <NullTerminateStrings>true</NullTerminateStrings>
     </ResourceCompile>
     <Manifest>
-      <OutputManifestFile />
+      <OutputManifestFile>$(IntDir)$(TargetName)$(TargetExt).embed.manifest</OutputManifestFile>
     </Manifest>
     <ManifestResourceCompile>
-      <ResourceOutputFileName />
+      <ResourceOutputFileName>$(IntDir)$(TargetName)$(TargetExt).embed.manifest.res</ResourceOutputFileName>
     </ManifestResourceCompile>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='TestApp|x64'">
@@ -338,8 +341,11 @@
       <NullTerminateStrings>true</NullTerminateStrings>
     </ResourceCompile>
     <Manifest>
-      <OutputManifestFile />
+      <OutputManifestFile>$(IntDir)$(TargetName)$(TargetExt).embed.manifest</OutputManifestFile>
     </Manifest>
+    <ManifestResourceCompile>
+      <ResourceOutputFileName>$(IntDir)$(TargetName)$(TargetExt).embed.manifest.res</ResourceOutputFileName>
+    </ManifestResourceCompile>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <ClCompile>
@@ -372,8 +378,11 @@
       <NullTerminateStrings>true</NullTerminateStrings>
     </ResourceCompile>
     <Manifest>
-      <OutputManifestFile />
+      <OutputManifestFile>$(IntDir)$(TargetName)$(TargetExt).embed.manifest</OutputManifestFile>
     </Manifest>
+    <ManifestResourceCompile>
+      <ResourceOutputFileName>$(IntDir)$(TargetName)$(TargetExt).embed.manifest.res</ResourceOutputFileName>
+    </ManifestResourceCompile>
   </ItemDefinitionGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
