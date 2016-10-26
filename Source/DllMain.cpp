@@ -10,6 +10,7 @@
  *****************************************************************************/
 
 #include "ApiWindows.h"
+#include "Configuration.h"
 #include "Globals.h"
 #include "Log.h"
 
@@ -24,6 +25,7 @@ BOOL APIENTRY DllMain(HMODULE hModule, DWORD  ul_reason_for_call, LPVOID lpReser
     {
         case DLL_PROCESS_ATTACH:
             Xidi::Globals::SetInstanceHandle(hModule);
+            Xidi::Configuration::parseAndApplyConfigurationFile();
             break;
 
         case DLL_THREAD_ATTACH:

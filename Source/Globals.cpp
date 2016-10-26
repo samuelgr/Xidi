@@ -1,13 +1,14 @@
 /*****************************************************************************
-* Xidi
-*      DirectInput interface for XInput controllers.
-*****************************************************************************
-* Authored by Samuel Grossman
-* Copyright (c) 2016
-*****************************************************************************
-* Globals.cpp
-*      Implementation of a class that creates mappers of different types.
-*****************************************************************************/
+ * Xidi
+ *      DirectInput interface for XInput controllers.
+ *****************************************************************************
+ * Authored by Samuel Grossman
+ * Copyright (c) 2016
+ *****************************************************************************
+ * Globals.cpp
+ *      Implementation of accessors and mutators for global data items.
+ *      Intended for miscellaneous data elements with no other suitable place.
+ *****************************************************************************/
 
 #include "ApiWindows.h"
 #include "Globals.h"

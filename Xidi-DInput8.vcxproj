@@ -29,6 +29,7 @@
   <ItemGroup>
     <ClInclude Include="Include\Xidi\ApiDirectInput.h" />
     <ClInclude Include="Include\Xidi\ApiWindows.h" />
+    <ClInclude Include="Include\Xidi\Configuration.h" />
     <ClInclude Include="Include\Xidi\ExportApiDirectInput.h" />
     <ClInclude Include="Include\Xidi\Globals.h" />
     <ClInclude Include="Include\Xidi\Log.h" />
@@ -52,6 +53,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Source\ApiDirectInput.cpp" />
+    <ClCompile Include="Source\Configuration.cpp" />
     <ClCompile Include="Source\Globals.cpp" />
     <ClCompile Include="Source\Log.cpp" />
     <ClCompile Include="Source\MapperFactory.cpp" />
