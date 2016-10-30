@@ -28,6 +28,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Include\Xidi\ApiDirectInput.h" />
+    <ClInclude Include="Include\Xidi\ApiStdString.h" />
     <ClInclude Include="Include\Xidi\ApiWindows.h" />
     <ClInclude Include="Include\Xidi\Configuration.h" />
     <ClInclude Include="Include\Xidi\ExportApiDirectInput.h" />
