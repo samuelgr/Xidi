@@ -72,10 +72,15 @@ namespace Xidi
         // -------- HELPERS -------------------------------------------------------- //
 
         // Classifies the provided configuration file line and returns a value indicating the result.
-        static EConfigurationLineType classifyConfigurationFileLine(LPTSTR buf, const size_t length);
+        static EConfigurationLineType classifyConfigurationFileLine(LPCTSTR buf, const size_t length);
 
         // Extracts a section name from the specified configuration file line, which must first have been classified as containing a section name.
+		// Modifies the buffer by changing a value to the NULL character, indicating the end of the portion of interest in the input configuration file line.
         static void extractSectionNameFromConfigurationFileLine(StdString& sectionName, LPTSTR configFileLine);
+
+		// Extracts a name and a value for the specified configuration file line, which must first have been classified as containing a value.
+		// Modifies the buffer by changing a value to the NULL character, indicating the end of the portion of interest in the input configuration file line.
+		static void extractNameValuePairFromConfigurationFileLine(StdString& name, StdString& value, LPTSTR configFileLine);
         
         // Fills in the specified buffer with the file name of the configuration file to use.
         // Returns the number of characters written to the buffer.
@@ -83,11 +88,38 @@ namespace Xidi
 
         // Handles an error related to being unable to open a configuration file.
         // The filename is passed as a parameter for the purpose of generating a suitable error message.
-        static void handleErrorCannotOpenConfigurationFile(LPTSTR filename);
+        static void handleErrorCannotOpenConfigurationFile(LPCTSTR filename);
 
         // Handles an error related to being unable to parse a specific line of the configuration file.
         // The filename and line number are both passed as parameters for the purpose of generating a suitable error message.
-        static void handleErrorCannotParseConfigurationFileLine(LPTSTR filename, const DWORD linenum);
+        static void handleErrorCannotParseConfigurationFileLine(LPCTSTR filename, const DWORD linenum);
+
+		// Handles an error related to a section present in the configuration file multiple times.
+		// The filename and section name are passed as parameters for the purpose of generating a suitable error message.
+		static void handleErrorDuplicateConfigurationSection(LPCTSTR filename, LPCTSTR section);
+
+		// Handles an error related to a section present in the configuration file that is unsupported by this application.
+		// The filename and section name are passed as parameters for the purpose of generating a suitable error message.
+		static void handleErrorUnsupportedConfigurationSection(LPCTSTR filename, LPCTSTR section);
+
+		// Handles an error due to a configuration file's line length being too long.
+		// The filename and line number are both passed as parameters for the purpose of generating a suitable error message.
+		static void handleErrorLineTooLong(LPCTSTR filename, const DWORD linenum);
+
+		// Handles a semantic error in which a value is specified outside of a section.
+		// The filename and line number are both passed as parameters for the purpose of generating a suitable error message.
+		static void handleErrorValueOutsideSection(LPCTSTR filename, const DWORD linenum);
+
+		// Handles a semantic error in which a value is specified multiple times in a section.
+		// The filename, line number, and value name are all passed as parameters for the purpose of generating a suitable error message.
+		static void handleErrorDuplicateValue(LPCTSTR filename, const DWORD linenum, LPCTSTR value);
+
+		// Handles a semantic error in which a value is specified in a section that does not recognize that value.
+		// The filename, line number, and value name are all passed as parameters for the purpose of generating a suitable error message.
+		static void handleErrorUnsupportedValue(LPCTSTR filename, const DWORD linenum, LPCTSTR value);
+		
+		// Handles file I/O errors while reading the configuration file.
+		static void handleErrorFileIO(void);
 
         // Handles a miscellaneous internal error related to being unable to read the configuration file.
         // The code should be presented to the user.

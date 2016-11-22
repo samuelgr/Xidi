@@ -50,6 +50,7 @@
     <ClInclude Include="Include\Xidi\WrapperIDirectInput.h" />
     <ClInclude Include="Include\Xidi\WrapperIDirectInputDevice.h" />
     <ClInclude Include="Include\Xidi\XInputController.h" />
+    <ClInclude Include="Resources\Xidi-DInput.h" />
     <ClInclude Include="Resources\Xidi.h" />
   </ItemGroup>
   <ItemGroup>

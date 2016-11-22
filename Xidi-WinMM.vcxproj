@@ -49,6 +49,8 @@
     </ClInclude>
     <ClInclude Include="Include\Xidi\WrapperJoyWinMM.h" />
     <ClInclude Include="Include\Xidi\XInputController.h" />
+    <ClInclude Include="Resources\Xidi-WinMM.h" />
+    <ClInclude Include="Resources\Xidi.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Source\ApiDirectInput.cpp" />

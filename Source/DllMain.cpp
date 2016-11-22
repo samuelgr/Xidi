@@ -17,11 +17,11 @@
 
 // -------- ENTRY POINT ---------------------------------------------------- //
 
-BOOL APIENTRY DllMain(HMODULE hModule, DWORD  ul_reason_for_call, LPVOID lpReserved)
+BOOL APIENTRY DllMain(HMODULE hModule, DWORD ulReasonForCall, LPVOID lpReserved)
 {
     BOOL result = TRUE;
     
-    switch (ul_reason_for_call)
+    switch (ulReasonForCall)
     {
         case DLL_PROCESS_ATTACH:
             Xidi::Globals::SetInstanceHandle(hModule);
