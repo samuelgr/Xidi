@@ -3,7 +3,7 @@
  *      DirectInput interface for XInput controllers.
  *****************************************************************************
  * Authored by Samuel Grossman
- * Copyright (c) 2016
+ * Copyright (c) 2016-2017
  *****************************************************************************
  * ImportApiDirectInput.cpp
  *      Implementation of importing the API from the DirectInput library.

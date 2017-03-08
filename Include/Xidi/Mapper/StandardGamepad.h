@@ -3,7 +3,7 @@
  *      DirectInput interface for XInput controllers.
  *****************************************************************************
  * Authored by Samuel Grossman
- * Copyright (c) 2016
+ * Copyright (c) 2016-2017
  *****************************************************************************
  * Mapper/StandardGamepad.h
  *      Declares a mapper that maps to the button layout of an older

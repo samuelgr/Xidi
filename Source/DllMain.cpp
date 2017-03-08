@@ -3,7 +3,7 @@
  *      DirectInput interface for XInput controllers.
  *****************************************************************************
  * Authored by Samuel Grossman
- * Copyright (c) 2016
+ * Copyright (c) 2016-2017
  *****************************************************************************
  * DllMain.cpp
  *      Entry point when loading or unloading this dynamic library.

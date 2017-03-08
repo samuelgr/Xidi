@@ -3,7 +3,7 @@
  *      DirectInput interface for XInput controllers.
  *****************************************************************************
  * Authored by Samuel Grossman
- * Copyright (c) 2016
+ * Copyright (c) 2016-2017
  *****************************************************************************
  * TestAppDirectInput.cpp
  *      Entry point and other implementation for a simple console application
