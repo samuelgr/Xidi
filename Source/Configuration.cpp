@@ -15,7 +15,7 @@
 #include "Log.h"
 
 #include <cctype>
-#include <cstdio>
+#include <cstdlib>
 #include <unordered_set>
 #include <unordered_map>
 
@@ -44,15 +44,15 @@ std::unordered_map<StdString, std::unordered_map<StdString, EConfigurationValueT
 // -------- CLASS METHODS -------------------------------------------------- //
 // See "Configuration.h" for documentation.
 
-void Configuration::parseAndApplyConfigurationFile(void)
+void Configuration::ParseAndApplyConfigurationFile(void)
 {
     TCHAR configurationFilePath[1024];
     FILE* configurationFileHandle = NULL;
 
     // Get the configuration file path.
-    if (0 == getConfigurationFilePath(configurationFilePath, _countof(configurationFilePath)))
+    if (0 == GetConfigurationFilePath(configurationFilePath, _countof(configurationFilePath)))
     {
-        handleErrorInternal(__LINE__);
+        HandleErrorInternal(__LINE__);
         return;
     }
 
@@ -60,7 +60,7 @@ void Configuration::parseAndApplyConfigurationFile(void)
     _tfopen_s(&configurationFileHandle, configurationFilePath, _T("r"));
     if (NULL == configurationFileHandle)
     {
-        handleErrorCannotOpenConfigurationFile(configurationFilePath);
+        HandleErrorCannotOpenConfigurationFile(configurationFilePath);
         return;
     }
 
@@ -69,39 +69,40 @@ void Configuration::parseAndApplyConfigurationFile(void)
         std::unordered_set<StdString> seenConfigurationSections;
         std::unordered_set<StdString> seenConfigurationValuesInCurrentSection;
         std::unordered_map<StdString, EConfigurationValueType>* currentConfigurationSection = NULL;
+        StdString currentConfigurationSectionName = _T("");
         
         TCHAR configurationLineBuffer[1024];
-        int configurationLineLength = readAndTrimSingleLine(configurationLineBuffer, _countof(configurationLineBuffer), configurationFileHandle);
+        int configurationLineLength = ReadAndTrimSingleLine(configurationLineBuffer, _countof(configurationLineBuffer), configurationFileHandle);
         unsigned int configurationLineNumber = 1;
         
         while (configurationLineLength >= 0)
         {
             StdString extractedName;
             StdString extractedValue;
-			EConfigurationValueType extractedValueType;
+            EConfigurationValueType extractedValueType;
             
-            switch (classifyConfigurationFileLine(configurationLineBuffer, configurationLineLength))
+            switch (ClassifyConfigurationFileLine(configurationLineBuffer, configurationLineLength))
             {
             case EConfigurationLineType::ConfigurationLineTypeIgnore:
                 // Skip lines that should be ignored.
                 break;
 
             case EConfigurationLineType::ConfigurationLineTypeSection:
-                extractSectionNameFromConfigurationFileLine(extractedName, configurationLineBuffer);
+                ExtractSectionNameFromConfigurationFileLine(extractedName, configurationLineBuffer);
 
                 if (0 != seenConfigurationSections.count(extractedName))
                 {
                     // Error: section name is duplicated.
-					handleErrorDuplicateConfigurationSection(configurationFilePath, extractedName.c_str());
-					fclose(configurationFileHandle);
-					return;
+                    HandleErrorDuplicateConfigurationSection(configurationFilePath, extractedName.c_str());
+                    fclose(configurationFileHandle);
+                    return;
                 }
                 else if (0 == configurationSections.count(extractedName))
                 {
                     // Error: section name is unsupported.
-					handleErrorUnsupportedConfigurationSection(configurationFilePath, extractedName.c_str());
-					fclose(configurationFileHandle);
-					return;
+                    HandleErrorUnsupportedConfigurationSection(configurationFilePath, extractedName.c_str());
+                    fclose(configurationFileHandle);
+                    return;
                 }
                 else
                 {
@@ -110,57 +111,93 @@ void Configuration::parseAndApplyConfigurationFile(void)
 
                     // Set the current section to the one named in the configuration file and reset the set of all values seen.
                     currentConfigurationSection = configurationSections[extractedName];
+                    currentConfigurationSectionName = extractedName;
                     seenConfigurationValuesInCurrentSection.clear();
                 }
                 break;
 
             case EConfigurationLineType::ConfigurationLineTypeValue:
-				if (NULL == currentConfigurationSection)
-				{
-					// Error: value specified outside a section (i.e. before the first section header in the configuration file).
-					handleErrorValueOutsideSection(configurationFilePath, configurationLineNumber);
-					fclose(configurationFileHandle);
-					return;
-				}
-				
-				// Extract out the name and value from the current line.
-				extractNameValuePairFromConfigurationFileLine(extractedName, extractedValue, configurationLineBuffer);
+                if (NULL == currentConfigurationSection)
+                {
+                    // Error: value specified outside a section (i.e. before the first section header in the configuration file).
+                    HandleErrorValueOutsideSection(configurationFilePath, configurationLineNumber);
+                    fclose(configurationFileHandle);
+                    return;
+                }
+                
+                // Extract out the name and value from the current line.
+                ExtractNameValuePairFromConfigurationFileLine(extractedName, extractedValue, configurationLineBuffer);
 
-				if (0 != seenConfigurationValuesInCurrentSection.count(extractedName))
-				{
-					// Error: duplicate value within the current section.
-					handleErrorDuplicateValue(configurationFilePath, configurationLineNumber, extractedName.c_str());
-					fclose(configurationFileHandle);
-					return;
-				}
+                if (0 != seenConfigurationValuesInCurrentSection.count(extractedName))
+                {
+                    // Error: duplicate value within the current section.
+                    HandleErrorDuplicateValue(configurationFilePath, configurationLineNumber, currentConfigurationSectionName.c_str(), extractedName.c_str());
+                    fclose(configurationFileHandle);
+                    return;
+                }
 
-				// Verify the name is recognized.
-				if (0 == currentConfigurationSection->count(extractedName))
-				{
-					// Error: unsupported value in current section.
-					handleErrorUnsupportedValue(configurationFilePath, configurationLineNumber, extractedName.c_str());
-					fclose(configurationFileHandle);
-					return;
-				}
+                // Verify the name is recognized.
+                if (0 == currentConfigurationSection->count(extractedName))
+                {
+                    // Error: unsupported value in current section.
+                    HandleErrorUnsupportedValue(configurationFilePath, configurationLineNumber, currentConfigurationSectionName.c_str(), extractedName.c_str());
+                    fclose(configurationFileHandle);
+                    return;
+                }
 
-				// Extract the value type.
-				extractedValueType = (*currentConfigurationSection)[extractedName];
+                // Extract the value type.
+                extractedValueType = (*currentConfigurationSection)[extractedName];
 
-				// Parse the value according to its specified and supposed type.
-				// TODO
-				
-				seenConfigurationValuesInCurrentSection.insert(extractedName);
+                // Parse the value according to its specified and supposed type.
+                union
+                {
+                    int64_t integerValue;
+                    bool booleanValue;
+                    LPTSTR stringValue;
+                } parsedValue;
+                
+                switch (extractedValueType)
+                {
+                case ConfigurationValueTypeInteger:
+                    if (false == ParseIntegerValue(parsedValue.integerValue, extractedValue))
+                    {
+                        HandleErrorMalformedValue(configurationFilePath, configurationLineNumber, currentConfigurationSectionName.c_str(), extractedName.c_str());
+                        fclose(configurationFileHandle);
+                        return;
+                    }
+                    break;
+
+                case ConfigurationValueTypeBoolean:
+                    if (false == ParseBooleanValue(parsedValue.booleanValue, extractedValue))
+                    {
+                        HandleErrorMalformedValue(configurationFilePath, configurationLineNumber, currentConfigurationSectionName.c_str(), extractedName.c_str());
+                        fclose(configurationFileHandle);
+                        return;
+                    }
+                    break;
+
+                case ConfigurationValueTypeString:
+                    break;
+
+                default:
+                    // This should never happen and is an internal error.
+                    HandleErrorInternal(__LINE__);
+                    fclose(configurationFileHandle);
+                    return;
+                }
+                
+                seenConfigurationValuesInCurrentSection.insert(extractedName);
 
                 break;
 
             default:
                 // Error: unable to parse the current configuration file line.
-				handleErrorCannotParseConfigurationFileLine(configurationFilePath, configurationLineNumber);
+                HandleErrorCannotParseConfigurationFileLine(configurationFilePath, configurationLineNumber);
                 fclose(configurationFileHandle);
                 return;
             }
             
-            configurationLineLength = readAndTrimSingleLine(configurationLineBuffer, _countof(configurationLineBuffer), configurationFileHandle);
+            configurationLineLength = ReadAndTrimSingleLine(configurationLineBuffer, _countof(configurationLineBuffer), configurationFileHandle);
             configurationLineNumber += 1;
         }
         
@@ -172,17 +209,17 @@ void Configuration::parseAndApplyConfigurationFile(void)
             if (ferror(configurationFileHandle))
             {
                 // Error: file I/O problem.
-				handleErrorFileIO();
-				fclose(configurationFileHandle);
-				return;
+                HandleErrorFileIO(configurationFilePath);
+                fclose(configurationFileHandle);
+                return;
 
             }
             else if (configurationLineLength < 0)
             {
                 // Error: line is too long.
-				handleErrorLineTooLong(configurationFilePath, configurationLineNumber);
-				fclose(configurationFileHandle);
-				return;
+                HandleErrorLineTooLong(configurationFilePath, configurationLineNumber);
+                fclose(configurationFileHandle);
+                return;
             }
         }
     }
@@ -194,7 +231,7 @@ void Configuration::parseAndApplyConfigurationFile(void)
 // -------- HELPERS -------------------------------------------------------- //
 // See "Configuration.h" for documentation.
 
-EConfigurationLineType Configuration::classifyConfigurationFileLine(LPCTSTR buf, const size_t length)
+EConfigurationLineType Configuration::ClassifyConfigurationFileLine(LPCTSTR buf, const size_t length)
 {
     // Skip over all whitespace at the start of the input line.
     LPCTSTR realBuf = buf;
@@ -279,7 +316,92 @@ EConfigurationLineType Configuration::classifyConfigurationFileLine(LPCTSTR buf,
 
 // ---------
 
-void Configuration::extractSectionNameFromConfigurationFileLine(StdString& sectionName, LPTSTR configFileLine)
+void Configuration::ExtractNameValuePairFromConfigurationFileLine(StdString& name, StdString& value, LPTSTR configFileLine)
+{
+    // Skip to the start of the configuration name.
+    LPTSTR configBuf = configFileLine;
+    while (isblank(configBuf[0]))
+        configBuf += 1;
+
+    // Find the length of the configuration name.
+    size_t configLength = 1;
+    while (!isblank(configBuf[configLength]) && !(_T('=') == configBuf[configLength]))
+        configLength += 1;
+
+    // NULL-terminate the configuration name, then assign to the output string.
+    configBuf[configLength] = _T('\0');
+    name = configBuf;
+
+    // Same process for configuration value.
+    configBuf = &configBuf[configLength + 1];
+
+    while (!isalnum(configBuf[0]))
+        configBuf += 1;
+
+    configLength = 1;
+    while (isalnum(configBuf[configLength]))
+        configLength += 1;
+
+    configBuf[configLength] = _T('\0');
+    value = configBuf;
+}
+
+// ---------
+
+bool Configuration::ParseIntegerValue(int64_t& dest, const StdString& source)
+{
+    int64_t value = 0ll;
+    LPTSTR endptr = NULL;
+
+    // Parse out a number in any representable base.
+    value = _tcstoll(source.c_str(), &endptr, 0);
+
+    // Verify that the number is not out of range.
+    if (ERANGE == errno && (LLONG_MIN == value || LLONG_MAX == value))
+        return false;
+    
+    // Verify that the whole string was consumed.
+    if (_T('\0') != *endptr)
+        return false;
+    
+    // Set the output.
+    dest = value;
+    return true;
+}
+
+// ---------
+
+bool Configuration::ParseBooleanValue(bool& dest, const StdString& source)
+{
+    static const StdString trueStrings[] = { _T("true"), _T("on"), _T("yes"), _T("enabled"), _T("1") };
+    static const StdString falseStrings[] = { _T("false"), _T("off"), _T("no"), _T("disabled"), _T("0") };
+    
+    // Check if the string represents a value of TRUE.
+    for (size_t i = 0; i < _countof(trueStrings); ++i)
+    {
+        if (0 == _tcsicmp(source.c_str(), trueStrings[i].c_str()))
+        {
+            dest = true;
+            return true;
+        }
+    }
+
+    // Check if the string represents a value of FALSE.
+    for (size_t i = 0; i < _countof(falseStrings); ++i)
+    {
+        if (0 == _tcsicmp(source.c_str(), trueStrings[i].c_str()))
+        {
+            dest = false;
+            return true;
+        }
+    }
+    
+    return false;
+}
+
+// ---------
+
+void Configuration::ExtractSectionNameFromConfigurationFileLine(StdString& sectionName, LPTSTR configFileLine)
 {
     // Skip to the '[' character.
     LPTSTR realBuf = configFileLine;
@@ -299,39 +421,34 @@ void Configuration::extractSectionNameFromConfigurationFileLine(StdString& secti
 
 // ---------
 
-void Configuration::extractNameValuePairFromConfigurationFileLine(StdString& name, StdString& value, LPTSTR configFileLine)
+int Configuration::ReadAndTrimSingleLine(LPTSTR buf, const size_t count, FILE* filehandle)
 {
-	// Skip to the start of the configuration name.
-	LPTSTR configBuf = configFileLine;
-	while (isblank(configBuf[0]))
-		configBuf += 1;
+    if (buf != _fgetts(buf, count, filehandle))
+        return -1;
 
-	// Find the length of the configuration name.
-	size_t configLength = 1;
-	while (!isblank(configBuf[configLength]) && !(_T('=') == configBuf[configLength]))
-		configLength += 1;
-	
-	// NULL-terminate the configuration name, then assign to the output string.
-	configBuf[configLength] = _T('\0');
-	name = configBuf;
+    // Verify that the line fits within the buffer, otherwise the line is too long.
+    size_t linelength = _tcsnlen(buf, count);
+    if (count - 1 == linelength && _T('\n') != buf[linelength - 1])
+    {
+        // Line is too long.
+        return -1;
+    }
 
-	// Same process for configuration value.
-	configBuf = &configBuf[configLength + 1];
-	
-	while (!isalnum(configBuf[0]))
-		configBuf += 1;
-	
-	configLength = 1;
-	while (isalnum(configBuf[configLength]))
-		configLength += 1;
+    // Remove the trailing newline character from the configuration line that was read.
+    if (_T('\n') == buf[linelength - 1])
+    {
+        linelength -= 1;
+        buf[linelength] = _T('\0');
+    }
 
-	configBuf[configLength] = _T('\0');
-	value = configBuf;
+    return linelength;
 }
 
-// ---------
 
-size_t Configuration::getConfigurationFilePath(LPTSTR buf, const size_t count)
+// -------- APPLICATION-SPECIFIC METHODS ----------------------------------- //
+// See "Configuration.h" for documentation.
+
+size_t Configuration::GetConfigurationFilePath(LPTSTR buf, const size_t count)
 {
     TCHAR configurationFileName[128];
     size_t lenConfigurationFileName = (size_t)LoadString(Globals::GetInstanceHandle(), IDS_XIDI_CONFIGURATION_FILE_NAME, configurationFileName, _countof(configurationFileName));
@@ -357,7 +474,7 @@ size_t Configuration::getConfigurationFilePath(LPTSTR buf, const size_t count)
 
 // ---------
 
-void Configuration::handleErrorCannotOpenConfigurationFile(LPCTSTR filename)
+void Configuration::HandleErrorCannotOpenConfigurationFile(LPCTSTR filename)
 {
     TCHAR configurationErrorMessageFormat[1024];
     
@@ -367,7 +484,7 @@ void Configuration::handleErrorCannotOpenConfigurationFile(LPCTSTR filename)
 
 // ---------
 
-void Configuration::handleErrorCannotParseConfigurationFileLine(LPCTSTR filename, const DWORD linenum)
+void Configuration::HandleErrorCannotParseConfigurationFileLine(LPCTSTR filename, const DWORD linenum)
 {
     TCHAR configurationErrorMessageFormat[1024];
 
@@ -377,105 +494,90 @@ void Configuration::handleErrorCannotParseConfigurationFileLine(LPCTSTR filename
 
 // ---------
 
-void Configuration::handleErrorDuplicateConfigurationSection(LPCTSTR filename, LPCTSTR section)
+void Configuration::HandleErrorDuplicateConfigurationSection(LPCTSTR filename, LPCTSTR section)
 {
-	TCHAR configurationErrorMessageFormat[1024];
+    TCHAR configurationErrorMessageFormat[1024];
 
-	if (0 != LoadString(Globals::GetInstanceHandle(), IDS_XIDI_CONFIGURATION_FILE_ERROR_DUPLICATED_SECTION_FORMAT, configurationErrorMessageFormat, _countof(configurationErrorMessageFormat)))
-		Log::WriteFormattedLogMessage(ELogLevel::LogLevelForced, configurationErrorMessageFormat, section, filename);
+    if (0 != LoadString(Globals::GetInstanceHandle(), IDS_XIDI_CONFIGURATION_FILE_ERROR_DUPLICATED_SECTION_FORMAT, configurationErrorMessageFormat, _countof(configurationErrorMessageFormat)))
+        Log::WriteFormattedLogMessage(ELogLevel::LogLevelForced, configurationErrorMessageFormat, section, filename);
 }
 
 // ---------
 
-void Configuration::handleErrorUnsupportedConfigurationSection(LPCTSTR filename, LPCTSTR section)
+void Configuration::HandleErrorUnsupportedConfigurationSection(LPCTSTR filename, LPCTSTR section)
 {
-	TCHAR configurationErrorMessageFormat[1024];
+    TCHAR configurationErrorMessageFormat[1024];
 
-	if (0 != LoadString(Globals::GetInstanceHandle(), IDS_XIDI_CONFIGURATION_FILE_ERROR_UNSUPPORTED_SECTION_FORMAT, configurationErrorMessageFormat, _countof(configurationErrorMessageFormat)))
-		Log::WriteFormattedLogMessage(ELogLevel::LogLevelForced, configurationErrorMessageFormat, section, filename);
+    if (0 != LoadString(Globals::GetInstanceHandle(), IDS_XIDI_CONFIGURATION_FILE_ERROR_UNSUPPORTED_SECTION_FORMAT, configurationErrorMessageFormat, _countof(configurationErrorMessageFormat)))
+        Log::WriteFormattedLogMessage(ELogLevel::LogLevelForced, configurationErrorMessageFormat, section, filename);
 }
 
 // ---------
 
-void Configuration::handleErrorLineTooLong(LPCTSTR filename, const DWORD linenum)
+void Configuration::HandleErrorLineTooLong(LPCTSTR filename, const DWORD linenum)
 {
-	TCHAR configurationErrorMessageFormat[1024];
+    TCHAR configurationErrorMessageFormat[1024];
 
-	if (0 != LoadString(Globals::GetInstanceHandle(), IDS_XIDI_CONFIGURATION_FILE_ERROR_LINE_TOO_LONG_FORMAT, configurationErrorMessageFormat, _countof(configurationErrorMessageFormat)))
-		Log::WriteFormattedLogMessage(ELogLevel::LogLevelForced, configurationErrorMessageFormat, linenum, filename);
+    if (0 != LoadString(Globals::GetInstanceHandle(), IDS_XIDI_CONFIGURATION_FILE_ERROR_LINE_TOO_LONG_FORMAT, configurationErrorMessageFormat, _countof(configurationErrorMessageFormat)))
+        Log::WriteFormattedLogMessage(ELogLevel::LogLevelForced, configurationErrorMessageFormat, linenum, filename);
 }
 
 // ---------
 
-void Configuration::handleErrorValueOutsideSection(LPCTSTR filename, const DWORD linenum)
+void Configuration::HandleErrorValueOutsideSection(LPCTSTR filename, const DWORD linenum)
 {
-	TCHAR configurationErrorMessageFormat[1024];
+    TCHAR configurationErrorMessageFormat[1024];
 
-	if (0 != LoadString(Globals::GetInstanceHandle(), IDS_XIDI_CONFIGURATION_FILE_ERROR_VALUE_WITHOUT_SECTION_FORMAT, configurationErrorMessageFormat, _countof(configurationErrorMessageFormat)))
-		Log::WriteFormattedLogMessage(ELogLevel::LogLevelForced, configurationErrorMessageFormat, linenum, filename);
+    if (0 != LoadString(Globals::GetInstanceHandle(), IDS_XIDI_CONFIGURATION_FILE_ERROR_VALUE_WITHOUT_SECTION_FORMAT, configurationErrorMessageFormat, _countof(configurationErrorMessageFormat)))
+        Log::WriteFormattedLogMessage(ELogLevel::LogLevelForced, configurationErrorMessageFormat, linenum, filename);
 }
 
 // ---------
 
-void Configuration::handleErrorDuplicateValue(LPCTSTR filename, const DWORD linenum, LPCTSTR value)
+void Configuration::HandleErrorDuplicateValue(LPCTSTR filename, const DWORD linenum, LPCTSTR section, LPCTSTR value)
 {
-	TCHAR configurationErrorMessageFormat[1024];
+    TCHAR configurationErrorMessageFormat[1024];
 
-	if (0 != LoadString(Globals::GetInstanceHandle(), IDS_XIDI_CONFIGURATION_FILE_ERROR_DUPLICATE_VALUE_FORMAT, configurationErrorMessageFormat, _countof(configurationErrorMessageFormat)))
-		Log::WriteFormattedLogMessage(ELogLevel::LogLevelForced, configurationErrorMessageFormat, value, linenum, filename);
+    if (0 != LoadString(Globals::GetInstanceHandle(), IDS_XIDI_CONFIGURATION_FILE_ERROR_DUPLICATE_VALUE_FORMAT, configurationErrorMessageFormat, _countof(configurationErrorMessageFormat)))
+        Log::WriteFormattedLogMessage(ELogLevel::LogLevelForced, configurationErrorMessageFormat, value, section, linenum, filename);
 }
 
 // ---------
 
-void Configuration::handleErrorUnsupportedValue(LPCTSTR filename, const DWORD linenum, LPCTSTR value)
+void Configuration::HandleErrorMalformedValue(LPCTSTR filename, const DWORD linenum, LPCTSTR section, LPCTSTR value)
 {
-	TCHAR configurationErrorMessageFormat[1024];
+    TCHAR configurationErrorMessageFormat[1024];
 
-	if (0 != LoadString(Globals::GetInstanceHandle(), IDS_XIDI_CONFIGURATION_FILE_ERROR_UNSUPPORTED_VALUE_FORMAT, configurationErrorMessageFormat, _countof(configurationErrorMessageFormat)))
-		Log::WriteFormattedLogMessage(ELogLevel::LogLevelForced, configurationErrorMessageFormat, value, linenum, filename);
+    if (0 != LoadString(Globals::GetInstanceHandle(), IDS_XIDI_CONFIGURATION_FILE_ERROR_MALFORMED_VALUE_FORMAT, configurationErrorMessageFormat, _countof(configurationErrorMessageFormat)))
+        Log::WriteFormattedLogMessage(ELogLevel::LogLevelForced, configurationErrorMessageFormat, value, section, linenum, filename);
 }
 
 // ---------
 
-void Configuration::handleErrorFileIO(void)
+void Configuration::HandleErrorUnsupportedValue(LPCTSTR filename, const DWORD linenum, LPCTSTR section, LPCTSTR value)
 {
-	TCHAR configurationErrorMessage[1024];
+    TCHAR configurationErrorMessageFormat[1024];
 
-	if (0 != LoadString(Globals::GetInstanceHandle(), IDS_XIDI_CONFIGURATION_FILE_ERROR_IO_FORMAT, configurationErrorMessage, _countof(configurationErrorMessage)))
-		Log::WriteLogMessage(ELogLevel::LogLevelForced, configurationErrorMessage);
+    if (0 != LoadString(Globals::GetInstanceHandle(), IDS_XIDI_CONFIGURATION_FILE_ERROR_UNSUPPORTED_VALUE_FORMAT, configurationErrorMessageFormat, _countof(configurationErrorMessageFormat)))
+        Log::WriteFormattedLogMessage(ELogLevel::LogLevelForced, configurationErrorMessageFormat, value, section, linenum, filename);
 }
 
 // ---------
 
-void Configuration::handleErrorInternal(const DWORD code)
+void Configuration::HandleErrorFileIO(LPCTSTR filename)
 {
-	TCHAR configurationErrorMessageFormat[1024];
+    TCHAR configurationErrorMessageFormat[1024];
 
-	if (0 != LoadString(Globals::GetInstanceHandle(), IDS_XIDI_CONFIGURATION_FILE_ERROR_INTERNAL_FORMAT, configurationErrorMessageFormat, _countof(configurationErrorMessageFormat)))
-		Log::WriteFormattedLogMessage(ELogLevel::LogLevelForced, configurationErrorMessageFormat, code);
+    if (0 != LoadString(Globals::GetInstanceHandle(), IDS_XIDI_CONFIGURATION_FILE_ERROR_IO_FORMAT, configurationErrorMessageFormat, _countof(configurationErrorMessageFormat)))
+        Log::WriteFormattedLogMessage(ELogLevel::LogLevelForced, configurationErrorMessageFormat, filename);
 }
 
 // ---------
 
-int Configuration::readAndTrimSingleLine(LPTSTR buf, const size_t count, FILE* filehandle)
+void Configuration::HandleErrorInternal(const DWORD code)
 {
-    if (buf != _fgetts(buf, count, filehandle))
-        return -1;
-    
-    // Verify that the line fits within the buffer, otherwise the line is too long.
-    size_t linelength = _tcsnlen(buf, count);
-    if (count - 1 == linelength && _T('\n') != buf[linelength - 1])
-    {
-        // Line is too long.
-        return -1;
-    }
+    TCHAR configurationErrorMessageFormat[1024];
 
-    // Remove the trailing newline character from the configuration line that was read.
-    if (_T('\n') == buf[linelength - 1])
-    {
-        linelength -= 1;
-        buf[linelength] = _T('\0');
-    }
-
-    return linelength;
+    if (0 != LoadString(Globals::GetInstanceHandle(), IDS_XIDI_CONFIGURATION_FILE_ERROR_INTERNAL_FORMAT, configurationErrorMessageFormat, _countof(configurationErrorMessageFormat)))
+        Log::WriteFormattedLogMessage(ELogLevel::LogLevelForced, configurationErrorMessageFormat, code);
 }

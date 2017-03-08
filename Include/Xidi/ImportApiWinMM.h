@@ -175,7 +175,7 @@ namespace Xidi
 
         // Calls the imported function joySetThreshold.
         static MMRESULT joySetThreshold(UINT uJoyID, UINT uThreshold);
-        
+
         // Calls the imported function timeBeginPeriod.
         static MMRESULT timeBeginPeriod(UINT uPeriod);
 
@@ -199,10 +199,10 @@ namespace Xidi
 
         // Calls the imported function waveInAddBuffer.
         static MMRESULT waveInAddBuffer(HWAVEIN hwi, LPWAVEHDR pwh, UINT cbwh);
-        
+
         // Calls the imported function waveInClose.
         static MMRESULT waveInClose(HWAVEIN hwi);
-        
+
         // Calls the imported function waveInGetDevCapsA.
         static MMRESULT waveInGetDevCapsA(UINT_PTR uDeviceID, LPWAVEINCAPSA pwic, UINT cbwic);
 

@@ -25,7 +25,7 @@ BOOL APIENTRY DllMain(HMODULE hModule, DWORD ulReasonForCall, LPVOID lpReserved)
     {
         case DLL_PROCESS_ATTACH:
             Xidi::Globals::SetInstanceHandle(hModule);
-            Xidi::Configuration::parseAndApplyConfigurationFile();
+            Xidi::Configuration::ParseAndApplyConfigurationFile();
             break;
 
         case DLL_THREAD_ATTACH:

@@ -32,8 +32,8 @@ XInputController::XInputController(DWORD xinputUserIndex) : bufferedEvents(), bu
 XInputController::~XInputController()
 {
     ClearBufferedEvents();
-	
-	EnterCriticalSection(&eventChangeCriticalSection);
+    
+    EnterCriticalSection(&eventChangeCriticalSection);
     DeleteCriticalSection(&eventChangeCriticalSection);
 }
 
@@ -125,7 +125,7 @@ void XInputController::ClearBufferedEvents(void)
 
 void XInputController::SubmitBufferedEvent(EXInputControllerElement controllerElement, LONG value, DWORD timestamp)
 {
-	LockEventBuffer();
+    LockEventBuffer();
     
     // Create the event.
     SControllerEvent newEvent;
@@ -140,7 +140,7 @@ void XInputController::SubmitBufferedEvent(EXInputControllerElement controllerEl
     // Increment the sequence number.
     bufferedEventsNextSequenceNumber += 1;
     
-	UnlockEventBuffer();
+    UnlockEventBuffer();
 }
 
 
@@ -165,9 +165,9 @@ DWORD XInputController::BufferedEventsCount()
 {
     DWORD numEvents = 0;
     
-	LockEventBuffer();
+    LockEventBuffer();
     numEvents = (DWORD)bufferedEvents.size();
-	UnlockEventBuffer();
+    UnlockEventBuffer();
     
     return numEvents;
 }
@@ -209,7 +209,7 @@ HRESULT XInputController::GetCurrentDeviceState(XINPUT_STATE* state)
 {
     if (!IsAcquired()) return DIERR_NOTACQUIRED;
 
-	LockEventBuffer();
+    LockEventBuffer();
 
     // Copy the most recent controller state into the specified buffer.
     *state = controllerState;
@@ -217,7 +217,7 @@ HRESULT XInputController::GetCurrentDeviceState(XINPUT_STATE* state)
     // Getting the full controller state also gets all buffered events in aggregate, so clear the buffer.
     ClearBufferedEvents();
 
-	UnlockEventBuffer();
+    UnlockEventBuffer();
     
     return DI_OK;
 }
@@ -240,45 +240,45 @@ BOOL XInputController::IsConnected(void)
 
 void XInputController::LockEventBuffer(void)
 {
-	EnterCriticalSection(&eventChangeCriticalSection);
+    EnterCriticalSection(&eventChangeCriticalSection);
 }
 
 // ---------
 
 HRESULT XInputController::PeekBufferedEvent(SControllerEvent* event, DWORD idx)
 {
-	if (!IsAcquired()) return DIERR_NOTACQUIRED;
+    if (!IsAcquired()) return DIERR_NOTACQUIRED;
 
-	LockEventBuffer();
+    LockEventBuffer();
 
-	HRESULT result = DI_OK;
+    HRESULT result = DI_OK;
 
-	if (idx >= BufferedEventsCount() || NULL == event)
-		result = DIERR_INVALIDPARAM;
-	else
-		*event = bufferedEvents[idx];
+    if (idx >= BufferedEventsCount() || NULL == event)
+        result = DIERR_INVALIDPARAM;
+    else
+        *event = bufferedEvents[idx];
 
-	UnlockEventBuffer();
+    UnlockEventBuffer();
 
-	return result;
+    return result;
 }
 
 // ---------
 
 HRESULT XInputController::PopBufferedEvent(SControllerEvent* event)
 {
-	if (!IsAcquired()) return DIERR_NOTACQUIRED;
+    if (!IsAcquired()) return DIERR_NOTACQUIRED;
 
-	LockEventBuffer();
+    LockEventBuffer();
 
-	if (NULL != event)
-		*event = bufferedEvents[0];
+    if (NULL != event)
+        *event = bufferedEvents[0];
 
-	bufferedEvents.pop_front();
+    bufferedEvents.pop_front();
 
-	UnlockEventBuffer();
+    UnlockEventBuffer();
 
-	return DI_OK;
+    return DI_OK;
 }
 
 // ---------
@@ -295,7 +295,7 @@ HRESULT XInputController::RefreshControllerState(void)
     if (ERROR_SUCCESS != result)
         ZeroMemory(&newControllerState.Gamepad, sizeof(newControllerState.Gamepad));
     
-	LockEventBuffer();
+    LockEventBuffer();
     
     // Capture the current event sequence number, which will be used to see if the application should be notified of a controller state change.
     const DWORD currentEventSequenceNumber = bufferedEventsNextSequenceNumber;
@@ -355,7 +355,7 @@ HRESULT XInputController::RefreshControllerState(void)
     // Copy the new controller state to the current controller state.
     controllerState = newControllerState;
 
-	UnlockEventBuffer();
+    UnlockEventBuffer();
 
     // Notify the application if the controller state changed.
     if (currentEventSequenceNumber != bufferedEventsNextSequenceNumber && NULL != controllerStateChangedEvent)
@@ -408,5 +408,5 @@ HRESULT XInputController::UnacquireController(void)
 
 void XInputController::UnlockEventBuffer(void)
 {
-	LeaveCriticalSection(&eventChangeCriticalSection);
+    LeaveCriticalSection(&eventChangeCriticalSection);
 }

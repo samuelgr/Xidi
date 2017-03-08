@@ -208,7 +208,7 @@ int RunTestApp(int argc, char* argv[])
 int main(int argc, char* argv[])
 {
     Globals::SetInstanceHandle(GetModuleHandle(NULL));
-    Configuration::parseAndApplyConfigurationFile();
+    Configuration::ParseAndApplyConfigurationFile();
     
     int result = RunTestApp(argc, argv);
 

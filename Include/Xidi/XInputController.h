@@ -175,19 +175,19 @@ namespace Xidi
         // Returns TRUE if this controller is currently connected (i.e. there is a controller physically present for the assigned device index).
         BOOL IsConnected(void);
 
-		// Locks the event buffer for multiple operations.
-		// Idempotent; can be called multiple times from the same thread, so long as each call has an accompanying call to UnlockEventBuffer.
-		void LockEventBuffer(void);
-		
-		// Retrieves the specified buffered event and places it into the specified location.
-		// Does not remove the event from the buffer.
-		HRESULT PeekBufferedEvent(SControllerEvent* event, DWORD idx);
-		
-		// Retrieves the first (oldest) buffered event from the controller and places it into the specified location.
-		// Removes the event from the buffer.
-		HRESULT PopBufferedEvent(SControllerEvent* event);
-		
-		// Refreshes the controller state information.
+        // Locks the event buffer for multiple operations.
+        // Idempotent; can be called multiple times from the same thread, so long as each call has an accompanying call to UnlockEventBuffer.
+        void LockEventBuffer(void);
+        
+        // Retrieves the specified buffered event and places it into the specified location.
+        // Does not remove the event from the buffer.
+        HRESULT PeekBufferedEvent(SControllerEvent* event, DWORD idx);
+        
+        // Retrieves the first (oldest) buffered event from the controller and places it into the specified location.
+        // Removes the event from the buffer.
+        HRESULT PopBufferedEvent(SControllerEvent* event);
+        
+        // Refreshes the controller state information.
         // Polls the controller for updated state.
         HRESULT RefreshControllerState(void);
         
@@ -201,7 +201,7 @@ namespace Xidi
         // Causes the device to be removed from an "acquired" state.
         HRESULT UnacquireController(void);
 
-		// Unlocks the event buffer after multiple operations have completed.
-		void UnlockEventBuffer(void);
+        // Unlocks the event buffer after multiple operations have completed.
+        void UnlockEventBuffer(void);
     };
 }

@@ -97,15 +97,15 @@ namespace Xidi
             // Holds the properties of all axes present in this mapper.
             SAxisProperties* axisProperties;
             
-			// Cached value for the state of the XInput controller LT trigger.
-			// Used to enable shared axis updates with buffered data.
-			LONG cachedValueXInputLT;
+            // Cached value for the state of the XInput controller LT trigger.
+            // Used to enable shared axis updates with buffered data.
+            LONG cachedValueXInputLT;
 
-			// Cached value for the state of the XInput controller RT trigger.
-			// Used to enable shared axis updates with buffered data.
-			LONG cachedValueXInputRT;
-			
-			// Specifies the size of an application data packet, in bytes.
+            // Cached value for the state of the XInput controller RT trigger.
+            // Used to enable shared axis updates with buffered data.
+            LONG cachedValueXInputRT;
+            
+            // Specifies the size of an application data packet, in bytes.
             DWORD dataPacketSize;
 
             // Maps from instance identifier to base offset in the application-specified data format.
@@ -161,10 +161,10 @@ namespace Xidi
             // -------- HELPERS -------------------------------------------------------- //
             
             // Applies axis deadzone and saturation to a raw value within axis range.
-			// Returns the result of the calculation.
-			LONG ApplyAxisPropertiesToRawValue(const TInstance axisInstance, const LONG value);
-			
-			// Places a friendly name string for the specified axis type by GUID into the specified buffer.
+            // Returns the result of the calculation.
+            LONG ApplyAxisPropertiesToRawValue(const TInstance axisInstance, const LONG value);
+            
+            // Places a friendly name string for the specified axis type by GUID into the specified buffer.
             // Requires the buffer size, measured in characters.
             // This is the non-Unicode version.
             void AxisTypeToStringA(REFGUID axisTypeGUID, LPSTR buf, const int bufcount);

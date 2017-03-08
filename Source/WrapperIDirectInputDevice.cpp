@@ -164,8 +164,8 @@ HRESULT STDMETHODCALLTYPE WrapperIDirectInputDevice::GetDeviceData(DWORD cbObjec
     if (NULL == pdwInOut)
         return DIERR_INVALIDPARAM;
     
-	// Cause the mapper to read events from the controller and map them to application events.
-	return mapper->WriteApplicationBufferedEvents(controller, rgdod, *pdwInOut, (0 != (dwFlags & DIGDD_PEEK)));
+    // Cause the mapper to read events from the controller and map them to application events.
+    return mapper->WriteApplicationBufferedEvents(controller, rgdod, *pdwInOut, (0 != (dwFlags & DIGDD_PEEK)));
 }
 
 // ---------
