@@ -26,7 +26,7 @@ using namespace Xidi;
 
 FILE* Log::fileHandle = NULL;
 
-ELogLevel Log::configuredSeverity = LogLevelDisabled;
+ELogLevel Log::configuredSeverity = ELogLevel::LogLevelError;
 
 bool Log::logEnabled = false;
 
@@ -71,7 +71,7 @@ ELogLevel Log::GetMinimumSeverity(void)
     if (logEnabled)
         return configuredSeverity;
     else
-        return LogLevelDisabled;
+        return ELogLevel::LogLevelDisabled;
 }
 
 // ---------
@@ -257,5 +257,5 @@ void Log::OutputStamp(ELogLevel severity)
 
 bool Log::ShouldOutputLogMessageOfSeverity(ELogLevel severity)
 {
-    return (LogLevelDisabled != severity && severity <= GetMinimumSeverity());
+    return (severity <= GetMinimumSeverity());
 }

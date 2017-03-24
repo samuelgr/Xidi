@@ -23,19 +23,19 @@ namespace Xidi
     // Used to specify how to parse a configuration value.
     enum EConfigurationValueType
     {
-        Integer,                                                        // Signed integer
-        Boolean,                                                        // Boolean
-        String                                                          // String
+        ConfigurationValueTypeInteger,                                  // Signed integer
+        ConfigurationValueTypeBoolean,                                  // Boolean
+        ConfigurationValueTypeString                                    // String
     };
     
     // Enumerates all possible types of configuration file lines.
     // Used during parsing to classify each line encountered.
     enum EConfigurationLineType
     {
-        Ignore,                                                         // Line should be ignored, either because it is just whitespace or because it is a comment
-        Section,                                                        // Line begins a section, whose name appears in square brackets
-        Value,                                                          // Line is a value within the current section and so should be parsed
-        Error                                                           // Line could not be parsed
+        ConfigurationLineTypeIgnore,                                    // Line should be ignored, either because it is just whitespace or because it is a comment
+        ConfigurationLineTypeSection,                                   // Line begins a section, whose name appears in square brackets
+        ConfigurationLineTypeValue,                                     // Line is a value within the current section and so should be parsed
+        ConfigurationLineTypeError                                      // Line could not be parsed
     };
 
     // Holds the type and applicator function for configuration values.

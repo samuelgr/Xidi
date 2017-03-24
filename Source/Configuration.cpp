@@ -29,12 +29,12 @@ using namespace Xidi;
 // See "Configuration.h" for documentation.
 
 std::unordered_map<StdString, SConfigurationValueApplyInfo> Configuration::logSettings = {
-    {_T("Enabled"),                             {EConfigurationValueType::Boolean,  (void*)&Log::ApplyConfigurationLogEnabled}},
-    {_T("Level"),                               {EConfigurationValueType::Integer,  (void*)&Log::ApplyConfigurationLogLevel}}
+    {_T("Enabled"),                             {EConfigurationValueType::ConfigurationValueTypeBoolean,  (void*)&Log::ApplyConfigurationLogEnabled}},
+    {_T("Level"),                               {EConfigurationValueType::ConfigurationValueTypeInteger,  (void*)&Log::ApplyConfigurationLogLevel}}
 };
 
 std::unordered_map<StdString, SConfigurationValueApplyInfo> Configuration::mapperSettings = {
-    {_T("Type"),                                {EConfigurationValueType::String,   (void*)&MapperFactory::ApplyConfigurationMapperType}},
+    {_T("Type"),                                {EConfigurationValueType::ConfigurationValueTypeString,   (void*)&MapperFactory::ApplyConfigurationMapperType}},
 };
 
 std::unordered_map<StdString, std::unordered_map<StdString, SConfigurationValueApplyInfo>*> Configuration::configurationSections = {
@@ -85,11 +85,11 @@ void Configuration::ParseAndApplyConfigurationFile(void)
             
             switch (ClassifyConfigurationFileLine(configurationLineBuffer, configurationLineLength))
             {
-            case EConfigurationLineType::Ignore:
+            case EConfigurationLineType::ConfigurationLineTypeIgnore:
                 // Skip lines that should be ignored.
                 break;
 
-            case EConfigurationLineType::Section:
+            case EConfigurationLineType::ConfigurationLineTypeSection:
                 ExtractSectionNameFromConfigurationFileLine(extractedName, configurationLineBuffer);
 
                 if (0 != seenConfigurationSections.count(extractedName))
@@ -118,13 +118,12 @@ void Configuration::ParseAndApplyConfigurationFile(void)
                 }
                 break;
 
-            case EConfigurationLineType::Value:
+            case EConfigurationLineType::ConfigurationLineTypeValue:
                 if (NULL == currentConfigurationSection)
                 {
-                    // Error: value specified outside a section (i.e. before the first section header in the configuration file).
+                    // Warning: value specified outside a section (i.e. before the first section header in the configuration file).
                     HandleErrorValueOutsideSection(configurationFilePath, configurationLineNumber);
-                    fclose(configurationFileHandle);
-                    return;
+                    break;
                 }
                 
                 // Extract out the name and value from the current line.
@@ -132,19 +131,16 @@ void Configuration::ParseAndApplyConfigurationFile(void)
 
                 if (0 != seenConfigurationValuesInCurrentSection.count(extractedName))
                 {
-                    // Error: duplicate value within the current section.
+                    // Warning: duplicate value within the current section.
                     HandleErrorDuplicateValue(configurationFilePath, configurationLineNumber, currentConfigurationSectionName.c_str(), extractedName.c_str());
-                    fclose(configurationFileHandle);
-                    return;
                 }
 
                 // Verify the name is recognized.
                 if (0 == currentConfigurationSection->count(extractedName))
                 {
-                    // Error: unsupported value in current section.
+                    // Warning: unsupported value in current section.
                     HandleErrorUnsupportedValue(configurationFilePath, configurationLineNumber, currentConfigurationSectionName.c_str(), extractedName.c_str());
-                    fclose(configurationFileHandle);
-                    return;
+                    break;
                 }
 
                 // Extract information on the value.
@@ -161,11 +157,12 @@ void Configuration::ParseAndApplyConfigurationFile(void)
                 
                 switch (extractedValueInfo.type)
                 {
-                case EConfigurationValueType::Integer:
+                case EConfigurationValueType::ConfigurationValueTypeInteger:
                     
                     // Parse the value.
                     if (false == ParseIntegerValue(parsedValue.integerValue, extractedValue))
                     {
+                        // Warning: unable to parse the value.
                         HandleErrorMalformedValue(configurationFilePath, configurationLineNumber, currentConfigurationSectionName.c_str(), extractedName.c_str());
                         break;
                     }
@@ -176,11 +173,12 @@ void Configuration::ParseAndApplyConfigurationFile(void)
                     
                     break;
 
-                case EConfigurationValueType::Boolean:
+                case EConfigurationValueType::ConfigurationValueTypeBoolean:
                     
                     // Parse the value.
                     if (false == ParseBooleanValue(parsedValue.booleanValue, extractedValue))
                     {
+                        // Warning: unable to parse the value.
                         HandleErrorMalformedValue(configurationFilePath, configurationLineNumber, currentConfigurationSectionName.c_str(), extractedName.c_str());
                         break;
                     }
@@ -191,7 +189,7 @@ void Configuration::ParseAndApplyConfigurationFile(void)
                     
                     break;
 
-                case EConfigurationValueType::String:
+                case EConfigurationValueType::ConfigurationValueTypeString:
                     
                     // No special parsing operation is required for a string-typed value.
                     parsedValue.stringValue = &extractedValue;
@@ -267,38 +265,38 @@ EConfigurationLineType Configuration::ClassifyConfigurationFileLine(LPCTSTR buf,
     // Sanity check: zero-length and all-whitespace lines can be safely ignored.
     // Also filter out comments this way.
     if (0 == realLength || _T(';') == realBuf[0] || _T('#') == realBuf[0])
-        return EConfigurationLineType::Ignore;
+        return EConfigurationLineType::ConfigurationLineTypeIgnore;
 
     // Non-comments must, by definition, have at least three characters in them, excluding all whitespace.
     // For section headers, this must mean '[' + section name + ']'.
     // For values, this must mean name + '=' + value.
     if (realLength < 3)
-        return EConfigurationLineType::Error;
+        return EConfigurationLineType::ConfigurationLineTypeError;
     
     if (_T('[') == realBuf[0])
     {
         // The line cannot be a section header unless the second character is alphanumeric (there must be at least one character in the name of the section).
         if (!isalnum(realBuf[1]))
-            return EConfigurationLineType::Error;
+            return EConfigurationLineType::ConfigurationLineTypeError;
         
         // Verify that the line is a valid section header by checking for alphanumeric characters between two square brackets.
         size_t i = 2;
         for (; i < realLength && _T(']') != realBuf[i]; ++i)
         {
             if (!isalnum(realBuf[i]))
-                return EConfigurationLineType::Error;
+                return EConfigurationLineType::ConfigurationLineTypeError;
         }
         if (_T(']') != realBuf[i])
-            return EConfigurationLineType::Error;
+            return EConfigurationLineType::ConfigurationLineTypeError;
 
         // Verify that the remainder of the line is either a comment or just whitespace.
         for (i += 1; i < realLength && _T(';') != realBuf[i] && _T('#') != realBuf[i]; ++i)
         {
             if (!isblank(realBuf[i]))
-                return EConfigurationLineType::Error;
+                return EConfigurationLineType::ConfigurationLineTypeError;
         }
 
-        return EConfigurationLineType::Section;
+        return EConfigurationLineType::ConfigurationLineTypeSection;
     }
     else if (isalnum(realBuf[0]))
     {
@@ -307,18 +305,18 @@ EConfigurationLineType Configuration::ClassifyConfigurationFileLine(LPCTSTR buf,
         for (; i < realLength && _T('=') != realBuf[i] && !isblank(realBuf[i]); ++i)
         {
             if (!isalnum(realBuf[i]))
-                return EConfigurationLineType::Error;
+                return EConfigurationLineType::ConfigurationLineTypeError;
         }
 
         // Skip over any whitespace present, then check for an equals sign.
         for (; i < realLength && isblank(realBuf[i]); ++i);
         if (_T('=') != realBuf[i])
-            return EConfigurationLineType::Error;
+            return EConfigurationLineType::ConfigurationLineTypeError;
         
         // Skip over any whitespace present, then verify the next character is alphanumeric to start a value.
         for (i += 1; i < realLength && isblank(realBuf[i]); ++i);
         if (!isalnum(realBuf[i]))
-            return EConfigurationLineType::Error;
+            return EConfigurationLineType::ConfigurationLineTypeError;
         
         // Skip over the alphanumeric characters that follow, effectively skipping over the value itself.
         for (i += 1; i < realLength && isalnum(realBuf[i]); ++i);
@@ -327,13 +325,13 @@ EConfigurationLineType Configuration::ClassifyConfigurationFileLine(LPCTSTR buf,
         for (; i < realLength && _T(';') != realBuf[i] && _T('#') != realBuf[i]; ++i)
         {
             if (!isblank(realBuf[i]))
-                return EConfigurationLineType::Error;
+                return EConfigurationLineType::ConfigurationLineTypeError;
         }
         
-        return EConfigurationLineType::Value;
+        return EConfigurationLineType::ConfigurationLineTypeValue;
     }
 
-    return EConfigurationLineType::Error;
+    return EConfigurationLineType::ConfigurationLineTypeError;
 }
 
 // ---------
@@ -511,7 +509,7 @@ void Configuration::HandleErrorCannotParseConfigurationFileLine(LPCTSTR filename
     TCHAR configurationErrorMessageFormat[1024];
 
     if (0 != LoadString(Globals::GetInstanceHandle(), IDS_XIDI_CONFIGURATION_FILE_ERROR_CANNOT_PARSE_LINE_FORMAT, configurationErrorMessageFormat, _countof(configurationErrorMessageFormat)))
-        Log::WriteFormattedLogMessage(ELogLevel::LogLevelForced, configurationErrorMessageFormat, linenum, filename);
+        Log::WriteFormattedLogMessage(ELogLevel::LogLevelError, configurationErrorMessageFormat, linenum, filename);
 }
 
 // ---------
@@ -521,7 +519,7 @@ void Configuration::HandleErrorDuplicateConfigurationSection(LPCTSTR filename, L
     TCHAR configurationErrorMessageFormat[1024];
 
     if (0 != LoadString(Globals::GetInstanceHandle(), IDS_XIDI_CONFIGURATION_FILE_ERROR_DUPLICATED_SECTION_FORMAT, configurationErrorMessageFormat, _countof(configurationErrorMessageFormat)))
-        Log::WriteFormattedLogMessage(ELogLevel::LogLevelForced, configurationErrorMessageFormat, section, filename);
+        Log::WriteFormattedLogMessage(ELogLevel::LogLevelError, configurationErrorMessageFormat, section, filename);
 }
 
 // ---------
@@ -531,7 +529,7 @@ void Configuration::HandleErrorUnsupportedConfigurationSection(LPCTSTR filename,
     TCHAR configurationErrorMessageFormat[1024];
 
     if (0 != LoadString(Globals::GetInstanceHandle(), IDS_XIDI_CONFIGURATION_FILE_ERROR_UNSUPPORTED_SECTION_FORMAT, configurationErrorMessageFormat, _countof(configurationErrorMessageFormat)))
-        Log::WriteFormattedLogMessage(ELogLevel::LogLevelForced, configurationErrorMessageFormat, section, filename);
+        Log::WriteFormattedLogMessage(ELogLevel::LogLevelError, configurationErrorMessageFormat, section, filename);
 }
 
 // ---------
@@ -541,7 +539,7 @@ void Configuration::HandleErrorLineTooLong(LPCTSTR filename, const DWORD linenum
     TCHAR configurationErrorMessageFormat[1024];
 
     if (0 != LoadString(Globals::GetInstanceHandle(), IDS_XIDI_CONFIGURATION_FILE_ERROR_LINE_TOO_LONG_FORMAT, configurationErrorMessageFormat, _countof(configurationErrorMessageFormat)))
-        Log::WriteFormattedLogMessage(ELogLevel::LogLevelForced, configurationErrorMessageFormat, linenum, filename);
+        Log::WriteFormattedLogMessage(ELogLevel::LogLevelError, configurationErrorMessageFormat, linenum, filename);
 }
 
 // ---------
@@ -551,7 +549,7 @@ void Configuration::HandleErrorValueOutsideSection(LPCTSTR filename, const DWORD
     TCHAR configurationErrorMessageFormat[1024];
 
     if (0 != LoadString(Globals::GetInstanceHandle(), IDS_XIDI_CONFIGURATION_FILE_ERROR_VALUE_WITHOUT_SECTION_FORMAT, configurationErrorMessageFormat, _countof(configurationErrorMessageFormat)))
-        Log::WriteFormattedLogMessage(ELogLevel::LogLevelForced, configurationErrorMessageFormat, linenum, filename);
+        Log::WriteFormattedLogMessage(ELogLevel::LogLevelWarning, configurationErrorMessageFormat, linenum, filename);
 }
 
 // ---------
@@ -561,7 +559,7 @@ void Configuration::HandleErrorDuplicateValue(LPCTSTR filename, const DWORD line
     TCHAR configurationErrorMessageFormat[1024];
 
     if (0 != LoadString(Globals::GetInstanceHandle(), IDS_XIDI_CONFIGURATION_FILE_ERROR_DUPLICATE_VALUE_FORMAT, configurationErrorMessageFormat, _countof(configurationErrorMessageFormat)))
-        Log::WriteFormattedLogMessage(ELogLevel::LogLevelForced, configurationErrorMessageFormat, value, section, linenum, filename);
+        Log::WriteFormattedLogMessage(ELogLevel::LogLevelWarning, configurationErrorMessageFormat, value, section, linenum, filename);
 }
 
 // ---------
@@ -581,7 +579,7 @@ void Configuration::HandleErrorUnsupportedValue(LPCTSTR filename, const DWORD li
     TCHAR configurationErrorMessageFormat[1024];
 
     if (0 != LoadString(Globals::GetInstanceHandle(), IDS_XIDI_CONFIGURATION_FILE_ERROR_UNSUPPORTED_VALUE_FORMAT, configurationErrorMessageFormat, _countof(configurationErrorMessageFormat)))
-        Log::WriteFormattedLogMessage(ELogLevel::LogLevelForced, configurationErrorMessageFormat, value, section, linenum, filename);
+        Log::WriteFormattedLogMessage(ELogLevel::LogLevelWarning, configurationErrorMessageFormat, value, section, linenum, filename);
 }
 
 // ---------
@@ -591,7 +589,7 @@ void Configuration::HandleErrorCannotApplyValue(LPCTSTR filename, const DWORD li
     TCHAR configurationErrorMessageFormat[1024];
 
     if (0 != LoadString(Globals::GetInstanceHandle(), IDS_XIDI_CONFIGURATION_FILE_ERROR_CANNOT_APPLY_VALUE_FORMAT, configurationErrorMessageFormat, _countof(configurationErrorMessageFormat)))
-        Log::WriteFormattedLogMessage(ELogLevel::LogLevelWarning, configurationErrorMessageFormat, setting, value, section, linenum, filename);
+        Log::WriteFormattedLogMessage(ELogLevel::LogLevelError, configurationErrorMessageFormat, setting, value, section, linenum, filename);
 }
 
 void Configuration::HandleErrorFileIO(LPCTSTR filename)
@@ -599,7 +597,7 @@ void Configuration::HandleErrorFileIO(LPCTSTR filename)
     TCHAR configurationErrorMessageFormat[1024];
 
     if (0 != LoadString(Globals::GetInstanceHandle(), IDS_XIDI_CONFIGURATION_FILE_ERROR_IO_FORMAT, configurationErrorMessageFormat, _countof(configurationErrorMessageFormat)))
-        Log::WriteFormattedLogMessage(ELogLevel::LogLevelForced, configurationErrorMessageFormat, filename);
+        Log::WriteFormattedLogMessage(ELogLevel::LogLevelError, configurationErrorMessageFormat, filename);
 }
 
 // ---------

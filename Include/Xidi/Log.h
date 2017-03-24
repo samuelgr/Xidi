@@ -33,7 +33,7 @@ namespace Xidi
         LogLevelInfo                            = 3,                    // Everything else.
 
         LogLevelMaxConfigurableValue            = LogLevelInfo,         // Maximum configurable severity value for logging.
-        LogLevelMinConfigurableValue            = LogLevelDisabled,     // Minimum configurable severity value for logging.
+        LogLevelMinConfigurableValue            = LogLevelError,        // Minimum configurable severity value for logging.
     };
     
     // Encapsulates all log-related functionality.
