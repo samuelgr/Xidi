@@ -1117,7 +1117,13 @@ HRESULT Base::WriteApplicationBufferedEvents(XInputController* xController, LPDI
 				appEventBuf[eventCount].dwTimeStamp = xEvent.timestamp;
 				appEventBuf[eventCount].dwOfs = appEventOffset;
 
-				// Value depends on the instance type.
+				// If triggers are treated as buttons, then the value of the trigger needs to be correctly formatted to be a button value.
+                if (EInstanceType::InstanceTypeButton == ExtractIdentifierInstanceType(appEventInstance) && (EXInputControllerElement::TriggerLT == xEvent.controllerElement || EXInputControllerElement::TriggerRT == xEvent.controllerElement))
+                {
+                    xEvent.value = (xEvent.value > XINPUT_GAMEPAD_TRIGGER_THRESHOLD ? (LONG)0x0080 : (LONG)0x0000);
+                }
+                
+                // Value depends on the instance type.
 				if (EInstanceType::InstanceTypeAxis == ExtractIdentifierInstanceType(appEventInstance))
 				{
 					// If axis, value needs to be converted and range-adjusted, with proper consideration for deadzone and saturation.
@@ -1180,7 +1186,7 @@ HRESULT Base::WriteApplicationBufferedEvents(XInputController* xController, LPDI
 					// Apply range and deadzone.
 					appEventBuf[eventCount].dwData = (DWORD)ApplyAxisPropertiesToRawValue(appEventInstance, (LONG)appEventBuf[eventCount].dwData);
 				}
-				else
+                else
 				{
 					// If button or POV, value is already in DirectInput format so just copy directly.
 					appEventBuf[eventCount].dwData = (DWORD)xEvent.value;

@@ -128,9 +128,8 @@ int RunTestApp(int argc, char* argv[])
 
     tout << _T("Preparing to launch interactive mode... ");
     tout << _T("DONE") << endl;
-    tout << _T("After every character typed, the device's state will be read and reported.") << endl;
-    tout << _T("To quit, type Q and press RETURN.") << endl;
-    tout << _T("To re-read the device's state, type any other character and press RETURN.") << endl;
+    tout << _T("Device state is updated up to 30 times per second.") << endl;
+    tout << _T("Quits automatically after 300 updates. To quit early, use CTRL+C.") << endl;
     system("pause");
     system("cls");
 
@@ -139,9 +138,7 @@ int RunTestApp(int argc, char* argv[])
     testData.dwSize = sizeof(testData);
     testData.dwFlags = JOY_RETURNALL;
 
-    TCHAR inputchar = _T('\0');
-
-    while (_T('Q') != inputchar && _T('q') != inputchar)
+    for (unsigned int i = 0; i < 300; ++i)
     {
         system("cls");
         
@@ -190,8 +187,7 @@ int RunTestApp(int argc, char* argv[])
                 tout << _T(" ") << (i + 1);
         }
 
-        tout << endl << endl << _T("Awaiting input (character then RETURN)... ");
-        tin >> inputchar;
+        Sleep(33);
     }
 
 

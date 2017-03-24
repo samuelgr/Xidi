@@ -828,16 +828,13 @@ int RunTestApp(int argc, char* argv[])
     CopyMemory(&testBufferedData, &testData, sizeof(testData));
     
     tout << _T("DONE") << endl;
-    tout << _T("After every character typed, the device's state will be read and reported.") << endl;
+    tout << _T("Device state is updated up to 30 times per second.") << endl;
     tout << _T("All axes are set to a range of -100 to +100, with 25% each deadzone/saturation.") << endl;
-    tout << _T("To quit, type Q and press RETURN.") << endl;
-    tout << _T("To re-read the device's state, type any other character and press RETURN.") << endl;
+    tout << _T("Quits automatically after 300 updates. To quit early, use CTRL+C.") << endl;
     system("pause");
     system("cls");
 
-    TCHAR inputchar = _T('\0');
-
-    while (_T('Q') != inputchar && _T('q') != inputchar)
+    for (unsigned int i = 0; i < 300; ++i)
     {
         system("cls");
         
@@ -851,7 +848,7 @@ int RunTestApp(int argc, char* argv[])
 
         // Retrieve the device's buffered input events.
         bufferedDataCount = _countof(bufferedData);
-        result = directInputDeviceIface->GetDeviceData(sizeof(bufferedData[0]), bufferedData, &bufferedDataCount, DIGDD_PEEK);
+        result = directInputDeviceIface->GetDeviceData(sizeof(bufferedData[0]), bufferedData, &bufferedDataCount, 0);
         if (DI_OK != result)
         {
             tout << _T("Failed to retrieve device buffered events.") << endl;
@@ -872,15 +869,6 @@ int RunTestApp(int argc, char* argv[])
                 // Data element is 4 bytes
                 *((DWORD*)(&bufptr[bufferedData[i].dwOfs])) = (DWORD)bufferedData[i].dwData;
             }
-        }
-
-        // Flush the buffered input events (not strictly necessary but good for testing).
-        bufferedDataCount = INFINITE;
-        result = directInputDeviceIface->GetDeviceData(sizeof(bufferedData[0]), NULL, &bufferedDataCount, 0);
-        if (DI_OK != result)
-        {
-            tout << _T("Failed to flush device buffered events.") << endl;
-            return -1;
         }
         
         // Retrieve the device's new state.
@@ -939,15 +927,14 @@ int RunTestApp(int argc, char* argv[])
                 tout << _T(" ") << (i + 1);
         }
         
-        tout << endl << endl << _T("Awaiting input (character then RETURN)... ");
-        tin >> inputchar;
+        Sleep(33);
     }
 
     
     ////////////////////////////////////
     ////////   Cleanup and Exit
     
-    tout << _T("Exiting.") << endl;
+    tout << _T("\nExiting.") << endl;
     
     directInputDeviceIface->Release();
     directInputIface->Release();
