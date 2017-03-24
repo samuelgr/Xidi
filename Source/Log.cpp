@@ -28,9 +28,32 @@ FILE* Log::fileHandle = NULL;
 
 ELogLevel Log::configuredSeverity = LogLevelDisabled;
 
+bool Log::logEnabled = false;
+
 
 // -------- CLASS METHODS -------------------------------------------------- //
 // See "Log.h" for documentation.
+
+bool Log::ApplyConfigurationLogEnabled(bool value)
+{
+    logEnabled = value;
+    return true;
+}
+
+// --------
+
+bool Log::ApplyConfigurationLogLevel(int64_t value)
+{
+    if ((ELogLevel)value >= LogLevelMinConfigurableValue && (ELogLevel)value <= LogLevelMaxConfigurableValue)
+    {
+        SetMinimumSeverity((ELogLevel)value);
+        return true;
+    }
+    else
+        return false;
+}
+
+// --------
 
 void Log::FinalizeLog(void)
 {
@@ -45,7 +68,10 @@ void Log::FinalizeLog(void)
 
 ELogLevel Log::GetMinimumSeverity(void)
 {
-    return configuredSeverity;
+    if (logEnabled)
+        return configuredSeverity;
+    else
+        return LogLevelDisabled;
 }
 
 // ---------
@@ -231,5 +257,5 @@ void Log::OutputStamp(ELogLevel severity)
 
 bool Log::ShouldOutputLogMessageOfSeverity(ELogLevel severity)
 {
-    return (LogLevelDisabled != severity && severity <= configuredSeverity);
+    return (LogLevelDisabled != severity && severity <= GetMinimumSeverity());
 }

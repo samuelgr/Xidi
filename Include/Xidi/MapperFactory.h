@@ -11,7 +11,10 @@
 
 #pragma once
 
+#include "ApiStdString.h"
 #include "Mapper/Base.h"
+
+#include <unordered_map>
 
 
 namespace Xidi
@@ -41,7 +44,12 @@ namespace Xidi
     private:
         // -------- CLASS VARIABLES ------------------------------------------------ //
         
+        // Specifies the currently-configured mapper type.
         static EMapper configuredMapperType;
+
+        // Maps strings to mapper types.
+        // Used for accepting configuration setting values.
+        static std::unordered_map<StdString, EMapper> mapperTypeStrings;
         
         
         // -------- CONSTRUCTION AND DESTRUCTION ----------------------------------- //
@@ -52,6 +60,9 @@ namespace Xidi
         
     public:
         // -------- CLASS METHODS -------------------------------------------------- //
+        
+        // Applies a configuration setting that configures the type of mapper to create.
+        static bool ApplyConfigurationMapperType(const StdString& value);
         
         // Creates a new mapper of the configured type, using the "new" operator.
         // Returns NULL in the event of an error (i.e. invalid or unrecognized configured type).

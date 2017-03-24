@@ -343,9 +343,6 @@ int RunTestApp(int argc, char* argv[])
         terr << _T("Unable to obtain IDirectInput interface pointer: code ") << result << _T(".") << endl;
         return -1;
     }
-
-    // Specify the mapper type to use.
-    MapperFactory::SetMapperType(EMapper::XInputSharedTriggersMapper);
     
     
     ////////////////////////////////////

@@ -14,6 +14,7 @@
 #include "ApiWindows.h"
 
 #include <cstdarg>
+#include <cstdint>
 #include <cstdio>
 
 
@@ -47,6 +48,9 @@ namespace Xidi
 
         // Configured minimum severity for log messages to be output.
         static ELogLevel configuredSeverity;
+
+        // Configured log mode, either enabled or disabled.
+        static bool logEnabled;
         
         
         // -------- CONSTRUCTION AND DESTRUCTION ----------------------------------- //
@@ -57,6 +61,12 @@ namespace Xidi
         
     public:
         // -------- CLASS METHODS -------------------------------------------------- //
+        
+        // Applies a configuration setting that enables or disables the log.
+        static bool ApplyConfigurationLogEnabled(bool value);
+
+        // Applies a configuration setting that sets the log level.
+        static bool ApplyConfigurationLogLevel(int64_t value);
         
         // Flushes and closes the log file.
         // Idempotent.

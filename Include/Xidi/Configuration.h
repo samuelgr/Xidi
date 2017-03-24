@@ -23,20 +23,37 @@ namespace Xidi
     // Used to specify how to parse a configuration value.
     enum EConfigurationValueType
     {
-        ConfigurationValueTypeInteger,                                  // Signed integer
-        ConfigurationValueTypeBoolean,                                  // Boolean
-        ConfigurationValueTypeString                                    // String
+        Integer,                                                        // Signed integer
+        Boolean,                                                        // Boolean
+        String                                                          // String
     };
     
     // Enumerates all possible types of configuration file lines.
     // Used during parsing to classify each line encountered.
     enum EConfigurationLineType
     {
-        ConfigurationLineTypeIgnore,                                    // Line should be ignored, either because it is just whitespace or because it is a comment
-        ConfigurationLineTypeSection,                                   // Line begins a section, whose name appears in square brackets
-        ConfigurationLineTypeValue,                                     // Line is a value within the current section and so should be parsed
-        ConfigurationLineTypeError                                      // Line could not be parsed
+        Ignore,                                                         // Line should be ignored, either because it is just whitespace or because it is a comment
+        Section,                                                        // Line begins a section, whose name appears in square brackets
+        Value,                                                          // Line is a value within the current section and so should be parsed
+        Error                                                           // Line could not be parsed
     };
+
+    // Holds the type and applicator function for configuration values.
+    struct SConfigurationValueApplyInfo
+    {
+        EConfigurationValueType type;                                   // Type of the value, used to specify how to interpret it.
+        void* applyFunc;                                                // Pointer to the function to call when applying the setting. Must match the correct signature for the specified type.
+    };
+    
+    // Specifies the signature for a function that accepts an integer-valued setting.
+    typedef bool(*TFuncApplyIntSetting)(int64_t value);
+
+    // Specifies the signature for a function that accepts a Boolean-valued setting.
+    typedef bool(*TFuncApplyBoolSetting)(bool value);
+
+    // Specifies the signature for a function that accepts a string-valued setting.
+    typedef bool(*TFuncApplyStringSetting)(const StdString& value);
+
 
     // Encapsulates all configuration-related functionality.
     // All methods are class methods.
@@ -46,13 +63,13 @@ namespace Xidi
         // -------- CLASS VARIABLES ------------------------------------------------ //
 
         // Defines the supported values in the "Log" section of the configuration file.
-        static std::unordered_map<StdString, EConfigurationValueType> logSettings;
+        static std::unordered_map<StdString, SConfigurationValueApplyInfo> logSettings;
 
         // Defines the supported values in the "Mapper" section of the configuration file.
-        static std::unordered_map<StdString, EConfigurationValueType> mapperSettings;
+        static std::unordered_map<StdString, SConfigurationValueApplyInfo> mapperSettings;
 
         // Defines the supported sections of the configuration file.
-        static std::unordered_map<StdString, std::unordered_map<StdString, EConfigurationValueType>*> configurationSections;
+        static std::unordered_map<StdString, std::unordered_map<StdString, SConfigurationValueApplyInfo>*> configurationSections;
 
 
         // -------- CONSTRUCTION AND DESTRUCTION ----------------------------------- //
@@ -138,6 +155,10 @@ namespace Xidi
         // Handles a semantic error in which a value is specified in a section that does not recognize that value.
         // The filename, line number, section name, and value name are all passed as parameters for the purpose of generating a suitable error message.
         static void HandleErrorUnsupportedValue(LPCTSTR filename, const DWORD linenum, LPCTSTR section, LPCTSTR value);
+
+        // Handles a semantic error in which a value is parsed correctly but is rejected by the function that is supposed to apply it.
+        // The filename, line number, setting value, section name, and value are all passed as parameters for the purpose of generating a suitable error message.
+        static void HandleErrorCannotApplyValue(LPCTSTR filename, const DWORD linenum, LPCTSTR setting, LPCTSTR section, LPCTSTR value);
         
         // Handles file I/O errors while reading the configuration file.
         static void HandleErrorFileIO(LPCTSTR filename);

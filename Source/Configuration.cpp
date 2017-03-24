@@ -13,11 +13,13 @@
 #include "Configuration.h"
 #include "Globals.h"
 #include "Log.h"
+#include "MapperFactory.h"
 
 #include <cctype>
 #include <cstdlib>
 #include <unordered_set>
 #include <unordered_map>
+#include <utility>
 
 
 using namespace Xidi;
@@ -26,16 +28,16 @@ using namespace Xidi;
 // -------- CLASS VARIABLES ------------------------------------------------ //
 // See "Configuration.h" for documentation.
 
-std::unordered_map<StdString, EConfigurationValueType> Configuration::logSettings = {
-    {_T("Enabled"),                             EConfigurationValueType::ConfigurationValueTypeBoolean},
-    {_T("Level"),                               EConfigurationValueType::ConfigurationValueTypeInteger}
+std::unordered_map<StdString, SConfigurationValueApplyInfo> Configuration::logSettings = {
+    {_T("Enabled"),                             {EConfigurationValueType::Boolean,  (void*)&Log::ApplyConfigurationLogEnabled}},
+    {_T("Level"),                               {EConfigurationValueType::Integer,  (void*)&Log::ApplyConfigurationLogLevel}}
 };
 
-std::unordered_map<StdString, EConfigurationValueType> Configuration::mapperSettings = {
-    {_T("Type"),                                EConfigurationValueType::ConfigurationValueTypeString},
+std::unordered_map<StdString, SConfigurationValueApplyInfo> Configuration::mapperSettings = {
+    {_T("Type"),                                {EConfigurationValueType::String,   (void*)&MapperFactory::ApplyConfigurationMapperType}},
 };
 
-std::unordered_map<StdString, std::unordered_map<StdString, EConfigurationValueType>*> Configuration::configurationSections = {
+std::unordered_map<StdString, std::unordered_map<StdString, SConfigurationValueApplyInfo>*> Configuration::configurationSections = {
     {_T("Log"),                                 &logSettings},
     {_T("Mapper"),                              &mapperSettings},
 };
@@ -68,7 +70,7 @@ void Configuration::ParseAndApplyConfigurationFile(void)
     {
         std::unordered_set<StdString> seenConfigurationSections;
         std::unordered_set<StdString> seenConfigurationValuesInCurrentSection;
-        std::unordered_map<StdString, EConfigurationValueType>* currentConfigurationSection = NULL;
+        std::unordered_map<StdString, SConfigurationValueApplyInfo>* currentConfigurationSection = NULL;
         StdString currentConfigurationSectionName = _T("");
         
         TCHAR configurationLineBuffer[1024];
@@ -79,15 +81,15 @@ void Configuration::ParseAndApplyConfigurationFile(void)
         {
             StdString extractedName;
             StdString extractedValue;
-            EConfigurationValueType extractedValueType;
+            SConfigurationValueApplyInfo extractedValueInfo;
             
             switch (ClassifyConfigurationFileLine(configurationLineBuffer, configurationLineLength))
             {
-            case EConfigurationLineType::ConfigurationLineTypeIgnore:
+            case EConfigurationLineType::Ignore:
                 // Skip lines that should be ignored.
                 break;
 
-            case EConfigurationLineType::ConfigurationLineTypeSection:
+            case EConfigurationLineType::Section:
                 ExtractSectionNameFromConfigurationFileLine(extractedName, configurationLineBuffer);
 
                 if (0 != seenConfigurationSections.count(extractedName))
@@ -116,7 +118,7 @@ void Configuration::ParseAndApplyConfigurationFile(void)
                 }
                 break;
 
-            case EConfigurationLineType::ConfigurationLineTypeValue:
+            case EConfigurationLineType::Value:
                 if (NULL == currentConfigurationSection)
                 {
                     // Error: value specified outside a section (i.e. before the first section header in the configuration file).
@@ -145,38 +147,59 @@ void Configuration::ParseAndApplyConfigurationFile(void)
                     return;
                 }
 
-                // Extract the value type.
-                extractedValueType = (*currentConfigurationSection)[extractedName];
-
+                // Extract information on the value.
+                extractedValueInfo = (*currentConfigurationSection)[extractedName];
+                
                 // Parse the value according to its specified and supposed type.
+                // Apply the setting immediately after parsing.
                 union
                 {
                     int64_t integerValue;
                     bool booleanValue;
-                    LPTSTR stringValue;
+                    StdString* stringValue;
                 } parsedValue;
                 
-                switch (extractedValueType)
+                switch (extractedValueInfo.type)
                 {
-                case ConfigurationValueTypeInteger:
+                case EConfigurationValueType::Integer:
+                    
+                    // Parse the value.
                     if (false == ParseIntegerValue(parsedValue.integerValue, extractedValue))
                     {
                         HandleErrorMalformedValue(configurationFilePath, configurationLineNumber, currentConfigurationSectionName.c_str(), extractedName.c_str());
-                        fclose(configurationFileHandle);
-                        return;
+                        break;
                     }
+                    
+                    // Attempt to apply the value.
+                    if (false == ((TFuncApplyIntSetting)extractedValueInfo.applyFunc)(parsedValue.integerValue))
+                        HandleErrorCannotApplyValue(configurationFilePath, configurationLineNumber, extractedValue.c_str(), currentConfigurationSectionName.c_str(), extractedName.c_str());
+                    
                     break;
 
-                case ConfigurationValueTypeBoolean:
+                case EConfigurationValueType::Boolean:
+                    
+                    // Parse the value.
                     if (false == ParseBooleanValue(parsedValue.booleanValue, extractedValue))
                     {
                         HandleErrorMalformedValue(configurationFilePath, configurationLineNumber, currentConfigurationSectionName.c_str(), extractedName.c_str());
-                        fclose(configurationFileHandle);
-                        return;
+                        break;
                     }
+                    
+                    // Attempt to apply the value.
+                    if (false == ((TFuncApplyBoolSetting)extractedValueInfo.applyFunc)(parsedValue.booleanValue))
+                        HandleErrorCannotApplyValue(configurationFilePath, configurationLineNumber, extractedValue.c_str(), currentConfigurationSectionName.c_str(), extractedName.c_str());
+                    
                     break;
 
-                case ConfigurationValueTypeString:
+                case EConfigurationValueType::String:
+                    
+                    // No special parsing operation is required for a string-typed value.
+                    parsedValue.stringValue = &extractedValue;
+                    
+                    // Attempt to apply the value.
+                    if (false == ((TFuncApplyStringSetting)extractedValueInfo.applyFunc)(*parsedValue.stringValue))
+                        HandleErrorCannotApplyValue(configurationFilePath, configurationLineNumber, extractedValue.c_str(), currentConfigurationSectionName.c_str(), extractedName.c_str());
+                    
                     break;
 
                 default:
@@ -187,7 +210,6 @@ void Configuration::ParseAndApplyConfigurationFile(void)
                 }
                 
                 seenConfigurationValuesInCurrentSection.insert(extractedName);
-
                 break;
 
             default:
@@ -245,38 +267,38 @@ EConfigurationLineType Configuration::ClassifyConfigurationFileLine(LPCTSTR buf,
     // Sanity check: zero-length and all-whitespace lines can be safely ignored.
     // Also filter out comments this way.
     if (0 == realLength || _T(';') == realBuf[0] || _T('#') == realBuf[0])
-        return EConfigurationLineType::ConfigurationLineTypeIgnore;
+        return EConfigurationLineType::Ignore;
 
     // Non-comments must, by definition, have at least three characters in them, excluding all whitespace.
     // For section headers, this must mean '[' + section name + ']'.
     // For values, this must mean name + '=' + value.
     if (realLength < 3)
-        return EConfigurationLineType::ConfigurationLineTypeError;
+        return EConfigurationLineType::Error;
     
     if (_T('[') == realBuf[0])
     {
         // The line cannot be a section header unless the second character is alphanumeric (there must be at least one character in the name of the section).
         if (!isalnum(realBuf[1]))
-            return EConfigurationLineType::ConfigurationLineTypeError;
+            return EConfigurationLineType::Error;
         
         // Verify that the line is a valid section header by checking for alphanumeric characters between two square brackets.
         size_t i = 2;
         for (; i < realLength && _T(']') != realBuf[i]; ++i)
         {
             if (!isalnum(realBuf[i]))
-                return EConfigurationLineType::ConfigurationLineTypeError;
+                return EConfigurationLineType::Error;
         }
         if (_T(']') != realBuf[i])
-            return EConfigurationLineType::ConfigurationLineTypeError;
+            return EConfigurationLineType::Error;
 
         // Verify that the remainder of the line is either a comment or just whitespace.
         for (i += 1; i < realLength && _T(';') != realBuf[i] && _T('#') != realBuf[i]; ++i)
         {
             if (!isblank(realBuf[i]))
-                return EConfigurationLineType::ConfigurationLineTypeError;
+                return EConfigurationLineType::Error;
         }
 
-        return EConfigurationLineType::ConfigurationLineTypeSection;
+        return EConfigurationLineType::Section;
     }
     else if (isalnum(realBuf[0]))
     {
@@ -285,18 +307,18 @@ EConfigurationLineType Configuration::ClassifyConfigurationFileLine(LPCTSTR buf,
         for (; i < realLength && _T('=') != realBuf[i] && !isblank(realBuf[i]); ++i)
         {
             if (!isalnum(realBuf[i]))
-                return EConfigurationLineType::ConfigurationLineTypeError;
+                return EConfigurationLineType::Error;
         }
 
         // Skip over any whitespace present, then check for an equals sign.
         for (; i < realLength && isblank(realBuf[i]); ++i);
         if (_T('=') != realBuf[i])
-            return EConfigurationLineType::ConfigurationLineTypeError;
+            return EConfigurationLineType::Error;
         
         // Skip over any whitespace present, then verify the next character is alphanumeric to start a value.
         for (i += 1; i < realLength && isblank(realBuf[i]); ++i);
         if (!isalnum(realBuf[i]))
-            return EConfigurationLineType::ConfigurationLineTypeError;
+            return EConfigurationLineType::Error;
         
         // Skip over the alphanumeric characters that follow, effectively skipping over the value itself.
         for (i += 1; i < realLength && isalnum(realBuf[i]); ++i);
@@ -305,13 +327,13 @@ EConfigurationLineType Configuration::ClassifyConfigurationFileLine(LPCTSTR buf,
         for (; i < realLength && _T(';') != realBuf[i] && _T('#') != realBuf[i]; ++i)
         {
             if (!isblank(realBuf[i]))
-                return EConfigurationLineType::ConfigurationLineTypeError;
+                return EConfigurationLineType::Error;
         }
         
-        return EConfigurationLineType::ConfigurationLineTypeValue;
+        return EConfigurationLineType::Value;
     }
 
-    return EConfigurationLineType::ConfigurationLineTypeError;
+    return EConfigurationLineType::Error;
 }
 
 // ---------
@@ -389,7 +411,7 @@ bool Configuration::ParseBooleanValue(bool& dest, const StdString& source)
     // Check if the string represents a value of FALSE.
     for (size_t i = 0; i < _countof(falseStrings); ++i)
     {
-        if (0 == _tcsicmp(source.c_str(), trueStrings[i].c_str()))
+        if (0 == _tcsicmp(source.c_str(), falseStrings[i].c_str()))
         {
             dest = false;
             return true;
@@ -549,7 +571,7 @@ void Configuration::HandleErrorMalformedValue(LPCTSTR filename, const DWORD line
     TCHAR configurationErrorMessageFormat[1024];
 
     if (0 != LoadString(Globals::GetInstanceHandle(), IDS_XIDI_CONFIGURATION_FILE_ERROR_MALFORMED_VALUE_FORMAT, configurationErrorMessageFormat, _countof(configurationErrorMessageFormat)))
-        Log::WriteFormattedLogMessage(ELogLevel::LogLevelForced, configurationErrorMessageFormat, value, section, linenum, filename);
+        Log::WriteFormattedLogMessage(ELogLevel::LogLevelWarning, configurationErrorMessageFormat, value, section, linenum, filename);
 }
 
 // ---------
@@ -563,6 +585,14 @@ void Configuration::HandleErrorUnsupportedValue(LPCTSTR filename, const DWORD li
 }
 
 // ---------
+
+void Configuration::HandleErrorCannotApplyValue(LPCTSTR filename, const DWORD linenum, LPCTSTR setting, LPCTSTR section, LPCTSTR value)
+{
+    TCHAR configurationErrorMessageFormat[1024];
+
+    if (0 != LoadString(Globals::GetInstanceHandle(), IDS_XIDI_CONFIGURATION_FILE_ERROR_CANNOT_APPLY_VALUE_FORMAT, configurationErrorMessageFormat, _countof(configurationErrorMessageFormat)))
+        Log::WriteFormattedLogMessage(ELogLevel::LogLevelWarning, configurationErrorMessageFormat, setting, value, section, linenum, filename);
+}
 
 void Configuration::HandleErrorFileIO(LPCTSTR filename)
 {
