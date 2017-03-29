@@ -318,6 +318,9 @@ namespace Xidi
     private:
         // -------- HELPERS -------------------------------------------------------- //
 
+        // Logs an informational event related to attempting to load the system-provided library for importing functions.
+        static void LogInitializeLibraryPath(LPTSTR libraryPath);
+        
         // Logs an error event related to failure to initialize the import table.
         // Returns MMSYSERR_ERROR unconditionally.
         static MMRESULT LogInitializeFailed(void);

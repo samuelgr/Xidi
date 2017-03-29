@@ -52,6 +52,7 @@ HRESULT ImportApiDirectInput::Initialize(void)
         _tcsncat_s(libraryName, _countof(libraryName), kDirectInputLibraryName, kDirectInputLibraryLength);
         
         // Attempt to load the library.
+        LogInitializeLibraryPath(libraryName);
         HMODULE loadedLibrary = LoadLibraryEx(libraryName, NULL, 0);
         if (NULL == loadedLibrary) return LogInitializeFailed();
 
@@ -184,6 +185,13 @@ HRESULT ImportApiDirectInput::DllGetClassObject(REFCLSID rclsid, REFIID riid, LP
 // -------- HELPERS -------------------------------------------------------- //
 // See "ImportApiDirectInput.h" for documentation.
 
+void ImportApiDirectInput::LogInitializeLibraryPath(LPTSTR libraryPath)
+{
+    Log::WriteFormattedLogMessageFromResource(ELogLevel::LogLevelDebug, IDS_XIDI_IMPORTAPIDIRECTINPUT_INIT_PATH_FORMAT, libraryPath);
+}
+
+// ---------
+
 HRESULT ImportApiDirectInput::LogInitializeFailed(void)
 {
     Log::WriteLogMessageFromResource(ELogLevel::LogLevelError, IDS_XIDI_IMPORTAPIDIRECTINPUT_INIT_FAILED);
@@ -194,5 +202,5 @@ HRESULT ImportApiDirectInput::LogInitializeFailed(void)
 
 void ImportApiDirectInput::LogInitializeSucceeded(void)
 {
-    Log::WriteFormattedLogMessageFromResource(ELogLevel::LogLevelInfo, IDS_XIDI_IMPORTAPIDIRECTINPUT_INIT_SUCCEEDED);
+    Log::WriteLogMessageFromResource(ELogLevel::LogLevelInfo, IDS_XIDI_IMPORTAPIDIRECTINPUT_INIT_SUCCEEDED);
 }

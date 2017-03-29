@@ -226,6 +226,7 @@ void Log::OutputFormattedLogMessage(LPTSTR format, va_list args)
     if (IsLogReady())
     {
         _vftprintf_s(fileHandle, format, args);
+        fflush(fileHandle);
     }
 }
 
@@ -241,6 +242,7 @@ void Log::OutputLogMessage(LPTSTR message)
     if (IsLogReady())
     {
         _fputts(message, fileHandle);
+        fflush(fileHandle);
     }
 }
 
@@ -286,6 +288,10 @@ void Log::OutputStamp(ELogLevel severity)
     
     case ELogLevel::LogLevelInfo:
         LoadString(Globals::GetInstanceHandle(), IDS_XIDI_LOG_SEVERITY_INFO, stampStringBuffer, _countof(stampStringBuffer));
+        break;
+
+    case ELogLevel::LogLevelDebug:
+        LoadString(Globals::GetInstanceHandle(), IDS_XIDI_LOG_SEVERITY_DEBUG, stampStringBuffer, _countof(stampStringBuffer));
         break;
 
     default:

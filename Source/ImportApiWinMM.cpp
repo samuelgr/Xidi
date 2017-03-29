@@ -47,6 +47,7 @@ MMRESULT ImportApiWinMM::Initialize(void)
         _tcsncat_s(libraryName, _countof(libraryName), kWinMMLibraryName, kWinMMLibraryLength);
         
         // Attempt to load the library.
+        LogInitializeLibraryPath(libraryName);
         HMODULE loadedLibrary = LoadLibraryEx(libraryName, NULL, 0);
         if (NULL == loadedLibrary) return LogInitializeFailed();
         
@@ -940,6 +941,13 @@ MMRESULT ImportApiWinMM::waveOutWrite(HWAVEOUT hwo, LPWAVEHDR pwh, UINT cbwh)
 
 // -------- HELPERS -------------------------------------------------------- //
 // See "ImportApiWinMM.h" for documentation.
+
+void ImportApiWinMM::LogInitializeLibraryPath(LPTSTR libraryPath)
+{
+    Log::WriteFormattedLogMessageFromResource(ELogLevel::LogLevelDebug, IDS_XIDI_IMPORTAPIWINMM_INIT_PATH_FORMAT, libraryPath);
+}
+
+// --------
 
 MMRESULT ImportApiWinMM::LogInitializeFailed(void)
 {
