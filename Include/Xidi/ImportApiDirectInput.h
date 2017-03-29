@@ -104,7 +104,7 @@ namespace Xidi
     private:
         // -------- HELPERS -------------------------------------------------------- //
 
-        // Logs an informational event related to attempting to load the system-provided library for importing functions.
+        // Logs a debug event related to attempting to load the system-provided library for importing functions.
         static void LogInitializeLibraryPath(LPTSTR libraryPath);
         
         // Logs an error event related to failure to initialize the import table.
