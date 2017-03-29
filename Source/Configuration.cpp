@@ -496,116 +496,82 @@ size_t Configuration::GetConfigurationFilePath(LPTSTR buf, const size_t count)
 
 void Configuration::HandleErrorCannotOpenConfigurationFile(LPCTSTR filename)
 {
-    TCHAR configurationErrorMessageFormat[1024];
-    
-    if (0 != LoadString(Globals::GetInstanceHandle(), IDS_XIDI_CONFIGURATION_FILE_ERROR_CANNOT_OPEN_FORMAT, configurationErrorMessageFormat, _countof(configurationErrorMessageFormat)))
-        Log::WriteFormattedLogMessage(ELogLevel::LogLevelForced, configurationErrorMessageFormat, filename);
+    Log::WriteFormattedLogMessageFromResource(ELogLevel::LogLevelForced, IDS_XIDI_CONFIGURATION_FILE_ERROR_CANNOT_OPEN_FORMAT, filename);
 }
 
 // ---------
 
 void Configuration::HandleErrorCannotParseConfigurationFileLine(LPCTSTR filename, const DWORD linenum)
 {
-    TCHAR configurationErrorMessageFormat[1024];
-
-    if (0 != LoadString(Globals::GetInstanceHandle(), IDS_XIDI_CONFIGURATION_FILE_ERROR_CANNOT_PARSE_LINE_FORMAT, configurationErrorMessageFormat, _countof(configurationErrorMessageFormat)))
-        Log::WriteFormattedLogMessage(ELogLevel::LogLevelError, configurationErrorMessageFormat, linenum, filename);
+    Log::WriteFormattedLogMessageFromResource(ELogLevel::LogLevelError, IDS_XIDI_CONFIGURATION_FILE_ERROR_CANNOT_PARSE_LINE_FORMAT, linenum, filename);
 }
 
 // ---------
 
 void Configuration::HandleErrorDuplicateConfigurationSection(LPCTSTR filename, LPCTSTR section)
 {
-    TCHAR configurationErrorMessageFormat[1024];
-
-    if (0 != LoadString(Globals::GetInstanceHandle(), IDS_XIDI_CONFIGURATION_FILE_ERROR_DUPLICATED_SECTION_FORMAT, configurationErrorMessageFormat, _countof(configurationErrorMessageFormat)))
-        Log::WriteFormattedLogMessage(ELogLevel::LogLevelError, configurationErrorMessageFormat, section, filename);
+    Log::WriteFormattedLogMessageFromResource(ELogLevel::LogLevelError, IDS_XIDI_CONFIGURATION_FILE_ERROR_DUPLICATED_SECTION_FORMAT, section, filename);
 }
 
 // ---------
 
 void Configuration::HandleErrorUnsupportedConfigurationSection(LPCTSTR filename, LPCTSTR section)
 {
-    TCHAR configurationErrorMessageFormat[1024];
-
-    if (0 != LoadString(Globals::GetInstanceHandle(), IDS_XIDI_CONFIGURATION_FILE_ERROR_UNSUPPORTED_SECTION_FORMAT, configurationErrorMessageFormat, _countof(configurationErrorMessageFormat)))
-        Log::WriteFormattedLogMessage(ELogLevel::LogLevelError, configurationErrorMessageFormat, section, filename);
+    Log::WriteFormattedLogMessageFromResource(ELogLevel::LogLevelError, IDS_XIDI_CONFIGURATION_FILE_ERROR_UNSUPPORTED_SECTION_FORMAT, section, filename);
 }
 
 // ---------
 
 void Configuration::HandleErrorLineTooLong(LPCTSTR filename, const DWORD linenum)
 {
-    TCHAR configurationErrorMessageFormat[1024];
-
-    if (0 != LoadString(Globals::GetInstanceHandle(), IDS_XIDI_CONFIGURATION_FILE_ERROR_LINE_TOO_LONG_FORMAT, configurationErrorMessageFormat, _countof(configurationErrorMessageFormat)))
-        Log::WriteFormattedLogMessage(ELogLevel::LogLevelError, configurationErrorMessageFormat, linenum, filename);
+    Log::WriteFormattedLogMessageFromResource(ELogLevel::LogLevelError, IDS_XIDI_CONFIGURATION_FILE_ERROR_LINE_TOO_LONG_FORMAT, linenum, filename);
 }
 
 // ---------
 
 void Configuration::HandleErrorValueOutsideSection(LPCTSTR filename, const DWORD linenum)
 {
-    TCHAR configurationErrorMessageFormat[1024];
-
-    if (0 != LoadString(Globals::GetInstanceHandle(), IDS_XIDI_CONFIGURATION_FILE_ERROR_VALUE_WITHOUT_SECTION_FORMAT, configurationErrorMessageFormat, _countof(configurationErrorMessageFormat)))
-        Log::WriteFormattedLogMessage(ELogLevel::LogLevelWarning, configurationErrorMessageFormat, linenum, filename);
+    Log::WriteFormattedLogMessageFromResource(ELogLevel::LogLevelWarning, IDS_XIDI_CONFIGURATION_FILE_ERROR_VALUE_WITHOUT_SECTION_FORMAT, linenum, filename);
 }
 
 // ---------
 
 void Configuration::HandleErrorDuplicateValue(LPCTSTR filename, const DWORD linenum, LPCTSTR section, LPCTSTR value)
 {
-    TCHAR configurationErrorMessageFormat[1024];
-
-    if (0 != LoadString(Globals::GetInstanceHandle(), IDS_XIDI_CONFIGURATION_FILE_ERROR_DUPLICATE_VALUE_FORMAT, configurationErrorMessageFormat, _countof(configurationErrorMessageFormat)))
-        Log::WriteFormattedLogMessage(ELogLevel::LogLevelWarning, configurationErrorMessageFormat, value, section, linenum, filename);
+    Log::WriteFormattedLogMessageFromResource(ELogLevel::LogLevelWarning, IDS_XIDI_CONFIGURATION_FILE_ERROR_DUPLICATE_VALUE_FORMAT, value, section, linenum, filename);
 }
 
 // ---------
 
 void Configuration::HandleErrorMalformedValue(LPCTSTR filename, const DWORD linenum, LPCTSTR section, LPCTSTR value)
 {
-    TCHAR configurationErrorMessageFormat[1024];
-
-    if (0 != LoadString(Globals::GetInstanceHandle(), IDS_XIDI_CONFIGURATION_FILE_ERROR_MALFORMED_VALUE_FORMAT, configurationErrorMessageFormat, _countof(configurationErrorMessageFormat)))
-        Log::WriteFormattedLogMessage(ELogLevel::LogLevelWarning, configurationErrorMessageFormat, value, section, linenum, filename);
+    Log::WriteFormattedLogMessageFromResource(ELogLevel::LogLevelWarning, IDS_XIDI_CONFIGURATION_FILE_ERROR_MALFORMED_VALUE_FORMAT, value, section, linenum, filename);
 }
 
 // ---------
 
 void Configuration::HandleErrorUnsupportedValue(LPCTSTR filename, const DWORD linenum, LPCTSTR section, LPCTSTR value)
 {
-    TCHAR configurationErrorMessageFormat[1024];
-
-    if (0 != LoadString(Globals::GetInstanceHandle(), IDS_XIDI_CONFIGURATION_FILE_ERROR_UNSUPPORTED_VALUE_FORMAT, configurationErrorMessageFormat, _countof(configurationErrorMessageFormat)))
-        Log::WriteFormattedLogMessage(ELogLevel::LogLevelWarning, configurationErrorMessageFormat, value, section, linenum, filename);
+    Log::WriteFormattedLogMessageFromResource(ELogLevel::LogLevelWarning, IDS_XIDI_CONFIGURATION_FILE_ERROR_UNSUPPORTED_VALUE_FORMAT, value, section, linenum, filename);
 }
 
 // ---------
 
 void Configuration::HandleErrorCannotApplyValue(LPCTSTR filename, const DWORD linenum, LPCTSTR setting, LPCTSTR section, LPCTSTR value)
 {
-    TCHAR configurationErrorMessageFormat[1024];
-
-    if (0 != LoadString(Globals::GetInstanceHandle(), IDS_XIDI_CONFIGURATION_FILE_ERROR_CANNOT_APPLY_VALUE_FORMAT, configurationErrorMessageFormat, _countof(configurationErrorMessageFormat)))
-        Log::WriteFormattedLogMessage(ELogLevel::LogLevelError, configurationErrorMessageFormat, setting, value, section, linenum, filename);
+    Log::WriteFormattedLogMessageFromResource(ELogLevel::LogLevelWarning, IDS_XIDI_CONFIGURATION_FILE_ERROR_CANNOT_APPLY_VALUE_FORMAT, setting, value, section, linenum, filename);
 }
+
+// ---------
 
 void Configuration::HandleErrorFileIO(LPCTSTR filename)
 {
-    TCHAR configurationErrorMessageFormat[1024];
-
-    if (0 != LoadString(Globals::GetInstanceHandle(), IDS_XIDI_CONFIGURATION_FILE_ERROR_IO_FORMAT, configurationErrorMessageFormat, _countof(configurationErrorMessageFormat)))
-        Log::WriteFormattedLogMessage(ELogLevel::LogLevelError, configurationErrorMessageFormat, filename);
+    Log::WriteFormattedLogMessageFromResource(ELogLevel::LogLevelError, IDS_XIDI_CONFIGURATION_FILE_ERROR_IO_FORMAT, filename);
 }
 
 // ---------
 
 void Configuration::HandleErrorInternal(const DWORD code)
 {
-    TCHAR configurationErrorMessageFormat[1024];
-
-    if (0 != LoadString(Globals::GetInstanceHandle(), IDS_XIDI_CONFIGURATION_FILE_ERROR_INTERNAL_FORMAT, configurationErrorMessageFormat, _countof(configurationErrorMessageFormat)))
-        Log::WriteFormattedLogMessage(ELogLevel::LogLevelForced, configurationErrorMessageFormat, code);
+    Log::WriteFormattedLogMessageFromResource(ELogLevel::LogLevelForced, IDS_XIDI_CONFIGURATION_FILE_ERROR_INTERNAL_FORMAT, code);
 }

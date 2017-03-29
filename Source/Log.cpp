@@ -140,9 +140,7 @@ void Log::WriteFormattedLogMessage(ELogLevel severity, LPTSTR format, ...)
         va_list args;
         va_start(args, format);
 
-        OutputStamp(severity);
-        OutputFormattedLogMessage(format, args);
-        OutputLogMessage(_T("\n"));
+        LogLineOutputFormat(severity, format, args);
 
         va_end(args);
     }
@@ -153,10 +151,39 @@ void Log::WriteFormattedLogMessage(ELogLevel severity, LPTSTR format, ...)
 void Log::WriteLogMessage(ELogLevel severity, LPTSTR message)
 {
     if (ShouldOutputLogMessageOfSeverity(severity))
+        LogLineOutputString(severity, message);
+}
+
+// ---------
+
+void Log::WriteFormattedLogMessageFromResource(ELogLevel severity, unsigned int resourceIdentifier, ...)
+{
+    if (ShouldOutputLogMessageOfSeverity(severity))
     {
-        OutputStamp(severity);
-        OutputLogMessage(message);
-        OutputLogMessage(_T("\n"));
+        TCHAR logMessageFormat[kLogResourceBufferSize];
+        
+        if (0 != LoadString(Globals::GetInstanceHandle(), resourceIdentifier, logMessageFormat, _countof(logMessageFormat)))
+        {
+            va_list args;
+            va_start(args, resourceIdentifier);
+
+            LogLineOutputFormat(severity, logMessageFormat, args);
+
+            va_end(args);
+        }
+    }
+}
+
+// ---------
+
+void Log::WriteLogMessageFromResource(ELogLevel severity, unsigned int resourceIdentifier)
+{
+    if (ShouldOutputLogMessageOfSeverity(severity))
+    {
+        TCHAR logMessage[kLogResourceBufferSize];
+
+        if (0 != LoadString(Globals::GetInstanceHandle(), resourceIdentifier, logMessage, _countof(logMessage)))
+            LogLineOutputString(severity, logMessage);
     }
 }
 
@@ -167,6 +194,24 @@ void Log::WriteLogMessage(ELogLevel severity, LPTSTR message)
 bool Log::IsLogReady(void)
 {
     return (NULL != fileHandle);
+}
+
+// ---------
+
+void Log::LogLineOutputString(ELogLevel severity, LPTSTR message)
+{
+    OutputStamp(severity);
+    OutputLogMessage(message);
+    OutputLogMessage(_T("\n"));
+}
+
+// ---------
+
+void Log::LogLineOutputFormat(ELogLevel severity, LPTSTR format, va_list args)
+{
+    OutputStamp(severity);
+    OutputFormattedLogMessage(format, args);
+    OutputLogMessage(_T("\n"));
 }
 
 // ---------

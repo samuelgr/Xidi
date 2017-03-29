@@ -30,9 +30,10 @@ namespace Xidi
         LogLevelDisabled                        = 0,                    // Logging is disabled. Should not be used for individual log messages.
         LogLevelError                           = 1,                    // Error. Causes a change in behavior if encountered, possibly leading to application termination. Anything at or above this level is only written to a log file if it has otherwise been created.
         LogLevelWarning                         = 2,                    // Warning. May cause a change in behavior but is not critical and will not terminate the application.
-        LogLevelInfo                            = 3,                    // Everything else.
+        LogLevelInfo                            = 3,                    // Informational. Useful status-related remarks for tracking application and Xidi behavior.
+        LogLevelDebug                           = 4,                    // Debug. Includes detailed messages to aid in troubleshooting application and Xidi behavior.
 
-        LogLevelMaxConfigurableValue            = LogLevelInfo,         // Maximum configurable severity value for logging.
+        LogLevelMaxConfigurableValue            = LogLevelDebug,        // Maximum configurable severity value for logging.
         LogLevelMinConfigurableValue            = LogLevelError,        // Minimum configurable severity value for logging.
     };
     
@@ -41,6 +42,13 @@ namespace Xidi
     class Log
     {
     private:
+        // -------- CONSTANTS ------------------------------------------------------ //
+        
+        // Buffer size, in characters, for the temporary buffer to hold string messages read using a resource identifier.
+        // When writing log messages using a resource identifier (rather than a raw string), a temporary buffer is created to hold the loaded resource string.
+        static const size_t kLogResourceBufferSize = 1024;
+
+        
         // -------- CLASS VARIABLES ------------------------------------------------ //
         
         // Log file handle. Used to write to the log file.
@@ -88,18 +96,34 @@ namespace Xidi
         // Requires a severity, a message string with standard format specifiers, and values to be formatted.
         // Adds a timestamp to the start of the message and a line break at the end.
         static void WriteFormattedLogMessage(ELogLevel severity, LPTSTR format, ...);
+
+        // Formats and writes the specified log message to the log, filtering based on specified and configured minimum severity.
+        // Requires a severity, a resource identifier that refers to a string containing standard format specifiers, and values to be formatted.
+        // Adds a timestamp to the start of the message and a line break at the end.
+        static void WriteFormattedLogMessageFromResource(ELogLevel severity, unsigned int resourceIdentifier, ...);
         
         // Writes the specified log message to the log, filtering based on specified and configured minimum severity.
         // Requires both a severity and a message string.
         // Adds a timestamp to the start of the message and a line break at the end.
         static void WriteLogMessage(ELogLevel severity, LPTSTR message);
+
+        // Writes the specified log message to the log, filtering based on specified and configured minimum severity.
+        // Requires both a severity and a resource identifier, which identifies the string resource that contains the message to be logged.
+        // Adds a timestamp to the start of the message and a line break at the end.
+        static void WriteLogMessageFromResource(ELogLevel severity, unsigned int resourceIdentifier);
         
         
     private:
         // -------- HELPERS -------------------------------------------------------- //
-
+        
         // Specifies if the log file is created and initialized.
         static bool IsLogReady(void);
+        
+        // Formats and outputs a single log line, given a severity and a string to output as the message.
+        static void LogLineOutputString(ELogLevel severity, LPTSTR message);
+
+        // Formats and outputs a single log line, with support for format specifiers, given a severity, a format string, and a list of arguments.
+        static void LogLineOutputFormat(ELogLevel severity, LPTSTR format, va_list args);
         
         // Formats and outputs a log message.
         // Will cause lazy initialization of the log if invoked when the log is not yet created or initialized.
@@ -108,11 +132,11 @@ namespace Xidi
         // Outputs a log message.
         // Will cause lazy initialization of the log if invoked when the log is not yet created or initialized.
         static void OutputLogMessage(LPTSTR message);
-
+        
         // Outputs a log stamp, which includes a date and time plus a severity indicator.
         // Invoked to write the beginning part of each log message line.
         static void OutputStamp(ELogLevel severity);
-
+        
         // Determines if a message of the specified severity should be output to the log.
         static bool ShouldOutputLogMessageOfSeverity(ELogLevel severity);
     };
