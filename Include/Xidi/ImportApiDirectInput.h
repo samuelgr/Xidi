@@ -99,5 +99,16 @@ namespace Xidi
 
         // Calls the imported function DllGetClassObject.
         static HRESULT DllGetClassObject(REFCLSID rclsid, REFIID riid, LPVOID* ppv);
+        
+        
+    private:
+        // -------- HELPERS -------------------------------------------------------- //
+
+        // Logs an error event related to failure to initialize the import table.
+        // Returns E_FAIL unconditionally.
+        static HRESULT LogInitializeFailed(void);
+        
+        // Logs an informational event related to successful initialization of the import table.
+        static void LogInitializeSucceeded(void);
     };
 }

@@ -11,6 +11,7 @@
 
 #include "ApiWindows.h"
 #include "ImportApiWinMM.h"
+#include "Log.h"
 
 using namespace Xidi;
 
@@ -47,269 +48,270 @@ MMRESULT ImportApiWinMM::Initialize(void)
         
         // Attempt to load the library.
         HMODULE loadedLibrary = LoadLibraryEx(libraryName, NULL, 0);
-        if (NULL == loadedLibrary) return MMSYSERR_ERROR;
+        if (NULL == loadedLibrary) return LogInitializeFailed();
         
         // Attempt to obtain the addresses of all imported API functions.
         FARPROC procAddress = NULL;
         
         procAddress = GetProcAddress(loadedLibrary, "auxGetDevCapsA");
-        if (NULL == procAddress) return MMSYSERR_ERROR;
+        if (NULL == procAddress) return LogInitializeFailed();
         importTable.auxGetDevCapsA = (MMRESULT(WINAPI *)(UINT_PTR, LPAUXCAPSA, UINT))procAddress;
         
         procAddress = GetProcAddress(loadedLibrary, "auxGetDevCapsW");
-        if (NULL == procAddress) return MMSYSERR_ERROR;
+        if (NULL == procAddress) return LogInitializeFailed();
         importTable.auxGetDevCapsW = (MMRESULT(WINAPI *)(UINT_PTR, LPAUXCAPSW, UINT))procAddress;
         
         procAddress = GetProcAddress(loadedLibrary, "auxGetNumDevs");
-        if (NULL == procAddress) return MMSYSERR_ERROR;
+        if (NULL == procAddress) return LogInitializeFailed();
         importTable.auxGetNumDevs = (UINT(WINAPI *)(void))procAddress;
         
         procAddress = GetProcAddress(loadedLibrary, "auxGetVolume");
-        if (NULL == procAddress) return MMSYSERR_ERROR;
+        if (NULL == procAddress) return LogInitializeFailed();
         importTable.auxGetVolume = (MMRESULT(WINAPI *)(UINT, LPDWORD))procAddress;
         
         procAddress = GetProcAddress(loadedLibrary, "auxOutMessage");
-        if (NULL == procAddress) return MMSYSERR_ERROR;
+        if (NULL == procAddress) return LogInitializeFailed();
         importTable.auxOutMessage = (MMRESULT(WINAPI *)(UINT, UINT, DWORD_PTR, DWORD_PTR))procAddress;
         
         procAddress = GetProcAddress(loadedLibrary, "auxSetVolume");
-        if (NULL == procAddress) return MMSYSERR_ERROR;
+        if (NULL == procAddress) return LogInitializeFailed();
         importTable.auxSetVolume = (MMRESULT(WINAPI *)(UINT, DWORD))procAddress;
         
         // ---------
         
         procAddress = GetProcAddress(loadedLibrary, "joyConfigChanged");
-        if (NULL == procAddress) return MMSYSERR_ERROR;
+        if (NULL == procAddress) return LogInitializeFailed();
         importTable.joyConfigChanged = (MMRESULT(WINAPI *)(DWORD))procAddress;
         
         procAddress = GetProcAddress(loadedLibrary, "joyGetDevCapsA");
-        if (NULL == procAddress) return MMSYSERR_ERROR;
+        if (NULL == procAddress) return LogInitializeFailed();
         importTable.joyGetDevCapsA = (MMRESULT(WINAPI *)(UINT_PTR, LPJOYCAPSA, UINT))procAddress;
         
         procAddress = GetProcAddress(loadedLibrary, "joyGetDevCapsW");
-        if (NULL == procAddress) return MMSYSERR_ERROR;
+        if (NULL == procAddress) return LogInitializeFailed();
         importTable.joyGetDevCapsW = (MMRESULT(WINAPI *)(UINT_PTR, LPJOYCAPSW, UINT))procAddress;
         
         procAddress = GetProcAddress(loadedLibrary, "joyGetNumDevs");
-        if (NULL == procAddress) return MMSYSERR_ERROR;
+        if (NULL == procAddress) return LogInitializeFailed();
         importTable.joyGetNumDevs = (UINT(WINAPI *)(void))procAddress;
         
         procAddress = GetProcAddress(loadedLibrary, "joyGetPos");
-        if (NULL == procAddress) return MMSYSERR_ERROR;
+        if (NULL == procAddress) return LogInitializeFailed();
         importTable.joyGetPos = (MMRESULT(WINAPI *)(UINT, LPJOYINFO))procAddress;
         
         procAddress = GetProcAddress(loadedLibrary, "joyGetPosEx");
-        if (NULL == procAddress) return MMSYSERR_ERROR;
+        if (NULL == procAddress) return LogInitializeFailed();
         importTable.joyGetPosEx = (MMRESULT(WINAPI *)(UINT, LPJOYINFOEX))procAddress;
         
         procAddress = GetProcAddress(loadedLibrary, "joyGetThreshold");
-        if (NULL == procAddress) return MMSYSERR_ERROR;
+        if (NULL == procAddress) return LogInitializeFailed();
         importTable.joyGetThreshold = (MMRESULT(WINAPI *)(UINT, LPUINT))procAddress;
         
         procAddress = GetProcAddress(loadedLibrary, "joyReleaseCapture");
-        if (NULL == procAddress) return MMSYSERR_ERROR;
+        if (NULL == procAddress) return LogInitializeFailed();
         importTable.joyReleaseCapture = (MMRESULT(WINAPI *)(UINT))procAddress;
         
         procAddress = GetProcAddress(loadedLibrary, "joySetCapture");
-        if (NULL == procAddress) return MMSYSERR_ERROR;
+        if (NULL == procAddress) return LogInitializeFailed();
         importTable.joySetCapture = (MMRESULT(WINAPI *)(HWND, UINT, UINT, BOOL))procAddress;
         
         procAddress = GetProcAddress(loadedLibrary, "joySetThreshold");
-        if (NULL == procAddress) return MMSYSERR_ERROR;
+        if (NULL == procAddress) return LogInitializeFailed();
         importTable.joySetThreshold = (MMRESULT(WINAPI *)(UINT, UINT))procAddress;
         
         // ---------
         
         procAddress = GetProcAddress(loadedLibrary, "timeBeginPeriod");
-        if (NULL == procAddress) return MMSYSERR_ERROR;
+        if (NULL == procAddress) return LogInitializeFailed();
         importTable.timeBeginPeriod = (MMRESULT(WINAPI *)(UINT))procAddress;
         
         procAddress = GetProcAddress(loadedLibrary, "timeEndPeriod");
-        if (NULL == procAddress) return MMSYSERR_ERROR;
+        if (NULL == procAddress) return LogInitializeFailed();
         importTable.timeEndPeriod = (MMRESULT(WINAPI *)(UINT))procAddress;
         
         procAddress = GetProcAddress(loadedLibrary, "timeGetDevCaps");
-        if (NULL == procAddress) return MMSYSERR_ERROR;
+        if (NULL == procAddress) return LogInitializeFailed();
         importTable.timeGetDevCaps = (MMRESULT(WINAPI *)(LPTIMECAPS, UINT))procAddress;
         
         procAddress = GetProcAddress(loadedLibrary, "timeGetSystemTime");
-        if (NULL == procAddress) return MMSYSERR_ERROR;
+        if (NULL == procAddress) return LogInitializeFailed();
         importTable.timeGetSystemTime = (MMRESULT(WINAPI *)(LPMMTIME, UINT))procAddress;
         
         procAddress = GetProcAddress(loadedLibrary, "timeGetTime");
-        if (NULL == procAddress) return MMSYSERR_ERROR;
+        if (NULL == procAddress) return LogInitializeFailed();
         importTable.timeGetTime = (DWORD(WINAPI *)(void))procAddress;
         
         procAddress = GetProcAddress(loadedLibrary, "timeKillEvent");
-        if (NULL == procAddress) return MMSYSERR_ERROR;
+        if (NULL == procAddress) return LogInitializeFailed();
         importTable.timeKillEvent = (MMRESULT(WINAPI *)(UINT))procAddress;
         
         procAddress = GetProcAddress(loadedLibrary, "timeSetEvent");
-        if (NULL == procAddress) return MMSYSERR_ERROR;
+        if (NULL == procAddress) return LogInitializeFailed();
         importTable.timeSetEvent = (MMRESULT(WINAPI *)(UINT, UINT, LPTIMECALLBACK, DWORD_PTR, UINT))procAddress;
         
         // ---------
         
         procAddress = GetProcAddress(loadedLibrary, "waveInAddBuffer");
-        if (NULL == procAddress) return MMSYSERR_ERROR;
+        if (NULL == procAddress) return LogInitializeFailed();
         importTable.waveInAddBuffer = (MMRESULT(WINAPI *)(HWAVEIN, LPWAVEHDR, UINT))procAddress;
         
         procAddress = GetProcAddress(loadedLibrary, "waveInClose");
-        if (NULL == procAddress) return MMSYSERR_ERROR;
+        if (NULL == procAddress) return LogInitializeFailed();
         importTable.waveInClose = (MMRESULT(WINAPI *)(HWAVEIN))procAddress;
         
         procAddress = GetProcAddress(loadedLibrary, "waveInGetDevCapsA");
-        if (NULL == procAddress) return MMSYSERR_ERROR;
+        if (NULL == procAddress) return LogInitializeFailed();
         importTable.waveInGetDevCapsA = (MMRESULT(WINAPI *)(UINT_PTR, LPWAVEINCAPSA, UINT))procAddress;
         
         procAddress = GetProcAddress(loadedLibrary, "waveInGetDevCapsW");
-        if (NULL == procAddress) return MMSYSERR_ERROR;
+        if (NULL == procAddress) return LogInitializeFailed();
         importTable.waveInGetDevCapsW = (MMRESULT(WINAPI *)(UINT_PTR, LPWAVEINCAPSW, UINT))procAddress;
         
         procAddress = GetProcAddress(loadedLibrary, "waveInGetErrorTextA");
-        if (NULL == procAddress) return MMSYSERR_ERROR;
+        if (NULL == procAddress) return LogInitializeFailed();
         importTable.waveInGetErrorTextA = (MMRESULT(WINAPI *)(MMRESULT, LPCSTR, UINT))procAddress;
         
         procAddress = GetProcAddress(loadedLibrary, "waveInGetErrorTextW");
-        if (NULL == procAddress) return MMSYSERR_ERROR;
+        if (NULL == procAddress) return LogInitializeFailed();
         importTable.waveInGetErrorTextW = (MMRESULT(WINAPI *)(MMRESULT, LPWSTR, UINT))procAddress;
         
         procAddress = GetProcAddress(loadedLibrary, "waveInGetID");
-        if (NULL == procAddress) return MMSYSERR_ERROR;
+        if (NULL == procAddress) return LogInitializeFailed();
         importTable.waveInGetID = (MMRESULT(WINAPI *)(HWAVEIN, LPUINT))procAddress;
         
         procAddress = GetProcAddress(loadedLibrary, "waveInGetNumDevs");
-        if (NULL == procAddress) return MMSYSERR_ERROR;
+        if (NULL == procAddress) return LogInitializeFailed();
         importTable.waveInGetNumDevs = (UINT(WINAPI *)(void))procAddress;
         
         procAddress = GetProcAddress(loadedLibrary, "waveInGetPosition");
-        if (NULL == procAddress) return MMSYSERR_ERROR;
+        if (NULL == procAddress) return LogInitializeFailed();
         importTable.waveInGetPosition = (MMRESULT(WINAPI *)(HWAVEIN, LPMMTIME, UINT))procAddress;
         
         procAddress = GetProcAddress(loadedLibrary, "waveInMessage");
-        if (NULL == procAddress) return MMSYSERR_ERROR;
+        if (NULL == procAddress) return LogInitializeFailed();
         importTable.waveInMessage = (DWORD(WINAPI *)(HWAVEIN, UINT, DWORD_PTR, DWORD_PTR))procAddress;
         
         procAddress = GetProcAddress(loadedLibrary, "waveInOpen");
-        if (NULL == procAddress) return MMSYSERR_ERROR;
+        if (NULL == procAddress) return LogInitializeFailed();
         importTable.waveInOpen = (MMRESULT(WINAPI *)(LPHWAVEIN, UINT, LPCWAVEFORMATEX, DWORD_PTR, DWORD_PTR, DWORD))procAddress;
         
         procAddress = GetProcAddress(loadedLibrary, "waveInPrepareHeader");
-        if (NULL == procAddress) return MMSYSERR_ERROR;
+        if (NULL == procAddress) return LogInitializeFailed();
         importTable.waveInPrepareHeader = (MMRESULT(WINAPI *)(HWAVEIN, LPWAVEHDR, UINT))procAddress;
         
         procAddress = GetProcAddress(loadedLibrary, "waveInReset");
-        if (NULL == procAddress) return MMSYSERR_ERROR;
+        if (NULL == procAddress) return LogInitializeFailed();
         importTable.waveInReset = (MMRESULT(WINAPI *)(HWAVEIN))procAddress;
         
         procAddress = GetProcAddress(loadedLibrary, "waveInStart");
-        if (NULL == procAddress) return MMSYSERR_ERROR;
+        if (NULL == procAddress) return LogInitializeFailed();
         importTable.waveInStart = (MMRESULT(WINAPI *)(HWAVEIN))procAddress;
         
         procAddress = GetProcAddress(loadedLibrary, "waveInStop");
-        if (NULL == procAddress) return MMSYSERR_ERROR;
+        if (NULL == procAddress) return LogInitializeFailed();
         importTable.waveInStop = (MMRESULT(WINAPI *)(HWAVEIN))procAddress;
         
         procAddress = GetProcAddress(loadedLibrary, "waveInUnprepareHeader");
-        if (NULL == procAddress) return MMSYSERR_ERROR;
+        if (NULL == procAddress) return LogInitializeFailed();
         importTable.waveInUnprepareHeader = (MMRESULT(WINAPI *)(HWAVEIN, LPWAVEHDR, UINT))procAddress;
         
         // ---------
         
         procAddress = GetProcAddress(loadedLibrary, "waveOutBreakLoop");
-        if (NULL == procAddress) return MMSYSERR_ERROR;
+        if (NULL == procAddress) return LogInitializeFailed();
         importTable.waveOutBreakLoop = (MMRESULT(WINAPI *)(HWAVEOUT))procAddress;
         
         procAddress = GetProcAddress(loadedLibrary, "waveOutClose");
-        if (NULL == procAddress) return MMSYSERR_ERROR;
+        if (NULL == procAddress) return LogInitializeFailed();
         importTable.waveOutClose = (MMRESULT(WINAPI *)(HWAVEOUT))procAddress;
         
         procAddress = GetProcAddress(loadedLibrary, "waveOutGetDevCapsA");
-        if (NULL == procAddress) return MMSYSERR_ERROR;
+        if (NULL == procAddress) return LogInitializeFailed();
         importTable.waveOutGetDevCapsA = (MMRESULT(WINAPI *)(UINT_PTR, LPWAVEOUTCAPSA, UINT))procAddress;
         
         procAddress = GetProcAddress(loadedLibrary, "waveOutGetDevCapsW");
-        if (NULL == procAddress) return MMSYSERR_ERROR;
+        if (NULL == procAddress) return LogInitializeFailed();
         importTable.waveOutGetDevCapsW = (MMRESULT(WINAPI *)(UINT_PTR, LPWAVEOUTCAPSW, UINT))procAddress;
         
         procAddress = GetProcAddress(loadedLibrary, "waveOutGetErrorTextA");
-        if (NULL == procAddress) return MMSYSERR_ERROR;
+        if (NULL == procAddress) return LogInitializeFailed();
         importTable.waveOutGetErrorTextA = (MMRESULT(WINAPI *)(MMRESULT, LPCSTR, UINT))procAddress;
         
         procAddress = GetProcAddress(loadedLibrary, "waveOutGetErrorTextW");
-        if (NULL == procAddress) return MMSYSERR_ERROR;
+        if (NULL == procAddress) return LogInitializeFailed();
         importTable.waveOutGetErrorTextW = (MMRESULT(WINAPI *)(MMRESULT, LPWSTR, UINT))procAddress;
         
         procAddress = GetProcAddress(loadedLibrary, "waveOutGetID");
-        if (NULL == procAddress) return MMSYSERR_ERROR;
+        if (NULL == procAddress) return LogInitializeFailed();
         importTable.waveOutGetID = (MMRESULT(WINAPI *)(HWAVEOUT, LPUINT))procAddress;
         
         procAddress = GetProcAddress(loadedLibrary, "waveOutGetNumDevs");
-        if (NULL == procAddress) return MMSYSERR_ERROR;
+        if (NULL == procAddress) return LogInitializeFailed();
         importTable.waveOutGetNumDevs = (UINT(WINAPI *)(void))procAddress;
         
         procAddress = GetProcAddress(loadedLibrary, "waveOutGetPitch");
-        if (NULL == procAddress) return MMSYSERR_ERROR;
+        if (NULL == procAddress) return LogInitializeFailed();
         importTable.waveOutGetPitch = (MMRESULT(WINAPI *)(HWAVEOUT, LPDWORD))procAddress;
         
         procAddress = GetProcAddress(loadedLibrary, "waveOutGetPlaybackRate");
-        if (NULL == procAddress) return MMSYSERR_ERROR;
+        if (NULL == procAddress) return LogInitializeFailed();
         importTable.waveOutGetPlaybackRate = (MMRESULT(WINAPI *)(HWAVEOUT, LPDWORD))procAddress;
         
         procAddress = GetProcAddress(loadedLibrary, "waveOutGetPosition");
-        if (NULL == procAddress) return MMSYSERR_ERROR;
+        if (NULL == procAddress) return LogInitializeFailed();
         importTable.waveOutGetPosition = (MMRESULT(WINAPI *)(HWAVEOUT, LPMMTIME, UINT))procAddress;
         
         procAddress = GetProcAddress(loadedLibrary, "waveOutGetVolume");
-        if (NULL == procAddress) return MMSYSERR_ERROR;
+        if (NULL == procAddress) return LogInitializeFailed();
         importTable.waveOutGetVolume = (MMRESULT(WINAPI *)(HWAVEOUT, LPDWORD))procAddress;
         
         procAddress = GetProcAddress(loadedLibrary, "waveOutMessage");
-        if (NULL == procAddress) return MMSYSERR_ERROR;
+        if (NULL == procAddress) return LogInitializeFailed();
         importTable.waveOutMessage = (DWORD(WINAPI *)(HWAVEOUT, UINT, DWORD_PTR, DWORD_PTR))procAddress;
         
         procAddress = GetProcAddress(loadedLibrary, "waveOutOpen");
-        if (NULL == procAddress) return MMSYSERR_ERROR;
+        if (NULL == procAddress) return LogInitializeFailed();
         importTable.waveOutOpen = (MMRESULT(WINAPI *)(LPHWAVEOUT, UINT_PTR, LPWAVEFORMATEX, DWORD_PTR, DWORD_PTR, DWORD))procAddress;
         
         procAddress = GetProcAddress(loadedLibrary, "waveOutPause");
-        if (NULL == procAddress) return MMSYSERR_ERROR;
+        if (NULL == procAddress) return LogInitializeFailed();
         importTable.waveOutPause = (MMRESULT(WINAPI *)(HWAVEOUT))procAddress;
         
         procAddress = GetProcAddress(loadedLibrary, "waveOutPrepareHeader");
-        if (NULL == procAddress) return MMSYSERR_ERROR;
+        if (NULL == procAddress) return LogInitializeFailed();
         importTable.waveOutPrepareHeader = (MMRESULT(WINAPI *)(HWAVEOUT, LPWAVEHDR, UINT))procAddress;
         
         procAddress = GetProcAddress(loadedLibrary, "waveOutReset");
-        if (NULL == procAddress) return MMSYSERR_ERROR;
+        if (NULL == procAddress) return LogInitializeFailed();
         importTable.waveOutReset = (MMRESULT(WINAPI *)(HWAVEOUT))procAddress;
         
         procAddress = GetProcAddress(loadedLibrary, "waveOutRestart");
-        if (NULL == procAddress) return MMSYSERR_ERROR;
+        if (NULL == procAddress) return LogInitializeFailed();
         importTable.waveOutRestart = (MMRESULT(WINAPI *)(HWAVEOUT))procAddress;
         
         procAddress = GetProcAddress(loadedLibrary, "waveOutSetPitch");
-        if (NULL == procAddress) return MMSYSERR_ERROR;
+        if (NULL == procAddress) return LogInitializeFailed();
         importTable.waveOutSetPitch = (MMRESULT(WINAPI *)(HWAVEOUT, DWORD))procAddress;
         
         procAddress = GetProcAddress(loadedLibrary, "waveOutSetPlaybackRate");
-        if (NULL == procAddress) return MMSYSERR_ERROR;
+        if (NULL == procAddress) return LogInitializeFailed();
         importTable.waveOutSetPlaybackRate = (MMRESULT(WINAPI *)(HWAVEOUT, DWORD))procAddress;
         
         procAddress = GetProcAddress(loadedLibrary, "waveOutSetVolume");
-        if (NULL == procAddress) return MMSYSERR_ERROR;
+        if (NULL == procAddress) return LogInitializeFailed();
         importTable.waveOutSetVolume = (MMRESULT(WINAPI *)(HWAVEOUT, DWORD))procAddress;
         
         procAddress = GetProcAddress(loadedLibrary, "waveOutUnprepareHeader");
-        if (NULL == procAddress) return MMSYSERR_ERROR;
+        if (NULL == procAddress) return LogInitializeFailed();
         importTable.waveOutUnprepareHeader = (MMRESULT(WINAPI *)(HWAVEOUT, LPWAVEHDR, UINT))procAddress;
         
         procAddress = GetProcAddress(loadedLibrary, "waveOutWrite");
-        if (NULL == procAddress) return MMSYSERR_ERROR;
+        if (NULL == procAddress) return LogInitializeFailed();
         importTable.waveOutWrite = (MMRESULT(WINAPI *)(HWAVEOUT, LPWAVEHDR, UINT))procAddress;
         
         // Initialization complete.
         importTableIsInitialized = TRUE;
+        LogInitializeSucceeded();
     }
 
     return MMSYSERR_NOERROR;
@@ -933,4 +935,21 @@ MMRESULT ImportApiWinMM::waveOutWrite(HWAVEOUT hwo, LPWAVEHDR pwh, UINT cbwh)
         return MMSYSERR_ERROR;
     
     return importTable.waveOutWrite(hwo, pwh, cbwh);
+}
+
+
+// -------- HELPERS -------------------------------------------------------- //
+// See "ImportApiWinMM.h" for documentation.
+
+MMRESULT ImportApiWinMM::LogInitializeFailed(void)
+{
+    Log::WriteLogMessageFromResource(ELogLevel::LogLevelError, IDS_XIDI_IMPORTAPIWINMM_INIT_FAILED);
+    return MMSYSERR_ERROR;
+}
+
+// --------
+
+void ImportApiWinMM::LogInitializeSucceeded(void)
+{
+    Log::WriteFormattedLogMessageFromResource(ELogLevel::LogLevelInfo, IDS_XIDI_IMPORTAPIWINMM_INIT_SUCCEEDED);
 }

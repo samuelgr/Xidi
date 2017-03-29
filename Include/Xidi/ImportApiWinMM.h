@@ -313,5 +313,16 @@ namespace Xidi
 
         // Calls the imported function waveOutWrite.
         static MMRESULT waveOutWrite(HWAVEOUT hwo, LPWAVEHDR pwh, UINT cbwh);
+        
+        
+    private:
+        // -------- HELPERS -------------------------------------------------------- //
+
+        // Logs an error event related to failure to initialize the import table.
+        // Returns MMSYSERR_ERROR unconditionally.
+        static MMRESULT LogInitializeFailed(void);
+
+        // Logs an informational event related to successful initialization of the import table.
+        static void LogInitializeSucceeded(void);
     };
 }

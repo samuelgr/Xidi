@@ -11,6 +11,7 @@
 
 #include "ApiDirectInput.h"
 #include "ImportApiDirectInput.h"
+#include "Log.h"
 
 using namespace Xidi;
 
@@ -52,47 +53,48 @@ HRESULT ImportApiDirectInput::Initialize(void)
         
         // Attempt to load the library.
         HMODULE loadedLibrary = LoadLibraryEx(libraryName, NULL, 0);
-        if (NULL == loadedLibrary) return E_FAIL;
+        if (NULL == loadedLibrary) return LogInitializeFailed();
 
         // Attempt to obtain the addresses of all imported API functions.
         FARPROC procAddress = NULL;
         
 #if DIRECTINPUT_VERSION >= 0x0800
         procAddress = GetProcAddress(loadedLibrary, "DirectInput8Create");
-        if (NULL == procAddress) return E_FAIL;
+        if (NULL == procAddress) return LogInitializeFailed();
         importTable.DirectInput8Create = (HRESULT(STDMETHODCALLTYPE *)(HINSTANCE, DWORD, REFIID, LPVOID*, LPUNKNOWN))procAddress;
 #else
         procAddress = GetProcAddress(loadedLibrary, "DirectInputCreateA");
-        if (NULL == procAddress) return E_FAIL;
+        if (NULL == procAddress) return LogInitializeFailed();
         importTable.DirectInputCreateA = (HRESULT(STDMETHODCALLTYPE *)(HINSTANCE, DWORD, LPDIRECTINPUTA*, LPUNKNOWN))procAddress;
 
         procAddress = GetProcAddress(loadedLibrary, "DirectInputCreateW");
-        if (NULL == procAddress) return E_FAIL;
+        if (NULL == procAddress) return LogInitializeFailed();
         importTable.DirectInputCreateW = (HRESULT(STDMETHODCALLTYPE *)(HINSTANCE, DWORD, LPDIRECTINPUTW*, LPUNKNOWN))procAddress;
 
         procAddress = GetProcAddress(loadedLibrary, "DirectInputCreateEx");
-        if (NULL == procAddress) return E_FAIL;
+        if (NULL == procAddress) return LogInitializeFailed();
         importTable.DirectInputCreateEx = (HRESULT(STDMETHODCALLTYPE *)(HINSTANCE, DWORD, REFIID, LPVOID*, LPUNKNOWN))procAddress;
 #endif
 
         procAddress = GetProcAddress(loadedLibrary, "DllRegisterServer");
-        if (NULL == procAddress) return E_FAIL;
+        if (NULL == procAddress) return LogInitializeFailed();
         importTable.DllRegisterServer = (HRESULT(STDMETHODCALLTYPE *)(void))procAddress;
 
         procAddress = GetProcAddress(loadedLibrary, "DllUnregisterServer");
-        if (NULL == procAddress) return E_FAIL;
+        if (NULL == procAddress) return LogInitializeFailed();
         importTable.DllUnregisterServer = (HRESULT(STDMETHODCALLTYPE *)(void))procAddress;
 
         procAddress = GetProcAddress(loadedLibrary, "DllCanUnloadNow");
-        if (NULL == procAddress) return E_FAIL;
+        if (NULL == procAddress) return LogInitializeFailed();
         importTable.DllCanUnloadNow = (HRESULT(STDMETHODCALLTYPE *)(void))procAddress;
 
         procAddress = GetProcAddress(loadedLibrary, "DllGetClassObject");
-        if (NULL == procAddress) return E_FAIL;
+        if (NULL == procAddress) return LogInitializeFailed();
         importTable.DllGetClassObject = (HRESULT(STDMETHODCALLTYPE *)(REFCLSID, REFIID, LPVOID*))procAddress;
         
         // Initialization complete.
         importTableIsInitialized = TRUE;
+        LogInitializeSucceeded();
     }
 
     return S_OK;
@@ -176,4 +178,21 @@ HRESULT ImportApiDirectInput::DllGetClassObject(REFCLSID rclsid, REFIID riid, LP
         return E_NOT_VALID_STATE;
 
     return importTable.DllGetClassObject(rclsid, riid, ppv);
+}
+
+
+// -------- HELPERS -------------------------------------------------------- //
+// See "ImportApiDirectInput.h" for documentation.
+
+HRESULT ImportApiDirectInput::LogInitializeFailed(void)
+{
+    Log::WriteLogMessageFromResource(ELogLevel::LogLevelError, IDS_XIDI_IMPORTAPIDIRECTINPUT_INIT_FAILED);
+    return E_FAIL;
+}
+
+// ---------
+
+void ImportApiDirectInput::LogInitializeSucceeded(void)
+{
+    Log::WriteFormattedLogMessageFromResource(ELogLevel::LogLevelInfo, IDS_XIDI_IMPORTAPIDIRECTINPUT_INIT_SUCCEEDED);
 }
