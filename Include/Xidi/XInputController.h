@@ -122,7 +122,7 @@ namespace Xidi
         XInputController(DWORD xinputUserIndex);
 
         // Default destructor.
-        ~XInputController();
+        virtual ~XInputController();
         
         
         // -------- CLASS METHODS -------------------------------------------------- //

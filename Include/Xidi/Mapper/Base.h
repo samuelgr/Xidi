@@ -130,7 +130,7 @@ namespace Xidi
             Base();
             
             // Default destructor.
-            ~Base();
+            virtual ~Base();
             
             
             // -------- CLASS METHODS -------------------------------------------------- //

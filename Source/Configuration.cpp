@@ -170,6 +170,8 @@ void Configuration::ParseAndApplyConfigurationFile(void)
                     // Attempt to apply the value.
                     if (false == ((TFuncApplyIntSetting)extractedValueInfo.applyFunc)(parsedValue.integerValue))
                         HandleErrorCannotApplyValue(configurationFilePath, configurationLineNumber, extractedValue.c_str(), currentConfigurationSectionName.c_str(), extractedName.c_str());
+                    else
+                        HandleSuccessAppliedValue(configurationFilePath, configurationLineNumber, extractedValue.c_str(), currentConfigurationSectionName.c_str(), extractedName.c_str());
                     
                     break;
 
@@ -186,6 +188,8 @@ void Configuration::ParseAndApplyConfigurationFile(void)
                     // Attempt to apply the value.
                     if (false == ((TFuncApplyBoolSetting)extractedValueInfo.applyFunc)(parsedValue.booleanValue))
                         HandleErrorCannotApplyValue(configurationFilePath, configurationLineNumber, extractedValue.c_str(), currentConfigurationSectionName.c_str(), extractedName.c_str());
+                    else
+                        HandleSuccessAppliedValue(configurationFilePath, configurationLineNumber, extractedValue.c_str(), currentConfigurationSectionName.c_str(), extractedName.c_str());
                     
                     break;
 
@@ -197,6 +201,8 @@ void Configuration::ParseAndApplyConfigurationFile(void)
                     // Attempt to apply the value.
                     if (false == ((TFuncApplyStringSetting)extractedValueInfo.applyFunc)(*parsedValue.stringValue))
                         HandleErrorCannotApplyValue(configurationFilePath, configurationLineNumber, extractedValue.c_str(), currentConfigurationSectionName.c_str(), extractedName.c_str());
+                    else
+                        HandleSuccessAppliedValue(configurationFilePath, configurationLineNumber, extractedValue.c_str(), currentConfigurationSectionName.c_str(), extractedName.c_str());
                     
                     break;
 
@@ -574,4 +580,11 @@ void Configuration::HandleErrorFileIO(LPCTSTR filename)
 void Configuration::HandleErrorInternal(const DWORD code)
 {
     Log::WriteFormattedLogMessageFromResource(ELogLevel::LogLevelForced, IDS_XIDI_CONFIGURATION_FILE_ERROR_INTERNAL_FORMAT, code);
+}
+
+// ---------
+
+void Configuration::HandleSuccessAppliedValue(LPCTSTR filename, const DWORD linenum, LPCTSTR setting, LPCTSTR section, LPCTSTR value)
+{
+    Log::WriteFormattedLogMessageFromResource(ELogLevel::LogLevelInfo, IDS_XIDI_CONFIGURATION_FILE_SUCCESS_APPLY_FORMAT, setting, value, section, linenum, filename);
 }

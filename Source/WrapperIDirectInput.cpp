@@ -114,7 +114,7 @@ HRESULT STDMETHODCALLTYPE WrapperIDirectInput::EnumDevices(DWORD dwDevType, LPDI
     callbackInfo.lpCallback = lpCallback;
     callbackInfo.pvRef = pvRef;
     
-    BOOL xinputEnumResult = DIENUM_CONTINUE;
+    HRESULT xinputEnumResult = DIENUM_CONTINUE;
 
     // Only enumerate XInput controllers if the application requests a type that includes game controllers.
 #if DIRECTINPUT_VERSION >= 0x0800

@@ -83,7 +83,7 @@ BOOL ControllerIdentification::DoesDirectInputControllerSupportXInput(EarliestID
 
 // ---------
 
-BOOL ControllerIdentification::EnumerateXInputControllersA(LPDIENUMDEVICESCALLBACKA lpCallback, LPVOID pvRef)
+HRESULT ControllerIdentification::EnumerateXInputControllersA(LPDIENUMDEVICESCALLBACKA lpCallback, LPVOID pvRef)
 {
     for (WORD idx = 0; idx < XInputController::kMaxNumXInputControllers; ++idx)
     {
@@ -114,7 +114,7 @@ BOOL ControllerIdentification::EnumerateXInputControllersA(LPDIENUMDEVICESCALLBA
 
 // ---------
 
-BOOL ControllerIdentification::EnumerateXInputControllersW(LPDIENUMDEVICESCALLBACKW lpCallback, LPVOID pvRef)
+HRESULT ControllerIdentification::EnumerateXInputControllersW(LPDIENUMDEVICESCALLBACKW lpCallback, LPVOID pvRef)
 {
     for (WORD idx = 0; idx < XInputController::kMaxNumXInputControllers; ++idx)
     {

@@ -92,6 +92,8 @@ LONG Base::ApplyAxisPropertiesToRawValue(const TInstance axisInstance, const LON
 	return axisFinalValue;
 }
 
+// ---------
+
 void Base::AxisTypeToStringA(REFGUID axisTypeGUID, LPSTR buf, const int bufcount)
 {
     if (axisTypeGUID == GUID_XAxis)

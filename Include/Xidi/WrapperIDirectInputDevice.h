@@ -47,7 +47,7 @@ namespace Xidi
         WrapperIDirectInputDevice(BOOL useUnicode, XInputController* controller, Mapper::Base* mapper);
 
         // Default destructor.
-        ~WrapperIDirectInputDevice();
+        virtual ~WrapperIDirectInputDevice();
         
         
     public:

@@ -22,7 +22,7 @@ using namespace Xidi;
 HINSTANCE Globals::gInstanceHandle = NULL;
 
 
-// -------- CLASS METHODS (ACCESSORS) -------------------------------------- //
+// -------- CLASS METHODS -------------------------------------------------- //
 // See "Globals.h" for documentation.
 
 HINSTANCE Globals::GetInstanceHandle(void)
@@ -30,9 +30,7 @@ HINSTANCE Globals::GetInstanceHandle(void)
     return gInstanceHandle;
 }
 
-
-// -------- CLASS METHODS (MUTATORS) --------------------------------------- //
-// See "Globals.h" for documentation.
+// ---------
 
 void Globals::SetInstanceHandle(HINSTANCE newInstanceHandle)
 {

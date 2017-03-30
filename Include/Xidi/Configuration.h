@@ -166,5 +166,9 @@ namespace Xidi
         // Handles a miscellaneous internal error related to being unable to read the configuration file.
         // The code should be presented to the user.
         static void HandleErrorInternal(const DWORD code);
+        
+        // Handles a success case in which a value is parsed correctly and successfully applied.
+        // The filename, line number, setting value, section name, and value are all passed as parameters for the purpose of generating a suitable message.
+        static void HandleSuccessAppliedValue(LPCTSTR filename, const DWORD linenum, LPCTSTR setting, LPCTSTR section, LPCTSTR value);
     };
 }

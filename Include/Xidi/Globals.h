@@ -35,13 +35,10 @@ namespace Xidi
 
 
     public:
-        // -------- CLASS METHODS (ACCESSORS) -------------------------------------- //
+        // -------- CLASS METHODS -------------------------------------------------- //
 
         // Retrieves the handle of the instance that represents the current running form of Xidi, be it the library or the test application.
         static HINSTANCE GetInstanceHandle(void);
-        
-
-        // -------- CLASS METHODS (MUTATORS) --------------------------------------- //
         
         // Sets the handle of the instance that represents the current running form of Xidi, be it the library or the test application.
         static void SetInstanceHandle(HINSTANCE newInstanceHandle);

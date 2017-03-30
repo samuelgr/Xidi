@@ -828,23 +828,16 @@ int RunTestApp(int argc, char* argv[])
     CopyMemory(&testBufferedData, &testData, sizeof(testData));
     
     tout << _T("DONE") << endl;
-    tout << _T("Device state is updated up to 30 times per second.") << endl;
+    tout << _T("Device state is updated twice per second, with multiple polls in between.") << endl;
     tout << _T("All axes are set to a range of -100 to +100, with 25% each deadzone/saturation.") << endl;
-    tout << _T("Quits automatically after 300 updates. To quit early, use CTRL+C.") << endl;
+    tout << _T("Quits automatically after 50 updates. To quit early, use CTRL+C.") << endl;
     system("pause");
     system("cls");
 
-    for (unsigned int i = 0; i < 300; ++i)
+    for (unsigned int i = 0; i < 50; ++i)
     {
         system("cls");
-        
-        // Poll the device to update its state.
-        result = directInputDeviceIface->Poll();
-        if (DI_OK != result)
-        {
-            tout << _T("Failed to poll device.") << endl;
-            return -1;
-        }
+        tout << _T("Update #") << (i+1) << endl;
 
         // Retrieve the device's buffered input events.
         bufferedDataCount = _countof(bufferedData);
@@ -927,7 +920,18 @@ int RunTestApp(int argc, char* argv[])
                 tout << _T(" ") << (i + 1);
         }
         
-        Sleep(33);
+        for (int i = 0; i < 10; ++i)
+        {
+            // Poll the device to update its state.
+            result = directInputDeviceIface->Poll();
+            if (DI_OK != result)
+            {
+                tout << _T("Failed to poll device.") << endl;
+                return -1;
+            }
+
+            Sleep(50);
+        }
     }
 
     

@@ -49,6 +49,8 @@ const TInstanceCount XInputSharedTriggers::AxisTypeCount(REFGUID axisGUID)
     return 0;
 }
 
+// ---------
+
 const GUID XInputSharedTriggers::AxisTypeFromInstanceNumber(const TInstanceIdx instanceNumber)
 {
     EAxis axisNumber = (EAxis)instanceNumber;

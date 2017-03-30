@@ -47,6 +47,8 @@ const TInstanceCount StandardGamepad::AxisTypeCount(REFGUID axisGUID)
     return 0;
 }
 
+// ---------
+
 const GUID StandardGamepad::AxisTypeFromInstanceNumber(const TInstanceIdx instanceNumber)
 {
     EAxis axisNumber = (EAxis)instanceNumber;

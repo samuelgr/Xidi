@@ -49,6 +49,8 @@ const TInstanceCount XInputNative::AxisTypeCount(REFGUID axisGUID)
     return 0;
 }
 
+// ---------
+
 const GUID XInputNative::AxisTypeFromInstanceNumber(const TInstanceIdx instanceNumber)
 {
     EAxis axisNumber = (EAxis)instanceNumber;

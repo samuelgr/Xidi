@@ -128,8 +128,8 @@ int RunTestApp(int argc, char* argv[])
 
     tout << _T("Preparing to launch interactive mode... ");
     tout << _T("DONE") << endl;
-    tout << _T("Device state is updated up to 30 times per second.") << endl;
-    tout << _T("Quits automatically after 300 updates. To quit early, use CTRL+C.") << endl;
+    tout << _T("Device state is updated twice per second.") << endl;
+    tout << _T("Quits automatically after 50 updates. To quit early, use CTRL+C.") << endl;
     system("pause");
     system("cls");
 
@@ -138,9 +138,10 @@ int RunTestApp(int argc, char* argv[])
     testData.dwSize = sizeof(testData);
     testData.dwFlags = JOY_RETURNALL;
 
-    for (unsigned int i = 0; i < 300; ++i)
+    for (unsigned int i = 0; i < 50; ++i)
     {
         system("cls");
+        tout << _T("Update #") << (i+1) << endl;
         
         result = ExportApiWinMMJoyGetPosEx(devIdx, &testData);
         if (JOYERR_NOERROR != result)
@@ -187,14 +188,14 @@ int RunTestApp(int argc, char* argv[])
                 tout << _T(" ") << (i + 1);
         }
 
-        Sleep(33);
+        Sleep(500);
     }
 
 
     ////////////////////////////////////
     ////////   Cleanup and Exit
 
-    tout << _T("Exiting.") << endl;
+    tout << _T("\nExiting.") << endl;
     return 0;
 }
 
