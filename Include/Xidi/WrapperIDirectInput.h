@@ -43,6 +43,12 @@ namespace Xidi
     private:
         // -------- HELPERS -------------------------------------------------------- //
         
+        // Logs an informational event related to creating a non-XInput device.
+        static void LogCreateDeviceNonXInput(void);
+
+        // Logs an informational event related to creating an XInput device.
+        static void LogCreateDeviceXInput(unsigned int index);
+        
         // Logs a debug event related to enumerating a device to the application.
         static void LogEnumDevice(LPCTSTR deviceName);
 

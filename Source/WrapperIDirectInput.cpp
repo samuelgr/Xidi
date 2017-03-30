@@ -44,6 +44,20 @@ WrapperIDirectInput::WrapperIDirectInput(LatestIDirectInput* underlyingDIObject,
 // -------- HELPERS -------------------------------------------------------- //
 // See "WrapperIDirectInput.h" for documentation.
 
+void WrapperIDirectInput::LogCreateDeviceNonXInput(void)
+{
+    Log::WriteLogMessageFromResource(ELogLevel::LogLevelInfo, IDS_XIDI_WRAPPERIDIRECTINPUT_CREATE_NONXINPUT);
+}
+
+// --------
+
+void WrapperIDirectInput::LogCreateDeviceXInput(unsigned int index)
+{
+    Log::WriteFormattedLogMessageFromResource(ELogLevel::LogLevelInfo, IDS_XIDI_WRAPPERIDIRECTINPUT_CREATE_XINPUT_FORMAT, index);
+}
+
+// --------
+
 void WrapperIDirectInput::LogEnumDevice(LPCTSTR deviceName)
 {
     Log::WriteFormattedLogMessageFromResource(ELogLevel::LogLevelDebug, IDS_XIDI_WRAPPERIDIRECTINPUT_ENUM_DEVICES_ENUM_FORMAT, deviceName);
@@ -140,11 +154,13 @@ HRESULT STDMETHODCALLTYPE WrapperIDirectInput::CreateDevice(REFGUID rguid, Earli
     if (-1 == xinputIndex)
     {
         // Not an XInput GUID, so just create the device as requested by the application.
+        LogCreateDeviceNonXInput();
         return underlyingDIObject->CreateDevice(rguid, lplpDirectInputDevice, pUnkOuter);
     }
     else
     {
         // Is an XInput GUID, so create a fake device that will communicate with the XInput controller of the specified index.
+        LogCreateDeviceXInput(xinputIndex + 1);
         *lplpDirectInputDevice = new WrapperIDirectInputDevice(underlyingDIObjectUsesUnicode, new XInputController(xinputIndex), MapperFactory::CreateMapper());
         return DI_OK;
     }
@@ -207,7 +223,19 @@ HRESULT STDMETHODCALLTYPE WrapperIDirectInput::FindDevice(REFGUID rguidClass, LP
 
 HRESULT STDMETHODCALLTYPE WrapperIDirectInput::GetDeviceStatus(REFGUID rguidInstance)
 {
-    return underlyingDIObject->GetDeviceStatus(rguidInstance);
+    // Check if the specified instance GUID is an XInput GUID.
+    LONG xinputIndex = ControllerIdentification::XInputControllerIndexForInstanceGUID(rguidInstance);
+
+    if (-1 == xinputIndex)
+    {
+        // Not an XInput GUID, so ask the underlying implementation for status.
+        return underlyingDIObject->GetDeviceStatus(rguidInstance);
+    }
+    else
+    {
+        // Is an XInput GUID, so specify that it is connected.
+        return DI_OK;
+    }
 }
 
 // ---------
