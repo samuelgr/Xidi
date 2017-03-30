@@ -12,6 +12,7 @@
 
 #include "ApiDirectInput.h"
 #include "ControllerIdentification.h"
+#include "Log.h"
 #include "MapperFactory.h"
 #include "WrapperIDirectInput.h"
 #include "WrapperIDirectInputDevice.h"
@@ -38,6 +39,50 @@ namespace Xidi
 // See "WrapperIDirectInput.h" for documentation.
 
 WrapperIDirectInput::WrapperIDirectInput(LatestIDirectInput* underlyingDIObject, BOOL underlyingDIObjectUsesUnicode) : underlyingDIObject(underlyingDIObject), underlyingDIObjectUsesUnicode(underlyingDIObjectUsesUnicode) {}
+
+
+// -------- HELPERS -------------------------------------------------------- //
+// See "WrapperIDirectInput.h" for documentation.
+
+void WrapperIDirectInput::LogEnumDevice(LPCTSTR deviceName)
+{
+    Log::WriteFormattedLogMessageFromResource(ELogLevel::LogLevelDebug, IDS_XIDI_WRAPPERIDIRECTINPUT_ENUM_DEVICES_ENUM_FORMAT, deviceName);
+}
+
+// --------
+
+void WrapperIDirectInput::LogEnumFinishEarly(void)
+{
+    Log::WriteFormattedLogMessageFromResource(ELogLevel::LogLevelDebug, IDS_XIDI_WRAPPERIDIRECTINPUT_ENUM_DEVICES_FINISH_EARLY);
+}
+
+// --------
+
+void WrapperIDirectInput::LogEnumSkipDevice(LPCTSTR deviceName)
+{
+    Log::WriteFormattedLogMessageFromResource(ELogLevel::LogLevelDebug, IDS_XIDI_WRAPPERIDIRECTINPUT_ENUM_DEVICES_SKIP_FORMAT, deviceName);
+}
+
+// --------
+
+void WrapperIDirectInput::LogEnumXidiDevices(void)
+{
+    Log::WriteLogMessageFromResource(ELogLevel::LogLevelDebug, IDS_XIDI_WRAPPERIDIRECTINPUT_ENUM_DEVICES_XIDI);
+}
+
+// --------
+
+void WrapperIDirectInput::LogStartEnumDevices(void)
+{
+    Log::WriteLogMessageFromResource(ELogLevel::LogLevelDebug, IDS_XIDI_WRAPPERIDIRECTINPUT_ENUM_DEVICES_START);
+}
+
+// --------
+
+void WrapperIDirectInput::LogFinishEnumDevices(void)
+{
+    Log::WriteLogMessageFromResource(ELogLevel::LogLevelDebug, IDS_XIDI_WRAPPERIDIRECTINPUT_ENUM_DEVICES_FINISH);
+}
 
 
 // -------- METHODS: IUnknown ---------------------------------------------- //
@@ -114,7 +159,9 @@ HRESULT STDMETHODCALLTYPE WrapperIDirectInput::EnumDevices(DWORD dwDevType, LPDI
     callbackInfo.lpCallback = lpCallback;
     callbackInfo.pvRef = pvRef;
     
-    HRESULT xinputEnumResult = DIENUM_CONTINUE;
+    HRESULT enumResult = DIENUM_CONTINUE;
+
+    LogStartEnumDevices();
 
     // Only enumerate XInput controllers if the application requests a type that includes game controllers.
 #if DIRECTINPUT_VERSION >= 0x0800
@@ -126,19 +173,27 @@ HRESULT STDMETHODCALLTYPE WrapperIDirectInput::EnumDevices(DWORD dwDevType, LPDI
         // Currently force feedback is not suported.
         if (!(dwFlags & DIEDFL_FORCEFEEDBACK))
         {
+            LogEnumXidiDevices();
+            
             if (underlyingDIObjectUsesUnicode)
-                xinputEnumResult = ControllerIdentification::EnumerateXInputControllersW((LPDIENUMDEVICESCALLBACKW)lpCallback, pvRef);
+                enumResult = ControllerIdentification::EnumerateXInputControllersW((LPDIENUMDEVICESCALLBACKW)lpCallback, pvRef);
             else
-                xinputEnumResult = ControllerIdentification::EnumerateXInputControllersA((LPDIENUMDEVICESCALLBACKA)lpCallback, pvRef);
+                enumResult = ControllerIdentification::EnumerateXInputControllersA((LPDIENUMDEVICESCALLBACKA)lpCallback, pvRef);
         }
     }
 
     // If either no XInput devices were enumerated or the application wants to continue enumeration, hand the process off to the native DirectInput library.
     // The callback below will filter out any DirectInput devices that are also XInput-based devices.
-    if (DIENUM_CONTINUE == xinputEnumResult)
-        return underlyingDIObject->EnumDevices(dwDevType, &WrapperIDirectInput::CallbackEnumDevices, (LPVOID)&callbackInfo, dwFlags);
+    if (DIENUM_CONTINUE == enumResult)
+        enumResult = underlyingDIObject->EnumDevices(dwDevType, &WrapperIDirectInput::CallbackEnumDevices, (LPVOID)&callbackInfo, dwFlags);
     else
-        return DI_OK;
+    {
+        LogEnumFinishEarly();
+        enumResult = DI_OK;
+    }
+
+    LogFinishEnumDevices();
+    return enumResult;
 }
 
 // ---------
@@ -179,9 +234,19 @@ BOOL STDMETHODCALLTYPE WrapperIDirectInput::CallbackEnumDevices(LPCDIDEVICEINSTA
     
     // Do not enumerate controllers that support XInput; these are enumerated separately.
     if (ControllerIdentification::DoesDirectInputControllerSupportXInput(callbackInfo->instance->underlyingDIObject, lpddi->guidInstance))
+    {
+        LogEnumSkipDevice(lpddi->tszProductName);
         return DIENUM_CONTINUE;
+    }
     
-    return callbackInfo->lpCallback(lpddi, callbackInfo->pvRef);
+    LogEnumDevice(lpddi->tszProductName);
+    
+    HRESULT enumResult = callbackInfo->lpCallback(lpddi, callbackInfo->pvRef);
+
+    if (DIENUM_CONTINUE != enumResult)
+        LogEnumFinishEarly();
+
+    return enumResult;
 }
 
 

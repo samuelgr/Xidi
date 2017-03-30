@@ -40,6 +40,29 @@ namespace Xidi
         WrapperIDirectInput(LatestIDirectInput* underlyingDIObject, BOOL underlyingDIObjectUsesUnicode);
         
         
+    private:
+        // -------- HELPERS -------------------------------------------------------- //
+        
+        // Logs a debug event related to enumerating a device to the application.
+        static void LogEnumDevice(LPCTSTR deviceName);
+
+        // Logs a debug event related to stopping enumeration early.
+        static void LogEnumFinishEarly(void);
+
+        // Logs a debug event related to skipping over enumeration of an XInput-compatible device.
+        static void LogEnumSkipDevice(LPCTSTR deviceName);
+
+        // Logs a debug event related to enumerating Xidi-created virtual devices.
+        static void LogEnumXidiDevices(void);
+        
+        // Logs a debug event related to starting to enumerate devices.
+        static void LogStartEnumDevices(void);
+        
+        // Logs a debug event related to finishing to enumerate devices.
+        static void LogFinishEnumDevices(void);
+        
+
+    public:
         // -------- METHODS: IUnknown ---------------------------------------------- //
         virtual HRESULT STDMETHODCALLTYPE QueryInterface(REFIID riid, LPVOID* ppvObj);
         virtual ULONG STDMETHODCALLTYPE AddRef(void);
