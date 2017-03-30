@@ -9,17 +9,13 @@
  *      Implementation of importing the API from the WinMM library.
  *****************************************************************************/
 
+#include "ApiStdString.h"
 #include "ApiWindows.h"
+#include "Globals.h"
 #include "ImportApiWinMM.h"
 #include "Log.h"
 
 using namespace Xidi;
-
-
-// -------- CONSTANTS ------------------------------------------------------ //
-// See "ImportApiWinMM.h" for documentation.
-
-const StdString ImportApiWinMM::kWinMMLibraryName = _T("\\winmm.dll");
 
 
 // -------- CLASS VARIABLES ------------------------------------------------ //
@@ -40,14 +36,12 @@ MMRESULT ImportApiWinMM::Initialize(void)
         ZeroMemory(&importTable, sizeof(importTable));
         
         // Obtain the full library path string.
-        // A path must be specified directly since the system has already loaded this DLL of the same name.
-        TCHAR libraryName[kMaximumLibraryNameLength];
-        GetSystemDirectory(libraryName, kMaximumSystemDirectoryNameLength);
-        _tcsncat_s(libraryName, _countof(libraryName), kWinMMLibraryName.c_str(), kWinMMLibraryName.length());
+        StdString libraryPath;
+        Globals::FillWinMMLibraryPath(libraryPath);
         
         // Attempt to load the library.
-        LogInitializeLibraryPath(libraryName);
-        HMODULE loadedLibrary = LoadLibraryEx(libraryName, NULL, 0);
+        LogInitializeLibraryPath(libraryPath.c_str());
+        HMODULE loadedLibrary = LoadLibraryEx(libraryPath.c_str(), NULL, 0);
         if (NULL == loadedLibrary) return LogInitializeFailed();
         
         // Attempt to obtain the addresses of all imported API functions.
@@ -941,7 +935,7 @@ MMRESULT ImportApiWinMM::waveOutWrite(HWAVEOUT hwo, LPWAVEHDR pwh, UINT cbwh)
 // -------- HELPERS -------------------------------------------------------- //
 // See "ImportApiWinMM.h" for documentation.
 
-void ImportApiWinMM::LogInitializeLibraryPath(LPTSTR libraryPath)
+void ImportApiWinMM::LogInitializeLibraryPath(LPCTSTR libraryPath)
 {
     Log::WriteFormattedLogMessageFromResource(ELogLevel::LogLevelDebug, IDS_XIDI_IMPORTAPIWINMM_INIT_PATH_FORMAT, libraryPath);
 }

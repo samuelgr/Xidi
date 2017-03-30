@@ -9,6 +9,7 @@
  *      Implementation of configuration file functionality.
  *****************************************************************************/
 
+#include "ApiCharacterType.h"
 #include "ApiStdString.h"
 #include "Configuration.h"
 #include "Globals.h"
@@ -17,11 +18,9 @@
 #include "Log.h"
 #include "MapperFactory.h"
 
-#include <cctype>
-#include <cstdlib>
+#include <cstdio>
 #include <unordered_set>
 #include <unordered_map>
-#include <utility>
 
 
 using namespace Xidi;
@@ -31,9 +30,9 @@ using namespace Xidi;
 // See "Configuration.h" for documentation.
 
 std::unordered_map<StdString, SConfigurationValueApplyInfo> Configuration::importSettings = {
-    {_T("dinput.dll"),                          {EConfigurationValueType::ConfigurationValueTypeString,     (void*)NULL}},
-    {_T("dinput8.dll"),                         {EConfigurationValueType::ConfigurationValueTypeString,     (void*)NULL}},
-    {_T("winmm.dll"),                           {EConfigurationValueType::ConfigurationValueTypeString,     (void*)NULL}},
+    {_T("dinput.dll"),                          {EConfigurationValueType::ConfigurationValueTypeString,     (void*)Globals::ApplyOverrideImportDirectInput}},
+    {_T("dinput8.dll"),                         {EConfigurationValueType::ConfigurationValueTypeString,     (void*)Globals::ApplyOverrideImportDirectInput8}},
+    {_T("winmm.dll"),                           {EConfigurationValueType::ConfigurationValueTypeString,     (void*)Globals::ApplyOverrideImportWinMM}},
 };
 
 std::unordered_map<StdString, SConfigurationValueApplyInfo> Configuration::logSettings = {
@@ -271,7 +270,7 @@ EConfigurationLineType Configuration::ClassifyConfigurationFileLine(LPCTSTR buf,
     // Skip over all whitespace at the start of the input line.
     LPCTSTR realBuf = buf;
     size_t realLength = length;
-    while (realLength != 0 && isblank(realBuf[0]))
+    while (realLength != 0 && istblank(realBuf[0]))
     {
         realLength -= 1;
         realBuf += 1;
@@ -291,14 +290,14 @@ EConfigurationLineType Configuration::ClassifyConfigurationFileLine(LPCTSTR buf,
     if (_T('[') == realBuf[0])
     {
         // The line cannot be a section header unless the second character is alphanumeric (there must be at least one character in the name of the section).
-        if (!isalnum(realBuf[1]))
+        if (!istalnum(realBuf[1]))
             return EConfigurationLineType::ConfigurationLineTypeError;
         
         // Verify that the line is a valid section header by checking for alphanumeric characters between two square brackets.
         size_t i = 2;
         for (; i < realLength && _T(']') != realBuf[i]; ++i)
         {
-            if (!isalnum(realBuf[i]))
+            if (!istalnum(realBuf[i]))
                 return EConfigurationLineType::ConfigurationLineTypeError;
         }
         if (_T(']') != realBuf[i])
@@ -307,39 +306,39 @@ EConfigurationLineType Configuration::ClassifyConfigurationFileLine(LPCTSTR buf,
         // Verify that the remainder of the line is either a comment or just whitespace.
         for (i += 1; i < realLength && _T(';') != realBuf[i] && _T('#') != realBuf[i]; ++i)
         {
-            if (!isblank(realBuf[i]))
+            if (!istblank(realBuf[i]))
                 return EConfigurationLineType::ConfigurationLineTypeError;
         }
 
         return EConfigurationLineType::ConfigurationLineTypeSection;
     }
-    else if (isalnum(realBuf[0]))
+    else if (IsAllowedValueNameCharacter(realBuf[0]))
     {
-        // Search for whitespace or an equals sign, with all characters in between needing to be alphanumeric.
+        // Search for whitespace or an equals sign, with all characters in between needing to be allowed as value name characters.
         size_t i = 1;
-        for (; i < realLength && _T('=') != realBuf[i] && !isblank(realBuf[i]); ++i)
+        for (; i < realLength && _T('=') != realBuf[i] && !istblank(realBuf[i]); ++i)
         {
-            if (!isalnum(realBuf[i]))
+            if (!IsAllowedValueNameCharacter(realBuf[i]))
                 return EConfigurationLineType::ConfigurationLineTypeError;
         }
 
         // Skip over any whitespace present, then check for an equals sign.
-        for (; i < realLength && isblank(realBuf[i]); ++i);
+        for (; i < realLength && istblank(realBuf[i]); ++i);
         if (_T('=') != realBuf[i])
             return EConfigurationLineType::ConfigurationLineTypeError;
         
-        // Skip over any whitespace present, then verify the next character is alphanumeric to start a value.
-        for (i += 1; i < realLength && isblank(realBuf[i]); ++i);
-        if (!isalnum(realBuf[i]))
+        // Skip over any whitespace present, then verify the next character is allowed to start a value setting.
+        for (i += 1; i < realLength && istblank(realBuf[i]); ++i);
+        if (!IsAllowedValueSettingCharacter(realBuf[i]))
             return EConfigurationLineType::ConfigurationLineTypeError;
         
-        // Skip over the alphanumeric characters that follow, effectively skipping over the value itself.
-        for (i += 1; i < realLength && isalnum(realBuf[i]); ++i);
+        // Skip over the value setting characters that follow.
+        for (i += 1; i < realLength && IsAllowedValueSettingCharacter(realBuf[i]); ++i);
 
         // Verify that the remainder of the line is either a comment or just whitespace.
         for (; i < realLength && _T(';') != realBuf[i] && _T('#') != realBuf[i]; ++i)
         {
-            if (!isblank(realBuf[i]))
+            if (!istblank(realBuf[i]))
                 return EConfigurationLineType::ConfigurationLineTypeError;
         }
         
@@ -355,30 +354,67 @@ void Configuration::ExtractNameValuePairFromConfigurationFileLine(StdString& nam
 {
     // Skip to the start of the configuration name.
     LPTSTR configBuf = configFileLine;
-    while (isblank(configBuf[0]))
+    while (istblank(configBuf[0]))
         configBuf += 1;
 
     // Find the length of the configuration name.
     size_t configLength = 1;
-    while (!isblank(configBuf[configLength]) && !(_T('=') == configBuf[configLength]))
+    while (IsAllowedValueNameCharacter(configBuf[configLength]))
         configLength += 1;
 
     // NULL-terminate the configuration name, then assign to the output string.
     configBuf[configLength] = _T('\0');
     name = configBuf;
 
-    // Same process for configuration value.
+    // Advance to the value portion of the string.
     configBuf = &configBuf[configLength + 1];
 
-    while (!isalnum(configBuf[0]))
+    // Skip over whitespace and the '=' sign.
+    while ((_T('=') == configBuf[0]) || (istblank(configBuf[0])))
         configBuf += 1;
 
+    // Find the length of the configuration value.
     configLength = 1;
-    while (isalnum(configBuf[configLength]))
+    while (IsAllowedValueSettingCharacter(configBuf[configLength]))
         configLength += 1;
 
+    // Trim off any dangling whitespace.
+    while ((1 < configLength) && (istblank(configBuf[configLength - 1])))
+        configLength -= 1;
+    
     configBuf[configLength] = _T('\0');
     value = configBuf;
+}
+
+// ---------
+
+int Configuration::IsAllowedValueNameCharacter(const TCHAR charToTest)
+{
+    switch (charToTest)
+    {
+    case _T('.'):
+        return true;
+
+    default:
+        return istalnum(charToTest);
+    }
+}
+
+// ---------
+
+int Configuration::IsAllowedValueSettingCharacter(const TCHAR charToTest)
+{
+    switch (charToTest)
+    {
+    case _T('.'):
+    case _T('\\'):
+    case _T(' '):
+    case _T(':'):
+        return true;
+
+    default:
+        return istalnum(charToTest);
+    }
 }
 
 // ---------

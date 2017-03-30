@@ -113,7 +113,15 @@ namespace Xidi
         // Extracts a section name from the specified configuration file line, which must first have been classified as containing a section name.
         // Modifies the buffer by changing a value to the NULL character, indicating the end of the portion of interest in the input configuration file line.
         static void ExtractSectionNameFromConfigurationFileLine(StdString& sectionName, LPTSTR configFileLine);
+        
+        // Tests if the supplied character is allowed as a value name (the part before the '=' sign in the configuration file).
+        // Returns nonzero if true or zero if false (similar interface to cctype functions).
+        static int IsAllowedValueNameCharacter(const TCHAR charToTest);
 
+        // Tests if the supplied character is allowed as a value setting (the part after the '=' sign in the configuration file).
+        // Returns nonzero if true or zero if false (similar interface to cctype functions).
+        static int IsAllowedValueSettingCharacter(const TCHAR charToTest);
+        
         // Parses a signed integer value from the supplied input string.
         // Returns TRUE if the parse was successful and able to consume the whole string, FALSE otherwise.
         // Sets the destination parameter's value to the result of the parse, although it remains unmodified on parse failure.

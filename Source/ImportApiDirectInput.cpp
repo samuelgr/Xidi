@@ -10,20 +10,12 @@
  *****************************************************************************/
 
 #include "ApiDirectInput.h"
+#include "ApiStdString.h"
+#include "Globals.h"
 #include "ImportApiDirectInput.h"
 #include "Log.h"
 
 using namespace Xidi;
-
-
-// -------- CONSTANTS ------------------------------------------------------ //
-// See "ImportApiDirectInput.h" for documentation.
-
-#if DIRECTINPUT_VERSION >= 0x0800
-const StdString ImportApiDirectInput::kDirectInputLibraryName = _T("\\dinput8.dll");
-#else
-const StdString ImportApiDirectInput::kDirectInputLibraryName = _T("\\dinput.dll");
-#endif
 
 
 // -------- CLASS VARIABLES ------------------------------------------------ //
@@ -44,14 +36,17 @@ HRESULT ImportApiDirectInput::Initialize(void)
         ZeroMemory(&importTable, sizeof(importTable));
         
         // Obtain the full library path string.
-        // A path must be specified directly since the system has already loaded this DLL of the same name.
-        TCHAR libraryName[kMaximumLibraryNameLength];
-        GetSystemDirectory(libraryName, kMaximumSystemDirectoryNameLength);
-        _tcsncat_s(libraryName, _countof(libraryName), kDirectInputLibraryName.c_str(), kDirectInputLibraryName.length());
+        StdString libraryPath;
+
+#if DIRECTINPUT_VERSION >= 0x0800
+        Globals::FillDirectInput8LibraryPath(libraryPath);
+#else
+        Globals::FillDirectInputLibraryPath(libraryPath);
+#endif
         
         // Attempt to load the library.
-        LogInitializeLibraryPath(libraryName);
-        HMODULE loadedLibrary = LoadLibraryEx(libraryName, NULL, 0);
+        LogInitializeLibraryPath(libraryPath.c_str());
+        HMODULE loadedLibrary = LoadLibraryEx(libraryPath.c_str(), NULL, 0);
         if (NULL == loadedLibrary) return LogInitializeFailed();
 
         // Attempt to obtain the addresses of all imported API functions.
@@ -183,7 +178,7 @@ HRESULT ImportApiDirectInput::DllGetClassObject(REFCLSID rclsid, REFIID riid, LP
 // -------- HELPERS -------------------------------------------------------- //
 // See "ImportApiDirectInput.h" for documentation.
 
-void ImportApiDirectInput::LogInitializeLibraryPath(LPTSTR libraryPath)
+void ImportApiDirectInput::LogInitializeLibraryPath(LPCTSTR libraryPath)
 {
     Log::WriteFormattedLogMessageFromResource(ELogLevel::LogLevelDebug, IDS_XIDI_IMPORTAPIDIRECTINPUT_INIT_PATH_FORMAT, libraryPath);
 }

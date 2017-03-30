@@ -81,6 +81,9 @@
     <ClInclude Include="Resources\Xidi-DInput8.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="Include\Xidi\ApiCharacterType.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Source\ControllerIdentification.cpp">

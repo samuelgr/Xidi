@@ -44,18 +44,6 @@ namespace Xidi
         
         
     private:
-        // -------- CONSTANTS ------------------------------------------------------ //
-
-        // Holds the name of the library to load from the system directory.
-        static const StdString kDirectInputLibraryName;
-
-        // Maximum length of a library name.
-        static const size_t kMaximumLibraryNameLength = 2048;
-
-        // Maximum length of the system directory name.
-        static const size_t kMaximumSystemDirectoryNameLength = 512;
-        
-        
         // -------- CLASS VARIABLES ------------------------------------------------ //
 
         // Holds the imported DirectInput API function addresses.
@@ -109,7 +97,7 @@ namespace Xidi
         // -------- HELPERS -------------------------------------------------------- //
 
         // Logs a debug event related to attempting to load the system-provided library for importing functions.
-        static void LogInitializeLibraryPath(LPTSTR libraryPath);
+        static void LogInitializeLibraryPath(LPCTSTR libraryPath);
         
         // Logs an error event related to failure to initialize the import table.
         // Returns E_FAIL unconditionally.
