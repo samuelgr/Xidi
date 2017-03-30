@@ -96,14 +96,19 @@ namespace Xidi
     private:
         // -------- HELPERS -------------------------------------------------------- //
 
+        // Logs a warning event related to failure to import a particular function from the import library.
+        static void LogImportFailed(LPCTSTR functionName);
+        
         // Logs a debug event related to attempting to load the system-provided library for importing functions.
         static void LogInitializeLibraryPath(LPCTSTR libraryPath);
         
-        // Logs an error event related to failure to initialize the import table.
-        // Returns E_FAIL unconditionally.
-        static HRESULT LogInitializeFailed(void);
+        // Logs an error event related to failure to initialize the import table because the import library could not be loaded.
+        static void LogInitializeFailed(LPCTSTR libraryPath);
         
         // Logs an informational event related to successful initialization of the import table.
         static void LogInitializeSucceeded(void);
+
+        // Logs an error event related to a missing import function that has been invoked.
+        static void LogMissingFunctionCalled(LPCTSTR functionName);
     };
 }

@@ -34,6 +34,12 @@ static void LogSystemCreateError(HRESULT errorCode)
     Log::WriteFormattedLogMessageFromResource(ELogLevel::LogLevelDebug, IDS_XIDI_EXPORTAPIDIRECTINPUT_CREATE_FAILED_SYSTEM_FORMAT, errorCode);
 }
 
+// Logs a debug event indicating that an instance of IDirectInput(8) was created successfully.
+static void LogSystemCreateSuccess(void)
+{
+    Log::WriteLogMessageFromResource(ELogLevel::LogLevelDebug, IDS_XIDI_EXPORTAPIDIRECTINPUT_CREATE_SUCCEEDED);
+}
+
 
 // -------- DLL EXPORT FUNCTIONS ------------------------------------------- //
 // See DirectInput and COM documentation for more information.
@@ -56,6 +62,7 @@ HRESULT WINAPI ExportApiDirectInputDirectInput8Create(HINSTANCE hinst, DWORD dwV
     diObject = new WrapperIDirectInput(diObject, (IID_IDirectInput8W == riidltf));
     *ppvOut = (LPVOID)diObject;
 
+    LogSystemCreateSuccess();
     return result;
 }
 #else
@@ -76,6 +83,7 @@ HRESULT WINAPI ExportApiDirectInputDirectInputCreateA(HINSTANCE hinst, DWORD dwV
     diObject = new WrapperIDirectInput((LatestIDirectInput*)diObject, FALSE);
     *ppDI = (LPDIRECTINPUTA)diObject;
 
+    LogSystemCreateSuccess();
     return result;
 }
 
@@ -98,6 +106,7 @@ HRESULT WINAPI ExportApiDirectInputDirectInputCreateW(HINSTANCE hinst, DWORD dwV
     diObject = new WrapperIDirectInput((LatestIDirectInput*)diObject, TRUE);
     *ppDI = (LPDIRECTINPUTW)diObject;
 
+    LogSystemCreateSuccess();
     return result;
 }
 
@@ -132,6 +141,7 @@ HRESULT WINAPI ExportApiDirectInputDirectInputCreateEx(HINSTANCE hinst, DWORD dw
     diObject = new WrapperIDirectInput((LatestIDirectInput*)diObject, useUnicode);
     *ppvOut = (LPVOID)diObject;
 
+    LogSystemCreateSuccess();
     return result;
 }
 #endif

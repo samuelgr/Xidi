@@ -256,14 +256,14 @@ void Log::OutputStamp(ELogLevel severity)
     OutputLogMessage(_T("["));
 
     // Stamp part 2: date
-    if (0 != GetDateFormatEx(LOCALE_NAME_USER_DEFAULT, DATE_SHORTDATE, NULL, NULL, stampStringBuffer, _countof(stampStringBuffer), NULL))
+    if (0 != GetDateFormat(LOCALE_NAME_USER_DEFAULT, DATE_SHORTDATE, NULL, NULL, stampStringBuffer, _countof(stampStringBuffer)))
     {
         OutputLogMessage(stampStringBuffer);
         OutputLogMessage(_T(" "));
     }
 
     // Stamp part 3: time
-    if (0 != GetTimeFormatEx(LOCALE_NAME_USER_DEFAULT, 0, NULL, NULL, stampStringBuffer, _countof(stampStringBuffer)))
+    if (0 != GetTimeFormat(LOCALE_NAME_USER_DEFAULT, 0, NULL, NULL, stampStringBuffer, _countof(stampStringBuffer)))
     {
         OutputLogMessage(stampStringBuffer);
     }
