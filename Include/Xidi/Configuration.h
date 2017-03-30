@@ -62,6 +62,9 @@ namespace Xidi
     private:
         // -------- CLASS VARIABLES ------------------------------------------------ //
 
+        // Defines the supported values in the "Import" section of the configuration file.
+        static std::unordered_map<StdString, SConfigurationValueApplyInfo> importSettings;
+        
         // Defines the supported values in the "Log" section of the configuration file.
         static std::unordered_map<StdString, SConfigurationValueApplyInfo> logSettings;
 

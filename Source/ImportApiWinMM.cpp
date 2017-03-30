@@ -19,8 +19,7 @@ using namespace Xidi;
 // -------- CONSTANTS ------------------------------------------------------ //
 // See "ImportApiWinMM.h" for documentation.
 
-const TCHAR* const ImportApiWinMM::kWinMMLibraryName = _T("\\winmm.dll");
-const DWORD ImportApiWinMM::kWinMMLibraryLength = 10;
+const StdString ImportApiWinMM::kWinMMLibraryName = _T("\\winmm.dll");
 
 
 // -------- CLASS VARIABLES ------------------------------------------------ //
@@ -42,9 +41,9 @@ MMRESULT ImportApiWinMM::Initialize(void)
         
         // Obtain the full library path string.
         // A path must be specified directly since the system has already loaded this DLL of the same name.
-        TCHAR libraryName[1024];
-        GetSystemDirectory(libraryName, 512);
-        _tcsncat_s(libraryName, _countof(libraryName), kWinMMLibraryName, kWinMMLibraryLength);
+        TCHAR libraryName[kMaximumLibraryNameLength];
+        GetSystemDirectory(libraryName, kMaximumSystemDirectoryNameLength);
+        _tcsncat_s(libraryName, _countof(libraryName), kWinMMLibraryName.c_str(), kWinMMLibraryName.length());
         
         // Attempt to load the library.
         LogInitializeLibraryPath(libraryName);

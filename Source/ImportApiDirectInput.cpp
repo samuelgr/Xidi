@@ -20,11 +20,9 @@ using namespace Xidi;
 // See "ImportApiDirectInput.h" for documentation.
 
 #if DIRECTINPUT_VERSION >= 0x0800
-const TCHAR* const ImportApiDirectInput::kDirectInputLibraryName = _T("\\dinput8.dll");
-const DWORD ImportApiDirectInput::kDirectInputLibraryLength = 12;
+const StdString ImportApiDirectInput::kDirectInputLibraryName = _T("\\dinput8.dll");
 #else
-const TCHAR* const ImportApiDirectInput::kDirectInputLibraryName = _T("\\dinput.dll");
-const DWORD ImportApiDirectInput::kDirectInputLibraryLength = 11;
+const StdString ImportApiDirectInput::kDirectInputLibraryName = _T("\\dinput.dll");
 #endif
 
 
@@ -47,9 +45,9 @@ HRESULT ImportApiDirectInput::Initialize(void)
         
         // Obtain the full library path string.
         // A path must be specified directly since the system has already loaded this DLL of the same name.
-        TCHAR libraryName[1024];
-        GetSystemDirectory(libraryName, 512);
-        _tcsncat_s(libraryName, _countof(libraryName), kDirectInputLibraryName, kDirectInputLibraryLength);
+        TCHAR libraryName[kMaximumLibraryNameLength];
+        GetSystemDirectory(libraryName, kMaximumSystemDirectoryNameLength);
+        _tcsncat_s(libraryName, _countof(libraryName), kDirectInputLibraryName.c_str(), kDirectInputLibraryName.length());
         
         // Attempt to load the library.
         LogInitializeLibraryPath(libraryName);

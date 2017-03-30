@@ -11,6 +11,7 @@
 
 #pragma once
 
+#include "ApiStdString.h"
 #include "ApiWindows.h"
 
 
@@ -99,12 +100,15 @@ namespace Xidi
         // -------- CONSTANTS ------------------------------------------------------ //
 
         // Holds the name of the library to load from the system directory.
-        static const TCHAR* const kWinMMLibraryName;
+        static const StdString kWinMMLibraryName;
 
-        // Holds the length, in characters, of the name of the library.
-        static const DWORD kWinMMLibraryLength;
+        // Maximum length of a library name.
+        static const size_t kMaximumLibraryNameLength = 2048;
 
-
+        // Maximum length of the system directory name.
+        static const size_t kMaximumSystemDirectoryNameLength = 512;
+        
+        
     private:
         // -------- CLASS VARIABLES ------------------------------------------------ //
 

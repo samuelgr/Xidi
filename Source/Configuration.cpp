@@ -12,6 +12,8 @@
 #include "ApiStdString.h"
 #include "Configuration.h"
 #include "Globals.h"
+#include "ImportApiDirectInput.h"
+#include "ImportApiWinMM.h"
 #include "Log.h"
 #include "MapperFactory.h"
 
@@ -28,16 +30,23 @@ using namespace Xidi;
 // -------- CLASS VARIABLES ------------------------------------------------ //
 // See "Configuration.h" for documentation.
 
+std::unordered_map<StdString, SConfigurationValueApplyInfo> Configuration::importSettings = {
+    {_T("dinput.dll"),                          {EConfigurationValueType::ConfigurationValueTypeString,     (void*)NULL}},
+    {_T("dinput8.dll"),                         {EConfigurationValueType::ConfigurationValueTypeString,     (void*)NULL}},
+    {_T("winmm.dll"),                           {EConfigurationValueType::ConfigurationValueTypeString,     (void*)NULL}},
+};
+
 std::unordered_map<StdString, SConfigurationValueApplyInfo> Configuration::logSettings = {
-    {_T("Enabled"),                             {EConfigurationValueType::ConfigurationValueTypeBoolean,  (void*)&Log::ApplyConfigurationLogEnabled}},
-    {_T("Level"),                               {EConfigurationValueType::ConfigurationValueTypeInteger,  (void*)&Log::ApplyConfigurationLogLevel}}
+    {_T("Enabled"),                             {EConfigurationValueType::ConfigurationValueTypeBoolean,    (void*)&Log::ApplyConfigurationLogEnabled}},
+    {_T("Level"),                               {EConfigurationValueType::ConfigurationValueTypeInteger,    (void*)&Log::ApplyConfigurationLogLevel}}
 };
 
 std::unordered_map<StdString, SConfigurationValueApplyInfo> Configuration::mapperSettings = {
-    {_T("Type"),                                {EConfigurationValueType::ConfigurationValueTypeString,   (void*)&MapperFactory::ApplyConfigurationMapperType}},
+    {_T("Type"),                                {EConfigurationValueType::ConfigurationValueTypeString,     (void*)&MapperFactory::ApplyConfigurationMapperType}},
 };
 
 std::unordered_map<StdString, std::unordered_map<StdString, SConfigurationValueApplyInfo>*> Configuration::configurationSections = {
+    {_T("Import"),                              &importSettings},
     {_T("Log"),                                 &logSettings},
     {_T("Mapper"),                              &mapperSettings},
 };
@@ -168,7 +177,7 @@ void Configuration::ParseAndApplyConfigurationFile(void)
                     }
                     
                     // Attempt to apply the value.
-                    if (false == ((TFuncApplyIntSetting)extractedValueInfo.applyFunc)(parsedValue.integerValue))
+                    if ((NULL == extractedValueInfo.applyFunc) || (false == ((TFuncApplyIntSetting)extractedValueInfo.applyFunc)(parsedValue.integerValue)))
                         HandleErrorCannotApplyValue(configurationFilePath, configurationLineNumber, extractedValue.c_str(), currentConfigurationSectionName.c_str(), extractedName.c_str());
                     else
                         HandleSuccessAppliedValue(configurationFilePath, configurationLineNumber, extractedValue.c_str(), currentConfigurationSectionName.c_str(), extractedName.c_str());
@@ -186,7 +195,7 @@ void Configuration::ParseAndApplyConfigurationFile(void)
                     }
                     
                     // Attempt to apply the value.
-                    if (false == ((TFuncApplyBoolSetting)extractedValueInfo.applyFunc)(parsedValue.booleanValue))
+                    if ((NULL == extractedValueInfo.applyFunc) || (false == ((TFuncApplyBoolSetting)extractedValueInfo.applyFunc)(parsedValue.booleanValue)))
                         HandleErrorCannotApplyValue(configurationFilePath, configurationLineNumber, extractedValue.c_str(), currentConfigurationSectionName.c_str(), extractedName.c_str());
                     else
                         HandleSuccessAppliedValue(configurationFilePath, configurationLineNumber, extractedValue.c_str(), currentConfigurationSectionName.c_str(), extractedName.c_str());
@@ -199,7 +208,7 @@ void Configuration::ParseAndApplyConfigurationFile(void)
                     parsedValue.stringValue = &extractedValue;
                     
                     // Attempt to apply the value.
-                    if (false == ((TFuncApplyStringSetting)extractedValueInfo.applyFunc)(*parsedValue.stringValue))
+                    if ((NULL == extractedValueInfo.applyFunc) || (false == ((TFuncApplyStringSetting)extractedValueInfo.applyFunc)(*parsedValue.stringValue)))
                         HandleErrorCannotApplyValue(configurationFilePath, configurationLineNumber, extractedValue.c_str(), currentConfigurationSectionName.c_str(), extractedName.c_str());
                     else
                         HandleSuccessAppliedValue(configurationFilePath, configurationLineNumber, extractedValue.c_str(), currentConfigurationSectionName.c_str(), extractedName.c_str());

@@ -13,6 +13,7 @@
 #pragma once
 
 #include "ApiDirectInput.h"
+#include "ApiStdString.h"
 
 
 namespace Xidi
@@ -45,12 +46,15 @@ namespace Xidi
         // -------- CONSTANTS ------------------------------------------------------ //
 
         // Holds the name of the library to load from the system directory.
-        static const TCHAR* const kDirectInputLibraryName;
+        static const StdString kDirectInputLibraryName;
 
-        // Holds the length, in characters, of the name of the library.
-        static const DWORD kDirectInputLibraryLength;
+        // Maximum length of a library name.
+        static const size_t kMaximumLibraryNameLength = 2048;
 
-
+        // Maximum length of the system directory name.
+        static const size_t kMaximumSystemDirectoryNameLength = 512;
+        
+        
     private:
         // -------- CLASS VARIABLES ------------------------------------------------ //
 
@@ -69,7 +73,7 @@ namespace Xidi
 
     public:
         // -------- CLASS METHODS -------------------------------------------------- //
-
+        
         // Dynamically loads the DirectInput library and sets up all imported function calls.
         // Returns S_OK on success and E_FAIL on failure.
         static HRESULT Initialize(void);
