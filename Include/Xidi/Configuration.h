@@ -60,6 +60,18 @@ namespace Xidi
     class Configuration
     {
     private:
+        // -------- CONSTANTS ------------------------------------------------------ //
+        
+        // Specifies the maximum length of a full configuration file path.
+        static const size_t kMaximumConfigurationFilePathLength = 2048;
+
+        // Specifies the maximum length of a configuration file's file name (i.e. the part after the directory name).
+        static const size_t kMaximumConfigurationFileNameLength = 32;
+
+        // Specifies the maximum length of a line in the configuration file.
+        static const size_t kMaximumConfigurationLineLength = 2048;
+        
+        
         // -------- CLASS VARIABLES ------------------------------------------------ //
 
         // Defines the supported values in the "Import" section of the configuration file.

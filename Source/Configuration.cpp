@@ -57,7 +57,7 @@ std::unordered_map<StdString, std::unordered_map<StdString, SConfigurationValueA
 
 void Configuration::ParseAndApplyConfigurationFile(void)
 {
-    TCHAR configurationFilePath[1024];
+    TCHAR configurationFilePath[kMaximumConfigurationFilePathLength];
     FILE* configurationFileHandle = NULL;
 
     // Get the configuration file path.
@@ -82,7 +82,7 @@ void Configuration::ParseAndApplyConfigurationFile(void)
         std::unordered_map<StdString, SConfigurationValueApplyInfo>* currentConfigurationSection = NULL;
         StdString currentConfigurationSectionName = _T("");
         
-        TCHAR configurationLineBuffer[1024];
+        TCHAR configurationLineBuffer[kMaximumConfigurationLineLength];
         int configurationLineLength = ReadAndTrimSingleLine(configurationLineBuffer, _countof(configurationLineBuffer), configurationFileHandle);
         unsigned int configurationLineNumber = 1;
         
@@ -485,7 +485,7 @@ int Configuration::ReadAndTrimSingleLine(LPTSTR buf, const size_t count, FILE* f
 
 size_t Configuration::GetConfigurationFilePath(LPTSTR buf, const size_t count)
 {
-    TCHAR configurationFileName[128];
+    TCHAR configurationFileName[kMaximumConfigurationFileNameLength];
     size_t lenConfigurationFileName = (size_t)LoadString(Globals::GetInstanceHandle(), IDS_XIDI_CONFIGURATION_FILE_NAME, configurationFileName, _countof(configurationFileName));
     size_t lenInstancePath = (size_t)GetModuleFileName(Globals::GetInstanceHandle(), buf, count);
     

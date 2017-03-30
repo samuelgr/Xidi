@@ -42,7 +42,8 @@ namespace Xidi
             HRESULT (STDMETHODCALLTYPE* DllGetClassObject)(REFCLSID, REFIID, LPVOID*);
         };
         
-
+        
+    private:
         // -------- CONSTANTS ------------------------------------------------------ //
 
         // Holds the name of the library to load from the system directory.
@@ -55,7 +56,6 @@ namespace Xidi
         static const size_t kMaximumSystemDirectoryNameLength = 512;
         
         
-    private:
         // -------- CLASS VARIABLES ------------------------------------------------ //
 
         // Holds the imported DirectInput API function addresses.
