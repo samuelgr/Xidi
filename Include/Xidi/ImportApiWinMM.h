@@ -28,72 +28,94 @@ namespace Xidi
         // Fields specify the addresses of the imported DirectInput API functions.
         struct SImportTable
         {
-            MMRESULT (WINAPI* auxGetDevCapsA)(UINT_PTR, LPAUXCAPSA, UINT);
-            MMRESULT (WINAPI* auxGetDevCapsW)(UINT_PTR, LPAUXCAPSW, UINT);
-            UINT     (WINAPI* auxGetNumDevs)(void);
-            MMRESULT (WINAPI* auxGetVolume)(UINT, LPDWORD);
-            MMRESULT (WINAPI* auxOutMessage)(UINT, UINT, DWORD_PTR, DWORD_PTR);
-            MMRESULT (WINAPI* auxSetVolume)(UINT, DWORD);
+            MMRESULT    (WINAPI* auxGetDevCapsA)(UINT_PTR, LPAUXCAPSA, UINT);
+            MMRESULT    (WINAPI* auxGetDevCapsW)(UINT_PTR, LPAUXCAPSW, UINT);
+            UINT        (WINAPI* auxGetNumDevs)(void);
+            MMRESULT    (WINAPI* auxGetVolume)(UINT, LPDWORD);
+            MMRESULT    (WINAPI* auxOutMessage)(UINT, UINT, DWORD_PTR, DWORD_PTR);
+            MMRESULT    (WINAPI* auxSetVolume)(UINT, DWORD);
 
-            MMRESULT (WINAPI* joyConfigChanged)(DWORD);
-            MMRESULT (WINAPI* joyGetDevCapsA)(UINT_PTR, LPJOYCAPSA, UINT);
-            MMRESULT (WINAPI* joyGetDevCapsW)(UINT_PTR, LPJOYCAPSW, UINT);
-            UINT     (WINAPI* joyGetNumDevs)(void);
-            MMRESULT (WINAPI* joyGetPos)(UINT, LPJOYINFO);
-            MMRESULT (WINAPI* joyGetPosEx)(UINT, LPJOYINFOEX);
-            MMRESULT (WINAPI* joyGetThreshold)(UINT, LPUINT);
-            MMRESULT (WINAPI* joyReleaseCapture)(UINT);
-            MMRESULT (WINAPI* joySetCapture)(HWND, UINT, UINT, BOOL);
-            MMRESULT (WINAPI* joySetThreshold)(UINT, UINT);
+            MMRESULT    (WINAPI* joyConfigChanged)(DWORD);
+            MMRESULT    (WINAPI* joyGetDevCapsA)(UINT_PTR, LPJOYCAPSA, UINT);
+            MMRESULT    (WINAPI* joyGetDevCapsW)(UINT_PTR, LPJOYCAPSW, UINT);
+            UINT        (WINAPI* joyGetNumDevs)(void);
+            MMRESULT    (WINAPI* joyGetPos)(UINT, LPJOYINFO);
+            MMRESULT    (WINAPI* joyGetPosEx)(UINT, LPJOYINFOEX);
+            MMRESULT    (WINAPI* joyGetThreshold)(UINT, LPUINT);
+            MMRESULT    (WINAPI* joyReleaseCapture)(UINT);
+            MMRESULT    (WINAPI* joySetCapture)(HWND, UINT, UINT, BOOL);
+            MMRESULT    (WINAPI* joySetThreshold)(UINT, UINT);
             
-            MMRESULT (WINAPI* timeBeginPeriod)(UINT);
-            MMRESULT (WINAPI* timeEndPeriod)(UINT);
-            MMRESULT (WINAPI* timeGetDevCaps)(LPTIMECAPS, UINT);
-            MMRESULT (WINAPI* timeGetSystemTime)(LPMMTIME, UINT);
-            DWORD    (WINAPI* timeGetTime)(void);
-            MMRESULT (WINAPI* timeKillEvent)(UINT);
-            MMRESULT (WINAPI* timeSetEvent)(UINT, UINT, LPTIMECALLBACK, DWORD_PTR, UINT);
+            MMRESULT    (WINAPI* mmioAdvance)(HMMIO, LPMMIOINFO, UINT);
+            MMRESULT    (WINAPI* mmioAscend)(HMMIO, LPMMCKINFO, UINT);
+            MMRESULT    (WINAPI* mmioClose)(HMMIO, UINT);
+            MMRESULT    (WINAPI* mmioCreateChunk)(HMMIO, LPMMCKINFO, UINT);
+            MMRESULT    (WINAPI* mmioDescend)(HMMIO, LPMMCKINFO, LPCMMCKINFO, UINT);
+            MMRESULT    (WINAPI* mmioFlush)(HMMIO, UINT);
+            MMRESULT    (WINAPI* mmioGetInfo)(HMMIO, LPMMIOINFO, UINT);
+            LPMMIOPROC  (WINAPI* mmioInstallIOProcA)(FOURCC, LPMMIOPROC, DWORD);
+            LPMMIOPROC  (WINAPI* mmioInstallIOProcW)(FOURCC, LPMMIOPROC, DWORD);
+            HMMIO       (WINAPI* mmioOpenA)(LPSTR, LPMMIOINFO, DWORD);
+            HMMIO       (WINAPI* mmioOpenW)(LPWSTR, LPMMIOINFO, DWORD);
+            LONG        (WINAPI* mmioRead)(HMMIO, HPSTR, LONG);
+            MMRESULT    (WINAPI* mmioRenameA)(LPCSTR, LPCSTR, LPCMMIOINFO, DWORD);
+            MMRESULT    (WINAPI* mmioRenameW)(LPCWSTR, LPCWSTR, LPCMMIOINFO, DWORD);
+            LONG        (WINAPI* mmioSeek)(HMMIO, LONG, int);
+            LRESULT     (WINAPI* mmioSendMessage)(HMMIO, UINT, LPARAM, LPARAM);
+            MMRESULT    (WINAPI* mmioSetBuffer)(HMMIO, LPSTR, LONG, UINT);
+            MMRESULT    (WINAPI* mmioSetInfo)(HMMIO, LPCMMIOINFO, UINT);
+            FOURCC      (WINAPI* mmioStringToFOURCCA)(LPCSTR, UINT);
+            FOURCC      (WINAPI* mmioStringToFOURCCW)(LPCWSTR, UINT);
+            LONG        (WINAPI* mmioWrite)(HMMIO, const char*, LONG);
+            
+            MMRESULT    (WINAPI* timeBeginPeriod)(UINT);
+            MMRESULT    (WINAPI* timeEndPeriod)(UINT);
+            MMRESULT    (WINAPI* timeGetDevCaps)(LPTIMECAPS, UINT);
+            MMRESULT    (WINAPI* timeGetSystemTime)(LPMMTIME, UINT);
+            DWORD       (WINAPI* timeGetTime)(void);
+            MMRESULT    (WINAPI* timeKillEvent)(UINT);
+            MMRESULT    (WINAPI* timeSetEvent)(UINT, UINT, LPTIMECALLBACK, DWORD_PTR, UINT);
 
-            MMRESULT (WINAPI* waveInAddBuffer)(HWAVEIN, LPWAVEHDR, UINT);
-            MMRESULT (WINAPI* waveInClose)(HWAVEIN);
-            MMRESULT (WINAPI* waveInGetDevCapsA)(UINT_PTR, LPWAVEINCAPSA, UINT);
-            MMRESULT (WINAPI* waveInGetDevCapsW)(UINT_PTR, LPWAVEINCAPSW, UINT);
-            MMRESULT (WINAPI* waveInGetErrorTextA)(MMRESULT, LPCSTR, UINT);
-            MMRESULT (WINAPI* waveInGetErrorTextW)(MMRESULT, LPWSTR, UINT);
-            MMRESULT (WINAPI* waveInGetID)(HWAVEIN, LPUINT);
-            UINT     (WINAPI* waveInGetNumDevs)(void);
-            MMRESULT (WINAPI* waveInGetPosition)(HWAVEIN, LPMMTIME, UINT);
-            DWORD    (WINAPI* waveInMessage)(HWAVEIN, UINT, DWORD_PTR, DWORD_PTR);
-            MMRESULT (WINAPI* waveInOpen)(LPHWAVEIN, UINT, LPCWAVEFORMATEX, DWORD_PTR, DWORD_PTR, DWORD);
-            MMRESULT (WINAPI* waveInPrepareHeader)(HWAVEIN, LPWAVEHDR, UINT);
-            MMRESULT (WINAPI* waveInReset)(HWAVEIN);
-            MMRESULT (WINAPI* waveInStart)(HWAVEIN);
-            MMRESULT (WINAPI* waveInStop)(HWAVEIN);
-            MMRESULT (WINAPI* waveInUnprepareHeader)(HWAVEIN, LPWAVEHDR, UINT);
+            MMRESULT    (WINAPI* waveInAddBuffer)(HWAVEIN, LPWAVEHDR, UINT);
+            MMRESULT    (WINAPI* waveInClose)(HWAVEIN);
+            MMRESULT    (WINAPI* waveInGetDevCapsA)(UINT_PTR, LPWAVEINCAPSA, UINT);
+            MMRESULT    (WINAPI* waveInGetDevCapsW)(UINT_PTR, LPWAVEINCAPSW, UINT);
+            MMRESULT    (WINAPI* waveInGetErrorTextA)(MMRESULT, LPCSTR, UINT);
+            MMRESULT    (WINAPI* waveInGetErrorTextW)(MMRESULT, LPWSTR, UINT);
+            MMRESULT    (WINAPI* waveInGetID)(HWAVEIN, LPUINT);
+            UINT        (WINAPI* waveInGetNumDevs)(void);
+            MMRESULT    (WINAPI* waveInGetPosition)(HWAVEIN, LPMMTIME, UINT);
+            DWORD       (WINAPI* waveInMessage)(HWAVEIN, UINT, DWORD_PTR, DWORD_PTR);
+            MMRESULT    (WINAPI* waveInOpen)(LPHWAVEIN, UINT, LPCWAVEFORMATEX, DWORD_PTR, DWORD_PTR, DWORD);
+            MMRESULT    (WINAPI* waveInPrepareHeader)(HWAVEIN, LPWAVEHDR, UINT);
+            MMRESULT    (WINAPI* waveInReset)(HWAVEIN);
+            MMRESULT    (WINAPI* waveInStart)(HWAVEIN);
+            MMRESULT    (WINAPI* waveInStop)(HWAVEIN);
+            MMRESULT    (WINAPI* waveInUnprepareHeader)(HWAVEIN, LPWAVEHDR, UINT);
 
-            MMRESULT (WINAPI* waveOutBreakLoop)(HWAVEOUT);
-            MMRESULT (WINAPI* waveOutClose)(HWAVEOUT);
-            MMRESULT (WINAPI* waveOutGetDevCapsA)(UINT_PTR, LPWAVEOUTCAPSA, UINT);
-            MMRESULT (WINAPI* waveOutGetDevCapsW)(UINT_PTR, LPWAVEOUTCAPSW, UINT);
-            MMRESULT (WINAPI* waveOutGetErrorTextA)(MMRESULT, LPCSTR, UINT);
-            MMRESULT (WINAPI* waveOutGetErrorTextW)(MMRESULT, LPWSTR, UINT);
-            MMRESULT (WINAPI* waveOutGetID)(HWAVEOUT, LPUINT);
-            UINT     (WINAPI* waveOutGetNumDevs)(void);
-            MMRESULT (WINAPI* waveOutGetPitch)(HWAVEOUT, LPDWORD);
-            MMRESULT (WINAPI* waveOutGetPlaybackRate)(HWAVEOUT, LPDWORD);
-            MMRESULT (WINAPI* waveOutGetPosition)(HWAVEOUT, LPMMTIME, UINT);
-            MMRESULT (WINAPI* waveOutGetVolume)(HWAVEOUT, LPDWORD);
-            DWORD    (WINAPI* waveOutMessage)(HWAVEOUT, UINT, DWORD_PTR, DWORD_PTR);
-            MMRESULT (WINAPI* waveOutOpen)(LPHWAVEOUT, UINT_PTR, LPWAVEFORMATEX, DWORD_PTR, DWORD_PTR, DWORD);
-            MMRESULT (WINAPI* waveOutPause)(HWAVEOUT);
-            MMRESULT (WINAPI* waveOutPrepareHeader)(HWAVEOUT, LPWAVEHDR, UINT);
-            MMRESULT (WINAPI* waveOutReset)(HWAVEOUT);
-            MMRESULT (WINAPI* waveOutRestart)(HWAVEOUT);
-            MMRESULT (WINAPI* waveOutSetPitch)(HWAVEOUT, DWORD);
-            MMRESULT (WINAPI* waveOutSetPlaybackRate)(HWAVEOUT, DWORD);
-            MMRESULT (WINAPI* waveOutSetVolume)(HWAVEOUT, DWORD);
-            MMRESULT (WINAPI* waveOutUnprepareHeader)(HWAVEOUT, LPWAVEHDR, UINT);
-            MMRESULT (WINAPI* waveOutWrite)(HWAVEOUT, LPWAVEHDR, UINT);
+            MMRESULT    (WINAPI* waveOutBreakLoop)(HWAVEOUT);
+            MMRESULT    (WINAPI* waveOutClose)(HWAVEOUT);
+            MMRESULT    (WINAPI* waveOutGetDevCapsA)(UINT_PTR, LPWAVEOUTCAPSA, UINT);
+            MMRESULT    (WINAPI* waveOutGetDevCapsW)(UINT_PTR, LPWAVEOUTCAPSW, UINT);
+            MMRESULT    (WINAPI* waveOutGetErrorTextA)(MMRESULT, LPCSTR, UINT);
+            MMRESULT    (WINAPI* waveOutGetErrorTextW)(MMRESULT, LPWSTR, UINT);
+            MMRESULT    (WINAPI* waveOutGetID)(HWAVEOUT, LPUINT);
+            UINT        (WINAPI* waveOutGetNumDevs)(void);
+            MMRESULT    (WINAPI* waveOutGetPitch)(HWAVEOUT, LPDWORD);
+            MMRESULT    (WINAPI* waveOutGetPlaybackRate)(HWAVEOUT, LPDWORD);
+            MMRESULT    (WINAPI* waveOutGetPosition)(HWAVEOUT, LPMMTIME, UINT);
+            MMRESULT    (WINAPI* waveOutGetVolume)(HWAVEOUT, LPDWORD);
+            DWORD       (WINAPI* waveOutMessage)(HWAVEOUT, UINT, DWORD_PTR, DWORD_PTR);
+            MMRESULT    (WINAPI* waveOutOpen)(LPHWAVEOUT, UINT_PTR, LPWAVEFORMATEX, DWORD_PTR, DWORD_PTR, DWORD);
+            MMRESULT    (WINAPI* waveOutPause)(HWAVEOUT);
+            MMRESULT    (WINAPI* waveOutPrepareHeader)(HWAVEOUT, LPWAVEHDR, UINT);
+            MMRESULT    (WINAPI* waveOutReset)(HWAVEOUT);
+            MMRESULT    (WINAPI* waveOutRestart)(HWAVEOUT);
+            MMRESULT    (WINAPI* waveOutSetPitch)(HWAVEOUT, DWORD);
+            MMRESULT    (WINAPI* waveOutSetPlaybackRate)(HWAVEOUT, DWORD);
+            MMRESULT    (WINAPI* waveOutSetVolume)(HWAVEOUT, DWORD);
+            MMRESULT    (WINAPI* waveOutUnprepareHeader)(HWAVEOUT, LPWAVEHDR, UINT);
+            MMRESULT    (WINAPI* waveOutWrite)(HWAVEOUT, LPWAVEHDR, UINT);
         };
         
         
@@ -168,6 +190,69 @@ namespace Xidi
         // Calls the imported function joySetThreshold.
         static MMRESULT joySetThreshold(UINT uJoyID, UINT uThreshold);
 
+        // Calls the imported function mmioAdvance.
+        static MMRESULT mmioAdvance(HMMIO hmmio, LPMMIOINFO lpmmioinfo, UINT wFlags);
+
+        // Calls the imported function mmioAscend.
+        static MMRESULT mmioAscend(HMMIO hmmio, LPMMCKINFO lpck, UINT wFlags);
+
+        // Calls the imported function mmioClose.
+        static MMRESULT mmioClose(HMMIO hmmio, UINT wFlags);
+
+        // Calls the imported function mmioCreateChunk.
+        static MMRESULT mmioCreateChunk(HMMIO hmmio, LPMMCKINFO lpck, UINT wFlags);
+
+        // Calls the imported function mmioDescend.
+        static MMRESULT mmioDescend(HMMIO hmmio, LPMMCKINFO lpck, LPCMMCKINFO lpckParent, UINT wFlags);
+
+        // Calls the imported function mmioFlush.
+        static MMRESULT mmioFlush(HMMIO hmmio, UINT fuFlush);
+
+        // Calls the imported function mmioGetInfo.
+        static MMRESULT mmioGetInfo(HMMIO hmmio, LPMMIOINFO lpmmioinfo, UINT wFlags);
+
+        // Calls the imported function mmioInstallIOProcA.
+        static LPMMIOPROC mmioInstallIOProcA(FOURCC fccIOProc, LPMMIOPROC pIOProc, DWORD dwFlags);
+
+        // Calls the imported function mmioInstallIOProcW.
+        static LPMMIOPROC mmioInstallIOProcW(FOURCC fccIOProc, LPMMIOPROC pIOProc, DWORD dwFlags);
+
+        // Calls the imported function mmioOpenA.
+        static HMMIO mmioOpenA(LPSTR szFilename, LPMMIOINFO lpmmioinfo, DWORD dwOpenFlags);
+
+        // Calls the imported function mmioOpenW.
+        static HMMIO mmioOpenW(LPWSTR szFilename, LPMMIOINFO lpmmioinfo, DWORD dwOpenFlags);
+
+        // Calls the imported function mmioRead.
+        static LONG mmioRead(HMMIO hmmio, HPSTR pch, LONG cch);
+
+        // Calls the imported function mmioRenameA.
+        static MMRESULT mmioRenameA(LPCSTR szFilename, LPCSTR szNewFilename, LPCMMIOINFO lpmmioinfo, DWORD dwRenameFlags);
+
+        // Calls the imported function mmioRenameW.
+        static MMRESULT mmioRenameW(LPCWSTR szFilename, LPCWSTR szNewFilename, LPCMMIOINFO lpmmioinfo, DWORD dwRenameFlags);
+
+        // Calls the imported function mmioSeek.
+        static LONG mmioSeek(HMMIO hmmio, LONG lOffset, int iOrigin);
+
+        // Calls the imported function mmioSendMessage.
+        static LRESULT mmioSendMessage(HMMIO hmmio, UINT wMsg, LPARAM lParam1, LPARAM lParam2);
+
+        // Calls the imported function mmioSetBuffer.
+        static MMRESULT mmioSetBuffer(HMMIO hmmio, LPSTR pchBuffer, LONG cchBuffer, UINT wFlags);
+
+        // Calls the imported function mmioSetInfo.
+        static MMRESULT mmioSetInfo(HMMIO hmmio, LPCMMIOINFO lpmmioinfo, UINT wFlags);
+
+        // Calls the imported function mmioStringToFOURCCA.
+        static FOURCC mmioStringToFOURCCA(LPCSTR sz, UINT wFlags);
+
+        // Calls the imported function mmioStringToFOURCCW.
+        static FOURCC mmioStringToFOURCCW(LPCWSTR sz, UINT wFlags);
+
+        // Calls the imported function mmioWrite.
+        static LONG mmioWrite(HMMIO hmmio, const char* pch, LONG cch);
+        
         // Calls the imported function timeBeginPeriod.
         static MMRESULT timeBeginPeriod(UINT uPeriod);
 

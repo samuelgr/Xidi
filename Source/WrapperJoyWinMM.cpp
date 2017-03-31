@@ -177,7 +177,7 @@ void WrapperJoyWinMM::SetControllerNameRegistryInfo(void)
     RegCloseKey(registryKey);
 
     // Next, place the names into the correct spots for the application to read.
-    // These will be in HKCU\System\CurrentControlSet\Control\MediaProperties\PrivateProperties\OEM\[valueData from above loop] and contain the name of the controller.
+    // These will be in HKCU\System\CurrentControlSet\Control\MediaProperties\PrivateProperties\Joystick\OEM\[valueData from above loop] and contain the name of the controller.
     for (DWORD i = 0; i < _countof(controllers); ++i)
     {
         TCHAR valueData[64];
@@ -202,124 +202,143 @@ MMRESULT WrapperJoyWinMM::JoyConfigChanged(DWORD dwFlags)
 {
     Initialize();
     
-    // Operation not supported.
-    return JOYERR_NOCANDO;
+    // Redirect to the imported API.
+    return ImportApiWinMM::joyConfigChanged(dwFlags);
 }
 
 // ---------
 
 MMRESULT WrapperJoyWinMM::JoyGetDevCapsA(UINT_PTR uJoyID, LPJOYCAPSA pjc, UINT cbjc)
 {
-    Initialize();
-    
-    // Check for the correct structure size.
-    if (sizeof(*pjc) != cbjc)
-        return JOYERR_PARMS;
-    
-    // Ensure the controller number is within bounds.
-    if (!(uJoyID < JoyGetNumDevs()))
-        return JOYERR_PARMS;
-    
-    // Get information from the mapper on the mapped device's capabilities.
-    DIDEVCAPS mappedDeviceCaps;
-    mapper->FillDeviceCapabilities(&mappedDeviceCaps);
-    
-    // Fill in the provided structure.
-    ZeroMemory(pjc, sizeof(*pjc));
-    pjc->wMaxAxes = 6;
-    pjc->wMaxButtons = _countof(SJoyStateData::buttons);
-    pjc->wNumAxes = (WORD)mappedDeviceCaps.dwAxes;
-    pjc->wNumButtons = (WORD)mappedDeviceCaps.dwButtons;
-    pjc->wXmin = (WORD)Mapper::Base::kDefaultAxisRangeMin;
-    pjc->wXmax = (WORD)Mapper::Base::kDefaultAxisRangeMax;
-    pjc->wYmin = (WORD)Mapper::Base::kDefaultAxisRangeMin;
-    pjc->wYmax = (WORD)Mapper::Base::kDefaultAxisRangeMax;
-    pjc->wZmin = (WORD)Mapper::Base::kDefaultAxisRangeMin;
-    pjc->wZmax = (WORD)Mapper::Base::kDefaultAxisRangeMax;
-    pjc->wRmin = (WORD)Mapper::Base::kDefaultAxisRangeMin;
-    pjc->wRmax = (WORD)Mapper::Base::kDefaultAxisRangeMax;
-    pjc->wUmin = (WORD)Mapper::Base::kDefaultAxisRangeMin;
-    pjc->wUmax = (WORD)Mapper::Base::kDefaultAxisRangeMax;
-    pjc->wVmin = (WORD)Mapper::Base::kDefaultAxisRangeMin;
-    pjc->wVmax = (WORD)Mapper::Base::kDefaultAxisRangeMax;
-    
-    if (mappedDeviceCaps.dwPOVs > 0)
-        pjc->wCaps = JOYCAPS_HASPOV | JOYCAPS_POV4DIR;
-    
-    if (mappedDeviceCaps.dwAxes > 2)
-        pjc->wCaps |= JOYCAPS_HASZ;
-    
-    if (mappedDeviceCaps.dwAxes > 3)
-        pjc->wCaps |= JOYCAPS_HASR;
-    
-    if (mappedDeviceCaps.dwAxes > 4)
-        pjc->wCaps |= JOYCAPS_HASU;
-    
-    if (mappedDeviceCaps.dwAxes > 5)
-        pjc->wCaps |= JOYCAPS_HASV;
-    
-    FillRegistryKeyStringA(pjc->szRegKey, _countof(pjc->szRegKey));
-    ControllerIdentification::FillXInputControllerNameA(pjc->szPname, _countof(pjc->szPname), (DWORD)uJoyID);
-    
-    return JOYERR_NOERROR;
+    if (uJoyID < _countof(controllers))
+    {
+        // Querying an XInput controller.
+        Initialize();
+
+        // Check for the correct structure size.
+        if (sizeof(*pjc) != cbjc)
+            return JOYERR_PARMS;
+
+        // Ensure the controller number is within bounds.
+        if (!(uJoyID < JoyGetNumDevs()))
+            return JOYERR_PARMS;
+
+        // Get information from the mapper on the mapped device's capabilities.
+        DIDEVCAPS mappedDeviceCaps;
+        mapper->FillDeviceCapabilities(&mappedDeviceCaps);
+
+        // Fill in the provided structure.
+        ZeroMemory(pjc, sizeof(*pjc));
+        pjc->wMaxAxes = 6;
+        pjc->wMaxButtons = _countof(SJoyStateData::buttons);
+        pjc->wNumAxes = (WORD)mappedDeviceCaps.dwAxes;
+        pjc->wNumButtons = (WORD)mappedDeviceCaps.dwButtons;
+        pjc->wXmin = (WORD)Mapper::Base::kDefaultAxisRangeMin;
+        pjc->wXmax = (WORD)Mapper::Base::kDefaultAxisRangeMax;
+        pjc->wYmin = (WORD)Mapper::Base::kDefaultAxisRangeMin;
+        pjc->wYmax = (WORD)Mapper::Base::kDefaultAxisRangeMax;
+        pjc->wZmin = (WORD)Mapper::Base::kDefaultAxisRangeMin;
+        pjc->wZmax = (WORD)Mapper::Base::kDefaultAxisRangeMax;
+        pjc->wRmin = (WORD)Mapper::Base::kDefaultAxisRangeMin;
+        pjc->wRmax = (WORD)Mapper::Base::kDefaultAxisRangeMax;
+        pjc->wUmin = (WORD)Mapper::Base::kDefaultAxisRangeMin;
+        pjc->wUmax = (WORD)Mapper::Base::kDefaultAxisRangeMax;
+        pjc->wVmin = (WORD)Mapper::Base::kDefaultAxisRangeMin;
+        pjc->wVmax = (WORD)Mapper::Base::kDefaultAxisRangeMax;
+
+        if (mappedDeviceCaps.dwPOVs > 0)
+            pjc->wCaps = JOYCAPS_HASPOV | JOYCAPS_POV4DIR;
+
+        if (mappedDeviceCaps.dwAxes > 2)
+            pjc->wCaps |= JOYCAPS_HASZ;
+
+        if (mappedDeviceCaps.dwAxes > 3)
+            pjc->wCaps |= JOYCAPS_HASR;
+
+        if (mappedDeviceCaps.dwAxes > 4)
+            pjc->wCaps |= JOYCAPS_HASU;
+
+        if (mappedDeviceCaps.dwAxes > 5)
+            pjc->wCaps |= JOYCAPS_HASV;
+
+        FillRegistryKeyStringA(pjc->szRegKey, _countof(pjc->szRegKey));
+        ControllerIdentification::FillXInputControllerNameA(pjc->szPname, _countof(pjc->szPname), (DWORD)uJoyID);
+
+        return JOYERR_NOERROR;
+    }
+    else
+    {
+        // Querying a non-XInput controller.
+        return ImportApiWinMM::joyGetDevCapsA(uJoyID - _countof(controllers), pjc, cbjc);
+    }
 }
 
 // ---------
 
 MMRESULT WrapperJoyWinMM::JoyGetDevCapsW(UINT_PTR uJoyID, LPJOYCAPSW pjc, UINT cbjc)
 {
-    Initialize();
-    
-    // Check for the correct structure size.
-    if (sizeof(*pjc) != cbjc)
-        return JOYERR_PARMS;
-    
-    // Ensure the controller number is within bounds.
-    if (!(uJoyID < JoyGetNumDevs()))
-        return JOYERR_PARMS;
-    
-    // Get information from the mapper on the mapped device's capabilities.
-    DIDEVCAPS mappedDeviceCaps;
-    mapper->FillDeviceCapabilities(&mappedDeviceCaps);
-    
-    // Fill in the provided structure.
-    ZeroMemory(pjc, sizeof(*pjc));
-    pjc->wMaxAxes = 6;
-    pjc->wMaxButtons = _countof(SJoyStateData::buttons);
-    pjc->wNumAxes = (WORD)mappedDeviceCaps.dwAxes;
-    pjc->wNumButtons = (WORD)mappedDeviceCaps.dwButtons;
-    pjc->wXmin = (WORD)Mapper::Base::kDefaultAxisRangeMin;
-    pjc->wXmax = (WORD)Mapper::Base::kDefaultAxisRangeMax;
-    pjc->wYmin = (WORD)Mapper::Base::kDefaultAxisRangeMin;
-    pjc->wYmax = (WORD)Mapper::Base::kDefaultAxisRangeMax;
-    pjc->wZmin = (WORD)Mapper::Base::kDefaultAxisRangeMin;
-    pjc->wZmax = (WORD)Mapper::Base::kDefaultAxisRangeMax;
-    pjc->wRmin = (WORD)Mapper::Base::kDefaultAxisRangeMin;
-    pjc->wRmax = (WORD)Mapper::Base::kDefaultAxisRangeMax;
-    pjc->wUmin = (WORD)Mapper::Base::kDefaultAxisRangeMin;
-    pjc->wUmax = (WORD)Mapper::Base::kDefaultAxisRangeMax;
-    pjc->wVmin = (WORD)Mapper::Base::kDefaultAxisRangeMin;
-    pjc->wVmax = (WORD)Mapper::Base::kDefaultAxisRangeMax;
-    
-    if (mappedDeviceCaps.dwPOVs > 0)
-        pjc->wCaps = JOYCAPS_HASPOV | JOYCAPS_POV4DIR;
-    
-    if (mapper->AxisTypeCount(GUID_ZAxis) > 0)
-        pjc->wCaps |= JOYCAPS_HASZ;
-    
-    if (mapper->AxisTypeCount(GUID_RzAxis) > 0)
-        pjc->wCaps |= JOYCAPS_HASR;
-    
-    if (mapper->AxisTypeCount(GUID_RyAxis) > 0)
-        pjc->wCaps |= JOYCAPS_HASU;
-    
-    if (mapper->AxisTypeCount(GUID_RxAxis) > 0)
-        pjc->wCaps |= JOYCAPS_HASV;
-    
-    FillRegistryKeyStringW(pjc->szRegKey, _countof(pjc->szRegKey));
-    ControllerIdentification::FillXInputControllerNameW(pjc->szPname, _countof(pjc->szPname), (DWORD)uJoyID);
-    
-    return JOYERR_NOERROR;
+    if (uJoyID < _countof(controllers))
+    {
+        // Querying an XInput controller.
+        Initialize();
+
+        // Check for the correct structure size.
+        if (sizeof(*pjc) != cbjc)
+            return JOYERR_PARMS;
+
+        // Ensure the controller number is within bounds.
+        if (!(uJoyID < JoyGetNumDevs()))
+            return JOYERR_PARMS;
+
+        // Get information from the mapper on the mapped device's capabilities.
+        DIDEVCAPS mappedDeviceCaps;
+        mapper->FillDeviceCapabilities(&mappedDeviceCaps);
+
+        // Fill in the provided structure.
+        ZeroMemory(pjc, sizeof(*pjc));
+        pjc->wMaxAxes = 6;
+        pjc->wMaxButtons = _countof(SJoyStateData::buttons);
+        pjc->wNumAxes = (WORD)mappedDeviceCaps.dwAxes;
+        pjc->wNumButtons = (WORD)mappedDeviceCaps.dwButtons;
+        pjc->wXmin = (WORD)Mapper::Base::kDefaultAxisRangeMin;
+        pjc->wXmax = (WORD)Mapper::Base::kDefaultAxisRangeMax;
+        pjc->wYmin = (WORD)Mapper::Base::kDefaultAxisRangeMin;
+        pjc->wYmax = (WORD)Mapper::Base::kDefaultAxisRangeMax;
+        pjc->wZmin = (WORD)Mapper::Base::kDefaultAxisRangeMin;
+        pjc->wZmax = (WORD)Mapper::Base::kDefaultAxisRangeMax;
+        pjc->wRmin = (WORD)Mapper::Base::kDefaultAxisRangeMin;
+        pjc->wRmax = (WORD)Mapper::Base::kDefaultAxisRangeMax;
+        pjc->wUmin = (WORD)Mapper::Base::kDefaultAxisRangeMin;
+        pjc->wUmax = (WORD)Mapper::Base::kDefaultAxisRangeMax;
+        pjc->wVmin = (WORD)Mapper::Base::kDefaultAxisRangeMin;
+        pjc->wVmax = (WORD)Mapper::Base::kDefaultAxisRangeMax;
+
+        if (mappedDeviceCaps.dwPOVs > 0)
+            pjc->wCaps = JOYCAPS_HASPOV | JOYCAPS_POV4DIR;
+
+        if (mapper->AxisTypeCount(GUID_ZAxis) > 0)
+            pjc->wCaps |= JOYCAPS_HASZ;
+
+        if (mapper->AxisTypeCount(GUID_RzAxis) > 0)
+            pjc->wCaps |= JOYCAPS_HASR;
+
+        if (mapper->AxisTypeCount(GUID_RyAxis) > 0)
+            pjc->wCaps |= JOYCAPS_HASU;
+
+        if (mapper->AxisTypeCount(GUID_RxAxis) > 0)
+            pjc->wCaps |= JOYCAPS_HASV;
+
+        FillRegistryKeyStringW(pjc->szRegKey, _countof(pjc->szRegKey));
+        ControllerIdentification::FillXInputControllerNameW(pjc->szPname, _countof(pjc->szPname), (DWORD)uJoyID);
+
+        return JOYERR_NOERROR;
+    }
+    else
+    {
+        // Querying a non-XInput controller.
+        HRESULT result = ImportApiWinMM::joyGetDevCapsW(uJoyID - _countof(controllers), pjc, cbjc);
+        return result;
+    }
 }
 
 // ---------
@@ -327,111 +346,165 @@ MMRESULT WrapperJoyWinMM::JoyGetDevCapsW(UINT_PTR uJoyID, LPJOYCAPSW pjc, UINT c
 UINT WrapperJoyWinMM::JoyGetNumDevs(void)
 {
     Initialize();
-    
-    // Number of controllers is fixed.
-    return _countof(controllers);
+
+    // Number of controllers = number of XInput controllers + number of driver-reported controllers.
+    return _countof(controllers) + ImportApiWinMM::joyGetNumDevs();
 }
 
 // ---------
 
 MMRESULT WrapperJoyWinMM::JoyGetPos(UINT uJoyID, LPJOYINFO pji)
 {
-    Initialize();
-    
-    SJoyStateData joyStateData;
-    MMRESULT result = FillDeviceState(uJoyID, &joyStateData);
-    if (JOYERR_NOERROR != result)
-        return result;
+    if (uJoyID < _countof(controllers))
+    {
+        // Querying an XInput controller.
+        Initialize();
 
-    // Fill in the provided structure.
-    pji->wXpos = (WORD)joyStateData.axisX;
-    pji->wYpos = (WORD)joyStateData.axisY;
-    pji->wZpos = (WORD)joyStateData.axisZ;
-    pji->wButtons = 0;
-    if (joyStateData.buttons[0])
-        pji->wButtons |= JOY_BUTTON1;
-    if (joyStateData.buttons[1])
-        pji->wButtons |= JOY_BUTTON2;
-    if (joyStateData.buttons[2])
-        pji->wButtons |= JOY_BUTTON3;
-    if (joyStateData.buttons[3])
-        pji->wButtons |= JOY_BUTTON4;
-    
-    // Operation complete.
-    return JOYERR_NOERROR;
+        SJoyStateData joyStateData;
+        MMRESULT result = FillDeviceState(uJoyID, &joyStateData);
+        if (JOYERR_NOERROR != result)
+            return result;
+
+        // Fill in the provided structure.
+        pji->wXpos = (WORD)joyStateData.axisX;
+        pji->wYpos = (WORD)joyStateData.axisY;
+        pji->wZpos = (WORD)joyStateData.axisZ;
+        pji->wButtons = 0;
+        if (joyStateData.buttons[0])
+            pji->wButtons |= JOY_BUTTON1;
+        if (joyStateData.buttons[1])
+            pji->wButtons |= JOY_BUTTON2;
+        if (joyStateData.buttons[2])
+            pji->wButtons |= JOY_BUTTON3;
+        if (joyStateData.buttons[3])
+            pji->wButtons |= JOY_BUTTON4;
+
+        // Operation complete.
+        return JOYERR_NOERROR;
+    }
+    else
+    {
+        // Querying a non-XInput controller.
+        return ImportApiWinMM::joyGetPos(uJoyID - _countof(controllers), pji);
+    }
 }
 
 // ---------
 
 MMRESULT WrapperJoyWinMM::JoyGetPosEx(UINT uJoyID, LPJOYINFOEX pji)
 {
-    Initialize();
-    
-    // Check for the correct structure size.
-    if (sizeof(*pji) != pji->dwSize)
-        return JOYERR_PARMS;
-    
-    SJoyStateData joyStateData;
-    MMRESULT result = FillDeviceState(uJoyID, &joyStateData);
-    if (JOYERR_NOERROR != result)
-        return result;
-
-    // Fill in the provided structure.
-    // WinMM uses only 16 bits to indicate that the dpad is centered, whereas it is safe to use all 32 in DirectInput, hence the conversion (forgetting this can introduce bugs into games).
-    pji->dwPOV = ((DWORD)-1 == joyStateData.pov ? (DWORD)(JOY_POVCENTERED) : joyStateData.pov);
-    pji->dwXpos = joyStateData.axisX;
-    pji->dwYpos = joyStateData.axisY;
-    pji->dwZpos = joyStateData.axisZ;
-    pji->dwRpos = joyStateData.axisRz;
-    pji->dwUpos = joyStateData.axisRy;
-    pji->dwVpos = joyStateData.axisRx;
-    pji->dwButtons = 0;
-    for (DWORD i = 0; i < _countof(SJoyStateData::buttons); ++i)
+    if (uJoyID < _countof(controllers))
     {
-        if (joyStateData.buttons[i])
-            pji->dwButtons |= (1 << i);
+        // Querying an XInput controller.
+        Initialize();
+
+        // Check for the correct structure size.
+        if (sizeof(*pji) != pji->dwSize)
+            return JOYERR_PARMS;
+
+        SJoyStateData joyStateData;
+        MMRESULT result = FillDeviceState(uJoyID, &joyStateData);
+        if (JOYERR_NOERROR != result)
+            return result;
+
+        // Fill in the provided structure.
+        // WinMM uses only 16 bits to indicate that the dpad is centered, whereas it is safe to use all 32 in DirectInput, hence the conversion (forgetting this can introduce bugs into games).
+        pji->dwPOV = ((DWORD)-1 == joyStateData.pov ? (DWORD)(JOY_POVCENTERED) : joyStateData.pov);
+        pji->dwXpos = joyStateData.axisX;
+        pji->dwYpos = joyStateData.axisY;
+        pji->dwZpos = joyStateData.axisZ;
+        pji->dwRpos = joyStateData.axisRz;
+        pji->dwUpos = joyStateData.axisRy;
+        pji->dwVpos = joyStateData.axisRx;
+        pji->dwButtons = 0;
+        for (DWORD i = 0; i < _countof(SJoyStateData::buttons); ++i)
+        {
+            if (joyStateData.buttons[i])
+                pji->dwButtons |= (1 << i);
+        }
+
+        // Operation complete.
+        return JOYERR_NOERROR;
     }
-    
-    // Operation complete.
-    return JOYERR_NOERROR;
+    else
+    {
+        // Querying a non-XInput controller.
+        return ImportApiWinMM::joyGetPosEx(uJoyID - _countof(controllers), pji);
+    }
 }
 
 // ---------
 
 MMRESULT WrapperJoyWinMM::JoyGetThreshold(UINT uJoyID, LPUINT puThreshold)
 {
-    Initialize();
-    
-    // Operation not supported.
-    return JOYERR_NOCANDO;
+    if (uJoyID < _countof(controllers))
+    {
+        // Querying an XInput controller.
+        Initialize();
+
+        // Operation not supported.
+        return JOYERR_NOCANDO;
+    }
+    else
+    {
+        // Querying a non-XInput controller.
+        return ImportApiWinMM::joyGetThreshold(uJoyID - _countof(controllers), puThreshold);
+    }
 }
 
 // ---------
 
 MMRESULT WrapperJoyWinMM::JoyReleaseCapture(UINT uJoyID)
 {
-    Initialize();
-    
-    // Operation not supported.
-    return JOYERR_NOCANDO;
+    if (uJoyID < _countof(controllers))
+    {
+        // Querying an XInput controller.
+        Initialize();
+
+        // Operation not supported.
+        return JOYERR_NOCANDO;
+    }
+    else
+    {
+        // Querying a non-XInput controller.
+        return ImportApiWinMM::joyReleaseCapture(uJoyID - _countof(controllers));
+    }
 }
 
 // ---------
 
 MMRESULT WrapperJoyWinMM::JoySetCapture(HWND hwnd, UINT uJoyID, UINT uPeriod, BOOL fChanged)
 {
-    Initialize();
-    
-    // Operation not supported.
-    return JOYERR_NOCANDO;
+    if (uJoyID < _countof(controllers))
+    {
+        // Querying an XInput controller.
+        Initialize();
+
+        // Operation not supported.
+        return JOYERR_NOCANDO;
+    }
+    else
+    {
+        // Querying a non-XInput controller.
+        return ImportApiWinMM::joySetCapture(hwnd, uJoyID - _countof(controllers), uPeriod, fChanged);
+    }
 }
 
 // ---------
 
 MMRESULT WrapperJoyWinMM::JoySetThreshold(UINT uJoyID, UINT uThreshold)
 {
-    Initialize();
-    
-    // Operation not supported.
-    return JOYERR_NOCANDO;
+    if (uJoyID < _countof(controllers))
+    {
+        // Querying an XInput controller.
+        Initialize();
+
+        // Operation not supported.
+        return JOYERR_NOCANDO;
+    }
+    else
+    {
+        // Querying a non-XInput controller.
+        return ImportApiWinMM::joySetThreshold(uJoyID - _countof(controllers), uThreshold);
+    }
 }

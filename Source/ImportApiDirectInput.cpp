@@ -59,36 +59,36 @@ HRESULT ImportApiDirectInput::Initialize(void)
 #if DIRECTINPUT_VERSION >= 0x0800
         procAddress = GetProcAddress(loadedLibrary, "DirectInput8Create");
         if (NULL == procAddress) LogImportFailed(_T("DirectInput8Create"));
-        importTable.DirectInput8Create = (HRESULT(STDMETHODCALLTYPE *)(HINSTANCE, DWORD, REFIID, LPVOID*, LPUNKNOWN))procAddress;
+        importTable.DirectInput8Create = (HRESULT(STDMETHODCALLTYPE*)(HINSTANCE, DWORD, REFIID, LPVOID*, LPUNKNOWN))procAddress;
 #else
         procAddress = GetProcAddress(loadedLibrary, "DirectInputCreateA");
         if (NULL == procAddress) LogImportFailed(_T("DirectInputCreateA"));
-        importTable.DirectInputCreateA = (HRESULT(STDMETHODCALLTYPE *)(HINSTANCE, DWORD, LPDIRECTINPUTA*, LPUNKNOWN))procAddress;
+        importTable.DirectInputCreateA = (HRESULT(STDMETHODCALLTYPE*)(HINSTANCE, DWORD, LPDIRECTINPUTA*, LPUNKNOWN))procAddress;
 
         procAddress = GetProcAddress(loadedLibrary, "DirectInputCreateW");
         if (NULL == procAddress) LogImportFailed(_T("DirectInputCreateW"));
-        importTable.DirectInputCreateW = (HRESULT(STDMETHODCALLTYPE *)(HINSTANCE, DWORD, LPDIRECTINPUTW*, LPUNKNOWN))procAddress;
+        importTable.DirectInputCreateW = (HRESULT(STDMETHODCALLTYPE*)(HINSTANCE, DWORD, LPDIRECTINPUTW*, LPUNKNOWN))procAddress;
 
         procAddress = GetProcAddress(loadedLibrary, "DirectInputCreateEx");
         if (NULL == procAddress) LogImportFailed(_T("DirectInputCreateEx"));
-        importTable.DirectInputCreateEx = (HRESULT(STDMETHODCALLTYPE *)(HINSTANCE, DWORD, REFIID, LPVOID*, LPUNKNOWN))procAddress;
+        importTable.DirectInputCreateEx = (HRESULT(STDMETHODCALLTYPE*)(HINSTANCE, DWORD, REFIID, LPVOID*, LPUNKNOWN))procAddress;
 #endif
         
         procAddress = GetProcAddress(loadedLibrary, "DllRegisterServer");
         if (NULL == procAddress) LogImportFailed(_T("DllRegisterServer"));
-        importTable.DllRegisterServer = (HRESULT(STDMETHODCALLTYPE *)(void))procAddress;
+        importTable.DllRegisterServer = (HRESULT(STDMETHODCALLTYPE*)(void))procAddress;
 
         procAddress = GetProcAddress(loadedLibrary, "DllUnregisterServer");
         if (NULL == procAddress) LogImportFailed(_T("DllUnregisterServer"));
-        importTable.DllUnregisterServer = (HRESULT(STDMETHODCALLTYPE *)(void))procAddress;
+        importTable.DllUnregisterServer = (HRESULT(STDMETHODCALLTYPE*)(void))procAddress;
 
         procAddress = GetProcAddress(loadedLibrary, "DllCanUnloadNow");
         if (NULL == procAddress) LogImportFailed(_T("DllCanUnloadNow"));
-        importTable.DllCanUnloadNow = (HRESULT(STDMETHODCALLTYPE *)(void))procAddress;
+        importTable.DllCanUnloadNow = (HRESULT(STDMETHODCALLTYPE*)(void))procAddress;
 
         procAddress = GetProcAddress(loadedLibrary, "DllGetClassObject");
         if (NULL == procAddress) LogImportFailed(_T("DllGetClassObject"));
-        importTable.DllGetClassObject = (HRESULT(STDMETHODCALLTYPE *)(REFCLSID, REFIID, LPVOID*))procAddress;
+        importTable.DllGetClassObject = (HRESULT(STDMETHODCALLTYPE*)(REFCLSID, REFIID, LPVOID*))procAddress;
         
         // Initialization complete.
         importTableIsInitialized = TRUE;

@@ -130,6 +130,173 @@ MMRESULT WINAPI ExportApiWinMMJoySetThreshold(UINT uJoyID, UINT uThreshold)
 
 // ---------
 
+MMRESULT WINAPI ExportApiWinMMMMIOAdvance(HMMIO hmmio, LPMMIOINFO lpmmioinfo, UINT wFlags)
+{
+    return ImportApiWinMM::mmioAdvance(hmmio, lpmmioinfo, wFlags);
+}
+
+// ---------
+
+
+MMRESULT WINAPI ExportApiWinMMMMIOAscend(HMMIO hmmio, LPMMCKINFO lpck, UINT wFlags)
+{
+    return ImportApiWinMM::mmioAscend(hmmio, lpck, wFlags);
+}
+
+// ---------
+
+
+MMRESULT WINAPI ExportApiWinMMMMIOClose(HMMIO hmmio, UINT wFlags)
+{
+    return ImportApiWinMM::mmioClose(hmmio, wFlags);
+}
+
+// ---------
+
+
+MMRESULT WINAPI ExportApiWinMMMMIOCreateChunk(HMMIO hmmio, LPMMCKINFO lpck, UINT wFlags)
+{
+    return ImportApiWinMM::mmioCreateChunk(hmmio, lpck, wFlags);
+}
+
+// ---------
+
+
+MMRESULT WINAPI ExportApiWinMMMMIODescend(HMMIO hmmio, LPMMCKINFO lpck, LPCMMCKINFO lpckParent, UINT wFlags)
+{
+    return ImportApiWinMM::mmioDescend(hmmio, lpck, lpckParent, wFlags);
+}
+
+// ---------
+
+
+MMRESULT WINAPI ExportApiWinMMMMIOFlush(HMMIO hmmio, UINT fuFlush)
+{
+    return ImportApiWinMM::mmioFlush(hmmio, fuFlush);
+}
+
+// ---------
+
+
+MMRESULT WINAPI ExportApiWinMMMMIOGetInfo(HMMIO hmmio, LPMMIOINFO lpmmioinfo, UINT wFlags)
+{
+    return ImportApiWinMM::mmioGetInfo(hmmio, lpmmioinfo, wFlags);
+}
+
+// ---------
+
+
+LPMMIOPROC WINAPI ExportApiWinMMMMIOInstallIOProcA(FOURCC fccIOProc, LPMMIOPROC pIOProc, DWORD dwFlags)
+{
+    return ImportApiWinMM::mmioInstallIOProcA(fccIOProc, pIOProc, dwFlags);
+}
+
+// ---------
+
+
+LPMMIOPROC WINAPI ExportApiWinMMMMIOInstallIOProcW(FOURCC fccIOProc, LPMMIOPROC pIOProc, DWORD dwFlags)
+{
+    return ImportApiWinMM::mmioInstallIOProcW(fccIOProc, pIOProc, dwFlags);
+}
+
+// ---------
+
+
+HMMIO WINAPI ExportApiWinMMMMIOOpenA(LPSTR szFilename, LPMMIOINFO lpmmioinfo, DWORD dwOpenFlags)
+{
+    return ImportApiWinMM::mmioOpenA(szFilename, lpmmioinfo, dwOpenFlags);
+}
+
+// ---------
+
+
+HMMIO WINAPI ExportApiWinMMMMIOOpenW(LPWSTR szFilename, LPMMIOINFO lpmmioinfo, DWORD dwOpenFlags)
+{
+    return ImportApiWinMM::mmioOpenW(szFilename, lpmmioinfo, dwOpenFlags);
+}
+
+// ---------
+
+
+LONG WINAPI ExportApiWinMMMMIORead(HMMIO hmmio, HPSTR pch, LONG cch)
+{
+    return ImportApiWinMM::mmioRead(hmmio, pch, cch);
+}
+
+// ---------
+
+
+MMRESULT WINAPI ExportApiWinMMMMIORenameA(LPCSTR szFilename, LPCSTR szNewFilename, LPCMMIOINFO lpmmioinfo, DWORD dwRenameFlags)
+{
+    return ImportApiWinMM::mmioRenameA(szFilename, szNewFilename, lpmmioinfo, dwRenameFlags);
+}
+
+// ---------
+
+
+MMRESULT WINAPI ExportApiWinMMMMIORenameW(LPCWSTR szFilename, LPCWSTR szNewFilename, LPCMMIOINFO lpmmioinfo, DWORD dwRenameFlags)
+{
+    return ImportApiWinMM::mmioRenameW(szFilename, szNewFilename, lpmmioinfo, dwRenameFlags);
+}
+
+// ---------
+
+
+LONG WINAPI ExportApiWinMMMMIOSeek(HMMIO hmmio, LONG lOffset, int iOrigin)
+{
+    return ImportApiWinMM::mmioSeek(hmmio, lOffset, iOrigin);
+}
+
+// ---------
+
+
+LRESULT WINAPI ExportApiWinMMMMIOSendMessage(HMMIO hmmio, UINT wMsg, LPARAM lParam1, LPARAM lParam2)
+{
+    return ImportApiWinMM::mmioSendMessage(hmmio, wMsg, lParam1, lParam2);
+}
+
+// ---------
+
+
+MMRESULT WINAPI ExportApiWinMMMMIOSetBuffer(HMMIO hmmio, LPSTR pchBuffer, LONG cchBuffer, UINT wFlags)
+{
+    return ImportApiWinMM::mmioSetBuffer(hmmio, pchBuffer, cchBuffer, wFlags);
+}
+
+// ---------
+
+
+MMRESULT WINAPI ExportApiWinMMMMIOSetInfo(HMMIO hmmio, LPCMMIOINFO lpmmioinfo, UINT wFlags)
+{
+    return ImportApiWinMM::mmioSetInfo(hmmio, lpmmioinfo, wFlags);
+}
+
+// ---------
+
+
+FOURCC WINAPI ExportApiWinMMMMIOStringToFOURCCA(LPCSTR sz, UINT wFlags)
+{
+    return ImportApiWinMM::mmioStringToFOURCCA(sz, wFlags);
+}
+
+// ---------
+
+
+FOURCC WINAPI ExportApiWinMMMMIOStringToFOURCCW(LPCWSTR sz, UINT wFlags)
+{
+    return ImportApiWinMM::mmioStringToFOURCCW(sz, wFlags);
+}
+
+// ---------
+
+
+LONG WINAPI ExportApiWinMMMMIOWrite(HMMIO hmmio, const char* pch, LONG cch)
+{
+    return ImportApiWinMM::mmioWrite(hmmio, pch, cch);
+}
+
+// ---------
+
 MMRESULT WINAPI ExportApiWinMMTimeBeginPeriod(UINT uPeriod)
 {
     return ImportApiWinMM::timeBeginPeriod(uPeriod);
