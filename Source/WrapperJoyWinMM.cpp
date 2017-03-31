@@ -147,8 +147,8 @@ int WrapperJoyWinMM::FillRegistryKeyStringW(LPWSTR buf, const size_t bufcount)
 void WrapperJoyWinMM::SetControllerNameRegistryInfo(void)
 {
     HKEY registryKey;
-    TCHAR registryKeyName[32];
-    TCHAR registryPath[256];
+    TCHAR registryKeyName[128];
+    TCHAR registryPath[1024];
 
     // First, add OEM string references to HKCU\System\CurrentControlSet\Control\MediaResources\Joystick\Xidi.
     // These will point a WinMM-based application to another part of the registry, by reference, which will actually contain the names.
@@ -174,9 +174,57 @@ void WrapperJoyWinMM::SetControllerNameRegistryInfo(void)
         }
     }
 
+    // Next, for each joystick defined by the system, extract its registry-based name pointer and transfer it to the Xidi registry area.
+    // This ensures that joystick names for non-XInput joysticks presented by WinMM are correctly readable by applications looking in the registry.
+    // All of this happens under HKCU\System\CurrentControlSet\Control\MediaResources\Joystick, with the source key being specified by the system and the destination already having been opened previously.
+    for (UINT i = 0; i < ImportApiWinMM::joyGetNumDevs(); ++i)
+    {
+        HKEY sourceRegistryKey;
+        JOYCAPSW joyInfo;
+        MMRESULT result = ImportApiWinMM::joyGetDevCaps(i, &joyInfo, sizeof(joyInfo));
+
+        if ((JOYERR_NOERROR != result) || (_T('\0') == joyInfo.szRegKey[0]))
+            break;
+
+        // Open a handle to the information source registry key.
+        _stprintf_s(registryPath, _countof(registryPath), REGSTR_PATH_JOYCONFIG _T("\\%s\\") REGSTR_KEY_JOYCURR, joyInfo.szRegKey);
+        RegCreateKeyEx(HKEY_CURRENT_USER, registryPath, 0, NULL, REG_OPTION_VOLATILE, KEY_QUERY_VALUE, NULL, &sourceRegistryKey, NULL);
+        if (ERROR_SUCCESS != result)
+        {
+            RegCloseKey(registryKey);
+            return;
+        }
+
+        // Get the value of interest from the correct value within the information source registry key.
+        TCHAR valueName[64];
+        TCHAR valueData[64];
+        DWORD valueSize = sizeof(valueData);
+
+        _stprintf_s(valueName, _countof(valueName), REGSTR_VAL_JOYNOEMNAME, (i + 1));
+
+        result = RegGetValue(sourceRegistryKey, NULL, valueName, RRF_RT_REG_SZ, NULL, valueData, &valueSize);
+        RegCloseKey(sourceRegistryKey);
+        if (ERROR_SUCCESS != result)
+        {
+            RegCloseKey(registryKey);
+            return;
+        }
+
+        // Write to the destination registry key the value just read, but with an adjusted index.
+        const int valueNameCount = _stprintf_s(valueName, _countof(valueName), REGSTR_VAL_JOYNOEMNAME, (_countof(controllers) + i + 1));
+        const int valueDataCount = valueSize / sizeof(valueData[0]);
+
+        result = RegSetValueEx(registryKey, valueName, 0, REG_SZ, (const BYTE*)valueData, (sizeof(TCHAR) * (valueDataCount + 1)));
+        if (ERROR_SUCCESS != result)
+        {
+            RegCloseKey(registryKey);
+            return;
+        }
+    }
+    
     RegCloseKey(registryKey);
 
-    // Next, place the names into the correct spots for the application to read.
+    // Finally, place the names into the correct spots for the application to read.
     // These will be in HKCU\System\CurrentControlSet\Control\MediaProperties\PrivateProperties\Joystick\OEM\[valueData from above loop] and contain the name of the controller.
     for (DWORD i = 0; i < _countof(controllers); ++i)
     {
@@ -201,9 +249,14 @@ void WrapperJoyWinMM::SetControllerNameRegistryInfo(void)
 MMRESULT WrapperJoyWinMM::JoyConfigChanged(DWORD dwFlags)
 {
     Initialize();
-    
-    // Redirect to the imported API.
-    return ImportApiWinMM::joyConfigChanged(dwFlags);
+
+    // Redirect to the imported API so that its view of the registry can be updated.
+    HRESULT result = ImportApiWinMM::joyConfigChanged(dwFlags);
+
+    // Update Xidi's view of the registry.
+    SetControllerNameRegistryInfo();
+
+    return result;
 }
 
 // ---------
@@ -269,7 +322,13 @@ MMRESULT WrapperJoyWinMM::JoyGetDevCapsA(UINT_PTR uJoyID, LPJOYCAPSA pjc, UINT c
     else
     {
         // Querying a non-XInput controller.
-        return ImportApiWinMM::joyGetDevCapsA(uJoyID - _countof(controllers), pjc, cbjc);
+        // Replace the registry key but otherwise leave the response unchanged.
+        HRESULT result = ImportApiWinMM::joyGetDevCapsA(uJoyID - _countof(controllers), pjc, cbjc);
+        
+        if (JOYERR_NOERROR == result)
+            FillRegistryKeyStringA(pjc->szRegKey, _countof(pjc->szRegKey));
+
+        return result;
     }
 }
 
@@ -336,7 +395,12 @@ MMRESULT WrapperJoyWinMM::JoyGetDevCapsW(UINT_PTR uJoyID, LPJOYCAPSW pjc, UINT c
     else
     {
         // Querying a non-XInput controller.
+        // Replace the registry key with ours but otherwise leave the response unchanged.
         HRESULT result = ImportApiWinMM::joyGetDevCapsW(uJoyID - _countof(controllers), pjc, cbjc);
+
+        if (JOYERR_NOERROR == result)
+            FillRegistryKeyStringW(pjc->szRegKey, _countof(pjc->szRegKey));
+        
         return result;
     }
 }
