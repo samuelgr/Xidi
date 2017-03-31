@@ -303,8 +303,8 @@ EConfigurationLineType Configuration::ClassifyConfigurationFileLine(LPCTSTR buf,
         if (_T(']') != realBuf[i])
             return EConfigurationLineType::ConfigurationLineTypeError;
 
-        // Verify that the remainder of the line is either a comment or just whitespace.
-        for (i += 1; i < realLength && _T(';') != realBuf[i] && _T('#') != realBuf[i]; ++i)
+        // Verify that the remainder of the line is just whitespace.
+        for (i += 1; i < realLength; ++i)
         {
             if (!istblank(realBuf[i]))
                 return EConfigurationLineType::ConfigurationLineTypeError;
@@ -335,8 +335,8 @@ EConfigurationLineType Configuration::ClassifyConfigurationFileLine(LPCTSTR buf,
         // Skip over the value setting characters that follow.
         for (i += 1; i < realLength && IsAllowedValueSettingCharacter(realBuf[i]); ++i);
 
-        // Verify that the remainder of the line is either a comment or just whitespace.
-        for (; i < realLength && _T(';') != realBuf[i] && _T('#') != realBuf[i]; ++i)
+        // Verify that the remainder of the line is just whitespace.
+        for (; i < realLength; ++i)
         {
             if (!istblank(realBuf[i]))
                 return EConfigurationLineType::ConfigurationLineTypeError;
@@ -406,10 +406,30 @@ int Configuration::IsAllowedValueSettingCharacter(const TCHAR charToTest)
 {
     switch (charToTest)
     {
+    case _T(','):
     case _T('.'):
-    case _T('\\'):
-    case _T(' '):
+    case _T(';'):
     case _T(':'):
+    case _T('\''):
+    case _T('\\'):
+    case _T('{'):
+    case _T('['):
+    case _T('}'):
+    case _T(']'):
+    case _T('-'):
+    case _T('_'):
+    case _T(' '):
+    case _T('+'):
+    case _T('='):
+    case _T('!'):
+    case _T('@'):
+    case _T('#'):
+    case _T('$'):
+    case _T('%'):
+    case _T('^'):
+    case _T('&'):
+    case _T('('):
+    case _T(')'):
         return true;
 
     default:
@@ -444,8 +464,8 @@ bool Configuration::ParseIntegerValue(int64_t& dest, const StdString& source)
 
 bool Configuration::ParseBooleanValue(bool& dest, const StdString& source)
 {
-    static const StdString trueStrings[] = { _T("true"), _T("on"), _T("yes"), _T("enabled"), _T("1") };
-    static const StdString falseStrings[] = { _T("false"), _T("off"), _T("no"), _T("disabled"), _T("0") };
+    static const StdString trueStrings[] = { _T("t"), _T("true"), _T("on"), _T("y"), _T("yes"), _T("enabled"), _T("1") };
+    static const StdString falseStrings[] = { _T("f"), _T("false"), _T("off"), _T("n"), _T("no"), _T("disabled"), _T("0") };
     
     // Check if the string represents a value of TRUE.
     for (size_t i = 0; i < _countof(trueStrings); ++i)
