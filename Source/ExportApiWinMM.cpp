@@ -297,6 +297,34 @@ LONG WINAPI ExportApiWinMMMMIOWrite(HMMIO hmmio, const char* pch, LONG cch)
 
 // ---------
 
+BOOL WINAPI ExportApiWinMMPlaySoundA(LPCSTR pszSound, HMODULE hmod, DWORD fdwSound)
+{
+    return ImportApiWinMM::PlaySoundA(pszSound, hmod, fdwSound);
+}
+
+// ---------
+
+BOOL WINAPI ExportApiWinMMPlaySoundW(LPCWSTR pszSound, HMODULE hmod, DWORD fdwSound)
+{
+    return ImportApiWinMM::PlaySoundW(pszSound, hmod, fdwSound);
+}
+
+// ---------
+
+BOOL WINAPI ExportApiWinMMSndPlaySoundA(LPCSTR lpszSound, UINT fuSound)
+{
+    return ImportApiWinMM::sndPlaySoundA(lpszSound, fuSound);
+}
+
+// ---------
+
+BOOL WINAPI ExportApiWinMMSndPlaySoundW(LPCWSTR lpszSound, UINT fuSound)
+{
+    return ImportApiWinMM::sndPlaySoundW(lpszSound, fuSound);
+}
+
+// ---------
+
 MMRESULT WINAPI ExportApiWinMMTimeBeginPeriod(UINT uPeriod)
 {
     return ImportApiWinMM::timeBeginPeriod(uPeriod);

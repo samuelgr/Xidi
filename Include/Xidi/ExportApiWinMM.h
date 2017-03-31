@@ -57,6 +57,12 @@ FOURCC      WINAPI ExportApiWinMMMMIOStringToFOURCCA(LPCSTR sz, UINT wFlags);
 FOURCC      WINAPI ExportApiWinMMMMIOStringToFOURCCW(LPCWSTR sz, UINT wFlags);
 LONG        WINAPI ExportApiWinMMMMIOWrite(HMMIO hmmio, const char* pch, LONG cch);
 
+BOOL        WINAPI ExportApiWinMMPlaySoundA(LPCSTR pszSound, HMODULE hmod, DWORD fdwSound);
+BOOL        WINAPI ExportApiWinMMPlaySoundW(LPCWSTR pszSound, HMODULE hmod, DWORD fdwSound);
+
+BOOL        WINAPI ExportApiWinMMSndPlaySoundA(LPCSTR lpszSound, UINT fuSound);
+BOOL        WINAPI ExportApiWinMMSndPlaySoundW(LPCWSTR lpszSound, UINT fuSound);
+
 MMRESULT    WINAPI ExportApiWinMMTimeBeginPeriod(UINT uPeriod);
 MMRESULT    WINAPI ExportApiWinMMTimeEndPeriod(UINT uPeriod);
 MMRESULT    WINAPI ExportApiWinMMTimeGetDevCaps(LPTIMECAPS ptc, UINT cbtc);

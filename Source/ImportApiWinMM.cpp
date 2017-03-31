@@ -200,7 +200,27 @@ MMRESULT ImportApiWinMM::Initialize(void)
         importTable.mmioWrite = (LONG(WINAPI*)(HMMIO, const char*, LONG))procAddress;
         
         // ---------
+
+        procAddress = GetProcAddress(loadedLibrary, "PlaySoundA");
+        if (NULL == procAddress) return LogInitializeFailed();
+        importTable.PlaySoundA = (BOOL(WINAPI*)(LPCSTR, HMODULE, DWORD))procAddress;
         
+        procAddress = GetProcAddress(loadedLibrary, "PlaySoundW");
+        if (NULL == procAddress) return LogInitializeFailed();
+        importTable.PlaySoundW = (BOOL(WINAPI*)(LPCWSTR, HMODULE, DWORD))procAddress;
+        
+        // ---------
+        
+        procAddress = GetProcAddress(loadedLibrary, "sndPlaySoundA");
+        if (NULL == procAddress) return LogInitializeFailed();
+        importTable.sndPlaySoundA = (BOOL(WINAPI*)(LPCSTR, UINT))procAddress;
+        
+        procAddress = GetProcAddress(loadedLibrary, "sndPlaySoundW");
+        if (NULL == procAddress) return LogInitializeFailed();
+        importTable.sndPlaySoundW = (BOOL(WINAPI*)(LPCWSTR, UINT))procAddress;
+        
+        // ---------
+
         procAddress = GetProcAddress(loadedLibrary, "timeBeginPeriod");
         if (NULL == procAddress) return LogInitializeFailed();
         importTable.timeBeginPeriod = (MMRESULT(WINAPI*)(UINT))procAddress;
@@ -785,6 +805,46 @@ LONG ImportApiWinMM::mmioWrite(HMMIO hmmio, const char* pch, LONG cch)
         return -1;
 
     return importTable.mmioWrite(hmmio, pch, cch);
+}
+
+// ---------
+
+BOOL ImportApiWinMM::PlaySoundA(LPCSTR pszSound, HMODULE hmod, DWORD fdwSound)
+{
+    if (MMSYSERR_NOERROR != Initialize())
+        return FALSE;
+
+    return importTable.PlaySoundA(pszSound, hmod, fdwSound);
+}
+
+// ---------
+
+BOOL ImportApiWinMM::PlaySoundW(LPCWSTR pszSound, HMODULE hmod, DWORD fdwSound)
+{
+    if (MMSYSERR_NOERROR != Initialize())
+        return FALSE;
+
+    return importTable.PlaySoundW(pszSound, hmod, fdwSound);
+}
+
+// ---------
+
+BOOL ImportApiWinMM::sndPlaySoundA(LPCSTR lpszSound, UINT fuSound)
+{
+    if (MMSYSERR_NOERROR != Initialize())
+        return FALSE;
+
+    return importTable.sndPlaySoundA(lpszSound, fuSound);
+}
+
+// ---------
+
+BOOL ImportApiWinMM::sndPlaySoundW(LPCWSTR lpszSound, UINT fuSound)
+{
+    if (MMSYSERR_NOERROR != Initialize())
+        return FALSE;
+
+    return importTable.sndPlaySoundW(lpszSound, fuSound);
 }
 
 // ---------

@@ -68,6 +68,12 @@ namespace Xidi
             FOURCC      (WINAPI* mmioStringToFOURCCW)(LPCWSTR, UINT);
             LONG        (WINAPI* mmioWrite)(HMMIO, const char*, LONG);
             
+            BOOL        (WINAPI* PlaySoundA)(LPCSTR pszSound, HMODULE hmod, DWORD fdwSound);
+            BOOL        (WINAPI* PlaySoundW)(LPCWSTR pszSound, HMODULE hmod, DWORD fdwSound);
+            
+            BOOL        (WINAPI* sndPlaySoundA)(LPCSTR lpszSound, UINT fuSound);
+            BOOL        (WINAPI* sndPlaySoundW)(LPCWSTR lpszSound, UINT fuSound);
+            
             MMRESULT    (WINAPI* timeBeginPeriod)(UINT);
             MMRESULT    (WINAPI* timeEndPeriod)(UINT);
             MMRESULT    (WINAPI* timeGetDevCaps)(LPTIMECAPS, UINT);
@@ -252,6 +258,18 @@ namespace Xidi
 
         // Calls the imported function mmioWrite.
         static LONG mmioWrite(HMMIO hmmio, const char* pch, LONG cch);
+
+        // Calls the imported function PlaySoundA.
+        static BOOL PlaySoundA(LPCSTR pszSound, HMODULE hmod, DWORD fdwSound);
+        
+        // Calls the imported function PlaySoundW.
+        static BOOL PlaySoundW(LPCWSTR pszSound, HMODULE hmod, DWORD fdwSound);
+        
+        // Calls the imported function sndPlaySoundA.
+        static BOOL sndPlaySoundA(LPCSTR lpszSound, UINT fuSound);
+        
+        // Calls the imported function sndPlaySoundW.
+        static BOOL sndPlaySoundW(LPCWSTR lpszSound, UINT fuSound);
         
         // Calls the imported function timeBeginPeriod.
         static MMRESULT timeBeginPeriod(UINT uPeriod);

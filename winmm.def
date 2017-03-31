@@ -44,6 +44,10 @@ EXPORTS
     mmioStringToFOURCCA=ExportApiWinMMMMIOStringToFOURCCA
     mmioStringToFOURCCW=ExportApiWinMMMMIOStringToFOURCCW
     mmioWrite=ExportApiWinMMMMIOWrite
+	PlaySoundA=ExportApiWinMMPlaySoundA
+	PlaySoundW=ExportApiWinMMPlaySoundW
+	sndPlaySoundA=ExportApiWinMMSndPlaySoundA
+	sndPlaySoundW=ExportApiWinMMSndPlaySoundW
 	waveInAddBuffer=ExportApiWinMMWaveInAddBuffer
     waveInClose=ExportApiWinMMWaveInClose
     waveInGetDevCapsA=ExportApiWinMMWaveInGetDevCapsA
