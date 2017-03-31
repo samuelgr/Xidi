@@ -35,6 +35,9 @@ MMRESULT    WINAPI ExportApiWinMMJoyReleaseCapture(UINT uJoyID);
 MMRESULT    WINAPI ExportApiWinMMJoySetCapture(HWND hwnd, UINT uJoyID, UINT uPeriod, BOOL fChanged);
 MMRESULT    WINAPI ExportApiWinMMJoySetThreshold(UINT uJoyID, UINT uThreshold);
 
+MMRESULT    WINAPI ExportApiWinMMMidiConnect(HMIDI hMidi, HMIDIOUT hmo, LPVOID pReserved);
+MMRESULT    WINAPI ExportApiWinMMMidiDisconnect(HMIDI hMidi, HMIDIOUT hmo, LPVOID pReserved);
+
 MMRESULT    WINAPI ExportApiWinMMMMIOAdvance(HMMIO hmmio, LPMMIOINFO lpmmioinfo, UINT wFlags);
 MMRESULT    WINAPI ExportApiWinMMMMIOAscend(HMMIO hmmio, LPMMCKINFO lpck, UINT wFlags);
 MMRESULT    WINAPI ExportApiWinMMMMIOClose(HMMIO hmmio, UINT wFlags);

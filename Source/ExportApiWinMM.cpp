@@ -130,6 +130,20 @@ MMRESULT WINAPI ExportApiWinMMJoySetThreshold(UINT uJoyID, UINT uThreshold)
 
 // ---------
 
+MMRESULT WINAPI ExportApiWinMMMidiConnect(HMIDI hMidi, HMIDIOUT hmo, LPVOID pReserved)
+{
+    return ImportApiWinMM::midiConnect(hMidi, hmo, pReserved);
+}
+
+// ---------
+
+MMRESULT WINAPI ExportApiWinMMMidiDisconnect(HMIDI hMidi, HMIDIOUT hmo, LPVOID pReserved)
+{
+    return ImportApiWinMM::midiDisconnect(hMidi, hmo, pReserved);
+}
+
+// ---------
+
 MMRESULT WINAPI ExportApiWinMMMMIOAdvance(HMMIO hmmio, LPMMIOINFO lpmmioinfo, UINT wFlags)
 {
     return ImportApiWinMM::mmioAdvance(hmmio, lpmmioinfo, wFlags);

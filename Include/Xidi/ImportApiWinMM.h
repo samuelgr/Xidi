@@ -45,6 +45,9 @@ namespace Xidi
             MMRESULT    (WINAPI* joyReleaseCapture)(UINT);
             MMRESULT    (WINAPI* joySetCapture)(HWND, UINT, UINT, BOOL);
             MMRESULT    (WINAPI* joySetThreshold)(UINT, UINT);
+
+            MMRESULT    (WINAPI* midiConnect)(HMIDI, HMIDIOUT, LPVOID);
+            MMRESULT    (WINAPI* midiDisconnect)(HMIDI, HMIDIOUT, LPVOID);
             
             MMRESULT    (WINAPI* mmioAdvance)(HMMIO, LPMMIOINFO, UINT);
             MMRESULT    (WINAPI* mmioAscend)(HMMIO, LPMMCKINFO, UINT);
@@ -195,6 +198,12 @@ namespace Xidi
 
         // Calls the imported function joySetThreshold.
         static MMRESULT joySetThreshold(UINT uJoyID, UINT uThreshold);
+
+        // Calls the imported function midiConnect.
+        static MMRESULT midiConnect(HMIDI hMidi, HMIDIOUT hmo, LPVOID pReserved);
+
+        // Calls the imported function midiDisconnect.
+        static MMRESULT midiDisconnect(HMIDI hMidi, HMIDIOUT hmo, LPVOID pReserved);
 
         // Calls the imported function mmioAdvance.
         static MMRESULT mmioAdvance(HMMIO hmmio, LPMMIOINFO lpmmioinfo, UINT wFlags);

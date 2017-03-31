@@ -115,6 +115,16 @@ MMRESULT ImportApiWinMM::Initialize(void)
         
         // ---------
 
+        procAddress = GetProcAddress(loadedLibrary, "midiConnect");
+        if (NULL == procAddress) return LogInitializeFailed();
+        importTable.midiConnect = (MMRESULT(WINAPI*)(HMIDI, HMIDIOUT, LPVOID))procAddress;
+
+        procAddress = GetProcAddress(loadedLibrary, "midiDisconnect");
+        if (NULL == procAddress) return LogInitializeFailed();
+        importTable.midiDisconnect = (MMRESULT(WINAPI*)(HMIDI, HMIDIOUT, LPVOID))procAddress;
+
+        // ---------
+
         procAddress = GetProcAddress(loadedLibrary, "mmioAdvance");
         if (NULL == procAddress) return LogInitializeFailed();
         importTable.mmioAdvance = (MMRESULT(WINAPI*)(HMMIO, LPMMIOINFO, UINT))procAddress;
@@ -575,6 +585,26 @@ MMRESULT ImportApiWinMM::joySetThreshold(UINT uJoyID, UINT uThreshold)
         return MMSYSERR_ERROR;
 
     return importTable.joySetThreshold(uJoyID, uThreshold);
+}
+
+// ---------
+
+MMRESULT ImportApiWinMM::midiConnect(HMIDI hMidi, HMIDIOUT hmo, LPVOID pReserved)
+{
+    if (MMSYSERR_NOERROR != Initialize())
+        return MMSYSERR_ERROR;
+
+    return importTable.midiConnect(hMidi, hmo, pReserved);
+}
+
+// ---------
+
+MMRESULT ImportApiWinMM::midiDisconnect(HMIDI hMidi, HMIDIOUT hmo, LPVOID pReserved)
+{
+    if (MMSYSERR_NOERROR != Initialize())
+        return MMSYSERR_ERROR;
+
+    return importTable.midiDisconnect(hMidi, hmo, pReserved);
 }
 
 // ---------
