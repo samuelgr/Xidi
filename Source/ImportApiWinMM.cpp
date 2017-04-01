@@ -125,6 +125,176 @@ MMRESULT ImportApiWinMM::Initialize(void)
 
         // ---------
 
+        procAddress = GetProcAddress(loadedLibrary, "midiInAddBuffer");
+        if (NULL == procAddress) return LogInitializeFailed();
+        importTable.midiInAddBuffer = (MMRESULT(WINAPI*)(HMIDIIN, LPMIDIHDR, UINT))procAddress;
+
+        procAddress = GetProcAddress(loadedLibrary, "midiInClose");
+        if (NULL == procAddress) return LogInitializeFailed();
+        importTable.midiInClose = (MMRESULT(WINAPI*)(HMIDIIN))procAddress;
+
+        procAddress = GetProcAddress(loadedLibrary, "midiInGetDevCapsA");
+        if (NULL == procAddress) return LogInitializeFailed();
+        importTable.midiInGetDevCapsA = (MMRESULT(WINAPI*)(UINT_PTR, LPMIDIINCAPSA, UINT))procAddress;
+
+        procAddress = GetProcAddress(loadedLibrary, "midiInGetDevCapsW");
+        if (NULL == procAddress) return LogInitializeFailed();
+        importTable.midiInGetDevCapsW = (MMRESULT(WINAPI*)(UINT_PTR, LPMIDIINCAPSW, UINT))procAddress;
+
+        procAddress = GetProcAddress(loadedLibrary, "midiInGetErrorTextA");
+        if (NULL == procAddress) return LogInitializeFailed();
+        importTable.midiInGetErrorTextA = (MMRESULT(WINAPI*)(MMRESULT, LPSTR, UINT))procAddress;
+
+        procAddress = GetProcAddress(loadedLibrary, "midiInGetErrorTextW");
+        if (NULL == procAddress) return LogInitializeFailed();
+        importTable.midiInGetErrorTextW = (MMRESULT(WINAPI*)(MMRESULT, LPWSTR, UINT))procAddress;
+
+        procAddress = GetProcAddress(loadedLibrary, "midiInGetID");
+        if (NULL == procAddress) return LogInitializeFailed();
+        importTable.midiInGetID = (MMRESULT(WINAPI*)(HMIDIIN, LPUINT))procAddress;
+
+        procAddress = GetProcAddress(loadedLibrary, "midiInGetNumDevs");
+        if (NULL == procAddress) return LogInitializeFailed();
+        importTable.midiInGetNumDevs = (UINT(WINAPI*)(void))procAddress;
+
+        procAddress = GetProcAddress(loadedLibrary, "midiInMessage");
+        if (NULL == procAddress) return LogInitializeFailed();
+        importTable.midiInMessage = (DWORD(WINAPI*)(HMIDIIN, UINT, DWORD_PTR, DWORD_PTR))procAddress;
+
+        procAddress = GetProcAddress(loadedLibrary, "midiInOpen");
+        if (NULL == procAddress) return LogInitializeFailed();
+        importTable.midiInOpen = (MMRESULT(WINAPI*)(LPHMIDIIN, UINT, DWORD_PTR, DWORD_PTR, DWORD))procAddress;
+
+        procAddress = GetProcAddress(loadedLibrary, "midiInPrepareHeader");
+        if (NULL == procAddress) return LogInitializeFailed();
+        importTable.midiInPrepareHeader = (MMRESULT(WINAPI*)(HMIDIIN, LPMIDIHDR, UINT))procAddress;
+
+        procAddress = GetProcAddress(loadedLibrary, "midiInReset");
+        if (NULL == procAddress) return LogInitializeFailed();
+        importTable.midiInReset = (MMRESULT(WINAPI*)(HMIDIIN))procAddress;
+
+        procAddress = GetProcAddress(loadedLibrary, "midiInStart");
+        if (NULL == procAddress) return LogInitializeFailed();
+        importTable.midiInStart = (MMRESULT(WINAPI*)(HMIDIIN))procAddress;
+
+        procAddress = GetProcAddress(loadedLibrary, "midiInStop");
+        if (NULL == procAddress) return LogInitializeFailed();
+        importTable.midiInStop = (MMRESULT(WINAPI*)(HMIDIIN))procAddress;
+
+        procAddress = GetProcAddress(loadedLibrary, "midiInUnprepareHeader");
+        if (NULL == procAddress) return LogInitializeFailed();
+        importTable.midiInUnprepareHeader = (MMRESULT(WINAPI*)(HMIDIIN, LPMIDIHDR, UINT))procAddress;
+        
+        // ---------
+
+        procAddress = GetProcAddress(loadedLibrary, "midiOutCacheDrumPatches");
+        if (NULL == procAddress) return LogInitializeFailed();
+        importTable.midiOutCacheDrumPatches = (MMRESULT(WINAPI*)(HMIDIOUT, UINT, WORD*, UINT))procAddress;
+
+        procAddress = GetProcAddress(loadedLibrary, "midiOutCachePatches");
+        if (NULL == procAddress) return LogInitializeFailed();
+        importTable.midiOutCachePatches = (MMRESULT(WINAPI*)(HMIDIOUT, UINT, WORD*, UINT))procAddress;
+
+        procAddress = GetProcAddress(loadedLibrary, "midiOutClose");
+        if (NULL == procAddress) return LogInitializeFailed();
+        importTable.midiOutClose = (MMRESULT(WINAPI*)(HMIDIOUT))procAddress;
+
+        procAddress = GetProcAddress(loadedLibrary, "midiOutGetDevCapsA");
+        if (NULL == procAddress) return LogInitializeFailed();
+        importTable.midiOutGetDevCapsA = (MMRESULT(WINAPI*)(UINT_PTR, LPMIDIOUTCAPSA, UINT))procAddress;
+
+        procAddress = GetProcAddress(loadedLibrary, "midiOutGetDevCapsW");
+        if (NULL == procAddress) return LogInitializeFailed();
+        importTable.midiOutGetDevCapsW = (MMRESULT(WINAPI*)(UINT_PTR, LPMIDIOUTCAPSW, UINT))procAddress;
+
+        procAddress = GetProcAddress(loadedLibrary, "midiOutGetErrorTextA");
+        if (NULL == procAddress) return LogInitializeFailed();
+        importTable.midiOutGetErrorTextA = (UINT(WINAPI*)(MMRESULT, LPSTR, UINT))procAddress;
+
+        procAddress = GetProcAddress(loadedLibrary, "midiOutGetErrorTextW");
+        if (NULL == procAddress) return LogInitializeFailed();
+        importTable.midiOutGetErrorTextW = (UINT(WINAPI*)(MMRESULT, LPWSTR, UINT))procAddress;
+
+        procAddress = GetProcAddress(loadedLibrary, "midiOutGetID");
+        if (NULL == procAddress) return LogInitializeFailed();
+        importTable.midiOutGetID = (MMRESULT(WINAPI*)(HMIDIOUT, LPUINT))procAddress;
+
+        procAddress = GetProcAddress(loadedLibrary, "midiOutGetNumDevs");
+        if (NULL == procAddress) return LogInitializeFailed();
+        importTable.midiOutGetNumDevs = (UINT(WINAPI*)(void))procAddress;
+
+        procAddress = GetProcAddress(loadedLibrary, "midiOutGetVolume");
+        if (NULL == procAddress) return LogInitializeFailed();
+        importTable.midiOutGetVolume = (MMRESULT(WINAPI*)(HMIDIOUT, LPDWORD))procAddress;
+
+        procAddress = GetProcAddress(loadedLibrary, "midiOutLongMsg");
+        if (NULL == procAddress) return LogInitializeFailed();
+        importTable.midiOutLongMsg = (MMRESULT(WINAPI*)(HMIDIOUT, LPMIDIHDR, UINT))procAddress;
+
+        procAddress = GetProcAddress(loadedLibrary, "midiOutMessage");
+        if (NULL == procAddress) return LogInitializeFailed();
+        importTable.midiOutMessage = (DWORD(WINAPI*)(HMIDIOUT, UINT, DWORD_PTR, DWORD_PTR))procAddress;
+
+        procAddress = GetProcAddress(loadedLibrary, "midiOutOpen");
+        if (NULL == procAddress) return LogInitializeFailed();
+        importTable.midiOutOpen = (MMRESULT(WINAPI*)(LPHMIDIOUT, UINT, DWORD_PTR, DWORD_PTR, DWORD))procAddress;
+
+        procAddress = GetProcAddress(loadedLibrary, "midiOutPrepareHeader");
+        if (NULL == procAddress) return LogInitializeFailed();
+        importTable.midiOutPrepareHeader = (MMRESULT(WINAPI*)(HMIDIOUT, LPMIDIHDR, UINT))procAddress;
+
+        procAddress = GetProcAddress(loadedLibrary, "midiOutReset");
+        if (NULL == procAddress) return LogInitializeFailed();
+        importTable.midiOutReset = (MMRESULT(WINAPI*)(HMIDIOUT))procAddress;
+
+        procAddress = GetProcAddress(loadedLibrary, "midiOutSetVolume");
+        if (NULL == procAddress) return LogInitializeFailed();
+        importTable.midiOutSetVolume = (MMRESULT(WINAPI*)(HMIDIOUT, DWORD))procAddress;
+
+        procAddress = GetProcAddress(loadedLibrary, "midiOutShortMsg");
+        if (NULL == procAddress) return LogInitializeFailed();
+        importTable.midiOutShortMsg = (MMRESULT(WINAPI*)(HMIDIOUT, DWORD))procAddress;
+
+        procAddress = GetProcAddress(loadedLibrary, "midiOutUnprepareHeader");
+        if (NULL == procAddress) return LogInitializeFailed();
+        importTable.midiOutUnprepareHeader = (MMRESULT(WINAPI*)(HMIDIOUT, LPMIDIHDR, UINT))procAddress;
+
+        // ---------
+
+        procAddress = GetProcAddress(loadedLibrary, "midiStreamClose");
+        if (NULL == procAddress) return LogInitializeFailed();
+        importTable.midiStreamClose = (MMRESULT(WINAPI*)(HMIDISTRM))procAddress;
+
+        procAddress = GetProcAddress(loadedLibrary, "midiStreamOpen");
+        if (NULL == procAddress) return LogInitializeFailed();
+        importTable.midiStreamOpen = (MMRESULT(WINAPI*)(LPHMIDISTRM, LPUINT, DWORD, DWORD_PTR, DWORD_PTR, DWORD))procAddress;
+
+        procAddress = GetProcAddress(loadedLibrary, "midiStreamOut");
+        if (NULL == procAddress) return LogInitializeFailed();
+        importTable.midiStreamOut = (MMRESULT(WINAPI*)(HMIDISTRM, LPMIDIHDR, UINT))procAddress;
+
+        procAddress = GetProcAddress(loadedLibrary, "midiStreamPause");
+        if (NULL == procAddress) return LogInitializeFailed();
+        importTable.midiStreamPause = (MMRESULT(WINAPI*)(HMIDISTRM))procAddress;
+
+        procAddress = GetProcAddress(loadedLibrary, "midiStreamPosition");
+        if (NULL == procAddress) return LogInitializeFailed();
+        importTable.midiStreamPosition = (MMRESULT(WINAPI*)(HMIDISTRM, LPMMTIME, UINT))procAddress;
+
+        procAddress = GetProcAddress(loadedLibrary, "midiStreamProperty");
+        if (NULL == procAddress) return LogInitializeFailed();
+        importTable.midiStreamProperty = (MMRESULT(WINAPI*)(HMIDISTRM, LPBYTE, DWORD))procAddress;
+
+        procAddress = GetProcAddress(loadedLibrary, "midiStreamRestart");
+        if (NULL == procAddress) return LogInitializeFailed();
+        importTable.midiStreamRestart = (MMRESULT(WINAPI*)(HMIDISTRM))procAddress;
+
+        procAddress = GetProcAddress(loadedLibrary, "midiStreamStop");
+        if (NULL == procAddress) return LogInitializeFailed();
+        importTable.midiStreamStop = (MMRESULT(WINAPI*)(HMIDISTRM))procAddress;
+
+        // ---------
+        
         procAddress = GetProcAddress(loadedLibrary, "mmioAdvance");
         if (NULL == procAddress) return LogInitializeFailed();
         importTable.mmioAdvance = (MMRESULT(WINAPI*)(HMMIO, LPMMIOINFO, UINT))procAddress;
@@ -605,6 +775,416 @@ MMRESULT ImportApiWinMM::midiDisconnect(HMIDI hMidi, HMIDIOUT hmo, LPVOID pReser
         return MMSYSERR_ERROR;
 
     return importTable.midiDisconnect(hMidi, hmo, pReserved);
+}
+
+// ---------
+
+MMRESULT ImportApiWinMM::midiInAddBuffer(HMIDIIN hMidiIn, LPMIDIHDR lpMidiInHdr, UINT cbMidiInHdr)
+{
+    if (MMSYSERR_NOERROR != Initialize)
+        return MMSYSERR_ERROR;
+
+    return importTable.midiInAddBuffer(hMidiIn, lpMidiInHdr, cbMidiInHdr);
+}
+
+// ---------
+
+MMRESULT ImportApiWinMM::midiInClose(HMIDIIN hMidiIn)
+{
+    if (MMSYSERR_NOERROR != Initialize)
+        return MMSYSERR_ERROR;
+
+    return importTable.midiInClose(hMidiIn);
+}
+
+// ---------
+
+MMRESULT ImportApiWinMM::midiInGetDevCapsA(UINT_PTR uDeviceID, LPMIDIINCAPSA lpMidiInCaps, UINT cbMidiInCaps)
+{
+    if (MMSYSERR_NOERROR != Initialize)
+        return MMSYSERR_ERROR;
+
+    return importTable.midiInGetDevCapsA(uDeviceID, lpMidiInCaps, cbMidiInCaps);
+}
+
+// ---------
+
+MMRESULT ImportApiWinMM::midiInGetDevCapsW(UINT_PTR uDeviceID, LPMIDIINCAPSW lpMidiInCaps, UINT cbMidiInCaps)
+{
+    if (MMSYSERR_NOERROR != Initialize)
+        return MMSYSERR_ERROR;
+
+    return importTable.midiInGetDevCapsW(uDeviceID, lpMidiInCaps, cbMidiInCaps);
+}
+
+// ---------
+
+MMRESULT ImportApiWinMM::midiInGetErrorTextA(MMRESULT wError, LPSTR lpText, UINT cchText)
+{
+    if (MMSYSERR_NOERROR != Initialize)
+        return MMSYSERR_ERROR;
+
+    return importTable.midiInGetErrorTextA(wError, lpText, cchText);
+}
+
+// ---------
+
+MMRESULT ImportApiWinMM::midiInGetErrorTextW(MMRESULT wError, LPWSTR lpText, UINT cchText)
+{
+    if (MMSYSERR_NOERROR != Initialize)
+        return MMSYSERR_ERROR;
+
+    return importTable.midiInGetErrorTextW(wError, lpText, cchText);
+}
+
+// ---------
+
+MMRESULT ImportApiWinMM::midiInGetID(HMIDIIN hmi, LPUINT puDeviceID)
+{
+    if (MMSYSERR_NOERROR != Initialize)
+        return MMSYSERR_ERROR;
+
+    return importTable.midiInGetID(hmi, puDeviceID);
+}
+
+// ---------
+
+UINT ImportApiWinMM::midiInGetNumDevs(void)
+{
+    if (MMSYSERR_NOERROR != Initialize)
+        return 0;
+
+    return importTable.midiInGetNumDevs();
+}
+
+// ---------
+
+DWORD ImportApiWinMM::midiInMessage(HMIDIIN deviceID, UINT msg, DWORD_PTR dw1, DWORD_PTR dw2)
+{
+    if (MMSYSERR_NOERROR != Initialize)
+        return 0;
+
+    return importTable.midiInMessage(deviceID, msg, dw1, dw2);
+}
+
+// ---------
+
+MMRESULT ImportApiWinMM::midiInOpen(LPHMIDIIN lphMidiIn, UINT uDeviceID, DWORD_PTR dwCallback, DWORD_PTR dwCallbackInstance, DWORD dwFlags)
+{
+    if (MMSYSERR_NOERROR != Initialize)
+        return MMSYSERR_ERROR;
+
+    return importTable.midiInOpen(lphMidiIn, uDeviceID, dwCallback, dwCallbackInstance, dwFlags);
+}
+
+// ---------
+
+MMRESULT ImportApiWinMM::midiInPrepareHeader(HMIDIIN hMidiIn, LPMIDIHDR lpMidiInHdr, UINT cbMidiInHdr)
+{
+    if (MMSYSERR_NOERROR != Initialize)
+        return MMSYSERR_ERROR;
+
+    return importTable.midiInPrepareHeader(hMidiIn, lpMidiInHdr, cbMidiInHdr);
+}
+
+// ---------
+
+MMRESULT ImportApiWinMM::midiInReset(HMIDIIN hMidiIn)
+{
+    if (MMSYSERR_NOERROR != Initialize)
+        return MMSYSERR_ERROR;
+
+    return importTable.midiInReset(hMidiIn);
+}
+
+// ---------
+
+MMRESULT ImportApiWinMM::midiInStart(HMIDIIN hMidiIn)
+{
+    if (MMSYSERR_NOERROR != Initialize)
+        return MMSYSERR_ERROR;
+
+    return importTable.midiInStart(hMidiIn);
+}
+
+// ---------
+
+MMRESULT ImportApiWinMM::midiInStop(HMIDIIN hMidiIn)
+{
+    if (MMSYSERR_NOERROR != Initialize)
+        return MMSYSERR_ERROR;
+
+    return importTable.midiInStop(hMidiIn);
+}
+
+// ---------
+
+MMRESULT ImportApiWinMM::midiInUnprepareHeader(HMIDIIN hMidiIn, LPMIDIHDR lpMidiInHdr, UINT cbMidiInHdr)
+{
+    if (MMSYSERR_NOERROR != Initialize)
+        return MMSYSERR_ERROR;
+
+    return importTable.midiInUnprepareHeader(hMidiIn, lpMidiInHdr, cbMidiInHdr);
+}
+
+// ---------
+
+MMRESULT ImportApiWinMM::midiOutCacheDrumPatches(HMIDIOUT hmo, UINT wPatch, WORD* lpKeyArray, UINT wFlags)
+{
+    if (MMSYSERR_NOERROR != Initialize())
+        return MMSYSERR_ERROR;
+
+    return importTable.midiOutCacheDrumPatches(hmo, wPatch, lpKeyArray, wFlags);
+}
+
+// ---------
+
+MMRESULT ImportApiWinMM::midiOutCachePatches(HMIDIOUT hmo, UINT wBank, WORD* lpPatchArray, UINT wFlags)
+{
+    if (MMSYSERR_NOERROR != Initialize())
+        return MMSYSERR_ERROR;
+
+    return importTable.midiOutCachePatches(hmo, wBank, lpPatchArray, wFlags);
+}
+
+// ---------
+
+MMRESULT ImportApiWinMM::midiOutClose(HMIDIOUT hmo)
+{
+    if (MMSYSERR_NOERROR != Initialize())
+        return MMSYSERR_ERROR;
+
+    return importTable.midiOutClose(hmo);
+}
+
+// ---------
+
+MMRESULT ImportApiWinMM::midiOutGetDevCapsA(UINT_PTR uDeviceID, LPMIDIOUTCAPSA lpMidiOutCaps, UINT cbMidiOutCaps)
+{
+    if (MMSYSERR_NOERROR != Initialize())
+        return MMSYSERR_ERROR;
+
+    return importTable.midiOutGetDevCapsA(uDeviceID, lpMidiOutCaps, cbMidiOutCaps);
+}
+
+// ---------
+
+MMRESULT ImportApiWinMM::midiOutGetDevCapsW(UINT_PTR uDeviceID, LPMIDIOUTCAPSW lpMidiOutCaps, UINT cbMidiOutCaps)
+{
+    if (MMSYSERR_NOERROR != Initialize())
+        return MMSYSERR_ERROR;
+
+    return importTable.midiOutGetDevCapsW(uDeviceID, lpMidiOutCaps, cbMidiOutCaps);
+}
+
+// ---------
+
+UINT ImportApiWinMM::midiOutGetErrorTextA(MMRESULT mmrError, LPSTR lpText, UINT cchText)
+{
+    if (MMSYSERR_NOERROR != Initialize())
+        return MMSYSERR_ERROR;
+
+    return importTable.midiOutGetErrorTextA(mmrError, lpText, cchText);
+}
+
+// ---------
+
+UINT ImportApiWinMM::midiOutGetErrorTextW(MMRESULT mmrError, LPWSTR lpText, UINT cchText)
+{
+    if (MMSYSERR_NOERROR != Initialize())
+        return MMSYSERR_ERROR;
+
+    return importTable.midiOutGetErrorTextW(mmrError, lpText, cchText);
+}
+
+// ---------
+
+MMRESULT ImportApiWinMM::midiOutGetID(HMIDIOUT hmo, LPUINT puDeviceID)
+{
+    if (MMSYSERR_NOERROR != Initialize())
+        return MMSYSERR_ERROR;
+
+    return importTable.midiOutGetID(hmo, puDeviceID);
+}
+
+// ---------
+
+UINT ImportApiWinMM::midiOutGetNumDevs(void)
+{
+    if (MMSYSERR_NOERROR != Initialize())
+        return MMSYSERR_ERROR;
+
+    return importTable.midiOutGetNumDevs();
+}
+
+// ---------
+
+MMRESULT ImportApiWinMM::midiOutGetVolume(HMIDIOUT hmo, LPDWORD lpdwVolume)
+{
+    if (MMSYSERR_NOERROR != Initialize())
+        return MMSYSERR_ERROR;
+
+    return importTable.midiOutGetVolume(hmo, lpdwVolume);
+}
+
+// ---------
+
+MMRESULT ImportApiWinMM::midiOutLongMsg(HMIDIOUT hmo, LPMIDIHDR lpMidiOutHdr, UINT cbMidiOutHdr)
+{
+    if (MMSYSERR_NOERROR != Initialize())
+        return MMSYSERR_ERROR;
+
+    return importTable.midiOutLongMsg(hmo, lpMidiOutHdr, cbMidiOutHdr);
+}
+
+// ---------
+
+DWORD ImportApiWinMM::midiOutMessage(HMIDIOUT deviceID, UINT msg, DWORD_PTR dw1, DWORD_PTR dw2)
+{
+    if (MMSYSERR_NOERROR != Initialize())
+        return MMSYSERR_ERROR;
+
+    return importTable.midiOutMessage(deviceID, msg, dw1, dw2);
+}
+
+// ---------
+
+MMRESULT ImportApiWinMM::midiOutOpen(LPHMIDIOUT lphmo, UINT uDeviceID, DWORD_PTR dwCallback, DWORD_PTR dwCallbackInstance, DWORD dwFlags)
+{
+    if (MMSYSERR_NOERROR != Initialize())
+        return MMSYSERR_ERROR;
+
+    return importTable.midiOutOpen(lphmo, uDeviceID, dwCallback, dwCallbackInstance, dwFlags);
+}
+
+// ---------
+
+MMRESULT ImportApiWinMM::midiOutPrepareHeader(HMIDIOUT hmo, LPMIDIHDR lpMidiOutHdr, UINT cbMidiOutHdr)
+{
+    if (MMSYSERR_NOERROR != Initialize())
+        return MMSYSERR_ERROR;
+
+    return importTable.midiOutPrepareHeader(hmo, lpMidiOutHdr, cbMidiOutHdr);
+}
+
+// ---------
+
+MMRESULT ImportApiWinMM::midiOutReset(HMIDIOUT hmo)
+{
+    if (MMSYSERR_NOERROR != Initialize())
+        return MMSYSERR_ERROR;
+
+    return importTable.midiOutReset(hmo);
+}
+
+// ---------
+
+MMRESULT ImportApiWinMM::midiOutSetVolume(HMIDIOUT hmo, DWORD dwVolume)
+{
+    if (MMSYSERR_NOERROR != Initialize())
+        return MMSYSERR_ERROR;
+
+    return importTable.midiOutSetVolume(hmo, dwVolume);
+}
+
+// ---------
+
+MMRESULT ImportApiWinMM::midiOutShortMsg(HMIDIOUT hmo, DWORD dwMsg)
+{
+    if (MMSYSERR_NOERROR != Initialize())
+        return MMSYSERR_ERROR;
+
+    return importTable.midiOutShortMsg(hmo, dwMsg);
+}
+
+// ---------
+
+MMRESULT ImportApiWinMM::midiOutUnprepareHeader(HMIDIOUT hmo, LPMIDIHDR lpMidiOutHdr, UINT cbMidiOutHdr)
+{
+    if (MMSYSERR_NOERROR != Initialize())
+        return MMSYSERR_ERROR;
+
+    return importTable.midiOutUnprepareHeader(hmo, lpMidiOutHdr, cbMidiOutHdr);
+}
+
+// ---------
+
+MMRESULT ImportApiWinMM::midiStreamClose(HMIDISTRM hStream)
+{
+    if (MMSYSERR_NOERROR != Initialize())
+        return MMSYSERR_ERROR;
+
+    return importTable.midiStreamClose(hStream);
+}
+
+// ---------
+
+MMRESULT ImportApiWinMM::midiStreamOpen(LPHMIDISTRM lphStream, LPUINT puDeviceID, DWORD cMidi, DWORD_PTR dwCallback, DWORD_PTR dwInstance, DWORD fdwOpen)
+{
+    if (MMSYSERR_NOERROR != Initialize())
+        return MMSYSERR_ERROR;
+
+    return importTable.midiStreamOpen(lphStream, puDeviceID, cMidi, dwCallback, dwInstance, fdwOpen);
+}
+
+// ---------
+
+MMRESULT ImportApiWinMM::midiStreamOut(HMIDISTRM hMidiStream, LPMIDIHDR lpMidiHdr, UINT cbMidiHdr)
+{
+    if (MMSYSERR_NOERROR != Initialize())
+        return MMSYSERR_ERROR;
+
+    return importTable.midiStreamOut(hMidiStream, lpMidiHdr, cbMidiHdr);
+}
+
+// ---------
+
+MMRESULT ImportApiWinMM::midiStreamPause(HMIDISTRM hms)
+{
+    if (MMSYSERR_NOERROR != Initialize())
+        return MMSYSERR_ERROR;
+
+    return importTable.midiStreamPause(hms);
+}
+
+// ---------
+
+MMRESULT ImportApiWinMM::midiStreamPosition(HMIDISTRM hms, LPMMTIME pmmt, UINT cbmmt)
+{
+    if (MMSYSERR_NOERROR != Initialize())
+        return MMSYSERR_ERROR;
+
+    return importTable.midiStreamPosition(hms, pmmt, cbmmt);
+}
+
+// ---------
+
+MMRESULT ImportApiWinMM::midiStreamProperty(HMIDISTRM hm, LPBYTE lppropdata, DWORD dwProperty)
+{
+    if (MMSYSERR_NOERROR != Initialize())
+        return MMSYSERR_ERROR;
+
+    return importTable.midiStreamProperty(hm, lppropdata, dwProperty);
+}
+
+// ---------
+
+MMRESULT ImportApiWinMM::midiStreamRestart(HMIDISTRM hms)
+{
+    if (MMSYSERR_NOERROR != Initialize())
+        return MMSYSERR_ERROR;
+
+    return importTable.midiStreamRestart(hms);
+}
+
+// ---------
+
+MMRESULT ImportApiWinMM::midiStreamStop(HMIDISTRM hms)
+{
+    if (MMSYSERR_NOERROR != Initialize())
+        return MMSYSERR_ERROR;
+
+    return importTable.midiStreamStop(hms);
 }
 
 // ---------

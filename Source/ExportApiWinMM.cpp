@@ -144,13 +144,299 @@ MMRESULT WINAPI ExportApiWinMMMidiDisconnect(HMIDI hMidi, HMIDIOUT hmo, LPVOID p
 
 // ---------
 
+MMRESULT WINAPI ExportApiWinMMMidiInAddBuffer(HMIDIIN hMidiIn, LPMIDIHDR lpMidiInHdr, UINT cbMidiInHdr)
+{
+    return ImportApiWinMM::midiInAddBuffer(hMidiIn, lpMidiInHdr, cbMidiInHdr);
+}
+
+// ---------
+
+MMRESULT WINAPI ExportApiWinMMMidiInClose(HMIDIIN hMidiIn)
+{
+    return ImportApiWinMM::midiInClose(hMidiIn);
+}
+
+// ---------
+
+MMRESULT WINAPI ExportApiWinMMMidiInGetDevCapsA(UINT_PTR uDeviceID, LPMIDIINCAPSA lpMidiInCaps, UINT cbMidiInCaps)
+{
+    return ImportApiWinMM::midiInGetDevCapsA(uDeviceID, lpMidiInCaps, cbMidiInCaps);
+}
+
+// ---------
+
+MMRESULT WINAPI ExportApiWinMMMidiInGetDevCapsW(UINT_PTR uDeviceID, LPMIDIINCAPSW lpMidiInCaps, UINT cbMidiInCaps)
+{
+    return ImportApiWinMM::midiInGetDevCapsW(uDeviceID, lpMidiInCaps, cbMidiInCaps);
+}
+
+// ---------
+
+MMRESULT WINAPI ExportApiWinMMMidiInGetErrorTextA(MMRESULT wError, LPSTR lpText, UINT cchText)
+{
+    return ImportApiWinMM::midiInGetErrorTextA(wError, lpText, cchText);
+}
+
+// ---------
+
+MMRESULT WINAPI ExportApiWinMMMidiInGetErrorTextW(MMRESULT wError, LPWSTR lpText, UINT cchText)
+{
+    return ImportApiWinMM::midiInGetErrorTextW(wError, lpText, cchText);
+}
+
+// ---------
+
+MMRESULT WINAPI ExportApiWinMMMidiInGetID(HMIDIIN hmi, LPUINT puDeviceID)
+{
+    return ImportApiWinMM::midiInGetID(hmi, puDeviceID);
+}
+
+// ---------
+
+UINT WINAPI ExportApiWinMMMidiInGetNumDevs(void)
+{
+    return ImportApiWinMM::midiInGetNumDevs();
+}
+
+// ---------
+
+DWORD WINAPI ExportApiWinMMMidiInMessage(HMIDIIN deviceID, UINT msg, DWORD_PTR dw1, DWORD_PTR dw2)
+{
+    return ImportApiWinMM::midiInMessage(deviceID, msg, dw1, dw2);
+}
+
+// ---------
+
+MMRESULT WINAPI ExportApiWinMMMidiInOpen(LPHMIDIIN lphMidiIn, UINT uDeviceID, DWORD_PTR dwCallback, DWORD_PTR dwCallbackInstance, DWORD dwFlags)
+{
+    return ImportApiWinMM::midiInOpen(lphMidiIn, uDeviceID, dwCallback, dwCallbackInstance, dwFlags);
+}
+
+// ---------
+
+MMRESULT WINAPI ExportApiWinMMMidiInPrepareHeader(HMIDIIN hMidiIn, LPMIDIHDR lpMidiInHdr, UINT cbMidiInHdr)
+{
+    return ImportApiWinMM::midiInPrepareHeader(hMidiIn, lpMidiInHdr, cbMidiInHdr);
+}
+
+// ---------
+
+MMRESULT WINAPI ExportApiWinMMMidiInReset(HMIDIIN hMidiIn)
+{
+    return ImportApiWinMM::midiInReset(hMidiIn);
+}
+
+// ---------
+
+MMRESULT WINAPI ExportApiWinMMMidiInStart(HMIDIIN hMidiIn)
+{
+    return ImportApiWinMM::midiInStart(hMidiIn);
+}
+
+// ---------
+
+MMRESULT WINAPI ExportApiWinMMMidiInStop(HMIDIIN hMidiIn)
+{
+    return ImportApiWinMM::midiInStop(hMidiIn);
+}
+
+// ---------
+
+MMRESULT WINAPI ExportApiWinMMMidiInUnprepareHeader(HMIDIIN hMidiIn, LPMIDIHDR lpMidiInHdr, UINT cbMidiInHdr)
+{
+    return ImportApiWinMM::midiInUnprepareHeader(hMidiIn, lpMidiInHdr, cbMidiInHdr);
+}
+
+// ---------
+
+MMRESULT WINAPI ExportApiWinMMMidiOutCacheDrumPatches(HMIDIOUT hmo, UINT wPatch, WORD* lpKeyArray, UINT wFlags)
+{
+    return ImportApiWinMM::midiOutCacheDrumPatches(hmo, wPatch, lpKeyArray, wFlags);
+}
+
+// ---------
+
+MMRESULT WINAPI ExportApiWinMMMidiOutCachePatches(HMIDIOUT hmo, UINT wBank, WORD* lpPatchArray, UINT wFlags)
+{
+    return ImportApiWinMM::midiOutCachePatches(hmo, wBank, lpPatchArray, wFlags);
+}
+
+// ---------
+
+MMRESULT WINAPI ExportApiWinMMMidiOutClose(HMIDIOUT hmo)
+{
+    return ImportApiWinMM::midiOutClose(hmo);
+}
+
+// ---------
+
+MMRESULT WINAPI ExportApiWinMMMidiOutGetDevCapsA(UINT_PTR uDeviceID, LPMIDIOUTCAPSA lpMidiOutCaps, UINT cbMidiOutCaps)
+{
+    return ImportApiWinMM::midiOutGetDevCapsA(uDeviceID, lpMidiOutCaps, cbMidiOutCaps);
+}
+
+// ---------
+
+MMRESULT WINAPI ExportApiWinMMMidiOutGetDevCapsW(UINT_PTR uDeviceID, LPMIDIOUTCAPSW lpMidiOutCaps, UINT cbMidiOutCaps)
+{
+    return ImportApiWinMM::midiOutGetDevCapsW(uDeviceID, lpMidiOutCaps, cbMidiOutCaps);
+}
+
+// ---------
+
+UINT WINAPI ExportApiWinMMMidiOutGetErrorTextA(MMRESULT mmrError, LPSTR lpText, UINT cchText)
+{
+    return ImportApiWinMM::midiOutGetErrorTextA(mmrError, lpText, cchText);
+}
+
+// ---------
+
+UINT WINAPI ExportApiWinMMMidiOutGetErrorTextW(MMRESULT mmrError, LPWSTR lpText, UINT cchText)
+{
+    return ImportApiWinMM::midiOutGetErrorTextW(mmrError, lpText, cchText);
+}
+
+// ---------
+
+MMRESULT WINAPI ExportApiWinMMMidiOutGetID(HMIDIOUT hmo, LPUINT puDeviceID)
+{
+    return ImportApiWinMM::midiOutGetID(hmo, puDeviceID);
+}
+
+// ---------
+
+UINT WINAPI ExportApiWinMMMidiOutGetNumDevs(void)
+{
+    return ImportApiWinMM::midiOutGetNumDevs();
+}
+
+// ---------
+
+MMRESULT WINAPI ExportApiWinMMMidiOutGetVolume(HMIDIOUT hmo, LPDWORD lpdwVolume)
+{
+    return ImportApiWinMM::midiOutGetVolume(hmo, lpdwVolume);
+}
+
+// ---------
+
+MMRESULT WINAPI ExportApiWinMMMidiOutLongMsg(HMIDIOUT hmo, LPMIDIHDR lpMidiOutHdr, UINT cbMidiOutHdr)
+{
+    return ImportApiWinMM::midiOutLongMsg(hmo, lpMidiOutHdr, cbMidiOutHdr);
+}
+
+// ---------
+
+DWORD WINAPI ExportApiWinMMMidiOutMessage(HMIDIOUT deviceID, UINT msg, DWORD_PTR dw1, DWORD_PTR dw2)
+{
+    return ImportApiWinMM::midiOutMessage(deviceID, msg, dw1, dw2);
+}
+
+// ---------
+
+MMRESULT WINAPI ExportApiWinMMMidiOutOpen(LPHMIDIOUT lphmo, UINT uDeviceID, DWORD_PTR dwCallback, DWORD_PTR dwCallbackInstance, DWORD dwFlags)
+{
+    return ImportApiWinMM::midiOutOpen(lphmo, uDeviceID, dwCallback, dwCallbackInstance, dwFlags);
+}
+
+// ---------
+
+MMRESULT WINAPI ExportApiWinMMMidiOutPrepareHeader(HMIDIOUT hmo, LPMIDIHDR lpMidiOutHdr, UINT cbMidiOutHdr)
+{
+    return ImportApiWinMM::midiOutPrepareHeader(hmo, lpMidiOutHdr, cbMidiOutHdr);
+}
+
+// ---------
+
+MMRESULT WINAPI ExportApiWinMMMidiOutReset(HMIDIOUT hmo)
+{
+    return ImportApiWinMM::midiOutReset(hmo);
+}
+
+// ---------
+
+MMRESULT WINAPI ExportApiWinMMMidiOutSetVolume(HMIDIOUT hmo, DWORD dwVolume)
+{
+    return ImportApiWinMM::midiOutSetVolume(hmo, dwVolume);
+}
+
+// ---------
+
+MMRESULT WINAPI ExportApiWinMMMidiOutShortMsg(HMIDIOUT hmo, DWORD dwMsg)
+{
+    return ImportApiWinMM::midiOutShortMsg(hmo, dwMsg);
+}
+
+// ---------
+
+MMRESULT WINAPI ExportApiWinMMMidiOutUnprepareHeader(HMIDIOUT hmo, LPMIDIHDR lpMidiOutHdr, UINT cbMidiOutHdr)
+{
+    return ImportApiWinMM::midiOutUnprepareHeader(hmo, lpMidiOutHdr, cbMidiOutHdr);
+}
+
+// ---------
+
+MMRESULT WINAPI ExportApiWinMMMidiStreamClose(HMIDISTRM hStream)
+{
+    return ImportApiWinMM::midiStreamClose(hStream);
+}
+
+// ---------
+
+MMRESULT WINAPI ExportApiWinMMMidiStreamOpen(LPHMIDISTRM lphStream, LPUINT puDeviceID, DWORD cMidi, DWORD_PTR dwCallback, DWORD_PTR dwInstance, DWORD fdwOpen)
+{
+    return ImportApiWinMM::midiStreamOpen(lphStream, puDeviceID, cMidi, dwCallback, dwInstance, fdwOpen);
+}
+
+// ---------
+
+MMRESULT WINAPI ExportApiWinMMMidiStreamOut(HMIDISTRM hMidiStream, LPMIDIHDR lpMidiHdr, UINT cbMidiHdr)
+{
+    return ImportApiWinMM::midiStreamOut(hMidiStream, lpMidiHdr, cbMidiHdr);
+}
+
+// ---------
+
+MMRESULT WINAPI ExportApiWinMMMidiStreamPause(HMIDISTRM hms)
+{
+    return ImportApiWinMM::midiStreamPause(hms);
+}
+
+// ---------
+
+MMRESULT WINAPI ExportApiWinMMMidiStreamPosition(HMIDISTRM hms, LPMMTIME pmmt, UINT cbmmt)
+{
+    return ImportApiWinMM::midiStreamPosition(hms, pmmt, cbmmt);
+}
+
+// ---------
+
+MMRESULT WINAPI ExportApiWinMMMidiStreamProperty(HMIDISTRM hm, LPBYTE lppropdata, DWORD dwProperty)
+{
+    return ImportApiWinMM::midiStreamProperty(hm, lppropdata, dwProperty);
+}
+
+// ---------
+
+MMRESULT WINAPI ExportApiWinMMMidiStreamRestart(HMIDISTRM hms)
+{
+    return ImportApiWinMM::midiStreamRestart(hms);
+}
+
+// ---------
+
+MMRESULT WINAPI ExportApiWinMMMidiStreamStop(HMIDISTRM hms)
+{
+    return ImportApiWinMM::midiStreamStop(hms);
+}
+
+// ---------
+
 MMRESULT WINAPI ExportApiWinMMMMIOAdvance(HMMIO hmmio, LPMMIOINFO lpmmioinfo, UINT wFlags)
 {
     return ImportApiWinMM::mmioAdvance(hmmio, lpmmioinfo, wFlags);
 }
 
 // ---------
-
 
 MMRESULT WINAPI ExportApiWinMMMMIOAscend(HMMIO hmmio, LPMMCKINFO lpck, UINT wFlags)
 {
