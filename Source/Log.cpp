@@ -86,17 +86,34 @@ void Log::InitializeAndCreateLog(void)
         HRESULT result = SHGetKnownFolderPath(FOLDERID_Desktop, 0, NULL, &folderPath);
         if (S_OK != result) return;
         
-        WCHAR logFileName[32];
-        WCHAR logFilePath[2048];
-        wcscpy_s(logFilePath, _countof(logFilePath) - _countof(logFileName) - 2, folderPath);
+        std::wstring logFilePath = folderPath;
+        logFilePath += L"\\";
         CoTaskMemFree(folderPath);
+        
+        // The log file will be named according to the version of Xidi that is being used, plus the name of the executable and a suffix.
+        WCHAR logFileNameBuffer[2048];
+        
+        // First is the name of the executable.
+        GetModuleFileNameW(NULL, logFileNameBuffer, _countof(logFileNameBuffer));
+        std::wstring executableFileName = logFileNameBuffer;
+        const size_t executableStartPos = executableFileName.find_last_of(L'\\');
+        const size_t executableEndPos = executableFileName.find_last_of(L'.');
+        
+        if ((std::wstring::npos != executableStartPos) && (std::wstring::npos != executableEndPos) && (executableStartPos < executableEndPos))
+            logFilePath += executableFileName.substr(executableStartPos + 1, executableEndPos - executableStartPos - 1);
 
-        LoadStringW(Globals::GetInstanceHandle(), IDS_XIDI_LOG_FILE_NAME, logFileName, _countof(logFileName));
-        wcsncat_s(logFilePath, _countof(logFilePath) - _countof(logFileName) - 1, L"\\", 1);
-        wcsncat_s(logFilePath, _countof(logFilePath), logFileName, _countof(logFileName));
-
+        logFilePath += L"_";
+        
+        // Next is the version of Xidi.
+        LoadStringW(Globals::GetInstanceHandle(), IDS_XIDI_VERSION_NAME, logFileNameBuffer, _countof(logFileNameBuffer));
+        logFilePath += logFileNameBuffer;
+        
+        // Finally is the suffix.
+        LoadStringW(Globals::GetInstanceHandle(), IDS_XIDI_LOG_FILE_NAME_SUFFIX, logFileNameBuffer, _countof(logFileNameBuffer));
+        logFilePath += logFileNameBuffer;
+        
         // Open the log file for writing.
-        _wfopen_s(&fileHandle, logFilePath, L"w");
+        _wfopen_s(&fileHandle, logFilePath.c_str(), L"w");
         if (NULL == fileHandle) return;
 
         // Write out the log file header.
