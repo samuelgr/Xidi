@@ -30,6 +30,9 @@ namespace Xidi
         // Mapping scheme to be applied to the wrapped DirectInput device.
         Mapper::Base* mapper;
 
+        // Specifies whether or not the device was polled since the last time its state was obtained.
+        BOOL polledSinceLastGetDeviceState;
+
         // Reference count.
         DWORD refcount;
 

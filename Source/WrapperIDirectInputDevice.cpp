@@ -19,7 +19,7 @@ using namespace Xidi;
 // -------- CONSTRUCTION AND DESTRUCTION ----------------------------------- //
 // See "WrapperIDirectInputDevice.h" for documentation.
 
-WrapperIDirectInputDevice::WrapperIDirectInputDevice(BOOL useUnicode, XInputController* controller, Mapper::Base* mapper) : controller(controller), mapper(mapper), refcount(0), useUnicode(useUnicode) {}
+WrapperIDirectInputDevice::WrapperIDirectInputDevice(BOOL useUnicode, XInputController* controller, Mapper::Base* mapper) : controller(controller), mapper(mapper), polledSinceLastGetDeviceState(FALSE), refcount(0), useUnicode(useUnicode) {}
 
 // ---------
 
@@ -180,6 +180,13 @@ HRESULT STDMETHODCALLTYPE WrapperIDirectInputDevice::GetDeviceInfo(LPDIDEVICEINS
 
 HRESULT STDMETHODCALLTYPE WrapperIDirectInputDevice::GetDeviceState(DWORD cbData, LPVOID lpvData)
 {
+    // Handle games that forget to poll the device.
+    // Don't bother buffering any changes, since this method has the effect of clearing the buffer anyway.
+    if (FALSE == polledSinceLastGetDeviceState)
+        controller->RefreshControllerStateUnbuffered();
+
+    polledSinceLastGetDeviceState = FALSE;
+    
     // Get the current state from the controller.
     XINPUT_STATE currentControllerState;
     HRESULT result = controller->GetCurrentDeviceState(&currentControllerState);
@@ -235,7 +242,12 @@ HRESULT STDMETHODCALLTYPE WrapperIDirectInputDevice::Initialize(HINSTANCE hinst,
 
 HRESULT STDMETHODCALLTYPE WrapperIDirectInputDevice::Poll(void)
 {
-    return controller->RefreshControllerState();
+    HRESULT refreshResult = controller->RefreshControllerState();
+
+    if (S_OK == refreshResult)
+        polledSinceLastGetDeviceState = TRUE;
+
+    return refreshResult;
 }
 
 // ---------

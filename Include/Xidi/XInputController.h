@@ -187,9 +187,11 @@ namespace Xidi
         // Removes the event from the buffer.
         HRESULT PopBufferedEvent(SControllerEvent* event);
         
-        // Refreshes the controller state information.
-        // Polls the controller for updated state.
+        // Refreshes the controller state information and adds changes to the event buffer.
         HRESULT RefreshControllerState(void);
+
+        // Refreshes the controller state information but does not add changes to the event buffer.
+        HRESULT RefreshControllerStateUnbuffered(void);
         
         // Sets a DirectInput property on this controller.
         // Corresponds directly to IDirectInputDevice's SetProperty method.

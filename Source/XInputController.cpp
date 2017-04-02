@@ -366,6 +366,26 @@ HRESULT XInputController::RefreshControllerState(void)
 
 // ---------
 
+HRESULT XInputController::RefreshControllerStateUnbuffered(void)
+{
+    if (!IsAcquired()) return DIERR_NOTACQUIRED;
+
+    // Get updated state information for the controller.
+    XINPUT_STATE newControllerState;
+    DWORD result = XInputGetState(xinputUserIndex, &newControllerState);
+
+    // Copy the new controller state to the current controller state.
+    controllerState = newControllerState;
+    
+    // If the device was unplugged or otherwise has become unavailable, reset its state to everything being neutral.
+    if (ERROR_SUCCESS != result)
+        ZeroMemory(&newControllerState.Gamepad, sizeof(newControllerState.Gamepad));
+    
+    return DI_OK;
+}
+
+// ---------
+
 HRESULT XInputController::SetControllerProperty(REFGUID rguidProp, LPCDIPROPHEADER pdiph)
 {
     // Verify the correct header size.
