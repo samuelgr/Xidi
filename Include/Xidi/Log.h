@@ -85,7 +85,7 @@ namespace Xidi
         
         // Creates a log file and initializes this class.
         // File name is determined internally.
-        // Must be called before any non-forced log messages can be written.
+        // Called automatically before any log messages are written.
         // Idempotent.
         static void InitializeAndCreateLog(void);
         

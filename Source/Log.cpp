@@ -236,10 +236,8 @@ void Log::LogLineOutputFormat(ELogLevel severity, LPTSTR format, va_list args)
 void Log::OutputFormattedLogMessage(LPTSTR format, va_list args)
 {
     if (!IsLogReady())
-    {
         InitializeAndCreateLog();
-    }
-
+    
     if (IsLogReady())
     {
         _vftprintf_s(fileHandle, format, args);
@@ -252,10 +250,8 @@ void Log::OutputFormattedLogMessage(LPTSTR format, va_list args)
 void Log::OutputLogMessage(LPTSTR message)
 {
     if (!IsLogReady())
-    {
         InitializeAndCreateLog();
-    }
-
+    
     if (IsLogReady())
     {
         _fputts(message, fileHandle);

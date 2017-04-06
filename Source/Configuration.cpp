@@ -567,7 +567,8 @@ size_t Configuration::GetConfigurationFilePath(LPTSTR buf, const size_t count)
 
 void Configuration::HandleErrorCannotOpenConfigurationFile(LPCTSTR filename)
 {
-    Log::WriteFormattedLogMessageFromResource(ELogLevel::LogLevelForced, IDS_XIDI_CONFIGURATION_FILE_ERROR_CANNOT_OPEN_FORMAT, filename);
+    // Do nothing.
+    // In this scenario, the default settings will be applied.
 }
 
 // ---------
@@ -644,7 +645,7 @@ void Configuration::HandleErrorFileIO(LPCTSTR filename)
 
 void Configuration::HandleErrorInternal(const DWORD code)
 {
-    Log::WriteFormattedLogMessageFromResource(ELogLevel::LogLevelForced, IDS_XIDI_CONFIGURATION_FILE_ERROR_INTERNAL_FORMAT, code);
+    Log::WriteFormattedLogMessageFromResource(ELogLevel::LogLevelError, IDS_XIDI_CONFIGURATION_FILE_ERROR_INTERNAL_FORMAT, code);
 }
 
 // ---------
