@@ -183,7 +183,7 @@ HRESULT STDMETHODCALLTYPE WrapperIDirectInput::EnumDevices(DWORD dwDevType, LPDI
 #if DIRECTINPUT_VERSION >= 0x0800
     if (DI8DEVCLASS_ALL == dwDevType || DI8DEVCLASS_GAMECTRL == dwDevType || DI8DEVTYPE_GAMEPAD == GET_DIDEVICE_TYPE(dwDevType))
 #else
-    if ((0 == dwDevType) || (DIDEVTYPE_DEVICE == GET_DIDEVICE_TYPE(dwDevType)) || (DIDEVTYPE_JOYSTICK == GET_DIDEVICE_TYPE(dwDevType) && (0 == GET_DIDEVICE_SUBTYPE(dwDevType) || DIDEVTYPEJOYSTICK_GAMEPAD == GET_DIDEVICE_TYPE(dwDevType))))
+    if ((0 == dwDevType) || (DIDEVTYPE_JOYSTICK == GET_DIDEVICE_TYPE(dwDevType) && (0 == GET_DIDEVICE_SUBTYPE(dwDevType) || DIDEVTYPEJOYSTICK_GAMEPAD == GET_DIDEVICE_TYPE(dwDevType))))
 #endif
     {
         // Currently force feedback is not suported.
