@@ -81,7 +81,7 @@ namespace Xidi
 
         // Maximum number of XInput controllers that can be plugged into the system.
         // Valid user indices range from 0 to this number.
-        static const WORD kMaxNumXInputControllers = 4;
+        static const WORD kMaxNumXInputControllers = XUSER_MAX_COUNT;
 
 
     private:
