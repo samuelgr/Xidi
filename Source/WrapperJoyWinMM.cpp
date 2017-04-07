@@ -302,16 +302,16 @@ MMRESULT WrapperJoyWinMM::JoyGetDevCapsA(UINT_PTR uJoyID, LPJOYCAPSA pjc, UINT c
         if (mappedDeviceCaps.dwPOVs > 0)
             pjc->wCaps = JOYCAPS_HASPOV | JOYCAPS_POV4DIR;
 
-        if (mappedDeviceCaps.dwAxes > 2)
+        if (mapper->AxisTypeCount(GUID_ZAxis) > 0)
             pjc->wCaps |= JOYCAPS_HASZ;
 
-        if (mappedDeviceCaps.dwAxes > 3)
+        if (mapper->AxisTypeCount(GUID_RzAxis) > 0)
             pjc->wCaps |= JOYCAPS_HASR;
 
-        if (mappedDeviceCaps.dwAxes > 4)
+        if (mapper->AxisTypeCount(GUID_RyAxis) > 0)
             pjc->wCaps |= JOYCAPS_HASU;
 
-        if (mappedDeviceCaps.dwAxes > 5)
+        if (mapper->AxisTypeCount(GUID_RxAxis) > 0)
             pjc->wCaps |= JOYCAPS_HASV;
 
         FillRegistryKeyStringA(pjc->szRegKey, _countof(pjc->szRegKey));
