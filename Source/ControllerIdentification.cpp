@@ -18,7 +18,6 @@
 #include <guiddef.h>
 #include <Xinput.h>
 
-
 using namespace Xidi;
 
 

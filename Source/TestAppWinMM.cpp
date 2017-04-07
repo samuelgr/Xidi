@@ -18,7 +18,6 @@
 #include "Log.h"
 #include "TestApp.h"
 
-
 using namespace Xidi;
 
 

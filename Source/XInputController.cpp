@@ -374,12 +374,12 @@ HRESULT XInputController::RefreshControllerStateUnbuffered(void)
     XINPUT_STATE newControllerState;
     DWORD result = XInputGetState(xinputUserIndex, &newControllerState);
 
-    // Copy the new controller state to the current controller state.
-    controllerState = newControllerState;
-    
     // If the device was unplugged or otherwise has become unavailable, reset its state to everything being neutral.
     if (ERROR_SUCCESS != result)
         ZeroMemory(&newControllerState.Gamepad, sizeof(newControllerState.Gamepad));
+    
+    // Copy the new controller state to the current controller state.
+    controllerState = newControllerState;
     
     return DI_OK;
 }

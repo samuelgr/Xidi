@@ -17,7 +17,6 @@
 #include <cstdio>
 #include <ShlObj.h>
 
-
 using namespace Xidi;
 
 

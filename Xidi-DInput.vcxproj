@@ -36,6 +36,7 @@
     <ClInclude Include="Include\Xidi\Globals.h" />
     <ClInclude Include="Include\Xidi\Log.h" />
     <ClInclude Include="Include\Xidi\MapperFactory.h" />
+    <ClInclude Include="Include\Xidi\Mapper\ExtendedGamepad.h" />
     <ClInclude Include="Include\Xidi\Mapper\XInputNative.h" />
     <ClInclude Include="Include\Xidi\Mapper\XInputSharedTriggers.h" />
     <ClInclude Include="Include\Xidi\Mapper\StandardGamepad.h" />
@@ -60,6 +61,7 @@
     <ClCompile Include="Source\Globals.cpp" />
     <ClCompile Include="Source\Log.cpp" />
     <ClCompile Include="Source\MapperFactory.cpp" />
+    <ClCompile Include="Source\Mapper\ExtendedGamepad.cpp" />
     <ClCompile Include="Source\Mapper\XInputNative.cpp" />
     <ClCompile Include="Source\Mapper\XInputSharedTriggers.cpp" />
     <ClCompile Include="Source\Mapper\StandardGamepad.cpp" />

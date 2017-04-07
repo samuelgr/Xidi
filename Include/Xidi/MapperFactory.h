@@ -25,7 +25,8 @@ namespace Xidi
         DefaultMapper,
         XInputNativeMapper,
         XInputSharedTriggersMapper,
-        StandardGamepadMapper
+        StandardGamepadMapper,
+        ExtendedGamepadMapper
     };
     
     // Creates and returns pointers to new mapper objects on request.
@@ -38,7 +39,7 @@ namespace Xidi
         // -------- CONSTANTS ------------------------------------------------------ //
         
         // Specifies the default mapper type that, absent any other changes, will be created upon request.
-        static const EMapper kDefaultMapperType = EMapper::StandardGamepadMapper;
+        static const EMapper kDefaultMapperType = EMapper::ExtendedGamepadMapper;
         
         
     private:

@@ -21,7 +21,6 @@
 #include "TestApp.h"
 #include "Mapper/Base.h"
 
-
 using namespace Xidi;
 
 
