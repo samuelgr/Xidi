@@ -1,12 +1,12 @@
 /*****************************************************************************
  * Xidi
- *      DirectInput interface for XInput controllers.
+ *   DirectInput interface for XInput controllers.
  *****************************************************************************
  * Authored by Samuel Grossman
  * Copyright (c) 2016-2017
- *****************************************************************************
- * Configuration.h
- *      Declaration of configuration file functionality.
+ *************************************************************************//**
+ * @file Configuration.h
+ *   Declaration of configuration file functionality.
  *****************************************************************************/
 
 #pragma once

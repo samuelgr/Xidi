@@ -1,13 +1,13 @@
 /*****************************************************************************
  * Xidi
- *      DirectInput interface for XInput controllers.
+ *   DirectInput interface for XInput controllers.
  *****************************************************************************
  * Authored by Samuel Grossman
  * Copyright (c) 2016-2017
- *****************************************************************************
- * Globals.cpp
- *      Implementation of accessors and mutators for global data items.
- *      Intended for miscellaneous data elements with no other suitable place.
+ *************************************************************************//**
+ * @file Globals.cpp
+ *   Implementation of accessors and mutators for global data items.
+ *   Intended for miscellaneous data elements with no other suitable place.
  *****************************************************************************/
 
 #include "ApiStdString.h"

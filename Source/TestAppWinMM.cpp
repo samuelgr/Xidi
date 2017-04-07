@@ -4,8 +4,8 @@
  *****************************************************************************
  * Authored by Samuel Grossman
  * Copyright (c) 2016-2017
- *****************************************************************************
- * TestAppWinMM.cpp
+ *************************************************************************//**
+ * @file TestAppWinMM.cpp
  *      Entry point and other implementation for a simple console application
  *      for testing the functionality of this library via WinMM.
  *****************************************************************************/

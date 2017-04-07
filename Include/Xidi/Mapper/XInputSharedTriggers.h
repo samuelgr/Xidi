@@ -1,14 +1,14 @@
 /*****************************************************************************
  * Xidi
- *      DirectInput interface for XInput controllers.
+ *   DirectInput interface for XInput controllers.
  *****************************************************************************
  * Authored by Samuel Grossman
  * Copyright (c) 2016-2017
- *****************************************************************************
- * Mapper/XInputSharedTriggers.h
- *      Declares a mapper that maps to the default configuration of an
- *      XInput controller when accessed via DirectInput, with the exception
- *      that the LT and RT triggers share the Z axis.
+ *************************************************************************//**
+ * @file Mapper/XInputSharedTriggers.h
+ *   Declares a mapper that maps to the default configuration of an
+ *   XInput controller when accessed via DirectInput, with the exception
+ *   that the LT and RT triggers share the Z axis.
  *****************************************************************************/
 
 #pragma once
@@ -20,16 +20,15 @@ namespace Xidi
 {
     namespace Mapper
     {
-        // Provides a mapping to the default button layout of an XInput controller when accessed via DirectInput, with the triggers sharing an axis.
-        // Right stick is mapped to Rx and Ry axes, and triggers are mapped to share the Z axis.
-        // Matches the behavior of an Xbox 360 controller with the latest drivers.
+        /// Provides a mapping to the default button layout of an XInput controller when accessed via DirectInput, with the triggers sharing an axis.
+        /// Right stick is mapped to Rx and Ry axes, and triggers are mapped to share the Z axis.
         class XInputSharedTriggers : public Base
         {
         public:
             // -------- TYPE DEFINITIONS ----------------------------------------------- //
 
-            // Identifies each button modelled by this mapper.
-            // Values specify DirectInput instance number.
+            /// Identifies each button modelled by this mapper.
+            /// Values specify DirectInput instance number.
             enum EButton : TInstanceIdx
             {
                 ButtonA = 0,
@@ -46,8 +45,8 @@ namespace Xidi
                 ButtonCount = 10
             };
 
-            // Identifies each axis modelled by this mapper.
-            // Values specify DirectInput instance number.
+            /// Identifies each axis modelled by this mapper.
+            /// Values specify DirectInput instance number.
             enum EAxis : TInstanceIdx
             {
                 AxisX = 0,
@@ -59,8 +58,8 @@ namespace Xidi
                 AxisCount = 5
             };
 
-            // Identifies each point-of-view controller modelled by this mapper.
-            // Values specify DirectInput instance number.
+            /// Identifies each point-of-view controller modelled by this mapper.
+            /// Values specify DirectInput instance number.
             enum EPov : TInstanceIdx
             {
                 PovDpad = 0,

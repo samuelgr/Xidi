@@ -1,12 +1,12 @@
 /*****************************************************************************
  * Xidi
- *      DirectInput interface for XInput controllers.
+ *   DirectInput interface for XInput controllers.
  *****************************************************************************
  * Authored by Samuel Grossman
  * Copyright (c) 2016-2017
- *****************************************************************************
- * Log.cpp
- *      Logging functionality implementation.
+ *************************************************************************//**
+ * @file Log.cpp
+ *   Logging functionality implementation.
  *****************************************************************************/
 
 #include "ApiWindows.h"

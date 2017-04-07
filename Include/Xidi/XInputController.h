@@ -1,13 +1,13 @@
 /*****************************************************************************
  * Xidi
- *      DirectInput interface for XInput controllers.
+ *   DirectInput interface for XInput controllers.
  *****************************************************************************
  * Authored by Samuel Grossman
  * Copyright (c) 2016-2017
- *****************************************************************************
- * XInputController.h
- *      Declaration of a class that represents and interfaces with a single
- *      XInput-based controller and exposes a DirectInput-like interface.
+ *************************************************************************//**
+ * @file XInputController.h
+ *   Declaration of a class that represents and interfaces with a single
+ *   XInput-based controller and exposes a DirectInput-like interface.
  *****************************************************************************/
 
 #pragma once

@@ -1,12 +1,12 @@
 /*****************************************************************************
  * Xidi
- *      DirectInput interface for XInput controllers.
+ *   DirectInput interface for XInput controllers.
  *****************************************************************************
  * Authored by Samuel Grossman
  * Copyright (c) 2016-2017
- *****************************************************************************
- * MapperFactory.cpp
- *      Implementation of a class that creates mappers of different types.
+ *************************************************************************//**
+ * @file MapperFactory.cpp
+ *   Implementation of a class that creates mappers of different types.
  *****************************************************************************/
 
 #include "ApiStdString.h"

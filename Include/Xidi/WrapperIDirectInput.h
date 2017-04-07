@@ -1,12 +1,12 @@
 /*****************************************************************************
  * Xidi
- *      DirectInput interface for XInput controllers.
+ *   DirectInput interface for XInput controllers.
  *****************************************************************************
  * Authored by Samuel Grossman
  * Copyright (c) 2016-2017
- *****************************************************************************
- * WrapperIDirectInput.h
- *      Declaration of the wrapper class for IDirectInput.
+ *************************************************************************//**
+ * @file WrapperIDirectInput.h
+ *   Declaration of the wrapper class for IDirectInput.
  *****************************************************************************/
 
 #pragma once

@@ -1,13 +1,13 @@
 /*****************************************************************************
  * Xidi
- *      DirectInput interface for XInput controllers.
+ *   DirectInput interface for XInput controllers.
  *****************************************************************************
  * Authored by Samuel Grossman
  * Copyright (c) 2016-2017
- *****************************************************************************
- * XInputControllerIdentification.cpp
- *      Implementation of helpers for identifying and enumerating
- *      XInput-based game controllers.
+ *************************************************************************//**
+ * @file XInputControllerIdentification.cpp
+ *   Implementation of helpers for identifying and enumerating
+ *   XInput-based game controllers.
  *****************************************************************************/
 
 #include "ApiDirectInput.h"

@@ -1,13 +1,13 @@
 /*****************************************************************************
  * Xidi
- *      DirectInput interface for XInput controllers.
+ *   DirectInput interface for XInput controllers.
  *****************************************************************************
  * Authored by Samuel Grossman
  * Copyright (c) 2016-2017
- *****************************************************************************
- * Mapper/Base.cpp
- *      Abstract base class for supported control mapping schemes.
- *      Provides common implementations of most core functionality.
+ *************************************************************************//**
+ * @file Mapper/Base.cpp
+ *   Abstract base class for supported control mapping schemes.
+ *   Provides common implementations of most core functionality.
  *****************************************************************************/
 
 #include "ApiDirectInput.h"

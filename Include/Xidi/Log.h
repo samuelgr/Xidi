@@ -1,12 +1,12 @@
 /*****************************************************************************
  * Xidi
- *      DirectInput interface for XInput controllers.
+ *   DirectInput interface for XInput controllers.
  *****************************************************************************
  * Authored by Samuel Grossman
  * Copyright (c) 2016-2017
- *****************************************************************************
- * Log.h
- *      Logging interface declaration.
+ *************************************************************************//**
+ * @file Log.h
+ *   Logging interface declaration.
  *****************************************************************************/
 
 #pragma once

@@ -1,13 +1,13 @@
 /*****************************************************************************
  * Xidi
- *      DirectInput interface for XInput controllers.
+ *   DirectInput interface for XInput controllers.
  *****************************************************************************
  * Authored by Samuel Grossman
  * Copyright (c) 2016-2017
- *****************************************************************************
- * Mapper/XInputNative.cpp
- *      Implements a mapper that maps to the default configuration of an
- *      XInput controller when accessed via DirectInput.
+ *************************************************************************//**
+ * @file Mapper/XInputNative.cpp
+ *   Implements a mapper that maps to the default configuration of an
+ *   XInput controller when accessed via DirectInput.
  *****************************************************************************/
 
 #include "ApiDirectInput.h"

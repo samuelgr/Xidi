@@ -1,12 +1,12 @@
 /*****************************************************************************
  * Xidi
- *      DirectInput interface for XInput controllers.
+ *   DirectInput interface for XInput controllers.
  *****************************************************************************
  * Authored by Samuel Grossman
  * Copyright (c) 2016-2017
- *****************************************************************************
- * WrapperJoyWinMM.h
- *      Declaration of the wrapper for all WinMM joystick functions.
+ *************************************************************************//**
+ * @file WrapperJoyWinMM.h
+ *   Declaration of the wrapper for all WinMM joystick functions.
  *****************************************************************************/
 
 #pragma once

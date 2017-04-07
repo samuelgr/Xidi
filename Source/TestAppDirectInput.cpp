@@ -1,13 +1,13 @@
 /*****************************************************************************
  * Xidi
- *      DirectInput interface for XInput controllers.
+ *   DirectInput interface for XInput controllers.
  *****************************************************************************
  * Authored by Samuel Grossman
  * Copyright (c) 2016-2017
- *****************************************************************************
- * TestAppDirectInput.cpp
- *      Entry point and other implementation for a simple console application
- *      for testing the functionality of this library via DirectInput.
+ *************************************************************************//**
+ * @file TestAppDirectInput.cpp
+ *   Entry point and other implementation for a simple console application
+ *   for testing the functionality of this library via DirectInput.
  *****************************************************************************/
 
 #include "ApiDirectInput.h"

@@ -1,12 +1,12 @@
 /*****************************************************************************
  * Xidi
- *      DirectInput interface for XInput controllers.
+ *   DirectInput interface for XInput controllers.
  *****************************************************************************
  * Authored by Samuel Grossman
  * Copyright (c) 2016-2017
- *****************************************************************************
- * ImportApiWinMM.h
- *      Declarations related to importing the API from the WinMM library.
+ *************************************************************************//**
+ * @file ImportApiWinMM.h
+ *   Declarations related to importing the API from the WinMM library.
  *****************************************************************************/
 
 #pragma once

@@ -1,13 +1,13 @@
 /*****************************************************************************
  * Xidi
- *      DirectInput interface for XInput controllers.
+ *   DirectInput interface for XInput controllers.
  *****************************************************************************
  * Authored by Samuel Grossman
  * Copyright (c) 2016-2017
- *****************************************************************************
- * Globals.h
- *      Declaration of a namespace for storing and retrieving global data.
- *      Intended for miscellaneous data elements with no other suitable place.
+ *************************************************************************//**
+ * @file Globals.h
+ *   Declaration of a namespace for storing and retrieving global data.
+ *   Intended for miscellaneous data elements with no other suitable place.
  *****************************************************************************/
 
 #pragma once

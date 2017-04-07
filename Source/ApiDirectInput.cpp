@@ -1,13 +1,13 @@
 /*****************************************************************************
  * Xidi
- *      DirectInput interface for XInput controllers.
+ *   DirectInput interface for XInput controllers.
  *****************************************************************************
  * Authored by Samuel Grossman
  * Copyright (c) 2016-2017
- *****************************************************************************
- * ApiDirectInput.h
- *      Pulls in all DirectInput GUID definitions to avoid linking with
- *      the DirectInput library.
+ *************************************************************************//**
+ * @file ApiDirectInput.cpp
+ *   Pulls in all DirectInput GUID definitions to avoid linking with
+ *   the DirectInput library.
  *****************************************************************************/
 
 #include <initguid.h>

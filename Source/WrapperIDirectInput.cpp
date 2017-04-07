@@ -1,13 +1,13 @@
 /*****************************************************************************
  * Xidi
- *      DirectInput interface for XInput controllers.
- *      Fixes issues associated with certain XInput-based controllers.
+ *   DirectInput interface for XInput controllers.
+ *   Fixes issues associated with certain XInput-based controllers.
  *****************************************************************************
  * Authored by Samuel Grossman
  * Copyright (c) 2016-2017
- *****************************************************************************
- * WrapperIDirectInput.cpp
- *      Implementation of the wrapper class for IDirectInput.
+ *************************************************************************//**
+ * @file WrapperIDirectInput.cpp
+ *   Implementation of the wrapper class for IDirectInput.
  *****************************************************************************/
 
 #include "ApiDirectInput.h"
@@ -23,14 +23,14 @@ using namespace Xidi;
 
 // -------- LOCAL TYPES ---------------------------------------------------- //
 
-// Contains all information required to intercept callbacks to EnumDevices.
 namespace Xidi
 {
+    /// Contains all information required to intercept callbacks to EnumDevices.
     struct SEnumDevicesCallbackInfo
     {
-        WrapperIDirectInput* instance;
-        LPDIENUMDEVICESCALLBACK lpCallback;
-        LPVOID pvRef;
+        WrapperIDirectInput* instance;                                      ///< #WrapperIDirectInput instance that invoked the enumeration.
+        LPDIENUMDEVICESCALLBACK lpCallback;                                 ///< Application-specified callback that should be invoked.
+        LPVOID pvRef;                                                       ///< Application-specified argument to be provided to the application-specified callback.
     };
 }
 

@@ -1,13 +1,13 @@
 /*****************************************************************************
  * Xidi
- *      DirectInput interface for XInput controllers.
+ *   DirectInput interface for XInput controllers.
  *****************************************************************************
  * Authored by Samuel Grossman
  * Copyright (c) 2016-2017
- *****************************************************************************
- * ExportApiDirectInput.h
- *      Declaration of primary exported functions for the DirectInput
- *      library.
+ *************************************************************************//**
+ * @file ExportApiDirectInput.h
+ *   Declaration of primary exported functions for the DirectInput
+ *   library.
  *****************************************************************************/
 
 #pragma once

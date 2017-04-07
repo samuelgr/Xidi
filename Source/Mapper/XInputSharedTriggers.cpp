@@ -1,14 +1,14 @@
 /*****************************************************************************
  * Xidi
- *      DirectInput interface for XInput controllers.
+ *   DirectInput interface for XInput controllers.
  *****************************************************************************
  * Authored by Samuel Grossman
  * Copyright (c) 2016-2017
- *****************************************************************************
- * Mapper/XInputSharedTriggers.cpp
- *      Implements a mapper that maps to the default configuration of an
- *      XInput controller when accessed via DirectInput, with the exception
- *      that the LT and RT triggers share the Z axis.
+ *************************************************************************//**
+ * @file Mapper/XInputSharedTriggers.cpp
+ *   Implements a mapper that maps to the default configuration of an
+ *   XInput controller when accessed via DirectInput, with the exception
+ *   that the LT and RT triggers share the Z axis.
  *****************************************************************************/
 
 #include "ApiDirectInput.h"

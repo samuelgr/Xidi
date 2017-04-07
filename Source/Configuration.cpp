@@ -1,12 +1,12 @@
 /*****************************************************************************
  * Xidi
- *      DirectInput interface for XInput controllers.
+ *   DirectInput interface for XInput controllers.
  *****************************************************************************
  * Authored by Samuel Grossman
  * Copyright (c) 2016-2017
- *****************************************************************************
- * Configuration.cpp
- *      Implementation of configuration file functionality.
+ *************************************************************************//**
+ * @file Configuration.cpp
+ *   Implementation of configuration file functionality.
  *****************************************************************************/
 
 #include "ApiCharacterType.h"

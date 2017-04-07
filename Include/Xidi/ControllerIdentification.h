@@ -1,13 +1,13 @@
 /*****************************************************************************
  * Xidi
- *      DirectInput interface for XInput controllers.
+ *   DirectInput interface for XInput controllers.
  *****************************************************************************
  * Authored by Samuel Grossman
  * Copyright (c) 2016-2017
- *****************************************************************************
- * ControllerIdentification.h
- *      Declaration of helpers for identifying and enumerating
- *      XInput-based game controllers.
+ *************************************************************************//**
+ * @file ControllerIdentification.h
+ *   Declaration of helpers for identifying and enumerating
+ *   XInput-based game controllers.
  *****************************************************************************/
 
 #pragma once

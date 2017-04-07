@@ -1,12 +1,12 @@
 /*****************************************************************************
  * Xidi
- *      DirectInput interface for XInput controllers.
+ *   DirectInput interface for XInput controllers.
  *****************************************************************************
  * Authored by Samuel Grossman
  * Copyright (c) 2016-2017
- *****************************************************************************
- * ApiCharacterType.h
- *      Common header file for specifying wide or narrow character type APIs.
+ *************************************************************************//**
+ * @file ApiCharacterType.h
+ *   Common header file for specifying wide or narrow character type APIs.
  *****************************************************************************/
 
 #pragma once

@@ -1,13 +1,13 @@
 /*****************************************************************************
  * Xidi
- *      DirectInput interface for XInput controllers.
+ *   DirectInput interface for XInput controllers.
  *****************************************************************************
  * Authored by Samuel Grossman
  * Copyright (c) 2016-2017
- *****************************************************************************
- * ExportApiDirectInput.cpp
- *      Implementation of primary exported functions for the DirectInput
- *      library.
+ *************************************************************************//**
+ * @file ExportApiDirectInput.cpp
+ *   Implementation of primary exported functions for the DirectInput
+ *   library.
  *****************************************************************************/
 
 #include "ImportApiDirectInput.h"
@@ -19,22 +19,25 @@ using namespace Xidi;
 
 // -------- HELPERS -------------------------------------------------------- //
 
-// Logs a debug event indicating that an instance of IDirectInput(8) could not be created due to a version out-of-range error.
-// Requires minimum and maximum versions, as well as the actual version received.
-// Returns E_FAIL unconditionally.
+/// Logs a debug event indicating that an instance of IDirectInput(8) could not be created due to a version out-of-range error.
+/// @param [in] minVersion Minimum allowed version.
+/// @param [in] maxVersion Maximum allowed version.
+/// @param [in] receivedVersion Actual version received.
+/// @return `E_FAIL` unconditionally.
 static HRESULT LogVersionOutOfRange(DWORD minVersion, DWORD maxVersion, DWORD receivedVersion)
 {
     Log::WriteFormattedLogMessageFromResource(ELogLevel::LogLevelDebug, IDS_XIDI_EXPORTAPIDIRECTINPUT_CREATE_FAILED_VERSION_FORMAT, minVersion, maxVersion, receivedVersion);
     return E_FAIL;
 }
 
-// Logs a debug event indicating that an instance of IDirectInput(8) could not be created due to an error having been returned by the system.
+/// Logs a debug event indicating that an instance of IDirectInput(8) could not be created due to an error having been returned by the system.
+/// @param [in] errorCode Error code returned by the system.
 static void LogSystemCreateError(HRESULT errorCode)
 {
     Log::WriteFormattedLogMessageFromResource(ELogLevel::LogLevelDebug, IDS_XIDI_EXPORTAPIDIRECTINPUT_CREATE_FAILED_SYSTEM_FORMAT, errorCode);
 }
 
-// Logs a debug event indicating that an instance of IDirectInput(8) was created successfully.
+/// Logs a debug event indicating that an instance of IDirectInput(8) was created successfully.
 static void LogSystemCreateSuccess(void)
 {
     Log::WriteLogMessageFromResource(ELogLevel::LogLevelDebug, IDS_XIDI_EXPORTAPIDIRECTINPUT_CREATE_SUCCEEDED);

@@ -1,12 +1,12 @@
 /*****************************************************************************
  * Xidi
- *      DirectInput interface for XInput controllers.
+ *   DirectInput interface for XInput controllers.
  *****************************************************************************
  * Authored by Samuel Grossman
  * Copyright (c) 2016-2017
- *****************************************************************************
- * ExportApiWinMM.cpp
- *      Implementation of primary exported functions for the WinMM library.
+ *************************************************************************//**
+ * @file ExportApiWinMM.cpp
+ *   Implementation of primary exported functions for the WinMM library.
  *****************************************************************************/
 
 #include "ImportApiWinMM.h"

@@ -1,12 +1,12 @@
 /*****************************************************************************
  * Xidi
- *      DirectInput interface for XInput controllers.
+ *   DirectInput interface for XInput controllers.
  *****************************************************************************
  * Authored by Samuel Grossman
  * Copyright (c) 2016-2017
- *****************************************************************************
- * ApiDirectInput.h
- *      Common header file for the DirectInput API.
+ *************************************************************************//**
+ * @file ApiDirectInput.h
+ *   Common header file for the DirectInput API.
  *****************************************************************************/
 
 #pragma once
