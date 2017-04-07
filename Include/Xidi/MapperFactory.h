@@ -39,7 +39,7 @@ namespace Xidi
         // -------- CONSTANTS ------------------------------------------------------ //
         
         // Specifies the default mapper type that, absent any other changes, will be created upon request.
-        static const EMapper kDefaultMapperType = EMapper::ExtendedGamepadMapper;
+        static const EMapper kDefaultMapperType = EMapper::StandardGamepadMapper;
         
         
     private:
