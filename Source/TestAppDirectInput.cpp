@@ -353,9 +353,9 @@ int RunTestApp(int argc, char* argv[])
     tout << _T("Begin IDirectInput->EnumDevices") << endl;
     
 #if DIRECTINPUT_VERSION >= 0x0800
-    result = directInputIface->EnumDevices(DI8DEVCLASS_GAMECTRL, &EnumDevicesTestCallback, (LPVOID)&testValue, DIEDFL_ATTACHEDONLY);
+    result = directInputIface->EnumDevices(DI8DEVCLASS_ALL, &EnumDevicesTestCallback, (LPVOID)&testValue, DIEDFL_ATTACHEDONLY);
 #else
-    result = directInputIface->EnumDevices(DIDEVTYPE_JOYSTICK, &EnumDevicesTestCallback, (LPVOID)&testValue, DIEDFL_ATTACHEDONLY);
+    result = directInputIface->EnumDevices(0, &EnumDevicesTestCallback, (LPVOID)&testValue, DIEDFL_ATTACHEDONLY);
 #endif
     if (DI_OK != result)
     {

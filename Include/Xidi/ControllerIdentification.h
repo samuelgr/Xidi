@@ -60,12 +60,12 @@ namespace Xidi
         // Performs a DirectInput-style controller enumeration of connected XInput controllers.
         // Returns DIENUM_CONTINUE or DIENUM_STOP depending on what the application requested.
         // This is the non-Unicode version.
-        static HRESULT EnumerateXInputControllersA(LPDIENUMDEVICESCALLBACKA lpCallback, LPVOID pvRef);
+        static BOOL EnumerateXInputControllersA(LPDIENUMDEVICESCALLBACKA lpCallback, LPVOID pvRef);
         
         // Performs a DirectInput-style controller enumeration of connected XInput controllers.
         // Returns DIENUM_CONTINUE or DIENUM_STOP depending on what the application requested.
         // This is the Unicode version.
-        static HRESULT EnumerateXInputControllersW(LPDIENUMDEVICESCALLBACKW lpCallback, LPVOID pvRef);
+        static BOOL EnumerateXInputControllersW(LPDIENUMDEVICESCALLBACKW lpCallback, LPVOID pvRef);
         
         // Generates and places a string representing the XInput controller's product name for the controller at the specified index.
         // Returns the number of characters written, or negative in the event of an error.

@@ -31,6 +31,8 @@ namespace Xidi
         WrapperIDirectInput* instance;                                      ///< #WrapperIDirectInput instance that invoked the enumeration.
         LPDIENUMDEVICESCALLBACK lpCallback;                                 ///< Application-specified callback that should be invoked.
         LPVOID pvRef;                                                       ///< Application-specified argument to be provided to the application-specified callback.
+        BOOL callbackReturnCode;                                            ///< Indicates if the application requested that enumeration continue or stop.
+        BOOL systemHasXInputDevices;                                        ///< Indicates if the system has any XInput-compatible devices attached during device enumeration.
     };
 }
 
@@ -170,44 +172,89 @@ HRESULT STDMETHODCALLTYPE WrapperIDirectInput::CreateDevice(REFGUID rguid, Earli
 
 HRESULT STDMETHODCALLTYPE WrapperIDirectInput::EnumDevices(DWORD dwDevType, LPDIENUMDEVICESCALLBACK lpCallback, LPVOID pvRef, DWORD dwFlags)
 {
+#if DIRECTINPUT_VERSION >= 0x0800
+    const BOOL gameControllersRequested = (DI8DEVCLASS_ALL == dwDevType || DI8DEVCLASS_GAMECTRL == dwDevType || DI8DEVTYPE_GAMEPAD == GET_DIDEVICE_TYPE(dwDevType));
+    const DWORD gameControllerDevClass = DI8DEVCLASS_GAMECTRL;
+#else
+    const BOOL gameControllersRequested = (0 == dwDevType || DIDEVTYPE_JOYSTICK == dwDevType);
+    const DWORD gameControllerDevClass = DIDEVTYPE_JOYSTICK;
+#endif
+    
     SEnumDevicesCallbackInfo callbackInfo;
     callbackInfo.instance = this;
     callbackInfo.lpCallback = lpCallback;
     callbackInfo.pvRef = pvRef;
-    
-    HRESULT enumResult = DIENUM_CONTINUE;
+    callbackInfo.callbackReturnCode = DIENUM_CONTINUE;
+    callbackInfo.systemHasXInputDevices = FALSE;
+
+    HRESULT enumResult = DI_OK;
 
     LogStartEnumDevices();
 
-    // Only enumerate XInput controllers if the application requests a type that includes game controllers.
-#if DIRECTINPUT_VERSION >= 0x0800
-    if (DI8DEVCLASS_ALL == dwDevType || DI8DEVCLASS_GAMECTRL == dwDevType || DI8DEVTYPE_GAMEPAD == GET_DIDEVICE_TYPE(dwDevType))
-#else
-    if ((0 == dwDevType) || (DIDEVTYPE_JOYSTICK == GET_DIDEVICE_TYPE(dwDevType) && (0 == GET_DIDEVICE_SUBTYPE(dwDevType) || DIDEVTYPEJOYSTICK_GAMEPAD == GET_DIDEVICE_TYPE(dwDevType))))
-#endif
+    // Enumerating game controllers requires some manipulation.
+    if (gameControllersRequested)
     {
-        // Currently force feedback is not suported.
-        if (!(dwFlags & DIEDFL_FORCEFEEDBACK))
+        // First scan the system for any XInput-compatible game controllers that match the enumeration request.
+        enumResult = underlyingDIObject->EnumDevices(gameControllerDevClass, &WrapperIDirectInput::CallbackEnumGameControllersXInputScan, (LPVOID)&callbackInfo, dwFlags);
+        if (DI_OK != enumResult) return enumResult;
+
+        // Second, if the system has XInput controllers, enumerate them.
+        // These will be the first controllers seen by the application.
+        if (TRUE == callbackInfo.systemHasXInputDevices)
         {
             LogEnumXidiDevices();
             
             if (underlyingDIObjectUsesUnicode)
-                enumResult = ControllerIdentification::EnumerateXInputControllersW((LPDIENUMDEVICESCALLBACKW)lpCallback, pvRef);
+                callbackInfo.callbackReturnCode = ControllerIdentification::EnumerateXInputControllersW((LPDIENUMDEVICESCALLBACKW)lpCallback, pvRef);
             else
-                enumResult = ControllerIdentification::EnumerateXInputControllersA((LPDIENUMDEVICESCALLBACKA)lpCallback, pvRef);
+                callbackInfo.callbackReturnCode = ControllerIdentification::EnumerateXInputControllersA((LPDIENUMDEVICESCALLBACKA)lpCallback, pvRef);
+
+            if (DIENUM_CONTINUE != callbackInfo.callbackReturnCode)
+            {
+                LogEnumFinishEarly();
+                return enumResult;
+            }
+        }
+
+        // Third, enumerate all other game controllers, filtering out those that support XInput.
+        enumResult = underlyingDIObject->EnumDevices(gameControllerDevClass, &WrapperIDirectInput::CallbackEnumGameControllersFilterXInput, (LPVOID)&callbackInfo, dwFlags);
+        if (DI_OK != enumResult) return enumResult;
+
+        if (DIENUM_CONTINUE != callbackInfo.callbackReturnCode)
+        {
+            LogEnumFinishEarly();
+            return enumResult;
+        }
+
+        // Finally, if the system did not have any XInput controllers, enumerate them anyway.
+        // These will be the last controllers seen by the application.
+        if (FALSE == callbackInfo.systemHasXInputDevices)
+        {
+            LogEnumXidiDevices();
+
+            if (underlyingDIObjectUsesUnicode)
+                callbackInfo.callbackReturnCode = ControllerIdentification::EnumerateXInputControllersW((LPDIENUMDEVICESCALLBACKW)lpCallback, pvRef);
+            else
+                callbackInfo.callbackReturnCode = ControllerIdentification::EnumerateXInputControllersA((LPDIENUMDEVICESCALLBACKA)lpCallback, pvRef);
+
+            if (DIENUM_CONTINUE != callbackInfo.callbackReturnCode)
+            {
+                LogEnumFinishEarly();
+                return enumResult;
+            }
         }
     }
 
-    // If either no XInput devices were enumerated or the application wants to continue enumeration, hand the process off to the native DirectInput library.
-    // The callback below will filter out any DirectInput devices that are also XInput-based devices.
-    if (DIENUM_CONTINUE == enumResult)
-        enumResult = underlyingDIObject->EnumDevices(dwDevType, &WrapperIDirectInput::CallbackEnumDevices, (LPVOID)&callbackInfo, dwFlags);
-    else
+    // Enumerate anything else the application requested, filtering out game controllers.
+    enumResult = underlyingDIObject->EnumDevices(dwDevType, &WrapperIDirectInput::CallbackEnumOtherDevices, (LPVOID)&callbackInfo, dwFlags);
+    if (DI_OK != enumResult) return enumResult;
+
+    if (DIENUM_CONTINUE != callbackInfo.callbackReturnCode)
     {
         LogEnumFinishEarly();
-        enumResult = DI_OK;
+        return enumResult;
     }
-
+    
     LogFinishEnumDevices();
     return enumResult;
 }
@@ -256,25 +303,60 @@ HRESULT STDMETHODCALLTYPE WrapperIDirectInput::RunControlPanel(HWND hwndOwner, D
 // -------- CALLBACKS: IDirectInput COMMON --------------------------------- //
 // See "WrapperIDirectInput.h" for documentation.
 
-BOOL STDMETHODCALLTYPE WrapperIDirectInput::CallbackEnumDevices(LPCDIDEVICEINSTANCE lpddi, LPVOID pvRef)
+BOOL STDMETHODCALLTYPE WrapperIDirectInput::CallbackEnumGameControllersXInputScan(LPCDIDEVICEINSTANCE lpddi, LPVOID pvRef)
 {
     SEnumDevicesCallbackInfo* callbackInfo = (SEnumDevicesCallbackInfo*)pvRef;
-    
+
+    // If the present controller supports XInput, indicate as much and stop the enumeration.
+    if (ControllerIdentification::DoesDirectInputControllerSupportXInput(callbackInfo->instance->underlyingDIObject, lpddi->guidInstance))
+    {
+        callbackInfo->systemHasXInputDevices = TRUE;
+        return DIENUM_STOP;
+    }
+
+    return DIENUM_CONTINUE;
+}
+
+// --------
+
+BOOL STDMETHODCALLTYPE WrapperIDirectInput::CallbackEnumGameControllersFilterXInput(LPCDIDEVICEINSTANCE lpddi, LPVOID pvRef)
+{
+    SEnumDevicesCallbackInfo* callbackInfo = (SEnumDevicesCallbackInfo*)pvRef;
+
     // Do not enumerate controllers that support XInput; these are enumerated separately.
     if (ControllerIdentification::DoesDirectInputControllerSupportXInput(callbackInfo->instance->underlyingDIObject, lpddi->guidInstance))
     {
         LogEnumSkipDevice(lpddi->tszProductName);
         return DIENUM_CONTINUE;
     }
-    
+
     LogEnumDevice(lpddi->tszProductName);
-    
-    HRESULT enumResult = callbackInfo->lpCallback(lpddi, callbackInfo->pvRef);
+    callbackInfo->callbackReturnCode = callbackInfo->lpCallback(lpddi, callbackInfo->pvRef);
+    return callbackInfo->callbackReturnCode;
+}
 
-    if (DIENUM_CONTINUE != enumResult)
-        LogEnumFinishEarly();
+// --------
 
-    return enumResult;
+BOOL STDMETHODCALLTYPE WrapperIDirectInput::CallbackEnumOtherDevices(LPCDIDEVICEINSTANCE lpddi, LPVOID pvRef)
+{
+    SEnumDevicesCallbackInfo* callbackInfo = (SEnumDevicesCallbackInfo*)pvRef;
+
+    // Identify devices that are game controllers.
+#if DIRECTINPUT_VERSION >= 0x0800
+    const BOOL isDeviceGameController = ((DI8DEVTYPE_JOYSTICK == GET_DIDEVICE_TYPE(lpddi->dwDevType)) || (DI8DEVTYPE_GAMEPAD == GET_DIDEVICE_TYPE(lpddi->dwDevType)) || (DI8DEVTYPE_DRIVING == GET_DIDEVICE_TYPE(lpddi->dwDevType)) || (DI8DEVTYPE_FLIGHT == GET_DIDEVICE_TYPE(lpddi->dwDevType)) || (DI8DEVTYPE_1STPERSON == GET_DIDEVICE_TYPE(lpddi->dwDevType)));
+#else
+    const BOOL isDeviceGameController = (DIDEVTYPE_JOYSTICK == GET_DIDEVICE_TYPE(lpddi->dwDevType));
+#endif
+
+    // Game controllers would already have been enumerated, so skip over any that are encountered.
+    if (FALSE == isDeviceGameController)
+    {
+        LogEnumDevice(lpddi->tszProductName);
+        callbackInfo->callbackReturnCode = callbackInfo->lpCallback(lpddi, callbackInfo->pvRef);
+        return callbackInfo->callbackReturnCode;
+    }
+
+    return DIENUM_CONTINUE;
 }
 
 

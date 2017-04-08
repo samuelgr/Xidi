@@ -86,10 +86,15 @@ namespace Xidi
 
         // -------- CALLBACKS: IDirectInput COMMON --------------------------------- //
         
-        // Intercepts callbacks invoked as part of a call to EnumDevices.
-        static BOOL STDMETHODCALLTYPE CallbackEnumDevices(LPCDIDEVICEINSTANCE lpddi, LPVOID pvRef);
+        // Callback used to scan for any XInput-compatible game controllers.
+        static BOOL STDMETHODCALLTYPE CallbackEnumGameControllersXInputScan(LPCDIDEVICEINSTANCE lpddi, LPVOID pvRef);
 
+        // Callback used to enumerate game controllers to the application, filtering out XInput-compatible game controllers.
+        static BOOL STDMETHODCALLTYPE CallbackEnumGameControllersFilterXInput(LPCDIDEVICEINSTANCE lpddi, LPVOID pvRef);
 
+        // Callback used to enumerate all other devices to the application, filtering out all game controllers.
+        static BOOL STDMETHODCALLTYPE CallbackEnumOtherDevices(LPCDIDEVICEINSTANCE lpddi, LPVOID pvRef);
+        
 #if DIRECTINPUT_VERSION >= 0x0800
         // -------- METHODS: IDirectInput8 ONLY ------------------------------------ //
         virtual HRESULT STDMETHODCALLTYPE ConfigureDevices(LPDICONFIGUREDEVICESCALLBACK lpdiCallback, LPDICONFIGUREDEVICESPARAMS lpdiCDParams, DWORD dwFlags, LPVOID pvRefData);
