@@ -369,6 +369,7 @@ namespace Xidi
             /// @param [in] appEventBuf Application data buffer. Refer to DirectInput documentation for more.
             /// @param [in,out] eventCount On input, number of events that fit in the application data buffer. On output, number of events written to the application data buffer.
             /// @param [in] peek `TRUE` if events should be left in the buffer once consumed, `FALSE` if they should be removed from it.
+            /// @return `DI_OK` on success, `DI_BUFFEROVERFLOW` if the buffer has overflowed, or any other standard DirectInput return code for IDirectInputDevice GetDeviceData.
             HRESULT WriteApplicationBufferedEvents(XInputController* xController, LPDIDEVICEOBJECTDATA appEventBuf, DWORD& eventCount, const BOOL peek);
             
             /// Writes controller state to an application data structure, given an XInput controller's state structure.

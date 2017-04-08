@@ -629,7 +629,7 @@ HRESULT Base::GetMappedProperty(REFGUID rguidProp, LPDIPROPHEADER pdiph)
     }
     else
     {
-        // Should never get here.
+        // All other properties are unsupported, but they should have been filtered out by checking if the mapper handles the property.
         return DIERR_UNSUPPORTED;
     }
 
@@ -1060,7 +1060,7 @@ HRESULT Base::SetMappedProperty(REFGUID rguidProp, LPCDIPROPHEADER pdiph)
     }
     else
     {
-        // Should never get here.
+        // All other properties are unsupported, but they should have been filtered out by checking if the mapper handles the property.
         return DIERR_UNSUPPORTED;
     }
 
@@ -1082,19 +1082,17 @@ void Base::ResetApplicationDataFormat(void)
 
 HRESULT Base::WriteApplicationBufferedEvents(XInputController* xController, LPDIDEVICEOBJECTDATA appEventBuf, DWORD& eventCount, const BOOL peek)
 {
-	// This is easy: just pretend that events were read if no buffer specified and not told to remove from the buffer.
-	if (NULL == appEventBuf && peek)
-		return DI_OK;
-	
-	xController->LockEventBuffer();
+    xController->LockEventBuffer();
 	
 	// Initialize before writing application events.
 	const DWORD maxAppEvents = eventCount;
 	const DWORD numControllerEvents = xController->BufferedEventsCount();
-	eventCount = 0;
+    const BOOL eventBufferOverflowed = xController->IsEventBufferOverflowed();
 
 	// Iterate over the controller events. Will break early if application event capacity is reached.
-	for (DWORD i = 0; i < numControllerEvents && eventCount < maxAppEvents; ++i)
+    eventCount = 0;
+
+    for (DWORD i = 0; i < numControllerEvents && eventCount < maxAppEvents; ++i)
 	{
 		// Retrieve the next controller event.
 		SControllerEvent xEvent;
@@ -1202,7 +1200,7 @@ HRESULT Base::WriteApplicationBufferedEvents(XInputController* xController, LPDI
 
 	xController->UnlockEventBuffer();
     
-	return DI_OK;
+	return (eventBufferOverflowed ? DI_BUFFEROVERFLOW : DI_OK);
 }
 
 // ---------

@@ -183,7 +183,7 @@ HRESULT STDMETHODCALLTYPE WrapperIDirectInputDevice::GetDeviceState(DWORD cbData
     // Handle games that forget to poll the device.
     // Don't bother buffering any changes, since this method has the effect of clearing the buffer anyway.
     if (FALSE == polledSinceLastGetDeviceState)
-        controller->RefreshControllerStateUnbuffered();
+        controller->RefreshControllerState();
 
     polledSinceLastGetDeviceState = FALSE;
     

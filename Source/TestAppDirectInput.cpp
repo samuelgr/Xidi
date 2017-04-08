@@ -588,9 +588,11 @@ int RunTestApp(int argc, char* argv[])
     
     DIPROPRANGE rangeTest;
     DIPROPDWORD deadzoneTest;
+    DIPROPDWORD bufferSize;
 
     ZeroMemory(&rangeTest, sizeof(rangeTest));
     ZeroMemory(&deadzoneTest, sizeof(deadzoneTest));
+    ZeroMemory(&bufferSize, sizeof(bufferSize));
 
     // First, test range without setting header size properly but setting everything else.
     rangeTest.diph.dwHow = DIPH_BYID;
@@ -741,12 +743,57 @@ int RunTestApp(int argc, char* argv[])
 
     tout << _T("End IDirectInputDevice->[Set|Get]Property") << endl << endl;
 
+    // Set the input buffer size to something huge (1GB).
+    bufferSize.diph.dwHow = DIPH_DEVICE;
+    bufferSize.diph.dwObj = 0;
+    bufferSize.diph.dwSize = sizeof(bufferSize);
+    bufferSize.diph.dwHeaderSize = sizeof(bufferSize.diph);
+    bufferSize.dwData = 1 * 1024 * 1024 * 1024;
+    result = directInputDeviceIface->SetProperty(DIPROP_BUFFERSIZE, &bufferSize.diph);
+    if (DI_OK != result)
+        tout << _T("FAIL: Set huge buffer size test.") << endl;
+    else
+        tout << _T("PASS: Set huge buffer size test.") << endl;
 
+    // Read back the input buffer size and make sure the value set is the value obtained.
+    bufferSize.dwData = 0;
+    result = directInputDeviceIface->GetProperty(DIPROP_BUFFERSIZE, &bufferSize.diph);
+    if ((DI_OK != result) || (1 * 1024 * 1024 * 1024 != bufferSize.dwData))
+        tout << _T("FAIL: Get huge buffer size test.") << endl;
+    else
+        tout << _T("PASS: Get huge buffer size test.") << endl;
+
+    // Set the input buffer size to something reasonable (1kB).
+    bufferSize.dwData = 1024;
+    result = directInputDeviceIface->SetProperty(DIPROP_BUFFERSIZE, &bufferSize.diph);
+    if (DI_OK != result)
+        tout << _T("FAIL: Set reasonable buffer size test.") << endl;
+    else
+        tout << _T("PASS: Set reasonable buffer size test.") << endl;
+
+    // Expect to get that same value back.
+    bufferSize.dwData = 0;
+    result = directInputDeviceIface->GetProperty(DIPROP_BUFFERSIZE, &bufferSize.diph);
+    if ((DI_OK != result) || (1024 != bufferSize.dwData))
+        tout << _T("FAIL: Get reasonable buffer size test.") << endl;
+    else
+        tout << _T("PASS: Get reasonable buffer size test.") << endl;
+    
+    
     ////////////////////////////////////
     ////////   Interactive Mode Preparation
 
     tout << _T("Preparing to launch interactive mode... ");
 
+    
+    // Set the input buffer size to 128kB to avoid possible overflows during interactive testing.
+    bufferSize.dwData = 128 * 1024;
+    result = directInputDeviceIface->SetProperty(DIPROP_BUFFERSIZE, &bufferSize.diph);
+    if (DI_OK != result)
+    {
+        tout << _T("FAILED") << endl << _T("Unable to set input buffer size.") << endl;
+        return -1;
+    }
     
     // Set deadzone and saturation for the whole device.
     deadzoneTest.dwData = 2500;
@@ -841,7 +888,12 @@ int RunTestApp(int argc, char* argv[])
         // Retrieve the device's buffered input events.
         bufferedDataCount = _countof(bufferedData);
         result = directInputDeviceIface->GetDeviceData(sizeof(bufferedData[0]), bufferedData, &bufferedDataCount, 0);
-        if (DI_OK != result)
+        if (DI_BUFFEROVERFLOW == result)
+        {
+            tout << _T("Device event buffer has overflowed.") << endl;
+            return -1;
+        }
+        else if (DI_OK != result)
         {
             tout << _T("Failed to retrieve device buffered events.") << endl;
             return -1;
