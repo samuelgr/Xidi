@@ -87,6 +87,9 @@
     <ClInclude Include="Include\Xidi\Mapper\ExtendedGamepad.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="Include\Xidi\ApiGUID.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Source\ControllerIdentification.cpp">
@@ -141,6 +144,9 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="Source\Mapper\ExtendedGamepad.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\ApiGUID.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

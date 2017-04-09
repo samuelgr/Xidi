@@ -55,8 +55,8 @@ namespace Xidi
         // Logs a debug event related to stopping enumeration early.
         static void LogEnumFinishEarly(void);
 
-        // Logs a debug event related to skipping over enumeration of an XInput-compatible device.
-        static void LogEnumSkipDevice(LPCTSTR deviceName);
+        // Logs a debug event related to enumeration of an XInput-compatible device.
+        static void LogEnumFoundXInputDevice(LPCTSTR deviceName);
 
         // Logs a debug event related to enumerating Xidi-created virtual devices.
         static void LogEnumXidiDevices(void);
@@ -89,11 +89,8 @@ namespace Xidi
         // Callback used to scan for any XInput-compatible game controllers.
         static BOOL STDMETHODCALLTYPE CallbackEnumGameControllersXInputScan(LPCDIDEVICEINSTANCE lpddi, LPVOID pvRef);
 
-        // Callback used to enumerate game controllers to the application, filtering out XInput-compatible game controllers.
-        static BOOL STDMETHODCALLTYPE CallbackEnumGameControllersFilterXInput(LPCDIDEVICEINSTANCE lpddi, LPVOID pvRef);
-
-        // Callback used to enumerate all other devices to the application, filtering out all game controllers.
-        static BOOL STDMETHODCALLTYPE CallbackEnumOtherDevices(LPCDIDEVICEINSTANCE lpddi, LPVOID pvRef);
+        // Callback used to enumerate all devices to the application, filtering out those already seen.
+        static BOOL STDMETHODCALLTYPE CallbackEnumDevicesFiltered(LPCDIDEVICEINSTANCE lpddi, LPVOID pvRef);
         
 #if DIRECTINPUT_VERSION >= 0x0800
         // -------- METHODS: IDirectInput8 ONLY ------------------------------------ //

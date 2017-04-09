@@ -10,6 +10,7 @@
  *****************************************************************************/
 
 #include "ApiDirectInput.h"
+#include "ApiGUID.h"
 #include "WrapperIDirectInputDevice.h"
 #include "Mapper/Base.h"
 

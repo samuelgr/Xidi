@@ -29,6 +29,7 @@
   <ItemGroup>
     <ClInclude Include="Include\Xidi\ApiCharacterType.h" />
     <ClInclude Include="Include\Xidi\ApiDirectInput.h" />
+    <ClInclude Include="Include\Xidi\ApiGUID.h" />
     <ClInclude Include="Include\Xidi\ApiStdString.h" />
     <ClInclude Include="Include\Xidi\ApiWindows.h" />
     <ClInclude Include="Include\Xidi\Configuration.h" />
@@ -56,6 +57,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Source\ApiDirectInput.cpp" />
+    <ClCompile Include="Source\ApiGUID.cpp" />
     <ClCompile Include="Source\Configuration.cpp" />
     <ClCompile Include="Source\ExportApiWinMM.cpp" />
     <ClCompile Include="Source\Globals.cpp" />
