@@ -152,7 +152,12 @@ void WrapperJoyWinMM::SetControllerNameRegistryInfo(void)
 
     // First, add OEM string references to HKCU\System\CurrentControlSet\Control\MediaResources\Joystick\Xidi.
     // These will point a WinMM-based application to another part of the registry, by reference, which will actually contain the names.
+#ifdef UNICODE
     FillRegistryKeyStringW(registryKeyName, _countof(registryKeyName));
+#else
+    FillRegistryKeyStringA(registryKeyName, _countof(registryKeyName));
+#endif
+    
     _stprintf_s(registryPath, _countof(registryPath), REGSTR_PATH_JOYCONFIG _T("\\%s\\") REGSTR_KEY_JOYCURR, registryKeyName);
     
     LSTATUS result = RegCreateKeyEx(HKEY_CURRENT_USER, registryPath, 0, NULL, REG_OPTION_VOLATILE, KEY_ALL_ACCESS, NULL, &registryKey, NULL);

@@ -92,6 +92,17 @@ namespace Xidi
             
             
         private:
+            // -------- TYPE DEFINITIONS ----------------------------------- //
+            
+            /// Internal type, used to select between Unicode and non-Unicode representations of device object instance information.
+            /// Intended to be used only when enumerating device object instances.
+            union UObjectInstanceInfo
+            {
+                DIDEVICEOBJECTINSTANCEA a;                                  ///< Non-Unicode version of the device object instance information.
+                DIDEVICEOBJECTINSTANCEW w;                                  ///< Unicode version of the device object instance information.
+            };
+            
+            
             // -------- INSTANCE VARIABLES --------------------------------- //
             
             /// Holds the properties of all axes present in this mapper.

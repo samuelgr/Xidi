@@ -19,6 +19,7 @@
 #include "WrapperIDirectInputDevice.h"
 #include "XInputController.h"
 
+#include <cstdlib>
 #include <unordered_set>
 
 using namespace Xidi;
@@ -43,7 +44,13 @@ namespace Xidi
 // -------- CONSTRUCTION AND DESTRUCTION ----------------------------------- //
 // See "WrapperIDirectInput.h" for documentation.
 
-WrapperIDirectInput::WrapperIDirectInput(LatestIDirectInput* underlyingDIObject, BOOL underlyingDIObjectUsesUnicode) : underlyingDIObject(underlyingDIObject), underlyingDIObjectUsesUnicode(underlyingDIObjectUsesUnicode) {}
+WrapperIDirectInput::WrapperIDirectInput(LatestIDirectInput* underlyingDIObject, BOOL underlyingDIObjectUsesUnicode) : underlyingDIObjectUsesUnicode(underlyingDIObjectUsesUnicode)
+{
+    if (underlyingDIObjectUsesUnicode)
+        this->underlyingDIObject.a = (LatestIDirectInputA*)underlyingDIObject;
+    else
+        this->underlyingDIObject.w = (LatestIDirectInputW*)underlyingDIObject;
+}
 
 
 // -------- HELPERS -------------------------------------------------------- //
@@ -122,7 +129,10 @@ HRESULT STDMETHODCALLTYPE WrapperIDirectInput::QueryInterface(REFIID riid, LPVOI
     }
     else
     {
-        result = underlyingDIObject->QueryInterface(riid, ppvObj);
+        if (underlyingDIObjectUsesUnicode)
+            result = underlyingDIObject.w->QueryInterface(riid, ppvObj);
+        else
+            result = underlyingDIObject.a->QueryInterface(riid, ppvObj);
     }
     
     return result;
@@ -132,14 +142,22 @@ HRESULT STDMETHODCALLTYPE WrapperIDirectInput::QueryInterface(REFIID riid, LPVOI
 
 ULONG STDMETHODCALLTYPE WrapperIDirectInput::AddRef(void)
 {
-    return underlyingDIObject->AddRef();
+    if (underlyingDIObjectUsesUnicode)
+        return underlyingDIObject.w->AddRef();
+    else
+        return underlyingDIObject.a->AddRef();
 }
 
 // ---------
 
 ULONG STDMETHODCALLTYPE WrapperIDirectInput::Release(void)
 {
-    ULONG numRemainingRefs = underlyingDIObject->Release();
+    ULONG numRemainingRefs;
+    
+    if (underlyingDIObjectUsesUnicode)
+        numRemainingRefs = underlyingDIObject.w->Release();
+    else
+        numRemainingRefs = underlyingDIObject.a->Release();
     
     if (0 == numRemainingRefs)
         delete this;
@@ -160,7 +178,11 @@ HRESULT STDMETHODCALLTYPE WrapperIDirectInput::CreateDevice(REFGUID rguid, Earli
     {
         // Not an XInput GUID, so just create the device as requested by the application.
         LogCreateDeviceNonXInput();
-        return underlyingDIObject->CreateDevice(rguid, lplpDirectInputDevice, pUnkOuter);
+        
+        if (underlyingDIObjectUsesUnicode)
+            return underlyingDIObject.w->CreateDevice(rguid, (EarliestIDirectInputDeviceW**)lplpDirectInputDevice, pUnkOuter);
+        else
+            return underlyingDIObject.a->CreateDevice(rguid, (EarliestIDirectInputDeviceA**)lplpDirectInputDevice, pUnkOuter);
     }
     else
     {
@@ -198,7 +220,11 @@ HRESULT STDMETHODCALLTYPE WrapperIDirectInput::EnumDevices(DWORD dwDevType, LPDI
     if (gameControllersRequested)
     {
         // First scan the system for any XInput-compatible game controllers that match the enumeration request.
-        enumResult = underlyingDIObject->EnumDevices(dwDevType, &WrapperIDirectInput::CallbackEnumGameControllersXInputScan, (LPVOID)&callbackInfo, dwFlags);
+        if (underlyingDIObjectUsesUnicode)
+            enumResult = underlyingDIObject.w->EnumDevices(dwDevType, &WrapperIDirectInput::CallbackEnumGameControllersXInputScanW, (LPVOID)&callbackInfo, dwFlags);
+        else
+            enumResult = underlyingDIObject.a->EnumDevices(dwDevType, &WrapperIDirectInput::CallbackEnumGameControllersXInputScanA, (LPVOID)&callbackInfo, dwFlags);
+        
         if (DI_OK != enumResult) return enumResult;
 
         // Second, if the system has XInput controllers, enumerate them.
@@ -222,7 +248,11 @@ HRESULT STDMETHODCALLTYPE WrapperIDirectInput::EnumDevices(DWORD dwDevType, LPDI
         }
 
         // Third, enumerate all other game controllers, filtering out those that support XInput.
-        enumResult = underlyingDIObject->EnumDevices(gameControllerDevClass, &WrapperIDirectInput::CallbackEnumDevicesFiltered, (LPVOID)&callbackInfo, dwFlags);
+        if (underlyingDIObjectUsesUnicode)
+            enumResult = underlyingDIObject.w->EnumDevices(gameControllerDevClass, &WrapperIDirectInput::CallbackEnumDevicesFilteredW, (LPVOID)&callbackInfo, dwFlags);
+        else
+            enumResult = underlyingDIObject.a->EnumDevices(gameControllerDevClass, &WrapperIDirectInput::CallbackEnumDevicesFilteredA, (LPVOID)&callbackInfo, dwFlags);
+        
         if (DI_OK != enumResult) return enumResult;
 
         if (DIENUM_CONTINUE != callbackInfo.callbackReturnCode)
@@ -251,7 +281,11 @@ HRESULT STDMETHODCALLTYPE WrapperIDirectInput::EnumDevices(DWORD dwDevType, LPDI
     }
 
     // Enumerate anything else the application requested, filtering out game controllers.
-    enumResult = underlyingDIObject->EnumDevices(dwDevType, &WrapperIDirectInput::CallbackEnumDevicesFiltered, (LPVOID)&callbackInfo, dwFlags);
+    if (underlyingDIObjectUsesUnicode)
+        enumResult = underlyingDIObject.w->EnumDevices(dwDevType, &WrapperIDirectInput::CallbackEnumDevicesFilteredW, (LPVOID)&callbackInfo, dwFlags);
+    else
+        enumResult = underlyingDIObject.a->EnumDevices(dwDevType, &WrapperIDirectInput::CallbackEnumDevicesFilteredA, (LPVOID)&callbackInfo, dwFlags);
+    
     if (DI_OK != enumResult) return enumResult;
 
     if (DIENUM_CONTINUE != callbackInfo.callbackReturnCode)
@@ -268,7 +302,10 @@ HRESULT STDMETHODCALLTYPE WrapperIDirectInput::EnumDevices(DWORD dwDevType, LPDI
 
 HRESULT STDMETHODCALLTYPE WrapperIDirectInput::FindDevice(REFGUID rguidClass, LPCTSTR ptszName, LPGUID pguidInstance)
 {
-    return underlyingDIObject->FindDevice(rguidClass, ptszName, pguidInstance);
+    if (underlyingDIObjectUsesUnicode)
+        return underlyingDIObject.w->FindDevice(rguidClass, (LPCWSTR)ptszName, pguidInstance);
+    else
+        return underlyingDIObject.a->FindDevice(rguidClass, (LPCSTR)ptszName, pguidInstance);
 }
 
 // ---------
@@ -281,7 +318,10 @@ HRESULT STDMETHODCALLTYPE WrapperIDirectInput::GetDeviceStatus(REFGUID rguidInst
     if (-1 == xinputIndex)
     {
         // Not an XInput GUID, so ask the underlying implementation for status.
-        return underlyingDIObject->GetDeviceStatus(rguidInstance);
+        if (underlyingDIObjectUsesUnicode)
+            return underlyingDIObject.w->GetDeviceStatus(rguidInstance);
+        else
+            return underlyingDIObject.a->GetDeviceStatus(rguidInstance);
     }
     else
     {
@@ -294,28 +334,42 @@ HRESULT STDMETHODCALLTYPE WrapperIDirectInput::GetDeviceStatus(REFGUID rguidInst
 
 HRESULT STDMETHODCALLTYPE WrapperIDirectInput::Initialize(HINSTANCE hinst, DWORD dwVersion)
 {
-    return underlyingDIObject->Initialize(hinst, dwVersion);
+    if (underlyingDIObjectUsesUnicode)
+        return underlyingDIObject.w->Initialize(hinst, dwVersion);
+    else
+        return underlyingDIObject.a->Initialize(hinst, dwVersion);
 }
 
 // ---------
 
 HRESULT STDMETHODCALLTYPE WrapperIDirectInput::RunControlPanel(HWND hwndOwner, DWORD dwFlags)
 {
-    return underlyingDIObject->RunControlPanel(hwndOwner, dwFlags);
+    if (underlyingDIObjectUsesUnicode)
+        return underlyingDIObject.w->RunControlPanel(hwndOwner, dwFlags);
+    else
+        return underlyingDIObject.a->RunControlPanel(hwndOwner, dwFlags);
 }
 
 
 // -------- CALLBACKS: IDirectInput COMMON --------------------------------- //
 // See "WrapperIDirectInput.h" for documentation.
 
-BOOL STDMETHODCALLTYPE WrapperIDirectInput::CallbackEnumGameControllersXInputScan(LPCDIDEVICEINSTANCE lpddi, LPVOID pvRef)
+BOOL STDMETHODCALLTYPE WrapperIDirectInput::CallbackEnumGameControllersXInputScanA(LPCDIDEVICEINSTANCEA lpddi, LPVOID pvRef)
 {
     SEnumDevicesCallbackInfo* callbackInfo = (SEnumDevicesCallbackInfo*)pvRef;
 
     // If the present controller supports XInput, indicate such by adding it to the set of instance identifiers of interest.
-    if (ControllerIdentification::DoesDirectInputControllerSupportXInput(callbackInfo->instance->underlyingDIObject, lpddi->guidInstance))
+    if (ControllerIdentification::DoesDirectInputControllerSupportXInput(callbackInfo->instance->underlyingDIObject.w, lpddi->guidInstance))
     {
-        LogEnumFoundXInputDevice(lpddi->tszProductName);
+#ifdef UNICODE
+        WCHAR productName[_countof(lpddi->tszProductName) + 1];
+        ZeroMemory(productName, sizeof(productName));
+        mbstowcs_s(NULL, productName, _countof(productName) - 1, lpddi->tszProductName, _countof(lpddi->tszProductName));
+#else
+        LPCSTR productName = lpddi->tszProductName;
+#endif
+        
+        LogEnumFoundXInputDevice(productName);
         callbackInfo->seenInstanceIdentifiers.insert(lpddi->guidInstance);
     }
 
@@ -324,16 +378,77 @@ BOOL STDMETHODCALLTYPE WrapperIDirectInput::CallbackEnumGameControllersXInputSca
 
 // --------
 
-BOOL STDMETHODCALLTYPE WrapperIDirectInput::CallbackEnumDevicesFiltered(LPCDIDEVICEINSTANCE lpddi, LPVOID pvRef)
+BOOL STDMETHODCALLTYPE WrapperIDirectInput::CallbackEnumGameControllersXInputScanW(LPCDIDEVICEINSTANCEW lpddi, LPVOID pvRef)
+{
+    SEnumDevicesCallbackInfo* callbackInfo = (SEnumDevicesCallbackInfo*)pvRef;
+
+    // If the present controller supports XInput, indicate such by adding it to the set of instance identifiers of interest.
+    if (ControllerIdentification::DoesDirectInputControllerSupportXInput(callbackInfo->instance->underlyingDIObject.w, lpddi->guidInstance))
+    {
+#ifdef UNICODE
+        LPCTSTR productName = lpddi->tszProductName;
+#else
+        CHAR productName[(_countof(lpddi->tszProductName) + 1) * sizeof(WCHAR) / sizeof(CHAR)];
+        ZeroMemory(productName, sizeof(productName);
+        wcstombs_s(NULL, productName, _countof(productName) - 1, lpddi->tszProductName, _countof(lpddi->tszProductName));
+#endif
+        
+        LogEnumFoundXInputDevice(productName);
+        callbackInfo->seenInstanceIdentifiers.insert(lpddi->guidInstance);
+    }
+
+    return DIENUM_CONTINUE;
+}
+
+// --------
+
+BOOL STDMETHODCALLTYPE WrapperIDirectInput::CallbackEnumDevicesFilteredA(LPCDIDEVICEINSTANCEA lpddi, LPVOID pvRef)
+{
+    SEnumDevicesCallbackInfo* callbackInfo = (SEnumDevicesCallbackInfo*)pvRef;
+
+    if (0 == callbackInfo->seenInstanceIdentifiers.count(lpddi->guidInstance))
+    {
+        // If the device has not been seen already, add it to the set and present it to the application.
+#ifdef UNICODE
+        WCHAR productName[_countof(lpddi->tszProductName) + 1];
+        ZeroMemory(productName, sizeof(productName));
+        mbstowcs_s(NULL, productName, _countof(productName) - 1, lpddi->tszProductName, _countof(lpddi->tszProductName));
+#else
+        LPCSTR productName = lpddi->tszProductName;
+#endif
+        
+        LogEnumDevice(productName);
+        callbackInfo->seenInstanceIdentifiers.insert(lpddi->guidInstance);
+        callbackInfo->callbackReturnCode = ((LPDIENUMDEVICESCALLBACKA)(callbackInfo->lpCallback))(lpddi, callbackInfo->pvRef);
+        return callbackInfo->callbackReturnCode;
+    }
+    else
+    {
+        // Otherwise, just skip the device and move onto the next one.
+        return DIENUM_CONTINUE;
+    }
+}
+
+// --------
+
+BOOL STDMETHODCALLTYPE WrapperIDirectInput::CallbackEnumDevicesFilteredW(LPCDIDEVICEINSTANCEW lpddi, LPVOID pvRef)
 {
     SEnumDevicesCallbackInfo* callbackInfo = (SEnumDevicesCallbackInfo*)pvRef;
     
     if (0 == callbackInfo->seenInstanceIdentifiers.count(lpddi->guidInstance))
     {
         // If the device has not been seen already, add it to the set and present it to the application.
-        LogEnumDevice(lpddi->tszProductName);
+#ifdef UNICODE
+        LPCTSTR productName = lpddi->tszProductName;
+#else
+        CHAR productName[(_countof(lpddi->tszProductName) + 1) * sizeof(WCHAR) / sizeof(CHAR)];
+        ZeroMemory(productName, sizeof(productName);
+        wcstombs_s(NULL, productName, _countof(productName) - 1, lpddi->tszProductName, _countof(lpddi->tszProductName));
+#endif
+        
+        LogEnumDevice(productName);
         callbackInfo->seenInstanceIdentifiers.insert(lpddi->guidInstance);
-        callbackInfo->callbackReturnCode = callbackInfo->lpCallback(lpddi, callbackInfo->pvRef);
+        callbackInfo->callbackReturnCode = ((LPDIENUMDEVICESCALLBACKW)(callbackInfo->lpCallback))(lpddi, callbackInfo->pvRef);
         return callbackInfo->callbackReturnCode;
     }
     else
@@ -350,7 +465,10 @@ BOOL STDMETHODCALLTYPE WrapperIDirectInput::CallbackEnumDevicesFiltered(LPCDIDEV
 
 HRESULT STDMETHODCALLTYPE WrapperIDirectInput::ConfigureDevices(LPDICONFIGUREDEVICESCALLBACK lpdiCallback, LPDICONFIGUREDEVICESPARAMS lpdiCDParams, DWORD dwFlags, LPVOID pvRefData)
 {
-    return underlyingDIObject->ConfigureDevices(lpdiCallback, lpdiCDParams, dwFlags, pvRefData);
+    if (underlyingDIObjectUsesUnicode)
+        return underlyingDIObject.w->ConfigureDevices(lpdiCallback, (LPDICONFIGUREDEVICESPARAMSW)lpdiCDParams, dwFlags, pvRefData);
+    else
+        return underlyingDIObject.a->ConfigureDevices(lpdiCallback, (LPDICONFIGUREDEVICESPARAMSA)lpdiCDParams, dwFlags, pvRefData);
 }
 
 // ---------

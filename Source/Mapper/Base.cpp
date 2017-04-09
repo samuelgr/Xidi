@@ -412,30 +412,23 @@ HRESULT Base::EnumerateMappedObjects(BOOL useUnicode, LPDIENUMDEVICEOBJECTSCALLB
     const TInstanceCount numAxes = NumInstancesOfType(EInstanceType::InstanceTypeAxis);
     const TInstanceCount numPov = NumInstancesOfType(EInstanceType::InstanceTypePov);
     const TInstanceCount numButtons = NumInstancesOfType(EInstanceType::InstanceTypeButton);
+
+    // Allocate a structure for repeated submission to the application, using the heap for security purposes.
+    UObjectInstanceInfo* objectDescriptor = new UObjectInstanceInfo;
     
     // If requested, enumerate axes.
     if (DIDFT_ALL == enumerationFlags || enumerationFlags & DIDFT_AXIS)
     {
         for (TInstanceCount i = 0; i < numAxes; ++i)
         {
-            // Allocate and fill a structure to submit to the application, using the heap for security purposes.
-            LPVOID objectDescriptor = NULL;
+            // Fill the information structure to submit to the application.
             if (useUnicode)
-            {
-                objectDescriptor = (LPVOID)(new DIDEVICEOBJECTINSTANCEW);
-                FillObjectInstanceInfoW((LPDIDEVICEOBJECTINSTANCEW)objectDescriptor, EInstanceType::InstanceTypeAxis, (TInstanceIdx)i);
-            }
+                FillObjectInstanceInfoW(&objectDescriptor->w, EInstanceType::InstanceTypeAxis, (TInstanceIdx)i);
             else
-            {
-                objectDescriptor = (LPVOID)(new DIDEVICEOBJECTINSTANCEA);
-                FillObjectInstanceInfoA((LPDIDEVICEOBJECTINSTANCEA)objectDescriptor, EInstanceType::InstanceTypeAxis, (TInstanceIdx)i);
-            }
+                FillObjectInstanceInfoA(&objectDescriptor->a, EInstanceType::InstanceTypeAxis, (TInstanceIdx)i);
             
             // Submit the button to the application.
             BOOL appResponse = appCallback((LPCDIDEVICEOBJECTINSTANCE)objectDescriptor, appCbParam);
-            
-            // Free previously-allocated memory.
-            delete objectDescriptor;
             
             // See if the application requested that the enumeration stop and, if so, honor that request
             switch (appResponse)
@@ -443,8 +436,10 @@ HRESULT Base::EnumerateMappedObjects(BOOL useUnicode, LPDIENUMDEVICEOBJECTSCALLB
             case DIENUM_CONTINUE:
                 break;
             case DIENUM_STOP:
+                delete objectDescriptor;
                 return DI_OK;
             default:
+                delete objectDescriptor;
                 return DIERR_INVALIDPARAM;
             }
         }
@@ -455,24 +450,14 @@ HRESULT Base::EnumerateMappedObjects(BOOL useUnicode, LPDIENUMDEVICEOBJECTSCALLB
     {
         for (TInstanceCount i = 0; i < numPov; ++i)
         {
-            // Allocate and fill a structure to submit to the application, using the heap for security purposes.
-            LPVOID objectDescriptor = NULL;
+            // Fill the information structure to submit to the application.
             if (useUnicode)
-            {
-                objectDescriptor = (LPVOID)(new DIDEVICEOBJECTINSTANCEW);
-                FillObjectInstanceInfoW((LPDIDEVICEOBJECTINSTANCEW)objectDescriptor, EInstanceType::InstanceTypePov, (TInstanceIdx)i);
-            }
+                FillObjectInstanceInfoW(&objectDescriptor->w, EInstanceType::InstanceTypePov, (TInstanceIdx)i);
             else
-            {
-                objectDescriptor = (LPVOID)(new DIDEVICEOBJECTINSTANCEA);
-                FillObjectInstanceInfoA((LPDIDEVICEOBJECTINSTANCEA)objectDescriptor, EInstanceType::InstanceTypePov, (TInstanceIdx)i);
-            }
+                FillObjectInstanceInfoA(&objectDescriptor->a, EInstanceType::InstanceTypePov, (TInstanceIdx)i);
             
             // Submit the button to the application.
             BOOL appResponse = appCallback((LPCDIDEVICEOBJECTINSTANCE)objectDescriptor, appCbParam);
-            
-            // Free previously-allocated memory.
-            delete objectDescriptor;
             
             // See if the application requested that the enumeration stop and, if so, honor that request
             switch (appResponse)
@@ -480,8 +465,10 @@ HRESULT Base::EnumerateMappedObjects(BOOL useUnicode, LPDIENUMDEVICEOBJECTSCALLB
             case DIENUM_CONTINUE:
                 break;
             case DIENUM_STOP:
+                delete objectDescriptor;
                 return DI_OK;
             default:
+                delete objectDescriptor;
                 return DIERR_INVALIDPARAM;
             }
         }
@@ -492,24 +479,14 @@ HRESULT Base::EnumerateMappedObjects(BOOL useUnicode, LPDIENUMDEVICEOBJECTSCALLB
     {
         for (TInstanceCount i = 0; i < numButtons; ++i)
         {
-            // Allocate and fill a structure to submit to the application, using the heap for security purposes.
-            LPVOID objectDescriptor = NULL;
+            // Fill the information structure to submit to the application.
             if (useUnicode)
-            {
-                objectDescriptor = (LPVOID)(new DIDEVICEOBJECTINSTANCEW);
-                FillObjectInstanceInfoW((LPDIDEVICEOBJECTINSTANCEW)objectDescriptor, EInstanceType::InstanceTypeButton, (TInstanceIdx)i);
-            }
+                FillObjectInstanceInfoW(&objectDescriptor->w, EInstanceType::InstanceTypeButton, (TInstanceIdx)i);
             else
-            {
-                objectDescriptor = (LPVOID)(new DIDEVICEOBJECTINSTANCEA);
-                FillObjectInstanceInfoA((LPDIDEVICEOBJECTINSTANCEA)objectDescriptor, EInstanceType::InstanceTypeButton, (TInstanceIdx)i);
-            }
+                FillObjectInstanceInfoA(&objectDescriptor->a, EInstanceType::InstanceTypeButton, (TInstanceIdx)i);
             
             // Submit the button to the application.
             BOOL appResponse = appCallback((LPCDIDEVICEOBJECTINSTANCE)objectDescriptor, appCbParam);
-            
-            // Free previously-allocated memory.
-            delete objectDescriptor;
             
             // See if the application requested that the enumeration stop and, if so, honor that request
             switch (appResponse)
@@ -517,13 +494,16 @@ HRESULT Base::EnumerateMappedObjects(BOOL useUnicode, LPDIENUMDEVICEOBJECTSCALLB
             case DIENUM_CONTINUE:
                 break;
             case DIENUM_STOP:
+                delete objectDescriptor;
                 return DI_OK;
             default:
+                delete objectDescriptor;
                 return DIERR_INVALIDPARAM;
             }
         }
     }
     
+    delete objectDescriptor;
     return DI_OK;
 }
 

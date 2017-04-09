@@ -30,8 +30,16 @@
 
 typedef IDirectInput8                           EarliestIDirectInput;
 typedef IDirectInput8                           LatestIDirectInput;
+typedef IDirectInput8A                          EarliestIDirectInputA;
+typedef IDirectInput8A                          LatestIDirectInputA;
+typedef IDirectInput8W                          EarliestIDirectInputW;
+typedef IDirectInput8W                          LatestIDirectInputW;
 typedef IDirectInputDevice8                     EarliestIDirectInputDevice;
 typedef IDirectInputDevice8                     LatestIDirectInputDevice;
+typedef IDirectInputDevice8A                    EarliestIDirectInputDeviceA;
+typedef IDirectInputDevice8A                    LatestIDirectInputDeviceA;
+typedef IDirectInputDevice8W                    EarliestIDirectInputDeviceW;
+typedef IDirectInputDevice8W                    LatestIDirectInputDeviceW;
 
 #else
 
@@ -42,7 +50,15 @@ typedef IDirectInputDevice8                     LatestIDirectInputDevice;
 
 typedef IDirectInput                            EarliestIDirectInput;
 typedef IDirectInput7                           LatestIDirectInput;
+typedef IDirectInputA                           EarliestIDirectInputA;
+typedef IDirectInput7A                          LatestIDirectInputA;
+typedef IDirectInputW                           EarliestIDirectInputW;
+typedef IDirectInput7W                          LatestIDirectInputW;
 typedef IDirectInputDevice                      EarliestIDirectInputDevice;
 typedef IDirectInputDevice7                     LatestIDirectInputDevice;
+typedef IDirectInputDeviceA                     EarliestIDirectInputDeviceA;
+typedef IDirectInputDevice7A                    LatestIDirectInputDeviceA;
+typedef IDirectInputDeviceW                     EarliestIDirectInputDeviceW;
+typedef IDirectInputDevice7W                    LatestIDirectInputDeviceW;
 
 #endif

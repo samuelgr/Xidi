@@ -21,10 +21,21 @@ namespace Xidi
     struct WrapperIDirectInput : LatestIDirectInput
     {
     private:
+        // -------- TYPE DEFINITIONS ----------------------------------------------- //
+
+        // Internal type, used to select between Unicode and non-Unicode representations of the underlying DirectInput interface.
+        union UIDirectInput
+        {
+            LatestIDirectInputA* a;
+            LatestIDirectInputW* w;
+        };
+
+
         // -------- INSTANCE VARIABLES --------------------------------------------- //
         
         // The underlying IDirectInput8 object that this instance wraps.
-        LatestIDirectInput* underlyingDIObject;
+        // Represented both in Unicode and non-Unicode form, with the correct version to be specified by the application.
+        UIDirectInput underlyingDIObject;
 
         // Specifies whether or not the underlying DirectInput object is Unicode-based.
         BOOL underlyingDIObjectUsesUnicode;
@@ -87,10 +98,20 @@ namespace Xidi
         // -------- CALLBACKS: IDirectInput COMMON --------------------------------- //
         
         // Callback used to scan for any XInput-compatible game controllers.
-        static BOOL STDMETHODCALLTYPE CallbackEnumGameControllersXInputScan(LPCDIDEVICEINSTANCE lpddi, LPVOID pvRef);
+        // This is the non-Unicode version.
+        static BOOL STDMETHODCALLTYPE CallbackEnumGameControllersXInputScanA(LPCDIDEVICEINSTANCEA lpddi, LPVOID pvRef);
+        
+        // Callback used to scan for any XInput-compatible game controllers.
+        // This is the Unicode version.
+        static BOOL STDMETHODCALLTYPE CallbackEnumGameControllersXInputScanW(LPCDIDEVICEINSTANCEW lpddi, LPVOID pvRef);
 
         // Callback used to enumerate all devices to the application, filtering out those already seen.
-        static BOOL STDMETHODCALLTYPE CallbackEnumDevicesFiltered(LPCDIDEVICEINSTANCE lpddi, LPVOID pvRef);
+        // This is the non-Unicode version.
+        static BOOL STDMETHODCALLTYPE CallbackEnumDevicesFilteredA(LPCDIDEVICEINSTANCEA lpddi, LPVOID pvRef);
+        
+        // Callback used to enumerate all devices to the application, filtering out those already seen.
+        // This is the Unicode version.
+        static BOOL STDMETHODCALLTYPE CallbackEnumDevicesFilteredW(LPCDIDEVICEINSTANCEW lpddi, LPVOID pvRef);
         
 #if DIRECTINPUT_VERSION >= 0x0800
         // -------- METHODS: IDirectInput8 ONLY ------------------------------------ //
