@@ -359,7 +359,7 @@ BOOL STDMETHODCALLTYPE WrapperIDirectInput::CallbackEnumGameControllersXInputSca
     SEnumDevicesCallbackInfo* callbackInfo = (SEnumDevicesCallbackInfo*)pvRef;
 
     // If the present controller supports XInput, indicate such by adding it to the set of instance identifiers of interest.
-    if (ControllerIdentification::DoesDirectInputControllerSupportXInput(callbackInfo->instance->underlyingDIObject.w, lpddi->guidInstance))
+    if (ControllerIdentification::DoesDirectInputControllerSupportXInput(callbackInfo->instance->underlyingDIObject.t, lpddi->guidInstance))
     {
 #ifdef UNICODE
         WCHAR productName[_countof(lpddi->tszProductName) + 1];
@@ -383,13 +383,13 @@ BOOL STDMETHODCALLTYPE WrapperIDirectInput::CallbackEnumGameControllersXInputSca
     SEnumDevicesCallbackInfo* callbackInfo = (SEnumDevicesCallbackInfo*)pvRef;
 
     // If the present controller supports XInput, indicate such by adding it to the set of instance identifiers of interest.
-    if (ControllerIdentification::DoesDirectInputControllerSupportXInput(callbackInfo->instance->underlyingDIObject.w, lpddi->guidInstance))
+    if (ControllerIdentification::DoesDirectInputControllerSupportXInput(callbackInfo->instance->underlyingDIObject.t, lpddi->guidInstance))
     {
 #ifdef UNICODE
         LPCTSTR productName = lpddi->tszProductName;
 #else
         CHAR productName[(_countof(lpddi->tszProductName) + 1) * sizeof(WCHAR) / sizeof(CHAR)];
-        ZeroMemory(productName, sizeof(productName);
+        ZeroMemory(productName, sizeof(productName));
         wcstombs_s(NULL, productName, _countof(productName) - 1, lpddi->tszProductName, _countof(lpddi->tszProductName));
 #endif
         
@@ -442,7 +442,7 @@ BOOL STDMETHODCALLTYPE WrapperIDirectInput::CallbackEnumDevicesFilteredW(LPCDIDE
         LPCTSTR productName = lpddi->tszProductName;
 #else
         CHAR productName[(_countof(lpddi->tszProductName) + 1) * sizeof(WCHAR) / sizeof(CHAR)];
-        ZeroMemory(productName, sizeof(productName);
+        ZeroMemory(productName, sizeof(productName));
         wcstombs_s(NULL, productName, _countof(productName) - 1, lpddi->tszProductName, _countof(lpddi->tszProductName));
 #endif
         

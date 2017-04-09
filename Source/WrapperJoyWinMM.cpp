@@ -185,8 +185,12 @@ void WrapperJoyWinMM::SetControllerNameRegistryInfo(void)
     for (UINT i = 0; i < ImportApiWinMM::joyGetNumDevs(); ++i)
     {
         HKEY sourceRegistryKey;
-        JOYCAPSW joyInfo;
-        MMRESULT result = ImportApiWinMM::joyGetDevCaps(i, &joyInfo, sizeof(joyInfo));
+        JOYCAPS joyInfo;
+#ifdef UNICODE
+        MMRESULT result = ImportApiWinMM::joyGetDevCapsW(i, &joyInfo, sizeof(joyInfo));
+#else
+        MMRESULT result = ImportApiWinMM::joyGetDevCapsA(i, &joyInfo, sizeof(joyInfo));
+#endif
 
         if ((JOYERR_NOERROR != result) || (_T('\0') == joyInfo.szRegKey[0]))
             break;
@@ -234,7 +238,11 @@ void WrapperJoyWinMM::SetControllerNameRegistryInfo(void)
     for (DWORD i = 0; i < _countof(controllers); ++i)
     {
         TCHAR valueData[64];
+#ifdef UNICODE
         const int valueDataCount = ControllerIdentification::FillXInputControllerNameW(valueData, _countof(valueData), i);
+#else
+        const int valueDataCount = ControllerIdentification::FillXInputControllerNameA(valueData, _countof(valueData), i);
+#endif
 
         _stprintf_s(registryPath, _countof(registryPath), REGSTR_PATH_JOYOEM _T("\\%s%u"), registryKeyName, i + 1);
         result = RegCreateKeyEx(HKEY_CURRENT_USER, registryPath, 0, NULL, REG_OPTION_VOLATILE, KEY_ALL_ACCESS, NULL, &registryKey, NULL);

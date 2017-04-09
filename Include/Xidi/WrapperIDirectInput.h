@@ -28,6 +28,7 @@ namespace Xidi
         {
             LatestIDirectInputA* a;
             LatestIDirectInputW* w;
+            LatestIDirectInput* t;
         };
 
 
