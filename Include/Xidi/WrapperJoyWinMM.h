@@ -62,7 +62,7 @@ namespace Xidi
 
         // Maps from application-specified joystick index to the actual indices to present to WinMM or use internally.
         // Negative values indicate XInput controllers, others indicate values to be passed to WinMM as is.
-        static std::vector<INT_PTR> joyIndexMap;
+        static std::vector<int> joyIndexMap;
 
         // Holds information about all devices WinMM makes available.
         // String specifies the device identifier (vendor ID and product ID string), bool value specifies whether the device supports XInput.
@@ -114,7 +114,7 @@ namespace Xidi
         static void SetControllerNameRegistryInfo(void);
 
         // Translates an application-supplied joystick index to an internal joystick index using the map.
-        static INT_PTR TranslateApplicationJoyIndex(UINT_PTR uJoyID);
+        static int TranslateApplicationJoyIndex(UINT uJoyID);
         
         
     public:

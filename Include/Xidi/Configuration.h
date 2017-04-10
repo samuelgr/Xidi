@@ -134,14 +134,14 @@ namespace Xidi
 
         // Reads a single line from the specified file handle, verifies that it fits within the specified buffer, and removes the trailing newline.
         // Returns the length of the string that was read, with negative indicating an error condition.
-        static int ReadAndTrimSingleLine(LPTSTR buf, const size_t count, FILE* filehandle);
+        static int ReadAndTrimSingleLine(LPTSTR buf, const int count, FILE* filehandle);
 
 
         // -------- APPLICATION-SPECIFIC METHODS ----------------------------------- //
         
         // Fills in the specified buffer with the file name of the configuration file to use.
         // Returns the number of characters written to the buffer.
-        static size_t GetConfigurationFilePath(LPTSTR buf, const size_t count);
+        static size_t GetConfigurationFilePath(LPTSTR buf, const DWORD count);
 
         // Handles an error related to being unable to open a configuration file.
         // The filename is passed as a parameter for the purpose of generating a suitable error message.

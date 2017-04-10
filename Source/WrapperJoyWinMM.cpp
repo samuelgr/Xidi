@@ -20,6 +20,7 @@
 #include "WrapperJoyWinMM.h"
 #include "XInputController.h"
 
+#include <climits>
 #include <RegStr.h>
 #include <utility>
 #include <vector>
@@ -93,7 +94,7 @@ DIOBJECTDATAFORMAT WrapperJoyWinMM::joyStateObjectDataFormat[] = {
 
 const DIDATAFORMAT WrapperJoyWinMM::joyStateDataFormat = { sizeof(DIDATAFORMAT), sizeof(DIOBJECTDATAFORMAT), 0, sizeof(SJoyStateData), _countof(joyStateObjectDataFormat), joyStateObjectDataFormat };
 
-std::vector<INT_PTR> WrapperJoyWinMM::joyIndexMap;
+std::vector<int> WrapperJoyWinMM::joyIndexMap;
 
 std::vector<std::pair<StdString, bool>> WrapperJoyWinMM::joySystemDeviceInfo;
 
@@ -146,24 +147,24 @@ void WrapperJoyWinMM::CreateJoyIndexMap(void)
         // Preferred device is present but does not support XInput.
         // Filter out all non-XInput devices, but ensure Xidi virtual devices are mapped to the end.
 
-        for (size_t i = 0; i < numDevicesFromSystem; ++i)
+        for (int i = 0; i < (int)numDevicesFromSystem; ++i)
         {
             if ((false == joySystemDeviceInfo[i].second) && !(joySystemDeviceInfo[i].first.empty()))
                 joyIndexMap.push_back(i);
         }
 
-        for (size_t i = 0; i < numXInputVirtualDevices; ++i)
-            joyIndexMap.push_back(-((INT_PTR)i + 1));
+        for (int i = 0; i < (int)numXInputVirtualDevices; ++i)
+            joyIndexMap.push_back(-(i + 1));
     }
     else
     {
         // Preferred device supports XInput or is not present.
         // Filter out all non-XInput devices and present Xidi virtual devices at the start.
 
-        for (size_t i = 0; i < numXInputVirtualDevices; ++i)
-            joyIndexMap.push_back(-((INT_PTR)i + 1));
+        for (int i = 0; i < (int)numXInputVirtualDevices; ++i)
+            joyIndexMap.push_back(-(i + 1));
 
-        for (size_t i = 0; i < numDevicesFromSystem; ++i)
+        for (int i = 0; i < (int)numDevicesFromSystem; ++i)
         {
             if ((false == joySystemDeviceInfo[i].second) && !(joySystemDeviceInfo[i].first.empty()))
                 joyIndexMap.push_back(i);
@@ -385,7 +386,7 @@ void WrapperJoyWinMM::SetControllerNameRegistryInfo(void)
 
             // Just reference the string directly.
             const TCHAR* valueData = joySystemDeviceInfo[joyIndexMap[i]].first.c_str();
-            const int valueDataCount = joySystemDeviceInfo[joyIndexMap[i]].first.length();
+            const int valueDataCount = (int)joySystemDeviceInfo[joyIndexMap[i]].first.length();
 
             // Write the value to the registry.
              RegSetValueEx(registryKey, valueName, 0, REG_SZ, (const BYTE*)valueData, (sizeof(joySystemDeviceInfo[joyIndexMap[i]].first[0]) * (valueDataCount + 1)));
@@ -395,9 +396,9 @@ void WrapperJoyWinMM::SetControllerNameRegistryInfo(void)
 
 // --------
 
-INT_PTR WrapperJoyWinMM::TranslateApplicationJoyIndex(UINT_PTR uJoyID)
+int WrapperJoyWinMM::TranslateApplicationJoyIndex(UINT uJoyID)
 {
-    if (joyIndexMap.size() <= uJoyID)
+    if (joyIndexMap.size() <= (size_t)uJoyID)
         return INT_MAX;
     else
         return joyIndexMap[uJoyID];
@@ -427,12 +428,12 @@ MMRESULT WrapperJoyWinMM::JoyConfigChanged(DWORD dwFlags)
 MMRESULT WrapperJoyWinMM::JoyGetDevCapsA(UINT_PTR uJoyID, LPJOYCAPSA pjc, UINT cbjc)
 {
     Initialize();
-    const INT_PTR realJoyID = TranslateApplicationJoyIndex(uJoyID);
+    const int realJoyID = TranslateApplicationJoyIndex((UINT)uJoyID);
     
     if (realJoyID < 0)
     {
         // Querying an XInput controller.
-        const DWORD xJoyID = ((-realJoyID) - 1);
+        const DWORD xJoyID = (DWORD)((-realJoyID) - 1);
 
         // Check for the correct structure size.
         if (sizeof(*pjc) != cbjc)
@@ -499,12 +500,12 @@ MMRESULT WrapperJoyWinMM::JoyGetDevCapsA(UINT_PTR uJoyID, LPJOYCAPSA pjc, UINT c
 MMRESULT WrapperJoyWinMM::JoyGetDevCapsW(UINT_PTR uJoyID, LPJOYCAPSW pjc, UINT cbjc)
 {
     Initialize();
-    const INT_PTR realJoyID = TranslateApplicationJoyIndex(uJoyID);
+    const int realJoyID = TranslateApplicationJoyIndex((UINT)uJoyID);
     
     if (realJoyID < 0)
     {
         // Querying an XInput controller.
-        const DWORD xJoyID = ((-realJoyID) - 1);
+        const DWORD xJoyID = (DWORD)((-realJoyID) - 1);
 
         // Check for the correct structure size.
         if (sizeof(*pjc) != cbjc)
@@ -581,12 +582,12 @@ UINT WrapperJoyWinMM::JoyGetNumDevs(void)
 MMRESULT WrapperJoyWinMM::JoyGetPos(UINT uJoyID, LPJOYINFO pji)
 {
     Initialize();
-    const INT_PTR realJoyID = TranslateApplicationJoyIndex(uJoyID);
+    const int realJoyID = TranslateApplicationJoyIndex(uJoyID);
     
     if (realJoyID < 0)
     {
         // Querying an XInput controller.
-        const DWORD xJoyID = ((-realJoyID) - 1);
+        const DWORD xJoyID = (DWORD)((-realJoyID) - 1);
 
         SJoyStateData joyStateData;
         MMRESULT result = FillDeviceState((UINT)xJoyID, &joyStateData);
@@ -613,7 +614,7 @@ MMRESULT WrapperJoyWinMM::JoyGetPos(UINT uJoyID, LPJOYINFO pji)
     else
     {
         // Querying a non-XInput controller.
-        return ImportApiWinMM::joyGetPos((UINT_PTR)realJoyID, pji);
+        return ImportApiWinMM::joyGetPos((UINT)realJoyID, pji);
     }
 }
 
@@ -622,12 +623,12 @@ MMRESULT WrapperJoyWinMM::JoyGetPos(UINT uJoyID, LPJOYINFO pji)
 MMRESULT WrapperJoyWinMM::JoyGetPosEx(UINT uJoyID, LPJOYINFOEX pji)
 {
     Initialize();
-    const INT_PTR realJoyID = TranslateApplicationJoyIndex(uJoyID);
+    const int realJoyID = TranslateApplicationJoyIndex(uJoyID);
     
     if (realJoyID < 0)
     {
         // Querying an XInput controller.
-        const DWORD xJoyID = ((-realJoyID) - 1);
+        const DWORD xJoyID = (DWORD)((-realJoyID) - 1);
 
         // Check for the correct structure size.
         if (sizeof(*pji) != pji->dwSize)
@@ -660,7 +661,7 @@ MMRESULT WrapperJoyWinMM::JoyGetPosEx(UINT uJoyID, LPJOYINFOEX pji)
     else
     {
         // Querying a non-XInput controller.
-        return ImportApiWinMM::joyGetPosEx((UINT_PTR)realJoyID, pji);
+        return ImportApiWinMM::joyGetPosEx((UINT)realJoyID, pji);
     }
 }
 
@@ -669,7 +670,7 @@ MMRESULT WrapperJoyWinMM::JoyGetPosEx(UINT uJoyID, LPJOYINFOEX pji)
 MMRESULT WrapperJoyWinMM::JoyGetThreshold(UINT uJoyID, LPUINT puThreshold)
 {
     Initialize();
-    const INT_PTR realJoyID = TranslateApplicationJoyIndex(uJoyID);
+    const int realJoyID = TranslateApplicationJoyIndex(uJoyID);
     
     if (realJoyID < 0)
     {
@@ -681,7 +682,7 @@ MMRESULT WrapperJoyWinMM::JoyGetThreshold(UINT uJoyID, LPUINT puThreshold)
     else
     {
         // Querying a non-XInput controller.
-        return ImportApiWinMM::joyGetThreshold((UINT_PTR)realJoyID, puThreshold);
+        return ImportApiWinMM::joyGetThreshold((UINT)realJoyID, puThreshold);
     }
 }
 
@@ -690,7 +691,7 @@ MMRESULT WrapperJoyWinMM::JoyGetThreshold(UINT uJoyID, LPUINT puThreshold)
 MMRESULT WrapperJoyWinMM::JoyReleaseCapture(UINT uJoyID)
 {
     Initialize();
-    const INT_PTR realJoyID = TranslateApplicationJoyIndex(uJoyID);
+    const int realJoyID = TranslateApplicationJoyIndex(uJoyID);
     
     if (realJoyID < 0)
     {
@@ -702,7 +703,7 @@ MMRESULT WrapperJoyWinMM::JoyReleaseCapture(UINT uJoyID)
     else
     {
         // Querying a non-XInput controller.
-        return ImportApiWinMM::joyReleaseCapture((UINT_PTR)realJoyID);
+        return ImportApiWinMM::joyReleaseCapture((UINT)realJoyID);
     }
 }
 
@@ -711,7 +712,7 @@ MMRESULT WrapperJoyWinMM::JoyReleaseCapture(UINT uJoyID)
 MMRESULT WrapperJoyWinMM::JoySetCapture(HWND hwnd, UINT uJoyID, UINT uPeriod, BOOL fChanged)
 {
     Initialize();
-    const INT_PTR realJoyID = TranslateApplicationJoyIndex(uJoyID);
+    const int realJoyID = TranslateApplicationJoyIndex(uJoyID);
     
     if (realJoyID < 0)
     {
@@ -723,7 +724,7 @@ MMRESULT WrapperJoyWinMM::JoySetCapture(HWND hwnd, UINT uJoyID, UINT uPeriod, BO
     else
     {
         // Querying a non-XInput controller.
-        return ImportApiWinMM::joySetCapture(hwnd, (UINT_PTR)realJoyID, uPeriod, fChanged);
+        return ImportApiWinMM::joySetCapture(hwnd, (UINT)realJoyID, uPeriod, fChanged);
     }
 }
 
@@ -732,7 +733,7 @@ MMRESULT WrapperJoyWinMM::JoySetCapture(HWND hwnd, UINT uJoyID, UINT uPeriod, BO
 MMRESULT WrapperJoyWinMM::JoySetThreshold(UINT uJoyID, UINT uThreshold)
 {
     Initialize();
-    const INT_PTR realJoyID = TranslateApplicationJoyIndex(uJoyID);
+    const int realJoyID = TranslateApplicationJoyIndex(uJoyID);
     
     if (realJoyID < 0)
     {
@@ -744,6 +745,6 @@ MMRESULT WrapperJoyWinMM::JoySetThreshold(UINT uJoyID, UINT uThreshold)
     else
     {
         // Querying a non-XInput controller.
-        return ImportApiWinMM::joySetThreshold((UINT_PTR)realJoyID, uThreshold);
+        return ImportApiWinMM::joySetThreshold((UINT)realJoyID, uThreshold);
     }
 }

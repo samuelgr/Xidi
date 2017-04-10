@@ -511,13 +511,13 @@ void Configuration::ExtractSectionNameFromConfigurationFileLine(StdString& secti
 
 // ---------
 
-int Configuration::ReadAndTrimSingleLine(LPTSTR buf, const size_t count, FILE* filehandle)
+int Configuration::ReadAndTrimSingleLine(LPTSTR buf, const int count, FILE* filehandle)
 {
     if (buf != _fgetts(buf, count, filehandle))
         return -1;
 
     // Verify that the line fits within the buffer, otherwise the line is too long.
-    size_t linelength = _tcsnlen(buf, count);
+    int linelength = (int)_tcsnlen(buf, count);
     if (count - 1 == linelength && _T('\n') != buf[linelength - 1])
     {
         // Line is too long.
@@ -538,11 +538,11 @@ int Configuration::ReadAndTrimSingleLine(LPTSTR buf, const size_t count, FILE* f
 // -------- APPLICATION-SPECIFIC METHODS ----------------------------------- //
 // See "Configuration.h" for documentation.
 
-size_t Configuration::GetConfigurationFilePath(LPTSTR buf, const size_t count)
+size_t Configuration::GetConfigurationFilePath(LPTSTR buf, const DWORD count)
 {
     TCHAR configurationFileName[kMaximumConfigurationFileNameLength];
-    size_t lenConfigurationFileName = (size_t)LoadString(Globals::GetInstanceHandle(), IDS_XIDI_CONFIGURATION_FILE_NAME, configurationFileName, _countof(configurationFileName));
-    size_t lenInstancePath = (size_t)GetModuleFileName(Globals::GetInstanceHandle(), buf, count);
+    DWORD lenConfigurationFileName = (size_t)LoadString(Globals::GetInstanceHandle(), IDS_XIDI_CONFIGURATION_FILE_NAME, configurationFileName, _countof(configurationFileName));
+    DWORD lenInstancePath = (size_t)GetModuleFileName(Globals::GetInstanceHandle(), buf, count);
     
     // Search for the final '\' character in the instance path, by working backwards, and truncate the entire length of the string after.
     // This extracts the directory name from the module file name.
