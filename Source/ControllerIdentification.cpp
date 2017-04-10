@@ -48,7 +48,7 @@ void ControllerIdentification::SetInstanceInXInputInstanceGUID(GUID& xguid, cons
 // -------- CLASS METHODS -------------------------------------------------- //
 // See "XInputControllerIdentification.h" for documentation.
 
-BOOL ControllerIdentification::DoesDirectInputControllerSupportXInput(EarliestIDirectInput* dicontext, REFGUID instanceGUID)
+BOOL ControllerIdentification::DoesDirectInputControllerSupportXInput(EarliestIDirectInput* dicontext, REFGUID instanceGUID, std::wstring* devicePath)
 {
     BOOL deviceSupportsXInput = FALSE;
     
@@ -71,7 +71,12 @@ BOOL ControllerIdentification::DoesDirectInputControllerSupportXInput(EarliestID
         {
             // The documented "best" way of determining if a device supports XInput is to look for "&IG_" in the device path string.
             if (NULL != wcsstr(devinfo.wszPath, L"&IG_") || NULL != wcsstr(devinfo.wszPath, L"&ig_"))
+            {
                 deviceSupportsXInput = TRUE;
+
+                if (NULL != devicePath)
+                    *devicePath = devinfo.wszPath;
+            }
         }
 
         didevice->Release();

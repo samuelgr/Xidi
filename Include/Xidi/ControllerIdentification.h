@@ -15,7 +15,7 @@
 #include "ApiDirectInput.h"
 #include "XInputController.h"
 
-#include <unordered_map>
+#include <string>
 
 
 namespace Xidi
@@ -55,7 +55,7 @@ namespace Xidi
         // -------- CLASS METHODS -------------------------------------------------- //
         
         // Returns TRUE if the specified DirectInput controller supports XInput, FALSE if not or this information could not be determined.
-        static BOOL DoesDirectInputControllerSupportXInput(EarliestIDirectInput* dicontext, REFGUID instanceGUID);
+        static BOOL DoesDirectInputControllerSupportXInput(EarliestIDirectInput* dicontext, REFGUID instanceGUID, std::wstring* devicePath = NULL);
 
         // Performs a DirectInput-style controller enumeration of connected XInput controllers.
         // Returns DIENUM_CONTINUE or DIENUM_STOP depending on what the application requested.

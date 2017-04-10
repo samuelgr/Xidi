@@ -11,16 +11,33 @@
 
 #include "ApiWindows.h"
 #include "ApiDirectInput.h"
+#include "ApiStdString.h"
 #include "ControllerIdentification.h"
 #include "Globals.h"
+#include "ImportApiDirectInput.h"
 #include "ImportApiWinMM.h"
 #include "MapperFactory.h"
 #include "WrapperJoyWinMM.h"
 #include "XInputController.h"
 
 #include <RegStr.h>
+#include <utility>
+#include <vector>
 
 using namespace Xidi;
+
+
+// -------- LOCAL TYPES ---------------------------------------------------- //
+
+namespace Xidi
+{
+    // Used to provide all information needed to get a list of XInput devices exposed by WinMM.
+    struct SWinMMEnumCallbackInfo
+    {
+        std::vector<std::pair<StdString, bool>>* systemDeviceInfo;
+        IDirectInput8* directInputInterface;
+    };
+}
 
 
 // -------- CLASS VARIABLES ------------------------------------------------ //
@@ -76,6 +93,10 @@ DIOBJECTDATAFORMAT WrapperJoyWinMM::joyStateObjectDataFormat[] = {
 
 const DIDATAFORMAT WrapperJoyWinMM::joyStateDataFormat = { sizeof(DIDATAFORMAT), sizeof(DIOBJECTDATAFORMAT), 0, sizeof(SJoyStateData), _countof(joyStateObjectDataFormat), joyStateObjectDataFormat };
 
+std::vector<INT_PTR> WrapperJoyWinMM::joyIndexMap;
+
+std::vector<std::pair<StdString, bool>> WrapperJoyWinMM::joySystemDeviceInfo;
+
 
 // -------- CLASS METHODS -------------------------------------------------- //
 // See "WrapperJoyWinMM.h" for documentation.
@@ -92,6 +113,12 @@ void WrapperJoyWinMM::Initialize(void)
         for (DWORD i = 0; i < _countof(controllers); ++i)
             controllers[i] = new XInputController(i);
         
+        // Enumerate all devices exposed by WinMM.
+        CreateSystemDeviceInfo();
+        
+        // Initialize the joystick index map.
+        CreateJoyIndexMap();
+        
         // Ensure all controllers have their names published in the system registry.
         SetControllerNameRegistryInfo();
         
@@ -103,13 +130,162 @@ void WrapperJoyWinMM::Initialize(void)
 // -------- HELPERS -------------------------------------------------------- //
 // See "WrapperJoyWinMM.h" for documentation.
 
-// Communicates with the relevant controller and the mapper to fill the provided structure with device state information.
+void WrapperJoyWinMM::CreateJoyIndexMap(void)
+{
+    const size_t numDevicesFromSystem = joySystemDeviceInfo.size();
+    const size_t numXInputVirtualDevices = _countof(controllers);
+    const size_t numDevicesTotal = numDevicesFromSystem + numXInputVirtualDevices;
+
+    // Initialize the joystick index map with conservative defaults.
+    // In the event of an error, it is safest to avoid enabling any Xidi virtual controllers to prevent binding both to the WinMM version and the Xidi version of the same one.
+    joyIndexMap.clear();
+    joyIndexMap.reserve(numDevicesTotal);
+    
+    if ((false == joySystemDeviceInfo[0].second) && !(joySystemDeviceInfo[0].first.empty()))
+    {
+        // Preferred device is present but does not support XInput.
+        // Filter out all non-XInput devices, but ensure Xidi virtual devices are mapped to the end.
+
+        for (size_t i = 0; i < numDevicesFromSystem; ++i)
+        {
+            if ((false == joySystemDeviceInfo[i].second) && !(joySystemDeviceInfo[i].first.empty()))
+                joyIndexMap.push_back(i);
+        }
+
+        for (size_t i = 0; i < numXInputVirtualDevices; ++i)
+            joyIndexMap.push_back(-((INT_PTR)i + 1));
+    }
+    else
+    {
+        // Preferred device supports XInput or is not present.
+        // Filter out all non-XInput devices and present Xidi virtual devices at the start.
+
+        for (size_t i = 0; i < numXInputVirtualDevices; ++i)
+            joyIndexMap.push_back(-((INT_PTR)i + 1));
+
+        for (size_t i = 0; i < numDevicesFromSystem; ++i)
+        {
+            if ((false == joySystemDeviceInfo[i].second) && !(joySystemDeviceInfo[i].first.empty()))
+                joyIndexMap.push_back(i);
+        }
+    }
+}
+
+// --------
+
+void WrapperJoyWinMM::CreateSystemDeviceInfo(void)
+{
+    const size_t numDevicesFromSystem = (size_t)ImportApiWinMM::joyGetNumDevs();
+    
+    // Initialize the system device information data structure.
+    joySystemDeviceInfo.clear();
+    joySystemDeviceInfo.reserve(numDevicesFromSystem);
+    
+    // Figure out the registry key that needs to be opened and open it.
+    JOYCAPS joyCaps;
+    HKEY registryKey;
+    if (JOYERR_NOERROR != ImportApiWinMM::joyGetDevCaps((UINT_PTR)-1, &joyCaps, sizeof(joyCaps)))
+        return;
+
+    TCHAR registryPath[1024];
+    _stprintf_s(registryPath, _countof(registryPath), REGSTR_PATH_JOYCONFIG _T("\\%s\\") REGSTR_KEY_JOYCURR, joyCaps.szRegKey);
+
+    if (ERROR_SUCCESS != RegCreateKeyEx(HKEY_CURRENT_USER, registryPath, 0, NULL, REG_OPTION_VOLATILE, KEY_QUERY_VALUE, NULL, &registryKey, NULL))
+        return;
+
+
+    // For each joystick device available in the system, see if it is present and, if so, get its device identifier (vendor ID and product ID string).
+    for (size_t i = 0; i < numDevicesFromSystem; ++i)
+    {
+        // Get the device capabilities. If this fails, the device is not present and can be skipped.
+        if (JOYERR_NOERROR != ImportApiWinMM::joyGetDevCaps((UINT_PTR)i, &joyCaps, sizeof(joyCaps)))
+        {
+            joySystemDeviceInfo.push_back({ _T(""), false });
+            continue;
+        }
+        
+        // Use the registry to get device vendor ID and product ID string.
+        TCHAR registryValueName[64];
+        _stprintf_s(registryValueName, _countof(registryValueName), REGSTR_VAL_JOYNOEMNAME, ((int)i + 1));
+
+        TCHAR registryValueData[64];
+        DWORD registryValueSize = sizeof(registryValueData);
+        if (ERROR_SUCCESS != RegGetValue(registryKey, NULL, registryValueName, RRF_RT_REG_SZ, NULL, registryValueData, &registryValueSize))
+        {
+            // If the registry value does not exist, this is past the end of the number of devices WinMM sees.
+            joySystemDeviceInfo.push_back({ _T(""), false });
+            continue;
+        }
+
+        // Add the vendor ID and product ID string to the list.
+        joySystemDeviceInfo.push_back({ registryValueData, false });
+    }
+
+    RegCloseKey(registryKey);
+
+    // Enumerate all devices using DirectInput8 to find any XInput devices with matching vendor and product identifiers.
+    // This will provide information on whether each WinMM device supports XInput.
+    IDirectInput8* directInputInterface = NULL;
+    if (S_OK != ImportApiDirectInput::DirectInput8Create(Globals::GetInstanceHandle(), DIRECTINPUT_VERSION, IID_IDirectInput8, (LPVOID*)&directInputInterface, NULL))
+        return;
+
+    SWinMMEnumCallbackInfo callbackInfo;
+    callbackInfo.systemDeviceInfo = &joySystemDeviceInfo;
+    callbackInfo.directInputInterface = directInputInterface;
+    if (S_OK != directInputInterface->EnumDevices(DI8DEVCLASS_GAMECTRL, CreateSystemDeviceInfoEnumCallback, (LPVOID)&callbackInfo, 0))
+        return;
+}
+
+// --------
+
+BOOL STDMETHODCALLTYPE WrapperJoyWinMM::CreateSystemDeviceInfoEnumCallback(LPCDIDEVICEINSTANCE lpddi, LPVOID pvRef)
+{
+    SWinMMEnumCallbackInfo* callbackInfo = (SWinMMEnumCallbackInfo*)pvRef;
+
+    std::wstring devicePath;
+    BOOL deviceSupportsXInput = ControllerIdentification::DoesDirectInputControllerSupportXInput(callbackInfo->directInputInterface, lpddi->guidInstance, &devicePath);
+
+    if (deviceSupportsXInput)
+    {
+#ifdef UNICODE
+        const WCHAR* devicePathString = devicePath.c_str();
+#else
+        CHAR devicePathString[(_countof(DIPROPGUIDANDPATH::wszPath) + 1) * sizeof(WCHAR) / sizeof(CHAR)];
+        ZeroMemory(devicePathString, sizeof(devicePathString));
+        wcstombs_s(NULL, devicePathString, _countof(devicePathString) - 1, devicePath.c_str(), devicePath.length());
+#endif
+
+        // Skip to the part of the path string that identifies vendor and product.
+        const TCHAR* devicePathSubstring = _tcsstr(devicePathString, _T("VID_"));
+        if (NULL == devicePathSubstring) devicePathSubstring = _tcsstr(devicePathString, _T("vid_"));
+        if (NULL != devicePathSubstring)
+        {
+            // For each element of the WinMM devices list, see if the vendor and product IDs match the one DirectInput presented as being compatible with XInput.
+            // If so, mark it in the list as being an XInput controller.
+            for (size_t i = 0; i < callbackInfo->systemDeviceInfo->size(); ++i)
+            {
+                // Already seen this device, skip.
+                if (true == callbackInfo->systemDeviceInfo->at(i).second)
+                    continue;
+
+                // No device at that position, skip.
+                if (callbackInfo->systemDeviceInfo->at(i).first.empty())
+                    continue;
+
+                // Check for a matching vendor and product ID. If so, mark the device as supporting XInput.
+                if (0 == _tcsnicmp(callbackInfo->systemDeviceInfo->at(i).first.c_str(), devicePathSubstring, callbackInfo->systemDeviceInfo->at(i).first.length()))
+                    callbackInfo->systemDeviceInfo->at(i).second = true;
+            }
+        }
+    }
+
+    return DIENUM_CONTINUE;
+}
+
+// --------
+
 MMRESULT WrapperJoyWinMM::FillDeviceState(UINT joyID, SJoyStateData* joyStateData)
 {
-    // Ensure the controller number is within bounds.
-    if (!(joyID < JoyGetNumDevs()))
-        return JOYERR_PARMS;
-
     // Acquire the controller.
     controllers[joyID]->AcquireController();
 
@@ -147,94 +323,18 @@ int WrapperJoyWinMM::FillRegistryKeyStringW(LPWSTR buf, const size_t bufcount)
 void WrapperJoyWinMM::SetControllerNameRegistryInfo(void)
 {
     HKEY registryKey;
+    LSTATUS result;
     TCHAR registryKeyName[128];
     TCHAR registryPath[1024];
 
-    // First, add OEM string references to HKCU\System\CurrentControlSet\Control\MediaResources\Joystick\Xidi.
-    // These will point a WinMM-based application to another part of the registry, by reference, which will actually contain the names.
 #ifdef UNICODE
     FillRegistryKeyStringW(registryKeyName, _countof(registryKeyName));
 #else
     FillRegistryKeyStringA(registryKeyName, _countof(registryKeyName));
 #endif
     
-    _stprintf_s(registryPath, _countof(registryPath), REGSTR_PATH_JOYCONFIG _T("\\%s\\") REGSTR_KEY_JOYCURR, registryKeyName);
-    
-    LSTATUS result = RegCreateKeyEx(HKEY_CURRENT_USER, registryPath, 0, NULL, REG_OPTION_VOLATILE, KEY_ALL_ACCESS, NULL, &registryKey, NULL);
-    if (ERROR_SUCCESS != result) return;
-
-    for (DWORD i = 0; i < _countof(controllers); ++i)
-    {
-        TCHAR valueName[64];
-        TCHAR valueData[64];
-
-        const int valueNameCount = _stprintf_s(valueName, _countof(valueName), REGSTR_VAL_JOYNOEMNAME, (i + 1));
-        const int valueDataCount = _stprintf_s(valueData, _countof(valueData), _T("%s%u"), registryKeyName, (i + 1));
-
-        result = RegSetValueEx(registryKey, valueName, 0, REG_SZ, (const BYTE*)valueData, (sizeof(TCHAR) * (valueDataCount + 1)));
-        if (ERROR_SUCCESS != result)
-        {
-            RegCloseKey(registryKey);
-            return;
-        }
-    }
-
-    // Next, for each joystick defined by the system, extract its registry-based name pointer and transfer it to the Xidi registry area.
-    // This ensures that joystick names for non-XInput joysticks presented by WinMM are correctly readable by applications looking in the registry.
-    // All of this happens under HKCU\System\CurrentControlSet\Control\MediaResources\Joystick, with the source key being specified by the system and the destination already having been opened previously.
-    for (UINT i = 0; i < ImportApiWinMM::joyGetNumDevs(); ++i)
-    {
-        HKEY sourceRegistryKey;
-        JOYCAPS joyInfo;
-#ifdef UNICODE
-        MMRESULT result = ImportApiWinMM::joyGetDevCapsW(i, &joyInfo, sizeof(joyInfo));
-#else
-        MMRESULT result = ImportApiWinMM::joyGetDevCapsA(i, &joyInfo, sizeof(joyInfo));
-#endif
-
-        if ((JOYERR_NOERROR != result) || (_T('\0') == joyInfo.szRegKey[0]))
-            break;
-
-        // Open a handle to the information source registry key.
-        _stprintf_s(registryPath, _countof(registryPath), REGSTR_PATH_JOYCONFIG _T("\\%s\\") REGSTR_KEY_JOYCURR, joyInfo.szRegKey);
-        RegCreateKeyEx(HKEY_CURRENT_USER, registryPath, 0, NULL, REG_OPTION_VOLATILE, KEY_QUERY_VALUE, NULL, &sourceRegistryKey, NULL);
-        if (ERROR_SUCCESS != result)
-        {
-            RegCloseKey(registryKey);
-            return;
-        }
-
-        // Get the value of interest from the correct value within the information source registry key.
-        TCHAR valueName[64];
-        TCHAR valueData[64];
-        DWORD valueSize = sizeof(valueData);
-
-        _stprintf_s(valueName, _countof(valueName), REGSTR_VAL_JOYNOEMNAME, (i + 1));
-
-        result = RegGetValue(sourceRegistryKey, NULL, valueName, RRF_RT_REG_SZ, NULL, valueData, &valueSize);
-        RegCloseKey(sourceRegistryKey);
-        if (ERROR_SUCCESS != result)
-        {
-            RegCloseKey(registryKey);
-            return;
-        }
-
-        // Write to the destination registry key the value just read, but with an adjusted index.
-        const int valueNameCount = _stprintf_s(valueName, _countof(valueName), REGSTR_VAL_JOYNOEMNAME, (_countof(controllers) + i + 1));
-        const int valueDataCount = valueSize / sizeof(valueData[0]);
-
-        result = RegSetValueEx(registryKey, valueName, 0, REG_SZ, (const BYTE*)valueData, (sizeof(TCHAR) * (valueDataCount + 1)));
-        if (ERROR_SUCCESS != result)
-        {
-            RegCloseKey(registryKey);
-            return;
-        }
-    }
-    
-    RegCloseKey(registryKey);
-
-    // Finally, place the names into the correct spots for the application to read.
-    // These will be in HKCU\System\CurrentControlSet\Control\MediaProperties\PrivateProperties\Joystick\OEM\[valueData from above loop] and contain the name of the controller.
+    // Place the names into the correct spots for the application to read.
+    // These will be in HKCU\System\CurrentControlSet\Control\MediaProperties\PrivateProperties\Joystick\OEM\Xidi# and contain the name of the controller.
     for (DWORD i = 0; i < _countof(controllers); ++i)
     {
         TCHAR valueData[64];
@@ -245,7 +345,7 @@ void WrapperJoyWinMM::SetControllerNameRegistryInfo(void)
 #endif
 
         _stprintf_s(registryPath, _countof(registryPath), REGSTR_PATH_JOYOEM _T("\\%s%u"), registryKeyName, i + 1);
-        result = RegCreateKeyEx(HKEY_CURRENT_USER, registryPath, 0, NULL, REG_OPTION_VOLATILE, KEY_ALL_ACCESS, NULL, &registryKey, NULL);
+        result = RegCreateKeyEx(HKEY_CURRENT_USER, registryPath, 0, NULL, REG_OPTION_VOLATILE, KEY_SET_VALUE, NULL, &registryKey, NULL);
         if (ERROR_SUCCESS != result) return;
 
         result = RegSetValueEx(registryKey, REGSTR_VAL_JOYOEMNAME, 0, REG_SZ, (const BYTE*)valueData, (sizeof(TCHAR) * (valueDataCount + 1)));
@@ -253,6 +353,54 @@ void WrapperJoyWinMM::SetControllerNameRegistryInfo(void)
 
         if (ERROR_SUCCESS != result) return;
     }
+
+    // Next, add OEM string references to HKCU\System\CurrentControlSet\Control\MediaResources\Joystick\Xidi.
+    // These will point a WinMM-based application to another part of the registry, by reference, which actually contain the names.
+    // Do this by consuming the joystick index map and system device information data structure.
+    _stprintf_s(registryPath, _countof(registryPath), REGSTR_PATH_JOYCONFIG _T("\\%s\\") REGSTR_KEY_JOYCURR, registryKeyName);
+
+    result = RegCreateKeyEx(HKEY_CURRENT_USER, registryPath, 0, NULL, REG_OPTION_VOLATILE, KEY_SET_VALUE, NULL, &registryKey, NULL);
+    if (ERROR_SUCCESS != result) return;
+    
+    for (DWORD i = 0; i < joyIndexMap.size(); ++i)
+    {
+        TCHAR valueName[64];
+        const int valueNameCount = _stprintf_s(valueName, _countof(valueName), REGSTR_VAL_JOYNOEMNAME, (i + 1));
+        
+        if (joyIndexMap[i] < 0)
+        {
+            // Map points to a Xidi virtual device.
+
+            // Index is just -1 * the value in the map.
+            // Use this value to create the correct string to write to the registry.
+            TCHAR valueData[64];
+            const int valueDataCount = _stprintf_s(valueData, _countof(valueData), _T("%s%u"), registryKeyName, ((UINT)(-joyIndexMap[i])));
+
+            // Write the value to the registry.
+            RegSetValueEx(registryKey, valueName, 0, REG_SZ, (const BYTE*)valueData, (sizeof(TCHAR) * (valueDataCount + 1)));
+        }
+        else
+        {
+            // Map points to a non-Xidi device.
+
+            // Just reference the string directly.
+            const TCHAR* valueData = joySystemDeviceInfo[joyIndexMap[i]].first.c_str();
+            const int valueDataCount = joySystemDeviceInfo[joyIndexMap[i]].first.length();
+
+            // Write the value to the registry.
+             RegSetValueEx(registryKey, valueName, 0, REG_SZ, (const BYTE*)valueData, (sizeof(joySystemDeviceInfo[joyIndexMap[i]].first[0]) * (valueDataCount + 1)));
+        }
+    }
+}
+
+// --------
+
+INT_PTR WrapperJoyWinMM::TranslateApplicationJoyIndex(UINT_PTR uJoyID)
+{
+    if (joyIndexMap.size() <= uJoyID)
+        return INT_MAX;
+    else
+        return joyIndexMap[uJoyID];
 }
 
 
@@ -266,7 +414,9 @@ MMRESULT WrapperJoyWinMM::JoyConfigChanged(DWORD dwFlags)
     // Redirect to the imported API so that its view of the registry can be updated.
     HRESULT result = ImportApiWinMM::joyConfigChanged(dwFlags);
 
-    // Update Xidi's view of the registry.
+    // Update Xidi's view of devices.
+    CreateSystemDeviceInfo();
+    CreateJoyIndexMap();
     SetControllerNameRegistryInfo();
 
     return result;
@@ -276,17 +426,16 @@ MMRESULT WrapperJoyWinMM::JoyConfigChanged(DWORD dwFlags)
 
 MMRESULT WrapperJoyWinMM::JoyGetDevCapsA(UINT_PTR uJoyID, LPJOYCAPSA pjc, UINT cbjc)
 {
-    if (uJoyID < _countof(controllers))
+    Initialize();
+    const INT_PTR realJoyID = TranslateApplicationJoyIndex(uJoyID);
+    
+    if (realJoyID < 0)
     {
         // Querying an XInput controller.
-        Initialize();
+        const DWORD xJoyID = ((-realJoyID) - 1);
 
         // Check for the correct structure size.
         if (sizeof(*pjc) != cbjc)
-            return JOYERR_PARMS;
-
-        // Ensure the controller number is within bounds.
-        if (!(uJoyID < JoyGetNumDevs()))
             return JOYERR_PARMS;
 
         // Get information from the mapper on the mapped device's capabilities.
@@ -328,7 +477,7 @@ MMRESULT WrapperJoyWinMM::JoyGetDevCapsA(UINT_PTR uJoyID, LPJOYCAPSA pjc, UINT c
             pjc->wCaps |= JOYCAPS_HASV;
 
         FillRegistryKeyStringA(pjc->szRegKey, _countof(pjc->szRegKey));
-        ControllerIdentification::FillXInputControllerNameA(pjc->szPname, _countof(pjc->szPname), (DWORD)uJoyID);
+        ControllerIdentification::FillXInputControllerNameA(pjc->szPname, _countof(pjc->szPname), xJoyID);
 
         return JOYERR_NOERROR;
     }
@@ -336,7 +485,7 @@ MMRESULT WrapperJoyWinMM::JoyGetDevCapsA(UINT_PTR uJoyID, LPJOYCAPSA pjc, UINT c
     {
         // Querying a non-XInput controller.
         // Replace the registry key but otherwise leave the response unchanged.
-        HRESULT result = ImportApiWinMM::joyGetDevCapsA(uJoyID - _countof(controllers), pjc, cbjc);
+        HRESULT result = ImportApiWinMM::joyGetDevCapsA((UINT_PTR)realJoyID, pjc, cbjc);
         
         if (JOYERR_NOERROR == result)
             FillRegistryKeyStringA(pjc->szRegKey, _countof(pjc->szRegKey));
@@ -349,17 +498,16 @@ MMRESULT WrapperJoyWinMM::JoyGetDevCapsA(UINT_PTR uJoyID, LPJOYCAPSA pjc, UINT c
 
 MMRESULT WrapperJoyWinMM::JoyGetDevCapsW(UINT_PTR uJoyID, LPJOYCAPSW pjc, UINT cbjc)
 {
-    if (uJoyID < _countof(controllers))
+    Initialize();
+    const INT_PTR realJoyID = TranslateApplicationJoyIndex(uJoyID);
+    
+    if (realJoyID < 0)
     {
         // Querying an XInput controller.
-        Initialize();
+        const DWORD xJoyID = ((-realJoyID) - 1);
 
         // Check for the correct structure size.
         if (sizeof(*pjc) != cbjc)
-            return JOYERR_PARMS;
-
-        // Ensure the controller number is within bounds.
-        if (!(uJoyID < JoyGetNumDevs()))
             return JOYERR_PARMS;
 
         // Get information from the mapper on the mapped device's capabilities.
@@ -401,7 +549,7 @@ MMRESULT WrapperJoyWinMM::JoyGetDevCapsW(UINT_PTR uJoyID, LPJOYCAPSW pjc, UINT c
             pjc->wCaps |= JOYCAPS_HASV;
 
         FillRegistryKeyStringW(pjc->szRegKey, _countof(pjc->szRegKey));
-        ControllerIdentification::FillXInputControllerNameW(pjc->szPname, _countof(pjc->szPname), (DWORD)uJoyID);
+        ControllerIdentification::FillXInputControllerNameW(pjc->szPname, _countof(pjc->szPname), xJoyID);
 
         return JOYERR_NOERROR;
     }
@@ -409,7 +557,7 @@ MMRESULT WrapperJoyWinMM::JoyGetDevCapsW(UINT_PTR uJoyID, LPJOYCAPSW pjc, UINT c
     {
         // Querying a non-XInput controller.
         // Replace the registry key with ours but otherwise leave the response unchanged.
-        HRESULT result = ImportApiWinMM::joyGetDevCapsW(uJoyID - _countof(controllers), pjc, cbjc);
+        HRESULT result = ImportApiWinMM::joyGetDevCapsW((UINT_PTR)realJoyID, pjc, cbjc);
 
         if (JOYERR_NOERROR == result)
             FillRegistryKeyStringW(pjc->szRegKey, _countof(pjc->szRegKey));
@@ -425,20 +573,23 @@ UINT WrapperJoyWinMM::JoyGetNumDevs(void)
     Initialize();
 
     // Number of controllers = number of XInput controllers + number of driver-reported controllers.
-    return _countof(controllers) + ImportApiWinMM::joyGetNumDevs();
+    return (UINT)joyIndexMap.size();
 }
 
 // ---------
 
 MMRESULT WrapperJoyWinMM::JoyGetPos(UINT uJoyID, LPJOYINFO pji)
 {
-    if (uJoyID < _countof(controllers))
+    Initialize();
+    const INT_PTR realJoyID = TranslateApplicationJoyIndex(uJoyID);
+    
+    if (realJoyID < 0)
     {
         // Querying an XInput controller.
-        Initialize();
+        const DWORD xJoyID = ((-realJoyID) - 1);
 
         SJoyStateData joyStateData;
-        MMRESULT result = FillDeviceState(uJoyID, &joyStateData);
+        MMRESULT result = FillDeviceState((UINT)xJoyID, &joyStateData);
         if (JOYERR_NOERROR != result)
             return result;
 
@@ -462,7 +613,7 @@ MMRESULT WrapperJoyWinMM::JoyGetPos(UINT uJoyID, LPJOYINFO pji)
     else
     {
         // Querying a non-XInput controller.
-        return ImportApiWinMM::joyGetPos(uJoyID - _countof(controllers), pji);
+        return ImportApiWinMM::joyGetPos((UINT_PTR)realJoyID, pji);
     }
 }
 
@@ -470,17 +621,20 @@ MMRESULT WrapperJoyWinMM::JoyGetPos(UINT uJoyID, LPJOYINFO pji)
 
 MMRESULT WrapperJoyWinMM::JoyGetPosEx(UINT uJoyID, LPJOYINFOEX pji)
 {
-    if (uJoyID < _countof(controllers))
+    Initialize();
+    const INT_PTR realJoyID = TranslateApplicationJoyIndex(uJoyID);
+    
+    if (realJoyID < 0)
     {
         // Querying an XInput controller.
-        Initialize();
+        const DWORD xJoyID = ((-realJoyID) - 1);
 
         // Check for the correct structure size.
         if (sizeof(*pji) != pji->dwSize)
             return JOYERR_PARMS;
 
         SJoyStateData joyStateData;
-        MMRESULT result = FillDeviceState(uJoyID, &joyStateData);
+        MMRESULT result = FillDeviceState((UINT)xJoyID, &joyStateData);
         if (JOYERR_NOERROR != result)
             return result;
 
@@ -506,7 +660,7 @@ MMRESULT WrapperJoyWinMM::JoyGetPosEx(UINT uJoyID, LPJOYINFOEX pji)
     else
     {
         // Querying a non-XInput controller.
-        return ImportApiWinMM::joyGetPosEx(uJoyID - _countof(controllers), pji);
+        return ImportApiWinMM::joyGetPosEx((UINT_PTR)realJoyID, pji);
     }
 }
 
@@ -514,18 +668,20 @@ MMRESULT WrapperJoyWinMM::JoyGetPosEx(UINT uJoyID, LPJOYINFOEX pji)
 
 MMRESULT WrapperJoyWinMM::JoyGetThreshold(UINT uJoyID, LPUINT puThreshold)
 {
-    if (uJoyID < _countof(controllers))
+    Initialize();
+    const INT_PTR realJoyID = TranslateApplicationJoyIndex(uJoyID);
+    
+    if (realJoyID < 0)
     {
         // Querying an XInput controller.
-        Initialize();
-
+        
         // Operation not supported.
         return JOYERR_NOCANDO;
     }
     else
     {
         // Querying a non-XInput controller.
-        return ImportApiWinMM::joyGetThreshold(uJoyID - _countof(controllers), puThreshold);
+        return ImportApiWinMM::joyGetThreshold((UINT_PTR)realJoyID, puThreshold);
     }
 }
 
@@ -533,18 +689,20 @@ MMRESULT WrapperJoyWinMM::JoyGetThreshold(UINT uJoyID, LPUINT puThreshold)
 
 MMRESULT WrapperJoyWinMM::JoyReleaseCapture(UINT uJoyID)
 {
-    if (uJoyID < _countof(controllers))
+    Initialize();
+    const INT_PTR realJoyID = TranslateApplicationJoyIndex(uJoyID);
+    
+    if (realJoyID < 0)
     {
         // Querying an XInput controller.
-        Initialize();
-
+        
         // Operation not supported.
         return JOYERR_NOCANDO;
     }
     else
     {
         // Querying a non-XInput controller.
-        return ImportApiWinMM::joyReleaseCapture(uJoyID - _countof(controllers));
+        return ImportApiWinMM::joyReleaseCapture((UINT_PTR)realJoyID);
     }
 }
 
@@ -552,18 +710,20 @@ MMRESULT WrapperJoyWinMM::JoyReleaseCapture(UINT uJoyID)
 
 MMRESULT WrapperJoyWinMM::JoySetCapture(HWND hwnd, UINT uJoyID, UINT uPeriod, BOOL fChanged)
 {
-    if (uJoyID < _countof(controllers))
+    Initialize();
+    const INT_PTR realJoyID = TranslateApplicationJoyIndex(uJoyID);
+    
+    if (realJoyID < 0)
     {
         // Querying an XInput controller.
-        Initialize();
-
+        
         // Operation not supported.
         return JOYERR_NOCANDO;
     }
     else
     {
         // Querying a non-XInput controller.
-        return ImportApiWinMM::joySetCapture(hwnd, uJoyID - _countof(controllers), uPeriod, fChanged);
+        return ImportApiWinMM::joySetCapture(hwnd, (UINT_PTR)realJoyID, uPeriod, fChanged);
     }
 }
 
@@ -571,17 +731,19 @@ MMRESULT WrapperJoyWinMM::JoySetCapture(HWND hwnd, UINT uJoyID, UINT uPeriod, BO
 
 MMRESULT WrapperJoyWinMM::JoySetThreshold(UINT uJoyID, UINT uThreshold)
 {
-    if (uJoyID < _countof(controllers))
+    Initialize();
+    const INT_PTR realJoyID = TranslateApplicationJoyIndex(uJoyID);
+    
+    if (realJoyID < 0)
     {
         // Querying an XInput controller.
-        Initialize();
-
+        
         // Operation not supported.
         return JOYERR_NOCANDO;
     }
     else
     {
         // Querying a non-XInput controller.
-        return ImportApiWinMM::joySetThreshold(uJoyID - _countof(controllers), uThreshold);
+        return ImportApiWinMM::joySetThreshold((UINT_PTR)realJoyID, uThreshold);
     }
 }
