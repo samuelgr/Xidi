@@ -18,6 +18,8 @@
 #include "Log.h"
 #include "TestApp.h"
 
+#include <RegStr.h>
+
 using namespace Xidi;
 
 
@@ -29,6 +31,58 @@ using namespace Xidi;
 #else
 #define ExportApiWinMMJoyGetDevCaps             ExportApiWinMMJoyGetDevCapsA
 #endif
+
+
+// -------- HELPERS -------------------------------------------------------- //
+
+// Retrieves the controller name from the registry for the specified controller index.
+// Returns the number of characters written, with zero indicating an error.
+size_t GetJoystickName(UINT index, TCHAR* buf, size_t count)
+{
+    // Sanity check.
+    if (ExportApiWinMMJoyGetNumDevs() <= index)
+        return 0;
+
+    // Get the registry key name.
+    JOYCAPS joyCaps;
+    if (JOYERR_NOERROR != ExportApiWinMMJoyGetDevCaps((UINT_PTR)-1, &joyCaps, sizeof(joyCaps)))
+        return 0;
+
+    // Open the correct registry key to determine the location to look for the joystick's actual OEM name.
+    HKEY registryKey;
+    TCHAR registryPath[1024];
+    _stprintf_s(registryPath, _countof(registryPath), REGSTR_PATH_JOYCONFIG _T("\\%s\\") REGSTR_KEY_JOYCURR, joyCaps.szRegKey);
+    
+    LRESULT result = RegCreateKeyEx(HKEY_CURRENT_USER, registryPath, 0, NULL, REG_OPTION_VOLATILE, KEY_QUERY_VALUE, NULL, &registryKey, NULL);
+    if (ERROR_SUCCESS != result)
+        return 0;
+
+    // Figure out the identifying string for the joystick, which specifies where to look for its actual OEM name.
+    TCHAR registryValueName[64];
+    _stprintf_s(registryValueName, _countof(registryValueName), REGSTR_VAL_JOYNOEMNAME, ((int)index + 1));
+
+    TCHAR registryValueData[256];
+    DWORD registryValueSize = sizeof(registryValueData);
+    
+    result = RegGetValue(registryKey, NULL, registryValueName, RRF_RT_REG_SZ, NULL, registryValueData, &registryValueSize);
+    RegCloseKey(registryKey);
+
+    if (ERROR_SUCCESS != result)
+        return 0;
+
+    // Open the correct registry key to look for the joystick's OEM name.
+    _stprintf_s(registryPath, _countof(registryPath), REGSTR_PATH_JOYOEM _T("\\%s"), registryValueData);
+    
+    result = RegCreateKeyEx(HKEY_CURRENT_USER, registryPath, 0, NULL, REG_OPTION_VOLATILE, KEY_QUERY_VALUE, NULL, &registryKey, NULL);
+    if (ERROR_SUCCESS != result)
+        return 0;
+
+    // Read the joystick's OEM name.
+    registryValueSize = (DWORD)count * sizeof(TCHAR);
+    result = RegGetValue(registryKey, NULL, REGSTR_VAL_JOYOEMNAME, RRF_RT_REG_SZ, NULL, buf, &registryValueSize);
+
+    return (ERROR_SUCCESS == result ? registryValueSize / sizeof(TCHAR) : 0);
+}
 
 
 // -------- FUNCTIONS ------------------------------------------------------ //
@@ -61,6 +115,7 @@ int RunTestApp(int argc, char* argv[])
     }
     
     // Enumerate all the devices attached to the system.
+    tout << _T("Driver reports ") << numJoysticks << _T(" joysticks are available.") << endl << endl;
     tout << _T("Begin enumerating devices via joyGetDevCaps") << endl;
     
     UINT devIdx = numJoysticks;
@@ -71,12 +126,21 @@ int RunTestApp(int argc, char* argv[])
         result = ExportApiWinMMJoyGetDevCaps(i, &joyCaps, sizeof(joyCaps));
         if (JOYERR_NOERROR == result)
         {
-            tout << _T("    Joystick detected at ") << i;
-            if (i < devIdx)
+            TCHAR joystickName[1024];
+            
+            if (0 == GetJoystickName(i, joystickName, _countof(joystickName)))
+                tout << _T("    Joystick \"(unknown)\" detected at ") << i;
+            else
             {
-                devIdx = i;
-                tout << _T(", selected");
+                tout << _T("    Joystick \"") << joystickName << _T("\" detected at ") << i;
+
+                if ((i < devIdx) && (NULL != _tcsstr(joystickName, _T("Xidi: "))))
+                {
+                    devIdx = i;
+                    tout << _T(", selected");
+                }
             }
+            
             tout << endl;
         }
     }

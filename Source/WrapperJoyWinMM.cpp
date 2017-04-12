@@ -190,11 +190,9 @@ void WrapperJoyWinMM::CreateSystemDeviceInfo(void)
 
     TCHAR registryPath[1024];
     _stprintf_s(registryPath, _countof(registryPath), REGSTR_PATH_JOYCONFIG _T("\\%s\\") REGSTR_KEY_JOYCURR, joyCaps.szRegKey);
-
     if (ERROR_SUCCESS != RegCreateKeyEx(HKEY_CURRENT_USER, registryPath, 0, NULL, REG_OPTION_VOLATILE, KEY_QUERY_VALUE, NULL, &registryKey, NULL))
         return;
-
-
+    
     // For each joystick device available in the system, see if it is present and, if so, get its device identifier (vendor ID and product ID string).
     for (size_t i = 0; i < numDevicesFromSystem; ++i)
     {
@@ -427,6 +425,13 @@ MMRESULT WrapperJoyWinMM::JoyConfigChanged(DWORD dwFlags)
 
 MMRESULT WrapperJoyWinMM::JoyGetDevCapsA(UINT_PTR uJoyID, LPJOYCAPSA pjc, UINT cbjc)
 {
+    // Special case: index is specified as -1, which the API says just means fill in the registry key.
+    if ((UINT_PTR)-1 == uJoyID)
+    {
+        FillRegistryKeyStringA(pjc->szRegKey, _countof(pjc->szRegKey));
+        return JOYERR_NOERROR;
+    }
+    
     Initialize();
     const int realJoyID = TranslateApplicationJoyIndex((UINT)uJoyID);
     
@@ -499,6 +504,13 @@ MMRESULT WrapperJoyWinMM::JoyGetDevCapsA(UINT_PTR uJoyID, LPJOYCAPSA pjc, UINT c
 
 MMRESULT WrapperJoyWinMM::JoyGetDevCapsW(UINT_PTR uJoyID, LPJOYCAPSW pjc, UINT cbjc)
 {
+    // Special case: index is specified as -1, which the API says just means fill in the registry key.
+    if ((UINT_PTR)-1 == uJoyID)
+    {
+        FillRegistryKeyStringW(pjc->szRegKey, _countof(pjc->szRegKey));
+        return JOYERR_NOERROR;
+    }
+    
     Initialize();
     const int realJoyID = TranslateApplicationJoyIndex((UINT)uJoyID);
     
