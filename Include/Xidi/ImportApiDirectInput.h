@@ -24,7 +24,7 @@ namespace Xidi
     class ImportApiDirectInput
     {
     public:
-        // -------- TYPE DEFINITIONS ----------------------------------------------- //
+        // -------- TYPE DEFINITIONS --------------------------------------- //
         
         // Fields specify the addresses of the imported DirectInput API functions.
         struct SImportTable
@@ -44,7 +44,7 @@ namespace Xidi
         
         
     private:
-        // -------- CLASS VARIABLES ------------------------------------------------ //
+        // -------- CLASS VARIABLES ---------------------------------------- //
 
         // Holds the imported DirectInput API function addresses.
         static SImportTable importTable;
@@ -53,14 +53,14 @@ namespace Xidi
         static BOOL importTableIsInitialized;
 
         
-        // -------- CONSTRUCTION AND DESTRUCTION ----------------------------------- //
+        // -------- CONSTRUCTION AND DESTRUCTION --------------------------- //
 
         // Default constructor. Should never be invoked.
-        ImportApiDirectInput();
+        ImportApiDirectInput(void);
 
 
     public:
-        // -------- CLASS METHODS -------------------------------------------------- //
+        // -------- CLASS METHODS ------------------------------------------ //
         
         // Dynamically loads the DirectInput library and sets up all imported function calls.
         // Returns S_OK on success and E_FAIL on failure.
@@ -94,7 +94,7 @@ namespace Xidi
         
         
     private:
-        // -------- HELPERS -------------------------------------------------------- //
+        // -------- HELPERS ------------------------------------------------ //
 
         // Logs a warning event related to failure to import a particular function from the import library.
         static void LogImportFailed(LPCTSTR functionName);

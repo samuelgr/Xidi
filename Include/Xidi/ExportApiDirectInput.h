@@ -15,8 +15,8 @@
 #include "ApiDirectInput.h"
 
 
- // -------- DLL EXPORT FUNCTIONS ------------------------------------------- //
- // See DirectInput and COM documentation for more information.
+// -------- DLL EXPORT FUNCTIONS ------------------------------------------- //
+// See DirectInput and COM documentation for more information.
 
 #if DIRECTINPUT_VERSION >= 0x0800
 HRESULT WINAPI ExportApiDirectInputDirectInput8Create(HINSTANCE hinst, DWORD dwVersion, REFIID riidltf, LPVOID* ppvOut, LPUNKNOWN punkOuter);

@@ -24,7 +24,7 @@ WrapperIDirectInputDevice::WrapperIDirectInputDevice(BOOL useUnicode, XInputCont
 
 // ---------
 
-WrapperIDirectInputDevice::~WrapperIDirectInputDevice()
+WrapperIDirectInputDevice::~WrapperIDirectInputDevice(void)
 {
     delete controller;
     delete mapper;

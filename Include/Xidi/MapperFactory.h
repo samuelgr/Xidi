@@ -19,7 +19,7 @@
 
 namespace Xidi
 {
-    // Enumerates the known types of mappers that can be created.
+    /// Enumerates the known types of mappers that can be created.
     enum EMapper
     {
         DefaultMapper,
@@ -29,54 +29,57 @@ namespace Xidi
         ExtendedGamepadMapper
     };
     
-    // Creates and returns pointers to new mapper objects on request.
-    // Intended to be used along with other logic that configures the types of mappers that should be created.
-    // Specifies a default mapper type but allows a configuration change that would alter the type of mappers returned.
-    // All methods are class methods.
+    /// Creates and returns pointers to new mapper objects on request.
+    /// Intended to be used along with other logic that configures the types of mappers that should be created.
+    /// Specifies a default mapper type but allows a configuration change that would alter the type of mappers returned.
+    /// All methods are class methods.
     class MapperFactory
     {
     public:
-        // -------- CONSTANTS ------------------------------------------------------ //
+        // -------- CONSTANTS ---------------------------------------------- //
         
-        // Specifies the default mapper type that, absent any other changes, will be created upon request.
+        /// Specifies the default mapper type that, absent any other changes, will be created upon request.
         static const EMapper kDefaultMapperType = EMapper::StandardGamepadMapper;
         
         
     private:
-        // -------- CLASS VARIABLES ------------------------------------------------ //
+        // -------- CLASS VARIABLES ---------------------------------------- //
         
-        // Specifies the currently-configured mapper type.
+        /// Specifies the currently-configured mapper type.
         static EMapper configuredMapperType;
 
-        // Maps strings to mapper types.
-        // Used for accepting configuration setting values.
+        /// Maps strings to mapper types.
+        /// Used for accepting configuration setting values.
         static std::unordered_map<StdString, EMapper> mapperTypeStrings;
         
         
-        // -------- CONSTRUCTION AND DESTRUCTION ----------------------------------- //
+        // -------- CONSTRUCTION AND DESTRUCTION --------------------------- //
         
-        // Default constructor. Should never be invoked.
-        MapperFactory();
+        /// Default constructor. Should never be invoked.
+        MapperFactory(void);
         
         
     public:
-        // -------- CLASS METHODS -------------------------------------------------- //
+        // -------- CLASS METHODS ------------------------------------------ //
         
-        // Applies a configuration setting that configures the type of mapper to create.
+        /// Applies a configuration setting that configures the type of mapper to create.
+        /// @param [in] value Setting value to be applied.
+        /// @return `true` if setting could be applied, `false` otherwise.
         static bool ApplyConfigurationMapperType(const StdString& value);
         
-        // Creates a new mapper of the configured type, using the "new" operator.
-        // Returns NULL in the event of an error (i.e. invalid or unrecognized configured type).
+        /// Creates a new mapper of the configured type, using the `new` operator.
+        /// @return Pointer to the newly-created mapper, or `NULL` in the event of an error.
         static Mapper::Base* CreateMapper(void);
 
-        // Creates a new mapper of the specified type, using the "new" operator.
-        // Returns NULL in the event of an error (i.e. invalid or unrecognized type).
+        /// Creates a new mapper of the specified type, using the `new` operator.
+        /// @return Pointer to the newly-created mapper, or `NULL` in the event of an error.
         static Mapper::Base* CreateMapperOfType(EMapper type);
         
-        // Resets the mapper configuration to default.
+        /// Resets the mapper configuration to default.
         static void ResetMapperType(void);
         
-        // Configures a new type of mapper to create.
+        /// Configures a new type of mapper to create.
+        /// @param [in] type Mapper type to configure.
         static void SetMapperType(EMapper type);
     };
 }

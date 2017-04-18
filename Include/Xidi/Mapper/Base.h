@@ -138,10 +138,10 @@ namespace Xidi
             // -------- CONSTRUCTION AND DESTRUCTION ----------------------- //
             
             /// Default constructor.
-            Base();
+            Base(void);
             
             /// Default destructor.
-            virtual ~Base();
+            virtual ~Base(void);
             
             
             // -------- CLASS METHODS -------------------------------------- //

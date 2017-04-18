@@ -72,7 +72,7 @@ namespace Xidi
         // -------- CONSTRUCTION AND DESTRUCTION ----------------------------------- //
         
         // Default constructor. Should never be invoked.
-        WrapperJoyWinMM();
+        WrapperJoyWinMM(void);
         
         
         // -------- CLASS METHODS -------------------------------------------------- //

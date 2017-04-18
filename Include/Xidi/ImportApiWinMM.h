@@ -23,7 +23,7 @@ namespace Xidi
     class ImportApiWinMM
     {
     public:
-        // -------- TYPE DEFINITIONS ----------------------------------------------- //
+        // -------- TYPE DEFINITIONS --------------------------------------- //
 
         // Fields specify the addresses of the imported DirectInput API functions.
         struct SImportTable
@@ -173,7 +173,7 @@ namespace Xidi
         
         
     private:
-        // -------- CLASS VARIABLES ------------------------------------------------ //
+        // -------- CLASS VARIABLES ---------------------------------------- //
 
         // Holds the imported DirectInput API function addresses.
         static SImportTable importTable;
@@ -182,14 +182,14 @@ namespace Xidi
         static BOOL importTableIsInitialized;
 
 
-        // -------- CONSTRUCTION AND DESTRUCTION ----------------------------------- //
+        // -------- CONSTRUCTION AND DESTRUCTION --------------------------- //
 
         // Default constructor. Should never be invoked.
         ImportApiWinMM();
 
 
     public:
-        // -------- CLASS METHODS -------------------------------------------------- //
+        // -------- CLASS METHODS ------------------------------------------ //
 
         // Dynamically loads the WinMM library and sets up all imported function calls.
         // Returns MMSYSERR_NOERROR on success and MMSYSERR_ERROR on failure.
@@ -587,7 +587,7 @@ namespace Xidi
         
         
     private:
-        // -------- HELPERS -------------------------------------------------------- //
+        // -------- HELPERS ------------------------------------------------ //
 
         // Logs a debug event related to attempting to load the system-provided library for importing functions.
         static void LogInitializeLibraryPath(LPCTSTR libraryPath);

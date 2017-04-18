@@ -5,7 +5,7 @@
  * Authored by Samuel Grossman
  * Copyright (c) 2016-2017
  *************************************************************************//**
- * @file XInputControllerIdentification.cpp
+ * @file ControllerIdentification.cpp
  *   Implementation of helpers for identifying and enumerating
  *   XInput-based game controllers.
  *****************************************************************************/

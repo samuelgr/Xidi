@@ -30,6 +30,7 @@
     <ClInclude Include="Include\Xidi\ApiCharacterType.h" />
     <ClInclude Include="Include\Xidi\ApiDirectInput.h" />
     <ClInclude Include="Include\Xidi\ApiGUID.h" />
+    <ClInclude Include="Include\Xidi\ApiIOStream.h" />
     <ClInclude Include="Include\Xidi\ApiStdString.h" />
     <ClInclude Include="Include\Xidi\ApiWindows.h" />
     <ClInclude Include="Include\Xidi\Configuration.h" />
@@ -44,12 +45,6 @@
     <ClInclude Include="Include\Xidi\ControllerIdentification.h" />
     <ClInclude Include="Include\Xidi\ImportApiDirectInput.h" />
     <ClInclude Include="Include\Xidi\Mapper\Base.h" />
-    <ClInclude Include="Include\Xidi\TestApp.h">
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</ExcludedFromBuild>
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
-    </ClInclude>
     <ClInclude Include="Include\Xidi\WrapperIDirectInput.h" />
     <ClInclude Include="Include\Xidi\WrapperIDirectInputDevice.h" />
     <ClInclude Include="Include\Xidi\XInputController.h" />

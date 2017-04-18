@@ -29,7 +29,7 @@ XInputController::XInputController(DWORD xinputUserIndex) : bufferedEvents(), bu
 
 // ---------
 
-XInputController::~XInputController()
+XInputController::~XInputController(void)
 {
     ClearBufferedEvents();
     

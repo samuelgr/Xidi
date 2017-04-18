@@ -24,11 +24,11 @@ using namespace Xidi::Mapper;
 // -------- CONSTRUCTION AND DESTRUCTION ----------------------------------- //
 // See "Mapper/Base.h" for documentation.
 
-Base::Base() : axisProperties(NULL), cachedValueXInputLT(XInputController::kTriggerNeutral), cachedValueXInputRT(XInputController::kTriggerNeutral), dataPacketSize(0), instanceToOffset(), mapsValid(FALSE), offsetToInstance(), povOffsetsToInitialize() {}
+Base::Base(void) : axisProperties(NULL), cachedValueXInputLT(XInputController::kTriggerNeutral), cachedValueXInputRT(XInputController::kTriggerNeutral), dataPacketSize(0), instanceToOffset(), mapsValid(FALSE), offsetToInstance(), povOffsetsToInitialize() {}
 
 // ---------
 
-Base::~Base()
+Base::~Base(void)
 {
     instanceToOffset.clear();
     offsetToInstance.clear();

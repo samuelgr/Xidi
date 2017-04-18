@@ -5,16 +5,13 @@
  * Authored by Samuel Grossman
  * Copyright (c) 2016-2017
  *************************************************************************//**
- * @file TestApp.h
- *   Common declarations and helpers for all versions of the test app.
+ * @file ApiIOStream.h
+ *   Common header file for specifying wide or narrow I/O stream objects.
  *****************************************************************************/
 
 #pragma once
 
-#include <cstdlib>
 #include <iostream>
-
-using namespace std;
 
 
 // -------- MACROS --------------------------------------------------------- //

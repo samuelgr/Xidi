@@ -129,7 +129,7 @@ namespace Xidi
         // -------- CONSTRUCTION AND DESTRUCTION --------------------------- //
 
         /// Default constructor. Should never be invoked.
-        XInputController();
+        XInputController(void);
         
     public:
         /// Constructs a new controller object given the index (0 to 3) of the controller with which to interface.
@@ -137,7 +137,7 @@ namespace Xidi
         XInputController(DWORD xinputUserIndex);
 
         /// Default destructor.
-        virtual ~XInputController();
+        virtual ~XInputController(void);
         
         
         // -------- CLASS METHODS ------------------------------------------ //

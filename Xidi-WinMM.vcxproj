@@ -45,7 +45,7 @@
     <ClInclude Include="Include\Xidi\Mapper\StandardGamepad.h" />
     <ClInclude Include="Include\Xidi\ControllerIdentification.h" />
     <ClInclude Include="Include\Xidi\Mapper\Base.h" />
-    <ClInclude Include="Include\Xidi\TestApp.h">
+    <ClInclude Include="Include\Xidi\ApiIOStream.h">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>

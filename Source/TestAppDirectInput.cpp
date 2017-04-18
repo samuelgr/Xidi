@@ -11,6 +11,7 @@
  *****************************************************************************/
 
 #include "ApiDirectInput.h"
+#include "ApiIOStream.h"
 #include "Configuration.h"
 #include "ControllerIdentification.h"
 #include "ExportApiDirectInput.h"
@@ -18,9 +19,9 @@
 #include "ImportApiDirectInput.h"
 #include "Log.h"
 #include "MapperFactory.h"
-#include "TestApp.h"
 #include "Mapper/Base.h"
 
+using namespace std;
 using namespace Xidi;
 
 

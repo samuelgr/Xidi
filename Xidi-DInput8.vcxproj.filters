@@ -57,9 +57,6 @@
     <ClInclude Include="Include\Xidi\ImportApiDirectInput.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="Include\Xidi\TestApp.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="Include\Xidi\MapperFactory.h">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -88,6 +85,9 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="Include\Xidi\ApiGUID.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Include\Xidi\ApiIOStream.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

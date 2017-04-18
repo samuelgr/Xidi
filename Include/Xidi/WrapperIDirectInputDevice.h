@@ -43,14 +43,14 @@ namespace Xidi
         // -------- CONSTRUCTION AND DESTRUCTION ----------------------------------- //
         
         // Default constructor. Should never be invoked.
-        WrapperIDirectInputDevice();
+        WrapperIDirectInputDevice(void);
         
     public:
         // Constructs a WrapperIDirectInput object, given a mapper and a controller.
         WrapperIDirectInputDevice(BOOL useUnicode, XInputController* controller, Mapper::Base* mapper);
 
         // Default destructor.
-        virtual ~WrapperIDirectInputDevice();
+        virtual ~WrapperIDirectInputDevice(void);
         
         
     public:

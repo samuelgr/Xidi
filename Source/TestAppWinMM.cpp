@@ -10,16 +10,17 @@
  *      for testing the functionality of this library via WinMM.
  *****************************************************************************/
 
+#include "ApiIOStream.h"
 #include "ApiWindows.h"
 #include "Configuration.h"
 #include "ExportApiWinMM.h"
 #include "Globals.h"
 #include "ImportApiWinMM.h"
 #include "Log.h"
-#include "TestApp.h"
 
 #include <RegStr.h>
 
+using namespace std;
 using namespace Xidi;
 
 

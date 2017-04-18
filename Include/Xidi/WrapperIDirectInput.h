@@ -45,7 +45,7 @@ namespace Xidi
         // -------- CONSTRUCTION AND DESTRUCTION ----------------------------------- //
         
         // Default constructor. Should never be invoked.
-        WrapperIDirectInput();
+        WrapperIDirectInput(void);
 
     public:
         // Constructs an WrapperIDirectInput object, given an underlying IDirectInput8 object to wrap.

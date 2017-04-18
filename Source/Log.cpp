@@ -120,20 +120,20 @@ void Log::InitializeAndCreateLog(void)
         
         // Header part 1: Xidi version name.
         LoadString(Globals::GetInstanceHandle(), IDS_XIDI_VERSION_NAME, logHeaderStringBuffer, _countof(logHeaderStringBuffer));
-        OutputLogMessage(logHeaderStringBuffer);
-        OutputLogMessage(_T("\n"));
+        OutputText(logHeaderStringBuffer);
+        OutputText(_T("\n"));
 
         // Header part 2: application file name
         if (0 != GetModuleFileName(NULL, logHeaderStringBuffer, _countof(logHeaderStringBuffer)))
         {
-            OutputLogMessage(logHeaderStringBuffer);
-            OutputLogMessage(_T("\n"));
+            OutputText(logHeaderStringBuffer);
+            OutputText(_T("\n"));
         }
 
         // Header part 3: separator
         LoadString(Globals::GetInstanceHandle(), IDS_XIDI_LOG_FILE_SEPARATOR, logHeaderStringBuffer, _countof(logHeaderStringBuffer));
-        OutputLogMessage(logHeaderStringBuffer);
-        OutputLogMessage(_T("\n"));
+        OutputText(logHeaderStringBuffer);
+        OutputText(_T("\n"));
     }
 }
 
@@ -217,8 +217,8 @@ bool Log::IsLogReady(void)
 void Log::LogLineOutputString(ELogLevel severity, LPTSTR message)
 {
     OutputStamp(severity);
-    OutputLogMessage(message);
-    OutputLogMessage(_T("\n"));
+    OutputText(message);
+    OutputText(_T("\n"));
 }
 
 // ---------
@@ -226,13 +226,13 @@ void Log::LogLineOutputString(ELogLevel severity, LPTSTR message)
 void Log::LogLineOutputFormat(ELogLevel severity, LPTSTR format, va_list args)
 {
     OutputStamp(severity);
-    OutputFormattedLogMessage(format, args);
-    OutputLogMessage(_T("\n"));
+    OutputFormattedText(format, args);
+    OutputText(_T("\n"));
 }
 
 // ---------
 
-void Log::OutputFormattedLogMessage(LPTSTR format, va_list args)
+void Log::OutputFormattedText(LPTSTR format, va_list args)
 {
     if (!IsLogReady())
         InitializeAndCreateLog();
@@ -246,7 +246,7 @@ void Log::OutputFormattedLogMessage(LPTSTR format, va_list args)
 
 // ---------
 
-void Log::OutputLogMessage(LPTSTR message)
+void Log::OutputText(LPTSTR message)
 {
     if (!IsLogReady())
         InitializeAndCreateLog();
@@ -265,23 +265,23 @@ void Log::OutputStamp(ELogLevel severity)
     TCHAR stampStringBuffer[1024];
 
     // Stamp part 1: open square bracket
-    OutputLogMessage(_T("["));
+    OutputText(_T("["));
 
     // Stamp part 2: date
     if (0 != GetDateFormat(LOCALE_NAME_USER_DEFAULT, DATE_SHORTDATE, NULL, NULL, stampStringBuffer, _countof(stampStringBuffer)))
     {
-        OutputLogMessage(stampStringBuffer);
-        OutputLogMessage(_T(" "));
+        OutputText(stampStringBuffer);
+        OutputText(_T(" "));
     }
 
     // Stamp part 3: time
     if (0 != GetTimeFormat(LOCALE_NAME_USER_DEFAULT, 0, NULL, NULL, stampStringBuffer, _countof(stampStringBuffer)))
     {
-        OutputLogMessage(stampStringBuffer);
+        OutputText(stampStringBuffer);
     }
 
     // Stamp part 4: separation between date/time and severity
-    OutputLogMessage(_T("]("));
+    OutputText(_T("]("));
     
     // Stamp part 5: severity
     switch (severity)
@@ -310,10 +310,10 @@ void Log::OutputStamp(ELogLevel severity)
         LoadString(Globals::GetInstanceHandle(), IDS_XIDI_LOG_SEVERITY_UNKNOWN, stampStringBuffer, _countof(stampStringBuffer));
         break;
     }
-    OutputLogMessage(stampStringBuffer);
+    OutputText(stampStringBuffer);
 
     // Stamp part 6: close round bracket and space to the actual message
-    OutputLogMessage(_T(") "));
+    OutputText(_T(") "));
 }
 
 // ---------
