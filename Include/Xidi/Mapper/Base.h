@@ -346,7 +346,7 @@ namespace Xidi
             BOOL IsApplicationDataFormatSet(void);
             
             /// Specifies if the DirectInput device property identified by the specified GUID is one that the mapper handles.
-            /// @param [in] GUID of the property of interest.
+            /// @param [in] guidProperty GUID of the property of interest.
             /// @return `TRUE` if the mapper handles the specified property, `FALSE` otherwise.
             BOOL IsPropertyHandledByMapper(REFGUID guidProperty);
             
@@ -361,7 +361,7 @@ namespace Xidi
             LONG OffsetForXInputControllerElement(EXInputControllerElement xElement);
             
             /// Parses an application-supplied DirectInput data format and sets internal data structures accordingly.
-            /// @param [in] Data format specification. Refer to DirectInput documentation for more information.
+            /// @param [in] lpdf Data format specification. Refer to DirectInput documentation for more information.
             /// @return `DI_OK` on success, `DIERR_INVALIDPARAM` if the data format was rejected.
             HRESULT SetApplicationDataFormat(LPCDIDATAFORMAT lpdf);
 
@@ -424,7 +424,7 @@ namespace Xidi
             /// XInput triggers, however, may map to either DirectInput axes or DirectInput buttons.
             /// Subclasses may return a negative value if they wish to omit the particular XInput controller element from the mapping, in which case the application will not receive any updates for that XInput controller element.
             /// Must be implemented by subclasses.
-            /// @param [in] XInput controller element being queried.
+            /// @param [in] element XInput controller element being queried.
             /// @return Instance type and index to which the specified controller element should be mapped.
             virtual const TInstance MapXInputElementToDirectInputInstance(EXInputControllerElement element) = 0;
             
@@ -443,7 +443,7 @@ namespace Xidi
             /// Otherwise return a positive value; it is an error to return 0.
             /// The default implementation maps LT to the positive direction and RT to the negative direction; this is the default behavior of an Xbox 360 controller when accessed over DirectInput.
             /// May be overridden by subclasses if the default behavior is unsuitable.
-            /// @param [in] XInput controller element that specifies which of the LT or RT triggers are being queried.
+            /// @param [in] trigger XInput controller element that specifies which of the LT or RT triggers are being queried.
             /// @return Value, either positive or negative but not zero, indicating the desired direction of the specified trigger on the shared axis.
             virtual LONG XInputTriggerSharedAxisDirection(EXInputControllerElement trigger);
         };

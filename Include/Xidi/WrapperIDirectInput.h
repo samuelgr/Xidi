@@ -16,14 +16,14 @@
 
 namespace Xidi
 {
-    // Wraps the IDirectInput8 interface to hook into all calls to it.
-    // Holds an underlying instance of an IDirectInput object but wraps all method invocations.
+    /// Wraps the IDirectInput8 interface to hook into all calls to it.
+    /// Holds an underlying instance of an IDirectInput object but wraps all method invocations.
     struct WrapperIDirectInput : LatestIDirectInput
     {
     private:
         // -------- TYPE DEFINITIONS ----------------------------------------------- //
 
-        // Internal type, used to select between Unicode and non-Unicode representations of the underlying DirectInput interface.
+        /// Internal type, used to select between Unicode and non-Unicode representations of the underlying DirectInput interface.
         union UIDirectInput
         {
             LatestIDirectInputA* a;
@@ -34,49 +34,52 @@ namespace Xidi
 
         // -------- INSTANCE VARIABLES --------------------------------------------- //
         
-        // The underlying IDirectInput8 object that this instance wraps.
-        // Represented both in Unicode and non-Unicode form, with the correct version to be specified by the application.
+        /// The underlying IDirectInput8 object that this instance wraps.
+        /// Represented both in Unicode and non-Unicode form, with the correct version to be specified by the application.
         UIDirectInput underlyingDIObject;
 
-        // Specifies whether or not the underlying DirectInput object is Unicode-based.
+        /// Specifies whether or not the underlying DirectInput object is Unicode-based.
         BOOL underlyingDIObjectUsesUnicode;
         
         
         // -------- CONSTRUCTION AND DESTRUCTION ----------------------------------- //
         
-        // Default constructor. Should never be invoked.
+        /// Default constructor. Should never be invoked.
         WrapperIDirectInput(void);
 
     public:
-        // Constructs an WrapperIDirectInput object, given an underlying IDirectInput8 object to wrap.
+        /// Constructs an WrapperIDirectInput object, given an underlying IDirectInput8 object to wrap.
         WrapperIDirectInput(LatestIDirectInput* underlyingDIObject, BOOL underlyingDIObjectUsesUnicode);
         
         
     private:
         // -------- HELPERS -------------------------------------------------------- //
         
-        // Logs an informational event related to creating a non-XInput device.
+        /// Logs an informational event related to creating a non-XInput device.
         static void LogCreateDeviceNonXInput(void);
 
-        // Logs an informational event related to creating an XInput device.
+        /// Logs an informational event related to creating an XInput device.
+        /// @param [in] index XInput player index.
         static void LogCreateDeviceXInput(unsigned int index);
         
-        // Logs a debug event related to enumerating a device to the application.
+        /// Logs a debug event related to enumerating a device to the application.
+        /// @param [in] deviceName Name of the device being enumerated.
         static void LogEnumDevice(LPCTSTR deviceName);
 
-        // Logs a debug event related to stopping enumeration early.
+        /// Logs a debug event related to stopping enumeration early.
         static void LogEnumFinishEarly(void);
 
-        // Logs a debug event related to enumeration of an XInput-compatible device.
+        /// Logs a debug event related to enumeration of an XInput-compatible device.
+        /// @param [in] deviceName Name of the device being enumerated.
         static void LogEnumFoundXInputDevice(LPCTSTR deviceName);
 
-        // Logs a debug event related to enumerating Xidi-created virtual devices.
+        /// Logs a debug event related to enumerating Xidi-created virtual devices.
         static void LogEnumXidiDevices(void);
         
-        // Logs a debug event related to starting to enumerate devices.
+        /// Logs a debug event related to starting to enumerate devices.
         static void LogStartEnumDevices(void);
         
-        // Logs a debug event related to finishing to enumerate devices.
+        /// Logs a debug event related to finishing to enumerate devices.
         static void LogFinishEnumDevices(void);
         
 

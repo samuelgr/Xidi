@@ -18,38 +18,41 @@
 
 namespace Xidi
 {
-    // Wraps the IDirectInput interface to hook into all calls to it.
+    /// Wraps the IDirectInput interface to hook into all calls to it.
     struct WrapperIDirectInputDevice : LatestIDirectInputDevice
     {
     private:
         // -------- INSTANCE VARIABLES --------------------------------------------- //
         
-        // Controller with which to interface.
+        /// Controller with which to interface.
         XInputController* controller;
         
-        // Mapping scheme to be applied to the wrapped DirectInput device.
+        /// Mapping scheme to be applied to the wrapped DirectInput device.
         Mapper::Base* mapper;
 
-        // Specifies whether or not the device was polled since the last time its state was obtained.
+        /// Specifies whether or not the device was polled since the last time its state was obtained.
         BOOL polledSinceLastGetDeviceState;
 
-        // Reference count.
+        /// Reference count.
         DWORD refcount;
 
-        // Specifies whether or not to use Unicode (this depends on the application configuration).
+        /// Specifies whether or not to use Unicode (this depends on the application configuration).
         BOOL useUnicode;
         
         
         // -------- CONSTRUCTION AND DESTRUCTION ----------------------------------- //
         
-        // Default constructor. Should never be invoked.
+        /// Default constructor. Should never be invoked.
         WrapperIDirectInputDevice(void);
         
     public:
-        // Constructs a WrapperIDirectInput object, given a mapper and a controller.
+        /// Constructs a WrapperIDirectInput object, given a mapper and a controller.
+        /// @param [in] useUnicode Specifies if the object should use Unicode versions of methods.
+        /// @param [in] controller XInput controller object to associate with this object.
+        /// @param [in] mapper Mapper object to associate with this object.
         WrapperIDirectInputDevice(BOOL useUnicode, XInputController* controller, Mapper::Base* mapper);
 
-        // Default destructor.
+        /// Default destructor.
         virtual ~WrapperIDirectInputDevice(void);
         
         
