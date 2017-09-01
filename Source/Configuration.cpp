@@ -29,9 +29,9 @@ using namespace Xidi;
 // See "Configuration.h" for documentation.
 
 std::unordered_map<StdString, SConfigurationValueApplyInfo> Configuration::importSettings = {
-    {_T("dinput.dll"),                          {EConfigurationValueType::ConfigurationValueTypeString,     (void*)Globals::ApplyOverrideImportDirectInput}},
-    {_T("dinput8.dll"),                         {EConfigurationValueType::ConfigurationValueTypeString,     (void*)Globals::ApplyOverrideImportDirectInput8}},
-    {_T("winmm.dll"),                           {EConfigurationValueType::ConfigurationValueTypeString,     (void*)Globals::ApplyOverrideImportWinMM}},
+    {_T("dinput.dll"),                          {EConfigurationValueType::ConfigurationValueTypeString,     (void*)&Globals::ApplyOverrideImportDirectInput}},
+    {_T("dinput8.dll"),                         {EConfigurationValueType::ConfigurationValueTypeString,     (void*)&Globals::ApplyOverrideImportDirectInput8}},
+    {_T("winmm.dll"),                           {EConfigurationValueType::ConfigurationValueTypeString,     (void*)&Globals::ApplyOverrideImportWinMM}},
 };
 
 std::unordered_map<StdString, SConfigurationValueApplyInfo> Configuration::logSettings = {

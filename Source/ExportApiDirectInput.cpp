@@ -19,28 +19,26 @@ using namespace Xidi;
 
 // -------- HELPERS -------------------------------------------------------- //
 
-/// Logs a debug event indicating that an instance of IDirectInput(8) could not be created due to a version out-of-range error.
+/// Logs an error event indicating that an instance of IDirectInput(8) could not be created due to a version out-of-range error.
 /// @param [in] minVersion Minimum allowed version.
 /// @param [in] maxVersion Maximum allowed version.
 /// @param [in] receivedVersion Actual version received.
-/// @return `E_FAIL` unconditionally.
-static HRESULT LogVersionOutOfRange(DWORD minVersion, DWORD maxVersion, DWORD receivedVersion)
+inline static void LogVersionOutOfRange(DWORD minVersion, DWORD maxVersion, DWORD receivedVersion)
 {
-    Log::WriteFormattedLogMessageFromResource(ELogLevel::LogLevelDebug, IDS_XIDI_EXPORTAPIDIRECTINPUT_CREATE_FAILED_VERSION_FORMAT, minVersion, maxVersion, receivedVersion);
-    return E_FAIL;
+    Log::WriteFormattedLogMessageFromResource(ELogLevel::LogLevelError, IDS_XIDI_EXPORTAPIDIRECTINPUT_CREATE_FAILED_VERSION_FORMAT, minVersion, maxVersion, receivedVersion);
 }
 
-/// Logs a debug event indicating that an instance of IDirectInput(8) could not be created due to an error having been returned by the system.
+/// Logs an error event indicating that an instance of IDirectInput(8) could not be created due to an error having been returned by the system.
 /// @param [in] errorCode Error code returned by the system.
-static void LogSystemCreateError(HRESULT errorCode)
+inline static void LogSystemCreateError(HRESULT errorCode)
 {
-    Log::WriteFormattedLogMessageFromResource(ELogLevel::LogLevelDebug, IDS_XIDI_EXPORTAPIDIRECTINPUT_CREATE_FAILED_SYSTEM_FORMAT, errorCode);
+    Log::WriteFormattedLogMessageFromResource(ELogLevel::LogLevelError, IDS_XIDI_EXPORTAPIDIRECTINPUT_CREATE_FAILED_SYSTEM_FORMAT, errorCode);
 }
 
-/// Logs a debug event indicating that an instance of IDirectInput(8) was created successfully.
-static void LogSystemCreateSuccess(void)
+/// Logs an informational event indicating that an instance of IDirectInput(8) was created successfully.
+inline static void LogSystemCreateSuccess(void)
 {
-    Log::WriteLogMessageFromResource(ELogLevel::LogLevelDebug, IDS_XIDI_EXPORTAPIDIRECTINPUT_CREATE_SUCCEEDED);
+    Log::WriteLogMessageFromResource(ELogLevel::LogLevelInfo, IDS_XIDI_EXPORTAPIDIRECTINPUT_CREATE_SUCCEEDED);
 }
 
 
@@ -53,7 +51,10 @@ HRESULT WINAPI ExportApiDirectInputDirectInput8Create(HINSTANCE hinst, DWORD dwV
     IDirectInput8* diObject = NULL;
 
     if (dwVersion < DINPUT_VER_MIN || dwVersion > DINPUT_VER_MAX)
-        return LogVersionOutOfRange(DINPUT_VER_MIN, DINPUT_VER_MAX, dwVersion);
+    {
+        LogVersionOutOfRange(DINPUT_VER_MIN, DINPUT_VER_MAX, dwVersion);
+        return E_FAIL;
+    }
 
     HRESULT result = ImportApiDirectInput::DirectInput8Create(hinst, dwVersion, riidltf, (LPVOID*)&diObject, punkOuter);
     if (DI_OK != result)
@@ -74,7 +75,10 @@ HRESULT WINAPI ExportApiDirectInputDirectInputCreateA(HINSTANCE hinst, DWORD dwV
     IDirectInput* diObject = NULL;
 
     if (dwVersion < DINPUT_VER_MIN || dwVersion > DINPUT_VER_MAX)
-        return LogVersionOutOfRange(DINPUT_VER_MIN, DINPUT_VER_MAX, dwVersion);
+    {
+        LogVersionOutOfRange(DINPUT_VER_MIN, DINPUT_VER_MAX, dwVersion);
+        return E_FAIL;
+    }
 
     HRESULT result = ImportApiDirectInput::DirectInputCreateA(hinst, DIRECTINPUT_VERSION, (LPDIRECTINPUTA*)&diObject, punkOuter);
     if (DI_OK != result)
@@ -97,7 +101,10 @@ HRESULT WINAPI ExportApiDirectInputDirectInputCreateW(HINSTANCE hinst, DWORD dwV
     IDirectInput* diObject = NULL;
 
     if (dwVersion < DINPUT_VER_MIN || dwVersion > DINPUT_VER_MAX)
-        return LogVersionOutOfRange(DINPUT_VER_MIN, DINPUT_VER_MAX, dwVersion);
+    {
+        LogVersionOutOfRange(DINPUT_VER_MIN, DINPUT_VER_MAX, dwVersion);
+        return E_FAIL;
+    }
 
     HRESULT result = ImportApiDirectInput::DirectInputCreateW(hinst, DIRECTINPUT_VERSION, (LPDIRECTINPUTW*)&diObject, punkOuter);
     if (DI_OK != result)
@@ -120,7 +127,10 @@ HRESULT WINAPI ExportApiDirectInputDirectInputCreateEx(HINSTANCE hinst, DWORD dw
     IDirectInput* diObject = NULL;
 
     if (dwVersion < DINPUT_VER_MIN || dwVersion > DINPUT_VER_MAX)
-        return LogVersionOutOfRange(DINPUT_VER_MIN, DINPUT_VER_MAX, dwVersion);
+    {
+        LogVersionOutOfRange(DINPUT_VER_MIN, DINPUT_VER_MAX, dwVersion);
+        return E_FAIL;
+    }
 
     HRESULT result;
     BOOL useUnicode = FALSE;
