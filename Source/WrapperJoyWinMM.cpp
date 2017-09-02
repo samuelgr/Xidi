@@ -635,6 +635,8 @@ MMRESULT WrapperJoyWinMM::JoyGetDevCapsW(UINT_PTR uJoyID, LPJOYCAPSW pjc, UINT c
 
 UINT WrapperJoyWinMM::JoyGetNumDevs(void)
 {
+    Log::WriteFormattedLogMessageFromResource(ELogLevel::LogLevelDebug, IDS_XIDI_WRAPPERJOYWINMM_LOG_GLOBAL_OPERATION_FORMAT, "joyGetNumDevs");
+    
     Initialize();
 
     // Number of controllers = number of XInput controllers + number of driver-reported controllers.

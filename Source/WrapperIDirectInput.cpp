@@ -429,12 +429,18 @@ HRESULT STDMETHODCALLTYPE WrapperIDirectInput::CreateDeviceEx(REFGUID rguid, REF
     if (underlyingDIObjectUsesUnicode)
     {
         if (!(IsEqualIID(riid, IID_IDirectInputDevice2W) || IsEqualIID(riid, IID_IDirectInputDevice7W)))
+        {
+            Log::WriteLogMessageFromResource(ELogLevel::LogLevelWarning, IDS_XIDI_WRAPPERIDIRECTINPUT_CREATEDEVICEEX_INVALID_IID);
             return E_INVALIDARG;
+        }
     }
     else
     {
         if (!(IsEqualIID(riid, IID_IDirectInputDevice2A) || IsEqualIID(riid, IID_IDirectInputDevice7A)))
+        {
+            Log::WriteLogMessageFromResource(ELogLevel::LogLevelWarning, IDS_XIDI_WRAPPERIDIRECTINPUT_CREATEDEVICEEX_INVALID_IID);
             return E_INVALIDARG;
+        }
     }
 
     // Create a device the normal way.
