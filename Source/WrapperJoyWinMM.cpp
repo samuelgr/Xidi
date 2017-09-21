@@ -162,7 +162,7 @@ void WrapperJoyWinMM::CreateJoyIndexMap(void)
 
         for (int i = 0; i < (int)numXInputVirtualDevices; ++i)
         {
-            Log::WriteFormattedLogMessageFromResource(ELogLevel::LogLevelDebug, IDS_XIDI_WRAPPERJOYWINMM_MAP_DEVICE_XIDI_FORMAT, (unsigned int)joyIndexMap.size(), (unsigned int)i);
+            Log::WriteFormattedLogMessageFromResource(ELogLevel::LogLevelDebug, IDS_XIDI_WRAPPERJOYWINMM_MAP_DEVICE_XIDI_FORMAT, (unsigned int)joyIndexMap.size(), (unsigned int)(i + 1));
             joyIndexMap.push_back(-(i + 1));
         }
     }
@@ -173,7 +173,7 @@ void WrapperJoyWinMM::CreateJoyIndexMap(void)
 
         for (int i = 0; i < (int)numXInputVirtualDevices; ++i)
         {
-            Log::WriteFormattedLogMessageFromResource(ELogLevel::LogLevelDebug, IDS_XIDI_WRAPPERJOYWINMM_MAP_DEVICE_XIDI_FORMAT, (unsigned int)joyIndexMap.size(), (unsigned int)i);
+            Log::WriteFormattedLogMessageFromResource(ELogLevel::LogLevelDebug, IDS_XIDI_WRAPPERJOYWINMM_MAP_DEVICE_XIDI_FORMAT, (unsigned int)joyIndexMap.size(), (unsigned int)(i + 1));
             joyIndexMap.push_back(-(i + 1));
         }
 
@@ -467,13 +467,14 @@ MMRESULT WrapperJoyWinMM::JoyConfigChanged(DWORD dwFlags)
 
 MMRESULT WrapperJoyWinMM::JoyGetDevCapsA(UINT_PTR uJoyID, LPJOYCAPSA pjc, UINT cbjc)
 {
-    Log::WriteFormattedLogMessageFromResource(ELogLevel::LogLevelDebug, IDS_XIDI_WRAPPERJOYWINMM_LOG_OPERATION_FORMAT, XIDI_LOG_FORMATTED_FUNCTION_NAME, (unsigned int)uJoyID);
-    
     // Special case: index is specified as -1, which the API says just means fill in the registry key.
     if ((UINT_PTR)-1 == uJoyID)
     {
         FillRegistryKeyStringA(pjc->szRegKey, _countof(pjc->szRegKey));
-        return JOYERR_NOERROR;
+
+        const MMRESULT result = JOYERR_NOERROR;
+        Log::WriteFormattedLogMessageFromResource(ELogLevel::LogLevelDebug, IDS_XIDI_WRAPPERJOYWINMM_LOG_OPERATION_FORMAT, XIDI_LOG_FORMATTED_FUNCTION_NAME, (unsigned int)uJoyID, result);
+        return result;
     }
     
     Initialize();
@@ -487,8 +488,10 @@ MMRESULT WrapperJoyWinMM::JoyGetDevCapsA(UINT_PTR uJoyID, LPJOYCAPSA pjc, UINT c
         // Check for the correct structure size.
         if (sizeof(*pjc) != cbjc)
         {
+            const MMRESULT result = JOYERR_PARMS;
             Log::WriteFormattedLogMessageFromResource(ELogLevel::LogLevelWarning, IDS_XIDI_WRAPPERJOYWINMM_FAILED_XINPUT_OPERATION_PARAMS_FORMAT, XIDI_LOG_FORMATTED_FUNCTION_NAME);
-            return JOYERR_PARMS;
+            Log::WriteFormattedLogMessageFromResource(ELogLevel::LogLevelDebug, IDS_XIDI_WRAPPERJOYWINMM_LOG_OPERATION_FORMAT, XIDI_LOG_FORMATTED_FUNCTION_NAME, (unsigned int)uJoyID, result);
+            return result;
         }
 
         // Get information from the mapper on the mapped device's capabilities.
@@ -532,17 +535,20 @@ MMRESULT WrapperJoyWinMM::JoyGetDevCapsA(UINT_PTR uJoyID, LPJOYCAPSA pjc, UINT c
         FillRegistryKeyStringA(pjc->szRegKey, _countof(pjc->szRegKey));
         ControllerIdentification::FillXInputControllerNameA(pjc->szPname, _countof(pjc->szPname), xJoyID);
 
-        return JOYERR_NOERROR;
+        const MMRESULT result = JOYERR_NOERROR;
+        Log::WriteFormattedLogMessageFromResource(ELogLevel::LogLevelDebug, IDS_XIDI_WRAPPERJOYWINMM_LOG_OPERATION_FORMAT, XIDI_LOG_FORMATTED_FUNCTION_NAME, (unsigned int)uJoyID, result);
+        return result;
     }
     else
     {
         // Querying a non-XInput controller.
         // Replace the registry key but otherwise leave the response unchanged.
-        HRESULT result = ImportApiWinMM::joyGetDevCapsA((UINT_PTR)realJoyID, pjc, cbjc);
+        MMRESULT result = ImportApiWinMM::joyGetDevCapsA((UINT_PTR)realJoyID, pjc, cbjc);
         
         if (JOYERR_NOERROR == result)
             FillRegistryKeyStringA(pjc->szRegKey, _countof(pjc->szRegKey));
 
+        Log::WriteFormattedLogMessageFromResource(ELogLevel::LogLevelDebug, IDS_XIDI_WRAPPERJOYWINMM_LOG_OPERATION_FORMAT, XIDI_LOG_FORMATTED_FUNCTION_NAME, (unsigned int)uJoyID, result);
         return result;
     }
 }
@@ -551,13 +557,14 @@ MMRESULT WrapperJoyWinMM::JoyGetDevCapsA(UINT_PTR uJoyID, LPJOYCAPSA pjc, UINT c
 
 MMRESULT WrapperJoyWinMM::JoyGetDevCapsW(UINT_PTR uJoyID, LPJOYCAPSW pjc, UINT cbjc)
 {
-    Log::WriteFormattedLogMessageFromResource(ELogLevel::LogLevelDebug, IDS_XIDI_WRAPPERJOYWINMM_LOG_OPERATION_FORMAT, XIDI_LOG_FORMATTED_FUNCTION_NAME, (unsigned int)uJoyID);
-    
     // Special case: index is specified as -1, which the API says just means fill in the registry key.
     if ((UINT_PTR)-1 == uJoyID)
     {
         FillRegistryKeyStringW(pjc->szRegKey, _countof(pjc->szRegKey));
-        return JOYERR_NOERROR;
+        
+        const MMRESULT result = JOYERR_NOERROR;
+        Log::WriteFormattedLogMessageFromResource(ELogLevel::LogLevelDebug, IDS_XIDI_WRAPPERJOYWINMM_LOG_OPERATION_FORMAT, XIDI_LOG_FORMATTED_FUNCTION_NAME, (unsigned int)uJoyID, result);
+        return result;
     }
     
     Initialize();
@@ -571,8 +578,10 @@ MMRESULT WrapperJoyWinMM::JoyGetDevCapsW(UINT_PTR uJoyID, LPJOYCAPSW pjc, UINT c
         // Check for the correct structure size.
         if (sizeof(*pjc) != cbjc)
         {
+            const MMRESULT result = JOYERR_PARMS;
             Log::WriteFormattedLogMessageFromResource(ELogLevel::LogLevelWarning, IDS_XIDI_WRAPPERJOYWINMM_FAILED_XINPUT_OPERATION_PARAMS_FORMAT, XIDI_LOG_FORMATTED_FUNCTION_NAME);
-            return JOYERR_PARMS;
+            Log::WriteFormattedLogMessageFromResource(ELogLevel::LogLevelDebug, IDS_XIDI_WRAPPERJOYWINMM_LOG_OPERATION_FORMAT, XIDI_LOG_FORMATTED_FUNCTION_NAME, (unsigned int)uJoyID, result);
+            return result;
         }
 
         // Get information from the mapper on the mapped device's capabilities.
@@ -616,17 +625,20 @@ MMRESULT WrapperJoyWinMM::JoyGetDevCapsW(UINT_PTR uJoyID, LPJOYCAPSW pjc, UINT c
         FillRegistryKeyStringW(pjc->szRegKey, _countof(pjc->szRegKey));
         ControllerIdentification::FillXInputControllerNameW(pjc->szPname, _countof(pjc->szPname), xJoyID);
 
-        return JOYERR_NOERROR;
+        const MMRESULT result = JOYERR_NOERROR;
+        Log::WriteFormattedLogMessageFromResource(ELogLevel::LogLevelDebug, IDS_XIDI_WRAPPERJOYWINMM_LOG_OPERATION_FORMAT, XIDI_LOG_FORMATTED_FUNCTION_NAME, (unsigned int)uJoyID, result);
+        return result;
     }
     else
     {
         // Querying a non-XInput controller.
         // Replace the registry key with ours but otherwise leave the response unchanged.
-        HRESULT result = ImportApiWinMM::joyGetDevCapsW((UINT_PTR)realJoyID, pjc, cbjc);
+        MMRESULT result = ImportApiWinMM::joyGetDevCapsW((UINT_PTR)realJoyID, pjc, cbjc);
 
         if (JOYERR_NOERROR == result)
             FillRegistryKeyStringW(pjc->szRegKey, _countof(pjc->szRegKey));
         
+        Log::WriteFormattedLogMessageFromResource(ELogLevel::LogLevelDebug, IDS_XIDI_WRAPPERJOYWINMM_LOG_OPERATION_FORMAT, XIDI_LOG_FORMATTED_FUNCTION_NAME, (unsigned int)uJoyID, result);
         return result;
     }
 }
@@ -635,20 +647,18 @@ MMRESULT WrapperJoyWinMM::JoyGetDevCapsW(UINT_PTR uJoyID, LPJOYCAPSW pjc, UINT c
 
 UINT WrapperJoyWinMM::JoyGetNumDevs(void)
 {
-    Log::WriteFormattedLogMessageFromResource(ELogLevel::LogLevelDebug, IDS_XIDI_WRAPPERJOYWINMM_LOG_GLOBAL_OPERATION_FORMAT, XIDI_LOG_FORMATTED_FUNCTION_NAME);
-    
     Initialize();
 
     // Number of controllers = number of XInput controllers + number of driver-reported controllers.
-    return (UINT)joyIndexMap.size();
+    UINT result = (UINT)joyIndexMap.size();
+    Log::WriteFormattedLogMessageFromResource(ELogLevel::LogLevelDebug, IDS_XIDI_WRAPPERJOYWINMM_LOG_GLOBAL_OPERATION_FORMAT, XIDI_LOG_FORMATTED_FUNCTION_NAME, result);
+    return result;
 }
 
 // ---------
 
 MMRESULT WrapperJoyWinMM::JoyGetPos(UINT uJoyID, LPJOYINFO pji)
 {
-    Log::WriteFormattedLogMessageFromResource(ELogLevel::LogLevelDebug, IDS_XIDI_WRAPPERJOYWINMM_LOG_OPERATION_FORMAT, XIDI_LOG_FORMATTED_FUNCTION_NAME, (unsigned int)uJoyID);
-
     Initialize();
     const int realJoyID = TranslateApplicationJoyIndex(uJoyID);
     
@@ -660,7 +670,10 @@ MMRESULT WrapperJoyWinMM::JoyGetPos(UINT uJoyID, LPJOYINFO pji)
         SJoyStateData joyStateData;
         MMRESULT result = FillDeviceState((UINT)xJoyID, &joyStateData);
         if (JOYERR_NOERROR != result)
+        {
+            Log::WriteFormattedLogMessageFromResource(ELogLevel::LogLevelDebug, IDS_XIDI_WRAPPERJOYWINMM_LOG_OPERATION_FORMAT, XIDI_LOG_FORMATTED_FUNCTION_NAME, (unsigned int)uJoyID, result);
             return result;
+        }
 
         // Fill in the provided structure.
         pji->wXpos = (WORD)joyStateData.axisX;
@@ -677,12 +690,16 @@ MMRESULT WrapperJoyWinMM::JoyGetPos(UINT uJoyID, LPJOYINFO pji)
             pji->wButtons |= JOY_BUTTON4;
 
         // Operation complete.
-        return JOYERR_NOERROR;
+        result = JOYERR_NOERROR;
+        Log::WriteFormattedLogMessageFromResource(ELogLevel::LogLevelDebug, IDS_XIDI_WRAPPERJOYWINMM_LOG_OPERATION_FORMAT, XIDI_LOG_FORMATTED_FUNCTION_NAME, (unsigned int)uJoyID, result);
+        return result;
     }
     else
     {
         // Querying a non-XInput controller.
-        return ImportApiWinMM::joyGetPos((UINT)realJoyID, pji);
+        const MMRESULT result = ImportApiWinMM::joyGetPos((UINT)realJoyID, pji);
+        Log::WriteFormattedLogMessageFromResource(ELogLevel::LogLevelDebug, IDS_XIDI_WRAPPERJOYWINMM_LOG_OPERATION_FORMAT, XIDI_LOG_FORMATTED_FUNCTION_NAME, (unsigned int)uJoyID, result);
+        return result;
     }
 }
 
@@ -690,8 +707,6 @@ MMRESULT WrapperJoyWinMM::JoyGetPos(UINT uJoyID, LPJOYINFO pji)
 
 MMRESULT WrapperJoyWinMM::JoyGetPosEx(UINT uJoyID, LPJOYINFOEX pji)
 {
-    Log::WriteFormattedLogMessageFromResource(ELogLevel::LogLevelDebug, IDS_XIDI_WRAPPERJOYWINMM_LOG_OPERATION_FORMAT, XIDI_LOG_FORMATTED_FUNCTION_NAME, (unsigned int)uJoyID);
-    
     Initialize();
     const int realJoyID = TranslateApplicationJoyIndex(uJoyID);
     
@@ -703,14 +718,19 @@ MMRESULT WrapperJoyWinMM::JoyGetPosEx(UINT uJoyID, LPJOYINFOEX pji)
         // Check for the correct structure size.
         if (sizeof(*pji) != pji->dwSize)
         {
+            MMRESULT result = JOYERR_PARMS;
             Log::WriteFormattedLogMessageFromResource(ELogLevel::LogLevelWarning, IDS_XIDI_WRAPPERJOYWINMM_FAILED_XINPUT_OPERATION_PARAMS_FORMAT, XIDI_LOG_FORMATTED_FUNCTION_NAME);
-            return JOYERR_PARMS;
+            Log::WriteFormattedLogMessageFromResource(ELogLevel::LogLevelDebug, IDS_XIDI_WRAPPERJOYWINMM_LOG_OPERATION_FORMAT, XIDI_LOG_FORMATTED_FUNCTION_NAME, (unsigned int)uJoyID, result);
+            return result;
         }
 
         SJoyStateData joyStateData;
         MMRESULT result = FillDeviceState((UINT)xJoyID, &joyStateData);
         if (JOYERR_NOERROR != result)
+        {
+            Log::WriteFormattedLogMessageFromResource(ELogLevel::LogLevelDebug, IDS_XIDI_WRAPPERJOYWINMM_LOG_OPERATION_FORMAT, XIDI_LOG_FORMATTED_FUNCTION_NAME, (unsigned int)uJoyID, result);
             return result;
+        }
 
         // Fill in the provided structure.
         // WinMM uses only 16 bits to indicate that the dpad is centered, whereas it is safe to use all 32 in DirectInput, hence the conversion (forgetting this can introduce bugs into games).
@@ -729,12 +749,16 @@ MMRESULT WrapperJoyWinMM::JoyGetPosEx(UINT uJoyID, LPJOYINFOEX pji)
         }
 
         // Operation complete.
-        return JOYERR_NOERROR;
+        result = JOYERR_NOERROR;
+        Log::WriteFormattedLogMessageFromResource(ELogLevel::LogLevelDebug, IDS_XIDI_WRAPPERJOYWINMM_LOG_OPERATION_FORMAT, XIDI_LOG_FORMATTED_FUNCTION_NAME, (unsigned int)uJoyID, result);
+        return result;
     }
     else
     {
         // Querying a non-XInput controller.
-        return ImportApiWinMM::joyGetPosEx((UINT)realJoyID, pji);
+        const MMRESULT result = ImportApiWinMM::joyGetPosEx((UINT)realJoyID, pji);
+        Log::WriteFormattedLogMessageFromResource(ELogLevel::LogLevelDebug, IDS_XIDI_WRAPPERJOYWINMM_LOG_OPERATION_FORMAT, XIDI_LOG_FORMATTED_FUNCTION_NAME, (unsigned int)uJoyID, result);
+        return result;
     }
 }
 
@@ -742,8 +766,6 @@ MMRESULT WrapperJoyWinMM::JoyGetPosEx(UINT uJoyID, LPJOYINFOEX pji)
 
 MMRESULT WrapperJoyWinMM::JoyGetThreshold(UINT uJoyID, LPUINT puThreshold)
 {
-    Log::WriteFormattedLogMessageFromResource(ELogLevel::LogLevelDebug, IDS_XIDI_WRAPPERJOYWINMM_LOG_OPERATION_FORMAT, XIDI_LOG_FORMATTED_FUNCTION_NAME, (unsigned int)uJoyID);
-    
     Initialize();
     const int realJoyID = TranslateApplicationJoyIndex(uJoyID);
     
@@ -752,13 +774,17 @@ MMRESULT WrapperJoyWinMM::JoyGetThreshold(UINT uJoyID, LPUINT puThreshold)
         // Querying an XInput controller.
         
         // Operation not supported.
+        const MMRESULT result = JOYERR_NOCANDO;
         Log::WriteFormattedLogMessageFromResource(ELogLevel::LogLevelWarning, IDS_XIDI_WRAPPERJOYWINMM_UNSUPPORTED_XINPUT_OPERATION_FORMAT, XIDI_LOG_FORMATTED_FUNCTION_NAME);
+        Log::WriteFormattedLogMessageFromResource(ELogLevel::LogLevelDebug, IDS_XIDI_WRAPPERJOYWINMM_LOG_OPERATION_FORMAT, XIDI_LOG_FORMATTED_FUNCTION_NAME, (unsigned int)uJoyID, result);
         return JOYERR_NOCANDO;
     }
     else
     {
         // Querying a non-XInput controller.
-        return ImportApiWinMM::joyGetThreshold((UINT)realJoyID, puThreshold);
+        const MMRESULT result = ImportApiWinMM::joyGetThreshold((UINT)realJoyID, puThreshold);
+        Log::WriteFormattedLogMessageFromResource(ELogLevel::LogLevelDebug, IDS_XIDI_WRAPPERJOYWINMM_LOG_OPERATION_FORMAT, XIDI_LOG_FORMATTED_FUNCTION_NAME, (unsigned int)uJoyID, result);
+        return result;
     }
 }
 
@@ -766,8 +792,6 @@ MMRESULT WrapperJoyWinMM::JoyGetThreshold(UINT uJoyID, LPUINT puThreshold)
 
 MMRESULT WrapperJoyWinMM::JoyReleaseCapture(UINT uJoyID)
 {
-    Log::WriteFormattedLogMessageFromResource(ELogLevel::LogLevelDebug, IDS_XIDI_WRAPPERJOYWINMM_LOG_OPERATION_FORMAT, XIDI_LOG_FORMATTED_FUNCTION_NAME, (unsigned int)uJoyID);
-    
     Initialize();
     const int realJoyID = TranslateApplicationJoyIndex(uJoyID);
     
@@ -776,13 +800,17 @@ MMRESULT WrapperJoyWinMM::JoyReleaseCapture(UINT uJoyID)
         // Querying an XInput controller.
         
         // Operation not supported.
+        const MMRESULT result = JOYERR_NOCANDO;
         Log::WriteFormattedLogMessageFromResource(ELogLevel::LogLevelWarning, IDS_XIDI_WRAPPERJOYWINMM_UNSUPPORTED_XINPUT_OPERATION_FORMAT, XIDI_LOG_FORMATTED_FUNCTION_NAME);
-        return JOYERR_NOCANDO;
+        Log::WriteFormattedLogMessageFromResource(ELogLevel::LogLevelDebug, IDS_XIDI_WRAPPERJOYWINMM_LOG_OPERATION_FORMAT, XIDI_LOG_FORMATTED_FUNCTION_NAME, (unsigned int)uJoyID, result);
+        return result;
     }
     else
     {
         // Querying a non-XInput controller.
-        return ImportApiWinMM::joyReleaseCapture((UINT)realJoyID);
+        const MMRESULT result = ImportApiWinMM::joyReleaseCapture((UINT)realJoyID);
+        Log::WriteFormattedLogMessageFromResource(ELogLevel::LogLevelDebug, IDS_XIDI_WRAPPERJOYWINMM_LOG_OPERATION_FORMAT, XIDI_LOG_FORMATTED_FUNCTION_NAME, (unsigned int)uJoyID, result);
+        return result;
     }
 }
 
@@ -790,8 +818,6 @@ MMRESULT WrapperJoyWinMM::JoyReleaseCapture(UINT uJoyID)
 
 MMRESULT WrapperJoyWinMM::JoySetCapture(HWND hwnd, UINT uJoyID, UINT uPeriod, BOOL fChanged)
 {
-    Log::WriteFormattedLogMessageFromResource(ELogLevel::LogLevelDebug, IDS_XIDI_WRAPPERJOYWINMM_LOG_OPERATION_FORMAT, XIDI_LOG_FORMATTED_FUNCTION_NAME, (unsigned int)uJoyID);
-    
     Initialize();
     const int realJoyID = TranslateApplicationJoyIndex(uJoyID);
     
@@ -800,13 +826,17 @@ MMRESULT WrapperJoyWinMM::JoySetCapture(HWND hwnd, UINT uJoyID, UINT uPeriod, BO
         // Querying an XInput controller.
         
         // Operation not supported.
+        const MMRESULT result = JOYERR_NOCANDO;
         Log::WriteFormattedLogMessageFromResource(ELogLevel::LogLevelWarning, IDS_XIDI_WRAPPERJOYWINMM_UNSUPPORTED_XINPUT_OPERATION_FORMAT, XIDI_LOG_FORMATTED_FUNCTION_NAME);
-        return JOYERR_NOCANDO;
+        Log::WriteFormattedLogMessageFromResource(ELogLevel::LogLevelDebug, IDS_XIDI_WRAPPERJOYWINMM_LOG_OPERATION_FORMAT, XIDI_LOG_FORMATTED_FUNCTION_NAME, (unsigned int)uJoyID, result);
+        return result;
     }
     else
     {
         // Querying a non-XInput controller.
-        return ImportApiWinMM::joySetCapture(hwnd, (UINT)realJoyID, uPeriod, fChanged);
+        const MMRESULT result = ImportApiWinMM::joySetCapture(hwnd, (UINT)realJoyID, uPeriod, fChanged);
+        Log::WriteFormattedLogMessageFromResource(ELogLevel::LogLevelDebug, IDS_XIDI_WRAPPERJOYWINMM_LOG_OPERATION_FORMAT, XIDI_LOG_FORMATTED_FUNCTION_NAME, (unsigned int)uJoyID, result);
+        return result;
     }
 }
 
@@ -814,8 +844,6 @@ MMRESULT WrapperJoyWinMM::JoySetCapture(HWND hwnd, UINT uJoyID, UINT uPeriod, BO
 
 MMRESULT WrapperJoyWinMM::JoySetThreshold(UINT uJoyID, UINT uThreshold)
 {
-    Log::WriteFormattedLogMessageFromResource(ELogLevel::LogLevelDebug, IDS_XIDI_WRAPPERJOYWINMM_LOG_OPERATION_FORMAT, XIDI_LOG_FORMATTED_FUNCTION_NAME, (unsigned int)uJoyID);
-    
     Initialize();
     const int realJoyID = TranslateApplicationJoyIndex(uJoyID);
     
@@ -824,12 +852,16 @@ MMRESULT WrapperJoyWinMM::JoySetThreshold(UINT uJoyID, UINT uThreshold)
         // Querying an XInput controller.
         
         // Operation not supported.
+        const MMRESULT result = JOYERR_NOCANDO;
         Log::WriteFormattedLogMessageFromResource(ELogLevel::LogLevelWarning, IDS_XIDI_WRAPPERJOYWINMM_UNSUPPORTED_XINPUT_OPERATION_FORMAT, XIDI_LOG_FORMATTED_FUNCTION_NAME);
-        return JOYERR_NOCANDO;
+        Log::WriteFormattedLogMessageFromResource(ELogLevel::LogLevelDebug, IDS_XIDI_WRAPPERJOYWINMM_LOG_OPERATION_FORMAT, XIDI_LOG_FORMATTED_FUNCTION_NAME, (unsigned int)uJoyID, result);
+        return result;
     }
     else
     {
         // Querying a non-XInput controller.
-        return ImportApiWinMM::joySetThreshold((UINT)realJoyID, uThreshold);
+        const MMRESULT result = ImportApiWinMM::joySetThreshold((UINT)realJoyID, uThreshold);
+        Log::WriteFormattedLogMessageFromResource(ELogLevel::LogLevelDebug, IDS_XIDI_WRAPPERJOYWINMM_LOG_OPERATION_FORMAT, XIDI_LOG_FORMATTED_FUNCTION_NAME, (unsigned int)uJoyID, result);
+        return result;
     }
 }
