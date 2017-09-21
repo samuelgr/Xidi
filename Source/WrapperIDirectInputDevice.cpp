@@ -83,127 +83,155 @@ ULONG STDMETHODCALLTYPE WrapperIDirectInputDevice::Release(void)
 
 HRESULT STDMETHODCALLTYPE WrapperIDirectInputDevice::Acquire(void)
 {
-    Log::WriteFormattedLogMessageFromResource(ELogLevel::LogLevelDebug, IDS_XIDI_WRAPPERIDIRECTINPUTDEVICE_OPERATION_FORMAT, XIDI_LOG_FORMATTED_FUNCTION_NAME, controller->GetPlayerIndex() + 1);
+    HRESULT result = DIERR_INVALIDPARAM;
     
     // Can only acquire the device once the data format has been set.
     if (mapper->IsApplicationDataFormatSet())
-        return controller->AcquireController();
+        result = controller->AcquireController();
 
-    return DIERR_INVALIDPARAM;
+    Log::WriteFormattedLogMessageFromResource(ELogLevel::LogLevelDebug, IDS_XIDI_WRAPPERIDIRECTINPUTDEVICE_OPERATION_FORMAT, XIDI_LOG_FORMATTED_FUNCTION_NAME, controller->GetPlayerIndex() + 1, result);
+    return result;
 }
 
 // ---------
 
 HRESULT STDMETHODCALLTYPE WrapperIDirectInputDevice::CreateEffect(REFGUID rguid, LPCDIEFFECT lpeff, LPDIRECTINPUTEFFECT* ppdeff, LPUNKNOWN punkOuter)
 {
-    Log::WriteFormattedLogMessageFromResource(ELogLevel::LogLevelDebug, IDS_XIDI_WRAPPERIDIRECTINPUTDEVICE_OPERATION_FORMAT, XIDI_LOG_FORMATTED_FUNCTION_NAME, controller->GetPlayerIndex() + 1);
-    
     // Operation not supported.
-    return DIERR_UNSUPPORTED;
+    const HRESULT result = DIERR_UNSUPPORTED;
+
+    Log::WriteLogMessageFromResource(ELogLevel::LogLevelWarning, IDS_XIDI_WRAPPERIDIRECTINPUTDEVICE_FORCE_FEEDBACK_OPERATION_UNSUPPORTED);
+    Log::WriteFormattedLogMessageFromResource(ELogLevel::LogLevelDebug, IDS_XIDI_WRAPPERIDIRECTINPUTDEVICE_OPERATION_FORMAT, XIDI_LOG_FORMATTED_FUNCTION_NAME, controller->GetPlayerIndex() + 1, result);
+    
+    return result;
 }
 
 // ---------
 
 HRESULT STDMETHODCALLTYPE WrapperIDirectInputDevice::EnumCreatedEffectObjects(LPDIENUMCREATEDEFFECTOBJECTSCALLBACK lpCallback, LPVOID pvRef, DWORD fl)
 {
-    Log::WriteFormattedLogMessageFromResource(ELogLevel::LogLevelDebug, IDS_XIDI_WRAPPERIDIRECTINPUTDEVICE_OPERATION_FORMAT, XIDI_LOG_FORMATTED_FUNCTION_NAME, controller->GetPlayerIndex() + 1);
-    
     // Operation not supported.
-    return DIERR_UNSUPPORTED;
+    const HRESULT result = DIERR_UNSUPPORTED;
+
+    Log::WriteLogMessageFromResource(ELogLevel::LogLevelWarning, IDS_XIDI_WRAPPERIDIRECTINPUTDEVICE_FORCE_FEEDBACK_OPERATION_UNSUPPORTED);
+    Log::WriteFormattedLogMessageFromResource(ELogLevel::LogLevelDebug, IDS_XIDI_WRAPPERIDIRECTINPUTDEVICE_OPERATION_FORMAT, XIDI_LOG_FORMATTED_FUNCTION_NAME, controller->GetPlayerIndex() + 1, result);
+
+    return result;
 }
 
 // ---------
 
 HRESULT STDMETHODCALLTYPE WrapperIDirectInputDevice::EnumEffects(LPDIENUMEFFECTSCALLBACK lpCallback, LPVOID pvRef, DWORD dwEffType)
 {
-    Log::WriteFormattedLogMessageFromResource(ELogLevel::LogLevelDebug, IDS_XIDI_WRAPPERIDIRECTINPUTDEVICE_OPERATION_FORMAT, XIDI_LOG_FORMATTED_FUNCTION_NAME, controller->GetPlayerIndex() + 1);
-    
     // Operation not supported.
-    return DIERR_UNSUPPORTED;
+    const HRESULT result = DIERR_UNSUPPORTED;
+
+    Log::WriteLogMessageFromResource(ELogLevel::LogLevelWarning, IDS_XIDI_WRAPPERIDIRECTINPUTDEVICE_FORCE_FEEDBACK_OPERATION_UNSUPPORTED);
+    Log::WriteFormattedLogMessageFromResource(ELogLevel::LogLevelDebug, IDS_XIDI_WRAPPERIDIRECTINPUTDEVICE_OPERATION_FORMAT, XIDI_LOG_FORMATTED_FUNCTION_NAME, controller->GetPlayerIndex() + 1, result);
+    
+    return result;
 }
 
 // ---------
 
 HRESULT STDMETHODCALLTYPE WrapperIDirectInputDevice::EnumEffectsInFile(LPCTSTR lptszFileName, LPDIENUMEFFECTSINFILECALLBACK pec, LPVOID pvRef, DWORD dwFlags)
 {
-    Log::WriteFormattedLogMessageFromResource(ELogLevel::LogLevelDebug, IDS_XIDI_WRAPPERIDIRECTINPUTDEVICE_OPERATION_FORMAT, XIDI_LOG_FORMATTED_FUNCTION_NAME, controller->GetPlayerIndex() + 1);
-    
     // Operation not supported.
-    return DIERR_UNSUPPORTED;
+    const HRESULT result = DIERR_UNSUPPORTED;
+
+    Log::WriteLogMessageFromResource(ELogLevel::LogLevelWarning, IDS_XIDI_WRAPPERIDIRECTINPUTDEVICE_FORCE_FEEDBACK_OPERATION_UNSUPPORTED);
+    Log::WriteFormattedLogMessageFromResource(ELogLevel::LogLevelDebug, IDS_XIDI_WRAPPERIDIRECTINPUTDEVICE_OPERATION_FORMAT, XIDI_LOG_FORMATTED_FUNCTION_NAME, controller->GetPlayerIndex() + 1, result);
+    
+    return result;
 }
 
 // ---------
 
 HRESULT STDMETHODCALLTYPE WrapperIDirectInputDevice::EnumObjects(LPDIENUMDEVICEOBJECTSCALLBACK lpCallback, LPVOID pvRef, DWORD dwFlags)
 {
-    Log::WriteFormattedLogMessageFromResource(ELogLevel::LogLevelDebug, IDS_XIDI_WRAPPERIDIRECTINPUTDEVICE_OPERATION_FORMAT, XIDI_LOG_FORMATTED_FUNCTION_NAME, controller->GetPlayerIndex() + 1);
-    return mapper->EnumerateMappedObjects(useUnicode, lpCallback, pvRef, dwFlags);
+    const HRESULT result = mapper->EnumerateMappedObjects(useUnicode, lpCallback, pvRef, dwFlags);
+    Log::WriteFormattedLogMessageFromResource(ELogLevel::LogLevelDebug, IDS_XIDI_WRAPPERIDIRECTINPUTDEVICE_OPERATION_FORMAT, XIDI_LOG_FORMATTED_FUNCTION_NAME, controller->GetPlayerIndex() + 1, result);
+    return result;
 }
 
 // ---------
 
 HRESULT STDMETHODCALLTYPE WrapperIDirectInputDevice::Escape(LPDIEFFESCAPE pesc)
 {
-    Log::WriteFormattedLogMessageFromResource(ELogLevel::LogLevelDebug, IDS_XIDI_WRAPPERIDIRECTINPUTDEVICE_OPERATION_FORMAT, XIDI_LOG_FORMATTED_FUNCTION_NAME, controller->GetPlayerIndex() + 1);
-    
     // Operation not supported.
-    return DIERR_UNSUPPORTED;
+    const HRESULT result = DIERR_UNSUPPORTED;
+    Log::WriteFormattedLogMessageFromResource(ELogLevel::LogLevelDebug, IDS_XIDI_WRAPPERIDIRECTINPUTDEVICE_OPERATION_FORMAT, XIDI_LOG_FORMATTED_FUNCTION_NAME, controller->GetPlayerIndex() + 1, result);
+    return result;
 }
 
 // ---------
 
 HRESULT STDMETHODCALLTYPE WrapperIDirectInputDevice::GetCapabilities(LPDIDEVCAPS lpDIDevCaps)
 {
-    Log::WriteFormattedLogMessageFromResource(ELogLevel::LogLevelDebug, IDS_XIDI_WRAPPERIDIRECTINPUTDEVICE_OPERATION_FORMAT, XIDI_LOG_FORMATTED_FUNCTION_NAME, controller->GetPlayerIndex() + 1);
-    
     if (sizeof(*lpDIDevCaps) != lpDIDevCaps->dwSize)
-        return DIERR_INVALIDPARAM;
+    {
+        const HRESULT result = DIERR_INVALIDPARAM;
+        Log::WriteFormattedLogMessageFromResource(ELogLevel::LogLevelDebug, IDS_XIDI_WRAPPERIDIRECTINPUTDEVICE_OPERATION_FORMAT, XIDI_LOG_FORMATTED_FUNCTION_NAME, controller->GetPlayerIndex() + 1, result);
+        return result;
+    }
     
     controller->FillDeviceCapabilities(lpDIDevCaps);
     mapper->FillDeviceCapabilities(lpDIDevCaps);
 
-    return DI_OK;
+    const HRESULT result = DI_OK;
+    Log::WriteFormattedLogMessageFromResource(ELogLevel::LogLevelDebug, IDS_XIDI_WRAPPERIDIRECTINPUTDEVICE_OPERATION_FORMAT, XIDI_LOG_FORMATTED_FUNCTION_NAME, controller->GetPlayerIndex() + 1, result);
+    return result;
 }
 
 // ---------
 
 HRESULT STDMETHODCALLTYPE WrapperIDirectInputDevice::GetDeviceData(DWORD cbObjectData, LPDIDEVICEOBJECTDATA rgdod, LPDWORD pdwInOut, DWORD dwFlags)
 {
-    Log::WriteFormattedLogMessageFromResource(ELogLevel::LogLevelDebug, IDS_XIDI_WRAPPERIDIRECTINPUTDEVICE_OPERATION_FORMAT, XIDI_LOG_FORMATTED_FUNCTION_NAME, controller->GetPlayerIndex() + 1);
-    
     // Verify the correct sizes of each structure.
     if (sizeof(DIDEVICEOBJECTDATA) != cbObjectData)
-        return DIERR_INVALIDPARAM;
+    {
+        const HRESULT result = DIERR_INVALIDPARAM;
+        Log::WriteFormattedLogMessageFromResource(ELogLevel::LogLevelDebug, IDS_XIDI_WRAPPERIDIRECTINPUTDEVICE_OPERATION_FORMAT, XIDI_LOG_FORMATTED_FUNCTION_NAME, controller->GetPlayerIndex() + 1, result);
+        return result;
+    }
     
     // Verify that the controller has been acquired.
     // This avoids allocating memory in the face of a known error case.
     if (!controller->IsAcquired())
-        return DIERR_NOTACQUIRED;
+    {
+        const HRESULT result = DIERR_NOTACQUIRED;
+        Log::WriteFormattedLogMessageFromResource(ELogLevel::LogLevelDebug, IDS_XIDI_WRAPPERIDIRECTINPUTDEVICE_OPERATION_FORMAT, XIDI_LOG_FORMATTED_FUNCTION_NAME, controller->GetPlayerIndex() + 1, result);
+        return result;
+    }
     
     // Verify provided count. Cannot be NULL.
     if (NULL == pdwInOut)
-        return DIERR_INVALIDPARAM;
+    {
+        const HRESULT result = DIERR_INVALIDPARAM;
+        Log::WriteFormattedLogMessageFromResource(ELogLevel::LogLevelDebug, IDS_XIDI_WRAPPERIDIRECTINPUTDEVICE_OPERATION_FORMAT, XIDI_LOG_FORMATTED_FUNCTION_NAME, controller->GetPlayerIndex() + 1, result);
+        return result;
+    }
     
     // Cause the mapper to read events from the controller and map them to application events.
-    return mapper->WriteApplicationBufferedEvents(controller, rgdod, *pdwInOut, (0 != (dwFlags & DIGDD_PEEK)));
+    const HRESULT result = mapper->WriteApplicationBufferedEvents(controller, rgdod, *pdwInOut, (0 != (dwFlags & DIGDD_PEEK)));
+    Log::WriteFormattedLogMessageFromResource(ELogLevel::LogLevelDebug, IDS_XIDI_WRAPPERIDIRECTINPUTDEVICE_OPERATION_FORMAT, XIDI_LOG_FORMATTED_FUNCTION_NAME, controller->GetPlayerIndex() + 1, result);
+    return result;
 }
 
 // ---------
 
 HRESULT STDMETHODCALLTYPE WrapperIDirectInputDevice::GetDeviceInfo(LPDIDEVICEINSTANCE pdidi)
 {
-    Log::WriteFormattedLogMessageFromResource(ELogLevel::LogLevelDebug, IDS_XIDI_WRAPPERIDIRECTINPUTDEVICE_OPERATION_FORMAT, XIDI_LOG_FORMATTED_FUNCTION_NAME, controller->GetPlayerIndex() + 1);
-    
     // Not yet implemented.
-    return DIERR_UNSUPPORTED;
+    const HRESULT result = DIERR_UNSUPPORTED;
+    Log::WriteFormattedLogMessageFromResource(ELogLevel::LogLevelDebug, IDS_XIDI_WRAPPERIDIRECTINPUTDEVICE_OPERATION_FORMAT, XIDI_LOG_FORMATTED_FUNCTION_NAME, controller->GetPlayerIndex() + 1, result);
+    return result;
 }
 
 // ---------
 
 HRESULT STDMETHODCALLTYPE WrapperIDirectInputDevice::GetDeviceState(DWORD cbData, LPVOID lpvData)
 {
-    Log::WriteFormattedLogMessageFromResource(ELogLevel::LogLevelDebug, IDS_XIDI_WRAPPERIDIRECTINPUTDEVICE_OPERATION_FORMAT, XIDI_LOG_FORMATTED_FUNCTION_NAME, controller->GetPlayerIndex() + 1);
-    
     // Handle games that forget to poll the device.
     // Don't bother buffering any changes, since this method has the effect of clearing the buffer anyway.
     if (FALSE == polledSinceLastGetDeviceState)
@@ -215,121 +243,128 @@ HRESULT STDMETHODCALLTYPE WrapperIDirectInputDevice::GetDeviceState(DWORD cbData
     XINPUT_STATE currentControllerState;
     HRESULT result = controller->GetCurrentDeviceState(&currentControllerState);
     if (DI_OK != result)
+    {
+        Log::WriteFormattedLogMessageFromResource(ELogLevel::LogLevelDebug, IDS_XIDI_WRAPPERIDIRECTINPUTDEVICE_OPERATION_FORMAT, XIDI_LOG_FORMATTED_FUNCTION_NAME, controller->GetPlayerIndex() + 1, result);
         return result;
+    }
 
     // Submit the state to the mapper, which will in turn map XInput device state to application device state and fill in the application's data structure.
-    return mapper->WriteApplicationControllerState(currentControllerState.Gamepad, lpvData, cbData);
+    result = mapper->WriteApplicationControllerState(currentControllerState.Gamepad, lpvData, cbData);
+    Log::WriteFormattedLogMessageFromResource(ELogLevel::LogLevelDebug, IDS_XIDI_WRAPPERIDIRECTINPUTDEVICE_OPERATION_FORMAT, XIDI_LOG_FORMATTED_FUNCTION_NAME, controller->GetPlayerIndex() + 1, result);
+    return result;
 }
 
 // ---------
 
 HRESULT STDMETHODCALLTYPE WrapperIDirectInputDevice::GetEffectInfo(LPDIEFFECTINFO pdei, REFGUID rguid)
 {
-    Log::WriteFormattedLogMessageFromResource(ELogLevel::LogLevelDebug, IDS_XIDI_WRAPPERIDIRECTINPUTDEVICE_OPERATION_FORMAT, XIDI_LOG_FORMATTED_FUNCTION_NAME, controller->GetPlayerIndex() + 1);
-    
     // Operation not supported.
-    return DIERR_UNSUPPORTED;
+    const HRESULT result = DIERR_UNSUPPORTED;
+    Log::WriteFormattedLogMessageFromResource(ELogLevel::LogLevelDebug, IDS_XIDI_WRAPPERIDIRECTINPUTDEVICE_OPERATION_FORMAT, XIDI_LOG_FORMATTED_FUNCTION_NAME, controller->GetPlayerIndex() + 1, result);
+    return result;
 }
 
 // ---------
 
 HRESULT STDMETHODCALLTYPE WrapperIDirectInputDevice::GetForceFeedbackState(LPDWORD pdwOut)
 {
-    Log::WriteFormattedLogMessageFromResource(ELogLevel::LogLevelDebug, IDS_XIDI_WRAPPERIDIRECTINPUTDEVICE_OPERATION_FORMAT, XIDI_LOG_FORMATTED_FUNCTION_NAME, controller->GetPlayerIndex() + 1);
-    
     // Operation not supported.
-    return DIERR_UNSUPPORTED;
+    const HRESULT result = DIERR_UNSUPPORTED;
+    Log::WriteFormattedLogMessageFromResource(ELogLevel::LogLevelDebug, IDS_XIDI_WRAPPERIDIRECTINPUTDEVICE_OPERATION_FORMAT, XIDI_LOG_FORMATTED_FUNCTION_NAME, controller->GetPlayerIndex() + 1, result);
+    return result;
 }
 
 // ---------
 
 HRESULT STDMETHODCALLTYPE WrapperIDirectInputDevice::GetObjectInfo(LPDIDEVICEOBJECTINSTANCE pdidoi, DWORD dwObj, DWORD dwHow)
 {
-    Log::WriteFormattedLogMessageFromResource(ELogLevel::LogLevelDebug, IDS_XIDI_WRAPPERIDIRECTINPUTDEVICE_OPERATION_FORMAT, XIDI_LOG_FORMATTED_FUNCTION_NAME, controller->GetPlayerIndex() + 1);
-    return mapper->GetMappedObjectInfo(useUnicode, pdidoi, dwObj, dwHow);
+    const HRESULT result = mapper->GetMappedObjectInfo(useUnicode, pdidoi, dwObj, dwHow);
+    Log::WriteFormattedLogMessageFromResource(ELogLevel::LogLevelDebug, IDS_XIDI_WRAPPERIDIRECTINPUTDEVICE_OPERATION_FORMAT, XIDI_LOG_FORMATTED_FUNCTION_NAME, controller->GetPlayerIndex() + 1, result);
+    return result;
 }
 
 // ---------
 
 HRESULT STDMETHODCALLTYPE WrapperIDirectInputDevice::GetProperty(REFGUID rguidProp, LPDIPROPHEADER pdiph)
 {
-    Log::WriteFormattedLogMessageFromResource(ELogLevel::LogLevelDebug, IDS_XIDI_WRAPPERIDIRECTINPUTDEVICE_OPERATION_FORMAT, XIDI_LOG_FORMATTED_FUNCTION_NAME, controller->GetPlayerIndex() + 1);
+    HRESULT result = DI_OK;
+
     if (mapper->IsPropertyHandledByMapper(rguidProp))
-        return mapper->GetMappedProperty(rguidProp, pdiph);
+        result = mapper->GetMappedProperty(rguidProp, pdiph);
     else
-        return controller->GetControllerProperty(rguidProp, pdiph);
+        result = controller->GetControllerProperty(rguidProp, pdiph);
+
+    Log::WriteFormattedLogMessageFromResource(ELogLevel::LogLevelDebug, IDS_XIDI_WRAPPERIDIRECTINPUTDEVICE_OPERATION_FORMAT, XIDI_LOG_FORMATTED_FUNCTION_NAME, controller->GetPlayerIndex() + 1, result);
+    return result;
 }
 
 // ---------
 
 HRESULT STDMETHODCALLTYPE WrapperIDirectInputDevice::Initialize(HINSTANCE hinst, DWORD dwVersion, REFGUID rguid)
 {
-    Log::WriteFormattedLogMessageFromResource(ELogLevel::LogLevelDebug, IDS_XIDI_WRAPPERIDIRECTINPUTDEVICE_OPERATION_FORMAT, XIDI_LOG_FORMATTED_FUNCTION_NAME, controller->GetPlayerIndex() + 1);
-    
     // Operation not necessary.
-    return S_FALSE;
+    const HRESULT result = S_FALSE;
+    Log::WriteFormattedLogMessageFromResource(ELogLevel::LogLevelDebug, IDS_XIDI_WRAPPERIDIRECTINPUTDEVICE_OPERATION_FORMAT, XIDI_LOG_FORMATTED_FUNCTION_NAME, controller->GetPlayerIndex() + 1, result);
+    return result;
 }
 
 // ---------
 
 HRESULT STDMETHODCALLTYPE WrapperIDirectInputDevice::Poll(void)
 {
-    Log::WriteFormattedLogMessageFromResource(ELogLevel::LogLevelDebug, IDS_XIDI_WRAPPERIDIRECTINPUTDEVICE_OPERATION_FORMAT, XIDI_LOG_FORMATTED_FUNCTION_NAME, controller->GetPlayerIndex() + 1);
-    
-    HRESULT refreshResult = controller->RefreshControllerState();
+    const HRESULT result = controller->RefreshControllerState();
 
-    if (S_OK == refreshResult)
+    if (S_OK == result)
         polledSinceLastGetDeviceState = TRUE;
 
-    return refreshResult;
+    Log::WriteFormattedLogMessageFromResource(ELogLevel::LogLevelDebug, IDS_XIDI_WRAPPERIDIRECTINPUTDEVICE_OPERATION_FORMAT, XIDI_LOG_FORMATTED_FUNCTION_NAME, controller->GetPlayerIndex() + 1, result);
+    return result;
 }
 
 // ---------
 
 HRESULT STDMETHODCALLTYPE WrapperIDirectInputDevice::RunControlPanel(HWND hwndOwner, DWORD dwFlags)
 {
-    Log::WriteFormattedLogMessageFromResource(ELogLevel::LogLevelDebug, IDS_XIDI_WRAPPERIDIRECTINPUTDEVICE_OPERATION_FORMAT, XIDI_LOG_FORMATTED_FUNCTION_NAME, controller->GetPlayerIndex() + 1);
-    
     // Operation not supported.
-    return DIERR_UNSUPPORTED;
+    const HRESULT result = DIERR_UNSUPPORTED;
+    Log::WriteFormattedLogMessageFromResource(ELogLevel::LogLevelDebug, IDS_XIDI_WRAPPERIDIRECTINPUTDEVICE_OPERATION_FORMAT, XIDI_LOG_FORMATTED_FUNCTION_NAME, controller->GetPlayerIndex() + 1, result);
+    return result;
 }
 
 // ---------
 
 HRESULT STDMETHODCALLTYPE WrapperIDirectInputDevice::SendDeviceData(DWORD cbObjectData, LPCDIDEVICEOBJECTDATA rgdod, LPDWORD pdwInOut, DWORD fl)
 {
-    Log::WriteFormattedLogMessageFromResource(ELogLevel::LogLevelDebug, IDS_XIDI_WRAPPERIDIRECTINPUTDEVICE_OPERATION_FORMAT, XIDI_LOG_FORMATTED_FUNCTION_NAME, controller->GetPlayerIndex() + 1);
-    
     // Operation not supported.
-    return DIERR_UNSUPPORTED;
+    const HRESULT result = DIERR_UNSUPPORTED;
+    Log::WriteFormattedLogMessageFromResource(ELogLevel::LogLevelDebug, IDS_XIDI_WRAPPERIDIRECTINPUTDEVICE_OPERATION_FORMAT, XIDI_LOG_FORMATTED_FUNCTION_NAME, controller->GetPlayerIndex() + 1, result);
+    return result;
 }
 
 // ---------
 
 HRESULT STDMETHODCALLTYPE WrapperIDirectInputDevice::SendForceFeedbackCommand(DWORD dwFlags)
 {
-    Log::WriteFormattedLogMessageFromResource(ELogLevel::LogLevelDebug, IDS_XIDI_WRAPPERIDIRECTINPUTDEVICE_OPERATION_FORMAT, XIDI_LOG_FORMATTED_FUNCTION_NAME, controller->GetPlayerIndex() + 1);
-    
     // Operation not supported.
-    return DIERR_UNSUPPORTED;
+    const HRESULT result = DIERR_UNSUPPORTED;
+    Log::WriteFormattedLogMessageFromResource(ELogLevel::LogLevelDebug, IDS_XIDI_WRAPPERIDIRECTINPUTDEVICE_OPERATION_FORMAT, XIDI_LOG_FORMATTED_FUNCTION_NAME, controller->GetPlayerIndex() + 1, result);
+    return result;
 }
 
 // ---------
 
 HRESULT STDMETHODCALLTYPE WrapperIDirectInputDevice::SetCooperativeLevel(HWND hwnd, DWORD dwFlags)
 {
-    Log::WriteFormattedLogMessageFromResource(ELogLevel::LogLevelDebug, IDS_XIDI_WRAPPERIDIRECTINPUTDEVICE_OPERATION_FORMAT, XIDI_LOG_FORMATTED_FUNCTION_NAME, controller->GetPlayerIndex() + 1);
-    
     // Ineffective at present, but this may change.
-    return DI_OK;
+    const HRESULT result = DI_OK;
+    Log::WriteFormattedLogMessageFromResource(ELogLevel::LogLevelDebug, IDS_XIDI_WRAPPERIDIRECTINPUTDEVICE_OPERATION_FORMAT, XIDI_LOG_FORMATTED_FUNCTION_NAME, controller->GetPlayerIndex() + 1, result);
+    return result;
 }
 
 // ---------
 
 HRESULT STDMETHODCALLTYPE WrapperIDirectInputDevice::SetDataFormat(LPCDIDATAFORMAT lpdf)
 {
-    Log::WriteFormattedLogMessageFromResource(ELogLevel::LogLevelDebug, IDS_XIDI_WRAPPERIDIRECTINPUTDEVICE_OPERATION_FORMAT, XIDI_LOG_FORMATTED_FUNCTION_NAME, controller->GetPlayerIndex() + 1);
-    
     HRESULT result = mapper->SetApplicationDataFormat(lpdf);
 
     if (S_OK == result)
@@ -337,6 +372,7 @@ HRESULT STDMETHODCALLTYPE WrapperIDirectInputDevice::SetDataFormat(LPCDIDATAFORM
     else
         Log::WriteFormattedLogMessageFromResource(ELogLevel::LogLevelError, IDS_XIDI_WRAPPERIDIRECTINPUTDEVICE_DATA_FORMAT_REJECTED_FORMAT, controller->GetPlayerIndex() + 1);
 
+    Log::WriteFormattedLogMessageFromResource(ELogLevel::LogLevelDebug, IDS_XIDI_WRAPPERIDIRECTINPUTDEVICE_OPERATION_FORMAT, XIDI_LOG_FORMATTED_FUNCTION_NAME, controller->GetPlayerIndex() + 1, result);
     return result;
 }
 
@@ -344,38 +380,43 @@ HRESULT STDMETHODCALLTYPE WrapperIDirectInputDevice::SetDataFormat(LPCDIDATAFORM
 
 HRESULT STDMETHODCALLTYPE WrapperIDirectInputDevice::SetEventNotification(HANDLE hEvent)
 {
-    Log::WriteFormattedLogMessageFromResource(ELogLevel::LogLevelDebug, IDS_XIDI_WRAPPERIDIRECTINPUTDEVICE_OPERATION_FORMAT, XIDI_LOG_FORMATTED_FUNCTION_NAME, controller->GetPlayerIndex() + 1);
-    return controller->SetControllerStateChangedEvent(hEvent);
+    const HRESULT result = controller->SetControllerStateChangedEvent(hEvent);
+    Log::WriteFormattedLogMessageFromResource(ELogLevel::LogLevelDebug, IDS_XIDI_WRAPPERIDIRECTINPUTDEVICE_OPERATION_FORMAT, XIDI_LOG_FORMATTED_FUNCTION_NAME, controller->GetPlayerIndex() + 1, result);
+    return result;
 }
 
 // ---------
 
 HRESULT STDMETHODCALLTYPE WrapperIDirectInputDevice::SetProperty(REFGUID rguidProp, LPCDIPROPHEADER pdiph)
 {
-    Log::WriteFormattedLogMessageFromResource(ELogLevel::LogLevelDebug, IDS_XIDI_WRAPPERIDIRECTINPUTDEVICE_OPERATION_FORMAT, XIDI_LOG_FORMATTED_FUNCTION_NAME, controller->GetPlayerIndex() + 1);
-
+    HRESULT result = DI_OK;
+    
     if (mapper->IsPropertyHandledByMapper(rguidProp))
-        return mapper->SetMappedProperty(rguidProp, pdiph);
+        result = mapper->SetMappedProperty(rguidProp, pdiph);
     else
-        return controller->SetControllerProperty(rguidProp, pdiph);
+        result = controller->SetControllerProperty(rguidProp, pdiph);
+
+    Log::WriteFormattedLogMessageFromResource(ELogLevel::LogLevelDebug, IDS_XIDI_WRAPPERIDIRECTINPUTDEVICE_OPERATION_FORMAT, XIDI_LOG_FORMATTED_FUNCTION_NAME, controller->GetPlayerIndex() + 1, result);
+    return result;
 }
 
 // ---------
 
 HRESULT STDMETHODCALLTYPE WrapperIDirectInputDevice::Unacquire(void)
 {
-    Log::WriteFormattedLogMessageFromResource(ELogLevel::LogLevelDebug, IDS_XIDI_WRAPPERIDIRECTINPUTDEVICE_OPERATION_FORMAT, XIDI_LOG_FORMATTED_FUNCTION_NAME, controller->GetPlayerIndex() + 1);
-    return controller->UnacquireController();
+    const HRESULT result = controller->UnacquireController();
+    Log::WriteFormattedLogMessageFromResource(ELogLevel::LogLevelDebug, IDS_XIDI_WRAPPERIDIRECTINPUTDEVICE_OPERATION_FORMAT, XIDI_LOG_FORMATTED_FUNCTION_NAME, controller->GetPlayerIndex() + 1, result);
+    return result;
 }
 
 // ---------
 
 HRESULT STDMETHODCALLTYPE WrapperIDirectInputDevice::WriteEffectToFile(LPCTSTR lptszFileName, DWORD dwEntries, LPDIFILEEFFECT rgDiFileEft, DWORD dwFlags)
 {
-    Log::WriteFormattedLogMessageFromResource(ELogLevel::LogLevelDebug, IDS_XIDI_WRAPPERIDIRECTINPUTDEVICE_OPERATION_FORMAT, XIDI_LOG_FORMATTED_FUNCTION_NAME, controller->GetPlayerIndex() + 1);
-    
     // Operation not supported.
-    return DIERR_UNSUPPORTED;
+    const HRESULT result = DIERR_UNSUPPORTED;
+    Log::WriteFormattedLogMessageFromResource(ELogLevel::LogLevelDebug, IDS_XIDI_WRAPPERIDIRECTINPUTDEVICE_OPERATION_FORMAT, XIDI_LOG_FORMATTED_FUNCTION_NAME, controller->GetPlayerIndex() + 1, result);
+    return result;
 }
 
 
@@ -385,29 +426,29 @@ HRESULT STDMETHODCALLTYPE WrapperIDirectInputDevice::WriteEffectToFile(LPCTSTR l
 
 HRESULT STDMETHODCALLTYPE WrapperIDirectInputDevice::BuildActionMap(LPDIACTIONFORMAT lpdiaf, LPCTSTR lpszUserName, DWORD dwFlags)
 {
-    Log::WriteFormattedLogMessageFromResource(ELogLevel::LogLevelDebug, IDS_XIDI_WRAPPERIDIRECTINPUTDEVICE_OPERATION_FORMAT, XIDI_LOG_FORMATTED_FUNCTION_NAME, controller->GetPlayerIndex() + 1);
-    
     // Operation not supported.
-    return DIERR_UNSUPPORTED;
+    const HRESULT result = DIERR_UNSUPPORTED;
+    Log::WriteFormattedLogMessageFromResource(ELogLevel::LogLevelDebug, IDS_XIDI_WRAPPERIDIRECTINPUTDEVICE_OPERATION_FORMAT, XIDI_LOG_FORMATTED_FUNCTION_NAME, controller->GetPlayerIndex() + 1, result);
+    return result;
 }
 
 // ---------
 
 HRESULT STDMETHODCALLTYPE WrapperIDirectInputDevice::GetImageInfo(LPDIDEVICEIMAGEINFOHEADER lpdiDevImageInfoHeader)
 {
-    Log::WriteFormattedLogMessageFromResource(ELogLevel::LogLevelDebug, IDS_XIDI_WRAPPERIDIRECTINPUTDEVICE_OPERATION_FORMAT, XIDI_LOG_FORMATTED_FUNCTION_NAME, controller->GetPlayerIndex() + 1);
-    
     // Operation not supported.
-    return DIERR_UNSUPPORTED;
+    const HRESULT result = DIERR_UNSUPPORTED;
+    Log::WriteFormattedLogMessageFromResource(ELogLevel::LogLevelDebug, IDS_XIDI_WRAPPERIDIRECTINPUTDEVICE_OPERATION_FORMAT, XIDI_LOG_FORMATTED_FUNCTION_NAME, controller->GetPlayerIndex() + 1, result);
+    return result;
 }
 
 // ---------
 
 HRESULT STDMETHODCALLTYPE WrapperIDirectInputDevice::SetActionMap(LPDIACTIONFORMAT lpdiActionFormat, LPCTSTR lptszUserName, DWORD dwFlags)
 {
-    Log::WriteFormattedLogMessageFromResource(ELogLevel::LogLevelDebug, IDS_XIDI_WRAPPERIDIRECTINPUTDEVICE_OPERATION_FORMAT, XIDI_LOG_FORMATTED_FUNCTION_NAME, controller->GetPlayerIndex() + 1);
-    
     // Operation not supported.
-    return DIERR_UNSUPPORTED;
+    const HRESULT result = DIERR_UNSUPPORTED;
+    Log::WriteFormattedLogMessageFromResource(ELogLevel::LogLevelDebug, IDS_XIDI_WRAPPERIDIRECTINPUTDEVICE_OPERATION_FORMAT, XIDI_LOG_FORMATTED_FUNCTION_NAME, controller->GetPlayerIndex() + 1, result);
+    return result;
 }
 #endif
