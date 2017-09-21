@@ -18,6 +18,11 @@
 #include <cstdio>
 
 
+/// Produces a nicely-formatted string representation of the name of the current function.
+/// Intended to be used for generating log messages.
+#define XIDI_LOG_FORMATTED_FUNCTION_NAME        _T(__FUNCTION__ "()")
+
+
 namespace Xidi
 {
     /// Enumerates all supported levels for logging messages.

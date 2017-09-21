@@ -330,6 +330,13 @@ HRESULT XInputController::GetCurrentDeviceState(XINPUT_STATE* state)
 
 // ---------
 
+DWORD XInputController::GetPlayerIndex(void)
+{
+    return xinputUserIndex;
+}
+
+// ---------
+
 BOOL XInputController::IsAcquired(void)
 {
     return isAcquired;

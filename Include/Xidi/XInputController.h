@@ -213,6 +213,10 @@ namespace Xidi
         /// @param [out] state Structure that receives the controller state.
         /// @return `DI_OK` upon completion, or `DIERR_NOTACQUIRED` if the application did not first acquire the device.
         HRESULT GetCurrentDeviceState(XINPUT_STATE* state);
+
+        /// Retrieves and returns the XInput player index associated with this controller object.
+        /// @return Associated XInput player index.
+        DWORD GetPlayerIndex(void);
         
         /// Specifies if the controller is currently acquired.
         /// @return `TRUE` if so, `FALSE` otherwise.
