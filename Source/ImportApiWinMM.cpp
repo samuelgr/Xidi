@@ -9,11 +9,12 @@
  *   Implementation of importing the API from the WinMM library.
  *****************************************************************************/
 
-#include "ApiStdString.h"
 #include "ApiWindows.h"
 #include "Globals.h"
 #include "ImportApiWinMM.h"
 #include "Log.h"
+
+#include <string>
 
 using namespace Xidi;
 
@@ -36,7 +37,7 @@ MMRESULT ImportApiWinMM::Initialize(void)
         ZeroMemory(&importTable, sizeof(importTable));
         
         // Obtain the full library path string.
-        StdString libraryPath;
+        std::wstring libraryPath;
         Globals::FillWinMMLibraryPath(libraryPath);
         
         // Attempt to load the library.

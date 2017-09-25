@@ -10,7 +10,6 @@
  *****************************************************************************/
 
 #include "ApiDirectInput.h"
-#include "ApiStdString.h"
 #include "Globals.h"
 #include "ImportApiDirectInput.h"
 #include "Log.h"
@@ -36,7 +35,7 @@ HRESULT ImportApiDirectInput::Initialize(void)
         ZeroMemory(&importTable, sizeof(importTable));
         
         // Obtain the full library path string.
-        StdString libraryPath;
+        std::wstring libraryPath;
 
 #if DIRECTINPUT_VERSION >= 0x0800
         Globals::FillDirectInput8LibraryPath(libraryPath);

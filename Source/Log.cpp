@@ -93,7 +93,7 @@ void Log::InitializeAndCreateLog(void)
         WCHAR logFileNameBuffer[2048];
         
         // First is the name of the executable.
-        GetModuleFileNameW(NULL, logFileNameBuffer, _countof(logFileNameBuffer));
+        GetModuleFileName(NULL, logFileNameBuffer, _countof(logFileNameBuffer));
         std::wstring executableFileName = logFileNameBuffer;
         const size_t executableStartPos = executableFileName.find_last_of(L'\\');
         const size_t executableEndPos = executableFileName.find_last_of(L'.');
@@ -112,7 +112,7 @@ void Log::InitializeAndCreateLog(void)
         logFilePath += logFileNameBuffer;
         
         // Open the log file for writing.
-        _wfopen_s(&fileHandle, logFilePath.c_str(), L"w");
+        _wfopen_s(&fileHandle, logFilePath.c_str(), L"w, ccs=UTF-8");
         if (NULL == fileHandle) return;
 
         // Write out the log file header.

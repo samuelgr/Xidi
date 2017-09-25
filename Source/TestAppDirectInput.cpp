@@ -11,7 +11,6 @@
  *****************************************************************************/
 
 #include "ApiDirectInput.h"
-#include "ApiIOStream.h"
 #include "Configuration.h"
 #include "ControllerIdentification.h"
 #include "ExportApiDirectInput.h"
@@ -20,6 +19,8 @@
 #include "Log.h"
 #include "MapperFactory.h"
 #include "Mapper/Base.h"
+
+#include <iostream>
 
 using namespace std;
 using namespace Xidi;
@@ -208,15 +209,15 @@ BOOL STDMETHODCALLTYPE EnumDevicesTestCallback(LPCDIDEVICEINSTANCE lpddi, LPVOID
     GUID xProductGUID;
     ControllerIdentification::GetProductGUID(xProductGUID);
 
-    tout << _T("    ");
+    wcout << _T("    ");
     
     if (*testValuePtr != testValue)
-        tout << _T("[pvRef fail] ");
+        wcout << _T("[pvRef fail] ");
 
     if (!flagCallbackExpected)
-        tout << _T("[flagCallbackExpected fail] ");
+        wcout << _T("[flagCallbackExpected fail] ");
     
-    tout << _T("Found ") << DirectInputDeviceTypeToString(GET_DIDEVICE_TYPE(lpddi->dwDevType)) << ": " << lpddi->tszProductName;
+    wcout << _T("Found ") << DirectInputDeviceTypeToString(GET_DIDEVICE_TYPE(lpddi->dwDevType)) << ": " << lpddi->tszProductName;
 
 #if DIRECTINPUT_VERSION >= 0x0800
     if (DI8DEVTYPE_GAMEPAD == GET_DIDEVICE_TYPE(lpddi->dwDevType) && (lpddi->guidProduct == xProductGUID))
@@ -228,10 +229,10 @@ BOOL STDMETHODCALLTYPE EnumDevicesTestCallback(LPCDIDEVICEINSTANCE lpddi, LPVOID
         flagInstanceGuidToTestFound = TRUE;
         flagCallbackExpected = FALSE;
     
-        tout << _T(", supported") << endl;
+        wcout << _T(", supported") << endl;
     }
     else
-        tout << endl;
+        wcout << endl;
     
     return flagCallbackExpected ? DIENUM_CONTINUE : DIENUM_STOP;
 }
@@ -241,22 +242,22 @@ BOOL STDMETHODCALLTYPE EnumObjectsAxesTestCallback(LPCDIDEVICEOBJECTINSTANCE lpd
 {
     DWORD* testValuePtr = (DWORD*)pvRef;
 
-    tout << _T("    ");
+    wcout << _T("    ");
 
     if (*testValuePtr != testValue)
-        tout << _T("[pvRef fail] ");
+        wcout << _T("[pvRef fail] ");
     if (DIDFT_GETTYPE(lpddoi->dwType) != DIDFT_ABSAXIS)
-        tout << _T("[dwType fail] ");
+        wcout << _T("[dwType fail] ");
 
     LPTSTR axisString = DirectInputAxisTypeToString(lpddoi->guidType);
     if (NULL == axisString)
-        tout << _T("[guidType fail] ");
+        wcout << _T("[guidType fail] ");
     
-    tout << _T("Instance ") << DIDFT_GETINSTANCE(lpddoi->dwType) << _T(" @") << lpddoi->dwOfs << _T(": ");
+    wcout << _T("Instance ") << DIDFT_GETINSTANCE(lpddoi->dwType) << _T(" @") << lpddoi->dwOfs << _T(": ");
     if (NULL == axisString)
-        tout << _T("UNKNOWN") << endl;
+        wcout << _T("UNKNOWN") << endl;
     else
-        tout << axisString << endl;
+        wcout << axisString << endl;
 
     testCounter += 1;
     return DIENUM_CONTINUE;
@@ -267,16 +268,16 @@ BOOL STDMETHODCALLTYPE EnumObjectsButtonsTestCallback(LPCDIDEVICEOBJECTINSTANCE 
 {
     DWORD* testValuePtr = (DWORD*)pvRef;
 
-    tout << _T("    ");
+    wcout << _T("    ");
 
     if (*testValuePtr != testValue)
-        tout << _T("[pvRef fail] ");
+        wcout << _T("[pvRef fail] ");
     if (DIDFT_GETTYPE(lpddoi->dwType) != DIDFT_PSHBUTTON)
-        tout << _T("[dwType fail] ");
+        wcout << _T("[dwType fail] ");
     if (lpddoi->guidType != GUID_Button)
-        tout << _T("[guidType fail] ");
+        wcout << _T("[guidType fail] ");
 
-    tout << _T("Instance ") << DIDFT_GETINSTANCE(lpddoi->dwType) << _T(" @") << lpddoi->dwOfs << endl;
+    wcout << _T("Instance ") << DIDFT_GETINSTANCE(lpddoi->dwType) << _T(" @") << lpddoi->dwOfs << endl;
 
     testCounter += 1;
     return DIENUM_CONTINUE;
@@ -287,16 +288,16 @@ BOOL STDMETHODCALLTYPE EnumObjectsPovTestCallback(LPCDIDEVICEOBJECTINSTANCE lpdd
 {
     DWORD* testValuePtr = (DWORD*)pvRef;
 
-    tout << _T("    ");
+    wcout << _T("    ");
 
     if (*testValuePtr != testValue)
-        tout << _T("[pvRef fail] ");
+        wcout << _T("[pvRef fail] ");
     if (DIDFT_GETTYPE(lpddoi->dwType) != DIDFT_POV)
-        tout << _T("[dwType fail] ");
+        wcout << _T("[dwType fail] ");
     if (lpddoi->guidType != GUID_POV)
-        tout << _T("[guidType fail] ");
+        wcout << _T("[guidType fail] ");
 
-    tout << _T("Instance ") << DIDFT_GETINSTANCE(lpddoi->dwType) << _T(" @") << lpddoi->dwOfs << endl;
+    wcout << _T("Instance ") << DIDFT_GETINSTANCE(lpddoi->dwType) << _T(" @") << lpddoi->dwOfs << endl;
 
     testCounter += 1;
     return DIENUM_CONTINUE;
@@ -308,7 +309,7 @@ BOOL STDMETHODCALLTYPE EnumObjectsOverallTestCallback(LPCDIDEVICEOBJECTINSTANCE 
     DWORD* testValuePtr = (DWORD*)pvRef;
 
     if (*testValuePtr != testValue)
-        tout << _T("[pvRef fail] ");
+        wcout << _T("[pvRef fail] ");
 
     testCounter += 1;
     return DIENUM_CONTINUE;
@@ -332,7 +333,7 @@ int RunTestApp(int argc, char* argv[])
     // Initialize the imported DirectInput8 API.
     if (S_OK != ImportApiDirectInput::Initialize())
     {
-        terr << _T("Unable to initialize DirectInput8 API.") << endl;
+        wcerr <<_T("Unable to initialize DirectInput8 API.") << endl;
         return -1;
     }
 
@@ -340,7 +341,7 @@ int RunTestApp(int argc, char* argv[])
     result = ExportedDirectInputCreateMethod(GetModuleHandle(NULL), DIRECTINPUT_VERSION, Use_IID_IDirectInput, (LPVOID*)&directInputIface, NULL);
     if (DI_OK != result)
     {
-        terr << _T("Unable to obtain IDirectInput interface pointer: code ") << result << _T(".") << endl;
+        wcerr <<_T("Unable to obtain IDirectInput interface pointer: code ") << result << _T(".") << endl;
         return -1;
     }
     
@@ -351,7 +352,7 @@ int RunTestApp(int argc, char* argv[])
     // Enumerate all devices attached to the system.
     flagCallbackExpected = TRUE;
     
-    tout << _T("Begin IDirectInput->EnumDevices") << endl;
+    wcout << _T("Begin IDirectInput->EnumDevices") << endl;
     
 #if DIRECTINPUT_VERSION >= 0x0800
     result = directInputIface->EnumDevices(DI8DEVCLASS_ALL, &EnumDevicesTestCallback, (LPVOID)&testValue, DIEDFL_ATTACHEDONLY);
@@ -360,22 +361,22 @@ int RunTestApp(int argc, char* argv[])
 #endif
     if (DI_OK != result)
     {
-        terr << _T("Unable to enumerate attached devices: code ") << result << _T(".") << endl;
+        wcerr <<_T("Unable to enumerate attached devices: code ") << result << _T(".") << endl;
         return -1;
     }
     
     // Test that the callback was invoked the required number of times.
     if (flagCallbackExpected && flagInstanceGuidToTestFound)
-        tout << _T("FAIL: IDirectInput->EnumDevices callback test") << endl;
+        wcout << _T("FAIL: IDirectInput->EnumDevices callback test") << endl;
     else
-        tout << _T("PASS: IDirectInput->EnumDevices callback test") << endl;
+        wcout << _T("PASS: IDirectInput->EnumDevices callback test") << endl;
 
-    tout << _T("End IDirectInput->EnumDevices") << endl << endl;
+    wcout << _T("End IDirectInput->EnumDevices") << endl << endl;
 
     // Verify that a supported device was found
     if (!flagInstanceGuidToTestFound)
     {
-        tout << _T("No supported devices found. Connect one and try again.") << endl;
+        wcout << _T("No supported devices found. Connect one and try again.") << endl;
         return -1;
     }
 
@@ -388,7 +389,7 @@ int RunTestApp(int argc, char* argv[])
     
     if (DI_OK != result)
     {
-        terr << _T("Unable to obtain IDirectInputDevice interface pointer: code ") << result << _T(".") << endl;
+        wcerr <<_T("Unable to obtain IDirectInputDevice interface pointer: code ") << result << _T(".") << endl;
         return -1;
     }
 
@@ -403,88 +404,88 @@ int RunTestApp(int argc, char* argv[])
     result = directInputDeviceIface->GetCapabilities(&deviceCapabilities);
     if (DI_OK != result)
     {
-        terr << _T("Unable to obtain get device capabilities: code ") << result << _T(".") << endl;
+        wcerr <<_T("Unable to obtain get device capabilities: code ") << result << _T(".") << endl;
         return -1;
     }
 
-    tout << _T("Device presents ") << deviceCapabilities.dwAxes << _T(" axes, ") << deviceCapabilities.dwButtons << _T(" buttons, and ") << deviceCapabilities.dwPOVs << _T(" POV controllers.") << endl << endl;
+    wcout << _T("Device presents ") << deviceCapabilities.dwAxes << _T(" axes, ") << deviceCapabilities.dwButtons << _T(" buttons, and ") << deviceCapabilities.dwPOVs << _T(" POV controllers.") << endl << endl;
     
 
     ////////////////////////////////////
     ////////   Device Object Enumeration
 
-    tout << _T("Begin IDirectInputDevice->EnumObjects") << endl;
+    wcout << _T("Begin IDirectInputDevice->EnumObjects") << endl;
     
     // Attempt to enumerate axes.
-    tout << _T("  Axes...") << endl;
+    wcout << _T("  Axes...") << endl;
     testCounter = 0;
     result = directInputDeviceIface->EnumObjects(&EnumObjectsAxesTestCallback, (LPVOID)&testValue, DIDFT_AXIS);
     
     if (DI_OK != result)
     {
-        terr << _T("Unable to obtain get device axes: code ") << result << _T(".") << endl;
+        wcerr <<_T("Unable to obtain get device axes: code ") << result << _T(".") << endl;
         return -1;
     }
     if (testCounter == (deviceCapabilities.dwAxes))
-        tout << _T("PASS: IDirectInputDevice->EnumObjects axis consistency check.") << endl;
+        wcout << _T("PASS: IDirectInputDevice->EnumObjects axis consistency check.") << endl;
     else
-        tout << _T("FAIL: IDirectInputDevice->EnumObjects axis consistency check.") << endl;
+        wcout << _T("FAIL: IDirectInputDevice->EnumObjects axis consistency check.") << endl;
 
     // Attempt to enumerate buttons.
-    tout << _T("  Buttons...") << endl;
+    wcout << _T("  Buttons...") << endl;
     testCounter = 0;
     result = directInputDeviceIface->EnumObjects(&EnumObjectsButtonsTestCallback, (LPVOID)&testValue, DIDFT_BUTTON);
     if (DI_OK != result)
     {
-        terr << _T("Unable to obtain get device buttons: code ") << result << _T(".") << endl;
+        wcerr <<_T("Unable to obtain get device buttons: code ") << result << _T(".") << endl;
         return -1;
     }
     if (testCounter == (deviceCapabilities.dwButtons))
-        tout << _T("PASS: IDirectInputDevice->EnumObjects button consistency check.") << endl;
+        wcout << _T("PASS: IDirectInputDevice->EnumObjects button consistency check.") << endl;
     else
-        tout << _T("FAIL: IDirectInputDevice->EnumObjects button consistency check.") << endl;
+        wcout << _T("FAIL: IDirectInputDevice->EnumObjects button consistency check.") << endl;
 
     // Attempt to enumerate POVs.
-    tout << _T("  POVs...") << endl;
+    wcout << _T("  POVs...") << endl;
     testCounter = 0;
     result = directInputDeviceIface->EnumObjects(&EnumObjectsPovTestCallback, (LPVOID)&testValue, DIDFT_POV);
     if (DI_OK != result)
     {
-        terr << _T("Unable to obtain get device POVs: code ") << result << _T(".") << endl;
+        wcerr <<_T("Unable to obtain get device POVs: code ") << result << _T(".") << endl;
         return -1;
     }
     if (testCounter == (deviceCapabilities.dwPOVs))
-        tout << _T("PASS: IDirectInputDevice->EnumObjects POV consistency check.") << endl;
+        wcout << _T("PASS: IDirectInputDevice->EnumObjects POV consistency check.") << endl;
     else
-        tout << _T("FAIL: IDirectInputDevice->EnumObjects POV consistency check.") << endl;
+        wcout << _T("FAIL: IDirectInputDevice->EnumObjects POV consistency check.") << endl;
 
     // Attempt to enumerate everything to verify consistency.
     testCounter = 0;
     result = directInputDeviceIface->EnumObjects(&EnumObjectsOverallTestCallback, (LPVOID)&testValue, DIDFT_ALL);
     if (DI_OK != result)
     {
-        terr << _T("Unable to obtain get device objects: code ") << result << _T(".") << endl;
+        wcerr <<_T("Unable to obtain get device objects: code ") << result << _T(".") << endl;
         return -1;
     }
     if (testCounter == (deviceCapabilities.dwAxes + deviceCapabilities.dwButtons + deviceCapabilities.dwPOVs))
-        tout << _T("PASS: IDirectInputDevice->EnumObjects overall consistency check.") << endl;
+        wcout << _T("PASS: IDirectInputDevice->EnumObjects overall consistency check.") << endl;
     else
-        tout << _T("FAIL: IDirectInputDevice->EnumObjects overall consistency check.") << endl;
+        wcout << _T("FAIL: IDirectInputDevice->EnumObjects overall consistency check.") << endl;
 
     // Finished enumerating objects.
-    tout << _T("End IDirectInputDevice->EnumObjects") << endl << endl;
+    wcout << _T("End IDirectInputDevice->EnumObjects") << endl << endl;
 
 
     ////////////////////////////////////
     ////////   Device Object Information
 
-    tout << _T("Begin IDirectInputDevice->GetObjectInfo") << endl;
+    wcout << _T("Begin IDirectInputDevice->GetObjectInfo") << endl;
 
     // Attempt to iterate over axes.
-    tout << _T("  Axes...") << endl;
+    wcout << _T("  Axes...") << endl;
     for (DWORD i = 0; i < deviceCapabilities.dwAxes; ++i)
     {
-        tout << _T("    ") << i << _T(": ");
+        wcout << _T("    ") << i << _T(": ");
 
         DIDEVICEOBJECTINSTANCE objectInfo;
         objectInfo.dwSize = sizeof(objectInfo);
@@ -492,18 +493,18 @@ int RunTestApp(int argc, char* argv[])
         result = directInputDeviceIface->GetObjectInfo(&objectInfo, DIDFT_ABSAXIS | DIDFT_MAKEINSTANCE(i), DIPH_BYID);
         if (DI_OK != result)
         {
-            tout << _T("FAILED") << endl;
+            wcout << _T("FAILED") << endl;
             continue;
         }
 
-        tout << _T("OK: ") << objectInfo.tszName << _T(" (") << DirectInputAxisTypeToString(objectInfo.guidType) << _T(" @") << objectInfo.dwOfs << _T(")") << endl;
+        wcout << _T("OK: ") << objectInfo.tszName << _T(" (") << DirectInputAxisTypeToString(objectInfo.guidType) << _T(" @") << objectInfo.dwOfs << _T(")") << endl;
     }
 
     // Attempt to iterate over buttons.
-    tout << _T("  Buttons...") << endl;
+    wcout << _T("  Buttons...") << endl;
     for (DWORD i = 0; i < deviceCapabilities.dwButtons; ++i)
     {
-        tout << _T("    ") << i << _T(": ");
+        wcout << _T("    ") << i << _T(": ");
 
         DIDEVICEOBJECTINSTANCE objectInfo;
         objectInfo.dwSize = sizeof(objectInfo);
@@ -511,18 +512,18 @@ int RunTestApp(int argc, char* argv[])
         result = directInputDeviceIface->GetObjectInfo(&objectInfo, DIDFT_PSHBUTTON | DIDFT_MAKEINSTANCE(i), DIPH_BYID);
         if (DI_OK != result)
         {
-            tout << _T("FAILED") << endl;
+            wcout << _T("FAILED") << endl;
             continue;
         }
 
-        tout << _T("OK: ") << objectInfo.tszName << _T(" (@") << objectInfo.dwOfs << _T(")") << endl;
+        wcout << _T("OK: ") << objectInfo.tszName << _T(" (@") << objectInfo.dwOfs << _T(")") << endl;
     }
 
     // Attempt to iterate over POVs.
-    tout << _T("  POVs...") << endl;
+    wcout << _T("  POVs...") << endl;
     for (DWORD i = 0; i < deviceCapabilities.dwPOVs; ++i)
     {
-        tout << _T("    ") << i << _T(": ");
+        wcout << _T("    ") << i << _T(": ");
 
         DIDEVICEOBJECTINSTANCE objectInfo;
         objectInfo.dwSize = sizeof(objectInfo);
@@ -530,11 +531,11 @@ int RunTestApp(int argc, char* argv[])
         result = directInputDeviceIface->GetObjectInfo(&objectInfo, DIDFT_POV | DIDFT_MAKEINSTANCE(i), DIPH_BYID);
         if (DI_OK != result)
         {
-            tout << _T("FAILED") << endl;
+            wcout << _T("FAILED") << endl;
             continue;
         }
 
-        tout << _T("OK: ") << objectInfo.tszName << _T(" (@") << objectInfo.dwOfs << _T(")") << endl;
+        wcout << _T("OK: ") << objectInfo.tszName << _T(" (@") << objectInfo.dwOfs << _T(")") << endl;
     }
 
     // Attempt to request information on objects that should not be available or are otherwise invalid requests.
@@ -543,49 +544,49 @@ int RunTestApp(int argc, char* argv[])
 
     result = directInputDeviceIface->GetObjectInfo(&objectInfo, DIDFT_ABSAXIS | DIDFT_MAKEINSTANCE(0), DIPH_BYID);
     if (DI_OK == result)
-        tout << _T("FAIL: Invalid DIDEVICEOBJECTINSTANCE dwSize test.") << endl;
+        wcout << _T("FAIL: Invalid DIDEVICEOBJECTINSTANCE dwSize test.") << endl;
     else
-        tout << _T("PASS: Invalid DIDEVICEOBJECTINSTANCE dwSize test.") << endl;
+        wcout << _T("PASS: Invalid DIDEVICEOBJECTINSTANCE dwSize test.") << endl;
 
     objectInfo.dwSize = sizeof(objectInfo);
     result = directInputDeviceIface->GetObjectInfo(&objectInfo, DIDFT_ABSAXIS | DIDFT_MAKEINSTANCE(deviceCapabilities.dwAxes), DIPH_BYID);
     if (DI_OK == result)
-        tout << _T("FAIL: Invalid axis object info test.") << endl;
+        wcout << _T("FAIL: Invalid axis object info test.") << endl;
     else
-        tout << _T("PASS: Invalid axis object info test.") << endl;
+        wcout << _T("PASS: Invalid axis object info test.") << endl;
 
     result = directInputDeviceIface->GetObjectInfo(&objectInfo, DIDFT_PSHBUTTON | DIDFT_MAKEINSTANCE(deviceCapabilities.dwButtons), DIPH_BYID);
     if (DI_OK == result)
-        tout << _T("FAIL: Invalid button object info test.") << endl;
+        wcout << _T("FAIL: Invalid button object info test.") << endl;
     else
-        tout << _T("PASS: Invalid button object info test.") << endl;
+        wcout << _T("PASS: Invalid button object info test.") << endl;
 
     result = directInputDeviceIface->GetObjectInfo(&objectInfo, DIDFT_POV | DIDFT_MAKEINSTANCE(deviceCapabilities.dwPOVs), DIPH_BYID);
     if (DI_OK == result)
-        tout << _T("FAIL: Invalid POV object info test.") << endl;
+        wcout << _T("FAIL: Invalid POV object info test.") << endl;
     else
-        tout << _T("PASS: Invalid POV object info test.") << endl;
+        wcout << _T("PASS: Invalid POV object info test.") << endl;
 
     result = directInputDeviceIface->GetObjectInfo(&objectInfo, 0, DIPH_BYOFFSET);
     if (DI_OK == result)
-        tout << _T("FAIL: Uninitialized data format object info test.") << endl;
+        wcout << _T("FAIL: Uninitialized data format object info test.") << endl;
     else
-        tout << _T("PASS: Uninitialized data format object info test.") << endl;
+        wcout << _T("PASS: Uninitialized data format object info test.") << endl;
 
     result = directInputDeviceIface->GetObjectInfo(&objectInfo, 0, DIPH_BYUSAGE);
     if (DI_OK == result)
-        tout << _T("FAIL: Unsupported request type object info test.") << endl;
+        wcout << _T("FAIL: Unsupported request type object info test.") << endl;
     else
-        tout << _T("PASS: Unsupported request type object info test.") << endl;
+        wcout << _T("PASS: Unsupported request type object info test.") << endl;
     
     // Finished checking objects.
-    tout << _T("End IDirectInputDevice->GetObjectInfo") << endl << endl;
+    wcout << _T("End IDirectInputDevice->GetObjectInfo") << endl << endl;
     
     
     ////////////////////////////////////
     ////////   Device Properties
 
-    tout << _T("Begin IDirectInputDevice->[Set|Get]Property") << endl;
+    wcout << _T("Begin IDirectInputDevice->[Set|Get]Property") << endl;
     
     DIPROPRANGE rangeTest;
     DIPROPDWORD deadzoneTest;
@@ -601,62 +602,62 @@ int RunTestApp(int argc, char* argv[])
     rangeTest.diph.dwSize = sizeof(rangeTest);
     result = directInputDeviceIface->GetProperty(DIPROP_RANGE, &rangeTest.diph);
     if (DIERR_INVALIDPARAM != result || Mapper::Base::kDefaultAxisRangeMax == rangeTest.lMax)
-        tout << _T("FAIL: Invalid header size test.") << endl;
+        wcout << _T("FAIL: Invalid header size test.") << endl;
     else
-        tout << _T("PASS: Invalid header size test.") << endl;
+        wcout << _T("PASS: Invalid header size test.") << endl;
 
     // Same, but now set header size and not overall size
     rangeTest.diph.dwSize = 0;
     rangeTest.diph.dwHeaderSize = sizeof(rangeTest.diph);
     result = directInputDeviceIface->GetProperty(DIPROP_RANGE, &rangeTest.diph);
     if (DIERR_INVALIDPARAM != result || Mapper::Base::kDefaultAxisRangeMax == rangeTest.lMax)
-        tout << _T("FAIL: Invalid structure size test.") << endl;
+        wcout << _T("FAIL: Invalid structure size test.") << endl;
     else
-        tout << _T("PASS: Invalid structure size test.") << endl;
+        wcout << _T("PASS: Invalid structure size test.") << endl;
 
     // Set sizes and expect to get default values back.
     rangeTest.diph.dwSize = sizeof(rangeTest);
     result = directInputDeviceIface->GetProperty(DIPROP_RANGE, &rangeTest.diph);
     if (DI_OK != result || Mapper::Base::kDefaultAxisRangeMax != rangeTest.lMax || Mapper::Base::kDefaultAxisRangeMin != rangeTest.lMin)
-        tout << _T("FAIL: Default range test.") << endl;
+        wcout << _T("FAIL: Default range test.") << endl;
     else
-        tout << _T("PASS: Default range test.") << endl;
+        wcout << _T("PASS: Default range test.") << endl;
 
     // Set an invalid range and expect it to be rejected.
     rangeTest.lMax = -1000;
     rangeTest.lMin = 1000;
     result = directInputDeviceIface->SetProperty(DIPROP_RANGE, &rangeTest.diph);
     if (DIERR_INVALIDPARAM != result)
-        tout << _T("FAIL: Set invalid range test 1.") << endl;
+        wcout << _T("FAIL: Set invalid range test 1.") << endl;
     else
-        tout << _T("PASS: Set invalid range test 1.") << endl;
+        wcout << _T("PASS: Set invalid range test 1.") << endl;
 
     // Another invalid range to be rejected.
     rangeTest.lMax = 1000;
     rangeTest.lMin = 1000;
     result = directInputDeviceIface->SetProperty(DIPROP_RANGE, &rangeTest.diph);
     if (DIERR_INVALIDPARAM != result)
-        tout << _T("FAIL: Set invalid range test 2.") << endl;
+        wcout << _T("FAIL: Set invalid range test 2.") << endl;
     else
-        tout << _T("PASS: Set invalid range test 2.") << endl;
+        wcout << _T("PASS: Set invalid range test 2.") << endl;
 
     // This range is valid and should be accepted.
     rangeTest.lMax = 1000;
     rangeTest.lMin = -1000;
     result = directInputDeviceIface->SetProperty(DIPROP_RANGE, &rangeTest.diph);
     if (DI_OK != result)
-        tout << _T("FAIL: Set valid range test.") << endl;
+        wcout << _T("FAIL: Set valid range test.") << endl;
     else
-        tout << _T("PASS: Set valid range test.") << endl;
+        wcout << _T("PASS: Set valid range test.") << endl;
 
     // Expect to read back that range.
     rangeTest.lMax = 0;
     rangeTest.lMin = 0;
     result = directInputDeviceIface->GetProperty(DIPROP_RANGE, &rangeTest.diph);
     if (DI_OK != result || 1000 != rangeTest.lMax || -1000 != rangeTest.lMin)
-        tout << _T("FAIL: Get valid range test.") << endl;
+        wcout << _T("FAIL: Get valid range test.") << endl;
     else
-        tout << _T("PASS: Get valid range test.") << endl;
+        wcout << _T("PASS: Get valid range test.") << endl;
 
     // Get a valid deadzone but targetting a button, should be rejected.
     deadzoneTest.diph.dwHow = DIPH_BYID;
@@ -666,25 +667,25 @@ int RunTestApp(int argc, char* argv[])
     deadzoneTest.dwData = 1000;
     result = directInputDeviceIface->GetProperty(DIPROP_DEADZONE, &deadzoneTest.diph);
     if (DIERR_UNSUPPORTED != result || 1000 != deadzoneTest.dwData)
-        tout << _T("FAIL: Bad deadzone target test.") << endl;
+        wcout << _T("FAIL: Bad deadzone target test.") << endl;
     else
-        tout << _T("PASS: Bad deadzone target test.") << endl;
+        wcout << _T("PASS: Bad deadzone target test.") << endl;
 
     // Set an actual valid deadzone.
     deadzoneTest.diph.dwObj = DIDFT_ABSAXIS | DIDFT_MAKEINSTANCE(0);
     result = directInputDeviceIface->SetProperty(DIPROP_DEADZONE, &deadzoneTest.diph);
     if (DI_OK != result || 1000 != deadzoneTest.dwData)
-        tout << _T("FAIL: Set valid deadzone test.") << endl;
+        wcout << _T("FAIL: Set valid deadzone test.") << endl;
     else
-        tout << _T("PASS: Set valid deadzone test.") << endl;
+        wcout << _T("PASS: Set valid deadzone test.") << endl;
 
     // Read it back.
     deadzoneTest.dwData = 1000000;
     result = directInputDeviceIface->GetProperty(DIPROP_DEADZONE, &deadzoneTest.diph);
     if (DI_OK != result || 1000 != deadzoneTest.dwData)
-        tout << _T("FAIL: Get valid deadzone test.") << endl;
+        wcout << _T("FAIL: Get valid deadzone test.") << endl;
     else
-        tout << _T("PASS: Get valid deadzone test.") << endl;
+        wcout << _T("PASS: Get valid deadzone test.") << endl;
 
     // Make sure the scope was limited to just that axis and it didn't go elsewhere.
     numErrors = 0;
@@ -696,17 +697,17 @@ int RunTestApp(int argc, char* argv[])
             numErrors += 1;
     }
     if (0 != numErrors)
-        tout << _T("FAIL: Single axis valid deadzone test.") << endl;
+        wcout << _T("FAIL: Single axis valid deadzone test.") << endl;
     else
-        tout << _T("PASS: Single axis valid deadzone test.") << endl;
+        wcout << _T("PASS: Single axis valid deadzone test.") << endl;
 
     // Write a deadzone out of range.
     deadzoneTest.dwData = Mapper::Base::kMaxAxisDeadzoneSaturation * 2;
     result = directInputDeviceIface->SetProperty(DIPROP_DEADZONE, &deadzoneTest.diph);
     if (DIERR_INVALIDPARAM != result)
-        tout << _T("FAIL: Set out-of-range deadzone test.") << endl;
+        wcout << _T("FAIL: Set out-of-range deadzone test.") << endl;
     else
-        tout << _T("PASS: Set out-of-range deadzone test.") << endl;
+        wcout << _T("PASS: Set out-of-range deadzone test.") << endl;
     
     // Write a deadzone for the whole device, but use an invalid "dwObj".
     deadzoneTest.dwData = 51;
@@ -714,18 +715,18 @@ int RunTestApp(int argc, char* argv[])
     deadzoneTest.diph.dwObj = DIDFT_ABSAXIS | DIDFT_MAKEINSTANCE(1);
     result = directInputDeviceIface->SetProperty(DIPROP_DEADZONE, &deadzoneTest.diph);
     if (DIERR_INVALIDPARAM != result)
-        tout << _T("FAIL: Set invalid whole device deadzone test.") << endl;
+        wcout << _T("FAIL: Set invalid whole device deadzone test.") << endl;
     else
-        tout << _T("PASS: Set invalid whole device deadzone test.") << endl;
+        wcout << _T("PASS: Set invalid whole device deadzone test.") << endl;
 
     // Write a valid deadzone for the whole device.
     deadzoneTest.dwData = 54;
     deadzoneTest.diph.dwObj = 0;
     result = directInputDeviceIface->SetProperty(DIPROP_DEADZONE, &deadzoneTest.diph);
     if (DI_OK != result)
-        tout << _T("FAIL: Set valid whole device deadzone test.") << endl;
+        wcout << _T("FAIL: Set valid whole device deadzone test.") << endl;
     else
-        tout << _T("PASS: Set valid whole device deadzone test.") << endl;
+        wcout << _T("PASS: Set valid whole device deadzone test.") << endl;
 
     // Read back the deadzone from the whole device.
     numErrors = 0;
@@ -738,11 +739,11 @@ int RunTestApp(int argc, char* argv[])
             numErrors += 1;
     }
     if (0 != numErrors)
-        tout << _T("FAIL: Whole device valid deadzone test.") << endl;
+        wcout << _T("FAIL: Whole device valid deadzone test.") << endl;
     else
-        tout << _T("PASS: Whole device valid deadzone test.") << endl;
+        wcout << _T("PASS: Whole device valid deadzone test.") << endl;
 
-    tout << _T("End IDirectInputDevice->[Set|Get]Property") << endl << endl;
+    wcout << _T("End IDirectInputDevice->[Set|Get]Property") << endl << endl;
 
     // Set the input buffer size to something huge (1GB).
     bufferSize.diph.dwHow = DIPH_DEVICE;
@@ -752,39 +753,39 @@ int RunTestApp(int argc, char* argv[])
     bufferSize.dwData = 1 * 1024 * 1024 * 1024;
     result = directInputDeviceIface->SetProperty(DIPROP_BUFFERSIZE, &bufferSize.diph);
     if (DI_OK != result)
-        tout << _T("FAIL: Set huge buffer size test.") << endl;
+        wcout << _T("FAIL: Set huge buffer size test.") << endl;
     else
-        tout << _T("PASS: Set huge buffer size test.") << endl;
+        wcout << _T("PASS: Set huge buffer size test.") << endl;
 
     // Read back the input buffer size and make sure the value set is the value obtained.
     bufferSize.dwData = 0;
     result = directInputDeviceIface->GetProperty(DIPROP_BUFFERSIZE, &bufferSize.diph);
     if ((DI_OK != result) || (1 * 1024 * 1024 * 1024 != bufferSize.dwData))
-        tout << _T("FAIL: Get huge buffer size test.") << endl;
+        wcout << _T("FAIL: Get huge buffer size test.") << endl;
     else
-        tout << _T("PASS: Get huge buffer size test.") << endl;
+        wcout << _T("PASS: Get huge buffer size test.") << endl;
 
     // Set the input buffer size to something reasonable (1kB).
     bufferSize.dwData = 1024;
     result = directInputDeviceIface->SetProperty(DIPROP_BUFFERSIZE, &bufferSize.diph);
     if (DI_OK != result)
-        tout << _T("FAIL: Set reasonable buffer size test.") << endl;
+        wcout << _T("FAIL: Set reasonable buffer size test.") << endl;
     else
-        tout << _T("PASS: Set reasonable buffer size test.") << endl;
+        wcout << _T("PASS: Set reasonable buffer size test.") << endl;
 
     // Expect to get that same value back.
     bufferSize.dwData = 0;
     result = directInputDeviceIface->GetProperty(DIPROP_BUFFERSIZE, &bufferSize.diph);
     if ((DI_OK != result) || (1024 != bufferSize.dwData))
-        tout << _T("FAIL: Get reasonable buffer size test.") << endl;
+        wcout << _T("FAIL: Get reasonable buffer size test.") << endl;
     else
-        tout << _T("PASS: Get reasonable buffer size test.") << endl;
+        wcout << _T("PASS: Get reasonable buffer size test.") << endl;
     
     
     ////////////////////////////////////
     ////////   Interactive Mode Preparation
 
-    tout << _T("Preparing to launch interactive mode... ");
+    wcout << _T("Preparing to launch interactive mode... ");
 
     
     // Set the input buffer size to 128kB to avoid possible overflows during interactive testing.
@@ -792,7 +793,7 @@ int RunTestApp(int argc, char* argv[])
     result = directInputDeviceIface->SetProperty(DIPROP_BUFFERSIZE, &bufferSize.diph);
     if (DI_OK != result)
     {
-        tout << _T("FAILED") << endl << _T("Unable to set input buffer size.") << endl;
+        wcout << _T("FAILED") << endl << _T("Unable to set input buffer size.") << endl;
         return -1;
     }
     
@@ -803,14 +804,14 @@ int RunTestApp(int argc, char* argv[])
     result = directInputDeviceIface->SetProperty(DIPROP_DEADZONE, &deadzoneTest.diph);
     if (DI_OK != result)
     {
-        tout << _T("FAILED") << endl << _T("Unable to set deadzone.") << endl;
+        wcout << _T("FAILED") << endl << _T("Unable to set deadzone.") << endl;
         return -1;
     }
     deadzoneTest.dwData = 7500;
     result = directInputDeviceIface->SetProperty(DIPROP_SATURATION, &deadzoneTest.diph);
     if (DI_OK != result)
     {
-        tout << _T("FAILED") << endl << _T("Unable to set saturation.") << endl;
+        wcout << _T("FAILED") << endl << _T("Unable to set saturation.") << endl;
         return -1;
     }
 
@@ -827,7 +828,7 @@ int RunTestApp(int argc, char* argv[])
         result = directInputDeviceIface->SetProperty(DIPROP_RANGE, &rangeTest.diph);
         if (DI_OK != result)
         {
-            tout << _T("FAILED") << endl << _T("Unable to set range.") << endl;
+            wcout << _T("FAILED") << endl << _T("Unable to set range.") << endl;
             return -1;
         }
     }
@@ -836,7 +837,7 @@ int RunTestApp(int argc, char* argv[])
     result = directInputDeviceIface->SetDataFormat(&dataFormat);
     if (DI_OK != result)
     {
-        tout << _T("FAILED") << endl << _T("Unable to set data format.") << endl;
+        wcout << _T("FAILED") << endl << _T("Unable to set data format.") << endl;
         return -1;
     }
 
@@ -844,7 +845,7 @@ int RunTestApp(int argc, char* argv[])
     result = directInputDeviceIface->Acquire();
     if (DI_OK != result)
     {
-        tout << _T("FAILED") << endl << _T("Unable to acquire device.") << endl;
+        wcout << _T("FAILED") << endl << _T("Unable to acquire device.") << endl;
         return -1;
     }
 
@@ -861,42 +862,42 @@ int RunTestApp(int argc, char* argv[])
     result = directInputDeviceIface->Poll();
     if (DI_OK != result)
     {
-        tout << _T("Failed to poll device.") << endl;
+        wcout << _T("Failed to poll device.") << endl;
         return -1;
     }
 
     result = directInputDeviceIface->GetDeviceState(sizeof(testData), (LPVOID)&testData);
     if (DI_OK != result)
     {
-        tout << _T("Failed to retrieve device initial state.") << endl;
+        wcout << _T("Failed to retrieve device initial state.") << endl;
         return -1;
     }
 
     CopyMemory(&testBufferedData, &testData, sizeof(testData));
     
-    tout << _T("DONE") << endl;
-    tout << _T("Device state is updated twice per second, with multiple polls in between.") << endl;
-    tout << _T("All axes are set to a range of -100 to +100, with 25% each deadzone/saturation.") << endl;
-    tout << _T("Quits automatically after 50 updates. To quit early, use CTRL+C.") << endl;
+    wcout << _T("DONE") << endl;
+    wcout << _T("Device state is updated twice per second, with multiple polls in between.") << endl;
+    wcout << _T("All axes are set to a range of -100 to +100, with 25% each deadzone/saturation.") << endl;
+    wcout << _T("Quits automatically after 50 updates. To quit early, use CTRL+C.") << endl;
     system("pause");
     system("cls");
 
     for (unsigned int i = 0; i < 50; ++i)
     {
         system("cls");
-        tout << _T("Update #") << (i+1) << endl;
+        wcout << _T("Update #") << (i+1) << endl;
 
         // Retrieve the device's buffered input events.
         bufferedDataCount = _countof(bufferedData);
         result = directInputDeviceIface->GetDeviceData(sizeof(bufferedData[0]), bufferedData, &bufferedDataCount, 0);
         if (DI_BUFFEROVERFLOW == result)
         {
-            tout << _T("Device event buffer has overflowed.") << endl;
+            wcout << _T("Device event buffer has overflowed.") << endl;
             return -1;
         }
         else if (DI_OK != result)
         {
-            tout << _T("Failed to retrieve device buffered events.") << endl;
+            wcout << _T("Failed to retrieve device buffered events.") << endl;
             return -1;
         }
         
@@ -920,14 +921,14 @@ int RunTestApp(int argc, char* argv[])
         result = directInputDeviceIface->GetDeviceState(sizeof(testData), (LPVOID)&testData);
         if (DI_OK != result)
         {
-            tout << _T("Failed to retrieve device state.") << endl;
+            wcout << _T("Failed to retrieve device state.") << endl;
             return -1;
         }
 
         // Compare buffer that results from device buffered event versus device state retrieval.
         if (0 != memcmp(&testData, &testBufferedData, sizeof(testData)))
         {
-            tout << _T("GetDeviceData() and GetDeviceState() consistency check failed.") << endl;
+            wcout << _T("GetDeviceData() and GetDeviceState() consistency check failed.") << endl;
             return -1;
         }
 
@@ -936,40 +937,40 @@ int RunTestApp(int argc, char* argv[])
         {
             if ((DWORD)-1 != testData.povs[i])
             {
-                tout << _T("Invalid POV data: those not present should be centered.") << endl;
+                wcout << _T("Invalid POV data: those not present should be centered.") << endl;
                 return -1;
             }
         }
 
-        tout << _T("Device presents ") << deviceCapabilities.dwAxes << _T(" axes, ") << deviceCapabilities.dwButtons << _T(" buttons, and ") << deviceCapabilities.dwPOVs << _T(" POV controllers.") << endl;
+        wcout << _T("Device presents ") << deviceCapabilities.dwAxes << _T(" axes, ") << deviceCapabilities.dwButtons << _T(" buttons, and ") << deviceCapabilities.dwPOVs << _T(" POV controllers.") << endl;
 
-        tout << endl;
+        wcout << endl;
         
-        tout << _T("Device state:") << endl;
+        wcout << _T("Device state:") << endl;
 
-        tout << endl;
+        wcout << endl;
 
-        tout << _T("   X Axis  = ") << testData.axisX << endl;
-        tout << _T("   Y Axis  = ") << testData.axisY << endl;
-        tout << _T("   Z Axis  = ") << testData.axisZ << endl;
+        wcout << _T("   X Axis  = ") << testData.axisX << endl;
+        wcout << _T("   Y Axis  = ") << testData.axisY << endl;
+        wcout << _T("   Z Axis  = ") << testData.axisZ << endl;
         
-        tout << endl;
+        wcout << endl;
         
-        tout << _T("   Rx Axis = ") << testData.axisRx << endl;
-        tout << _T("   Ry Axis = ") << testData.axisRy << endl;
-        tout << _T("   Rz Axis = ") << testData.axisRz << endl;
+        wcout << _T("   Rx Axis = ") << testData.axisRx << endl;
+        wcout << _T("   Ry Axis = ") << testData.axisRy << endl;
+        wcout << _T("   Rz Axis = ") << testData.axisRz << endl;
         
-        tout << endl;
+        wcout << endl;
 
-        tout << _T("   Dpad    = ") << testData.povs[0] << endl;
+        wcout << _T("   Dpad    = ") << testData.povs[0] << endl;
 
-        tout << endl;
+        wcout << endl;
 
-        tout << _T("   Buttons pressed:");
+        wcout << _T("   Buttons pressed:");
         for (int i = 0; i < _countof(testData.buttons); ++i)
         {
             if (0x80 == testData.buttons[i])
-                tout << _T(" ") << (i + 1);
+                wcout << _T(" ") << (i + 1);
         }
         
         for (int i = 0; i < 10; ++i)
@@ -978,7 +979,7 @@ int RunTestApp(int argc, char* argv[])
             result = directInputDeviceIface->Poll();
             if (DI_OK != result)
             {
-                tout << _T("Failed to poll device.") << endl;
+                wcout << _T("Failed to poll device.") << endl;
                 return -1;
             }
 
@@ -990,7 +991,7 @@ int RunTestApp(int argc, char* argv[])
     ////////////////////////////////////
     ////////   Cleanup and Exit
     
-    tout << _T("\nExiting.") << endl;
+    wcout << _T("\nExiting.") << endl;
     
     directInputDeviceIface->Release();
     directInputIface->Release();

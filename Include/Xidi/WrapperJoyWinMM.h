@@ -16,6 +16,7 @@
 #include "XInputController.h"
 #include "Mapper/Base.h"
 
+#include <string>
 #include <utility>
 #include <vector>
 
@@ -66,7 +67,7 @@ namespace Xidi
 
         /// Holds information about all devices WinMM makes available.
         /// String specifies the device identifier (vendor ID and product ID string), bool value specifies whether the device supports XInput.
-        static std::vector<std::pair<StdString, bool>> joySystemDeviceInfo;
+        static std::vector<std::pair<std::wstring, bool>> joySystemDeviceInfo;
         
         
         // -------- CONSTRUCTION AND DESTRUCTION ----------------------------------- //

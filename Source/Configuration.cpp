@@ -9,8 +9,6 @@
  *   Implementation of configuration file functionality.
  *****************************************************************************/
 
-#include "ApiCharacterType.h"
-#include "ApiStdString.h"
 #include "Configuration.h"
 #include "Globals.h"
 #include "ImportApiDirectInput.h"
@@ -19,6 +17,7 @@
 #include "MapperFactory.h"
 
 #include <cstdio>
+#include <string>
 #include <unordered_set>
 #include <unordered_map>
 
@@ -28,22 +27,22 @@ using namespace Xidi;
 // -------- CLASS VARIABLES ------------------------------------------------ //
 // See "Configuration.h" for documentation.
 
-std::unordered_map<StdString, SConfigurationValueApplyInfo> Configuration::importSettings = {
+std::unordered_map<std::wstring, SConfigurationValueApplyInfo> Configuration::importSettings = {
     {_T("dinput.dll"),                          {EConfigurationValueType::ConfigurationValueTypeString,     (void*)&Globals::ApplyOverrideImportDirectInput}},
     {_T("dinput8.dll"),                         {EConfigurationValueType::ConfigurationValueTypeString,     (void*)&Globals::ApplyOverrideImportDirectInput8}},
     {_T("winmm.dll"),                           {EConfigurationValueType::ConfigurationValueTypeString,     (void*)&Globals::ApplyOverrideImportWinMM}},
 };
 
-std::unordered_map<StdString, SConfigurationValueApplyInfo> Configuration::logSettings = {
+std::unordered_map<std::wstring, SConfigurationValueApplyInfo> Configuration::logSettings = {
     {_T("Enabled"),                             {EConfigurationValueType::ConfigurationValueTypeBoolean,    (void*)&Log::ApplyConfigurationLogEnabled}},
     {_T("Level"),                               {EConfigurationValueType::ConfigurationValueTypeInteger,    (void*)&Log::ApplyConfigurationLogLevel}}
 };
 
-std::unordered_map<StdString, SConfigurationValueApplyInfo> Configuration::mapperSettings = {
+std::unordered_map<std::wstring, SConfigurationValueApplyInfo> Configuration::mapperSettings = {
     {_T("Type"),                                {EConfigurationValueType::ConfigurationValueTypeString,     (void*)&MapperFactory::ApplyConfigurationMapperType}},
 };
 
-std::unordered_map<StdString, std::unordered_map<StdString, SConfigurationValueApplyInfo>*> Configuration::configurationSections = {
+std::unordered_map<std::wstring, std::unordered_map<std::wstring, SConfigurationValueApplyInfo>*> Configuration::configurationSections = {
     {_T("Import"),                              &importSettings},
     {_T("Log"),                                 &logSettings},
     {_T("Mapper"),                              &mapperSettings},
@@ -75,10 +74,10 @@ void Configuration::ParseAndApplyConfigurationFile(void)
 
     // Parse the configuration file, one line at a time.
     {
-        std::unordered_set<StdString> seenConfigurationSections;
-        std::unordered_set<StdString> seenConfigurationValuesInCurrentSection;
-        std::unordered_map<StdString, SConfigurationValueApplyInfo>* currentConfigurationSection = NULL;
-        StdString currentConfigurationSectionName = _T("");
+        std::unordered_set<std::wstring> seenConfigurationSections;
+        std::unordered_set<std::wstring> seenConfigurationValuesInCurrentSection;
+        std::unordered_map<std::wstring, SConfigurationValueApplyInfo>* currentConfigurationSection = NULL;
+        std::wstring currentConfigurationSectionName = _T("");
         
         TCHAR configurationLineBuffer[kMaximumConfigurationLineLength];
         int configurationLineLength = ReadAndTrimSingleLine(configurationLineBuffer, _countof(configurationLineBuffer), configurationFileHandle);
@@ -86,8 +85,8 @@ void Configuration::ParseAndApplyConfigurationFile(void)
         
         while (configurationLineLength >= 0)
         {
-            StdString extractedName;
-            StdString extractedValue;
+            std::wstring extractedName;
+            std::wstring extractedValue;
             SConfigurationValueApplyInfo extractedValueInfo;
             
             switch (ClassifyConfigurationFileLine(configurationLineBuffer, configurationLineLength))
@@ -159,7 +158,7 @@ void Configuration::ParseAndApplyConfigurationFile(void)
                 {
                     int64_t integerValue;
                     bool booleanValue;
-                    StdString* stringValue;
+                    std::wstring* stringValue;
                 } parsedValue;
                 
                 switch (extractedValueInfo.type)
@@ -269,7 +268,7 @@ EConfigurationLineType Configuration::ClassifyConfigurationFileLine(LPCTSTR buf,
     // Skip over all whitespace at the start of the input line.
     LPCTSTR realBuf = buf;
     size_t realLength = length;
-    while (realLength != 0 && istblank(realBuf[0]))
+    while (realLength != 0 && iswblank(realBuf[0]))
     {
         realLength -= 1;
         realBuf += 1;
@@ -289,14 +288,14 @@ EConfigurationLineType Configuration::ClassifyConfigurationFileLine(LPCTSTR buf,
     if (_T('[') == realBuf[0])
     {
         // The line cannot be a section header unless the second character is alphanumeric (there must be at least one character in the name of the section).
-        if (!istalnum(realBuf[1]))
+        if (!iswalnum(realBuf[1]))
             return EConfigurationLineType::ConfigurationLineTypeError;
         
         // Verify that the line is a valid section header by checking for alphanumeric characters between two square brackets.
         size_t i = 2;
         for (; i < realLength && _T(']') != realBuf[i]; ++i)
         {
-            if (!istalnum(realBuf[i]))
+            if (!iswalnum(realBuf[i]))
                 return EConfigurationLineType::ConfigurationLineTypeError;
         }
         if (_T(']') != realBuf[i])
@@ -305,7 +304,7 @@ EConfigurationLineType Configuration::ClassifyConfigurationFileLine(LPCTSTR buf,
         // Verify that the remainder of the line is just whitespace.
         for (i += 1; i < realLength; ++i)
         {
-            if (!istblank(realBuf[i]))
+            if (!iswblank(realBuf[i]))
                 return EConfigurationLineType::ConfigurationLineTypeError;
         }
 
@@ -315,19 +314,19 @@ EConfigurationLineType Configuration::ClassifyConfigurationFileLine(LPCTSTR buf,
     {
         // Search for whitespace or an equals sign, with all characters in between needing to be allowed as value name characters.
         size_t i = 1;
-        for (; i < realLength && _T('=') != realBuf[i] && !istblank(realBuf[i]); ++i)
+        for (; i < realLength && _T('=') != realBuf[i] && !iswblank(realBuf[i]); ++i)
         {
             if (!IsAllowedValueNameCharacter(realBuf[i]))
                 return EConfigurationLineType::ConfigurationLineTypeError;
         }
 
         // Skip over any whitespace present, then check for an equals sign.
-        for (; i < realLength && istblank(realBuf[i]); ++i);
+        for (; i < realLength && iswblank(realBuf[i]); ++i);
         if (_T('=') != realBuf[i])
             return EConfigurationLineType::ConfigurationLineTypeError;
         
         // Skip over any whitespace present, then verify the next character is allowed to start a value setting.
-        for (i += 1; i < realLength && istblank(realBuf[i]); ++i);
+        for (i += 1; i < realLength && iswblank(realBuf[i]); ++i);
         if (!IsAllowedValueSettingCharacter(realBuf[i]))
             return EConfigurationLineType::ConfigurationLineTypeError;
         
@@ -337,7 +336,7 @@ EConfigurationLineType Configuration::ClassifyConfigurationFileLine(LPCTSTR buf,
         // Verify that the remainder of the line is just whitespace.
         for (; i < realLength; ++i)
         {
-            if (!istblank(realBuf[i]))
+            if (!iswblank(realBuf[i]))
                 return EConfigurationLineType::ConfigurationLineTypeError;
         }
         
@@ -349,11 +348,11 @@ EConfigurationLineType Configuration::ClassifyConfigurationFileLine(LPCTSTR buf,
 
 // ---------
 
-void Configuration::ExtractNameValuePairFromConfigurationFileLine(StdString& name, StdString& value, LPTSTR configFileLine)
+void Configuration::ExtractNameValuePairFromConfigurationFileLine(std::wstring& name, std::wstring& value, LPTSTR configFileLine)
 {
     // Skip to the start of the configuration name.
     LPTSTR configBuf = configFileLine;
-    while (istblank(configBuf[0]))
+    while (iswblank(configBuf[0]))
         configBuf += 1;
 
     // Find the length of the configuration name.
@@ -369,7 +368,7 @@ void Configuration::ExtractNameValuePairFromConfigurationFileLine(StdString& nam
     configBuf = &configBuf[configLength + 1];
 
     // Skip over whitespace and the '=' sign.
-    while ((_T('=') == configBuf[0]) || (istblank(configBuf[0])))
+    while ((_T('=') == configBuf[0]) || (iswblank(configBuf[0])))
         configBuf += 1;
 
     // Find the length of the configuration value.
@@ -378,7 +377,7 @@ void Configuration::ExtractNameValuePairFromConfigurationFileLine(StdString& nam
         configLength += 1;
 
     // Trim off any dangling whitespace.
-    while ((1 < configLength) && (istblank(configBuf[configLength - 1])))
+    while ((1 < configLength) && (iswblank(configBuf[configLength - 1])))
         configLength -= 1;
     
     configBuf[configLength] = _T('\0');
@@ -395,7 +394,7 @@ int Configuration::IsAllowedValueNameCharacter(const TCHAR charToTest)
         return true;
 
     default:
-        return istalnum(charToTest);
+        return iswalnum(charToTest);
     }
 }
 
@@ -432,13 +431,13 @@ int Configuration::IsAllowedValueSettingCharacter(const TCHAR charToTest)
         return true;
 
     default:
-        return istalnum(charToTest);
+        return iswalnum(charToTest);
     }
 }
 
 // ---------
 
-bool Configuration::ParseIntegerValue(int64_t& dest, const StdString& source)
+bool Configuration::ParseIntegerValue(int64_t& dest, const std::wstring& source)
 {
     int64_t value = 0ll;
     LPTSTR endptr = NULL;
@@ -461,10 +460,10 @@ bool Configuration::ParseIntegerValue(int64_t& dest, const StdString& source)
 
 // ---------
 
-bool Configuration::ParseBooleanValue(bool& dest, const StdString& source)
+bool Configuration::ParseBooleanValue(bool& dest, const std::wstring& source)
 {
-    static const StdString trueStrings[] = { _T("t"), _T("true"), _T("on"), _T("y"), _T("yes"), _T("enabled"), _T("1") };
-    static const StdString falseStrings[] = { _T("f"), _T("false"), _T("off"), _T("n"), _T("no"), _T("disabled"), _T("0") };
+    static const std::wstring trueStrings[] = { _T("t"), _T("true"), _T("on"), _T("y"), _T("yes"), _T("enabled"), _T("1") };
+    static const std::wstring falseStrings[] = { _T("f"), _T("false"), _T("off"), _T("n"), _T("no"), _T("disabled"), _T("0") };
     
     // Check if the string represents a value of TRUE.
     for (size_t i = 0; i < _countof(trueStrings); ++i)
@@ -491,7 +490,7 @@ bool Configuration::ParseBooleanValue(bool& dest, const StdString& source)
 
 // ---------
 
-void Configuration::ExtractSectionNameFromConfigurationFileLine(StdString& sectionName, LPTSTR configFileLine)
+void Configuration::ExtractSectionNameFromConfigurationFileLine(std::wstring& sectionName, LPTSTR configFileLine)
 {
     // Skip to the '[' character.
     LPTSTR realBuf = configFileLine;

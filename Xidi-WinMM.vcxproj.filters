@@ -66,16 +66,10 @@
     <ClInclude Include="Include\Xidi\Configuration.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="Include\Xidi\ApiStdString.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="Resources\Xidi.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="Resources\Xidi-WinMM.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="Include\Xidi\ApiCharacterType.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="Include\Xidi\Mapper\ExtendedGamepad.h">
@@ -85,9 +79,6 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="Include\Xidi\ImportApiDirectInput.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="Include\Xidi\ApiIOStream.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="Resources\Xidi-Log.h">

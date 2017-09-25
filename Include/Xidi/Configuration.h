@@ -12,8 +12,8 @@
 #pragma once
 
 #include "ApiWindows.h"
-#include "ApiStdString.h"
 
+#include <string>
 #include <unordered_map>
 
 
@@ -52,7 +52,7 @@ namespace Xidi
     typedef bool(*TFuncApplyBoolSetting)(bool value);
 
     /// Specifies the signature for a function that accepts a string-valued setting.
-    typedef bool(*TFuncApplyStringSetting)(const StdString& value);
+    typedef bool(*TFuncApplyStringSetting)(const std::wstring& value);
 
 
     /// Encapsulates all configuration-related functionality.
@@ -75,16 +75,16 @@ namespace Xidi
         // -------- CLASS VARIABLES ------------------------------------------------ //
 
         /// Defines the supported values in the "Import" section of the configuration file.
-        static std::unordered_map<StdString, SConfigurationValueApplyInfo> importSettings;
+        static std::unordered_map<std::wstring, SConfigurationValueApplyInfo> importSettings;
         
         /// Defines the supported values in the "Log" section of the configuration file.
-        static std::unordered_map<StdString, SConfigurationValueApplyInfo> logSettings;
+        static std::unordered_map<std::wstring, SConfigurationValueApplyInfo> logSettings;
 
         /// Defines the supported values in the "Mapper" section of the configuration file.
-        static std::unordered_map<StdString, SConfigurationValueApplyInfo> mapperSettings;
+        static std::unordered_map<std::wstring, SConfigurationValueApplyInfo> mapperSettings;
 
         /// Defines the supported sections of the configuration file.
-        static std::unordered_map<StdString, std::unordered_map<StdString, SConfigurationValueApplyInfo>*> configurationSections;
+        static std::unordered_map<std::wstring, std::unordered_map<std::wstring, SConfigurationValueApplyInfo>*> configurationSections;
 
 
         // -------- CONSTRUCTION AND DESTRUCTION ----------------------------------- //
@@ -114,13 +114,13 @@ namespace Xidi
         /// @param [out] name Filled with the name of the configuration setting.
         /// @param [out] value Filled with the value specified for the configuration setting.
         /// @param [in] configFileLine Buffer containing the configuration file line.
-        static void ExtractNameValuePairFromConfigurationFileLine(StdString& name, StdString& value, LPTSTR configFileLine);
+        static void ExtractNameValuePairFromConfigurationFileLine(std::wstring& name, std::wstring& value, LPTSTR configFileLine);
         
         /// Extracts a section name from the specified configuration file line, which must first have been classified as containing a section name.
         /// Modifies the buffer by changing a value to the NULL character, indicating the end of the portion of interest in the input configuration file line.
         /// @param [out] sectionName Filled with the name of the configuration section.
         /// @param [in] configFileLine Buffer containing the configuration file line.
-        static void ExtractSectionNameFromConfigurationFileLine(StdString& sectionName, LPTSTR configFileLine);
+        static void ExtractSectionNameFromConfigurationFileLine(std::wstring& sectionName, LPTSTR configFileLine);
         
         /// Tests if the supplied character is allowed as a value name (the part before the '=' sign in the configuration file).
         /// @param [in] charToTest Character to test.
@@ -137,14 +137,14 @@ namespace Xidi
         /// @param [out] dest Filled with the result of the parse.
         /// @param [in] source String from which to parse.
         /// @return `TRUE` if the parse was successful and able to consume the whole string, `FALSE` otherwise.
-        static bool ParseIntegerValue(int64_t& dest, const StdString& source);
+        static bool ParseIntegerValue(int64_t& dest, const std::wstring& source);
 
         /// Parses a Boolean from the supplied input string.
         /// Sets the destination parameter's value to the result of the parse, although it remains unmodified on parse failure.
         /// @param [out] dest Filled with the result of the parse.
         /// @param [in] source String from which to parse.
         /// @return `TRUE` if the parse was successful and able to consume the whole string, `FALSE` otherwise.
-        static bool ParseBooleanValue(bool& dest, const StdString& source);
+        static bool ParseBooleanValue(bool& dest, const std::wstring& source);
 
         /// Reads a single line from the specified file handle, verifies that it fits within the specified buffer, and removes the trailing newline.
         /// @param [out] buf Filled with text from the specified file.

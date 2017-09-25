@@ -13,7 +13,6 @@
 #pragma once
 
 #include "ApiDirectInput.h"
-#include "ApiStdString.h"
 
 
 namespace Xidi

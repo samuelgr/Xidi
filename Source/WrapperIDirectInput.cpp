@@ -302,13 +302,9 @@ BOOL STDMETHODCALLTYPE WrapperIDirectInput::CallbackEnumGameControllersXInputSca
     // If the present controller supports XInput, indicate such by adding it to the set of instance identifiers of interest.
     if (ControllerIdentification::DoesDirectInputControllerSupportXInput(callbackInfo->instance->underlyingDIObject.t, lpddi->guidInstance))
     {
-#ifdef UNICODE
         WCHAR productName[_countof(lpddi->tszProductName) + 1];
         ZeroMemory(productName, sizeof(productName));
         mbstowcs_s(NULL, productName, _countof(productName) - 1, lpddi->tszProductName, _countof(lpddi->tszProductName));
-#else
-        LPCSTR productName = lpddi->tszProductName;
-#endif
         
         callbackInfo->seenInstanceIdentifiers.insert(lpddi->guidInstance);
         Log::WriteFormattedLogMessageFromResource(ELogLevel::LogLevelDebug, IDS_XIDI_WRAPPERIDIRECTINPUT_ENUM_DEVICES_XINPUT_FORMAT, productName);
@@ -326,13 +322,7 @@ BOOL STDMETHODCALLTYPE WrapperIDirectInput::CallbackEnumGameControllersXInputSca
     // If the present controller supports XInput, indicate such by adding it to the set of instance identifiers of interest.
     if (ControllerIdentification::DoesDirectInputControllerSupportXInput(callbackInfo->instance->underlyingDIObject.t, lpddi->guidInstance))
     {
-#ifdef UNICODE
         LPCTSTR productName = lpddi->tszProductName;
-#else
-        CHAR productName[(_countof(lpddi->tszProductName) + 1) * sizeof(WCHAR) / sizeof(CHAR)];
-        ZeroMemory(productName, sizeof(productName));
-        wcstombs_s(NULL, productName, _countof(productName) - 1, lpddi->tszProductName, _countof(lpddi->tszProductName));
-#endif
         
         callbackInfo->seenInstanceIdentifiers.insert(lpddi->guidInstance);
         Log::WriteFormattedLogMessageFromResource(ELogLevel::LogLevelDebug, IDS_XIDI_WRAPPERIDIRECTINPUT_ENUM_DEVICES_XINPUT_FORMAT, productName);
@@ -350,13 +340,9 @@ BOOL STDMETHODCALLTYPE WrapperIDirectInput::CallbackEnumDevicesFilteredA(LPCDIDE
     if (0 == callbackInfo->seenInstanceIdentifiers.count(lpddi->guidInstance))
     {
         // If the device has not been seen already, add it to the set and present it to the application.
-#ifdef UNICODE
         WCHAR productName[_countof(lpddi->tszProductName) + 1];
         ZeroMemory(productName, sizeof(productName));
         mbstowcs_s(NULL, productName, _countof(productName) - 1, lpddi->tszProductName, _countof(lpddi->tszProductName));
-#else
-        LPCSTR productName = lpddi->tszProductName;
-#endif
         
         callbackInfo->seenInstanceIdentifiers.insert(lpddi->guidInstance);
         callbackInfo->callbackReturnCode = ((LPDIENUMDEVICESCALLBACKA)(callbackInfo->lpCallback))(lpddi, callbackInfo->pvRef);
@@ -379,13 +365,7 @@ BOOL STDMETHODCALLTYPE WrapperIDirectInput::CallbackEnumDevicesFilteredW(LPCDIDE
     if (0 == callbackInfo->seenInstanceIdentifiers.count(lpddi->guidInstance))
     {
         // If the device has not been seen already, add it to the set and present it to the application.
-#ifdef UNICODE
         LPCTSTR productName = lpddi->tszProductName;
-#else
-        CHAR productName[(_countof(lpddi->tszProductName) + 1) * sizeof(WCHAR) / sizeof(CHAR)];
-        ZeroMemory(productName, sizeof(productName));
-        wcstombs_s(NULL, productName, _countof(productName) - 1, lpddi->tszProductName, _countof(lpddi->tszProductName));
-#endif
         
         callbackInfo->seenInstanceIdentifiers.insert(lpddi->guidInstance);
         callbackInfo->callbackReturnCode = ((LPDIENUMDEVICESCALLBACKW)(callbackInfo->lpCallback))(lpddi, callbackInfo->pvRef);

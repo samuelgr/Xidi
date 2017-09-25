@@ -11,7 +11,6 @@
 
 #pragma once
 
-#include "ApiStdString.h"
 #include "ApiWindows.h"
 
 

@@ -9,7 +9,6 @@
  *   Implementation of a class that creates mappers of different types.
  *****************************************************************************/
 
-#include "ApiStdString.h"
 #include "MapperFactory.h"
 #include "Mapper/Base.h"
 #include "Mapper/ExtendedGamepad.h"
@@ -17,6 +16,7 @@
 #include "Mapper/XInputSharedTriggers.h"
 #include "Mapper/StandardGamepad.h"
 
+#include <string>
 #include <unordered_map>
 
 using namespace Xidi;
@@ -27,7 +27,7 @@ using namespace Xidi;
 
 EMapper MapperFactory::configuredMapperType = kDefaultMapperType;
 
-std::unordered_map<StdString, EMapper> MapperFactory::mapperTypeStrings = {
+std::unordered_map<std::wstring, EMapper> MapperFactory::mapperTypeStrings = {
     {_T("StandardGamepad"),                     EMapper::StandardGamepadMapper},
     {_T("ExtendedGamepad"),                     EMapper::ExtendedGamepadMapper},
     {_T("XInputNative"),                        EMapper::XInputNativeMapper},
@@ -38,7 +38,7 @@ std::unordered_map<StdString, EMapper> MapperFactory::mapperTypeStrings = {
 // -------- CLASS METHODS -------------------------------------------------- //
 // See "MapperFactory.h" for documentation.
 
-bool MapperFactory::ApplyConfigurationMapperType(const StdString& value)
+bool MapperFactory::ApplyConfigurationMapperType(const std::wstring& value)
 {
     if (0 != mapperTypeStrings.count(value))
     {

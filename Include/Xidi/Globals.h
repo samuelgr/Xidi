@@ -12,8 +12,9 @@
 
 #pragma once
 
-#include "ApiStdString.h"
 #include "ApiWindows.h"
+
+#include <string>
 
 
 namespace Xidi
@@ -26,13 +27,13 @@ namespace Xidi
         // -------- CONSTANTS ---------------------------------------------- //
         
         /// Holds the name of the DirectInput library to load from the system directory.
-        static const StdString kDInputLibraryName;
+        static const std::wstring kDInputLibraryName;
 
         /// Holds the name of the DirectInput8 library to load from the system directory.
-        static const StdString kDInput8LibraryName;
+        static const std::wstring kDInput8LibraryName;
 
         /// Holds the name of the WinMM library to load from the system directory.
-        static const StdString kWinMMLibraryName;
+        static const std::wstring kWinMMLibraryName;
 
         /// Maximum length of the system directory name.
         static const size_t kMaximumSystemDirectoryNameLength = 2048;
@@ -44,13 +45,13 @@ namespace Xidi
         static HINSTANCE gInstanceHandle;
 
         /// Holds the path to a custom library that overrides the default import library for DirectInput functions.
-        static StdString gOverrideImportDirectInput;
+        static std::wstring gOverrideImportDirectInput;
 
         /// Holds the path to a custom library that overrides the default import library for DirectInput8 functions.
-        static StdString gOverrideImportDirectInput8;
+        static std::wstring gOverrideImportDirectInput8;
 
         /// Holds the path to a custom library that overrides the default import library for WinMM functions.
-        static StdString gOverrideImportWinMM;
+        static std::wstring gOverrideImportWinMM;
 
 
         // -------- CONSTRUCTION AND DESTRUCTION --------------------------- //
@@ -65,29 +66,29 @@ namespace Xidi
         /// Applies a setting that specifies a custom path for the import library for DirectInput functions.
         /// @param [in] value Setting value to be applied.
         /// @return `true` if setting could be applied, `false` otherwise.
-        static bool ApplyOverrideImportDirectInput(StdString& value);
+        static bool ApplyOverrideImportDirectInput(std::wstring& value);
 
         /// Applies a setting that specifies a custom path for the import library for DirectInput8 functions.
         /// @param [in] value Setting value to be applied.
         /// @return `true` if setting could be applied, `false` otherwise.
-        static bool ApplyOverrideImportDirectInput8(StdString& value);
+        static bool ApplyOverrideImportDirectInput8(std::wstring& value);
 
         /// Applies a setting that specifies a custom path for the import library for WinMM functions.
         /// @param [in] value Setting value to be applied.
         /// @return `true` if setting could be applied, `false` otherwise.
-        static bool ApplyOverrideImportWinMM(StdString& value);
+        static bool ApplyOverrideImportWinMM(std::wstring& value);
         
         /// Sets the supplied string reference to be equal to the library path for the DirectInput library that should be used for importing functions.
         /// @param [out] stringToFill String to be filled with the path.
-        static void FillDirectInputLibraryPath(StdString& stringToFill);
+        static void FillDirectInputLibraryPath(std::wstring& stringToFill);
 
         /// Sets the supplied string reference to be equal to the library path for the DirectInput8 library that should be used for importing functions.
         /// @param [out] stringToFill String to be filled with the path.
-        static void FillDirectInput8LibraryPath(StdString& stringToFill);
+        static void FillDirectInput8LibraryPath(std::wstring& stringToFill);
 
         /// Sets the supplied string reference to be equal to the library path for the WinMM library that should be used for importing functions.
         /// @param [out] stringToFill String to be filled with the path.
-        static void FillWinMMLibraryPath(StdString& stringToFill);
+        static void FillWinMMLibraryPath(std::wstring& stringToFill);
         
         /// Retrieves the handle of the instance that represents the current running form of Xidi, be it the library or the test application.
         /// @return Instance handle for Xidi.
@@ -107,10 +108,10 @@ namespace Xidi
         /// @param [out] stringToFill String to be filled.
         /// @param [in] overridePath Non-default override path to be considered.
         /// @param [in] defaultLibraryFileName Default name to be used if the override path is not specified.
-        static void FillLibraryPath(StdString& stringToFill, const StdString& overridePath, const StdString& defaultLibraryFileName);
+        static void FillLibraryPath(std::wstring& stringToFill, const std::wstring& overridePath, const std::wstring& defaultLibraryFileName);
         
         /// Sets the supplied string reference equal to the system directory path.
         /// @param [out] stringToFill String to be filled.
-        static void FillSystemDirectoryPath(StdString& stringToFill);
+        static void FillSystemDirectoryPath(std::wstring& stringToFill);
     };
 }

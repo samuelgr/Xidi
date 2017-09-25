@@ -10,9 +10,10 @@
  *   Intended for miscellaneous data elements with no other suitable place.
  *****************************************************************************/
 
-#include "ApiStdString.h"
 #include "ApiWindows.h"
 #include "Globals.h"
+
+#include <string>
 
 using namespace Xidi;
 
@@ -20,11 +21,11 @@ using namespace Xidi;
 // -------- CONSTANTS ------------------------------------------------------ //
 // See "Globals.h" for documentation.
 
-const StdString Globals::kDInputLibraryName = _T("dinput.dll");
+const std::wstring Globals::kDInputLibraryName = _T("dinput.dll");
 
-const StdString Globals::kDInput8LibraryName = _T("dinput8.dll");
+const std::wstring Globals::kDInput8LibraryName = _T("dinput8.dll");
 
-const StdString Globals::kWinMMLibraryName = _T("winmm.dll");
+const std::wstring Globals::kWinMMLibraryName = _T("winmm.dll");
 
 
 // -------- CLASS VARIABLES ------------------------------------------------ //
@@ -32,17 +33,17 @@ const StdString Globals::kWinMMLibraryName = _T("winmm.dll");
 
 HINSTANCE Globals::gInstanceHandle = NULL;
 
-StdString Globals::gOverrideImportDirectInput = _T("");
+std::wstring Globals::gOverrideImportDirectInput = _T("");
 
-StdString Globals::gOverrideImportDirectInput8 = _T("");
+std::wstring Globals::gOverrideImportDirectInput8 = _T("");
 
-StdString Globals::gOverrideImportWinMM = _T("");
+std::wstring Globals::gOverrideImportWinMM = _T("");
 
 
 // -------- CLASS METHODS -------------------------------------------------- //
 // See "Globals.h" for documentation.
 
-bool Globals::ApplyOverrideImportDirectInput(StdString& value)
+bool Globals::ApplyOverrideImportDirectInput(std::wstring& value)
 {
     bool validValue = !(value.empty());
 
@@ -54,7 +55,7 @@ bool Globals::ApplyOverrideImportDirectInput(StdString& value)
 
 // --------
 
-bool Globals::ApplyOverrideImportDirectInput8(StdString& value)
+bool Globals::ApplyOverrideImportDirectInput8(std::wstring& value)
 {
     bool validValue = !(value.empty());
 
@@ -66,7 +67,7 @@ bool Globals::ApplyOverrideImportDirectInput8(StdString& value)
 
 // --------
 
-bool Globals::ApplyOverrideImportWinMM(StdString& value)
+bool Globals::ApplyOverrideImportWinMM(std::wstring& value)
 {
     bool validValue = !(value.empty());
 
@@ -78,21 +79,21 @@ bool Globals::ApplyOverrideImportWinMM(StdString& value)
 
 // --------
 
-void Globals::FillDirectInputLibraryPath(StdString& stringToFill)
+void Globals::FillDirectInputLibraryPath(std::wstring& stringToFill)
 {
     FillLibraryPath(stringToFill, gOverrideImportDirectInput, kDInputLibraryName);
 }
 
 // --------
 
-void Globals::FillDirectInput8LibraryPath(StdString& stringToFill)
+void Globals::FillDirectInput8LibraryPath(std::wstring& stringToFill)
 {
     FillLibraryPath(stringToFill, gOverrideImportDirectInput8, kDInput8LibraryName);
 }
 
 // --------
 
-void Globals::FillWinMMLibraryPath(StdString& stringToFill)
+void Globals::FillWinMMLibraryPath(std::wstring& stringToFill)
 {
     FillLibraryPath(stringToFill, gOverrideImportWinMM, kWinMMLibraryName);
 }
@@ -115,7 +116,7 @@ void Globals::SetInstanceHandle(HINSTANCE newInstanceHandle)
 // -------- HELPERS -------------------------------------------------------- //
 // See "Globals.h" for documentation.
 
-void Globals::FillLibraryPath(StdString& stringToFill, const StdString& overridePath, const StdString& defaultLibraryFileName)
+void Globals::FillLibraryPath(std::wstring& stringToFill, const std::wstring& overridePath, const std::wstring& defaultLibraryFileName)
 {
     if (overridePath.empty())
     {
@@ -133,7 +134,7 @@ void Globals::FillLibraryPath(StdString& stringToFill, const StdString& override
 
 // --------
 
-void Globals::FillSystemDirectoryPath(StdString& stringToFill)
+void Globals::FillSystemDirectoryPath(std::wstring& stringToFill)
 {
     TCHAR systemDirectoryPath[kMaximumSystemDirectoryNameLength];
     GetSystemDirectory(systemDirectoryPath, kMaximumSystemDirectoryNameLength);

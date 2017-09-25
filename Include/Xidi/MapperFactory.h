@@ -11,9 +11,9 @@
 
 #pragma once
 
-#include "ApiStdString.h"
 #include "Mapper/Base.h"
 
+#include <string>
 #include <unordered_map>
 
 
@@ -50,7 +50,7 @@ namespace Xidi
 
         /// Maps strings to mapper types.
         /// Used for accepting configuration setting values.
-        static std::unordered_map<StdString, EMapper> mapperTypeStrings;
+        static std::unordered_map<std::wstring, EMapper> mapperTypeStrings;
         
         
         // -------- CONSTRUCTION AND DESTRUCTION --------------------------- //
@@ -65,7 +65,7 @@ namespace Xidi
         /// Applies a configuration setting that configures the type of mapper to create.
         /// @param [in] value Setting value to be applied.
         /// @return `true` if setting could be applied, `false` otherwise.
-        static bool ApplyConfigurationMapperType(const StdString& value);
+        static bool ApplyConfigurationMapperType(const std::wstring& value);
         
         /// Creates a new mapper of the configured type, using the `new` operator.
         /// @return Pointer to the newly-created mapper, or `NULL` in the event of an error.

@@ -11,7 +11,6 @@
 
 #include "ApiWindows.h"
 #include "ApiDirectInput.h"
-#include "ApiStdString.h"
 #include "ControllerIdentification.h"
 #include "Globals.h"
 #include "ImportApiDirectInput.h"
@@ -23,6 +22,7 @@
 
 #include <climits>
 #include <RegStr.h>
+#include <string>
 #include <utility>
 #include <vector>
 
@@ -36,7 +36,7 @@ namespace Xidi
     // Used to provide all information needed to get a list of XInput devices exposed by WinMM.
     struct SWinMMEnumCallbackInfo
     {
-        std::vector<std::pair<StdString, bool>>* systemDeviceInfo;
+        std::vector<std::pair<std::wstring, bool>>* systemDeviceInfo;
         IDirectInput8* directInputInterface;
     };
 }
@@ -97,7 +97,7 @@ const DIDATAFORMAT WrapperJoyWinMM::joyStateDataFormat = { sizeof(DIDATAFORMAT),
 
 std::vector<int> WrapperJoyWinMM::joyIndexMap;
 
-std::vector<std::pair<StdString, bool>> WrapperJoyWinMM::joySystemDeviceInfo;
+std::vector<std::pair<std::wstring, bool>> WrapperJoyWinMM::joySystemDeviceInfo;
 
 
 // -------- CLASS METHODS -------------------------------------------------- //
@@ -284,13 +284,7 @@ BOOL STDMETHODCALLTYPE WrapperJoyWinMM::CreateSystemDeviceInfoEnumCallback(LPCDI
 
     if (deviceSupportsXInput)
     {
-#ifdef UNICODE
         const WCHAR* devicePathString = devicePath.c_str();
-#else
-        CHAR devicePathString[(_countof(DIPROPGUIDANDPATH::wszPath) + 1) * sizeof(WCHAR) / sizeof(CHAR)];
-        ZeroMemory(devicePathString, sizeof(devicePathString));
-        wcstombs_s(NULL, devicePathString, _countof(devicePathString) - 1, devicePath.c_str(), devicePath.length());
-#endif
 
         // Skip to the part of the path string that identifies vendor and product.
         const TCHAR* devicePathSubstring = _tcsstr(devicePathString, _T("VID_"));
@@ -367,22 +361,14 @@ void WrapperJoyWinMM::SetControllerNameRegistryInfo(void)
     TCHAR registryKeyName[128];
     TCHAR registryPath[1024];
 
-#ifdef UNICODE
     FillRegistryKeyStringW(registryKeyName, _countof(registryKeyName));
-#else
-    FillRegistryKeyStringA(registryKeyName, _countof(registryKeyName));
-#endif
     
     // Place the names into the correct spots for the application to read.
     // These will be in HKCU\System\CurrentControlSet\Control\MediaProperties\PrivateProperties\Joystick\OEM\Xidi# and contain the name of the controller.
     for (DWORD i = 0; i < _countof(controllers); ++i)
     {
         TCHAR valueData[64];
-#ifdef UNICODE
         const int valueDataCount = ControllerIdentification::FillXInputControllerNameW(valueData, _countof(valueData), i);
-#else
-        const int valueDataCount = ControllerIdentification::FillXInputControllerNameA(valueData, _countof(valueData), i);
-#endif
 
         _stprintf_s(registryPath, _countof(registryPath), REGSTR_PATH_JOYOEM _T("\\%s%u"), registryKeyName, i + 1);
         result = RegCreateKeyEx(HKEY_CURRENT_USER, registryPath, 0, NULL, REG_OPTION_VOLATILE, KEY_SET_VALUE, NULL, &registryKey, NULL);
