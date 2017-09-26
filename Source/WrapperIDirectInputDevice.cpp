@@ -38,7 +38,11 @@ WrapperIDirectInputDevice::~WrapperIDirectInputDevice(void)
 
 HRESULT STDMETHODCALLTYPE WrapperIDirectInputDevice::QueryInterface(REFIID riid, LPVOID* ppvObj)
 {
+    if (NULL == ppvObj)
+        return E_INVALIDARG;
+    
     HRESULT result = S_OK;
+    *ppvObj = NULL;
 
 #if DIRECTINPUT_VERSION >= 0x0800
     if (IsEqualIID(riid, IID_IUnknown) || IsEqualIID(riid, IID_IDirectInputDevice8A) || IsEqualIID(riid, IID_IDirectInputDevice8W))
@@ -59,7 +63,7 @@ HRESULT STDMETHODCALLTYPE WrapperIDirectInputDevice::QueryInterface(REFIID riid,
 
 ULONG STDMETHODCALLTYPE WrapperIDirectInputDevice::AddRef(void)
 {
-    refcount += 1;
+    InterlockedIncrement(&refcount);
     return refcount;
 }
 
@@ -67,12 +71,10 @@ ULONG STDMETHODCALLTYPE WrapperIDirectInputDevice::AddRef(void)
 
 ULONG STDMETHODCALLTYPE WrapperIDirectInputDevice::Release(void)
 {
-    ULONG numRemainingRefs = refcount - 1;
+    ULONG numRemainingRefs = InterlockedDecrement(&refcount);
 
     if (0 == numRemainingRefs)
         delete this;
-    else
-        refcount = numRemainingRefs;
 
     return numRemainingRefs;
 }

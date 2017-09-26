@@ -58,26 +58,10 @@ WrapperIDirectInput::WrapperIDirectInput(LatestIDirectInput* underlyingDIObject,
 
 HRESULT STDMETHODCALLTYPE WrapperIDirectInput::QueryInterface(REFIID riid, LPVOID* ppvObj)
 {
-    HRESULT result = S_OK;
-    
-#if DIRECTINPUT_VERSION >= 0x0800
-    if (IsEqualIID(riid, IID_IUnknown) || IsEqualIID(riid, IID_IDirectInput8A) || IsEqualIID(riid, IID_IDirectInput8W))
-#else
-    if (IsEqualIID(riid, IID_IUnknown) || IsEqualIID(riid, IID_IDirectInput7A) || IsEqualIID(riid, IID_IDirectInput7W) || IsEqualIID(riid, IID_IDirectInput2A) || IsEqualIID(riid, IID_IDirectInput2W) || IsEqualIID(riid, IID_IDirectInputA) || IsEqualIID(riid, IID_IDirectInputW))
-#endif
-    {
-        AddRef();
-        *ppvObj = this;
-    }
+    if (underlyingDIObjectUsesUnicode)
+        return underlyingDIObject.w->QueryInterface(riid, ppvObj);
     else
-    {
-        if (underlyingDIObjectUsesUnicode)
-            result = underlyingDIObject.w->QueryInterface(riid, ppvObj);
-        else
-            result = underlyingDIObject.a->QueryInterface(riid, ppvObj);
-    }
-    
-    return result;
+        return underlyingDIObject.a->QueryInterface(riid, ppvObj);
 }
 
 // ---------
@@ -100,10 +84,10 @@ ULONG STDMETHODCALLTYPE WrapperIDirectInput::Release(void)
         numRemainingRefs = underlyingDIObject.w->Release();
     else
         numRemainingRefs = underlyingDIObject.a->Release();
-    
+
     if (0 == numRemainingRefs)
         delete this;
-    
+
     return numRemainingRefs;
 }
 
@@ -130,7 +114,11 @@ HRESULT STDMETHODCALLTYPE WrapperIDirectInput::CreateDevice(REFGUID rguid, Earli
     {
         // Is an XInput GUID, so create a fake device that will communicate with the XInput controller of the specified index.
         Log::WriteFormattedLogMessageFromResource(ELogLevel::LogLevelInfo, IDS_XIDI_WRAPPERIDIRECTINPUT_CREATE_XINPUT_FORMAT, (xinputIndex + 1));
-        *lplpDirectInputDevice = new WrapperIDirectInputDevice(underlyingDIObjectUsesUnicode, new XInputController(xinputIndex), MapperFactory::CreateMapper());
+        
+        WrapperIDirectInputDevice* newWrappedDevice = new WrapperIDirectInputDevice(underlyingDIObjectUsesUnicode, new XInputController(xinputIndex), MapperFactory::CreateMapper());
+        newWrappedDevice->AddRef();
+        *lplpDirectInputDevice = newWrappedDevice;
+        
         return DI_OK;
     }
 }

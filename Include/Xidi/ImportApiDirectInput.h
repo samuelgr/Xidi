@@ -62,33 +62,22 @@ namespace Xidi
         // -------- CLASS METHODS ------------------------------------------ //
         
         // Dynamically loads the DirectInput library and sets up all imported function calls.
-        // Returns S_OK on success and E_FAIL on failure.
-        static HRESULT Initialize(void);
-
+        static void Initialize(void);
+        
+        
+        // -------- CLASS METHODS: IMPORTED FUNCTIONS ---------------------- //
+        // See DirectInput and COM documentation for more information.
+        
 #if DIRECTINPUT_VERSION >= 0x0800
-        // Calls the imported function DirectInput8Create.
         static HRESULT DirectInput8Create(HINSTANCE hinst, DWORD dwVersion, REFIID riidltf, LPVOID* ppvOut, LPUNKNOWN punkOuter);
 #else
-        // Calls the imported function DirectInputCreateA.
         static HRESULT DirectInputCreateA(HINSTANCE hinst, DWORD dwVersion, LPDIRECTINPUTA* ppDI, LPUNKNOWN punkOuter);
-
-        // Calls the imported function DirectInputCreateW.
         static HRESULT DirectInputCreateW(HINSTANCE hinst, DWORD dwVersion, LPDIRECTINPUTW* ppDI, LPUNKNOWN punkOuter);
-
-        // Calls the imported function DirectInputCreateEx.
         static HRESULT DirectInputCreateEx(HINSTANCE hinst, DWORD dwVersion, REFIID riidltf, LPVOID* ppvOut, LPUNKNOWN punkOuter);
 #endif
-
-        // Calls the imported function DllRegisterServer.
         static HRESULT DllRegisterServer(void);
-
-        // Calls the imported function DllUnregisterServer.
         static HRESULT DllUnregisterServer(void);
-
-        // Calls the imported function DllCanUnloadNow.
         static HRESULT DllCanUnloadNow(void);
-
-        // Calls the imported function DllGetClassObject.
         static HRESULT DllGetClassObject(REFCLSID rclsid, REFIID riid, LPVOID* ppv);
         
         

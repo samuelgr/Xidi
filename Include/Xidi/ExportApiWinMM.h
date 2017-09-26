@@ -17,6 +17,16 @@
 // -------- DLL EXPORT FUNCTIONS ------------------------------------------- //
 // See WinMM documentation for more information.
 
+LRESULT     WINAPI ExportApiWinMMCloseDriver(HDRVR hdrvr, LPARAM lParam1, LPARAM lParam2);
+LRESULT     WINAPI ExportApiWinMMDefDriverProc(DWORD_PTR dwDriverId, HDRVR hdrvr, UINT msg, LONG lParam1, LONG lParam2);
+BOOL        WINAPI ExportApiWinMMDriverCallback(DWORD dwCallBack, DWORD dwFlags, HDRVR hdrvr, DWORD msg, DWORD dwUser, DWORD dwParam1, DWORD dwParam2);
+HMODULE     WINAPI ExportApiWinMMDrvGetModuleHandle(HDRVR hDriver);
+HMODULE     WINAPI ExportApiWinMMGetDriverModuleHandle(HDRVR hdrvr);
+HDRVR       WINAPI ExportApiWinMMOpenDriver(LPCWSTR lpDriverName, LPCWSTR lpSectionName, LPARAM lParam);
+BOOL        WINAPI ExportApiWinMMPlaySoundA(LPCSTR pszSound, HMODULE hmod, DWORD fdwSound);
+BOOL        WINAPI ExportApiWinMMPlaySoundW(LPCWSTR pszSound, HMODULE hmod, DWORD fdwSound);
+LRESULT     WINAPI ExportApiWinMMSendDriverMessage(HDRVR hdrvr, UINT msg, LPARAM lParam1, LPARAM lParam2);
+
 MMRESULT    WINAPI ExportApiWinMMAuxGetDevCapsA(UINT_PTR uDeviceID, LPAUXCAPSA lpCaps, UINT cbCaps);
 MMRESULT    WINAPI ExportApiWinMMAuxGetDevCapsW(UINT_PTR uDeviceID, LPAUXCAPSW lpCaps, UINT cbCaps);
 UINT        WINAPI ExportApiWinMMAuxGetNumDevs(void);
@@ -82,6 +92,21 @@ MMRESULT    WINAPI ExportApiWinMMMidiStreamProperty(HMIDISTRM hm, LPBYTE lppropd
 MMRESULT    WINAPI ExportApiWinMMMidiStreamRestart(HMIDISTRM hms);
 MMRESULT    WINAPI ExportApiWinMMMidiStreamStop(HMIDISTRM hms);
 
+MMRESULT    WINAPI ExportApiWinMMMixerClose(HMIXER hmx);
+MMRESULT    WINAPI ExportApiWinMMMixerGetControlDetailsA(HMIXEROBJ hmxobj, LPMIXERCONTROLDETAILS pmxcd, DWORD fdwDetails);
+MMRESULT    WINAPI ExportApiWinMMMixerGetControlDetailsW(HMIXEROBJ hmxobj, LPMIXERCONTROLDETAILS pmxcd, DWORD fdwDetails);
+MMRESULT    WINAPI ExportApiWinMMMixerGetDevCapsA(UINT_PTR uMxId, LPMIXERCAPS pmxcaps, UINT cbmxcaps);
+MMRESULT    WINAPI ExportApiWinMMMixerGetDevCapsW(UINT_PTR uMxId, LPMIXERCAPS pmxcaps, UINT cbmxcaps);
+MMRESULT    WINAPI ExportApiWinMMMixerGetID(HMIXEROBJ hmxobj, UINT* puMxId, DWORD fdwId);
+MMRESULT    WINAPI ExportApiWinMMMixerGetLineControlsA(HMIXEROBJ hmxobj, LPMIXERLINECONTROLS pmxlc, DWORD fdwControls);
+MMRESULT    WINAPI ExportApiWinMMMixerGetLineControlsW(HMIXEROBJ hmxobj, LPMIXERLINECONTROLS pmxlc, DWORD fdwControls);
+MMRESULT    WINAPI ExportApiWinMMMixerGetLineInfoA(HMIXEROBJ hmxobj, LPMIXERLINE pmxl, DWORD fdwInfo);
+MMRESULT    WINAPI ExportApiWinMMMixerGetLineInfoW(HMIXEROBJ hmxobj, LPMIXERLINE pmxl, DWORD fdwInfo);
+UINT        WINAPI ExportApiWinMMMixerGetNumDevs(void);
+DWORD       WINAPI ExportApiWinMMMixerMessage(HMIXER driverID, UINT uMsg, DWORD_PTR dwParam1, DWORD_PTR dwParam2);
+MMRESULT    WINAPI ExportApiWinMMMixerOpen(LPHMIXER phmx, UINT uMxId, DWORD_PTR dwCallback, DWORD_PTR dwInstance, DWORD fdwOpen);
+MMRESULT    WINAPI ExportApiWinMMMixerSetControlDetails(HMIXEROBJ hmxobj, LPMIXERCONTROLDETAILS pmxcd, DWORD fdwDetails);
+
 MMRESULT    WINAPI ExportApiWinMMMMIOAdvance(HMMIO hmmio, LPMMIOINFO lpmmioinfo, UINT wFlags);
 MMRESULT    WINAPI ExportApiWinMMMMIOAscend(HMMIO hmmio, LPMMCKINFO lpck, UINT wFlags);
 MMRESULT    WINAPI ExportApiWinMMMMIOClose(HMMIO hmmio, UINT wFlags);
@@ -103,9 +128,6 @@ MMRESULT    WINAPI ExportApiWinMMMMIOSetInfo(HMMIO hmmio, LPCMMIOINFO lpmmioinfo
 FOURCC      WINAPI ExportApiWinMMMMIOStringToFOURCCA(LPCSTR sz, UINT wFlags);
 FOURCC      WINAPI ExportApiWinMMMMIOStringToFOURCCW(LPCWSTR sz, UINT wFlags);
 LONG        WINAPI ExportApiWinMMMMIOWrite(HMMIO hmmio, const char* pch, LONG cch);
-
-BOOL        WINAPI ExportApiWinMMPlaySoundA(LPCSTR pszSound, HMODULE hmod, DWORD fdwSound);
-BOOL        WINAPI ExportApiWinMMPlaySoundW(LPCWSTR pszSound, HMODULE hmod, DWORD fdwSound);
 
 BOOL        WINAPI ExportApiWinMMSndPlaySoundA(LPCSTR lpszSound, UINT fuSound);
 BOOL        WINAPI ExportApiWinMMSndPlaySoundW(LPCWSTR lpszSound, UINT fuSound);

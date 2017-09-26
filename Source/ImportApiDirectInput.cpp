@@ -27,7 +27,7 @@ BOOL ImportApiDirectInput::importTableIsInitialized = FALSE;
 // -------- CLASS METHODS -------------------------------------------------- //
 // See "ImportApiDirectInput.h" for documentation.
 
-HRESULT ImportApiDirectInput::Initialize(void)
+void ImportApiDirectInput::Initialize(void)
 {
     if (FALSE == importTableIsInitialized)
     {
@@ -49,7 +49,7 @@ HRESULT ImportApiDirectInput::Initialize(void)
         if (NULL == loadedLibrary)
         {
             LogInitializeFailed(libraryPath.c_str());
-            return E_FAIL;
+            return;
         }
 
         // Attempt to obtain the addresses of all imported API functions.
@@ -93,8 +93,6 @@ HRESULT ImportApiDirectInput::Initialize(void)
         importTableIsInitialized = TRUE;
         LogInitializeSucceeded();
     }
-
-    return S_OK;
 }
 
 // ---------
@@ -102,28 +100,20 @@ HRESULT ImportApiDirectInput::Initialize(void)
 #if DIRECTINPUT_VERSION >= 0x0800
 HRESULT ImportApiDirectInput::DirectInput8Create(HINSTANCE hinst, DWORD dwVersion, REFIID riidltf, LPVOID* ppvOut, LPUNKNOWN punkOuter)
 {
-    if (S_OK != Initialize())
-        return E_NOT_VALID_STATE;
+    Initialize();
     
     if (NULL == importTable.DirectInput8Create)
-    {
         LogMissingFunctionCalled(_T("DirectInput8Create"));
-        return E_NOT_VALID_STATE;
-    }
     
     return importTable.DirectInput8Create(hinst, dwVersion, riidltf, ppvOut, punkOuter);
 }
 #else
 HRESULT ImportApiDirectInput::DirectInputCreateA(HINSTANCE hinst, DWORD dwVersion, LPDIRECTINPUTA*ppDI, LPUNKNOWN punkOuter)
 {
-    if (S_OK != Initialize())
-        return E_NOT_VALID_STATE;
-
+    Initialize();
+    
     if (NULL == importTable.DirectInputCreateA)
-    {
         LogMissingFunctionCalled(_T("DirectInputCreateA"));
-        return E_NOT_VALID_STATE;
-    }
 
     return importTable.DirectInputCreateA(hinst, dwVersion, ppDI, punkOuter);
 }
@@ -132,14 +122,10 @@ HRESULT ImportApiDirectInput::DirectInputCreateA(HINSTANCE hinst, DWORD dwVersio
 
 HRESULT ImportApiDirectInput::DirectInputCreateW(HINSTANCE hinst, DWORD dwVersion, LPDIRECTINPUTW*ppDI, LPUNKNOWN punkOuter)
 {
-    if (S_OK != Initialize())
-        return E_NOT_VALID_STATE;
-
+    Initialize();
+    
     if (NULL == importTable.DirectInputCreateW)
-    {
         LogMissingFunctionCalled(_T("DirectInputCreateW"));
-        return E_NOT_VALID_STATE;
-    }
 
     return importTable.DirectInputCreateW(hinst, dwVersion, ppDI, punkOuter);
 }
@@ -148,14 +134,10 @@ HRESULT ImportApiDirectInput::DirectInputCreateW(HINSTANCE hinst, DWORD dwVersio
 
 HRESULT ImportApiDirectInput::DirectInputCreateEx(HINSTANCE hinst, DWORD dwVersion, REFIID riidltf, LPVOID* ppvOut, LPUNKNOWN punkOuter)
 {
-    if (S_OK != Initialize())
-        return E_NOT_VALID_STATE;
-
+    Initialize();
+    
     if (NULL == importTable.DirectInputCreateEx)
-    {
         LogMissingFunctionCalled(_T("DirectInputCreateEx"));
-        return E_NOT_VALID_STATE;
-    }
 
     return importTable.DirectInputCreateEx(hinst, dwVersion, riidltf, ppvOut, punkOuter);
 }
@@ -165,14 +147,10 @@ HRESULT ImportApiDirectInput::DirectInputCreateEx(HINSTANCE hinst, DWORD dwVersi
 
 HRESULT ImportApiDirectInput::DllRegisterServer(void)
 {
-    if (S_OK != Initialize())
-        return E_NOT_VALID_STATE;
-
+    Initialize();
+    
     if (NULL == importTable.DllRegisterServer)
-    {
         LogMissingFunctionCalled(_T("DllRegisterServer"));
-        return E_NOT_VALID_STATE;
-    }
 
     return importTable.DllRegisterServer();
 }
@@ -181,14 +159,10 @@ HRESULT ImportApiDirectInput::DllRegisterServer(void)
 
 HRESULT ImportApiDirectInput::DllUnregisterServer(void)
 {
-    if (S_OK != Initialize())
-        return E_NOT_VALID_STATE;
-
+    Initialize();
+    
     if (NULL == importTable.DllUnregisterServer)
-    {
         LogMissingFunctionCalled(_T("DllUnregisterServer"));
-        return E_NOT_VALID_STATE;
-    }
 
     return importTable.DllUnregisterServer();
 }
@@ -197,14 +171,10 @@ HRESULT ImportApiDirectInput::DllUnregisterServer(void)
 
 HRESULT ImportApiDirectInput::DllCanUnloadNow(void)
 {
-    if (S_OK != Initialize())
-        return E_NOT_VALID_STATE;
-
+    Initialize();
+    
     if (NULL == importTable.DllCanUnloadNow)
-    {
         LogMissingFunctionCalled(_T("DllCanUnloadNow"));
-        return E_NOT_VALID_STATE;
-    }
 
     return importTable.DllCanUnloadNow();
 }
@@ -213,14 +183,10 @@ HRESULT ImportApiDirectInput::DllCanUnloadNow(void)
 
 HRESULT ImportApiDirectInput::DllGetClassObject(REFCLSID rclsid, REFIID riid, LPVOID* ppv)
 {
-    if (S_OK != Initialize())
-        return E_NOT_VALID_STATE;
-
+    Initialize();
+    
     if (NULL == importTable.DllGetClassObject)
-    {
         LogMissingFunctionCalled(_T("DllGetClassObject"));
-        return E_NOT_VALID_STATE;
-    }
 
     return importTable.DllGetClassObject(rclsid, riid, ppv);
 }

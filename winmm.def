@@ -1,5 +1,14 @@
 LIBRARY winmm
 EXPORTS
+    CloseDriver=ExportApiWinMMCloseDriver
+    DefDriverProc=ExportApiWinMMDefDriverProc
+    DriverCallback=ExportApiWinMMDriverCallback
+    DrvGetModuleHandle=ExportApiWinMMDrvGetModuleHandle
+    GetDriverModuleHandle=ExportApiWinMMGetDriverModuleHandle
+    OpenDriver=ExportApiWinMMOpenDriver
+    PlaySoundA=ExportApiWinMMPlaySoundA
+    PlaySoundW=ExportApiWinMMPlaySoundW
+    SendDriverMessage=ExportApiWinMMSendDriverMessage
     auxGetDevCapsA=ExportApiWinMMAuxGetDevCapsA
     auxGetDevCapsW=ExportApiWinMMAuxGetDevCapsW
     auxGetNumDevs=ExportApiWinMMAuxGetNumDevs
@@ -59,6 +68,20 @@ EXPORTS
     midiStreamProperty=ExportApiWinMMMidiStreamProperty
     midiStreamRestart=ExportApiWinMMMidiStreamRestart
     midiStreamStop=ExportApiWinMMMidiStreamStop
+    mixerClose=ExportApiWinMMMixerClose
+    mixerGetControlDetailsA=ExportApiWinMMMixerGetControlDetailsA
+    mixerGetControlDetailsW=ExportApiWinMMMixerGetControlDetailsW
+    mixerGetDevCapsA=ExportApiWinMMMixerGetDevCapsA
+    mixerGetDevCapsW=ExportApiWinMMMixerGetDevCapsW
+    mixerGetID=ExportApiWinMMMixerGetID
+    mixerGetLineControlsA=ExportApiWinMMMixerGetLineControlsA
+    mixerGetLineControlsW=ExportApiWinMMMixerGetLineControlsW
+    mixerGetLineInfoA=ExportApiWinMMMixerGetLineInfoA
+    mixerGetLineInfoW=ExportApiWinMMMixerGetLineInfoW
+    mixerGetNumDevs=ExportApiWinMMMixerGetNumDevs
+    mixerMessage=ExportApiWinMMMixerMessage
+    mixerOpen=ExportApiWinMMMixerOpen
+    mixerSetControlDetails=ExportApiWinMMMixerSetControlDetails
     mmioAdvance=ExportApiWinMMMMIOAdvance
     mmioAscend=ExportApiWinMMMMIOAscend
     mmioClose=ExportApiWinMMMMIOClose
@@ -80,8 +103,6 @@ EXPORTS
     mmioStringToFOURCCA=ExportApiWinMMMMIOStringToFOURCCA
     mmioStringToFOURCCW=ExportApiWinMMMMIOStringToFOURCCW
     mmioWrite=ExportApiWinMMMMIOWrite
-    PlaySoundA=ExportApiWinMMPlaySoundA
-    PlaySoundW=ExportApiWinMMPlaySoundW
     sndPlaySoundA=ExportApiWinMMSndPlaySoundA
     sndPlaySoundW=ExportApiWinMMSndPlaySoundW
     timeBeginPeriod=ExportApiWinMMTimeBeginPeriod

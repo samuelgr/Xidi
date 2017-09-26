@@ -331,12 +331,8 @@ int RunTestApp(int argc, char* argv[])
     ////////   Initialization
     
     // Initialize the imported DirectInput8 API.
-    if (S_OK != ImportApiDirectInput::Initialize())
-    {
-        wcerr <<_T("Unable to initialize DirectInput8 API.") << endl;
-        return -1;
-    }
-
+    ImportApiDirectInput::Initialize();
+    
     // Create the main interface to DirectInput.
     result = ExportedDirectInputCreateMethod(GetModuleHandle(NULL), DIRECTINPUT_VERSION, Use_IID_IDirectInput, (LPVOID*)&directInputIface, NULL);
     if (DI_OK != result)

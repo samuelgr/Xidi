@@ -18,6 +18,74 @@ using namespace Xidi;
 // -------- DLL EXPORT FUNCTIONS ------------------------------------------- //
 // See WinMM documentation for more information.
 
+LRESULT WINAPI ExportApiWinMMCloseDriver(HDRVR hdrvr, LPARAM lParam1, LPARAM lParam2)
+{
+    return ImportApiWinMM::CloseDriver(hdrvr, lParam1, lParam2);
+}
+
+// ---------
+
+
+LRESULT WINAPI ExportApiWinMMDefDriverProc(DWORD_PTR dwDriverId, HDRVR hdrvr, UINT msg, LONG lParam1, LONG lParam2)
+{
+    return ImportApiWinMM::DefDriverProc(dwDriverId, hdrvr, msg, lParam1, lParam2);
+}
+
+// ---------
+
+
+BOOL WINAPI ExportApiWinMMDriverCallback(DWORD dwCallBack, DWORD dwFlags, HDRVR hdrvr, DWORD msg, DWORD dwUser, DWORD dwParam1, DWORD dwParam2)
+{
+    return ImportApiWinMM::DriverCallback(dwCallBack, dwFlags, hdrvr, msg, dwUser, dwParam1, dwParam2);
+}
+
+// ---------
+
+
+HMODULE WINAPI ExportApiWinMMDrvGetModuleHandle(HDRVR hDriver)
+{
+    return ImportApiWinMM::DrvGetModuleHandle(hDriver);
+}
+
+// ---------
+
+
+HMODULE WINAPI ExportApiWinMMGetDriverModuleHandle(HDRVR hdrvr)
+{
+    return ImportApiWinMM::GetDriverModuleHandle(hdrvr);
+}
+
+// ---------
+
+
+HDRVR WINAPI ExportApiWinMMOpenDriver(LPCWSTR lpDriverName, LPCWSTR lpSectionName, LPARAM lParam)
+{
+    return ImportApiWinMM::OpenDriver(lpDriverName, lpSectionName, lParam);
+}
+
+// ---------
+
+BOOL WINAPI ExportApiWinMMPlaySoundA(LPCSTR pszSound, HMODULE hmod, DWORD fdwSound)
+{
+    return ImportApiWinMM::PlaySoundA(pszSound, hmod, fdwSound);
+}
+
+// ---------
+
+BOOL WINAPI ExportApiWinMMPlaySoundW(LPCWSTR pszSound, HMODULE hmod, DWORD fdwSound)
+{
+    return ImportApiWinMM::PlaySoundW(pszSound, hmod, fdwSound);
+}
+
+// ---------
+
+LRESULT WINAPI ExportApiWinMMSendDriverMessage(HDRVR hdrvr, UINT msg, LPARAM lParam1, LPARAM lParam2)
+{
+    return ImportApiWinMM::SendDriverMessage(hdrvr, msg, lParam1, lParam2);
+}
+
+// ---------
+
 MMRESULT WINAPI ExportApiWinMMAuxGetDevCapsA(UINT_PTR uDeviceID, LPAUXCAPSA lpCaps, UINT cbCaps)
 {
     return ImportApiWinMM::auxGetDevCapsA(uDeviceID, lpCaps, cbCaps);
@@ -431,6 +499,104 @@ MMRESULT WINAPI ExportApiWinMMMidiStreamStop(HMIDISTRM hms)
 
 // ---------
 
+MMRESULT WINAPI ExportApiWinMMMixerClose(HMIXER hmx)
+{
+    return ImportApiWinMM::mixerClose(hmx);
+}
+
+// ---------
+
+MMRESULT WINAPI ExportApiWinMMMixerGetControlDetailsA(HMIXEROBJ hmxobj, LPMIXERCONTROLDETAILS pmxcd, DWORD fdwDetails)
+{
+    return ImportApiWinMM::mixerGetControlDetailsA(hmxobj, pmxcd, fdwDetails);
+}
+
+// ---------
+
+MMRESULT WINAPI ExportApiWinMMMixerGetControlDetailsW(HMIXEROBJ hmxobj, LPMIXERCONTROLDETAILS pmxcd, DWORD fdwDetails)
+{
+    return ImportApiWinMM::mixerGetControlDetailsW(hmxobj, pmxcd, fdwDetails);
+}
+
+// ---------
+
+MMRESULT WINAPI ExportApiWinMMMixerGetDevCapsA(UINT_PTR uMxId, LPMIXERCAPS pmxcaps, UINT cbmxcaps)
+{
+    return ImportApiWinMM::mixerGetDevCapsA(uMxId, pmxcaps, cbmxcaps);
+}
+
+// ---------
+
+MMRESULT WINAPI ExportApiWinMMMixerGetDevCapsW(UINT_PTR uMxId, LPMIXERCAPS pmxcaps, UINT cbmxcaps)
+{
+    return ImportApiWinMM::mixerGetDevCapsW(uMxId, pmxcaps, cbmxcaps);
+}
+
+// ---------
+
+MMRESULT WINAPI ExportApiWinMMMixerGetID(HMIXEROBJ hmxobj, UINT* puMxId, DWORD fdwId)
+{
+    return ImportApiWinMM::mixerGetID(hmxobj, puMxId, fdwId);
+}
+
+// ---------
+
+MMRESULT WINAPI ExportApiWinMMMixerGetLineControlsA(HMIXEROBJ hmxobj, LPMIXERLINECONTROLS pmxlc, DWORD fdwControls)
+{
+    return ImportApiWinMM::mixerGetLineControlsA(hmxobj, pmxlc, fdwControls);
+}
+
+// ---------
+
+MMRESULT WINAPI ExportApiWinMMMixerGetLineControlsW(HMIXEROBJ hmxobj, LPMIXERLINECONTROLS pmxlc, DWORD fdwControls)
+{
+    return ImportApiWinMM::mixerGetLineControlsW(hmxobj, pmxlc, fdwControls);
+}
+
+// ---------
+
+MMRESULT WINAPI ExportApiWinMMMixerGetLineInfoA(HMIXEROBJ hmxobj, LPMIXERLINE pmxl, DWORD fdwInfo)
+{
+    return ImportApiWinMM::mixerGetLineInfoA(hmxobj, pmxl, fdwInfo);
+}
+
+// ---------
+
+MMRESULT WINAPI ExportApiWinMMMixerGetLineInfoW(HMIXEROBJ hmxobj, LPMIXERLINE pmxl, DWORD fdwInfo)
+{
+    return ImportApiWinMM::mixerGetLineInfoW(hmxobj, pmxl, fdwInfo);
+}
+
+// ---------
+
+UINT WINAPI ExportApiWinMMMixerGetNumDevs(void)
+{
+    return ImportApiWinMM::mixerGetNumDevs();
+}
+
+// ---------
+
+DWORD WINAPI ExportApiWinMMMixerMessage(HMIXER driverID, UINT uMsg, DWORD_PTR dwParam1, DWORD_PTR dwParam2)
+{
+    return ImportApiWinMM::mixerMessage(driverID, uMsg, dwParam1, dwParam2);
+}
+
+// ---------
+
+MMRESULT WINAPI ExportApiWinMMMixerOpen(LPHMIXER phmx, UINT uMxId, DWORD_PTR dwCallback, DWORD_PTR dwInstance, DWORD fdwOpen)
+{
+    return ImportApiWinMM::mixerOpen(phmx, uMxId, dwCallback, dwInstance, fdwOpen);
+}
+
+// ---------
+
+MMRESULT WINAPI ExportApiWinMMMixerSetControlDetails(HMIXEROBJ hmxobj, LPMIXERCONTROLDETAILS pmxcd, DWORD fdwDetails)
+{
+    return ImportApiWinMM::mixerSetControlDetails(hmxobj, pmxcd, fdwDetails);
+}
+
+// ---------
+
 MMRESULT WINAPI ExportApiWinMMMMIOAdvance(HMMIO hmmio, LPMMIOINFO lpmmioinfo, UINT wFlags)
 {
     return ImportApiWinMM::mmioAdvance(hmmio, lpmmioinfo, wFlags);
@@ -593,20 +759,6 @@ FOURCC WINAPI ExportApiWinMMMMIOStringToFOURCCW(LPCWSTR sz, UINT wFlags)
 LONG WINAPI ExportApiWinMMMMIOWrite(HMMIO hmmio, const char* pch, LONG cch)
 {
     return ImportApiWinMM::mmioWrite(hmmio, pch, cch);
-}
-
-// ---------
-
-BOOL WINAPI ExportApiWinMMPlaySoundA(LPCSTR pszSound, HMODULE hmod, DWORD fdwSound)
-{
-    return ImportApiWinMM::PlaySoundA(pszSound, hmod, fdwSound);
-}
-
-// ---------
-
-BOOL WINAPI ExportApiWinMMPlaySoundW(LPCWSTR pszSound, HMODULE hmod, DWORD fdwSound)
-{
-    return ImportApiWinMM::PlaySoundW(pszSound, hmod, fdwSound);
 }
 
 // ---------

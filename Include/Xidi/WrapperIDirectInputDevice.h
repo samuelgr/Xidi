@@ -34,7 +34,7 @@ namespace Xidi
         BOOL polledSinceLastGetDeviceState;
 
         /// Reference count.
-        DWORD refcount;
+        ULONG refcount;
 
         /// Specifies whether or not to use Unicode (this depends on the application configuration).
         BOOL useUnicode;

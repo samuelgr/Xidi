@@ -27,6 +27,16 @@ namespace Xidi
         // Fields specify the addresses of the imported DirectInput API functions.
         struct SImportTable
         {
+            LRESULT     (WINAPI* CloseDriver)(HDRVR, LPARAM, LPARAM);
+            LRESULT     (WINAPI* DefDriverProc)(DWORD_PTR, HDRVR, UINT, LONG, LONG);
+            BOOL        (WINAPI* DriverCallback)(DWORD, DWORD, HDRVR, DWORD, DWORD, DWORD, DWORD);
+            HMODULE     (WINAPI* DrvGetModuleHandle)(HDRVR);
+            HMODULE     (WINAPI* GetDriverModuleHandle)(HDRVR);
+            HDRVR       (WINAPI* OpenDriver)(LPCWSTR, LPCWSTR, LPARAM);
+            BOOL        (WINAPI* PlaySoundA)(LPCSTR, HMODULE, DWORD);
+            BOOL        (WINAPI* PlaySoundW)(LPCWSTR, HMODULE, DWORD);
+            LRESULT     (WINAPI* SendDriverMessage)(HDRVR, UINT, LPARAM, LPARAM);
+            
             MMRESULT    (WINAPI* auxGetDevCapsA)(UINT_PTR, LPAUXCAPSA, UINT);
             MMRESULT    (WINAPI* auxGetDevCapsW)(UINT_PTR, LPAUXCAPSW, UINT);
             UINT        (WINAPI* auxGetNumDevs)(void);
@@ -64,34 +74,49 @@ namespace Xidi
             MMRESULT    (WINAPI* midiInStop)(HMIDIIN);
             MMRESULT    (WINAPI* midiInUnprepareHeader)(HMIDIIN, LPMIDIHDR, UINT);
             
-            MMRESULT    (WINAPI* midiOutCacheDrumPatches)(HMIDIOUT hmo, UINT wPatch, WORD *lpKeyArray, UINT wFlags);
-            MMRESULT    (WINAPI* midiOutCachePatches)(HMIDIOUT hmo, UINT wBank, WORD *lpPatchArray, UINT wFlags);
-            MMRESULT    (WINAPI* midiOutClose)(HMIDIOUT hmo);
-            MMRESULT    (WINAPI* midiOutGetDevCapsA)(UINT_PTR uDeviceID, LPMIDIOUTCAPSA lpMidiOutCaps, UINT cbMidiOutCaps);
-            MMRESULT    (WINAPI* midiOutGetDevCapsW)(UINT_PTR uDeviceID, LPMIDIOUTCAPSW lpMidiOutCaps, UINT cbMidiOutCaps);
-            UINT        (WINAPI* midiOutGetErrorTextA)(MMRESULT    mmrError, LPSTR lpText, UINT cchText);
-            UINT        (WINAPI* midiOutGetErrorTextW)(MMRESULT    mmrError, LPWSTR lpText, UINT cchText);
-            MMRESULT    (WINAPI* midiOutGetID)(HMIDIOUT hmo, LPUINT puDeviceID);
+            MMRESULT    (WINAPI* midiOutCacheDrumPatches)(HMIDIOUT, UINT, WORD*, UINT);
+            MMRESULT    (WINAPI* midiOutCachePatches)(HMIDIOUT, UINT, WORD*, UINT);
+            MMRESULT    (WINAPI* midiOutClose)(HMIDIOUT);
+            MMRESULT    (WINAPI* midiOutGetDevCapsA)(UINT_PTR, LPMIDIOUTCAPSA, UINT);
+            MMRESULT    (WINAPI* midiOutGetDevCapsW)(UINT_PTR, LPMIDIOUTCAPSW, UINT);
+            UINT        (WINAPI* midiOutGetErrorTextA)(MMRESULT, LPSTR, UINT);
+            UINT        (WINAPI* midiOutGetErrorTextW)(MMRESULT, LPWSTR, UINT);
+            MMRESULT    (WINAPI* midiOutGetID)(HMIDIOUT, LPUINT);
             UINT        (WINAPI* midiOutGetNumDevs)(void);
-            MMRESULT    (WINAPI* midiOutGetVolume)(HMIDIOUT hmo, LPDWORD lpdwVolume);
-            MMRESULT    (WINAPI* midiOutLongMsg)(HMIDIOUT hmo, LPMIDIHDR lpMidiOutHdr, UINT cbMidiOutHdr);
-            DWORD       (WINAPI* midiOutMessage)(HMIDIOUT deviceID, UINT msg, DWORD_PTR dw1, DWORD_PTR dw2);
-            MMRESULT    (WINAPI* midiOutOpen)(LPHMIDIOUT lphmo, UINT uDeviceID, DWORD_PTR dwCallback, DWORD_PTR dwCallbackInstance, DWORD dwFlags);
-            MMRESULT    (WINAPI* midiOutPrepareHeader)(HMIDIOUT hmo, LPMIDIHDR lpMidiOutHdr, UINT cbMidiOutHdr);
-            MMRESULT    (WINAPI* midiOutReset)(HMIDIOUT hmo);
-            MMRESULT    (WINAPI* midiOutSetVolume)(HMIDIOUT hmo, DWORD dwVolume);
-            MMRESULT    (WINAPI* midiOutShortMsg)(HMIDIOUT hmo, DWORD dwMsg);
-            MMRESULT    (WINAPI* midiOutUnprepareHeader)(HMIDIOUT hmo, LPMIDIHDR lpMidiOutHdr, UINT cbMidiOutHdr);
+            MMRESULT    (WINAPI* midiOutGetVolume)(HMIDIOUT, LPDWORD);
+            MMRESULT    (WINAPI* midiOutLongMsg)(HMIDIOUT, LPMIDIHDR, UINT);
+            DWORD       (WINAPI* midiOutMessage)(HMIDIOUT, UINT, DWORD_PTR, DWORD_PTR);
+            MMRESULT    (WINAPI* midiOutOpen)(LPHMIDIOUT, UINT, DWORD_PTR, DWORD_PTR, DWORD);
+            MMRESULT    (WINAPI* midiOutPrepareHeader)(HMIDIOUT, LPMIDIHDR, UINT);
+            MMRESULT    (WINAPI* midiOutReset)(HMIDIOUT);
+            MMRESULT    (WINAPI* midiOutSetVolume)(HMIDIOUT, DWORD);
+            MMRESULT    (WINAPI* midiOutShortMsg)(HMIDIOUT, DWORD);
+            MMRESULT    (WINAPI* midiOutUnprepareHeader)(HMIDIOUT, LPMIDIHDR, UINT);
             
-            MMRESULT    (WINAPI* midiStreamClose)(HMIDISTRM hStream);
-            MMRESULT    (WINAPI* midiStreamOpen)(LPHMIDISTRM lphStream, LPUINT puDeviceID, DWORD cMidi, DWORD_PTR dwCallback, DWORD_PTR dwInstance, DWORD fdwOpen);
-            MMRESULT    (WINAPI* midiStreamOut)(HMIDISTRM hMidiStream, LPMIDIHDR lpMidiHdr, UINT cbMidiHdr);
-            MMRESULT    (WINAPI* midiStreamPause)(HMIDISTRM hms);
-            MMRESULT    (WINAPI* midiStreamPosition)(HMIDISTRM hms, LPMMTIME pmmt, UINT cbmmt);
-            MMRESULT    (WINAPI* midiStreamProperty)(HMIDISTRM hm, LPBYTE lppropdata, DWORD dwProperty);
-            MMRESULT    (WINAPI* midiStreamRestart)(HMIDISTRM hms);
-            MMRESULT    (WINAPI* midiStreamStop)(HMIDISTRM hms);
-            
+            MMRESULT    (WINAPI* midiStreamClose)(HMIDISTRM);
+            MMRESULT    (WINAPI* midiStreamOpen)(LPHMIDISTRM, LPUINT, DWORD, DWORD_PTR, DWORD_PTR, DWORD);
+            MMRESULT    (WINAPI* midiStreamOut)(HMIDISTRM, LPMIDIHDR, UINT);
+            MMRESULT    (WINAPI* midiStreamPause)(HMIDISTRM);
+            MMRESULT    (WINAPI* midiStreamPosition)(HMIDISTRM, LPMMTIME, UINT);
+            MMRESULT    (WINAPI* midiStreamProperty)(HMIDISTRM, LPBYTE, DWORD);
+            MMRESULT    (WINAPI* midiStreamRestart)(HMIDISTRM);
+            MMRESULT    (WINAPI* midiStreamStop)(HMIDISTRM);
+
+            MMRESULT    (WINAPI* mixerClose)(HMIXER);
+            MMRESULT    (WINAPI* mixerGetControlDetailsA)(HMIXEROBJ, LPMIXERCONTROLDETAILS, DWORD);
+            MMRESULT    (WINAPI* mixerGetControlDetailsW)(HMIXEROBJ, LPMIXERCONTROLDETAILS, DWORD);
+            MMRESULT    (WINAPI* mixerGetDevCapsA)(UINT_PTR, LPMIXERCAPS, UINT);
+            MMRESULT    (WINAPI* mixerGetDevCapsW)(UINT_PTR, LPMIXERCAPS, UINT);
+            MMRESULT    (WINAPI* mixerGetID)(HMIXEROBJ, UINT*, DWORD);
+            MMRESULT    (WINAPI* mixerGetLineControlsA)(HMIXEROBJ, LPMIXERLINECONTROLS, DWORD);
+            MMRESULT    (WINAPI* mixerGetLineControlsW)(HMIXEROBJ, LPMIXERLINECONTROLS, DWORD);
+            MMRESULT    (WINAPI* mixerGetLineInfoA)(HMIXEROBJ, LPMIXERLINE, DWORD);
+            MMRESULT    (WINAPI* mixerGetLineInfoW)(HMIXEROBJ, LPMIXERLINE, DWORD);
+            UINT        (WINAPI* mixerGetNumDevs)(void);
+            DWORD       (WINAPI* mixerMessage)(HMIXER, UINT, DWORD_PTR, DWORD_PTR);
+            MMRESULT    (WINAPI* mixerOpen)(LPHMIXER, UINT, DWORD_PTR, DWORD_PTR, DWORD);
+            MMRESULT    (WINAPI* mixerSetControlDetails)(HMIXEROBJ, LPMIXERCONTROLDETAILS, DWORD);
+
             MMRESULT    (WINAPI* mmioAdvance)(HMMIO, LPMMIOINFO, UINT);
             MMRESULT    (WINAPI* mmioAscend)(HMMIO, LPMMCKINFO, UINT);
             MMRESULT    (WINAPI* mmioClose)(HMMIO, UINT);
@@ -113,9 +138,6 @@ namespace Xidi
             FOURCC      (WINAPI* mmioStringToFOURCCA)(LPCSTR, UINT);
             FOURCC      (WINAPI* mmioStringToFOURCCW)(LPCWSTR, UINT);
             LONG        (WINAPI* mmioWrite)(HMMIO, const char*, LONG);
-            
-            BOOL        (WINAPI* PlaySoundA)(LPCSTR pszSound, HMODULE hmod, DWORD fdwSound);
-            BOOL        (WINAPI* PlaySoundW)(LPCWSTR pszSound, HMODULE hmod, DWORD fdwSound);
             
             BOOL        (WINAPI* sndPlaySoundA)(LPCSTR lpszSound, UINT fuSound);
             BOOL        (WINAPI* sndPlaySoundW)(LPCWSTR lpszSound, UINT fuSound);
@@ -191,411 +213,193 @@ namespace Xidi
         // -------- CLASS METHODS ------------------------------------------ //
 
         // Dynamically loads the WinMM library and sets up all imported function calls.
-        // Returns MMSYSERR_NOERROR on success and MMSYSERR_ERROR on failure.
-        static MMRESULT Initialize(void);
-
-        // Calls the imported function auxDevGetCapsA.
-        static MMRESULT auxGetDevCapsA(UINT_PTR uDeviceID, LPAUXCAPSA lpCaps, UINT cbCaps);
-
-        // Calls the imported function auxDevGetCapsW.
-        static MMRESULT auxGetDevCapsW(UINT_PTR uDeviceID, LPAUXCAPSW lpCaps, UINT cbCaps);
-
-        // Calls the imported function auxGetNumDevs.
-        static UINT auxGetNumDevs(void);
-
-        // Calls the imported function auxGetVolume.
-        static MMRESULT auxGetVolume(UINT uDeviceID, LPDWORD lpdwVolume);
-
-        // Calls the imported function auxOutMessage.
-        static MMRESULT auxOutMessage(UINT uDeviceID, UINT uMsg, DWORD_PTR dwParam1, DWORD_PTR dwParam2);
-
-        // Calls the imported function auxSetVolume.
-        static MMRESULT auxSetVolume(UINT uDeviceID, DWORD dwVolume);
+        static void Initialize(void);
         
-        // Calls the imported function joyConfigChanged.
-        static MMRESULT joyConfigChanged(DWORD dwFlags);
-
-        // Calls the imported function joyGetDevCapsA.
-        static MMRESULT joyGetDevCapsA(UINT_PTR uJoyID, LPJOYCAPSA pjc, UINT cbjc);
-
-        // Calls the imported function joyGetDevCapsW.
-        static MMRESULT joyGetDevCapsW(UINT_PTR uJoyID, LPJOYCAPSW pjc, UINT cbjc);
-
-        // Calls the imported function joyGetNumDevs.
-        static UINT joyGetNumDevs(void);
-
-        // Calls the imported function joyGetPos.
-        static MMRESULT joyGetPos(UINT uJoyID, LPJOYINFO pji);
-
-        // Calls the imported function joyGetPosEx.
-        static MMRESULT joyGetPosEx(UINT uJoyID, LPJOYINFOEX pji);
-
-        // Calls the imported function joyGetThreshold.
-        static MMRESULT joyGetThreshold(UINT uJoyID, LPUINT puThreshold);
-
-        // Calls the imported function joyReleaseCapture.
-        static MMRESULT joyReleaseCapture(UINT uJoyID);
-
-        // Calls the imported function joySetCapture.
-        static MMRESULT joySetCapture(HWND hwnd, UINT uJoyID, UINT uPeriod, BOOL fChanged);
-
-        // Calls the imported function joySetThreshold.
-        static MMRESULT joySetThreshold(UINT uJoyID, UINT uThreshold);
-
-        // Calls the imported function midiConnect.
-        static MMRESULT midiConnect(HMIDI hMidi, HMIDIOUT hmo, LPVOID pReserved);
-
-        // Calls the imported function midiDisconnect.
-        static MMRESULT midiDisconnect(HMIDI hMidi, HMIDIOUT hmo, LPVOID pReserved);
-
-        // Calls the imported function midiInAddBuffer.
-        static MMRESULT midiInAddBuffer(HMIDIIN hMidiIn, LPMIDIHDR lpMidiInHdr, UINT cbMidiInHdr);
-
-        // Calls the imported function midiInClose.
-        static MMRESULT midiInClose(HMIDIIN hMidiIn);
-
-        // Calls the imported function midiInGetDevCapsA.
-        static MMRESULT midiInGetDevCapsA(UINT_PTR uDeviceID, LPMIDIINCAPSA lpMidiInCaps, UINT cbMidiInCaps);
-
-        // Calls the imported function midiInGetDevCapsW.
-        static MMRESULT midiInGetDevCapsW(UINT_PTR uDeviceID, LPMIDIINCAPSW lpMidiInCaps, UINT cbMidiInCaps);
-
-        // Calls the imported function midiInGetErrorTextA.
-        static MMRESULT midiInGetErrorTextA(MMRESULT wError, LPSTR lpText, UINT cchText);
-
-        // Calls the imported function midiInGetErrorTextW.
-        static MMRESULT midiInGetErrorTextW(MMRESULT wError, LPWSTR lpText, UINT cchText);
-
-        // Calls the imported function midiInGetID.
-        static MMRESULT midiInGetID(HMIDIIN hmi, LPUINT puDeviceID);
-
-        // Calls the imported function midiInGetNumDevs.
-        static UINT midiInGetNumDevs(void);
-
-        // Calls the imported function midiInMessage.
-        static DWORD midiInMessage(HMIDIIN deviceID, UINT msg, DWORD_PTR dw1, DWORD_PTR dw2);
-
-        // Calls the imported function midiInOpen.
-        static MMRESULT midiInOpen(LPHMIDIIN lphMidiIn, UINT uDeviceID, DWORD_PTR dwCallback, DWORD_PTR dwCallbackInstance, DWORD dwFlags);
-
-        // Calls the imported function midiInPrepareHeader.
-        static MMRESULT midiInPrepareHeader(HMIDIIN hMidiIn, LPMIDIHDR lpMidiInHdr, UINT cbMidiInHdr);
-
-        // Calls the imported function midiInReset.
-        static MMRESULT midiInReset(HMIDIIN hMidiIn);
-
-        // Calls the imported function midiInStart.
-        static MMRESULT midiInStart(HMIDIIN hMidiIn);
-
-        // Calls the imported function midiInStop.
-        static MMRESULT midiInStop(HMIDIIN hMidiIn);
-
-        // Calls the imported function midiInUnprepareHeader.
-        static MMRESULT midiInUnprepareHeader(HMIDIIN hMidiIn, LPMIDIHDR lpMidiInHdr, UINT cbMidiInHdr);
-
-        // Calls the imported function midiOutCacheDrumPatches.
-        static MMRESULT midiOutCacheDrumPatches(HMIDIOUT hmo, UINT wPatch, WORD *lpKeyArray, UINT wFlags);
-
-        // Calls the imported function midiOutCachePatches.
-        static MMRESULT midiOutCachePatches(HMIDIOUT hmo, UINT wBank, WORD *lpPatchArray, UINT wFlags);
-
-        // Calls the imported function midiOutClose.
-        static MMRESULT midiOutClose(HMIDIOUT hmo);
-
-        // Calls the imported function midiOutGetDevCapsA.
-        static MMRESULT midiOutGetDevCapsA(UINT_PTR uDeviceID, LPMIDIOUTCAPSA lpMidiOutCaps, UINT cbMidiOutCaps);
-
-        // Calls the imported function midiOutGetDevCapsW.
-        static MMRESULT midiOutGetDevCapsW(UINT_PTR uDeviceID, LPMIDIOUTCAPSW lpMidiOutCaps, UINT cbMidiOutCaps);
-
-        // Calls the imported function midiOutGetErrorTextA.
-        static UINT midiOutGetErrorTextA(MMRESULT mmrError, LPSTR lpText, UINT cchText);
-
-        // Calls the imported function midiOutGetErrorTextW.
-        static UINT midiOutGetErrorTextW(MMRESULT mmrError, LPWSTR lpText, UINT cchText);
-
-        // Calls the imported function midiOutGetID.
-        static MMRESULT midiOutGetID(HMIDIOUT hmo, LPUINT puDeviceID);
-
-        // Calls the imported function midiOutGetNumDevs.
-        static UINT midiOutGetNumDevs(void);
-
-        // Calls the imported function midiOutGetVolume.
-        static MMRESULT midiOutGetVolume(HMIDIOUT hmo, LPDWORD lpdwVolume);
-
-        // Calls the imported function midiOutLongMsg.
-        static MMRESULT midiOutLongMsg(HMIDIOUT hmo, LPMIDIHDR lpMidiOutHdr, UINT cbMidiOutHdr);
-
-        // Calls the imported function midiOutMessage.
-        static DWORD midiOutMessage(HMIDIOUT deviceID, UINT msg, DWORD_PTR dw1, DWORD_PTR dw2);
-
-        // Calls the imported function midiOutOpen.
-        static MMRESULT midiOutOpen(LPHMIDIOUT lphmo, UINT uDeviceID, DWORD_PTR dwCallback, DWORD_PTR dwCallbackInstance, DWORD dwFlags);
-
-        // Calls the imported function midiOutPrepareHeader.
-        static MMRESULT midiOutPrepareHeader(HMIDIOUT hmo, LPMIDIHDR lpMidiOutHdr, UINT cbMidiOutHdr);
-
-        // Calls the imported function midiOutReset.
-        static MMRESULT midiOutReset(HMIDIOUT hmo);
-
-        // Calls the imported function midiOutSetVolume.
-        static MMRESULT midiOutSetVolume(HMIDIOUT hmo, DWORD dwVolume);
-
-        // Calls the imported function midiOutShortMsg.
-        static MMRESULT midiOutShortMsg(HMIDIOUT hmo, DWORD dwMsg);
-
-        // Calls the imported function midiOutUnprepareHeader.
-        static MMRESULT midiOutUnprepareHeader(HMIDIOUT hmo, LPMIDIHDR lpMidiOutHdr, UINT cbMidiOutHdr);
-
-        // Calls the imported function midiStreamClose.
-        static MMRESULT midiStreamClose(HMIDISTRM hStream);
-
-        // Calls the imported function midiStreamOpen.
-        static MMRESULT midiStreamOpen(LPHMIDISTRM lphStream, LPUINT puDeviceID, DWORD cMidi, DWORD_PTR dwCallback, DWORD_PTR dwInstance, DWORD fdwOpen);
-
-        // Calls the imported function midiStreamOut.
-        static MMRESULT midiStreamOut(HMIDISTRM hMidiStream, LPMIDIHDR lpMidiHdr, UINT cbMidiHdr);
-
-        // Calls the imported function midiStreamPause.
-        static MMRESULT midiStreamPause(HMIDISTRM hms);
-
-        // Calls the imported function midiStreamPosition.
-        static MMRESULT midiStreamPosition(HMIDISTRM hms, LPMMTIME pmmt, UINT cbmmt);
-
-        // Calls the imported function midiStreamProperty.
-        static MMRESULT midiStreamProperty(HMIDISTRM hm, LPBYTE lppropdata, DWORD dwProperty);
-
-        // Calls the imported function midiStreamRestart.
-        static MMRESULT midiStreamRestart(HMIDISTRM hms);
-
-        // Calls the imported function midiStreamStop.
-        static MMRESULT midiStreamStop(HMIDISTRM hms);
         
-        // Calls the imported function mmioAdvance.
-        static MMRESULT mmioAdvance(HMMIO hmmio, LPMMIOINFO lpmmioinfo, UINT wFlags);
-
-        // Calls the imported function mmioAscend.
-        static MMRESULT mmioAscend(HMMIO hmmio, LPMMCKINFO lpck, UINT wFlags);
-
-        // Calls the imported function mmioClose.
-        static MMRESULT mmioClose(HMMIO hmmio, UINT wFlags);
-
-        // Calls the imported function mmioCreateChunk.
-        static MMRESULT mmioCreateChunk(HMMIO hmmio, LPMMCKINFO lpck, UINT wFlags);
-
-        // Calls the imported function mmioDescend.
-        static MMRESULT mmioDescend(HMMIO hmmio, LPMMCKINFO lpck, LPCMMCKINFO lpckParent, UINT wFlags);
-
-        // Calls the imported function mmioFlush.
-        static MMRESULT mmioFlush(HMMIO hmmio, UINT fuFlush);
-
-        // Calls the imported function mmioGetInfo.
-        static MMRESULT mmioGetInfo(HMMIO hmmio, LPMMIOINFO lpmmioinfo, UINT wFlags);
-
-        // Calls the imported function mmioInstallIOProcA.
-        static LPMMIOPROC mmioInstallIOProcA(FOURCC fccIOProc, LPMMIOPROC pIOProc, DWORD dwFlags);
-
-        // Calls the imported function mmioInstallIOProcW.
-        static LPMMIOPROC mmioInstallIOProcW(FOURCC fccIOProc, LPMMIOPROC pIOProc, DWORD dwFlags);
-
-        // Calls the imported function mmioOpenA.
-        static HMMIO mmioOpenA(LPSTR szFilename, LPMMIOINFO lpmmioinfo, DWORD dwOpenFlags);
-
-        // Calls the imported function mmioOpenW.
-        static HMMIO mmioOpenW(LPWSTR szFilename, LPMMIOINFO lpmmioinfo, DWORD dwOpenFlags);
-
-        // Calls the imported function mmioRead.
-        static LONG mmioRead(HMMIO hmmio, HPSTR pch, LONG cch);
-
-        // Calls the imported function mmioRenameA.
-        static MMRESULT mmioRenameA(LPCSTR szFilename, LPCSTR szNewFilename, LPCMMIOINFO lpmmioinfo, DWORD dwRenameFlags);
-
-        // Calls the imported function mmioRenameW.
-        static MMRESULT mmioRenameW(LPCWSTR szFilename, LPCWSTR szNewFilename, LPCMMIOINFO lpmmioinfo, DWORD dwRenameFlags);
-
-        // Calls the imported function mmioSeek.
-        static LONG mmioSeek(HMMIO hmmio, LONG lOffset, int iOrigin);
-
-        // Calls the imported function mmioSendMessage.
-        static LRESULT mmioSendMessage(HMMIO hmmio, UINT wMsg, LPARAM lParam1, LPARAM lParam2);
-
-        // Calls the imported function mmioSetBuffer.
-        static MMRESULT mmioSetBuffer(HMMIO hmmio, LPSTR pchBuffer, LONG cchBuffer, UINT wFlags);
-
-        // Calls the imported function mmioSetInfo.
-        static MMRESULT mmioSetInfo(HMMIO hmmio, LPCMMIOINFO lpmmioinfo, UINT wFlags);
-
-        // Calls the imported function mmioStringToFOURCCA.
-        static FOURCC mmioStringToFOURCCA(LPCSTR sz, UINT wFlags);
-
-        // Calls the imported function mmioStringToFOURCCW.
-        static FOURCC mmioStringToFOURCCW(LPCWSTR sz, UINT wFlags);
-
-        // Calls the imported function mmioWrite.
-        static LONG mmioWrite(HMMIO hmmio, const char* pch, LONG cch);
-
-        // Calls the imported function PlaySoundA.
-        static BOOL PlaySoundA(LPCSTR pszSound, HMODULE hmod, DWORD fdwSound);
+        // -------- CLASS METHODS: IMPORTED FUNCTIONS ---------------------- //
+        // See WinMM documentation for more information.
         
-        // Calls the imported function PlaySoundW.
-        static BOOL PlaySoundW(LPCWSTR pszSound, HMODULE hmod, DWORD fdwSound);
+        static LRESULT      CloseDriver(HDRVR hdrvr, LPARAM lParam1, LPARAM lParam2);
+        static LRESULT      DefDriverProc(DWORD_PTR dwDriverId, HDRVR hdrvr, UINT msg, LONG lParam1, LONG lParam2);
+        static BOOL         DriverCallback(DWORD dwCallBack, DWORD dwFlags, HDRVR hdrvr, DWORD msg, DWORD dwUser, DWORD dwParam1, DWORD dwParam2);
+        static HMODULE      DrvGetModuleHandle(HDRVR hDriver);
+        static HMODULE      GetDriverModuleHandle(HDRVR hdrvr);
+        static HDRVR        OpenDriver(LPCWSTR lpDriverName, LPCWSTR lpSectionName, LPARAM lParam);
+        static BOOL         PlaySoundA(LPCSTR pszSound, HMODULE hmod, DWORD fdwSound);
+        static BOOL         PlaySoundW(LPCWSTR pszSound, HMODULE hmod, DWORD fdwSound);
+        static LRESULT      SendDriverMessage(HDRVR hdrvr, UINT msg, LPARAM lParam1, LPARAM lParam2);
+
+        static MMRESULT     auxGetDevCapsA(UINT_PTR uDeviceID, LPAUXCAPSA lpCaps, UINT cbCaps);
+        static MMRESULT     auxGetDevCapsW(UINT_PTR uDeviceID, LPAUXCAPSW lpCaps, UINT cbCaps);
+        static UINT         auxGetNumDevs(void);
+        static MMRESULT     auxGetVolume(UINT uDeviceID, LPDWORD lpdwVolume);
+        static MMRESULT     auxOutMessage(UINT uDeviceID, UINT uMsg, DWORD_PTR dwParam1, DWORD_PTR dwParam2);
+        static MMRESULT     auxSetVolume(UINT uDeviceID, DWORD dwVolume);
         
-        // Calls the imported function sndPlaySoundA.
-        static BOOL sndPlaySoundA(LPCSTR lpszSound, UINT fuSound);
+        static MMRESULT     joyConfigChanged(DWORD dwFlags);
+        static MMRESULT     joyGetDevCapsA(UINT_PTR uJoyID, LPJOYCAPSA pjc, UINT cbjc);
+        static MMRESULT     joyGetDevCapsW(UINT_PTR uJoyID, LPJOYCAPSW pjc, UINT cbjc);
+        static UINT         joyGetNumDevs(void);
+        static MMRESULT     joyGetPos(UINT uJoyID, LPJOYINFO pji);
+        static MMRESULT     joyGetPosEx(UINT uJoyID, LPJOYINFOEX pji);
+        static MMRESULT     joyGetThreshold(UINT uJoyID, LPUINT puThreshold);
+        static MMRESULT     joyReleaseCapture(UINT uJoyID);
+        static MMRESULT     joySetCapture(HWND hwnd, UINT uJoyID, UINT uPeriod, BOOL fChanged);
+        static MMRESULT     joySetThreshold(UINT uJoyID, UINT uThreshold);
         
-        // Calls the imported function sndPlaySoundW.
-        static BOOL sndPlaySoundW(LPCWSTR lpszSound, UINT fuSound);
+        static MMRESULT     midiConnect(HMIDI hMidi, HMIDIOUT hmo, LPVOID pReserved);
+        static MMRESULT     midiDisconnect(HMIDI hMidi, HMIDIOUT hmo, LPVOID pReserved);
         
-        // Calls the imported function timeBeginPeriod.
-        static MMRESULT timeBeginPeriod(UINT uPeriod);
-
-        // Calls the imported function timeEndPeriod.
-        static MMRESULT timeEndPeriod(UINT uPeriod);
-
-        // Calls the imported function timeGetDevCaps.
-        static MMRESULT timeGetDevCaps(LPTIMECAPS ptc, UINT cbtc);
-
-        // Calls the imported function timeGetSystemTime.
-        static MMRESULT timeGetSystemTime(LPMMTIME pmmt, UINT cbmmt);
-
-        // Calls the imported function timeGetTime.
-        static DWORD timeGetTime(void);
-
-        // Calls the imported function timeKillEvent.
-        static MMRESULT timeKillEvent(UINT uTimerID);
-
-        // Calls the imported function timeSetEvent.
-        static MMRESULT timeSetEvent(UINT uDelay, UINT uResolution, LPTIMECALLBACK lpTimeProc, DWORD_PTR dwUser, UINT fuEvent);
-
-        // Calls the imported function waveInAddBuffer.
-        static MMRESULT waveInAddBuffer(HWAVEIN hwi, LPWAVEHDR pwh, UINT cbwh);
-
-        // Calls the imported function waveInClose.
-        static MMRESULT waveInClose(HWAVEIN hwi);
-
-        // Calls the imported function waveInGetDevCapsA.
-        static MMRESULT waveInGetDevCapsA(UINT_PTR uDeviceID, LPWAVEINCAPSA pwic, UINT cbwic);
-
-        // Calls the imported function waveInGetDevCapsW.
-        static MMRESULT waveInGetDevCapsW(UINT_PTR uDeviceID, LPWAVEINCAPSW pwic, UINT cbwic);
-
-        // Calls the imported function waveInGetErrorTextA.
-        static MMRESULT waveInGetErrorTextA(MMRESULT mmrError, LPCSTR pszText, UINT cchText);
-
-        // Calls the imported function waveInGetErrorTextW.
-        static MMRESULT waveInGetErrorTextW(MMRESULT mmrError, LPWSTR pszText, UINT cchText);
-
-        // Calls the imported function waveInGetID.
-        static MMRESULT waveInGetID(HWAVEIN hwi, LPUINT puDeviceID);
-
-        // Calls the imported function waveInGetNumDevs.
-        static UINT waveInGetNumDevs(void);
-
-        // Calls the imported function waveInGetPosition.
-        static MMRESULT waveInGetPosition(HWAVEIN hwi, LPMMTIME pmmt, UINT cbmmt);
-
-        // Calls the imported function waveInMessage.
-        static DWORD waveInMessage(HWAVEIN deviceID, UINT uMsg, DWORD_PTR dwParam1, DWORD_PTR dwParam2);
-
-        // Calls the imported function waveInOpen.
-        static MMRESULT waveInOpen(LPHWAVEIN phwi, UINT uDeviceID, LPCWAVEFORMATEX pwfx, DWORD_PTR dwCallback, DWORD_PTR dwCallbackInstance, DWORD fdwOpen);
-
-        // Calls the imported function waveInPrepareHeader.
-        static MMRESULT waveInPrepareHeader(HWAVEIN hwi, LPWAVEHDR pwh, UINT cbwh);
-
-        // Calls the imported function waveInReset.
-        static MMRESULT waveInReset(HWAVEIN hwi);
-
-        // Calls the imported function waveInStart.
-        static MMRESULT waveInStart(HWAVEIN hwi);
-
-        // Calls the imported function waveInStop.
-        static MMRESULT waveInStop(HWAVEIN hwi);
-
-        // Calls the imported function waveInUnprepareHeader.
-        static MMRESULT waveInUnprepareHeader(HWAVEIN hwi, LPWAVEHDR pwh, UINT cbwh);
-
-        // Calls the imported function waveOutBreakLoop.
-        static MMRESULT waveOutBreakLoop(HWAVEOUT hwo);
-
-        // Calls the imported function waveOutClose.
-        static MMRESULT waveOutClose(HWAVEOUT hwo);
-
-        // Calls the imported function waveOutGetDevCapsA.
-        static MMRESULT waveOutGetDevCapsA(UINT_PTR uDeviceID, LPWAVEOUTCAPSA pwoc, UINT cbwoc);
-
-        // Calls the imported function waveOutGetDevCapsW.
-        static MMRESULT waveOutGetDevCapsW(UINT_PTR uDeviceID, LPWAVEOUTCAPSW pwoc, UINT cbwoc);
-
-        // Calls the imported function waveOutGetErrorTextA.
-        static MMRESULT waveOutGetErrorTextA(MMRESULT mmrError, LPCSTR pszText, UINT cchText);
-
-        // Calls the imported function waveOutGetErrorTextW.
-        static MMRESULT waveOutGetErrorTextW(MMRESULT mmrError, LPWSTR pszText, UINT cchText);
-
-        // Calls the imported function waveOutGetID.
-        static MMRESULT waveOutGetID(HWAVEOUT hwo, LPUINT puDeviceID);
-
-        // Calls the imported function waveOutGetNumDevs.
-        static UINT waveOutGetNumDevs(void);
-
-        // Calls the imported function waveOutGetPitch.
-        static MMRESULT waveOutGetPitch(HWAVEOUT hwo, LPDWORD pdwPitch);
-
-        // Calls the imported function waveOutGetPlaybackRate.
-        static MMRESULT waveOutGetPlaybackRate(HWAVEOUT hwo, LPDWORD pdwRate);
-
-        // Calls the imported function waveOutGetPosition.
-        static MMRESULT waveOutGetPosition(HWAVEOUT hwo, LPMMTIME pmmt, UINT cbmmt);
-
-        // Calls the imported function waveOutGetVolume.
-        static MMRESULT waveOutGetVolume(HWAVEOUT hwo, LPDWORD pdwVolume);
-
-        // Calls the imported function waveOutMessage.
-        static DWORD waveOutMessage(HWAVEOUT deviceID, UINT uMsg, DWORD_PTR dwParam1, DWORD_PTR dwParam2);
-
-        // Calls the imported function waveOutOpen.
-        static MMRESULT waveOutOpen(LPHWAVEOUT phwo, UINT_PTR uDeviceID, LPWAVEFORMATEX pwfx, DWORD_PTR dwCallback, DWORD_PTR dwCallbackInstance, DWORD fdwOpen);
-
-        // Calls the imported function waveOutPause.
-        static MMRESULT waveOutPause(HWAVEOUT hwo);
-
-        // Calls the imported function waveOutPrepareHeader.
-        static MMRESULT waveOutPrepareHeader(HWAVEOUT hwo, LPWAVEHDR pwh, UINT cbwh);
-
-        // Calls the imported function waveOutReset.
-        static MMRESULT waveOutReset(HWAVEOUT hwo);
-
-        // Calls the imported function waveOutRestart.
-        static MMRESULT waveOutRestart(HWAVEOUT hwo);
-
-        // Calls the imported function waveOutSetPitch.
-        static MMRESULT waveOutSetPitch(HWAVEOUT hwo, DWORD dwPitch);
-
-        // Calls the imported function waveOutSetPlaybackRate.
-        static MMRESULT waveOutSetPlaybackRate(HWAVEOUT hwo, DWORD dwRate);
-
-        // Calls the imported function waveOutSetVolume.
-        static MMRESULT waveOutSetVolume(HWAVEOUT hwo, DWORD dwVolume);
-
-        // Calls the imported function waveOutUnprepareHeader.
-        static MMRESULT waveOutUnprepareHeader(HWAVEOUT hwo, LPWAVEHDR pwh, UINT cbwh);
-
-        // Calls the imported function waveOutWrite.
-        static MMRESULT waveOutWrite(HWAVEOUT hwo, LPWAVEHDR pwh, UINT cbwh);
+        static MMRESULT     midiInAddBuffer(HMIDIIN hMidiIn, LPMIDIHDR lpMidiInHdr, UINT cbMidiInHdr);
+        static MMRESULT     midiInClose(HMIDIIN hMidiIn);
+        static MMRESULT     midiInGetDevCapsA(UINT_PTR uDeviceID, LPMIDIINCAPSA lpMidiInCaps, UINT cbMidiInCaps);
+        static MMRESULT     midiInGetDevCapsW(UINT_PTR uDeviceID, LPMIDIINCAPSW lpMidiInCaps, UINT cbMidiInCaps);
+        static MMRESULT     midiInGetErrorTextA(MMRESULT wError, LPSTR lpText, UINT cchText);
+        static MMRESULT     midiInGetErrorTextW(MMRESULT wError, LPWSTR lpText, UINT cchText);
+        static MMRESULT     midiInGetID(HMIDIIN hmi, LPUINT puDeviceID);
+        static UINT         midiInGetNumDevs(void);
+        static DWORD        midiInMessage(HMIDIIN deviceID, UINT msg, DWORD_PTR dw1, DWORD_PTR dw2);
+        static MMRESULT     midiInOpen(LPHMIDIIN lphMidiIn, UINT uDeviceID, DWORD_PTR dwCallback, DWORD_PTR dwCallbackInstance, DWORD dwFlags);
+        static MMRESULT     midiInPrepareHeader(HMIDIIN hMidiIn, LPMIDIHDR lpMidiInHdr, UINT cbMidiInHdr);
+        static MMRESULT     midiInReset(HMIDIIN hMidiIn);
+        static MMRESULT     midiInStart(HMIDIIN hMidiIn);
+        static MMRESULT     midiInStop(HMIDIIN hMidiIn);
+        static MMRESULT     midiInUnprepareHeader(HMIDIIN hMidiIn, LPMIDIHDR lpMidiInHdr, UINT cbMidiInHdr);
+        
+        static MMRESULT     midiOutCacheDrumPatches(HMIDIOUT hmo, UINT wPatch, WORD *lpKeyArray, UINT wFlags);
+        static MMRESULT     midiOutCachePatches(HMIDIOUT hmo, UINT wBank, WORD *lpPatchArray, UINT wFlags);
+        static MMRESULT     midiOutClose(HMIDIOUT hmo);
+        static MMRESULT     midiOutGetDevCapsA(UINT_PTR uDeviceID, LPMIDIOUTCAPSA lpMidiOutCaps, UINT cbMidiOutCaps);
+        static MMRESULT     midiOutGetDevCapsW(UINT_PTR uDeviceID, LPMIDIOUTCAPSW lpMidiOutCaps, UINT cbMidiOutCaps);
+        static UINT         midiOutGetErrorTextA(MMRESULT mmrError, LPSTR lpText, UINT cchText);
+        static UINT         midiOutGetErrorTextW(MMRESULT mmrError, LPWSTR lpText, UINT cchText);
+        static MMRESULT     midiOutGetID(HMIDIOUT hmo, LPUINT puDeviceID);
+        static UINT         midiOutGetNumDevs(void);
+        static MMRESULT     midiOutGetVolume(HMIDIOUT hmo, LPDWORD lpdwVolume);
+        static MMRESULT     midiOutLongMsg(HMIDIOUT hmo, LPMIDIHDR lpMidiOutHdr, UINT cbMidiOutHdr);
+        static DWORD        midiOutMessage(HMIDIOUT deviceID, UINT msg, DWORD_PTR dw1, DWORD_PTR dw2);
+        static MMRESULT     midiOutOpen(LPHMIDIOUT lphmo, UINT uDeviceID, DWORD_PTR dwCallback, DWORD_PTR dwCallbackInstance, DWORD dwFlags);
+        static MMRESULT     midiOutPrepareHeader(HMIDIOUT hmo, LPMIDIHDR lpMidiOutHdr, UINT cbMidiOutHdr);
+        static MMRESULT     midiOutReset(HMIDIOUT hmo);
+        static MMRESULT     midiOutSetVolume(HMIDIOUT hmo, DWORD dwVolume);
+        static MMRESULT     midiOutShortMsg(HMIDIOUT hmo, DWORD dwMsg);
+        static MMRESULT     midiOutUnprepareHeader(HMIDIOUT hmo, LPMIDIHDR lpMidiOutHdr, UINT cbMidiOutHdr);
+        
+        static MMRESULT     midiStreamClose(HMIDISTRM hStream);
+        static MMRESULT     midiStreamOpen(LPHMIDISTRM lphStream, LPUINT puDeviceID, DWORD cMidi, DWORD_PTR dwCallback, DWORD_PTR dwInstance, DWORD fdwOpen);
+        static MMRESULT     midiStreamOut(HMIDISTRM hMidiStream, LPMIDIHDR lpMidiHdr, UINT cbMidiHdr);
+        static MMRESULT     midiStreamPause(HMIDISTRM hms);
+        static MMRESULT     midiStreamPosition(HMIDISTRM hms, LPMMTIME pmmt, UINT cbmmt);
+        static MMRESULT     midiStreamProperty(HMIDISTRM hm, LPBYTE lppropdata, DWORD dwProperty);
+        static MMRESULT     midiStreamRestart(HMIDISTRM hms);
+        static MMRESULT     midiStreamStop(HMIDISTRM hms);
+        
+        static MMRESULT     mixerClose(HMIXER hmx);
+        static MMRESULT     mixerGetControlDetailsA(HMIXEROBJ hmxobj, LPMIXERCONTROLDETAILS pmxcd, DWORD fdwDetails);
+        static MMRESULT     mixerGetControlDetailsW(HMIXEROBJ hmxobj, LPMIXERCONTROLDETAILS pmxcd, DWORD fdwDetails);
+        static MMRESULT     mixerGetDevCapsA(UINT_PTR uMxId, LPMIXERCAPS pmxcaps, UINT cbmxcaps);
+        static MMRESULT     mixerGetDevCapsW(UINT_PTR uMxId, LPMIXERCAPS pmxcaps, UINT cbmxcaps);
+        static MMRESULT     mixerGetID(HMIXEROBJ hmxobj, UINT* puMxId, DWORD fdwId);
+        static MMRESULT     mixerGetLineControlsA(HMIXEROBJ hmxobj, LPMIXERLINECONTROLS pmxlc, DWORD fdwControls);
+        static MMRESULT     mixerGetLineControlsW(HMIXEROBJ hmxobj, LPMIXERLINECONTROLS pmxlc, DWORD fdwControls);
+        static MMRESULT     mixerGetLineInfoA(HMIXEROBJ hmxobj, LPMIXERLINE pmxl, DWORD fdwInfo);
+        static MMRESULT     mixerGetLineInfoW(HMIXEROBJ hmxobj, LPMIXERLINE pmxl, DWORD fdwInfo);
+        static UINT         mixerGetNumDevs(void);
+        static DWORD        mixerMessage(HMIXER driverID, UINT uMsg, DWORD_PTR dwParam1, DWORD_PTR dwParam2);
+        static MMRESULT     mixerOpen(LPHMIXER phmx, UINT uMxId, DWORD_PTR dwCallback, DWORD_PTR dwInstance, DWORD fdwOpen);
+        static MMRESULT     mixerSetControlDetails(HMIXEROBJ hmxobj, LPMIXERCONTROLDETAILS pmxcd, DWORD fdwDetails);
+        
+        static MMRESULT     mmioAdvance(HMMIO hmmio, LPMMIOINFO lpmmioinfo, UINT wFlags);
+        static MMRESULT     mmioAscend(HMMIO hmmio, LPMMCKINFO lpck, UINT wFlags);
+        static MMRESULT     mmioClose(HMMIO hmmio, UINT wFlags);
+        static MMRESULT     mmioCreateChunk(HMMIO hmmio, LPMMCKINFO lpck, UINT wFlags);
+        static MMRESULT     mmioDescend(HMMIO hmmio, LPMMCKINFO lpck, LPCMMCKINFO lpckParent, UINT wFlags);
+        static MMRESULT     mmioFlush(HMMIO hmmio, UINT fuFlush);
+        static MMRESULT     mmioGetInfo(HMMIO hmmio, LPMMIOINFO lpmmioinfo, UINT wFlags);
+        static LPMMIOPROC   mmioInstallIOProcA(FOURCC fccIOProc, LPMMIOPROC pIOProc, DWORD dwFlags);
+        static LPMMIOPROC   mmioInstallIOProcW(FOURCC fccIOProc, LPMMIOPROC pIOProc, DWORD dwFlags);
+        static HMMIO        mmioOpenA(LPSTR szFilename, LPMMIOINFO lpmmioinfo, DWORD dwOpenFlags);
+        static HMMIO        mmioOpenW(LPWSTR szFilename, LPMMIOINFO lpmmioinfo, DWORD dwOpenFlags);
+        static LONG         mmioRead(HMMIO hmmio, HPSTR pch, LONG cch);
+        static MMRESULT     mmioRenameA(LPCSTR szFilename, LPCSTR szNewFilename, LPCMMIOINFO lpmmioinfo, DWORD dwRenameFlags);
+        static MMRESULT     mmioRenameW(LPCWSTR szFilename, LPCWSTR szNewFilename, LPCMMIOINFO lpmmioinfo, DWORD dwRenameFlags);
+        static LONG         mmioSeek(HMMIO hmmio, LONG lOffset, int iOrigin);
+        static LRESULT      mmioSendMessage(HMMIO hmmio, UINT wMsg, LPARAM lParam1, LPARAM lParam2);
+        static MMRESULT     mmioSetBuffer(HMMIO hmmio, LPSTR pchBuffer, LONG cchBuffer, UINT wFlags);
+        static MMRESULT     mmioSetInfo(HMMIO hmmio, LPCMMIOINFO lpmmioinfo, UINT wFlags);
+        static FOURCC       mmioStringToFOURCCA(LPCSTR sz, UINT wFlags);
+        static FOURCC       mmioStringToFOURCCW(LPCWSTR sz, UINT wFlags);
+        static LONG         mmioWrite(HMMIO hmmio, const char* pch, LONG cch);
+        
+        static BOOL         sndPlaySoundA(LPCSTR lpszSound, UINT fuSound);
+        static BOOL         sndPlaySoundW(LPCWSTR lpszSound, UINT fuSound);
+        
+        static MMRESULT     timeBeginPeriod(UINT uPeriod);
+        static MMRESULT     timeEndPeriod(UINT uPeriod);
+        static MMRESULT     timeGetDevCaps(LPTIMECAPS ptc, UINT cbtc);
+        static MMRESULT     timeGetSystemTime(LPMMTIME pmmt, UINT cbmmt);
+        static DWORD        timeGetTime(void);
+        static MMRESULT     timeKillEvent(UINT uTimerID);
+        static MMRESULT     timeSetEvent(UINT uDelay, UINT uResolution, LPTIMECALLBACK lpTimeProc, DWORD_PTR dwUser, UINT fuEvent);
+        
+        static MMRESULT     waveInAddBuffer(HWAVEIN hwi, LPWAVEHDR pwh, UINT cbwh);
+        static MMRESULT     waveInClose(HWAVEIN hwi);
+        static MMRESULT     waveInGetDevCapsA(UINT_PTR uDeviceID, LPWAVEINCAPSA pwic, UINT cbwic);
+        static MMRESULT     waveInGetDevCapsW(UINT_PTR uDeviceID, LPWAVEINCAPSW pwic, UINT cbwic);
+        static MMRESULT     waveInGetErrorTextA(MMRESULT mmrError, LPCSTR pszText, UINT cchText);
+        static MMRESULT     waveInGetErrorTextW(MMRESULT mmrError, LPWSTR pszText, UINT cchText);
+        static MMRESULT     waveInGetID(HWAVEIN hwi, LPUINT puDeviceID);
+        static UINT         waveInGetNumDevs(void);
+        static MMRESULT     waveInGetPosition(HWAVEIN hwi, LPMMTIME pmmt, UINT cbmmt);
+        static DWORD        waveInMessage(HWAVEIN deviceID, UINT uMsg, DWORD_PTR dwParam1, DWORD_PTR dwParam2);
+        static MMRESULT     waveInOpen(LPHWAVEIN phwi, UINT uDeviceID, LPCWAVEFORMATEX pwfx, DWORD_PTR dwCallback, DWORD_PTR dwCallbackInstance, DWORD fdwOpen);
+        static MMRESULT     waveInPrepareHeader(HWAVEIN hwi, LPWAVEHDR pwh, UINT cbwh);
+        static MMRESULT     waveInReset(HWAVEIN hwi);
+        static MMRESULT     waveInStart(HWAVEIN hwi);
+        static MMRESULT     waveInStop(HWAVEIN hwi);
+        static MMRESULT     waveInUnprepareHeader(HWAVEIN hwi, LPWAVEHDR pwh, UINT cbwh);
+        
+        static MMRESULT     waveOutBreakLoop(HWAVEOUT hwo);
+        static MMRESULT     waveOutClose(HWAVEOUT hwo);
+        static MMRESULT     waveOutGetDevCapsA(UINT_PTR uDeviceID, LPWAVEOUTCAPSA pwoc, UINT cbwoc);
+        static MMRESULT     waveOutGetDevCapsW(UINT_PTR uDeviceID, LPWAVEOUTCAPSW pwoc, UINT cbwoc);
+        static MMRESULT     waveOutGetErrorTextA(MMRESULT mmrError, LPCSTR pszText, UINT cchText);
+        static MMRESULT     waveOutGetErrorTextW(MMRESULT mmrError, LPWSTR pszText, UINT cchText);
+        static MMRESULT     waveOutGetID(HWAVEOUT hwo, LPUINT puDeviceID);
+        static UINT         waveOutGetNumDevs(void);
+        static MMRESULT     waveOutGetPitch(HWAVEOUT hwo, LPDWORD pdwPitch);
+        static MMRESULT     waveOutGetPlaybackRate(HWAVEOUT hwo, LPDWORD pdwRate);
+        static MMRESULT     waveOutGetPosition(HWAVEOUT hwo, LPMMTIME pmmt, UINT cbmmt);
+        static MMRESULT     waveOutGetVolume(HWAVEOUT hwo, LPDWORD pdwVolume);
+        static DWORD        waveOutMessage(HWAVEOUT deviceID, UINT uMsg, DWORD_PTR dwParam1, DWORD_PTR dwParam2);
+        static MMRESULT     waveOutOpen(LPHWAVEOUT phwo, UINT_PTR uDeviceID, LPWAVEFORMATEX pwfx, DWORD_PTR dwCallback, DWORD_PTR dwCallbackInstance, DWORD fdwOpen);
+        static MMRESULT     waveOutPause(HWAVEOUT hwo);
+        static MMRESULT     waveOutPrepareHeader(HWAVEOUT hwo, LPWAVEHDR pwh, UINT cbwh);
+        static MMRESULT     waveOutReset(HWAVEOUT hwo);
+        static MMRESULT     waveOutRestart(HWAVEOUT hwo);
+        static MMRESULT     waveOutSetPitch(HWAVEOUT hwo, DWORD dwPitch);
+        static MMRESULT     waveOutSetPlaybackRate(HWAVEOUT hwo, DWORD dwRate);
+        static MMRESULT     waveOutSetVolume(HWAVEOUT hwo, DWORD dwVolume);
+        static MMRESULT     waveOutUnprepareHeader(HWAVEOUT hwo, LPWAVEHDR pwh, UINT cbwh);
+        static MMRESULT     waveOutWrite(HWAVEOUT hwo, LPWAVEHDR pwh, UINT cbwh);
         
         
     private:
         // -------- HELPERS ------------------------------------------------ //
 
+        // Logs a warning event related to failure to import a particular function from the import library.
+        static void LogImportFailed(LPCTSTR functionName);
+        
         // Logs a debug event related to attempting to load the system-provided library for importing functions.
         static void LogInitializeLibraryPath(LPCTSTR libraryPath);
         
         // Logs an error event related to failure to initialize the import table.
-        // Returns MMSYSERR_ERROR unconditionally.
-        static MMRESULT LogInitializeFailed(void);
+        static void LogInitializeFailed(void);
 
         // Logs an informational event related to successful initialization of the import table.
         static void LogInitializeSucceeded(void);
+
+        // Logs an error event related to a missing import function that has been invoked.
+        static void LogMissingFunctionCalled(LPCTSTR functionName);
     };
 }

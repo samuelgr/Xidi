@@ -87,11 +87,7 @@ int RunTestApp(int argc, char* argv[])
     ////////   Initialization
 
     // Initialize the imported WinMM API.
-    if (MMSYSERR_NOERROR != ImportApiWinMM::Initialize())
-    {
-        wcerr << _T("Unable to initialize WinMM API.") << endl;
-        return -1;
-    }
+    ImportApiWinMM::Initialize();
 
     
     ////////////////////////////////////
