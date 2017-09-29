@@ -149,7 +149,7 @@ void WrapperJoyWinMM::CreateJoyIndexMap(void)
     if ((false == joySystemDeviceInfo[0].second) && !(joySystemDeviceInfo[0].first.empty()))
     {
         // Preferred device is present but does not support XInput.
-        // Filter out all non-XInput devices, but ensure Xidi virtual devices are mapped to the end.
+        // Filter out all XInput devices, but ensure Xidi virtual devices are mapped to the end.
 
         for (int i = 0; i < (int)numDevicesFromSystem; ++i)
         {
@@ -169,7 +169,7 @@ void WrapperJoyWinMM::CreateJoyIndexMap(void)
     else
     {
         // Preferred device supports XInput or is not present.
-        // Filter out all non-XInput devices and present Xidi virtual devices at the start.
+        // Filter out all XInput devices and present Xidi virtual devices at the start.
 
         for (int i = 0; i < (int)numXInputVirtualDevices; ++i)
         {
