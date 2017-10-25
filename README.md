@@ -1,23 +1,20 @@
 <h1 id="xidi">Introduction</h1>
 
-Xidi provides a consistent interface between modern XInput-based controllers (i.e. Xbox-type controllers) and older games that use DirectInput or WinMM to communicate with game controllers.  While many XInput-based controllers are also exposed via DirectInput and WinMM and can be used in older games, using Xidi can lead to an improved gameplay experience.
+Xidi improves the gameplay experience when using modern XInput-based controllers (such as Xbox controllers) with older games that use DirectInput or WinMM to communicate with game controllers.  In more technical terms, Xidi provides both DirectInput and WinMM interfaces for games to use and communicates with XInput-based game controllers natively using XInput, translating between the two interfaces as needed.
 
 
-<h2 id="xidi-features">Features</h2>
-
-- Ever experienced broken analog controls, phantom button presses, or complete failure to detect controller input using an Xbox-type controller with an older game?  Xidi can fix that.
-
-- Change controllers while a game is running.  Older games do not normally support this, but with Xidi controllers can be plugged in, unplugged, and swapped seamlessly during gameplay.
-
-- Forgot to plug in the controller before starting the game?  No problem, just plug it in after the game is running and it will be recognized automatically.  Without Xidi, it would be necessary to quit the game, plug in the controller, and re-launch.
+Xidi is implemented as a library that games should load instead of the system-supplied versions.  As such, it is a very localized fix: no installation is required, and no persistent system-wide changes are made.
 
 
-<h2 id="xidi-whentouse">When to Use Xidi</h2>
+<h2 id="xidi-features">Key Features</h2>
 
-Xidi is useful for improving the gameplay experience of older games with new XInput-based (i.e. Xbox-type) controllers.  The game must natively support controller input using either DirectInput or WinMM.
+- Fixes issues encountered in older games, such as broken analog controls, phantom button presses, or complete failure to commmunicate with the controller.  Without Xidi these issues can come up in DirectInput-based or WinMM-based games when used with an XInput controller.
+
+- Allows controllers to be changed while a game is running.  Older games do not normally support this, but with Xidi controllers can be plugged in, unplugged, and swapped seamlessly during gameplay.  Without Xidi this would require exiting and restarting the game.
 
 
-<h2 id="xidi-whennottouse">When Not to Use Xidi</h2>
+
+<h2 id="xidi-whennottouse">Limitations</h2>
 
 Xidi is not useful if:
 
@@ -25,7 +22,7 @@ Xidi is not useful if:
 
 - A game already speaks XInput to controllers. These games are modern enough to support Xbox-type controllers natively.
 
-- The controllers intended for use with a particular game are not XInput-based controllers.  Xidi will not communicate with non-XInput controllers.
+- The problem arises with controllers that are not XInput-based controllers.  Xidi will not communicate with non-XInput controllers.
 
 - The problem arises from an older non-XInput controller being used with an XInput-based game.  This is the inverse of the problem Xidi solves, for which solution like the [Xbox 360 Controller Emulator](https://www.x360ce.com/) is needed.
 
@@ -71,20 +68,14 @@ This section is intended for users who simply wish to download and use Xidi.  To
 
 <h2 id="forusers-whattoexpectinagame">What to Expect in a Game</h2>
 
-XInput natively identifies controllers by player number rather than by specific controller device (i.e. player 1, player 2, and so on), and Xidi therefore does the same thing.  The system determines the assignment of controller device to player automatically; Xidi cannot control this.  However, some controllers such as the Xbox 360 controller indicate the assigned player number directly on the controller itself, so it is easy to determine which controller is assigned to which player number.
+XInput identifies controllers by player number rather than by specific controller device (i.e. player 1, player 2, and so on), and Xidi therefore does the same thing.  The system determines the assignment of controller device to player automatically, and these assignments may change as controller devices are plugged into and unplugged from the system.  Some controllers such as the Xbox 360 controller indicate the assigned player number directly on the device, so it is easy to determine which controller is assigned to which player number.
 
-This is very different from the way controller identification is handled in DirectInput and WinMM, which both allow games to specify an individual controller device.  The way in which this difference manifests itself in an actual game depends on whether or not the game allows configuration of which controller device it should use.
-
-If a game does not allow a specific controller device to be selected, typically it just binds to the first controller it sees in the system.  In most circumstances, this will be the XInput controller for player 1, so this is the controller that should automatically start working.  However, there are [some caveats](#forusers-questionsandanswers-q5) to this general rule.
-
-If a game does allow a specific controller device to be selected, there are a few noteworthy differences as to how Xidi presents controllers to the game, which in turn affect the visible configuration settings.  Xidi hides all DirectInput devices that support XInput and instead presents virtual devices mapped to XInput player numbers.  Thus, if the game is configured to use a controller named "Xidi: Player 1" then it will use the XInput controller assigned to player 1, and the same is correspondingly true of the other virtual devices.
-
-To better understand this behavior, consider an example of a system to which two Xbox 360 controllers are attached.  Without Xidi, the game configuration application would list "Controller (XBOX 360 For Windows)" for one of the controllers and a second "Controller (XBOX 360 For Windows)" for the other.  With Xidi, the game would not list either of these and would instead list "Xidi: Player 1", "Xidi: Player 2", and so on, up to the maximum number of controllers supported by XInput.  Xidi presents the maximum possible number of virtual devices irrespective of the physical presence or absence of controllers assigned to those player numbers.
+If a game does not allow a specific controller device to be set during configuration, then generally whichever controller is assigned to player 1 would automatically start working in the game.  Games that support multiple controllers would additionally work with other controllers in ascending player number order.  On the other hand, if a game supports explicit specification of a controller device, then Xidi-supplied controllers with names similar to "Xidi: Player 1" will be visible during the configuration process.  Each such controller maps to the XInput controller of the shown player number.  These Xidi-supplied controllers would need to be selected during configuration in order for the corresponding XInput controllers to be used in the game.
 
 
 <h2 id="forusers-configuringxidi">Configuring Xidi</h2>
 
-Xidi is designed to require minimal, if any, configuration.  Defaults were carefully selected to maximize the probability of compatibility.  Nevertheless, it can be configured by placing a text file called `Xidi.ini` into the same directory as the game executable.  This file is optional; if not present, Xidi simply uses its default settings.
+Xidi is designed to require minimal, if any, configuration.  Defaults were carefully selected to maximize the probability of compatibility.  Nevertheless, it can be configured by placing a text file named `Xidi.ini` into the same directory as the game executable.  This file is optional; if not present, Xidi simply uses its default settings.
 
 An example configuration file is shown below, containing default values for all available settings.  The remainder of this subsection describes each setting and what can be supplied as a value.
 
@@ -125,13 +116,15 @@ Any log files Xidi produces are placed on the current user's desktop and are nam
 
 This section provides advanced functionality unlikely to be needed by most users.  Unless there is a specific need for this feature, its use should be avoided.
 
-The settings in this section override Xidi's default import library paths.  Xidi relies on functions provided by the system-supplied version of each library it emulates (`dinput.dll`, `dinput8.dll`, or `winmm.dll`), so by default it loads the system-supplied version.  The example above shows a hard-coded default path, but in reality Xidi determines the system path dynamically.  In some situations, it may be desirable for Xidi to use functions provided by a different library file instead, functionality that the settings in this section enables.
+The settings in this section override Xidi's default import library paths.  Xidi relies on functions provided by the system-supplied version of each library it emulates (`dinput.dll`, `dinput8.dll`, or `winmm.dll`), so by default it loads the system-supplied version.  The example above shows a hard-coded default path, but in reality Xidi determines the system path dynamically.
 
-- **dinput.dll** specifies the full and absolute path of the DLL file that Xidi should load instead of the system-supplied `dinput.dll` file.
+In some situations, it may be desirable for Xidi to use functions provided by a different library file instead.  If this is the case, then values in this section should be specified.  Paths can be relative to the directory containing the executable file or absolute.
 
-- **dinput8.dll** specifies the full and absolute path of the DLL file that Xidi should load instead of the system-supplied `dinput8.dll` file.
+- **dinput.dll** specifies the path of the DLL file that Xidi should load instead of the system-supplied `dinput.dll` file.
 
-- **winmm.dll** specifies the full and absolute path of the DLL file that Xidi should load instead of the system-supplied `winmm.dll` file.
+- **dinput8.dll** specifies the path of the DLL file that Xidi should load instead of the system-supplied `dinput8.dll` file.
+
+- **winmm.dll** specifies the path of the DLL file that Xidi should load instead of the system-supplied `winmm.dll` file.
 
 
 <h2 id="forusers-mappingcontrollerbuttonsandaxes">Mapping Controller Buttons and Axes</h2>
@@ -140,11 +133,11 @@ An XInput-based controller follows the controller layout of an Xbox controller: 
 
 DirectInput, on the other hand, supports every possible form factor for a game controller: gamepads, joysticks and steering wheels, to name a few.  It does not have a defined standard layout for controllers.  Games generally refer to buttons by number (button 1, button 2, and so on) and analog axes by letter (X axis, Y axis, and so on), and it is up to the manufacturer of the controller to determine which physical button or axis corresponds to each number or letter, respectively.  Xidi therefore implements a mapping of Xbox controller components to DirectInput controller components.
 
-Most buttons and axes can be mapped directly from XInput to DirectInput, but the LT and RT triggers present a complication.  DirectInput axes assume that the neutral (i.e. unpressed) position is at the center.  This works for analog sticks and joysticks because they return to the center position when the user is not actively pushing them in a particular direction.  However, LT and RT do not behave this way: the neutral position is at an extreme end, so mapping them directly to a DirectInput axis will cause games to break unless they are aware of this specific behavior or ignore LT and RT entirely.
+Most buttons and axes can be mapped directly from XInput to DirectInput, but the LT and RT triggers present a complication.  DirectInput axes assume that the neutral (i.e. unpressed) position is at the center.  This works for analog sticks and joysticks because they return to the center position when the user is not actively pushing them in a particular direction.  However, LT and RT do not behave this way: the neutral position is at an extreme end, so mapping them directly to a DirectInput axis will cause games to break unless they are aware of this specific behavior or they ignore LT and RT completely.
 
 Many games make assumptions about the controller layout, and Xidi cannot automatically determine these assumptions.  Xidi therefore includes several types of mappers and allows the specific mapper that is used to be configured.  While the default, `StandardGamepad`, is expected to work well with a wide variety of games, there are undoubtedly situations in which it is unsuitable.  Specifically, Xidi provides the following mappers.
 
-- **StandardGamepad** emulates older gamepads that resemble PlayStation controllers.  As was common for these controllers, the right stick maps to the Z and Z-rotation axes.  LT and RT are mapped to digital buttons; all analog functionality is removed, but the controls are independently usable.
+- **StandardGamepad** emulates older gamepads that resemble Sony PlayStation controllers.  As was common for these controllers, the right stick maps to the Z and Z-rotation axes.  LT and RT are mapped to digital buttons; all analog functionality is removed, but the controls are usable.
 
 - **ExtendedGamepad** is as above, except that the analog functionality of LT and RT is preserved.  The X-rotation and Y-rotation axes were selected to retain the mapping of the right stick to the Z and Z-rotation axes.
 
