@@ -167,15 +167,15 @@ Precise button and axis mappings are as below.
 
 Any controller that supports Windows and XInput can be used with Xidi.  This includes non-Microsoft controllers, wireless controllers, wired controllers, and so on.  That being said, only Xbox 360 and Xbox One controllers have been specifically tested.  Any issues with other controllers are likely indicative of bugs in Xidi.
 
-<a name="questionsandanswers-q2"> **Can I use Xidi with multiple controllers? **</a>
+<a name="questionsandanswers-q2"> **Can I use Xidi with multiple controllers?** </a>
 
 Yes.  Xidi supports as many XInput-based controllers as does the XInput API itself.  The current limit is 4 controllers.
 
-<a name="questionsandanswers-q3"> **What if I have more than the maximum supported number of XInput controllers? **</a>
+<a name="questionsandanswers-q3"> **What if I have more than the maximum supported number of XInput controllers?** </a>
 
 The only XInput controllers that Xidi would expose to the game are those that are assigned XInput player numbers.  Any controllers above the limit would be unavailable for use in the game; they cannot be accessed, even by using DirectInput.
 
-<a name="questionsandanswers-q4"> **Does Xidi support using XInput controllers and non-XInput controllers together? **</a>
+<a name="questionsandanswers-q4"> **Does Xidi support using XInput controllers and non-XInput controllers together?** </a>
 
 Yes.  Xidi does not interfere in any way with the functionality of non-XInput controllers.  A game that attempts to enumerate DirectInput or WinMM controllers would see Xidi virtual devices in addition to any attached DirectInput or WinMM controllers that do not support XInput.
 
