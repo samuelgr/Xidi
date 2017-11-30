@@ -5,8 +5,9 @@
  * Authored by Samuel Grossman
  * Copyright (c) 2016-2017
  *************************************************************************//**
- * @file WrapperIDirectInputDevice.h
- *   Declaration of the wrapper class for IDirectInputDevice8.
+ * @file VirtualDirectInputDevice.h
+ *   Declaration of a virtual device that supports IDirectInputDevice but
+ *   communicates with an XInput-based controller.
  *****************************************************************************/
 
 #pragma once
@@ -18,8 +19,8 @@
 
 namespace Xidi
 {
-    /// Wraps the IDirectInput interface to hook into all calls to it.
-    struct WrapperIDirectInputDevice : LatestIDirectInputDevice
+    /// Inherits from whatever IDirectInputDevice version is appropriate.
+    struct VirtualDirectInputDevice : LatestIDirectInputDevice
     {
     private:
         // -------- INSTANCE VARIABLES --------------------------------------------- //
@@ -43,17 +44,17 @@ namespace Xidi
         // -------- CONSTRUCTION AND DESTRUCTION ----------------------------------- //
         
         /// Default constructor. Should never be invoked.
-        WrapperIDirectInputDevice(void);
+        VirtualDirectInputDevice(void);
         
     public:
         /// Constructs a WrapperIDirectInput object, given a mapper and a controller.
         /// @param [in] useUnicode Specifies if the object should use Unicode versions of methods.
         /// @param [in] controller XInput controller object to associate with this object.
         /// @param [in] mapper Mapper object to associate with this object.
-        WrapperIDirectInputDevice(BOOL useUnicode, XInputController* controller, Mapper::Base* mapper);
+        VirtualDirectInputDevice(BOOL useUnicode, XInputController* controller, Mapper::Base* mapper);
 
         /// Default destructor.
-        virtual ~WrapperIDirectInputDevice(void);
+        virtual ~VirtualDirectInputDevice(void);
         
         
     public:

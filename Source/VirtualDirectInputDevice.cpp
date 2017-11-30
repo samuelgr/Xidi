@@ -5,27 +5,28 @@
  * Authored by Samuel Grossman
  * Copyright (c) 2016-2017
  *************************************************************************//**
- * @file WrapperIDirectInputDevice.cpp
- *   Implementation of the wrapper class for IDirectInputDevice.
+ * @file VirtualDirectInputDevice.cpp
+ *   Implementation of a virtual device that supports IDirectInputDevice but
+ *   communicates with an XInput-based controller.
  *****************************************************************************/
 
 #include "ApiDirectInput.h"
 #include "ApiGUID.h"
 #include "Log.h"
-#include "WrapperIDirectInputDevice.h"
+#include "VirtualDirectInputDevice.h"
 #include "Mapper/Base.h"
 
 using namespace Xidi;
 
 
 // -------- CONSTRUCTION AND DESTRUCTION ----------------------------------- //
-// See "WrapperIDirectInputDevice.h" for documentation.
+// See "VirtualDirectInputDevice.h" for documentation.
 
-WrapperIDirectInputDevice::WrapperIDirectInputDevice(BOOL useUnicode, XInputController* controller, Mapper::Base* mapper) : controller(controller), mapper(mapper), polledSinceLastGetDeviceState(FALSE), refcount(0), useUnicode(useUnicode) {}
+VirtualDirectInputDevice::VirtualDirectInputDevice(BOOL useUnicode, XInputController* controller, Mapper::Base* mapper) : controller(controller), mapper(mapper), polledSinceLastGetDeviceState(FALSE), refcount(0), useUnicode(useUnicode) {}
 
 // ---------
 
-WrapperIDirectInputDevice::~WrapperIDirectInputDevice(void)
+VirtualDirectInputDevice::~VirtualDirectInputDevice(void)
 {
     Log::WriteFormattedLogMessageFromResource(ELogLevel::LogLevelInfo, IDS_XDI_WRAPPERIDIRECTINPUTDEVICE_DESTROYED_FORMAT, controller->GetPlayerIndex() + 1);
     delete controller;
@@ -36,7 +37,7 @@ WrapperIDirectInputDevice::~WrapperIDirectInputDevice(void)
 // -------- METHODS: IUnknown ---------------------------------------------- //
 // See IUnknown documentation for more information.
 
-HRESULT STDMETHODCALLTYPE WrapperIDirectInputDevice::QueryInterface(REFIID riid, LPVOID* ppvObj)
+HRESULT STDMETHODCALLTYPE VirtualDirectInputDevice::QueryInterface(REFIID riid, LPVOID* ppvObj)
 {
     if (NULL == ppvObj)
         return E_INVALIDARG;
@@ -61,7 +62,7 @@ HRESULT STDMETHODCALLTYPE WrapperIDirectInputDevice::QueryInterface(REFIID riid,
 
 // ---------
 
-ULONG STDMETHODCALLTYPE WrapperIDirectInputDevice::AddRef(void)
+ULONG STDMETHODCALLTYPE VirtualDirectInputDevice::AddRef(void)
 {
     InterlockedIncrement(&refcount);
     return refcount;
@@ -69,7 +70,7 @@ ULONG STDMETHODCALLTYPE WrapperIDirectInputDevice::AddRef(void)
 
 // ---------
 
-ULONG STDMETHODCALLTYPE WrapperIDirectInputDevice::Release(void)
+ULONG STDMETHODCALLTYPE VirtualDirectInputDevice::Release(void)
 {
     ULONG numRemainingRefs = InterlockedDecrement(&refcount);
 
@@ -83,7 +84,7 @@ ULONG STDMETHODCALLTYPE WrapperIDirectInputDevice::Release(void)
 // -------- METHODS: IDirectInputDevice COMMON ----------------------------- //
 // See DirectInput documentation for more information.
 
-HRESULT STDMETHODCALLTYPE WrapperIDirectInputDevice::Acquire(void)
+HRESULT STDMETHODCALLTYPE VirtualDirectInputDevice::Acquire(void)
 {
     HRESULT result = DIERR_INVALIDPARAM;
     
@@ -97,7 +98,7 @@ HRESULT STDMETHODCALLTYPE WrapperIDirectInputDevice::Acquire(void)
 
 // ---------
 
-HRESULT STDMETHODCALLTYPE WrapperIDirectInputDevice::CreateEffect(REFGUID rguid, LPCDIEFFECT lpeff, LPDIRECTINPUTEFFECT* ppdeff, LPUNKNOWN punkOuter)
+HRESULT STDMETHODCALLTYPE VirtualDirectInputDevice::CreateEffect(REFGUID rguid, LPCDIEFFECT lpeff, LPDIRECTINPUTEFFECT* ppdeff, LPUNKNOWN punkOuter)
 {
     // Operation not supported.
     const HRESULT result = DIERR_UNSUPPORTED;
@@ -110,7 +111,7 @@ HRESULT STDMETHODCALLTYPE WrapperIDirectInputDevice::CreateEffect(REFGUID rguid,
 
 // ---------
 
-HRESULT STDMETHODCALLTYPE WrapperIDirectInputDevice::EnumCreatedEffectObjects(LPDIENUMCREATEDEFFECTOBJECTSCALLBACK lpCallback, LPVOID pvRef, DWORD fl)
+HRESULT STDMETHODCALLTYPE VirtualDirectInputDevice::EnumCreatedEffectObjects(LPDIENUMCREATEDEFFECTOBJECTSCALLBACK lpCallback, LPVOID pvRef, DWORD fl)
 {
     // Operation not supported.
     const HRESULT result = DIERR_UNSUPPORTED;
@@ -123,20 +124,7 @@ HRESULT STDMETHODCALLTYPE WrapperIDirectInputDevice::EnumCreatedEffectObjects(LP
 
 // ---------
 
-HRESULT STDMETHODCALLTYPE WrapperIDirectInputDevice::EnumEffects(LPDIENUMEFFECTSCALLBACK lpCallback, LPVOID pvRef, DWORD dwEffType)
-{
-    // Operation not supported.
-    const HRESULT result = DIERR_UNSUPPORTED;
-
-    Log::WriteLogMessageFromResource(ELogLevel::LogLevelWarning, IDS_XIDI_WRAPPERIDIRECTINPUTDEVICE_FORCE_FEEDBACK_OPERATION_UNSUPPORTED);
-    Log::WriteFormattedLogMessageFromResource(ELogLevel::LogLevelDebug, IDS_XIDI_WRAPPERIDIRECTINPUTDEVICE_OPERATION_FORMAT, XIDI_LOG_FORMATTED_FUNCTION_NAME, controller->GetPlayerIndex() + 1, result);
-    
-    return result;
-}
-
-// ---------
-
-HRESULT STDMETHODCALLTYPE WrapperIDirectInputDevice::EnumEffectsInFile(LPCTSTR lptszFileName, LPDIENUMEFFECTSINFILECALLBACK pec, LPVOID pvRef, DWORD dwFlags)
+HRESULT STDMETHODCALLTYPE VirtualDirectInputDevice::EnumEffects(LPDIENUMEFFECTSCALLBACK lpCallback, LPVOID pvRef, DWORD dwEffType)
 {
     // Operation not supported.
     const HRESULT result = DIERR_UNSUPPORTED;
@@ -149,7 +137,20 @@ HRESULT STDMETHODCALLTYPE WrapperIDirectInputDevice::EnumEffectsInFile(LPCTSTR l
 
 // ---------
 
-HRESULT STDMETHODCALLTYPE WrapperIDirectInputDevice::EnumObjects(LPDIENUMDEVICEOBJECTSCALLBACK lpCallback, LPVOID pvRef, DWORD dwFlags)
+HRESULT STDMETHODCALLTYPE VirtualDirectInputDevice::EnumEffectsInFile(LPCTSTR lptszFileName, LPDIENUMEFFECTSINFILECALLBACK pec, LPVOID pvRef, DWORD dwFlags)
+{
+    // Operation not supported.
+    const HRESULT result = DIERR_UNSUPPORTED;
+
+    Log::WriteLogMessageFromResource(ELogLevel::LogLevelWarning, IDS_XIDI_WRAPPERIDIRECTINPUTDEVICE_FORCE_FEEDBACK_OPERATION_UNSUPPORTED);
+    Log::WriteFormattedLogMessageFromResource(ELogLevel::LogLevelDebug, IDS_XIDI_WRAPPERIDIRECTINPUTDEVICE_OPERATION_FORMAT, XIDI_LOG_FORMATTED_FUNCTION_NAME, controller->GetPlayerIndex() + 1, result);
+    
+    return result;
+}
+
+// ---------
+
+HRESULT STDMETHODCALLTYPE VirtualDirectInputDevice::EnumObjects(LPDIENUMDEVICEOBJECTSCALLBACK lpCallback, LPVOID pvRef, DWORD dwFlags)
 {
     const HRESULT result = mapper->EnumerateMappedObjects(useUnicode, lpCallback, pvRef, dwFlags);
     Log::WriteFormattedLogMessageFromResource(ELogLevel::LogLevelDebug, IDS_XIDI_WRAPPERIDIRECTINPUTDEVICE_OPERATION_FORMAT, XIDI_LOG_FORMATTED_FUNCTION_NAME, controller->GetPlayerIndex() + 1, result);
@@ -158,7 +159,7 @@ HRESULT STDMETHODCALLTYPE WrapperIDirectInputDevice::EnumObjects(LPDIENUMDEVICEO
 
 // ---------
 
-HRESULT STDMETHODCALLTYPE WrapperIDirectInputDevice::Escape(LPDIEFFESCAPE pesc)
+HRESULT STDMETHODCALLTYPE VirtualDirectInputDevice::Escape(LPDIEFFESCAPE pesc)
 {
     // Operation not supported.
     const HRESULT result = DIERR_UNSUPPORTED;
@@ -168,7 +169,7 @@ HRESULT STDMETHODCALLTYPE WrapperIDirectInputDevice::Escape(LPDIEFFESCAPE pesc)
 
 // ---------
 
-HRESULT STDMETHODCALLTYPE WrapperIDirectInputDevice::GetCapabilities(LPDIDEVCAPS lpDIDevCaps)
+HRESULT STDMETHODCALLTYPE VirtualDirectInputDevice::GetCapabilities(LPDIDEVCAPS lpDIDevCaps)
 {
     if (sizeof(*lpDIDevCaps) != lpDIDevCaps->dwSize)
     {
@@ -187,7 +188,7 @@ HRESULT STDMETHODCALLTYPE WrapperIDirectInputDevice::GetCapabilities(LPDIDEVCAPS
 
 // ---------
 
-HRESULT STDMETHODCALLTYPE WrapperIDirectInputDevice::GetDeviceData(DWORD cbObjectData, LPDIDEVICEOBJECTDATA rgdod, LPDWORD pdwInOut, DWORD dwFlags)
+HRESULT STDMETHODCALLTYPE VirtualDirectInputDevice::GetDeviceData(DWORD cbObjectData, LPDIDEVICEOBJECTDATA rgdod, LPDWORD pdwInOut, DWORD dwFlags)
 {
     // Verify the correct sizes of each structure.
     if (sizeof(DIDEVICEOBJECTDATA) != cbObjectData)
@@ -222,7 +223,7 @@ HRESULT STDMETHODCALLTYPE WrapperIDirectInputDevice::GetDeviceData(DWORD cbObjec
 
 // ---------
 
-HRESULT STDMETHODCALLTYPE WrapperIDirectInputDevice::GetDeviceInfo(LPDIDEVICEINSTANCE pdidi)
+HRESULT STDMETHODCALLTYPE VirtualDirectInputDevice::GetDeviceInfo(LPDIDEVICEINSTANCE pdidi)
 {
     // Not yet implemented.
     const HRESULT result = DIERR_UNSUPPORTED;
@@ -232,7 +233,7 @@ HRESULT STDMETHODCALLTYPE WrapperIDirectInputDevice::GetDeviceInfo(LPDIDEVICEINS
 
 // ---------
 
-HRESULT STDMETHODCALLTYPE WrapperIDirectInputDevice::GetDeviceState(DWORD cbData, LPVOID lpvData)
+HRESULT STDMETHODCALLTYPE VirtualDirectInputDevice::GetDeviceState(DWORD cbData, LPVOID lpvData)
 {
     // Handle games that forget to poll the device.
     // Don't bother buffering any changes, since this method has the effect of clearing the buffer anyway.
@@ -258,7 +259,7 @@ HRESULT STDMETHODCALLTYPE WrapperIDirectInputDevice::GetDeviceState(DWORD cbData
 
 // ---------
 
-HRESULT STDMETHODCALLTYPE WrapperIDirectInputDevice::GetEffectInfo(LPDIEFFECTINFO pdei, REFGUID rguid)
+HRESULT STDMETHODCALLTYPE VirtualDirectInputDevice::GetEffectInfo(LPDIEFFECTINFO pdei, REFGUID rguid)
 {
     // Operation not supported.
     const HRESULT result = DIERR_UNSUPPORTED;
@@ -268,7 +269,7 @@ HRESULT STDMETHODCALLTYPE WrapperIDirectInputDevice::GetEffectInfo(LPDIEFFECTINF
 
 // ---------
 
-HRESULT STDMETHODCALLTYPE WrapperIDirectInputDevice::GetForceFeedbackState(LPDWORD pdwOut)
+HRESULT STDMETHODCALLTYPE VirtualDirectInputDevice::GetForceFeedbackState(LPDWORD pdwOut)
 {
     // Operation not supported.
     const HRESULT result = DIERR_UNSUPPORTED;
@@ -278,7 +279,7 @@ HRESULT STDMETHODCALLTYPE WrapperIDirectInputDevice::GetForceFeedbackState(LPDWO
 
 // ---------
 
-HRESULT STDMETHODCALLTYPE WrapperIDirectInputDevice::GetObjectInfo(LPDIDEVICEOBJECTINSTANCE pdidoi, DWORD dwObj, DWORD dwHow)
+HRESULT STDMETHODCALLTYPE VirtualDirectInputDevice::GetObjectInfo(LPDIDEVICEOBJECTINSTANCE pdidoi, DWORD dwObj, DWORD dwHow)
 {
     const HRESULT result = mapper->GetMappedObjectInfo(useUnicode, pdidoi, dwObj, dwHow);
     Log::WriteFormattedLogMessageFromResource(ELogLevel::LogLevelDebug, IDS_XIDI_WRAPPERIDIRECTINPUTDEVICE_OPERATION_FORMAT, XIDI_LOG_FORMATTED_FUNCTION_NAME, controller->GetPlayerIndex() + 1, result);
@@ -287,7 +288,7 @@ HRESULT STDMETHODCALLTYPE WrapperIDirectInputDevice::GetObjectInfo(LPDIDEVICEOBJ
 
 // ---------
 
-HRESULT STDMETHODCALLTYPE WrapperIDirectInputDevice::GetProperty(REFGUID rguidProp, LPDIPROPHEADER pdiph)
+HRESULT STDMETHODCALLTYPE VirtualDirectInputDevice::GetProperty(REFGUID rguidProp, LPDIPROPHEADER pdiph)
 {
     HRESULT result = DI_OK;
 
@@ -302,7 +303,7 @@ HRESULT STDMETHODCALLTYPE WrapperIDirectInputDevice::GetProperty(REFGUID rguidPr
 
 // ---------
 
-HRESULT STDMETHODCALLTYPE WrapperIDirectInputDevice::Initialize(HINSTANCE hinst, DWORD dwVersion, REFGUID rguid)
+HRESULT STDMETHODCALLTYPE VirtualDirectInputDevice::Initialize(HINSTANCE hinst, DWORD dwVersion, REFGUID rguid)
 {
     // Operation not necessary.
     const HRESULT result = S_FALSE;
@@ -312,7 +313,7 @@ HRESULT STDMETHODCALLTYPE WrapperIDirectInputDevice::Initialize(HINSTANCE hinst,
 
 // ---------
 
-HRESULT STDMETHODCALLTYPE WrapperIDirectInputDevice::Poll(void)
+HRESULT STDMETHODCALLTYPE VirtualDirectInputDevice::Poll(void)
 {
     const HRESULT result = controller->RefreshControllerState();
 
@@ -325,7 +326,7 @@ HRESULT STDMETHODCALLTYPE WrapperIDirectInputDevice::Poll(void)
 
 // ---------
 
-HRESULT STDMETHODCALLTYPE WrapperIDirectInputDevice::RunControlPanel(HWND hwndOwner, DWORD dwFlags)
+HRESULT STDMETHODCALLTYPE VirtualDirectInputDevice::RunControlPanel(HWND hwndOwner, DWORD dwFlags)
 {
     // Operation not supported.
     const HRESULT result = DIERR_UNSUPPORTED;
@@ -335,7 +336,7 @@ HRESULT STDMETHODCALLTYPE WrapperIDirectInputDevice::RunControlPanel(HWND hwndOw
 
 // ---------
 
-HRESULT STDMETHODCALLTYPE WrapperIDirectInputDevice::SendDeviceData(DWORD cbObjectData, LPCDIDEVICEOBJECTDATA rgdod, LPDWORD pdwInOut, DWORD fl)
+HRESULT STDMETHODCALLTYPE VirtualDirectInputDevice::SendDeviceData(DWORD cbObjectData, LPCDIDEVICEOBJECTDATA rgdod, LPDWORD pdwInOut, DWORD fl)
 {
     // Operation not supported.
     const HRESULT result = DIERR_UNSUPPORTED;
@@ -345,7 +346,7 @@ HRESULT STDMETHODCALLTYPE WrapperIDirectInputDevice::SendDeviceData(DWORD cbObje
 
 // ---------
 
-HRESULT STDMETHODCALLTYPE WrapperIDirectInputDevice::SendForceFeedbackCommand(DWORD dwFlags)
+HRESULT STDMETHODCALLTYPE VirtualDirectInputDevice::SendForceFeedbackCommand(DWORD dwFlags)
 {
     // Operation not supported.
     const HRESULT result = DIERR_UNSUPPORTED;
@@ -355,7 +356,7 @@ HRESULT STDMETHODCALLTYPE WrapperIDirectInputDevice::SendForceFeedbackCommand(DW
 
 // ---------
 
-HRESULT STDMETHODCALLTYPE WrapperIDirectInputDevice::SetCooperativeLevel(HWND hwnd, DWORD dwFlags)
+HRESULT STDMETHODCALLTYPE VirtualDirectInputDevice::SetCooperativeLevel(HWND hwnd, DWORD dwFlags)
 {
     // Ineffective at present, but this may change.
     const HRESULT result = DI_OK;
@@ -365,7 +366,7 @@ HRESULT STDMETHODCALLTYPE WrapperIDirectInputDevice::SetCooperativeLevel(HWND hw
 
 // ---------
 
-HRESULT STDMETHODCALLTYPE WrapperIDirectInputDevice::SetDataFormat(LPCDIDATAFORMAT lpdf)
+HRESULT STDMETHODCALLTYPE VirtualDirectInputDevice::SetDataFormat(LPCDIDATAFORMAT lpdf)
 {
     HRESULT result = mapper->SetApplicationDataFormat(lpdf);
 
@@ -380,7 +381,7 @@ HRESULT STDMETHODCALLTYPE WrapperIDirectInputDevice::SetDataFormat(LPCDIDATAFORM
 
 // ---------
 
-HRESULT STDMETHODCALLTYPE WrapperIDirectInputDevice::SetEventNotification(HANDLE hEvent)
+HRESULT STDMETHODCALLTYPE VirtualDirectInputDevice::SetEventNotification(HANDLE hEvent)
 {
     const HRESULT result = controller->SetControllerStateChangedEvent(hEvent);
     Log::WriteFormattedLogMessageFromResource(ELogLevel::LogLevelDebug, IDS_XIDI_WRAPPERIDIRECTINPUTDEVICE_OPERATION_FORMAT, XIDI_LOG_FORMATTED_FUNCTION_NAME, controller->GetPlayerIndex() + 1, result);
@@ -389,7 +390,7 @@ HRESULT STDMETHODCALLTYPE WrapperIDirectInputDevice::SetEventNotification(HANDLE
 
 // ---------
 
-HRESULT STDMETHODCALLTYPE WrapperIDirectInputDevice::SetProperty(REFGUID rguidProp, LPCDIPROPHEADER pdiph)
+HRESULT STDMETHODCALLTYPE VirtualDirectInputDevice::SetProperty(REFGUID rguidProp, LPCDIPROPHEADER pdiph)
 {
     HRESULT result = DI_OK;
     
@@ -404,7 +405,7 @@ HRESULT STDMETHODCALLTYPE WrapperIDirectInputDevice::SetProperty(REFGUID rguidPr
 
 // ---------
 
-HRESULT STDMETHODCALLTYPE WrapperIDirectInputDevice::Unacquire(void)
+HRESULT STDMETHODCALLTYPE VirtualDirectInputDevice::Unacquire(void)
 {
     const HRESULT result = controller->UnacquireController();
     Log::WriteFormattedLogMessageFromResource(ELogLevel::LogLevelDebug, IDS_XIDI_WRAPPERIDIRECTINPUTDEVICE_OPERATION_FORMAT, XIDI_LOG_FORMATTED_FUNCTION_NAME, controller->GetPlayerIndex() + 1, result);
@@ -413,7 +414,7 @@ HRESULT STDMETHODCALLTYPE WrapperIDirectInputDevice::Unacquire(void)
 
 // ---------
 
-HRESULT STDMETHODCALLTYPE WrapperIDirectInputDevice::WriteEffectToFile(LPCTSTR lptszFileName, DWORD dwEntries, LPDIFILEEFFECT rgDiFileEft, DWORD dwFlags)
+HRESULT STDMETHODCALLTYPE VirtualDirectInputDevice::WriteEffectToFile(LPCTSTR lptszFileName, DWORD dwEntries, LPDIFILEEFFECT rgDiFileEft, DWORD dwFlags)
 {
     // Operation not supported.
     const HRESULT result = DIERR_UNSUPPORTED;
@@ -426,7 +427,7 @@ HRESULT STDMETHODCALLTYPE WrapperIDirectInputDevice::WriteEffectToFile(LPCTSTR l
 // -------- METHODS: IDirectInputDevice8 ONLY ------------------------------ //
 // See DirectInput documentation for more information.
 
-HRESULT STDMETHODCALLTYPE WrapperIDirectInputDevice::BuildActionMap(LPDIACTIONFORMAT lpdiaf, LPCTSTR lpszUserName, DWORD dwFlags)
+HRESULT STDMETHODCALLTYPE VirtualDirectInputDevice::BuildActionMap(LPDIACTIONFORMAT lpdiaf, LPCTSTR lpszUserName, DWORD dwFlags)
 {
     // Operation not supported.
     const HRESULT result = DIERR_UNSUPPORTED;
@@ -436,7 +437,7 @@ HRESULT STDMETHODCALLTYPE WrapperIDirectInputDevice::BuildActionMap(LPDIACTIONFO
 
 // ---------
 
-HRESULT STDMETHODCALLTYPE WrapperIDirectInputDevice::GetImageInfo(LPDIDEVICEIMAGEINFOHEADER lpdiDevImageInfoHeader)
+HRESULT STDMETHODCALLTYPE VirtualDirectInputDevice::GetImageInfo(LPDIDEVICEIMAGEINFOHEADER lpdiDevImageInfoHeader)
 {
     // Operation not supported.
     const HRESULT result = DIERR_UNSUPPORTED;
@@ -446,7 +447,7 @@ HRESULT STDMETHODCALLTYPE WrapperIDirectInputDevice::GetImageInfo(LPDIDEVICEIMAG
 
 // ---------
 
-HRESULT STDMETHODCALLTYPE WrapperIDirectInputDevice::SetActionMap(LPDIACTIONFORMAT lpdiActionFormat, LPCTSTR lptszUserName, DWORD dwFlags)
+HRESULT STDMETHODCALLTYPE VirtualDirectInputDevice::SetActionMap(LPDIACTIONFORMAT lpdiActionFormat, LPCTSTR lptszUserName, DWORD dwFlags)
 {
     // Operation not supported.
     const HRESULT result = DIERR_UNSUPPORTED;

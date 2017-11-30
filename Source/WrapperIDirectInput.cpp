@@ -15,8 +15,8 @@
 #include "ControllerIdentification.h"
 #include "Log.h"
 #include "MapperFactory.h"
+#include "VirtualDirectInputDevice.h"
 #include "WrapperIDirectInput.h"
-#include "WrapperIDirectInputDevice.h"
 #include "XInputController.h"
 
 #include <cstdlib>
@@ -115,7 +115,7 @@ HRESULT STDMETHODCALLTYPE WrapperIDirectInput::CreateDevice(REFGUID rguid, Earli
         // Is an XInput GUID, so create a fake device that will communicate with the XInput controller of the specified index.
         Log::WriteFormattedLogMessageFromResource(ELogLevel::LogLevelInfo, IDS_XIDI_WRAPPERIDIRECTINPUT_CREATE_XINPUT_FORMAT, (xinputIndex + 1));
         
-        WrapperIDirectInputDevice* newWrappedDevice = new WrapperIDirectInputDevice(underlyingDIObjectUsesUnicode, new XInputController(xinputIndex), MapperFactory::CreateMapper());
+        VirtualDirectInputDevice* newWrappedDevice = new VirtualDirectInputDevice(underlyingDIObjectUsesUnicode, new XInputController(xinputIndex), MapperFactory::CreateMapper());
         newWrappedDevice->AddRef();
         *lplpDirectInputDevice = newWrappedDevice;
         

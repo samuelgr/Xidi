@@ -42,8 +42,8 @@
     <ClInclude Include="Include\Xidi\ControllerIdentification.h" />
     <ClInclude Include="Include\Xidi\ImportApiDirectInput.h" />
     <ClInclude Include="Include\Xidi\Mapper\Base.h" />
+    <ClInclude Include="Include\Xidi\VirtualDirectInputDevice.h" />
     <ClInclude Include="Include\Xidi\WrapperIDirectInput.h" />
-    <ClInclude Include="Include\Xidi\WrapperIDirectInputDevice.h" />
     <ClInclude Include="Include\Xidi\XInputController.h" />
     <ClInclude Include="Resources\Xidi-DInput8.h" />
     <ClInclude Include="Resources\Xidi-Log.h" />
@@ -75,7 +75,7 @@
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='TestApp|Win32'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='TestApp|x64'">true</ExcludedFromBuild>
     </ClCompile>
-    <ClCompile Include="Source\WrapperIDirectInputDevice.cpp" />
+    <ClCompile Include="Source\VirtualDirectInputDevice.cpp" />
     <ClCompile Include="Source\XInputController.cpp" />
   </ItemGroup>
   <ItemGroup>
