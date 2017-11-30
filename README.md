@@ -163,29 +163,24 @@ Precise button and axis mappings are as below.
 
 <h1 id="questionsandanswers">Questions and Answers</h1>
 
-<a name="questionsandanswers-q1">
-**Which specific controllers does Xidi support?**
-</a><br>
+<a name="questionsandanswers-q1"> **Which specific controllers does Xidi support?** </a>
+
 Any controller that supports Windows and XInput can be used with Xidi.  This includes non-Microsoft controllers, wireless controllers, wired controllers, and so on.  That being said, only Xbox 360 and Xbox One controllers have been specifically tested.  Any issues with other controllers are likely indicative of bugs in Xidi.
 
-<a name="questionsandanswers-q2">
-**Can I use Xidi with multiple controllers?**
-</a><br>
+<a name="questionsandanswers-q2"> **Can I use Xidi with multiple controllers? **</a>
+
 Yes.  Xidi supports as many XInput-based controllers as does the XInput API itself.  The current limit is 4 controllers.
 
-<a name="questionsandanswers-q3">
-**What if I have more than the maximum supported number of XInput controllers?**
-</a><br>
+<a name="questionsandanswers-q3"> **What if I have more than the maximum supported number of XInput controllers? **</a>
+
 The only XInput controllers that Xidi would expose to the game are those that are assigned XInput player numbers.  Any controllers above the limit would be unavailable for use in the game; they cannot be accessed, even by using DirectInput.
 
-<a name="questionsandanswers-q4">
-**Does Xidi support using XInput controllers and non-XInput controllers together?**
-</a><br>
+<a name="questionsandanswers-q4"> **Does Xidi support using XInput controllers and non-XInput controllers together? **</a>
+
 Yes.  Xidi does not interfere in any way with the functionality of non-XInput controllers.  A game that attempts to enumerate DirectInput or WinMM controllers would see Xidi virtual devices in addition to any attached DirectInput or WinMM controllers that do not support XInput.
 
-<a name="questionsandanswers-q5">
-**If I have non-XInput controllers attached and I start a game that does not let me pick a specific controller, what happens?**
-</a><br>
+<a name="questionsandanswers-q5"> **If I have non-XInput controllers attached and I start a game that does not let me pick a specific controller, what happens?** </a>
+
 Typically a game would enumerate game controllers when it starts and would simply bind to whichever controller it sees first.  However, Xidi does take this scenario into account and controls the order in which controllers are presented to games during enumeration.  Xidi uses different rules depending on which version is in use (DirectInput or WinMM).  Before presenting enumerated controllers to the game, Xidi performs its own enumeration and applies these rules internally.
 
 The DirectInput version uses the following rules to determine enumeration order.  Note that DirectInput supports many device types other than game controllers, such as keyboards and mice, so applications that request enumeration can specify one or more device classes to narrow down the results.
@@ -204,12 +199,10 @@ The WinMM version uses the following rules to determine enumeration order.  Note
 
 - If the preferred game controller supports XInput or is either unspecified or physically absent, then Xidi virtual devices are enumerated first, followed by non-XInput devices.
 
-<a name="questionsandanswers-q6">
-**How do I add a controller or change to a different controller while the game is running?**
-</a><br>
+<a name="questionsandanswers-q6"> **How do I add a controller or change to a different controller while the game is running?** </a>
+
 Simply connect or disconnect controllers as needed.  Xidi's use of virtual devices means that the game is bound to an XInput player number, not a physical device.  While the corresponding controller is disconnected, the game is informed that there are no buttons or axes pressed (i.e. the controller is completely neutral).
 
-<a name="questionsandanswers-q7">
-**DirectInput supports force feedback.  What about Xidi?**
-</a><br>
+<a name="questionsandanswers-q7"> **DirectInput supports force feedback.  What about Xidi?** </a>
+
 Xidi does not currently support force feedback, but this feature may be added in a future version.
