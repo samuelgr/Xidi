@@ -45,6 +45,27 @@ MMRESULT    WINAPI ExportApiWinMMJoyReleaseCapture(UINT uJoyID);
 MMRESULT    WINAPI ExportApiWinMMJoySetCapture(HWND hwnd, UINT uJoyID, UINT uPeriod, BOOL fChanged);
 MMRESULT    WINAPI ExportApiWinMMJoySetThreshold(UINT uJoyID, UINT uThreshold);
 
+BOOL        WINAPI ExportApiWinMMMCIDriverNotify(HWND hwndCallback, MCIDEVICEID IDDevice, UINT uStatus);
+UINT        WINAPI ExportApiWinMMMCIDriverYield(MCIDEVICEID IDDevice);
+BOOL        WINAPI ExportApiWinMMMCIExecute(LPCSTR pszCommand);
+BOOL        WINAPI ExportApiWinMMMCIFreeCommandResource(UINT uResource);
+HANDLE      WINAPI ExportApiWinMMMCIGetCreatorTask(MCIDEVICEID IDDevice);
+MCIDEVICEID WINAPI ExportApiWinMMMCIGetDeviceIDA(LPCSTR lpszDevice);
+MCIDEVICEID WINAPI ExportApiWinMMMCIGetDeviceIDW(LPCWSTR lpszDevice);
+MCIDEVICEID WINAPI ExportApiWinMMMCIGetDeviceIDFromElementIDA(DWORD dwElementID, LPCSTR lpstrType);
+MCIDEVICEID WINAPI ExportApiWinMMMCIGetDeviceIDFromElementIDW(DWORD dwElementID, LPCWSTR lpstrType);
+DWORD_PTR   WINAPI ExportApiWinMMMCIGetDriverData(MCIDEVICEID IDDevice);
+BOOL        WINAPI ExportApiWinMMMCIGetErrorStringA(DWORD fdwError, LPCSTR lpszErrorText, UINT cchErrorText);
+BOOL        WINAPI ExportApiWinMMMCIGetErrorStringW(DWORD fdwError, LPWSTR lpszErrorText, UINT cchErrorText);
+YIELDPROC   WINAPI ExportApiWinMMMCIGetYieldProc(MCIDEVICEID IDDevice, LPDWORD lpdwYieldData);
+UINT        WINAPI ExportApiWinMMMCILoadCommandResource(HINSTANCE hInst, LPCWSTR lpwstrResourceName, UINT uType);
+MCIERROR    WINAPI ExportApiWinMMMCISendCommandA(MCIDEVICEID IDDevice, UINT uMsg, DWORD_PTR fdwCommand, DWORD_PTR dwParam);
+MCIERROR    WINAPI ExportApiWinMMMCISendCommandW(MCIDEVICEID IDDevice, UINT uMsg, DWORD_PTR fdwCommand, DWORD_PTR dwParam);
+MCIERROR    WINAPI ExportApiWinMMMCISendStringA(LPCSTR lpszCommand, LPSTR lpszReturnString, UINT cchReturn, HANDLE hwndCallback);
+MCIERROR    WINAPI ExportApiWinMMMCISendStringW(LPCWSTR lpszCommand, LPWSTR lpszReturnString, UINT cchReturn, HANDLE hwndCallback);
+BOOL        WINAPI ExportApiWinMMMCISetDriverData(MCIDEVICEID IDDevice, DWORD_PTR data);
+UINT        WINAPI ExportApiWinMMMCISetYieldProc(MCIDEVICEID IDDevice, YIELDPROC yp, DWORD dwYieldData);
+
 MMRESULT    WINAPI ExportApiWinMMMidiConnect(HMIDI hMidi, HMIDIOUT hmo, LPVOID pReserved);
 MMRESULT    WINAPI ExportApiWinMMMidiDisconnect(HMIDI hMidi, HMIDIOUT hmo, LPVOID pReserved);
 

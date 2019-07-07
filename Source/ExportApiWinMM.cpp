@@ -198,6 +198,146 @@ MMRESULT WINAPI ExportApiWinMMJoySetThreshold(UINT uJoyID, UINT uThreshold)
 
 // ---------
 
+BOOL WINAPI ExportApiWinMMMCIDriverNotify(HWND hwndCallback, MCIDEVICEID IDDevice, UINT uStatus)
+{
+    return ImportApiWinMM::mciDriverNotify(hwndCallback, IDDevice, uStatus);
+}
+
+// ---------
+
+UINT WINAPI ExportApiWinMMMCIDriverYield(MCIDEVICEID IDDevice)
+{
+    return ImportApiWinMM::mciDriverYield(IDDevice);
+}
+
+// ---------
+
+BOOL WINAPI ExportApiWinMMMCIExecute(LPCSTR pszCommand)
+{
+    return ImportApiWinMM::mciExecute(pszCommand);
+}
+
+// ---------
+
+BOOL WINAPI ExportApiWinMMMCIFreeCommandResource(UINT uResource)
+{
+    return ImportApiWinMM::mciFreeCommandResource(uResource);
+}
+
+// ---------
+
+HANDLE WINAPI ExportApiWinMMMCIGetCreatorTask(MCIDEVICEID IDDevice)
+{
+    return ImportApiWinMM::mciGetCreatorTask(IDDevice);
+}
+
+// ---------
+
+MCIDEVICEID WINAPI ExportApiWinMMMCIGetDeviceIDA(LPCSTR lpszDevice)
+{
+    return ImportApiWinMM::mciGetDeviceIDA(lpszDevice);
+}
+
+// ---------
+
+MCIDEVICEID WINAPI ExportApiWinMMMCIGetDeviceIDW(LPCWSTR lpszDevice)
+{
+    return ImportApiWinMM::mciGetDeviceIDW(lpszDevice);
+}
+
+// ---------
+
+MCIDEVICEID WINAPI ExportApiWinMMMCIGetDeviceIDFromElementIDA(DWORD dwElementID, LPCSTR lpstrType)
+{
+    return ImportApiWinMM::mciGetDeviceIDFromElementIDA(dwElementID, lpstrType);
+}
+
+// ---------
+
+MCIDEVICEID WINAPI ExportApiWinMMMCIGetDeviceIDFromElementIDW(DWORD dwElementID, LPCWSTR lpstrType)
+{
+    return ImportApiWinMM::mciGetDeviceIDFromElementIDW(dwElementID, lpstrType);
+}
+
+// ---------
+
+DWORD_PTR WINAPI ExportApiWinMMMCIGetDriverData(MCIDEVICEID IDDevice)
+{
+    return ImportApiWinMM::mciGetDriverData(IDDevice);
+}
+
+// ---------
+
+BOOL WINAPI ExportApiWinMMMCIGetErrorStringA(DWORD fdwError, LPCSTR lpszErrorText, UINT cchErrorText)
+{
+    return ImportApiWinMM::mciGetErrorStringA(fdwError, lpszErrorText, cchErrorText);
+}
+
+// ---------
+
+BOOL WINAPI ExportApiWinMMMCIGetErrorStringW(DWORD fdwError, LPWSTR lpszErrorText, UINT cchErrorText)
+{
+    return ImportApiWinMM::mciGetErrorStringW(fdwError, lpszErrorText, cchErrorText);
+}
+
+// ---------
+
+YIELDPROC WINAPI ExportApiWinMMMCIGetYieldProc(MCIDEVICEID IDDevice, LPDWORD lpdwYieldData)
+{
+    return ImportApiWinMM::mciGetYieldProc(IDDevice, lpdwYieldData);
+}
+
+// ---------
+
+UINT WINAPI ExportApiWinMMMCILoadCommandResource(HINSTANCE hInst, LPCWSTR lpwstrResourceName, UINT uType)
+{
+    return ImportApiWinMM::mciLoadCommandResource(hInst, lpwstrResourceName, uType);
+}
+
+// ---------
+
+MCIERROR WINAPI ExportApiWinMMMCISendCommandA(MCIDEVICEID IDDevice, UINT uMsg, DWORD_PTR fdwCommand, DWORD_PTR dwParam)
+{
+    return ImportApiWinMM::mciSendCommandA(IDDevice, uMsg, fdwCommand, dwParam);
+}
+
+// ---------
+
+MCIERROR WINAPI ExportApiWinMMMCISendCommandW(MCIDEVICEID IDDevice, UINT uMsg, DWORD_PTR fdwCommand, DWORD_PTR dwParam)
+{
+    return ImportApiWinMM::mciSendCommandW(IDDevice, uMsg, fdwCommand, dwParam);
+}
+
+// ---------
+
+MCIERROR WINAPI ExportApiWinMMMCISendStringA(LPCSTR lpszCommand, LPSTR lpszReturnString, UINT cchReturn, HANDLE hwndCallback)
+{
+    return ImportApiWinMM::mciSendStringA(lpszCommand, lpszReturnString, cchReturn, hwndCallback);
+}
+
+// ---------
+
+MCIERROR WINAPI ExportApiWinMMMCISendStringW(LPCWSTR lpszCommand, LPWSTR lpszReturnString, UINT cchReturn, HANDLE hwndCallback)
+{
+    return ImportApiWinMM::mciSendStringW(lpszCommand, lpszReturnString, cchReturn, hwndCallback);
+}
+
+// ---------
+
+BOOL WINAPI ExportApiWinMMMCISetDriverData(MCIDEVICEID IDDevice, DWORD_PTR data)
+{
+    return ImportApiWinMM::mciSetDriverData(IDDevice, data);
+}
+
+// ---------
+
+UINT WINAPI ExportApiWinMMMCISetYieldProc(MCIDEVICEID IDDevice, YIELDPROC yp, DWORD dwYieldData)
+{
+    return ImportApiWinMM::mciSetYieldProc(IDDevice, yp, dwYieldData);
+}
+
+// ---------
+
 MMRESULT WINAPI ExportApiWinMMMidiConnect(HMIDI hMidi, HMIDIOUT hmo, LPVOID pReserved)
 {
     return ImportApiWinMM::midiConnect(hMidi, hmo, pReserved);

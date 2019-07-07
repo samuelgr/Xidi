@@ -54,7 +54,28 @@ namespace Xidi
             MMRESULT    (WINAPI* joyReleaseCapture)(UINT);
             MMRESULT    (WINAPI* joySetCapture)(HWND, UINT, UINT, BOOL);
             MMRESULT    (WINAPI* joySetThreshold)(UINT, UINT);
-            
+
+            BOOL        (WINAPI* mciDriverNotify)(HWND, MCIDEVICEID, UINT);
+            UINT        (WINAPI* mciDriverYield)(MCIDEVICEID);
+            BOOL        (WINAPI* mciExecute)(LPCSTR);
+            BOOL        (WINAPI* mciFreeCommandResource)(UINT);
+            HANDLE      (WINAPI* mciGetCreatorTask)(MCIDEVICEID);
+            MCIDEVICEID (WINAPI* mciGetDeviceIDA)(LPCSTR);
+            MCIDEVICEID (WINAPI* mciGetDeviceIDW)(LPCWSTR);
+            MCIDEVICEID (WINAPI* mciGetDeviceIDFromElementIDA)(DWORD, LPCSTR);
+            MCIDEVICEID (WINAPI* mciGetDeviceIDFromElementIDW)(DWORD, LPCWSTR);
+            DWORD_PTR   (WINAPI* mciGetDriverData)(MCIDEVICEID);
+            BOOL        (WINAPI* mciGetErrorStringA)(DWORD, LPCSTR, UINT);
+            BOOL        (WINAPI* mciGetErrorStringW)(DWORD, LPWSTR, UINT);
+            YIELDPROC   (WINAPI* mciGetYieldProc)(MCIDEVICEID, LPDWORD);
+            UINT        (WINAPI* mciLoadCommandResource)(HINSTANCE, LPCWSTR, UINT);
+            MCIERROR    (WINAPI* mciSendCommandA)(MCIDEVICEID, UINT, DWORD_PTR, DWORD_PTR);
+            MCIERROR    (WINAPI* mciSendCommandW)(MCIDEVICEID, UINT, DWORD_PTR, DWORD_PTR);
+            MCIERROR    (WINAPI* mciSendStringA)(LPCSTR, LPSTR, UINT, HANDLE);
+            MCIERROR    (WINAPI* mciSendStringW)(LPCWSTR, LPWSTR, UINT, HANDLE);
+            BOOL        (WINAPI* mciSetDriverData)(MCIDEVICEID, DWORD_PTR);
+            UINT        (WINAPI* mciSetYieldProc)(MCIDEVICEID, YIELDPROC, DWORD);
+
             MMRESULT    (WINAPI* midiConnect)(HMIDI, HMIDIOUT, LPVOID);
             MMRESULT    (WINAPI* midiDisconnect)(HMIDI, HMIDIOUT, LPVOID);
             
@@ -246,6 +267,27 @@ namespace Xidi
         static MMRESULT     joyReleaseCapture(UINT uJoyID);
         static MMRESULT     joySetCapture(HWND hwnd, UINT uJoyID, UINT uPeriod, BOOL fChanged);
         static MMRESULT     joySetThreshold(UINT uJoyID, UINT uThreshold);
+        
+        static BOOL         mciDriverNotify(HWND hwndCallback, MCIDEVICEID IDDevice, UINT uStatus);
+        static UINT         mciDriverYield(MCIDEVICEID IDDevice);
+        static BOOL         mciExecute(LPCSTR pszCommand);
+        static BOOL         mciFreeCommandResource(UINT uResource);
+        static HANDLE       mciGetCreatorTask(MCIDEVICEID IDDevice);
+        static MCIDEVICEID  mciGetDeviceIDA(LPCSTR lpszDevice);
+        static MCIDEVICEID  mciGetDeviceIDW(LPCWSTR lpszDevice);
+        static MCIDEVICEID  mciGetDeviceIDFromElementIDA(DWORD dwElementID, LPCSTR lpstrType);
+        static MCIDEVICEID  mciGetDeviceIDFromElementIDW(DWORD dwElementID, LPCWSTR lpstrType);
+        static DWORD_PTR    mciGetDriverData(MCIDEVICEID IDDevice);
+        static BOOL         mciGetErrorStringA(DWORD fdwError, LPCSTR lpszErrorText, UINT cchErrorText);
+        static BOOL         mciGetErrorStringW(DWORD fdwError, LPWSTR lpszErrorText, UINT cchErrorText);
+        static YIELDPROC    mciGetYieldProc(MCIDEVICEID IDDevice, LPDWORD lpdwYieldData);
+        static UINT         mciLoadCommandResource(HINSTANCE hInst, LPCWSTR lpwstrResourceName, UINT uType);
+        static MCIERROR     mciSendCommandA(MCIDEVICEID IDDevice, UINT uMsg, DWORD_PTR fdwCommand, DWORD_PTR dwParam);
+        static MCIERROR     mciSendCommandW(MCIDEVICEID IDDevice, UINT uMsg, DWORD_PTR fdwCommand, DWORD_PTR dwParam);
+        static MCIERROR     mciSendStringA(LPCSTR lpszCommand, LPSTR lpszReturnString, UINT cchReturn, HANDLE hwndCallback);
+        static MCIERROR     mciSendStringW(LPCWSTR lpszCommand, LPWSTR lpszReturnString, UINT cchReturn, HANDLE hwndCallback);
+        static BOOL         mciSetDriverData(MCIDEVICEID IDDevice, DWORD_PTR data);
+        static UINT         mciSetYieldProc(MCIDEVICEID IDDevice, YIELDPROC yp, DWORD dwYieldData);
         
         static MMRESULT     midiConnect(HMIDI hMidi, HMIDIOUT hmo, LPVOID pReserved);
         static MMRESULT     midiDisconnect(HMIDI hMidi, HMIDIOUT hmo, LPVOID pReserved);

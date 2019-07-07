@@ -160,6 +160,88 @@ void ImportApiWinMM::Initialize(void)
         
         // ---------
 
+        procAddress = GetProcAddress(loadedLibrary, "mciDriverNotify");
+        if (NULL == procAddress) LogImportFailed(_T("mciDriverNotify"));
+        importTable.mciDriverNotify = (decltype(importTable.mciDriverNotify))procAddress;
+
+        procAddress = GetProcAddress(loadedLibrary, "mciDriverYield");
+        if (NULL == procAddress) LogImportFailed(_T("mciDriverYield"));
+        importTable.mciDriverYield = (decltype(importTable.mciDriverYield))procAddress;
+
+        procAddress = GetProcAddress(loadedLibrary, "mciExecute");
+        if (NULL == procAddress) LogImportFailed(_T("mciExecute"));
+        importTable.mciExecute = (decltype(importTable.mciExecute))procAddress;
+
+        procAddress = GetProcAddress(loadedLibrary, "mciFreeCommandResource");
+        if (NULL == procAddress) LogImportFailed(_T("mciFreeCommandResource"));
+        importTable.mciFreeCommandResource = (decltype(importTable.mciFreeCommandResource))procAddress;
+
+        procAddress = GetProcAddress(loadedLibrary, "mciGetCreatorTask");
+        if (NULL == procAddress) LogImportFailed(_T("mciGetCreatorTask"));
+        importTable.mciGetCreatorTask = (decltype(importTable.mciGetCreatorTask))procAddress;
+
+        procAddress = GetProcAddress(loadedLibrary, "mciGetDeviceIDA");
+        if (NULL == procAddress) LogImportFailed(_T("mciGetDeviceIDA"));
+        importTable.mciGetDeviceIDA = (decltype(importTable.mciGetDeviceIDA))procAddress;
+
+        procAddress = GetProcAddress(loadedLibrary, "mciGetDeviceIDW");
+        if (NULL == procAddress) LogImportFailed(_T("mciGetDeviceIDW"));
+        importTable.mciGetDeviceIDW = (decltype(importTable.mciGetDeviceIDW))procAddress;
+
+        procAddress = GetProcAddress(loadedLibrary, "mciGetDeviceIDFromElementIDA");
+        if (NULL == procAddress) LogImportFailed(_T("mciGetDeviceIDFromElementIDA"));
+        importTable.mciGetDeviceIDFromElementIDA = (decltype(importTable.mciGetDeviceIDFromElementIDA))procAddress;
+
+        procAddress = GetProcAddress(loadedLibrary, "mciGetDeviceIDFromElementIDW");
+        if (NULL == procAddress) LogImportFailed(_T("mciGetDeviceIDFromElementIDW"));
+        importTable.mciGetDeviceIDFromElementIDW = (decltype(importTable.mciGetDeviceIDFromElementIDW))procAddress;
+
+        procAddress = GetProcAddress(loadedLibrary, "mciGetDriverData");
+        if (NULL == procAddress) LogImportFailed(_T("mciGetDriverData"));
+        importTable.mciGetDriverData = (decltype(importTable.mciGetDriverData))procAddress;
+
+        procAddress = GetProcAddress(loadedLibrary, "mciGetErrorStringA");
+        if (NULL == procAddress) LogImportFailed(_T("mciGetErrorStringA"));
+        importTable.mciGetErrorStringA = (decltype(importTable.mciGetErrorStringA))procAddress;
+
+        procAddress = GetProcAddress(loadedLibrary, "mciGetErrorStringW");
+        if (NULL == procAddress) LogImportFailed(_T("mciGetErrorStringW"));
+        importTable.mciGetErrorStringW = (decltype(importTable.mciGetErrorStringW))procAddress;
+
+        procAddress = GetProcAddress(loadedLibrary, "mciGetYieldProc");
+        if (NULL == procAddress) LogImportFailed(_T("mciGetYieldProc"));
+        importTable.mciGetYieldProc = (decltype(importTable.mciGetYieldProc))procAddress;
+
+        procAddress = GetProcAddress(loadedLibrary, "mciLoadCommandResource");
+        if (NULL == procAddress) LogImportFailed(_T("mciLoadCommandResource"));
+        importTable.mciLoadCommandResource = (decltype(importTable.mciLoadCommandResource))procAddress;
+
+        procAddress = GetProcAddress(loadedLibrary, "mciSendCommandA");
+        if (NULL == procAddress) LogImportFailed(_T("mciSendCommandA"));
+        importTable.mciSendCommandA = (decltype(importTable.mciSendCommandA))procAddress;
+
+        procAddress = GetProcAddress(loadedLibrary, "mciSendCommandW");
+        if (NULL == procAddress) LogImportFailed(_T("mciSendCommandW"));
+        importTable.mciSendCommandW = (decltype(importTable.mciSendCommandW))procAddress;
+
+        procAddress = GetProcAddress(loadedLibrary, "mciSendStringA");
+        if (NULL == procAddress) LogImportFailed(_T("mciSendStringA"));
+        importTable.mciSendStringA = (decltype(importTable.mciSendStringA))procAddress;
+
+        procAddress = GetProcAddress(loadedLibrary, "mciSendStringW");
+        if (NULL == procAddress) LogImportFailed(_T("mciSendStringW"));
+        importTable.mciSendStringW = (decltype(importTable.mciSendStringW))procAddress;
+
+        procAddress = GetProcAddress(loadedLibrary, "mciSetDriverData");
+        if (NULL == procAddress) LogImportFailed(_T("mciSetDriverData"));
+        importTable.mciSetDriverData = (decltype(importTable.mciSetDriverData))procAddress;
+
+        procAddress = GetProcAddress(loadedLibrary, "mciSetYieldProc");
+        if (NULL == procAddress) LogImportFailed(_T("mciSetYieldProc"));
+        importTable.mciSetYieldProc = (decltype(importTable.mciSetYieldProc))procAddress;
+
+        // ---------
+
         procAddress = GetProcAddress(loadedLibrary, "midiConnect");
         if (NULL == procAddress) LogImportFailed(_T("midiConnect"));
         importTable.midiConnect = (MMRESULT(WINAPI*)(HMIDI, HMIDIOUT, LPVOID))procAddress;
@@ -986,6 +1068,246 @@ MMRESULT ImportApiWinMM::joySetThreshold(UINT uJoyID, UINT uThreshold)
         LogMissingFunctionCalled(_T("joySetThreshold"));
 
     return importTable.joySetThreshold(uJoyID, uThreshold);
+}
+
+// ---------
+
+BOOL ImportApiWinMM::mciDriverNotify(HWND hwndCallback, MCIDEVICEID IDDevice, UINT uStatus)
+{
+    Initialize();
+
+    if (NULL == importTable.mciDriverNotify)
+        LogMissingFunctionCalled(_T("mciDriverNotify"));
+
+    return importTable.mciDriverNotify(hwndCallback, IDDevice, uStatus);
+}
+
+// ---------
+
+UINT ImportApiWinMM::mciDriverYield(MCIDEVICEID IDDevice)
+{
+    Initialize();
+
+    if (NULL == importTable.mciDriverYield)
+        LogMissingFunctionCalled(_T("mciDriverYield"));
+
+    return importTable.mciDriverYield(IDDevice);
+}
+
+// ---------
+
+BOOL ImportApiWinMM::mciExecute(LPCSTR pszCommand)
+{
+    Initialize();
+
+    if (NULL == importTable.mciExecute)
+        LogMissingFunctionCalled(_T("mciExecute"));
+
+    return importTable.mciExecute(pszCommand);
+}
+
+// ---------
+
+BOOL ImportApiWinMM::mciFreeCommandResource(UINT uResource)
+{
+    Initialize();
+
+    if (NULL == importTable.mciFreeCommandResource)
+        LogMissingFunctionCalled(_T("mciFreeCommandResource"));
+
+    return importTable.mciFreeCommandResource(uResource);
+}
+
+// ---------
+
+HANDLE ImportApiWinMM::mciGetCreatorTask(MCIDEVICEID IDDevice)
+{
+    Initialize();
+
+    if (NULL == importTable.mciGetCreatorTask)
+        LogMissingFunctionCalled(_T("mciGetCreatorTask"));
+
+    return importTable.mciGetCreatorTask(IDDevice);
+}
+
+// ---------
+
+MCIDEVICEID ImportApiWinMM::mciGetDeviceIDA(LPCSTR lpszDevice)
+{
+    Initialize();
+
+    if (NULL == importTable.mciGetDeviceIDA)
+        LogMissingFunctionCalled(_T("mciGetDeviceIDA"));
+
+    return importTable.mciGetDeviceIDA(lpszDevice);
+}
+
+// ---------
+
+MCIDEVICEID ImportApiWinMM::mciGetDeviceIDW(LPCWSTR lpszDevice)
+{
+    Initialize();
+
+    if (NULL == importTable.mciGetDeviceIDW)
+        LogMissingFunctionCalled(_T("mciGetDeviceIDW"));
+
+    return importTable.mciGetDeviceIDW(lpszDevice);
+}
+
+// ---------
+
+MCIDEVICEID ImportApiWinMM::mciGetDeviceIDFromElementIDA(DWORD dwElementID, LPCSTR lpstrType)
+{
+    Initialize();
+
+    if (NULL == importTable.mciGetDeviceIDFromElementIDA)
+        LogMissingFunctionCalled(_T("mciGetDeviceIDFromElementIDA"));
+
+    return importTable.mciGetDeviceIDFromElementIDA(dwElementID, lpstrType);
+}
+
+// ---------
+
+MCIDEVICEID ImportApiWinMM::mciGetDeviceIDFromElementIDW(DWORD dwElementID, LPCWSTR lpstrType)
+{
+    Initialize();
+
+    if (NULL == importTable.mciGetDeviceIDFromElementIDW)
+        LogMissingFunctionCalled(_T("mciGetDeviceIDFromElementIDW"));
+
+    return importTable.mciGetDeviceIDFromElementIDW(dwElementID, lpstrType);
+}
+
+// ---------
+
+DWORD_PTR ImportApiWinMM::mciGetDriverData(MCIDEVICEID IDDevice)
+{
+    Initialize();
+
+    if (NULL == importTable.mciGetDriverData)
+        LogMissingFunctionCalled(_T("mciGetDriverData"));
+
+    return importTable.mciGetDriverData(IDDevice);
+}
+
+// ---------
+
+BOOL ImportApiWinMM::mciGetErrorStringA(DWORD fdwError, LPCSTR lpszErrorText, UINT cchErrorText)
+{
+    Initialize();
+
+    if (NULL == importTable.mciGetErrorStringA)
+        LogMissingFunctionCalled(_T("mciGetErrorStringA"));
+
+    return importTable.mciGetErrorStringA(fdwError, lpszErrorText, cchErrorText);
+}
+
+// ---------
+
+BOOL ImportApiWinMM::mciGetErrorStringW(DWORD fdwError, LPWSTR lpszErrorText, UINT cchErrorText)
+{
+    Initialize();
+
+    if (NULL == importTable.mciGetErrorStringW)
+        LogMissingFunctionCalled(_T("mciGetErrorStringW"));
+
+    return importTable.mciGetErrorStringW(fdwError, lpszErrorText, cchErrorText);
+}
+
+// ---------
+
+YIELDPROC ImportApiWinMM::mciGetYieldProc(MCIDEVICEID IDDevice, LPDWORD lpdwYieldData)
+{
+    Initialize();
+
+    if (NULL == importTable.mciGetYieldProc)
+        LogMissingFunctionCalled(_T("mciGetYieldProc"));
+
+    return importTable.mciGetYieldProc(IDDevice, lpdwYieldData);
+}
+
+// ---------
+
+UINT ImportApiWinMM::mciLoadCommandResource(HINSTANCE hInst, LPCWSTR lpwstrResourceName, UINT uType)
+{
+    Initialize();
+
+    if (NULL == importTable.mciLoadCommandResource)
+        LogMissingFunctionCalled(_T("mciLoadCommandResource"));
+
+    return importTable.mciLoadCommandResource(hInst, lpwstrResourceName, uType);
+}
+
+// ---------
+
+MCIERROR ImportApiWinMM::mciSendCommandA(MCIDEVICEID IDDevice, UINT uMsg, DWORD_PTR fdwCommand, DWORD_PTR dwParam)
+{
+    Initialize();
+
+    if (NULL == importTable.mciSendCommandA)
+        LogMissingFunctionCalled(_T("mciSendCommandA"));
+
+    return importTable.mciSendCommandA(IDDevice, uMsg, fdwCommand, dwParam);
+}
+
+// ---------
+
+MCIERROR ImportApiWinMM::mciSendCommandW(MCIDEVICEID IDDevice, UINT uMsg, DWORD_PTR fdwCommand, DWORD_PTR dwParam)
+{
+    Initialize();
+
+    if (NULL == importTable.mciSendCommandW)
+        LogMissingFunctionCalled(_T("mciSendCommandW"));
+
+    return importTable.mciSendCommandW(IDDevice, uMsg, fdwCommand, dwParam);
+}
+
+// ---------
+
+MCIERROR ImportApiWinMM::mciSendStringA(LPCSTR lpszCommand, LPSTR lpszReturnString, UINT cchReturn, HANDLE hwndCallback)
+{
+    Initialize();
+
+    if (NULL == importTable.mciSendStringA)
+        LogMissingFunctionCalled(_T("mciSendStringA"));
+
+    return importTable.mciSendStringA(lpszCommand, lpszReturnString, cchReturn, hwndCallback);
+}
+
+// ---------
+
+MCIERROR ImportApiWinMM::mciSendStringW(LPCWSTR lpszCommand, LPWSTR lpszReturnString, UINT cchReturn, HANDLE hwndCallback)
+{
+    Initialize();
+
+    if (NULL == importTable.mciSendStringW)
+        LogMissingFunctionCalled(_T("mciSendStringW"));
+
+    return importTable.mciSendStringW(lpszCommand, lpszReturnString, cchReturn, hwndCallback);
+}
+
+// ---------
+
+BOOL ImportApiWinMM::mciSetDriverData(MCIDEVICEID IDDevice, DWORD_PTR data)
+{
+    Initialize();
+
+    if (NULL == importTable.mciSetDriverData)
+        LogMissingFunctionCalled(_T("mciSetDriverData"));
+
+    return importTable.mciSetDriverData(IDDevice, data);
+}
+
+// ---------
+
+UINT ImportApiWinMM::mciSetYieldProc(MCIDEVICEID IDDevice, YIELDPROC yp, DWORD dwYieldData)
+{
+    Initialize();
+
+    if (NULL == importTable.mciSetYieldProc)
+        LogMissingFunctionCalled(_T("mciSetYieldProc"));
+
+    return importTable.mciSetYieldProc(IDDevice, yp, dwYieldData);
 }
 
 // ---------
