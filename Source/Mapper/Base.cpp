@@ -415,6 +415,7 @@ LONG Base::InvertAxisValue(LONG originalValue, LONG rangeMin, LONG rangeMax)
 
 void Base::MapInstanceAndOffset(TInstance instance, DWORD offset)
 {
+    Log::WriteFormattedLogMessage(ELogLevel::LogLevelDebug, _T("Mapping instance (type=%lld, index=%lld) to data format offset %d."), (int64_t)ExtractIdentifierInstanceType(instance), (int64_t)ExtractIdentifierInstanceIndex(instance), offset);
     instanceToOffset.insert({instance, offset});
     offsetToInstance.insert({offset, instance});
 }

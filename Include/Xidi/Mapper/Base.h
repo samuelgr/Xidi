@@ -43,11 +43,11 @@ namespace Xidi
         /// Enumerates supported types of elements to be the targets of mapping.
         enum EInstanceType : TInstanceType
         {
-            InstanceTypeAxis                    = 0,                        ///< Specifies an axis.
-            InstanceTypePov                     = 1,                        ///< Specifies a point-of-view controller.
-            InstanceTypeButton                  = 2,                        ///< Specifies a button.
+            InstanceTypeAxis,                                               ///< Specifies an axis.
+            InstanceTypePov,                                                ///< Specifies a point-of-view controller.
+            InstanceTypeButton,                                             ///< Specifies a button.
             
-            InstanceTypeCount                   = 3                         ///< Sentinel value.
+            InstanceTypeCount                                               ///< Sentinel value.
         };
 
         /// Holds all properties required to configure an axis (range, deadzone, and saturation).
