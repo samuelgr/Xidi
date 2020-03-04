@@ -19,10 +19,63 @@
 using namespace Xidi;
 
 
+
 // -------- MACROS --------------------------------------------------------- //
 
 /// Logs a DirectInput interface method invocation.
-#define LOG_INVOCATION(player, result)      Log::WriteFormattedLogMessage(ELogLevel::LogLevelDebug, _T("Invoked %s on XInput player %u, result = 0x%08x."), XIDI_LOG_FORMATTED_FUNCTION_NAME, player, result);
+#define LOG_INVOCATION(player, result)      Log::WriteFormattedLogMessage(ELogLevel::LogLevelInfo, _T("Invoked %s on XInput player %u, result = 0x%08x."), XIDI_LOG_FORMATTED_FUNCTION_NAME, player, result);
+
+
+// -------- INTERNAL FUNCTIONS --------------------------------------------- //
+
+/// Compares the specified GUID with the known list of property GUIDs.
+/// Returns a string that represents the specified GUID.
+/// @param [in] pguid GUID to check.
+/// @return String representation of the GUID's semantics, even if unknown.
+static const TCHAR* StringFromPropertyUniqueIdentifier(REFGUID rguidProp)
+{
+#if DIRECTINPUT_VERSION >= 0x0800
+    if (&DIPROP_APPDATA == &rguidProp)
+        return _T("DIPROP_APPDATA");
+    if (&DIPROP_CPOINTS == &rguidProp)
+        return _T("DIPROP_CPOINTS");
+    if (&DIPROP_KEYNAME == &rguidProp)
+        return _T("DIPROP_KEYNAME");
+    if (&DIPROP_SCANCODE == &rguidProp)
+        return _T("DIPROP_SCANCODE");
+    if (&DIPROP_TYPENAME == &rguidProp)
+        return _T("DIPROP_TYPENAME");
+    if (&DIPROP_USERNAME == &rguidProp)
+        return _T("DIPROP_USERNAME");
+    if (&DIPROP_VIDPID == &rguidProp)
+        return _T("DIPROP_VIDPID");
+#endif
+
+    if (&DIPROP_AUTOCENTER == &rguidProp)
+        return _T("DIPROP_AUTOCENTER");
+    if (&DIPROP_AXISMODE == &rguidProp)
+        return _T("DIPROP_AXISMODE");
+    if (&DIPROP_BUFFERSIZE == &rguidProp)
+        return _T("DIPROP_BUFFERSIZE");
+    if (&DIPROP_CALIBRATION == &rguidProp)
+        return _T("DIPROP_CALIBRATION");
+    if (&DIPROP_CALIBRATIONMODE == &rguidProp)
+        return _T("DIPROP_CALIBRATIONMODE");
+    if (&DIPROP_DEADZONE == &rguidProp)
+        return _T("DIPROP_DEADZONE");
+    if (&DIPROP_FFGAIN == &rguidProp)
+        return _T("DIPROP_FFGAIN");
+    if (&DIPROP_INSTANCENAME == &rguidProp)
+        return _T("DIPROP_INSTANCENAME");
+    if (&DIPROP_PRODUCTNAME == &rguidProp)
+        return _T("DIPROP_PRODUCTNAME");
+    if (&DIPROP_RANGE == &rguidProp)
+        return _T("DIPROP_RANGE");
+    if (&DIPROP_SATURATION == &rguidProp)
+        return _T("DIPROP_SATURATION");
+
+    return _T("(unknown)");
+}
 
 
 // -------- CONSTRUCTION AND DESTRUCTION ----------------------------------- //
@@ -298,6 +351,8 @@ HRESULT STDMETHODCALLTYPE VirtualDirectInputDevice::GetProperty(REFGUID rguidPro
 {
     HRESULT result = DI_OK;
 
+    Log::WriteFormattedLogMessage(ELogLevel::LogLevelDebug, _T("Received a request to GET property %s, handled by the %s."), StringFromPropertyUniqueIdentifier(rguidProp), (mapper->IsPropertyHandledByMapper(rguidProp) ? _T("MAPPER") : _T("CONTROLLER")));
+
     if (mapper->IsPropertyHandledByMapper(rguidProp))
         result = mapper->GetMappedProperty(rguidProp, pdiph);
     else
@@ -399,6 +454,8 @@ HRESULT STDMETHODCALLTYPE VirtualDirectInputDevice::SetEventNotification(HANDLE 
 HRESULT STDMETHODCALLTYPE VirtualDirectInputDevice::SetProperty(REFGUID rguidProp, LPCDIPROPHEADER pdiph)
 {
     HRESULT result = DI_OK;
+
+    Log::WriteFormattedLogMessage(ELogLevel::LogLevelDebug, _T("Received a request to SET property %s, handled by the %s."), StringFromPropertyUniqueIdentifier(rguidProp), (mapper->IsPropertyHandledByMapper(rguidProp) ? _T("MAPPER") : _T("CONTROLLER")));
     
     if (mapper->IsPropertyHandledByMapper(rguidProp))
         result = mapper->SetMappedProperty(rguidProp, pdiph);

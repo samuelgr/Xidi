@@ -12,6 +12,7 @@
 
 #include "ApiDirectInput.h"
 #include "Globals.h"
+#include "Log.h"
 #include "Mapper/Base.h"
 
 #include <unordered_set>
@@ -19,6 +20,101 @@
 
 using namespace Xidi;
 using namespace Xidi::Mapper;
+
+
+// -------- INTERNAL FUNCTIONS --------------------------------------------- //
+
+/// Compares the specified GUID with the known list of object unique identifiers.
+/// Returns a string that represents the specified GUID.
+/// @param [in] pguid GUID to check.
+/// @return String representation of the GUID's semantics, even if unknown.
+static const TCHAR* DataFormatStringFromObjectUniqueIdentifier(const GUID* pguid)
+{
+    if (NULL == pguid)
+        return _T("(any)");
+    if (GUID_XAxis == *pguid)
+        return _T("X Axis");
+    if (GUID_YAxis == *pguid)
+        return _T("Y Axis");
+    if (GUID_ZAxis == *pguid)
+        return _T("Z Axis");
+    if (GUID_RxAxis == *pguid)
+        return _T("RotX Axis");
+    if (GUID_RyAxis == *pguid)
+        return _T("RotY Axis");
+    if (GUID_RzAxis == *pguid)
+        return _T("RotZ Axis");
+    if (GUID_Slider == *pguid)
+        return _T("Slider");
+    if (GUID_Button == *pguid)
+        return _T("Button");
+    if (GUID_Key == *pguid)
+        return _T("Key");
+    if (GUID_POV == *pguid)
+        return _T("POV");
+    if (GUID_Unknown == *pguid)
+        return _T("Unknown from GUID");
+
+    return _T("(unknown)");
+}
+
+/// Dumps a data format definition to the log.
+/// Intended as a debugging aid.
+static void DumpDataFormatToLog(LPCDIDATAFORMAT lpdf)
+{
+    Log::WriteLogMessage(ELogLevel::LogLevelDebug, _T("Begin dump of data format."));
+    
+    // First, dump the top-level structure members along with some preliminary validity checks.
+    Log::WriteLogMessage(ELogLevel::LogLevelDebug, _T("  Metadata:"));
+    Log::WriteFormattedLogMessage(ELogLevel::LogLevelDebug, _T("    dwSize = %d (%s; expected %d)"), lpdf->dwSize, (sizeof(DIDATAFORMAT) == lpdf->dwSize ? _T("OK") : _T("INCORRECT")), sizeof(DIDATAFORMAT));
+    Log::WriteFormattedLogMessage(ELogLevel::LogLevelDebug, _T("    dwObjSize = %d (%s; expected %d)"), lpdf->dwObjSize, (sizeof(DIOBJECTDATAFORMAT) == lpdf->dwObjSize ? _T("OK") : _T("INCORRECT")), sizeof(DIOBJECTDATAFORMAT));
+    Log::WriteFormattedLogMessage(ELogLevel::LogLevelDebug, _T("    dwFlags = 0x%x (%s)"), lpdf->dwFlags, (DIDF_ABSAXIS == lpdf->dwFlags ? _T("DIDF_ABSAXIS") : (DIDF_RELAXIS == lpdf->dwFlags ? _T("DIDF_RELAXIS") : _T("UNKNOWN VALUE"))));
+    Log::WriteFormattedLogMessage(ELogLevel::LogLevelDebug, _T("    dwDataSize = %d (%s)"), lpdf->dwDataSize, (0 == lpdf->dwDataSize % 4 ? _T("POSSIBLY OK; is a multiple of 4") : _T("INCORRECT; must be a multiple of 4")));
+    Log::WriteFormattedLogMessage(ELogLevel::LogLevelDebug, _T("    dwNumObjs = %d"), lpdf->dwNumObjs);
+
+    // Second, dump the individual objects.
+    Log::WriteLogMessage(ELogLevel::LogLevelDebug, _T("  Objects:"));
+    for (DWORD i = 0; i < lpdf->dwNumObjs; ++i)
+    {
+        Log::WriteFormattedLogMessage(ELogLevel::LogLevelDebug, _T("    rgodf[%3d]: { pguid = %s, dwOfs = %d, dwType = 0x%x, dwFlags = 0x%x }"), i, DataFormatStringFromObjectUniqueIdentifier(lpdf->rgodf[i].pguid), lpdf->rgodf[i].dwOfs, lpdf->rgodf[i].dwType, lpdf->rgodf[i].dwFlags);
+    }
+    
+    Log::WriteLogMessage(ELogLevel::LogLevelDebug, _T("End dump of data format."));
+}
+
+/// Compares the specified value to the possible values for the dwHow member of a property header.
+/// Returns a string representation.
+/// @param [in] dwHow Value to check.
+/// @return String representation of the identification method, even if unknown.
+static TCHAR* PropertyStringFromIdentificationMethod(DWORD dwHow)
+{
+    if (DIPH_DEVICE == dwHow)
+        return _T("DIPH_DEVICE");
+    if (DIPH_BYOFFSET == dwHow)
+        return _T("DIPH_BYOFFSET");
+    if (DIPH_BYUSAGE == dwHow)
+        return _T("DIPH_BYUSAGE");
+    if (DIPH_BYID == dwHow)
+        return _T("DIPH_BYID");
+
+    return _T("(unknown)");
+}
+
+/// Dumps the top-level members of a property request (either get or set).
+/// @param [in] pdiph Pointer to the property header.
+static void DumpPropertyHeaderToLog(LPCDIPROPHEADER pdiph)
+{
+    Log::WriteLogMessage(ELogLevel::LogLevelDebug, _T("Begin dump of property request header."));
+
+    Log::WriteFormattedLogMessage(ELogLevel::LogLevelDebug, _T("    dwSize = %d"), pdiph->dwSize);
+    Log::WriteFormattedLogMessage(ELogLevel::LogLevelDebug, _T("    dwHeaderSize = %d (%s; expected %d)"), pdiph->dwHeaderSize, (sizeof(DIPROPHEADER) == pdiph->dwHeaderSize ? _T("OK") : _T("INCORRECT")), sizeof(DIPROPHEADER));
+    Log::WriteFormattedLogMessage(ELogLevel::LogLevelDebug, _T("    dwObj = %d (%s)"), pdiph->dwObj, (DIPH_DEVICE != pdiph->dwHow || 0 == pdiph->dwObj ? _T("POSSIBLY OK") : _T("INCORRECT; must be 0 in this case")));
+    Log::WriteFormattedLogMessage(ELogLevel::LogLevelDebug, _T("    dwHow = %d (%s)"), pdiph->dwHow, PropertyStringFromIdentificationMethod(pdiph->dwHow));
+
+    Log::WriteLogMessage(ELogLevel::LogLevelDebug, _T("End dump of property request header."));
+}
+
+
 
 
 // -------- CONSTRUCTION AND DESTRUCTION ----------------------------------- //
@@ -540,6 +636,12 @@ HRESULT Base::GetMappedObjectInfo(BOOL useUnicode, LPDIDEVICEOBJECTINSTANCE pdid
 
 HRESULT Base::GetMappedProperty(REFGUID rguidProp, LPDIPROPHEADER pdiph)
 {
+    if (Log::WillOutputLogMessageOfSeverity(ELogLevel::LogLevelDebug))
+    {
+        Log::WriteLogMessage(ELogLevel::LogLevelDebug, _T("Attempting to get a property."));
+        DumpPropertyHeaderToLog(pdiph);
+    }
+    
     // Lazily initialize the axis properties (this is idempotent).
     InitializeAxisProperties();
     
@@ -686,6 +788,12 @@ LONG Base::OffsetForXInputControllerElement(EXInputControllerElement xElement)
 
 HRESULT Base::SetApplicationDataFormat(LPCDIDATAFORMAT lpdf)
 {
+    if (Log::WillOutputLogMessageOfSeverity(ELogLevel::LogLevelDebug))
+    {
+        Log::WriteLogMessage(ELogLevel::LogLevelDebug, _T("Attempting to set application's requested data format."));
+        DumpDataFormatToLog(lpdf);
+    }
+    
     // Initialize the maps.
     ResetApplicationDataFormat();
     
@@ -931,6 +1039,12 @@ HRESULT Base::SetApplicationDataFormat(LPCDIDATAFORMAT lpdf)
 
 HRESULT Base::SetMappedProperty(REFGUID rguidProp, LPCDIPROPHEADER pdiph)
 {
+    if (Log::WillOutputLogMessageOfSeverity(ELogLevel::LogLevelDebug))
+    {
+        Log::WriteLogMessage(ELogLevel::LogLevelDebug, _T("Attempting to set a property."));
+        DumpPropertyHeaderToLog(pdiph);
+    }
+    
     // Lazily initialize the axis properties (this is idempotent).
     InitializeAxisProperties();
 
@@ -949,8 +1063,14 @@ HRESULT Base::SetMappedProperty(REFGUID rguidProp, LPCDIPROPHEADER pdiph)
     // Branch based on the property requested.
     if (&DIPROP_AXISMODE == &rguidProp)
     {
-        // Axis mode is easy: it is read-only, so just reject it.
-        return DIERR_UNSUPPORTED;
+        // Axis mode is easy: only absolute is supported.
+        switch (((LPDIPROPDWORD)pdiph)->dwData)
+        {
+        case DIPROPAXISMODE_ABS:
+            return DI_PROPNOEFFECT;
+        default:
+            return DIERR_UNSUPPORTED;
+        }
     }
     else if (&DIPROP_DEADZONE == &rguidProp || &DIPROP_SATURATION == &rguidProp || &DIPROP_RANGE == &rguidProp)
     {

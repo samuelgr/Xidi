@@ -32,7 +32,7 @@ using namespace Xidi;
 // -------- MACROS --------------------------------------------------------- //
 
 /// Logs a WinMM device-specific function invocation.
-#define LOG_INVOCATION(joyID, result)       Log::WriteFormattedLogMessage(ELogLevel::LogLevelDebug, _T("Invoked %s on device %d, result = %u."), XIDI_LOG_FORMATTED_FUNCTION_NAME, joyID, result);
+#define LOG_INVOCATION(joyID, result)       Log::WriteFormattedLogMessage(ELogLevel::LogLevelInfo, _T("Invoked %s on device %d, result = %u."), XIDI_LOG_FORMATTED_FUNCTION_NAME, joyID, result);
 
 /// Logs invocation of an unsupported WinMM operation.
 #define LOG_UNSUPPORTED_OPERATION()         Log::WriteFormattedLogMessage(ELogLevel::LogLevelWarning, _T("Application invoked %s on a Xidi virtual device, which is not supported."), XIDI_LOG_FORMATTED_FUNCTION_NAME);

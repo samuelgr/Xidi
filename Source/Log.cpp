@@ -160,9 +160,16 @@ void Log::SetMinimumSeverity(ELogLevel severity)
 
 // ---------
 
+bool Log::WillOutputLogMessageOfSeverity(ELogLevel severity)
+{
+    return (severity <= GetMinimumSeverity());
+}
+
+// ---------
+
 void Log::WriteFormattedLogMessage(ELogLevel severity, LPCTSTR format, ...)
 {
-    if (ShouldOutputLogMessageOfSeverity(severity))
+    if (WillOutputLogMessageOfSeverity(severity))
     {
         va_list args;
         va_start(args, format);
@@ -177,7 +184,7 @@ void Log::WriteFormattedLogMessage(ELogLevel severity, LPCTSTR format, ...)
 
 void Log::WriteLogMessage(ELogLevel severity, LPCTSTR message)
 {
-    if (ShouldOutputLogMessageOfSeverity(severity))
+    if (WillOutputLogMessageOfSeverity(severity))
         LogLineOutputString(severity, message);
 }
 
@@ -291,11 +298,4 @@ void Log::OutputStamp(ELogLevel severity)
 
     // Stamp part 6: close round bracket and space to the actual message
     OutputText(_T(") "));
-}
-
-// ---------
-
-bool Log::ShouldOutputLogMessageOfSeverity(ELogLevel severity)
-{
-    return (severity <= GetMinimumSeverity());
 }

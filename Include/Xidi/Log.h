@@ -96,6 +96,12 @@ namespace Xidi
         /// @param [in] Severity to set.
         static void SetMinimumSeverity(ELogLevel severity);
         
+        /// Determines if a message of the specified severity should be output to the log.
+        /// Compares the supplied severity level to the configured minimum severity level.
+        /// @param [in] severity Severity to test.
+        /// @return `true` if a message of the specified severity should be written to the log, `false` otherwise.
+        static bool WillOutputLogMessageOfSeverity(ELogLevel severity);
+        
         /// Formats and writes the specified log message to the log, filtering based on specified and configured minimum severity.
         /// Requires a severity, a message string with standard format specifiers, and values to be formatted.
         /// Adds a timestamp to the start of the message and a line break at the end.
@@ -144,11 +150,5 @@ namespace Xidi
         /// Invoked to write the beginning part of each log message line.
         /// @param [in] severity Severity of the stamp to generate.
         static void OutputStamp(ELogLevel severity);
-        
-        /// Determines if a message of the specified severity should be output to the log.
-        /// Compares the supplied severity level to the configured minimum severity level.
-        /// @param [in] severity Severity to test.
-        /// @return `true` if a message of the specified severity should be written to the log, `false` otherwise.
-        static bool ShouldOutputLogMessageOfSeverity(ELogLevel severity);
     };
 }
