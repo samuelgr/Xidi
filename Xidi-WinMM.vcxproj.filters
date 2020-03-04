@@ -81,9 +81,6 @@
     <ClInclude Include="Include\Xidi\ImportApiDirectInput.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="Resources\Xidi-Log.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Source\ControllerIdentification.cpp">
@@ -152,9 +149,6 @@
       <Filter>Resource Files</Filter>
     </ResourceCompile>
     <ResourceCompile Include="Resources\Xidi-WinMM.rc">
-      <Filter>Resource Files</Filter>
-    </ResourceCompile>
-    <ResourceCompile Include="Resources\Xidi-Log.rc">
       <Filter>Resource Files</Filter>
     </ResourceCompile>
   </ItemGroup>

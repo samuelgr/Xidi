@@ -573,82 +573,82 @@ void Configuration::HandleErrorCannotOpenConfigurationFile(LPCTSTR filename)
 
 void Configuration::HandleErrorCannotParseConfigurationFileLine(LPCTSTR filename, const DWORD linenum)
 {
-    Log::WriteFormattedLogMessageFromResource(ELogLevel::LogLevelError, IDS_XIDI_CONFIGURATION_FILE_ERROR_CANNOT_PARSE_LINE_FORMAT, linenum, filename);
+    Log::WriteFormattedLogMessage(ELogLevel::LogLevelError, _T("Unable to parse line %u of configuration file \"%s\"."), linenum, filename);
 }
 
 // ---------
 
 void Configuration::HandleErrorDuplicateConfigurationSection(LPCTSTR filename, LPCTSTR section)
 {
-    Log::WriteFormattedLogMessageFromResource(ELogLevel::LogLevelError, IDS_XIDI_CONFIGURATION_FILE_ERROR_DUPLICATED_SECTION_FORMAT, section, filename);
+    Log::WriteFormattedLogMessage(ELogLevel::LogLevelError, _T("Duplicate section \"%s\" in configuration file \"%s\"."), section, filename);
 }
 
 // ---------
 
 void Configuration::HandleErrorUnsupportedConfigurationSection(LPCTSTR filename, LPCTSTR section)
 {
-    Log::WriteFormattedLogMessageFromResource(ELogLevel::LogLevelError, IDS_XIDI_CONFIGURATION_FILE_ERROR_UNSUPPORTED_SECTION_FORMAT, section, filename);
+    Log::WriteFormattedLogMessage(ELogLevel::LogLevelError, _T("Unsupported section \"%s\" in configuration file \"%s\"."), section, filename);
 }
 
 // ---------
 
 void Configuration::HandleErrorLineTooLong(LPCTSTR filename, const DWORD linenum)
 {
-    Log::WriteFormattedLogMessageFromResource(ELogLevel::LogLevelError, IDS_XIDI_CONFIGURATION_FILE_ERROR_LINE_TOO_LONG_FORMAT, linenum, filename);
+    Log::WriteFormattedLogMessage(ELogLevel::LogLevelError, _T("Line %u is too long in configuration file \"%s\"."), linenum, filename);
 }
 
 // ---------
 
 void Configuration::HandleErrorValueOutsideSection(LPCTSTR filename, const DWORD linenum)
 {
-    Log::WriteFormattedLogMessageFromResource(ELogLevel::LogLevelWarning, IDS_XIDI_CONFIGURATION_FILE_ERROR_VALUE_WITHOUT_SECTION_FORMAT, linenum, filename);
+    Log::WriteFormattedLogMessage(ELogLevel::LogLevelWarning, _T("Value at line %u specified outside of a section in configuration file \"%s\"."), linenum, filename);
 }
 
 // ---------
 
 void Configuration::HandleErrorDuplicateValue(LPCTSTR filename, const DWORD linenum, LPCTSTR section, LPCTSTR value)
 {
-    Log::WriteFormattedLogMessageFromResource(ELogLevel::LogLevelWarning, IDS_XIDI_CONFIGURATION_FILE_ERROR_DUPLICATE_VALUE_FORMAT, value, section, linenum, filename);
+    Log::WriteFormattedLogMessage(ELogLevel::LogLevelWarning, _T("Duplicate value \"%s\" in section \"%s\" on line %u of configuration file \"%s\"."), value, section, linenum, filename);
 }
 
 // ---------
 
 void Configuration::HandleErrorMalformedValue(LPCTSTR filename, const DWORD linenum, LPCTSTR section, LPCTSTR value)
 {
-    Log::WriteFormattedLogMessageFromResource(ELogLevel::LogLevelWarning, IDS_XIDI_CONFIGURATION_FILE_ERROR_MALFORMED_VALUE_FORMAT, value, section, linenum, filename);
+    Log::WriteFormattedLogMessage(ELogLevel::LogLevelWarning, _T("Malformed setting for value \"%s\" in section \"%s\" on line %u of configuration file \"%s\"."), value, section, linenum, filename);
 }
 
 // ---------
 
 void Configuration::HandleErrorUnsupportedValue(LPCTSTR filename, const DWORD linenum, LPCTSTR section, LPCTSTR value)
 {
-    Log::WriteFormattedLogMessageFromResource(ELogLevel::LogLevelWarning, IDS_XIDI_CONFIGURATION_FILE_ERROR_UNSUPPORTED_VALUE_FORMAT, value, section, linenum, filename);
+    Log::WriteFormattedLogMessage(ELogLevel::LogLevelWarning, _T("Unsupported value \"%s\" in section \"%s\" on line %u of configuration file \"%s\"."), value, section, linenum, filename);
 }
 
 // ---------
 
 void Configuration::HandleErrorCannotApplyValue(LPCTSTR filename, const DWORD linenum, LPCTSTR setting, LPCTSTR section, LPCTSTR value)
 {
-    Log::WriteFormattedLogMessageFromResource(ELogLevel::LogLevelWarning, IDS_XIDI_CONFIGURATION_FILE_ERROR_CANNOT_APPLY_VALUE_FORMAT, setting, value, section, linenum, filename);
+    Log::WriteFormattedLogMessage(ELogLevel::LogLevelWarning, _T("Cannot apply setting \"%s\" for value \"%s\" in section \"%s\" on line %u of configuration file \"%s\"."), setting, value, section, linenum, filename);
 }
 
 // ---------
 
 void Configuration::HandleErrorFileIO(LPCTSTR filename)
 {
-    Log::WriteFormattedLogMessageFromResource(ELogLevel::LogLevelError, IDS_XIDI_CONFIGURATION_FILE_ERROR_IO_FORMAT, filename);
+    Log::WriteFormattedLogMessage(ELogLevel::LogLevelError, _T("I/O error while attempting to read configuration file \"%s\"."), filename);
 }
 
 // ---------
 
 void Configuration::HandleErrorInternal(const DWORD code)
 {
-    Log::WriteFormattedLogMessageFromResource(ELogLevel::LogLevelError, IDS_XIDI_CONFIGURATION_FILE_ERROR_INTERNAL_FORMAT, code);
+    Log::WriteFormattedLogMessage(ELogLevel::LogLevelError, _T("Internal error %u while attempting to read configuration file."), code);
 }
 
 // ---------
 
 void Configuration::HandleSuccessAppliedValue(LPCTSTR filename, const DWORD linenum, LPCTSTR setting, LPCTSTR section, LPCTSTR value)
 {
-    Log::WriteFormattedLogMessageFromResource(ELogLevel::LogLevelInfo, IDS_XIDI_CONFIGURATION_FILE_SUCCESS_APPLY_FORMAT, setting, value, section, linenum, filename);
+    Log::WriteFormattedLogMessage(ELogLevel::LogLevelInfo, _T("Successfully applied setting \"%s\" for value \"%s\" in section \"%s\" on line %u of configuration file \"%s\"."), setting, value, section, linenum, filename);
 }

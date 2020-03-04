@@ -20,6 +20,19 @@
 using namespace Xidi;
 
 
+// -------- INTERNAL CONSTANTS --------------------------------------------- //
+
+/// Buffer size, in characters, for the temporary buffer to hold string messages read using a resource identifier.
+/// When writing log messages using a resource identifier (rather than a raw string), a temporary buffer is created to hold the loaded resource string.
+static const size_t kLogResourceBufferSize = 1024;
+
+/// Suffix for the log file name.
+static const WCHAR kLogFileNameSuffix[] = L".log";
+
+/// Separator string to use within the log file.
+static const TCHAR kLogSeparator[] = _T("-------------------------");
+
+
 // -------- CLASS VARIABLES ------------------------------------------------ //
 // See "Log.h" for documentation.
 
@@ -108,8 +121,7 @@ void Log::InitializeAndCreateLog(void)
         logFilePath += logFileNameBuffer;
         
         // Finally is the suffix.
-        LoadStringW(Globals::GetInstanceHandle(), IDS_XIDI_LOG_FILE_NAME_SUFFIX, logFileNameBuffer, _countof(logFileNameBuffer));
-        logFilePath += logFileNameBuffer;
+        logFilePath += kLogFileNameSuffix;
         
         // Open the log file for writing.
         _wfopen_s(&fileHandle, logFilePath.c_str(), L"w, ccs=UTF-8");
@@ -131,8 +143,7 @@ void Log::InitializeAndCreateLog(void)
         }
 
         // Header part 3: separator
-        LoadString(Globals::GetInstanceHandle(), IDS_XIDI_LOG_FILE_SEPARATOR, logHeaderStringBuffer, _countof(logHeaderStringBuffer));
-        OutputText(logHeaderStringBuffer);
+        OutputText(kLogSeparator);
         OutputText(_T("\n"));
     }
 }
@@ -149,7 +160,7 @@ void Log::SetMinimumSeverity(ELogLevel severity)
 
 // ---------
 
-void Log::WriteFormattedLogMessage(ELogLevel severity, LPTSTR format, ...)
+void Log::WriteFormattedLogMessage(ELogLevel severity, LPCTSTR format, ...)
 {
     if (ShouldOutputLogMessageOfSeverity(severity))
     {
@@ -164,43 +175,10 @@ void Log::WriteFormattedLogMessage(ELogLevel severity, LPTSTR format, ...)
 
 // ---------
 
-void Log::WriteLogMessage(ELogLevel severity, LPTSTR message)
+void Log::WriteLogMessage(ELogLevel severity, LPCTSTR message)
 {
     if (ShouldOutputLogMessageOfSeverity(severity))
         LogLineOutputString(severity, message);
-}
-
-// ---------
-
-void Log::WriteFormattedLogMessageFromResource(ELogLevel severity, unsigned int resourceIdentifier, ...)
-{
-    if (ShouldOutputLogMessageOfSeverity(severity))
-    {
-        TCHAR logMessageFormat[kLogResourceBufferSize];
-        
-        if (0 != LoadString(Globals::GetInstanceHandle(), resourceIdentifier, logMessageFormat, _countof(logMessageFormat)))
-        {
-            va_list args;
-            va_start(args, resourceIdentifier);
-
-            LogLineOutputFormat(severity, logMessageFormat, args);
-
-            va_end(args);
-        }
-    }
-}
-
-// ---------
-
-void Log::WriteLogMessageFromResource(ELogLevel severity, unsigned int resourceIdentifier)
-{
-    if (ShouldOutputLogMessageOfSeverity(severity))
-    {
-        TCHAR logMessage[kLogResourceBufferSize];
-
-        if (0 != LoadString(Globals::GetInstanceHandle(), resourceIdentifier, logMessage, _countof(logMessage)))
-            LogLineOutputString(severity, logMessage);
-    }
 }
 
 
@@ -214,7 +192,7 @@ bool Log::IsLogReady(void)
 
 // ---------
 
-void Log::LogLineOutputString(ELogLevel severity, LPTSTR message)
+void Log::LogLineOutputString(ELogLevel severity, LPCTSTR message)
 {
     OutputStamp(severity);
     OutputText(message);
@@ -223,7 +201,7 @@ void Log::LogLineOutputString(ELogLevel severity, LPTSTR message)
 
 // ---------
 
-void Log::LogLineOutputFormat(ELogLevel severity, LPTSTR format, va_list args)
+void Log::LogLineOutputFormat(ELogLevel severity, LPCTSTR format, va_list args)
 {
     OutputStamp(severity);
     OutputFormattedText(format, args);
@@ -232,7 +210,7 @@ void Log::LogLineOutputFormat(ELogLevel severity, LPTSTR format, va_list args)
 
 // ---------
 
-void Log::OutputFormattedText(LPTSTR format, va_list args)
+void Log::OutputFormattedText(LPCTSTR format, va_list args)
 {
     if (!IsLogReady())
         InitializeAndCreateLog();
@@ -246,7 +224,7 @@ void Log::OutputFormattedText(LPTSTR format, va_list args)
 
 // ---------
 
-void Log::OutputText(LPTSTR message)
+void Log::OutputText(LPCTSTR message)
 {
     if (!IsLogReady())
         InitializeAndCreateLog();
@@ -287,30 +265,29 @@ void Log::OutputStamp(ELogLevel severity)
     switch (severity)
     {
     case ELogLevel::LogLevelForced:
-        LoadString(Globals::GetInstanceHandle(), IDS_XIDI_LOG_SEVERITY_FORCED, stampStringBuffer, _countof(stampStringBuffer));
+        OutputText(_T("F"));
         break;
 
     case ELogLevel::LogLevelError:
-        LoadString(Globals::GetInstanceHandle(), IDS_XIDI_LOG_SEVERITY_ERROR, stampStringBuffer, _countof(stampStringBuffer));
+        OutputText(_T("E"));
         break;
 
     case ELogLevel::LogLevelWarning:
-        LoadString(Globals::GetInstanceHandle(), IDS_XIDI_LOG_SEVERITY_WARNING, stampStringBuffer, _countof(stampStringBuffer));
+        OutputText(_T("W"));
         break;
     
     case ELogLevel::LogLevelInfo:
-        LoadString(Globals::GetInstanceHandle(), IDS_XIDI_LOG_SEVERITY_INFO, stampStringBuffer, _countof(stampStringBuffer));
+        OutputText(_T("I"));
         break;
 
     case ELogLevel::LogLevelDebug:
-        LoadString(Globals::GetInstanceHandle(), IDS_XIDI_LOG_SEVERITY_DEBUG, stampStringBuffer, _countof(stampStringBuffer));
+        OutputText(_T("D"));
         break;
 
     default:
-        LoadString(Globals::GetInstanceHandle(), IDS_XIDI_LOG_SEVERITY_UNKNOWN, stampStringBuffer, _countof(stampStringBuffer));
+        OutputText(_T("U"));
         break;
     }
-    OutputText(stampStringBuffer);
 
     // Stamp part 6: close round bracket and space to the actual message
     OutputText(_T(") "));

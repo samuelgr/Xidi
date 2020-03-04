@@ -25,20 +25,20 @@ using namespace Xidi;
 /// @param [in] receivedVersion Actual version received.
 inline static void LogVersionOutOfRange(DWORD minVersion, DWORD maxVersion, DWORD receivedVersion)
 {
-    Log::WriteFormattedLogMessageFromResource(ELogLevel::LogLevelError, IDS_XIDI_EXPORTAPIDIRECTINPUT_CREATE_FAILED_VERSION_FORMAT, minVersion, maxVersion, receivedVersion);
+    Log::WriteFormattedLogMessage(ELogLevel::LogLevelError, _T("Failed to create a DirectInput interface object because the version is out of range (expected 0x%04x to 0x%04x, got 0x%04x)."), minVersion, maxVersion, receivedVersion);
 }
 
 /// Logs an error event indicating that an instance of IDirectInput(8) could not be created due to an error having been returned by the system.
 /// @param [in] errorCode Error code returned by the system.
 inline static void LogSystemCreateError(HRESULT errorCode)
 {
-    Log::WriteFormattedLogMessageFromResource(ELogLevel::LogLevelError, IDS_XIDI_EXPORTAPIDIRECTINPUT_CREATE_FAILED_SYSTEM_FORMAT, errorCode);
+    Log::WriteFormattedLogMessage(ELogLevel::LogLevelError, _T("Failed to create a DirectInput interface object because the imported function returned code 0x%08x."), errorCode);
 }
 
 /// Logs an informational event indicating that an instance of IDirectInput(8) was created successfully.
 inline static void LogSystemCreateSuccess(void)
 {
-    Log::WriteLogMessageFromResource(ELogLevel::LogLevelInfo, IDS_XIDI_EXPORTAPIDIRECTINPUT_CREATE_SUCCEEDED);
+    Log::WriteLogMessage(ELogLevel::LogLevelInfo, _T("Successfully created a DirectInput interface object."));
 }
 
 

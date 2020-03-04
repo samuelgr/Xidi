@@ -47,13 +47,6 @@ namespace Xidi
     class Log
     {
     private:
-        // -------- CONSTANTS ------------------------------------------------------ //
-        
-        /// Buffer size, in characters, for the temporary buffer to hold string messages read using a resource identifier.
-        /// When writing log messages using a resource identifier (rather than a raw string), a temporary buffer is created to hold the loaded resource string.
-        static const size_t kLogResourceBufferSize = 1024;
-
-        
         // -------- CLASS VARIABLES ------------------------------------------------ //
         
         /// Log file handle. Used to write to the log file.
@@ -108,28 +101,14 @@ namespace Xidi
         /// Adds a timestamp to the start of the message and a line break at the end.
         /// @param [in] severity Severity of the message.
         /// @param [in] format Message string, possibly with format specifiers.
-        static void WriteFormattedLogMessage(ELogLevel severity, LPTSTR format, ...);
-
-        /// Formats and writes the specified log message to the log, filtering based on specified and configured minimum severity.
-        /// Requires a severity, a resource identifier that refers to a string containing standard format specifiers, and values to be formatted.
-        /// Adds a timestamp to the start of the message and a line break at the end.
-        /// @param [in] severity Severity of the message.
-        /// @param [in] resourceIdentifier String resource identifier from which the message string, possibly with format specifiers, should be loaded.
-        static void WriteFormattedLogMessageFromResource(ELogLevel severity, unsigned int resourceIdentifier, ...);
+        static void WriteFormattedLogMessage(ELogLevel severity, LPCTSTR format, ...);
         
         /// Writes the specified log message to the log, filtering based on specified and configured minimum severity.
         /// Requires both a severity and a message string.
         /// Adds a timestamp to the start of the message and a line break at the end.
         /// @param [in] severity Severity of the message.
         /// @param [in] message Message text.
-        static void WriteLogMessage(ELogLevel severity, LPTSTR message);
-
-        /// Writes the specified log message to the log, filtering based on specified and configured minimum severity.
-        /// Requires both a severity and a resource identifier, which identifies the string resource that contains the message to be logged.
-        /// Adds a timestamp to the start of the message and a line break at the end.
-        /// @param [in] severity Severity of the message.
-        /// @param [in] resourceIdentifier String resource identifier from which the message text should be loaded.
-        static void WriteLogMessageFromResource(ELogLevel severity, unsigned int resourceIdentifier);
+        static void WriteLogMessage(ELogLevel severity, LPCTSTR message);
         
         
     private:
@@ -142,24 +121,24 @@ namespace Xidi
         /// Formats and outputs a single log line.
         /// @param [in] severity Severity of the message.
         /// @param [in] message Message text.
-        static void LogLineOutputString(ELogLevel severity, LPTSTR message);
+        static void LogLineOutputString(ELogLevel severity, LPCTSTR message);
 
         /// Formats and outputs a single log line, with support for format specifiers.
         /// @param [in] severity Severity of the message.
         /// @param [in] format Message string, possibly with format specifiers.
         /// @param [in] args Variable-length list of arguments to be used for any format specifiers in the message string.
-        static void LogLineOutputFormat(ELogLevel severity, LPTSTR format, va_list args);
+        static void LogLineOutputFormat(ELogLevel severity, LPCTSTR format, va_list args);
         
         /// Formats and outputs some text to the log.
         /// Will cause lazy initialization of the log if invoked when the log is not yet created or initialized.
         /// @param [in] format Message string, possibly with format specifiers.
         /// @param [in] args Variable-length list of arguments to be used for any format specifiers in the message string.
-        static void OutputFormattedText(LPTSTR format, va_list args);
+        static void OutputFormattedText(LPCTSTR format, va_list args);
         
         /// Outputs some text to the log.
         /// Will cause lazy initialization of the log if invoked when the log is not yet created or initialized.
         /// @param [in] message Message text.
-        static void OutputText(LPTSTR message);
+        static void OutputText(LPCTSTR message);
         
         /// Outputs a log stamp, which includes a date and time plus a severity indicator.
         /// Invoked to write the beginning part of each log message line.

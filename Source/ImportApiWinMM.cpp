@@ -2848,33 +2848,33 @@ MMRESULT ImportApiWinMM::waveOutWrite(HWAVEOUT hwo, LPWAVEHDR pwh, UINT cbwh)
 
 void ImportApiWinMM::LogImportFailed(LPCTSTR functionName)
 {
-    Log::WriteFormattedLogMessageFromResource(ELogLevel::LogLevelWarning, IDS_XIDI_IMPORTAPI_MISSING_FUNCTION_FORMAT, functionName);
+    Log::WriteFormattedLogMessage(ELogLevel::LogLevelWarning, _T("Import library is missing WinMM function \"%s\". Attempts to call it will fail."), functionName);
 }
 
 // --------
 
 void ImportApiWinMM::LogInitializeLibraryPath(LPCTSTR libraryPath)
 {
-    Log::WriteFormattedLogMessageFromResource(ELogLevel::LogLevelDebug, IDS_XIDI_IMPORTAPIWINMM_INIT_PATH_FORMAT, libraryPath);
+    Log::WriteFormattedLogMessage(ELogLevel::LogLevelDebug, _T("Attempting to import WinMM functions from \"%s\"."), libraryPath);
 }
 
 // --------
 
 void ImportApiWinMM::LogInitializeFailed(void)
 {
-    Log::WriteLogMessageFromResource(ELogLevel::LogLevelError, IDS_XIDI_IMPORTAPIWINMM_INIT_FAILED);
+    Log::WriteLogMessage(ELogLevel::LogLevelError, _T("Failed to initialize imported WinMM functions."));
 }
 
 // --------
 
 void ImportApiWinMM::LogInitializeSucceeded(void)
 {
-    Log::WriteFormattedLogMessageFromResource(ELogLevel::LogLevelInfo, IDS_XIDI_IMPORTAPIWINMM_INIT_SUCCEEDED);
+    Log::WriteFormattedLogMessage(ELogLevel::LogLevelInfo, _T("Successfully initialized imported WinMM functions."));
 }
 
 // --------
 
 void ImportApiWinMM::LogMissingFunctionCalled(LPCTSTR functionName)
 {
-    Log::WriteFormattedLogMessageFromResource(ELogLevel::LogLevelError, IDS_XIDI_IMPORTAPI_MISSING_FUNCTION_CALLED_FORMAT, functionName);
+    Log::WriteFormattedLogMessage(ELogLevel::LogLevelError, _T("Application has attempted to call missing WinMM import function \"%s\"."), functionName);
 }

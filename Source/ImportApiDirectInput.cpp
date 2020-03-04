@@ -197,33 +197,33 @@ HRESULT ImportApiDirectInput::DllGetClassObject(REFCLSID rclsid, REFIID riid, LP
 
 void ImportApiDirectInput::LogImportFailed(LPCTSTR functionName)
 {
-    Log::WriteFormattedLogMessageFromResource(ELogLevel::LogLevelWarning, IDS_XIDI_IMPORTAPI_MISSING_FUNCTION_FORMAT, functionName);
+    Log::WriteFormattedLogMessage(ELogLevel::LogLevelWarning, _T("Import library is missing DirectInput function \"%s\". Attempts to call it will fail."), functionName);
 }
 
 // ---------
 
 void ImportApiDirectInput::LogInitializeLibraryPath(LPCTSTR libraryPath)
 {
-    Log::WriteFormattedLogMessageFromResource(ELogLevel::LogLevelDebug, IDS_XIDI_IMPORTAPIDIRECTINPUT_INIT_PATH_FORMAT, libraryPath);
+    Log::WriteFormattedLogMessage(ELogLevel::LogLevelDebug, _T("Attempting to import DirectInput functions from \"%s\"."), libraryPath);
 }
 
 // ---------
 
 void ImportApiDirectInput::LogInitializeFailed(LPCTSTR libraryPath)
 {
-    Log::WriteFormattedLogMessageFromResource(ELogLevel::LogLevelError, IDS_XIDI_IMPORTAPIDIRECTINPUT_INIT_FAILED_FORMAT, libraryPath);
+    Log::WriteFormattedLogMessage(ELogLevel::LogLevelError, _T("Failed to load DirectInput import library \"%s\"."), libraryPath);
 }
 
 // ---------
 
 void ImportApiDirectInput::LogInitializeSucceeded(void)
 {
-    Log::WriteLogMessageFromResource(ELogLevel::LogLevelInfo, IDS_XIDI_IMPORTAPIDIRECTINPUT_INIT_SUCCEEDED);
+    Log::WriteLogMessage(ELogLevel::LogLevelInfo, _T("Successfully initialized imported DirectInput functions."));
 }
 
 // ---------
 
 void ImportApiDirectInput::LogMissingFunctionCalled(LPCTSTR functionName)
 {
-    Log::WriteFormattedLogMessageFromResource(ELogLevel::LogLevelError, IDS_XIDI_IMPORTAPI_MISSING_FUNCTION_CALLED_FORMAT, functionName);
+    Log::WriteFormattedLogMessage(ELogLevel::LogLevelError, _T("Application has attempted to call missing DirectInput import function \"%s\"."), functionName);
 }
