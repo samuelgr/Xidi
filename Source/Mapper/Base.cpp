@@ -120,7 +120,7 @@ static void DumpPropertyHeaderToLog(LPCDIPROPHEADER pdiph)
 // -------- CONSTRUCTION AND DESTRUCTION ----------------------------------- //
 // See "Mapper/Base.h" for documentation.
 
-Base::Base(void) : axisProperties(NULL), cachedValueXInputLT(XInputController::kTriggerNeutral), cachedValueXInputRT(XInputController::kTriggerNeutral), dataPacketSize(0), instanceToOffset(), mapsValid(FALSE), offsetToInstance(), povOffsetsToInitialize() {}
+Base::Base(void) : axisProperties(NULL), cachedValueXInputLT(XInputController::kTriggerNeutral), cachedValueXInputRT(XInputController::kTriggerNeutral), dataPacketSize(0), instanceToOffset(), mapsValid(FALSE), offsetToInstance(), axisOffsetsUnused(), buttonOffsetsUnused(), povOffsetsUnused() {}
 
 // ---------
 
@@ -841,12 +841,12 @@ HRESULT Base::SetApplicationDataFormat(LPCDIDATAFORMAT lpdf)
         const BOOL allowAnyInstance = ((dataFormat->dwType & DIDFT_INSTANCEMASK) == DIDFT_ANYINSTANCE);
         const TInstanceIdx specificInstance = (TInstanceIdx)DIDFT_GETINSTANCE(dataFormat->dwType);
 
-        if ((dataFormat->dwType & DIDFT_ABSAXIS) && (nextUnusedAxis < numAxes))
+        if (dataFormat->dwType & DIDFT_ABSAXIS)
         {
             // Pick an axis
 
             // First check the offsets for overlap with something previously selected and for sufficient space in the data packet.
-            if (!(dataFormat->dwOfs + SizeofInstance(EInstanceType::InstanceTypeAxis) < lpdf->dwDataSize) || FALSE == CheckAndSetOffsets(&offsetUsed[dataFormat->dwOfs], SizeofInstance(EInstanceType::InstanceTypeAxis)))
+            if (!(dataFormat->dwOfs + SizeofInstance(EInstanceType::InstanceTypeAxis) <= lpdf->dwDataSize) || FALSE == CheckAndSetOffsets(&offsetUsed[dataFormat->dwOfs], SizeofInstance(EInstanceType::InstanceTypeAxis)))
                 invalidParamsDetected = TRUE;
             else
             {
@@ -856,6 +856,90 @@ HRESULT Base::SetApplicationDataFormat(LPCDIDATAFORMAT lpdf)
 
                     const TInstanceIdx instanceToSelect = allowAnyInstance ? nextUnusedAxis : specificInstance;
                     const TInstance selectedInstance = SelectInstance(EInstanceType::InstanceTypeAxis, axisUsed, numAxes, instanceToSelect);
+
+                    if (selectedInstance >= 0)
+                    {
+                        // Instance was selected successfully, add a mapping.
+                        MapInstanceAndOffset(selectedInstance, dataFormat->dwOfs);
+                    }
+                    else if (!allowAnyInstance)
+                    {
+                        // Instance was unable to be selected, and a specific instance was specified, so this is an error.
+                        invalidParamsDetected = TRUE;
+                    }
+                    else
+                    {
+                        // Instance was unable to be selected, and any instance was allowed.
+                        // This is okay, it just means the application data format has field for an axis that does not actually exist on the controller.
+                        Log::WriteFormattedLogMessage(ELogLevel::LogLevelDebug, _T("Any axis type allowed; mapping unused axis at offset %d."), dataFormat->dwOfs);
+                        axisOffsetsUnused.insert(dataFormat->dwOfs);
+                    }
+                }
+                else
+                {
+                    // Specific axis type required.
+
+                    if (allowAnyInstance)
+                    {
+                        // Any instance allowed, so find the first of this type that is unused, if any.
+                        TInstanceIdx instanceIndex = 0;
+                        TInstanceIdx axisIndex = AxisInstanceIndex(*dataFormat->pguid, instanceIndex++);
+                        TInstance selectedInstance = SelectInstance(EInstanceType::InstanceTypeAxis, axisUsed, numAxes, axisIndex);
+
+                        while (selectedInstance < 0 && axisIndex >= 0)
+                        {
+                            axisIndex = AxisInstanceIndex(*dataFormat->pguid, instanceIndex++);
+                            selectedInstance = SelectInstance(EInstanceType::InstanceTypeAxis, axisUsed, numAxes, axisIndex);
+                        }
+
+                        if (selectedInstance >= 0)
+                        {
+                            // Unused instance found, create a mapping.
+                            MapInstanceAndOffset(MakeInstanceIdentifier(EInstanceType::InstanceTypeAxis, axisIndex), dataFormat->dwOfs);
+                        }
+                        else
+                        {
+                            // No more unused instances of the requested axis type exist.
+                            // This is okay, it just means the application data format has a field for an axis that does not actually exist on the controller.
+                            Log::WriteFormattedLogMessage(ELogLevel::LogLevelDebug, _T("Specific axis type required; mapping unused axis at offset %d."), dataFormat->dwOfs);
+                            axisOffsetsUnused.insert(dataFormat->dwOfs);
+                        }
+                    }
+                    else
+                    {
+                        // Specific instance required, so check if it is available and select it if so.
+                        TInstanceIdx axisIndex = AxisInstanceIndex(*dataFormat->pguid, specificInstance);
+                        TInstance axisInstance = SelectInstance(EInstanceType::InstanceTypeAxis, axisUsed, numAxes, axisIndex);
+
+                        if (axisInstance >= 0)
+                        {
+                            // Instance was selected successfully, add a mapping.
+                            MapInstanceAndOffset(axisInstance, dataFormat->dwOfs);
+                        }
+                        else
+                        {
+                            // Axis unavailable, this is an error.
+                            invalidParamsDetected = TRUE;
+                        }
+                    }
+                }
+            }
+        }
+        else if (dataFormat->dwType & DIDFT_PSHBUTTON)
+        {
+            // Pick a button.
+
+            // First check the offsets for overlap with something previously selected and for sufficient space in the data packet.
+            if (!(dataFormat->dwOfs + SizeofInstance(EInstanceType::InstanceTypeButton) <= lpdf->dwDataSize) || FALSE == CheckAndSetOffsets(&offsetUsed[dataFormat->dwOfs], SizeofInstance(EInstanceType::InstanceTypeButton)))
+                invalidParamsDetected = TRUE;
+            else
+            {
+                if (NULL == dataFormat->pguid || GUID_Button == *dataFormat->pguid)
+                {
+                    // Type unspecified or specified as a button.
+
+                    const TInstanceIdx instanceToSelect = allowAnyInstance ? nextUnusedButton : specificInstance;
+                    const TInstance selectedInstance = SelectInstance(EInstanceType::InstanceTypeButton, buttonUsed, numButtons, instanceToSelect);
 
                     if (selectedInstance > 0)
                     {
@@ -867,145 +951,65 @@ HRESULT Base::SetApplicationDataFormat(LPCDIDATAFORMAT lpdf)
                         // Instance was unable to be selected, and a specific instance was specified, so this is an error.
                         invalidParamsDetected = TRUE;
                     }
+                    else
+                    {
+                        // Instance was unable to be selected, and any instance was allowed.
+                        // This is okay, it just means the application data format has field for a button that does not actually exist on the controller.
+                        Log::WriteFormattedLogMessage(ELogLevel::LogLevelDebug, _T("Mapping unused button at offset %d."), dataFormat->dwOfs);
+                        buttonOffsetsUnused.insert(dataFormat->dwOfs);
+                    }
                 }
                 else
                 {
-                    // Specific axis type required.
-
-                    if (0 != AxisTypeCount(*dataFormat->pguid))
-                    {
-                        // Axis type exists in the mapping.
-
-                        if (allowAnyInstance)
-                        {
-                            // Any instance allowed, so find the first of this type that is unused, if any.
-                            TInstanceIdx instanceIndex = 0;
-                            TInstanceIdx axisIndex = AxisInstanceIndex(*dataFormat->pguid, instanceIndex++);
-                            TInstance selectedInstance = SelectInstance(EInstanceType::InstanceTypeAxis, axisUsed, numAxes, axisIndex);
-
-                            while (selectedInstance < 0 && axisIndex >= 0)
-                            {
-                                axisIndex = AxisInstanceIndex(*dataFormat->pguid, instanceIndex++);
-                                selectedInstance = SelectInstance(EInstanceType::InstanceTypeAxis, axisUsed, numAxes, axisIndex);
-                            }
-
-                            if (selectedInstance >= 0)
-                            {
-                                // Unused instance found, create a mapping.
-                                MapInstanceAndOffset(MakeInstanceIdentifier(EInstanceType::InstanceTypeAxis, axisIndex), dataFormat->dwOfs);
-                            }
-                        }
-                        else
-                        {
-                            // Specific instance required, so check if it is available and select it if so.
-                            TInstanceIdx axisIndex = AxisInstanceIndex(*dataFormat->pguid, specificInstance);
-                            TInstance axisInstance = SelectInstance(EInstanceType::InstanceTypeAxis, axisUsed, numAxes, axisIndex);
-
-                            if (axisInstance >= 0)
-                            {
-                                // Instance was selected successfully, add a mapping.
-                                MapInstanceAndOffset(axisInstance, dataFormat->dwOfs);
-                            }
-                            else
-                            {
-                                // Axis unavailable, this is an error.
-                                invalidParamsDetected = TRUE;
-                            }
-                        }
-                    }
-                    else
-                    {
-                        // Axis type does not exist in the mapping.
-
-                        if (!allowAnyInstance)
-                        {
-                            // Specified an instance of a non-existant axis, this is an error.
-                            invalidParamsDetected = TRUE;
-                        }
-                    }
-                }
-            }
-        }
-        else if ((dataFormat->dwType & DIDFT_PSHBUTTON) && (nextUnusedButton < numButtons))
-        {
-            // Pick a button.
-
-            if (NULL == dataFormat->pguid || GUID_Button == *dataFormat->pguid)
-            {
-                // Type unspecified or specified as a button.
-
-                const TInstanceIdx instanceToSelect = allowAnyInstance ? nextUnusedButton : specificInstance;
-                const TInstance selectedInstance = SelectInstance(EInstanceType::InstanceTypeButton, buttonUsed, numButtons, instanceToSelect);
-
-                if (selectedInstance > 0)
-                {
-                    // Check the offsets for overlap with something previously selected and for sufficient space in the data packet.
-                    if (!(dataFormat->dwOfs + SizeofInstance(EInstanceType::InstanceTypeButton) < lpdf->dwDataSize) || FALSE == CheckAndSetOffsets(&offsetUsed[dataFormat->dwOfs], SizeofInstance(EInstanceType::InstanceTypeButton)))
-                        invalidParamsDetected = TRUE;
-                    else
-                    {
-                        // Instance was selected successfully, add a mapping.
-                        MapInstanceAndOffset(selectedInstance, dataFormat->dwOfs);
-                    }
-                }
-                else if (!allowAnyInstance)
-                {
-                    // Instance was unable to be selected, and a specific instance was specified, so this is an error.
+                    // Type specified as a non-button, this is an error.
                     invalidParamsDetected = TRUE;
                 }
             }
-            else
-            {
-                // Type specified as a non-button, this is an error.
-                invalidParamsDetected = TRUE;
-            }
-
         }
-        else if ((dataFormat->dwType & DIDFT_POV) && (nextUnusedPov < numPov))
+        else if (dataFormat->dwType & DIDFT_POV)
         {
             // Pick a POV
 
-            if (NULL == dataFormat->pguid || GUID_POV == *dataFormat->pguid)
+            // First check the offsets for overlap with something previously selected and for sufficient space in the data packet.
+            if (!(dataFormat->dwOfs + SizeofInstance(EInstanceType::InstanceTypePov) <= lpdf->dwDataSize) || FALSE == CheckAndSetOffsets(&offsetUsed[dataFormat->dwOfs], SizeofInstance(EInstanceType::InstanceTypePov)))
+                invalidParamsDetected = TRUE;
+            else
             {
-                // Type unspecified or specified as a POV.
-
-                const TInstanceIdx instanceToSelect = allowAnyInstance ? nextUnusedPov : specificInstance;
-                const TInstance selectedInstance = SelectInstance(EInstanceType::InstanceTypePov, povUsed, numPov, instanceToSelect);
-
-                if (selectedInstance > 0)
+                if (NULL == dataFormat->pguid || GUID_POV == *dataFormat->pguid)
                 {
-                    // Check the offsets for overlap with something previously selected and for sufficient space in the data packet.
-                    if (!(dataFormat->dwOfs + SizeofInstance(EInstanceType::InstanceTypePov) < lpdf->dwDataSize) || FALSE == CheckAndSetOffsets(&offsetUsed[dataFormat->dwOfs], SizeofInstance(EInstanceType::InstanceTypePov)))
-                        invalidParamsDetected = TRUE;
-                    else
+                    // Type unspecified or specified as a POV.
+
+                    const TInstanceIdx instanceToSelect = allowAnyInstance ? nextUnusedPov : specificInstance;
+                    const TInstance selectedInstance = SelectInstance(EInstanceType::InstanceTypePov, povUsed, numPov, instanceToSelect);
+
+                    if (selectedInstance > 0)
                     {
                         // Instance was selected successfully, add a mapping.
                         MapInstanceAndOffset(selectedInstance, dataFormat->dwOfs);
                     }
+                    else if (!allowAnyInstance)
+                    {
+                        // Instance was unable to be selected, and a specific instance was specified, so this is an error.
+                        invalidParamsDetected = TRUE;
+                    }
+                    else
+                    {
+                        // Instance was unable to be selected, and any instance was allowed.
+                        // This is okay, it just means the application data format has field for a POV that does not actually exist on the controller.
+                        Log::WriteFormattedLogMessage(ELogLevel::LogLevelDebug, _T("Mapping unused POV at offset %d."), dataFormat->dwOfs);
+                        povOffsetsUnused.insert(dataFormat->dwOfs);
+                    }
                 }
-                else if (!allowAnyInstance)
+                else
                 {
-                    // Instance was unable to be selected, and a specific instance was specified, so this is an error.
+                    // Type specified as a non-POV, this is an error.
                     invalidParamsDetected = TRUE;
                 }
             }
-            else
-            {
-                // Type specified as a non-POV, this is an error.
-                invalidParamsDetected = TRUE;
-            }
-
-        }
-        else if (allowAnyInstance)
-        {
-            // No objects available, but no instance specified.
-            // If asked for a POV, make note of its offset so it can be initialized later.
-            if (dataFormat->dwType & DIDFT_POV)
-                povOffsetsToInitialize.push_back(dataFormat->dwOfs);
         }
         else
         {
-            // An instance was specified of an object that is not available, this is an error.
+            // An unknown data format element was specified. This is an error.
             invalidParamsDetected = TRUE;
         }
 
@@ -1105,12 +1109,19 @@ HRESULT Base::SetMappedProperty(REFGUID rguidProp, LPCDIPROPHEADER pdiph)
         }
         else
         {
-            // Targetting a specific instance, so locate that instance
+            // Filter out requests for unused axes.
+            if ((DIPH_BYOFFSET == pdiph->dwHow) && (0 != axisOffsetsUnused.count(pdiph->dwObj)))
+            {
+                Log::WriteFormattedLogMessage(ELogLevel::LogLevelInfo, _T("Attempted to set an axis property on an unused axis at offset %d."), pdiph->dwObj);
+                return DI_PROPNOEFFECT;
+            }
+            
+            // Targetting a specific instance, so locate that instance.
             TInstance instance = InstanceIdentifierFromDirectInputSpec(pdiph->dwObj, pdiph->dwHow);
             if (instance < 0)
                 return DIERR_OBJECTNOTFOUND;
 
-            // Verify that the instance target is an axis
+            // Verify that the instance target is an axis.
             if (EInstanceType::InstanceTypeAxis != ExtractIdentifierInstanceType(instance))
                 return DIERR_UNSUPPORTED;
 
@@ -1174,7 +1185,9 @@ void Base::ResetApplicationDataFormat(void)
 {
     instanceToOffset.clear();
     offsetToInstance.clear();
-    povOffsetsToInitialize.clear();
+    axisOffsetsUnused.clear();
+    buttonOffsetsUnused.clear();
+    povOffsetsUnused.clear();
 
     mapsValid = FALSE;
 }
@@ -1687,12 +1700,12 @@ HRESULT Base::WriteApplicationControllerState(XINPUT_GAMEPAD& xState, LPVOID app
     }
     
     // Set to "centered" any other POVs in the application's data format.
-    if (povOffsetsToInitialize.size() > 0)
+    if (povOffsetsUnused.size() > 0)
     {
         const LONG povCenteredValue = XInputController::DirectInputPovStateFromXInputButtonState(0);
         
-        for (DWORD i = 0; i < povOffsetsToInitialize.size(); ++i)
-            WriteValueToApplicationOffset(povCenteredValue, povOffsetsToInitialize[i], appDataBuf);
+        for (auto it = povOffsetsUnused.begin(); it != povOffsetsUnused.end(); ++it)
+            WriteValueToApplicationOffset(povCenteredValue, *it, appDataBuf);
     }
     
     return DI_OK;

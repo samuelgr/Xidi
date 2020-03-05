@@ -15,8 +15,8 @@
 #include "ApiDirectInput.h"
 #include "XInputController.h"
 
+#include <set>
 #include <unordered_map>
-#include <vector>
 #include <Xinput.h>
 
 
@@ -128,10 +128,18 @@ namespace Xidi
             /// Maps from base offset in the application-specified data format to instance identifier.
             std::unordered_map<DWORD, TInstance> offsetToInstance;
 
+            /// Holds a list of offsets for axes that are in the application data format but do not exist in the mapping.
+            /// Useful for when applications set properties by offset and expect the result to be successful.
+            std::set<DWORD> axisOffsetsUnused;
+
+            /// Holds a list of offsets for buttons that are in the application data format but do not exist in the mapping.
+            /// Useful for when applications set properties by offset and expect the result to be successful.
+            std::set<DWORD> buttonOffsetsUnused;
+            
             /// Holds a list of offsets for POVs that are in the application data format but do not exist on the mapping.
             /// Some games do not check how many POVs are present and assume any offset set aside for a POV will be filled with a valid reading.
-            /// To accomodate this behavior, make a list of POVs that have offsets but do not exist and set them to "centered" every time device state is requested.
-            std::vector<DWORD> povOffsetsToInitialize;
+            /// For a POV, the neutral unpressed position is not zero, so these offsets need to be filled in with a proper value whenever device state information is retrieved.
+            std::set<DWORD> povOffsetsUnused;
             
             
         public:
