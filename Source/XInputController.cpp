@@ -119,8 +119,13 @@ DWORD XInputController::AllowedEventCountForRequestedSize(DWORD requestedSize)
 {
     if (requestedSize > kEventBufferCountMax)
         return kEventBufferCountMax;
+    else if (0 == requestedSize)
+        return 0;
     else
-        return requestedSize;
+    {
+        // Per DirectInput specifications (GetDeviceData() specifically documents this), buffer will (requestedSize - 1) events.
+        return requestedSize - 1;
+    }
 }
 
 // ---------
