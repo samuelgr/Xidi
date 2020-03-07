@@ -32,13 +32,14 @@ namespace Xidi
     {
         LogLevelForced                          = -1,                       ///< Forced message. Anything at or below this level can cause a log file to be created even if it otherwise would not be.
 
-        LogLevelDisabled                        = 0,                        ///< Logging is disabled. Should not be used for individual log messages.
-        LogLevelError                           = 1,                        ///< Error. Causes a change in behavior if encountered, possibly leading to application termination. Anything at or above this level is only written to a log file if it has otherwise been created.
-        LogLevelWarning                         = 2,                        ///< Warning. May cause a change in behavior but is not critical and will not terminate the application.
-        LogLevelInfo                            = 3,                        ///< Informational. Useful status-related remarks for tracking application and Xidi behavior.
-        LogLevelDebug                           = 4,                        ///< Debug. Includes detailed messages to aid in troubleshooting application and Xidi behavior.
+        LogLevelDisabled,                                                   ///< Logging is disabled. Should not be used for individual log messages.
+        LogLevelError,                                                      ///< Error. Causes a change in behavior if encountered, possibly leading to application termination. Anything at or above this level is only written to a log file if it has otherwise been created.
+        LogLevelWarning,                                                    ///< Warning. May cause a change in behavior but is not critical and will not terminate the application.
+        LogLevelInfo,                                                       ///< Informational. Useful status-related remarks for tracking application and Xidi behavior.
+        LogLevelDebug,                                                      ///< Debug. Includes detailed messages to aid in troubleshooting application and Xidi behavior.
+        LogLevelSuperDebug,                                                 ///< Super Debug. Includes detailed messages as above but goes beyond to include calls that happen frequently, making the logs large.
 
-        LogLevelMaxConfigurableValue            = LogLevelDebug,            ///< Maximum configurable severity value for logging.
+        LogLevelMaxConfigurableValue            = LogLevelSuperDebug,       ///< Maximum configurable severity value for logging.
         LogLevelMinConfigurableValue            = LogLevelError,            ///< Minimum configurable severity value for logging.
     };
     

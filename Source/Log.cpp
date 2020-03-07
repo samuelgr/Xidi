@@ -291,6 +291,10 @@ void Log::OutputStamp(ELogLevel severity)
         OutputText(_T("D"));
         break;
 
+    case ELogLevel::LogLevelSuperDebug:
+        OutputText(_T("X"));
+        break;
+
     default:
         OutputText(_T("U"));
         break;

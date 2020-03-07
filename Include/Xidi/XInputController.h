@@ -165,7 +165,7 @@ namespace Xidi
         // -------- HELPERS -------------------------------------------------------- //
 
         /// Computes the allowed event count for sizing the event buffer based on the requested size.
-        /// @param [in] requestedSize Requested event buffer size, in bytes.
+        /// @param [in] requestedSize Requested event buffer size, in number of elements.
         /// @return Allowed actual buffer size, in number of elements.
         DWORD AllowedEventCountForRequestedSize(DWORD requestedSize);
         

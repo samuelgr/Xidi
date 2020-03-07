@@ -1109,13 +1109,6 @@ HRESULT Base::SetMappedProperty(REFGUID rguidProp, LPCDIPROPHEADER pdiph)
         }
         else
         {
-            // Filter out requests for unused axes.
-            if ((DIPH_BYOFFSET == pdiph->dwHow) && (0 != axisOffsetsUnused.count(pdiph->dwObj)))
-            {
-                Log::WriteFormattedLogMessage(ELogLevel::LogLevelInfo, _T("Attempted to set an axis property on an unused axis at offset %d."), pdiph->dwObj);
-                return DI_PROPNOEFFECT;
-            }
-            
             // Targetting a specific instance, so locate that instance.
             TInstance instance = InstanceIdentifierFromDirectInputSpec(pdiph->dwObj, pdiph->dwHow);
             if (instance < 0)

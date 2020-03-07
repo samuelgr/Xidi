@@ -11,6 +11,7 @@
  *****************************************************************************/
 
 #include "ApiDirectInput.h"
+#include "Log.h"
 #include "XInputController.h"
 
 #include <deque>
@@ -116,26 +117,10 @@ BOOL XInputController::IsControllerConnected(const DWORD xinputUserIndex)
 
 DWORD XInputController::AllowedEventCountForRequestedSize(DWORD requestedSize)
 {
-    const DWORD requestedNumberOfElements = requestedSize / sizeof(SControllerEvent);
-
-    if ((0 == requestedNumberOfElements) && (0 != requestedSize))
-    {
-        // Requested a very small but non-zero buffer size, so small that it would not even hold a single element.
-        // Round this type of request up and store a single element.
-        return 1;
-    }
-    else if (requestedNumberOfElements > kEventBufferCountMax)
-    {
-        // Requested a buffer that is too large to be allowed.
-        // Return the maximum.
+    if (requestedSize > kEventBufferCountMax)
         return kEventBufferCountMax;
-    }
     else
-    {
-        // Requested a buffer size that is allowed.
-        // Return the computed number of elements that fit.
-        return requestedNumberOfElements;
-    }
+        return requestedSize;
 }
 
 // ---------
@@ -155,6 +140,8 @@ void XInputController::ClearBufferedEvents(void)
 void XInputController::SetEventBufferSize(DWORD requestedSize)
 {
     const DWORD actualCount = AllowedEventCountForRequestedSize(requestedSize);
+    
+    Log::WriteFormattedLogMessage(ELogLevel::LogLevelDebug, _T("Setting event buffer size on XInput player %u to %d events, based on a requested size of %d."), GetPlayerIndex() + 1, actualCount, requestedSize);
     
     if (actualCount == eventBufferCountActual)
     {
