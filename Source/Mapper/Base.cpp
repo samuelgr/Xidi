@@ -161,31 +161,31 @@ DWORD Base::SizeofInstance(const EInstanceType type)
 
 LONG Base::ApplyAxisPropertiesToRawValue(const TInstance axisInstance, const LONG value)
 {
-	// Calculate axis physical range of motion, center axis position and the value's displacement from it.
-	TInstanceIdx axisIndex = ExtractIdentifierInstanceIndex(axisInstance);
-	const double axisCenterPosition = (double)(axisProperties[axisIndex].rangeMax + axisProperties[axisIndex].rangeMin) / 2.0;
-	const double axisPhysicalRange = (double)(axisProperties[axisIndex].rangeMax) - axisCenterPosition;
-	const double axisValueDisp = (double)value - axisCenterPosition;
-	const double axisValueDispAbs = abs(axisValueDisp);
+    // Calculate axis physical range of motion, center axis position and the value's displacement from it.
+    TInstanceIdx axisIndex = ExtractIdentifierInstanceIndex(axisInstance);
+    const double axisCenterPosition = (double)(axisProperties[axisIndex].rangeMax + axisProperties[axisIndex].rangeMin) / 2.0;
+    const double axisPhysicalRange = (double)(axisProperties[axisIndex].rangeMax) - axisCenterPosition;
+    const double axisValueDisp = (double)value - axisCenterPosition;
+    const double axisValueDispAbs = abs(axisValueDisp);
 
-	// Calculate the value's displacement as a percentage of the axis' physical range of motion, mapped to a saturation and deadzone range (0 to 10000).
-	// Use this to figure out what its percentage should be, given the axis properties of deadzone and saturation.
-	DWORD axisValuePctRange = (DWORD)(axisValueDispAbs / axisPhysicalRange * 10000.0);
-	if (axisValuePctRange <= axisProperties[axisIndex].deadzone)
-		axisValuePctRange = 0;
-	else if (axisValuePctRange >= axisProperties[axisIndex].saturation)
-		axisValuePctRange = 10000;
-	else
-		axisValuePctRange = (DWORD)MapValueInRangeToRange(axisValuePctRange, axisProperties[axisIndex].deadzone, axisProperties[axisIndex].saturation, 0, 10000);
+    // Calculate the value's displacement as a percentage of the axis' physical range of motion, mapped to a saturation and deadzone range (0 to 10000).
+    // Use this to figure out what its percentage should be, given the axis properties of deadzone and saturation.
+    DWORD axisValuePctRange = (DWORD)(axisValueDispAbs / axisPhysicalRange * 10000.0);
+    if (axisValuePctRange <= axisProperties[axisIndex].deadzone)
+        axisValuePctRange = 0;
+    else if (axisValuePctRange >= axisProperties[axisIndex].saturation)
+        axisValuePctRange = 10000;
+    else
+        axisValuePctRange = (DWORD)MapValueInRangeToRange(axisValuePctRange, axisProperties[axisIndex].deadzone, axisProperties[axisIndex].saturation, 0, 10000);
 
-	// Compute the final value for the axis, taking into consideration deadzone and saturation.
-	LONG axisFinalValue;
-	if (axisValueDisp > 0)
-		axisFinalValue = (LONG)(axisCenterPosition + (axisPhysicalRange * (axisValuePctRange / 10000.0)));
-	else
-		axisFinalValue = (LONG)(axisCenterPosition - (axisPhysicalRange * (axisValuePctRange / 10000.0)));
+    // Compute the final value for the axis, taking into consideration deadzone and saturation.
+    LONG axisFinalValue;
+    if (axisValueDisp > 0)
+        axisFinalValue = (LONG)(axisCenterPosition + (axisPhysicalRange * (axisValuePctRange / 10000.0)));
+    else
+        axisFinalValue = (LONG)(axisCenterPosition - (axisPhysicalRange * (axisValuePctRange / 10000.0)));
 
-	return axisFinalValue;
+    return axisFinalValue;
 }
 
 // ---------
@@ -456,7 +456,7 @@ void Base::WriteAxisValueToApplicationDataStructure(const TInstance axisInstance
 {
     // Verify that the application cares about the axis in question.
     if (0 == instanceToOffset.count(axisInstance)) return;
-	
+
     // Write the axis value to the specified offset.
     WriteValueToApplicationOffset(ApplyAxisPropertiesToRawValue(axisInstance, value), instanceToOffset.find(axisInstance)->second, appData);
 }
@@ -1197,124 +1197,122 @@ void Base::ResetApplicationDataFormat(void)
 HRESULT Base::WriteApplicationBufferedEvents(XInputController* xController, LPDIDEVICEOBJECTDATA appEventBuf, DWORD& eventCount, const BOOL peek)
 {
     xController->LockEventBuffer();
-	
-	// Initialize before writing application events.
-	const DWORD maxAppEvents = eventCount;
-	const DWORD numControllerEvents = xController->BufferedEventsCount();
+    
+    // Initialize before writing application events.
+    const DWORD maxAppEvents = eventCount;
+    const DWORD numControllerEvents = xController->BufferedEventsCount();
     const BOOL eventBufferOverflowed = xController->IsEventBufferOverflowed();
 
-	// Iterate over the controller events. Will break early if application event capacity is reached.
+    // Iterate over the controller events. Will break early if application event capacity is reached.
     eventCount = 0;
 
     for (DWORD i = 0; i < numControllerEvents && eventCount < maxAppEvents; ++i)
-	{
-		// Retrieve the next controller event.
-		SControllerEvent xEvent;
-		if (peek)
-			xController->PeekBufferedEvent(&xEvent, i);
-		else
-			xController->PopBufferedEvent(&xEvent);
+    {
+        // Retrieve the next controller event.
+        SControllerEvent xEvent;
+        if (peek)
+            xController->PeekBufferedEvent(&xEvent, i);
+        else
+            xController->PopBufferedEvent(&xEvent);
 
-		// If not writing the event data anywhere, skip over the rest.
-		if (NULL != appEventBuf)
-		{
-			// Figure out the application instance that corresponds to the XInput controller element.
-			const TInstance appEventInstance = MapXInputElementToDirectInputInstance(xEvent.controllerElement);
-			const LONG appEventOffset = OffsetForXInputControllerElement(xEvent.controllerElement);
+        // If not writing the event data anywhere, skip over the rest.
+        if (NULL != appEventBuf)
+        {
+            // Figure out the application instance that corresponds to the XInput controller element.
+            const TInstance appEventInstance = MapXInputElementToDirectInputInstance(xEvent.controllerElement);
+            const LONG appEventOffset = OffsetForXInputControllerElement(xEvent.controllerElement);
 
-			// If the element is not part of the mapping, skip over the rest.
-			if (appEventInstance >= 0 && appEventOffset >= 0)
-			{
-				// Initialize and fill in known application event information.
-				ZeroMemory(&appEventBuf[eventCount], sizeof(appEventBuf[eventCount]));
-				appEventBuf[eventCount].dwSequence = xEvent.sequenceNumber;
-				appEventBuf[eventCount].dwTimeStamp = xEvent.timestamp;
-				appEventBuf[eventCount].dwOfs = appEventOffset;
+            // If the element is not part of the mapping, skip over the rest.
+            if (appEventInstance >= 0 && appEventOffset >= 0)
+            {
+                // Initialize and fill in known application event information.
+                ZeroMemory(&appEventBuf[eventCount], sizeof(appEventBuf[eventCount]));
+                appEventBuf[eventCount].dwSequence = xEvent.sequenceNumber;
+                appEventBuf[eventCount].dwTimeStamp = xEvent.timestamp;
+                appEventBuf[eventCount].dwOfs = appEventOffset;
 
-				// If triggers are treated as buttons, then the value of the trigger needs to be correctly formatted to be a button value.
+                // If triggers are treated as buttons, then the value of the trigger needs to be correctly formatted to be a button value.
                 if (EInstanceType::InstanceTypeButton == ExtractIdentifierInstanceType(appEventInstance) && (EXInputControllerElement::TriggerLT == xEvent.controllerElement || EXInputControllerElement::TriggerRT == xEvent.controllerElement))
-                {
                     xEvent.value = (xEvent.value > XINPUT_GAMEPAD_TRIGGER_THRESHOLD ? (LONG)0x0080 : (LONG)0x0000);
-                }
                 
                 // Value depends on the instance type.
-				if (EInstanceType::InstanceTypeAxis == ExtractIdentifierInstanceType(appEventInstance))
-				{
-					// If axis, value needs to be converted and range-adjusted, with proper consideration for deadzone and saturation.
-					// Functionality depends on the XInput controller element, since each has different input range.
-					switch (xEvent.controllerElement)
-					{
-					case EXInputControllerElement::StickLeftHorizontal:
-					case EXInputControllerElement::StickRightHorizontal:
-						// Horizontal sticks require no special treatment.
-						appEventBuf[eventCount].dwData = (DWORD)MapValueInRangeToRange(xEvent.value, XInputController::kStickRangeMin, XInputController::kStickRangeMax, axisProperties[ExtractIdentifierInstanceIndex(appEventInstance)].rangeMin, axisProperties[ExtractIdentifierInstanceIndex(appEventInstance)].rangeMax);
-						break;
+                if (EInstanceType::InstanceTypeAxis == ExtractIdentifierInstanceType(appEventInstance))
+                {
+                    // If axis, value needs to be converted and range-adjusted, with proper consideration for deadzone and saturation.
+                    // Functionality depends on the XInput controller element, since each has different input range.
+                    switch (xEvent.controllerElement)
+                    {
+                    case EXInputControllerElement::StickLeftHorizontal:
+                    case EXInputControllerElement::StickRightHorizontal:
+                        // Horizontal sticks require no special treatment.
+                        appEventBuf[eventCount].dwData = (DWORD)MapValueInRangeToRange(xEvent.value, XInputController::kStickRangeMin, XInputController::kStickRangeMax, axisProperties[ExtractIdentifierInstanceIndex(appEventInstance)].rangeMin, axisProperties[ExtractIdentifierInstanceIndex(appEventInstance)].rangeMax);
+                        break;
 
-					case EXInputControllerElement::StickLeftVertical:
-					case EXInputControllerElement::StickRightVertical:
-						// Vertical sticks require inversion.
-						appEventBuf[eventCount].dwData = (DWORD)MapValueInRangeToRange(InvertAxisValue(xEvent.value, XInputController::kStickRangeMin, XInputController::kStickRangeMax), XInputController::kStickRangeMin, XInputController::kStickRangeMax, axisProperties[ExtractIdentifierInstanceIndex(appEventInstance)].rangeMin, axisProperties[ExtractIdentifierInstanceIndex(appEventInstance)].rangeMax);
-						break;
+                    case EXInputControllerElement::StickLeftVertical:
+                    case EXInputControllerElement::StickRightVertical:
+                        // Vertical sticks require inversion.
+                        appEventBuf[eventCount].dwData = (DWORD)MapValueInRangeToRange(InvertAxisValue(xEvent.value, XInputController::kStickRangeMin, XInputController::kStickRangeMax), XInputController::kStickRangeMin, XInputController::kStickRangeMax, axisProperties[ExtractIdentifierInstanceIndex(appEventInstance)].rangeMin, axisProperties[ExtractIdentifierInstanceIndex(appEventInstance)].rangeMax);
+                        break;
 
-					case EXInputControllerElement::TriggerLT:
-					case EXInputControllerElement::TriggerRT:
-						// Triggers require special handling because they might share an axis.
-						if (MapXInputElementToDirectInputInstance(EXInputControllerElement::TriggerLT) >= 0 && MapXInputElementToDirectInputInstance(EXInputControllerElement::TriggerLT) == MapXInputElementToDirectInputInstance(EXInputControllerElement::TriggerRT))
-						{
-							// Shared axis, so figure out the separate contributions from each trigger and compute a new value.
-							if (EXInputControllerElement::TriggerLT == xEvent.controllerElement)
-								cachedValueXInputLT = xEvent.value;
-							else
-								cachedValueXInputRT = xEvent.value;
+                    case EXInputControllerElement::TriggerLT:
+                    case EXInputControllerElement::TriggerRT:
+                        // Triggers require special handling because they might share an axis.
+                        if (MapXInputElementToDirectInputInstance(EXInputControllerElement::TriggerLT) >= 0 && MapXInputElementToDirectInputInstance(EXInputControllerElement::TriggerLT) == MapXInputElementToDirectInputInstance(EXInputControllerElement::TriggerRT))
+                        {
+                            // Shared axis, so figure out the separate contributions from each trigger and compute a new value.
+                            if (EXInputControllerElement::TriggerLT == xEvent.controllerElement)
+                                cachedValueXInputLT = xEvent.value;
+                            else
+                                cachedValueXInputRT = xEvent.value;
 
-							// Figure out the direction of each trigger on the shared axis.
-							LONG leftTriggerMultiplier = XInputTriggerSharedAxisDirection(EXInputControllerElement::TriggerLT);
-							if (0 > leftTriggerMultiplier)
-								leftTriggerMultiplier = -1;
-							else if (0 < leftTriggerMultiplier)
-								leftTriggerMultiplier = 1;
-							else
-							{
-								// It is an error for the direction of a trigger on the shared axis to be 0.
-								xController->UnlockEventBuffer();
-								return DIERR_GENERIC;
-							}
+                            // Figure out the direction of each trigger on the shared axis.
+                            LONG leftTriggerMultiplier = XInputTriggerSharedAxisDirection(EXInputControllerElement::TriggerLT);
+                            if (0 > leftTriggerMultiplier)
+                                leftTriggerMultiplier = -1;
+                            else if (0 < leftTriggerMultiplier)
+                                leftTriggerMultiplier = 1;
+                            else
+                            {
+                                // It is an error for the direction of a trigger on the shared axis to be 0.
+                                xController->UnlockEventBuffer();
+                                return DIERR_GENERIC;
+                            }
 
-							// Compute the new value of the shared axis.
-							appEventBuf[eventCount].dwData = (DWORD)((leftTriggerMultiplier * cachedValueXInputLT) + (leftTriggerMultiplier * -1 * cachedValueXInputRT));
-							appEventBuf[eventCount].dwData = MapValueInRangeToRange((LONG)appEventBuf[eventCount].dwData, XInputController::kTriggerRangeMax * -1, XInputController::kTriggerRangeMax, axisProperties[ExtractIdentifierInstanceIndex(appEventInstance)].rangeMin, axisProperties[ExtractIdentifierInstanceIndex(appEventInstance)].rangeMax);
-						}
-						else
-						{
-							// Separate axes, so just map as usual.
-							appEventBuf[eventCount].dwData = (DWORD)MapValueInRangeToRange(xEvent.value, XInputController::kTriggerRangeMin, XInputController::kTriggerRangeMax, axisProperties[ExtractIdentifierInstanceIndex(appEventInstance)].rangeMin, axisProperties[ExtractIdentifierInstanceIndex(appEventInstance)].rangeMax);
-						}
-						break;
+                            // Compute the new value of the shared axis.
+                            appEventBuf[eventCount].dwData = (DWORD)((leftTriggerMultiplier * cachedValueXInputLT) + (leftTriggerMultiplier * -1 * cachedValueXInputRT));
+                            appEventBuf[eventCount].dwData = MapValueInRangeToRange((LONG)appEventBuf[eventCount].dwData, XInputController::kTriggerRangeMax * -1, XInputController::kTriggerRangeMax, axisProperties[ExtractIdentifierInstanceIndex(appEventInstance)].rangeMin, axisProperties[ExtractIdentifierInstanceIndex(appEventInstance)].rangeMax);
+                        }
+                        else
+                        {
+                            // Separate axes, so just map as usual.
+                            appEventBuf[eventCount].dwData = (DWORD)MapValueInRangeToRange(xEvent.value, XInputController::kTriggerRangeMin, XInputController::kTriggerRangeMax, axisProperties[ExtractIdentifierInstanceIndex(appEventInstance)].rangeMin, axisProperties[ExtractIdentifierInstanceIndex(appEventInstance)].rangeMax);
+                        }
+                        break;
 
-					default:
-						// It is an error for an axis to be mapped to any other XInput controller element.
-						xController->UnlockEventBuffer();
-						return DIERR_GENERIC;
-					}
+                    default:
+                        // It is an error for an axis to be mapped to any other XInput controller element.
+                        xController->UnlockEventBuffer();
+                        return DIERR_GENERIC;
+                    }
 
-					// Apply range and deadzone.
-					appEventBuf[eventCount].dwData = (DWORD)ApplyAxisPropertiesToRawValue(appEventInstance, (LONG)appEventBuf[eventCount].dwData);
-				}
+                    // Apply range and deadzone.
+                    appEventBuf[eventCount].dwData = (DWORD)ApplyAxisPropertiesToRawValue(appEventInstance, (LONG)appEventBuf[eventCount].dwData);
+                }
                 else
-				{
-					// If button or POV, value is already in DirectInput format so just copy directly.
-					appEventBuf[eventCount].dwData = (DWORD)xEvent.value;
-				}
+                {
+                    // If button or POV, value is already in DirectInput format so just copy directly.
+                    appEventBuf[eventCount].dwData = (DWORD)xEvent.value;
+                }
+                
+                // Increment the number of events written to the application buffer.
+                eventCount += 1;
+            }
+        }
+    }
 
-				// Increment the number of events written to the application buffer.
-				eventCount += 1;
-			}
-		}
-	}
-
-	xController->UnlockEventBuffer();
+    xController->UnlockEventBuffer();
     
-	return (eventBufferOverflowed ? DI_BUFFEROVERFLOW : DI_OK);
+    return (eventBufferOverflowed ? DI_BUFFEROVERFLOW : DI_OK);
 }
 
 // ---------
@@ -1336,12 +1334,12 @@ HRESULT Base::WriteApplicationControllerState(XINPUT_GAMEPAD& xState, LPVOID app
     
     // Triggers are handled differently, so handle them first as a special case.
     {
-		TInstance instanceLT = MapXInputElementToDirectInputInstance(EXInputControllerElement::TriggerLT);
+        TInstance instanceLT = MapXInputElementToDirectInputInstance(EXInputControllerElement::TriggerLT);
         TInstance instanceRT = MapXInputElementToDirectInputInstance(EXInputControllerElement::TriggerRT);
 
-		// Set aside the current state of the triggers into the cache.
-		cachedValueXInputLT = (LONG)xState.bLeftTrigger;
-		cachedValueXInputRT = (LONG)xState.bRightTrigger;
+        // Set aside the current state of the triggers into the cache.
+        cachedValueXInputLT = (LONG)xState.bLeftTrigger;
+        cachedValueXInputRT = (LONG)xState.bRightTrigger;
 
         if (instanceLT >= 0 && instanceRT >= 0 && instanceLT == instanceRT)
         {
@@ -1363,7 +1361,7 @@ HRESULT Base::WriteApplicationControllerState(XINPUT_GAMEPAD& xState, LPVOID app
             else if (0 < leftTriggerMultiplier)
                 leftTriggerMultiplier = 1;
             else
-				return DIERR_GENERIC;
+                return DIERR_GENERIC;
             
             // Compute the axis value for the shared axis.
             LONG triggerSharedAxisValue = (leftTriggerMultiplier * (LONG)xState.bLeftTrigger) + (leftTriggerMultiplier * -1 * (LONG)xState.bRightTrigger);
