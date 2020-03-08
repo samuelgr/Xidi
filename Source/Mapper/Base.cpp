@@ -285,6 +285,12 @@ void Base::FillObjectInstanceInfoA(LPDIDEVICEOBJECTINSTANCEA instanceInfo, EInst
         sprintf_s(instanceInfo->tszName, _countof(instanceInfo->tszName), instanceFormatString, (unsigned)(1 + instanceNumber));
         break;
     }
+
+    // This is undocumented, but correct, DirectInput behavior.
+    // Documentation suggests that EnumObjects will always return a native offset that has nothing to do with application data format.
+    // However, in practice, DirectInput will use application data format offsets if they have been set, and 0xffffffff (-1) for any objects that do not exist in the application data format.
+    if (IsApplicationDataFormatSet())
+        instanceInfo->dwOfs = OffsetForInstance(MakeInstanceIdentifier(instanceType, instanceNumber));
 }
 
 // ---------
@@ -330,6 +336,12 @@ void Base::FillObjectInstanceInfoW(LPDIDEVICEOBJECTINSTANCEW instanceInfo, EInst
         swprintf_s(instanceInfo->tszName, _countof(instanceInfo->tszName), instanceFormatString, (unsigned)(1 + instanceNumber));
         break;
     }
+
+    // This is undocumented, but correct, DirectInput behavior.
+    // Documentation suggests that EnumObjects will always return a native offset that has nothing to do with application data format.
+    // However, in practice, DirectInput will use application data format offsets if they have been set, and 0xffffffff (-1) for any objects that do not exist in the application data format.
+    if (IsApplicationDataFormatSet())
+        instanceInfo->dwOfs = OffsetForInstance(MakeInstanceIdentifier(instanceType, instanceNumber));
 }
 
 // ---------
