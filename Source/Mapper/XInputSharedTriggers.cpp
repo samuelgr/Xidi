@@ -3,7 +3,7 @@
  *   DirectInput interface for XInput controllers.
  *****************************************************************************
  * Authored by Samuel Grossman
- * Copyright (c) 2016-2017
+ * Copyright (c) 2016-2020
  *************************************************************************//**
  * @file Mapper/XInputSharedTriggers.cpp
  *   Implements a mapper that maps to the default configuration of an
