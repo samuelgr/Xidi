@@ -3,7 +3,7 @@ This documentation is for developers who wish to compile Xidi from source and po
 
 <h2 id="fordevelopers-buildingxidi">Building Xidi</h2>
 
-The build system Xidi uses is based on Microsoft Visual Studio 2015 Community Edition.  To build Xidi, simply open the supplied Visual Studio solution file and build from the graphical interface.  One Visual C++ project exists for each version of Xidi (`dinput.dll`, `dinput8.dll`, and `winmm.dll`), and each supports building both 32-bit and 64-bit versions of Xidi.
+The build system Xidi uses is based on Microsoft Visual Studio 2019 Community Edition.  To build Xidi, simply open the supplied Visual Studio solution file and build from the graphical interface.  One Visual C++ project exists for each version of Xidi (`dinput.dll`, `dinput8.dll`, and `winmm.dll`), and each supports building both 32-bit and 64-bit versions of Xidi.
 
 Debug and Release configurations will respectively produce debug (checked) and optimized (unchecked) versions of each library.  A third configuration, TestApp, produces an executable that is designed as a standalone test suite for Xidi's functionality.  This application runs through a series of API tests designed to ensure compliance with documented API specifications for WinMM and DirectInput.  It includes an interactive controller test mode at the end, in which buttons on an attached XInput controller can be pressed and the results reflected on screen.
 
