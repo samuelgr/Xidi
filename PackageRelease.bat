@@ -7,7 +7,7 @@ rem | Authored by Samuel Grossman
 rem | Copyright (c) 2016-2020
 rem +--------------------------------------------------------------------------
 rem | PackageRelease.bat
-rem |   Script for packaging up a release.  To be executed manually after
+rem |   Script for packaging up a release. To be executed manually after
 rem |   building the Release configuration for both Win32 and x64 platforms.
 rem +--------------------------------------------------------------------------
 
