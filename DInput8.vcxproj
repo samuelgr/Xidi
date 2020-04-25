@@ -34,6 +34,8 @@
     <ClInclude Include="Include\Xidi\ControllerIdentification.h" />
     <ClInclude Include="Include\Xidi\ImportApiDirectInput.h" />
     <ClInclude Include="Include\Xidi\Mapper\Base.h" />
+    <ClInclude Include="Include\Xidi\Strings.h" />
+    <ClInclude Include="Include\Xidi\TemporaryBuffer.h" />
     <ClInclude Include="Include\Xidi\VirtualDirectInputDevice.h" />
     <ClInclude Include="Include\Xidi\WrapperIDirectInput.h" />
     <ClInclude Include="Include\Xidi\XInputController.h" />
@@ -51,6 +53,8 @@
     <ClCompile Include="Source\Mapper\XInputNative.cpp" />
     <ClCompile Include="Source\Mapper\XInputSharedTriggers.cpp" />
     <ClCompile Include="Source\Mapper\StandardGamepad.cpp" />
+    <ClCompile Include="Source\Strings.cpp" />
+    <ClCompile Include="Source\TemporaryBuffer.cpp" />
     <ClCompile Include="Source\TestAppDirectInput.cpp">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>

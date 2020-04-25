@@ -16,7 +16,7 @@
 #include "Log.h"
 
 #include <mutex>
-#include <string>
+#include <string_view>
 
 
 namespace Xidi
@@ -276,12 +276,11 @@ namespace Xidi
                     ZeroMemory(&importTable, sizeof(importTable));
 
                     // Obtain the full library path string.
-                    std::wstring libraryPath;
-                    Globals::FillWinMMLibraryPath(libraryPath);
+                    std::wstring_view libraryPath = Globals::GetLibraryPathWinMM();
 
                     // Attempt to load the library.
-                    LogInitializeLibraryPath(libraryPath.c_str());
-                    HMODULE loadedLibrary = LoadLibraryEx(libraryPath.c_str(), nullptr, 0);
+                    LogInitializeLibraryPath(libraryPath.data());
+                    HMODULE loadedLibrary = LoadLibraryEx(libraryPath.data(), nullptr, 0);
                     if (nullptr == loadedLibrary)
                     {
                         LogInitializeFailed();

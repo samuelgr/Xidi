@@ -11,133 +11,168 @@
  *****************************************************************************/
 
 #include "ApiWindows.h"
-#include "Globals.h"
+#include "Strings.h"
 
 #include <string>
-
-using namespace Xidi;
-
-
-// -------- CONSTANTS ------------------------------------------------------ //
-// See "Globals.h" for documentation.
-
-const std::wstring Globals::kDInputLibraryName = L"dinput.dll";
-
-const std::wstring Globals::kDInput8LibraryName = L"dinput8.dll";
-
-const std::wstring Globals::kWinMMLibraryName = L"winmm.dll";
+#include <string_view>
 
 
-// -------- CLASS VARIABLES ------------------------------------------------ //
-// See "Globals.h" for documentation.
-
-HINSTANCE Globals::gInstanceHandle = nullptr;
-
-std::wstring Globals::gOverrideImportDirectInput = L"";
-
-std::wstring Globals::gOverrideImportDirectInput8 = L"";
-
-std::wstring Globals::gOverrideImportWinMM = L"";
-
-
-// -------- CLASS METHODS -------------------------------------------------- //
-// See "Globals.h" for documentation.
-
-bool Globals::ApplyOverrideImportDirectInput(std::wstring& value)
+namespace Xidi
 {
-    bool validValue = !(value.empty());
-
-    if (true == validValue)
-        gOverrideImportDirectInput = value;
-
-    return validValue;
-}
-
-// --------
-
-bool Globals::ApplyOverrideImportDirectInput8(std::wstring& value)
-{
-    bool validValue = !(value.empty());
-
-    if (true == validValue)
-        gOverrideImportDirectInput8 = value;
-
-    return validValue;
-}
-
-// --------
-
-bool Globals::ApplyOverrideImportWinMM(std::wstring& value)
-{
-    bool validValue = !(value.empty());
-
-    if (true == validValue)
-        gOverrideImportWinMM = value;
-
-    return validValue;
-}
-
-// --------
-
-void Globals::FillDirectInputLibraryPath(std::wstring& stringToFill)
-{
-    FillLibraryPath(stringToFill, gOverrideImportDirectInput, kDInputLibraryName);
-}
-
-// --------
-
-void Globals::FillDirectInput8LibraryPath(std::wstring& stringToFill)
-{
-    FillLibraryPath(stringToFill, gOverrideImportDirectInput8, kDInput8LibraryName);
-}
-
-// --------
-
-void Globals::FillWinMMLibraryPath(std::wstring& stringToFill)
-{
-    FillLibraryPath(stringToFill, gOverrideImportWinMM, kWinMMLibraryName);
-}
-
-// --------
-
-HINSTANCE Globals::GetInstanceHandle(void)
-{
-    return gInstanceHandle;
-}
-
-// ---------
-
-void Globals::SetInstanceHandle(HINSTANCE newInstanceHandle)
-{
-    gInstanceHandle = newInstanceHandle;
-}
-
-
-// -------- HELPERS -------------------------------------------------------- //
-// See "Globals.h" for documentation.
-
-void Globals::FillLibraryPath(std::wstring& stringToFill, const std::wstring& overridePath, const std::wstring& defaultLibraryFileName)
-{
-    if (overridePath.empty())
+    namespace Globals
     {
-        // No override path specified, so use the system directory plus library filename.
-        FillSystemDirectoryPath(stringToFill);
-        stringToFill += L'\\';
-        stringToFill += defaultLibraryFileName;
+        // -------- INTERNAL TYPES ----------------------------------------- //
+
+        /// Holds all static data that falls under the global category.
+        /// Used to make sure that globals are initialized as early as possible so that values are available during dynamic initialization.
+        /// Implemented as a singleton object.
+        class GlobalData
+        {
+        public:
+            // -------- INSTANCE VARIABLES --------------------------------- //
+
+            /// Pseudohandle of the current process.
+            HANDLE gCurrentProcessHandle;
+
+            /// PID of the current process.
+            DWORD gCurrentProcessId;
+
+            /// Holds information about the current system, as retrieved from Windows.
+            SYSTEM_INFO gSystemInformation;
+
+            /// Handle of the instance that represents the running form of this code.
+            HINSTANCE gInstanceHandle;
+
+            /// Holds the path to a custom library that overrides the default import library for DirectInput functions.
+            std::wstring gOverrideImportDirectInput;
+
+            /// Holds the path to a custom library that overrides the default import library for DirectInput8 functions.
+            std::wstring gOverrideImportDirectInput8;
+
+            /// Holds the path to a custom library that overrides the default import library for WinMM functions.
+            std::wstring gOverrideImportWinMM;
+
+
+        private:
+            // -------- CONSTRUCTION AND DESTRUCTION ----------------------- //
+
+            /// Default constructor. Objects cannot be constructed externally.
+            GlobalData(void) : gCurrentProcessHandle(GetCurrentProcess()), gCurrentProcessId(GetProcessId(GetCurrentProcess())), gSystemInformation(), gInstanceHandle(nullptr), gOverrideImportDirectInput(L""), gOverrideImportDirectInput8(L""), gOverrideImportWinMM(L"")
+            {
+                GetModuleHandleEx(GET_MODULE_HANDLE_EX_FLAG_FROM_ADDRESS, (LPCWSTR)&GlobalData::GetInstance, &gInstanceHandle);
+                GetNativeSystemInfo(&gSystemInformation);
+            }
+
+            /// Copy constructor. Should never be invoked.
+            GlobalData(const GlobalData& other) = delete;
+
+
+        public:
+            // -------- CLASS METHODS -------------------------------------- //
+
+            /// Returns a reference to the singleton instance of this class.
+            /// @return Reference to the singleton instance.
+            static GlobalData& GetInstance(void)
+            {
+                static GlobalData globalData;
+                return globalData;
+            }
+        };
+
+
+        // -------- FUNCTIONS ---------------------------------------------- //
+        // See "Globals.h" for documentation.
+
+        bool ApplyOverrideImportDirectInput(std::wstring& value)
+        {
+            bool validValue = !(value.empty());
+
+            if (true == validValue)
+                GlobalData::GetInstance().gOverrideImportDirectInput = value;
+
+            return validValue;
+        }
+
+        // --------
+
+        bool ApplyOverrideImportDirectInput8(std::wstring& value)
+        {
+            bool validValue = !(value.empty());
+
+            if (true == validValue)
+                GlobalData::GetInstance().gOverrideImportDirectInput8 = value;
+
+            return validValue;
+        }
+
+        // --------
+
+        bool ApplyOverrideImportWinMM(std::wstring& value)
+        {
+            bool validValue = !(value.empty());
+
+            if (true == validValue)
+                GlobalData::GetInstance().gOverrideImportWinMM = value;
+
+            return validValue;
+        }
+
+        // --------
+
+        HANDLE GetCurrentProcessHandle(void)
+        {
+            return GlobalData::GetInstance().gCurrentProcessHandle;
+        }
+
+        // --------
+
+        DWORD GetCurrentProcessId(void)
+        {
+            return GlobalData::GetInstance().gCurrentProcessId;
+        }
+
+        // --------
+
+        HINSTANCE GetInstanceHandle(void)
+        {
+            return GlobalData::GetInstance().gInstanceHandle;
+        }
+
+        // --------
+
+        std::wstring_view GetLibraryPathDirectInput(void)
+        {
+            if (false == GlobalData::GetInstance().gOverrideImportDirectInput.empty())
+                return GlobalData::GetInstance().gOverrideImportDirectInput;
+            else
+                return Strings::kStrSystemLibraryFilenameDirectInput;
+        }
+
+        // --------
+
+        std::wstring_view GetLibraryPathDirectInput8(void)
+        {
+            if (false == GlobalData::GetInstance().gOverrideImportDirectInput8.empty())
+                return GlobalData::GetInstance().gOverrideImportDirectInput8;
+            else
+                return Strings::kStrSystemLibraryFilenameDirectInput8;
+        }
+
+        // --------
+
+        std::wstring_view GetLibraryPathWinMM(void)
+        {
+            if (false == GlobalData::GetInstance().gOverrideImportWinMM.empty())
+                return GlobalData::GetInstance().gOverrideImportWinMM;
+            else
+                return Strings::kStrSystemLibraryFilenameWinMM;
+        }
+
+        // --------
+
+        const SYSTEM_INFO& GetSystemInformation(void)
+        {
+            return GlobalData::GetInstance().gSystemInformation;
+        }
     }
-    else
-    {
-        // Override path specified, so just use that.
-        stringToFill = overridePath;
-    }
-}
-
-// --------
-
-void Globals::FillSystemDirectoryPath(std::wstring& stringToFill)
-{
-    wchar_t systemDirectoryPath[kMaximumSystemDirectoryNameLength];
-    GetSystemDirectory(systemDirectoryPath, kMaximumSystemDirectoryNameLength);
-
-    stringToFill = systemDirectoryPath;
 }
