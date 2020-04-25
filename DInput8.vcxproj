@@ -45,7 +45,7 @@
     <ClInclude Include="Include\Xidi\VirtualDirectInputDevice.h" />
     <ClInclude Include="Include\Xidi\WrapperIDirectInput.h" />
     <ClInclude Include="Include\Xidi\XInputController.h" />
-    <ClInclude Include="Resources\Xidi-DInput8.h" />
+    <ClInclude Include="Resources\DInput8.h" />
     <ClInclude Include="Resources\Xidi.h" />
   </ItemGroup>
   <ItemGroup>
@@ -85,14 +85,14 @@
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="Resources\Xidi.rc" />
-    <ResourceCompile Include="Resources\Xidi-DInput8.rc" />
+    <ResourceCompile Include="Resources\DInput8.rc" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <ProjectGuid>{023441F6-2554-440F-9FFB-7E185AB7CF41}</ProjectGuid>
     <Keyword>Win32Proj</Keyword>
     <RootNamespace>Xidi</RootNamespace>
     <WindowsTargetPlatformVersion>10.0</WindowsTargetPlatformVersion>
-    <ProjectName>Xidi-DInput8</ProjectName>
+    <ProjectName>DInput8</ProjectName>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">

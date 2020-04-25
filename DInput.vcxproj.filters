@@ -45,13 +45,13 @@
     <ClInclude Include="Include\Xidi\ApiDirectInput.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="Include\Xidi\ImportApiWinMM.h">
+    <ClInclude Include="Include\Xidi\WrapperIDirectInput.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="Include\Xidi\ExportApiWinMM.h">
+    <ClInclude Include="Include\Xidi\ExportApiDirectInput.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="Include\Xidi\WrapperJoyWinMM.h">
+    <ClInclude Include="Include\Xidi\ImportApiDirectInput.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="Include\Xidi\MapperFactory.h">
@@ -63,13 +63,13 @@
     <ClInclude Include="Include\Xidi\Log.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="Include\Xidi\Configuration.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="Resources\Xidi.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="Resources\Xidi-WinMM.h">
+    <ClInclude Include="Include\Xidi\Configuration.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Resources\DInput.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="Include\Xidi\Mapper\ExtendedGamepad.h">
@@ -78,7 +78,7 @@
     <ClInclude Include="Include\Xidi\ApiGUID.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="Include\Xidi\ImportApiDirectInput.h">
+    <ClInclude Include="Include\Xidi\VirtualDirectInputDevice.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
@@ -101,19 +101,22 @@
     <ClCompile Include="Source\Mapper\XInputSharedTriggers.cpp">
       <Filter>Source Files\Mapper</Filter>
     </ClCompile>
+    <ClCompile Include="Source\ApiDirectInput.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\WrapperIDirectInput.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\TestAppDirectInput.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
     <ClCompile Include="Source\DllMain.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="Source\ImportApiWinMM.cpp">
+    <ClCompile Include="Source\ExportApiDirectInput.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="Source\TestAppWinMM.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="Source\ExportApiWinMM.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="Source\WrapperJoyWinMM.cpp">
+    <ClCompile Include="Source\ImportApiDirectInput.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="Source\MapperFactory.cpp">
@@ -128,27 +131,24 @@
     <ClCompile Include="Source\Configuration.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="Source\ApiDirectInput.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="Source\Mapper\ExtendedGamepad.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="Source\ApiGUID.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="Source\ImportApiDirectInput.cpp">
+    <ClCompile Include="Source\VirtualDirectInputDevice.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <None Include="winmm.def" />
+    <None Include="dinput.def" />
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="Resources\Xidi.rc">
       <Filter>Resource Files</Filter>
     </ResourceCompile>
-    <ResourceCompile Include="Resources\Xidi-WinMM.rc">
+    <ResourceCompile Include="Resources\DInput.rc">
       <Filter>Resource Files</Filter>
     </ResourceCompile>
   </ItemGroup>
