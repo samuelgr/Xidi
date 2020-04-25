@@ -117,7 +117,7 @@ namespace Xidi
                 configuration.ReadConfigurationFile(Strings::kStrConfigurationFilename);
 
                 if (Configuration::EFileReadResult::Malformed == configuration.GetFileReadResult())
-                    Message::Output(Message::ESeverity::Error, configuration.GetReadErrorMessage().data());
+                    Message::Output(Message::ESeverity::ForcedInteractiveError, configuration.GetReadErrorMessage().data());
             });
 
             return configuration;

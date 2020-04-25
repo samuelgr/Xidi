@@ -83,11 +83,26 @@ namespace Xidi
 
                 if ((true == config.IsDataValid()) && (true == config.GetData().SectionNamePairExists(Strings::kStrConfigurationSectionMapper, Strings::kStrConfigurationSettingMapperType)))
                 {
-                    configuredMapperType = mapperTypeStrings.find(config.GetData()[Strings::kStrConfigurationSectionMapper][Strings::kStrConfigurationSettingMapperType].FirstValue().GetStringValue())->second;
+                    const EType requestedMapperType = TypeFromString(config.GetData()[Strings::kStrConfigurationSectionMapper][Strings::kStrConfigurationSettingMapperType].FirstValue().GetStringValue());
+
+                    if (EType::Invalid != requestedMapperType)
+                        configuredMapperType = requestedMapperType;
                 }
             });
 
             return CreateMapperOfType(configuredMapperType);
+        }
+
+        // --------
+
+        EType TypeFromString(std::wstring_view typeString)
+        {
+            auto it = mapperTypeStrings.find(typeString);
+
+            if (mapperTypeStrings.end() == it)
+                return EType::Invalid;
+            else
+                return it->second;
         }
     }
 }
