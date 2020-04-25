@@ -11,8 +11,12 @@
  *****************************************************************************/
 
 #include "ApiWindows.h"
+#include "Configuration.h"
 #include "Strings.h"
+#include "XidiConfigReader.h"
 
+#include <memory>
+#include <mutex>
 #include <string>
 #include <string_view>
 
@@ -43,21 +47,12 @@ namespace Xidi
             /// Handle of the instance that represents the running form of this code.
             HINSTANCE gInstanceHandle;
 
-            /// Holds the path to a custom library that overrides the default import library for DirectInput functions.
-            std::wstring gOverrideImportDirectInput;
-
-            /// Holds the path to a custom library that overrides the default import library for DirectInput8 functions.
-            std::wstring gOverrideImportDirectInput8;
-
-            /// Holds the path to a custom library that overrides the default import library for WinMM functions.
-            std::wstring gOverrideImportWinMM;
-
 
         private:
             // -------- CONSTRUCTION AND DESTRUCTION ----------------------- //
 
             /// Default constructor. Objects cannot be constructed externally.
-            GlobalData(void) : gCurrentProcessHandle(GetCurrentProcess()), gCurrentProcessId(GetProcessId(GetCurrentProcess())), gSystemInformation(), gInstanceHandle(nullptr), gOverrideImportDirectInput(L""), gOverrideImportDirectInput8(L""), gOverrideImportWinMM(L"")
+            GlobalData(void) : gCurrentProcessHandle(GetCurrentProcess()), gCurrentProcessId(GetProcessId(GetCurrentProcess())), gSystemInformation(), gInstanceHandle(nullptr)
             {
                 GetModuleHandleEx(GET_MODULE_HANDLE_EX_FLAG_FROM_ADDRESS, (LPCWSTR)&GlobalData::GetInstance, &gInstanceHandle);
                 GetNativeSystemInfo(&gSystemInformation);
@@ -83,38 +78,16 @@ namespace Xidi
         // -------- FUNCTIONS ---------------------------------------------- //
         // See "Globals.h" for documentation.
 
-        bool ApplyOverrideImportDirectInput(std::wstring& value)
+        const Configuration::Configuration& GetConfiguration(void)
         {
-            bool validValue = !(value.empty());
+            static Configuration::Configuration configuration(std::make_unique<XidiConfigReader>());
 
-            if (true == validValue)
-                GlobalData::GetInstance().gOverrideImportDirectInput = value;
+            static std::once_flag readConfigFlag;
+            std::call_once(readConfigFlag, [](){
+                configuration.ReadConfigurationFile(Strings::kStrConfigurationFilename);
+            });
 
-            return validValue;
-        }
-
-        // --------
-
-        bool ApplyOverrideImportDirectInput8(std::wstring& value)
-        {
-            bool validValue = !(value.empty());
-
-            if (true == validValue)
-                GlobalData::GetInstance().gOverrideImportDirectInput8 = value;
-
-            return validValue;
-        }
-
-        // --------
-
-        bool ApplyOverrideImportWinMM(std::wstring& value)
-        {
-            bool validValue = !(value.empty());
-
-            if (true == validValue)
-                GlobalData::GetInstance().gOverrideImportWinMM = value;
-
-            return validValue;
+            return configuration;
         }
 
         // --------
@@ -136,36 +109,6 @@ namespace Xidi
         HINSTANCE GetInstanceHandle(void)
         {
             return GlobalData::GetInstance().gInstanceHandle;
-        }
-
-        // --------
-
-        std::wstring_view GetLibraryPathDirectInput(void)
-        {
-            if (false == GlobalData::GetInstance().gOverrideImportDirectInput.empty())
-                return GlobalData::GetInstance().gOverrideImportDirectInput;
-            else
-                return Strings::kStrSystemLibraryFilenameDirectInput;
-        }
-
-        // --------
-
-        std::wstring_view GetLibraryPathDirectInput8(void)
-        {
-            if (false == GlobalData::GetInstance().gOverrideImportDirectInput8.empty())
-                return GlobalData::GetInstance().gOverrideImportDirectInput8;
-            else
-                return Strings::kStrSystemLibraryFilenameDirectInput8;
-        }
-
-        // --------
-
-        std::wstring_view GetLibraryPathWinMM(void)
-        {
-            if (false == GlobalData::GetInstance().gOverrideImportWinMM.empty())
-                return GlobalData::GetInstance().gOverrideImportWinMM;
-            else
-                return Strings::kStrSystemLibraryFilenameWinMM;
         }
 
         // --------

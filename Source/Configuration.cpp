@@ -10,645 +10,603 @@
  *****************************************************************************/
 
 #include "Configuration.h"
-#include "Globals.h"
-#include "ImportApiDirectInput.h"
-#include "ImportApiWinMM.h"
-#include "Log.h"
-#include "MapperFactory.h"
+#include "TemporaryBuffer.h"
 
+#include <climits>
+#include <cstdarg>
+#include <cstdint>
 #include <cstdio>
+#include <cstdlib>
+#include <cstring>
+#include <limits>
+#include <memory>
 #include <string>
+#include <string_view>
 #include <unordered_set>
-#include <unordered_map>
-
-using namespace Xidi;
 
 
-// -------- CLASS VARIABLES ------------------------------------------------ //
-// See "Configuration.h" for documentation.
-
-std::unordered_map<std::wstring, SConfigurationValueApplyInfo> Configuration::importSettings = {
-    {L"dinput.dll",                             {EConfigurationValueType::ConfigurationValueTypeString,     (void*)&Globals::ApplyOverrideImportDirectInput}},
-    {L"dinput8.dll",                            {EConfigurationValueType::ConfigurationValueTypeString,     (void*)&Globals::ApplyOverrideImportDirectInput8}},
-    {L"winmm.dll",                              {EConfigurationValueType::ConfigurationValueTypeString,     (void*)&Globals::ApplyOverrideImportWinMM}},
-};
-
-std::unordered_map<std::wstring, SConfigurationValueApplyInfo> Configuration::logSettings = {
-    {L"Enabled",                                {EConfigurationValueType::ConfigurationValueTypeBoolean,    (void*)&Log::ApplyConfigurationLogEnabled}},
-    {L"Level",                                  {EConfigurationValueType::ConfigurationValueTypeInteger,    (void*)&Log::ApplyConfigurationLogLevel}}
-};
-
-std::unordered_map<std::wstring, SConfigurationValueApplyInfo> Configuration::mapperSettings = {
-    {L"Type",                                   {EConfigurationValueType::ConfigurationValueTypeString,     (void*)&MapperFactory::ApplyConfigurationMapperType}},
-};
-
-std::unordered_map<std::wstring, std::unordered_map<std::wstring, SConfigurationValueApplyInfo>*> Configuration::configurationSections = {
-    {L"Import",                                 &importSettings},
-    {L"Log",                                    &logSettings},
-    {L"Mapper",                                 &mapperSettings},
-};
-
-
-// -------- CLASS METHODS -------------------------------------------------- //
-// See "Configuration.h" for documentation.
-
-void Configuration::ParseAndApplyConfigurationFile(void)
+namespace Xidi
 {
-    wchar_t configurationFilePath[kMaximumConfigurationFilePathLength];
-    FILE* configurationFileHandle = nullptr;
-
-    // Get the configuration file path.
-    if (0 == GetConfigurationFilePath(configurationFilePath, _countof(configurationFilePath)))
+    namespace Configuration
     {
-        HandleErrorInternal(__LINE__);
-        return;
-    }
+        // -------- INTERNAL TYPES ----------------------------------------- //
 
-    // Attempt to open the configuration file.
-    _wfopen_s(&configurationFileHandle, configurationFilePath, L"r");
-    if (nullptr == configurationFileHandle)
-    {
-        HandleErrorCannotOpenConfigurationFile(configurationFilePath);
-        return;
-    }
-
-    // Parse the configuration file, one line at a time.
-    {
-        std::unordered_set<std::wstring> seenConfigurationSections;
-        std::unordered_set<std::wstring> seenConfigurationValuesInCurrentSection;
-        std::unordered_map<std::wstring, SConfigurationValueApplyInfo>* currentConfigurationSection = nullptr;
-        std::wstring currentConfigurationSectionName = L"";
-
-        wchar_t configurationLineBuffer[kMaximumConfigurationLineLength];
-        int configurationLineLength = ReadAndTrimSingleLine(configurationLineBuffer, _countof(configurationLineBuffer), configurationFileHandle);
-        unsigned int configurationLineNumber = 1;
-
-        while (configurationLineLength >= 0)
+        /// Enumerates all possible classifications of configuration file lines.
+        /// Used during parsing to classify each line encountered.
+        enum class ELineClassification
         {
-            std::wstring extractedName;
-            std::wstring extractedValue;
-            SConfigurationValueApplyInfo extractedValueInfo;
+            Error,                                                          ///< Line could not be parsed.
+            Ignore,                                                         ///< Line should be ignored, either because it is just whitespace or because it is a comment.
+            Section,                                                        ///< Line begins a section, whose name appears in square brackets.
+            Value,                                                          ///< Line is a value within the current section and so should be parsed.
+        };
 
-            switch (ClassifyConfigurationFileLine(configurationLineBuffer, configurationLineLength))
+        /// Wrapper around a standard file handle.
+        /// Attempts to open the specified file on construction and close it on destruction.
+        struct FileHandle
+        {
+            FILE* fileHandle = nullptr;
+
+            inline operator FILE*(void) const
             {
-            case EConfigurationLineType::ConfigurationLineTypeIgnore:
-                // Skip lines that should be ignored.
-                break;
+                return fileHandle;
+            }
 
-            case EConfigurationLineType::ConfigurationLineTypeSection:
-                ExtractSectionNameFromConfigurationFileLine(extractedName, configurationLineBuffer);
+            inline FILE** operator&(void)
+            {
+                return &fileHandle;
+            }
 
-                if (0 != seenConfigurationSections.count(extractedName))
+            inline ~FileHandle(void)
+            {
+                if (nullptr != fileHandle)
+                    fclose(fileHandle);
+            }
+        };
+
+
+        // -------- INTERNAL FUNCTIONS ------------------------------------- //
+
+        /// Tests if the supplied character is allowed as a configuration setting name (the part before the '=' sign in the configuration file).
+        /// @param [in] charToTest Character to test.
+        /// @return `true` if so, `false` if not.
+        static bool IsAllowedNameCharacter(const wchar_t charToTest)
+        {
+            switch (charToTest)
+            {
+            case L'.':
+                return true;
+
+            default:
+                return (iswalnum(charToTest) ? true : false);
+            }
+        }
+
+        /// Tests if the supplied character is allowed as a section name (appears between square brackets in the configuration file).
+        /// @param [in] charToTest Character to test.
+        /// @return `true` if so, `false` if not.
+        static bool IsAllowedSectionCharacter(const wchar_t charToTest)
+        {
+            switch (charToTest)
+            {
+            case L',':
+            case L'.':
+            case L';':
+            case L':':
+            case L'\'':
+            case L'\\':
+            case L'{':
+            case L'}':
+            case L'-':
+            case L'_':
+            case L' ':
+            case L'+':
+            case L'=':
+            case L'!':
+            case L'@':
+            case L'#':
+            case L'$':
+            case L'%':
+            case L'^':
+            case L'&':
+            case L'(':
+            case L')':
+                return true;
+
+            default:
+                return (iswalnum(charToTest) ? true : false);
+            }
+        }
+
+        /// Tests if the supplied character is allowed as a configuration setting value (the part after the '=' sign in the configuration file).
+        /// @param [in] charToTest Character to test.
+        /// @return `true` if so, `false` if not.
+        static bool IsAllowedValueCharacter(const wchar_t charToTest)
+        {
+            switch (charToTest)
+            {
+            case L',':
+            case L'.':
+            case L';':
+            case L':':
+            case L'\'':
+            case L'\\':
+            case L'{':
+            case L'[':
+            case L'}':
+            case L']':
+            case L'-':
+            case L'_':
+            case L' ':
+            case L'+':
+            case L'=':
+            case L'!':
+            case L'@':
+            case L'#':
+            case L'$':
+            case L'%':
+            case L'^':
+            case L'&':
+            case L'(':
+            case L')':
+                return true;
+
+            default:
+                return (iswalnum(charToTest) ? true : false);
+            }
+        }
+
+        /// Classifies the provided configuration file line and returns a value indicating the result.
+        /// @param [in] buf Buffer containing the configuration file line.
+        /// @param [in] length Number of characters in the buffer.
+        /// @return Configuration line classification.
+        static ELineClassification ClassifyConfigurationFileLine(const wchar_t* const buf, const int length)
+        {
+            // Skip over all whitespace at the start of the input line.
+            const wchar_t* realBuf = buf;
+            int realLength = length;
+            while (realLength != 0 && iswblank(realBuf[0]))
+            {
+                realLength -= 1;
+                realBuf += 1;
+            }
+
+            // Sanity check: zero-length and all-whitespace lines can be safely ignored.
+            // Also filter out comments this way.
+            if (0 == realLength || L';' == realBuf[0] || L'#' == realBuf[0])
+                return ELineClassification::Ignore;
+
+            // Non-comments must, by definition, have at least three characters in them, excluding all whitespace.
+            // For section headers, this must mean '[' + section name + ']'.
+            // For values, this must mean name + '=' + value.
+            if (realLength < 3)
+                return ELineClassification::Error;
+
+            if (L'[' == realBuf[0])
+            {
+                // The line cannot be a section header unless the second character is a valid section name character.
+                if (!IsAllowedSectionCharacter(realBuf[1]))
+                    return ELineClassification::Error;
+
+                // Verify that the line is a valid section header by checking for valid section name characters between two square brackets.
+                int i = 2;
+                for (; i < realLength && L']' != realBuf[i]; ++i)
                 {
-                    // Error: section name is duplicated.
-                    HandleErrorDuplicateConfigurationSection(configurationFilePath, extractedName.c_str());
-                    fclose(configurationFileHandle);
-                    return;
+                    if (!IsAllowedSectionCharacter(realBuf[i]))
+                        return ELineClassification::Error;
                 }
-                else if (0 == configurationSections.count(extractedName))
-                {
-                    // Error: section name is unsupported.
-                    HandleErrorUnsupportedConfigurationSection(configurationFilePath, extractedName.c_str());
-                    fclose(configurationFileHandle);
-                    return;
-                }
-                else
-                {
-                    // Insert the current configuration section into the set of those already seen.
-                    seenConfigurationSections.insert(extractedName);
+                if (L']' != realBuf[i])
+                    return ELineClassification::Error;
 
-                    // Set the current section to the one named in the configuration file and reset the set of all values seen.
-                    currentConfigurationSection = configurationSections[extractedName];
-                    currentConfigurationSectionName = extractedName;
-                    seenConfigurationValuesInCurrentSection.clear();
-                }
-                break;
-
-            case EConfigurationLineType::ConfigurationLineTypeValue:
-                if (nullptr == currentConfigurationSection)
+                // Verify that the remainder of the line is just whitespace.
+                for (i += 1; i < realLength; ++i)
                 {
-                    // Warning: value specified outside a section (i.e. before the first section header in the configuration file).
-                    HandleErrorValueOutsideSection(configurationFilePath, configurationLineNumber);
+                    if (!iswblank(realBuf[i]))
+                        return ELineClassification::Error;
+                }
+
+                return ELineClassification::Section;
+            }
+            else if (IsAllowedNameCharacter(realBuf[0]))
+            {
+                // Search for whitespace or an equals sign, with all characters in between needing to be allowed as value name characters.
+                int i = 1;
+                for (; i < realLength && L'=' != realBuf[i] && !iswblank(realBuf[i]); ++i)
+                {
+                    if (!IsAllowedNameCharacter(realBuf[i]))
+                        return ELineClassification::Error;
+                }
+
+                // Skip over any whitespace present, then check for an equals sign.
+                for (; i < realLength && iswblank(realBuf[i]); ++i);
+                if (L'=' != realBuf[i])
+                    return ELineClassification::Error;
+
+                // Skip over any whitespace present, then verify the next character is allowed to start a value setting.
+                for (i += 1; i < realLength && iswblank(realBuf[i]); ++i);
+                if (!IsAllowedValueCharacter(realBuf[i]))
+                    return ELineClassification::Error;
+
+                // Skip over the value setting characters that follow.
+                for (i += 1; i < realLength && IsAllowedValueCharacter(realBuf[i]); ++i);
+
+                // Verify that the remainder of the line is just whitespace.
+                for (; i < realLength; ++i)
+                {
+                    if (!iswblank(realBuf[i]))
+                        return ELineClassification::Error;
+                }
+
+                return ELineClassification::Value;
+            }
+
+            return ELineClassification::Error;
+        }
+
+        /// Creates a string based on formatting another one.
+        /// @param [out] dest String to which to output the result of formatting..
+        /// @param [in] format String to format, possibly with format specifiers.
+        static void FormatString(std::wstring& dest, const wchar_t* const format, ...)
+        {
+            TemporaryBuffer<wchar_t> buf;
+
+            va_list args;
+            va_start(args, format);
+
+            vswprintf_s(buf, buf.Count(), format, args);
+
+            va_end(args);
+
+            dest = buf;
+        }
+
+        /// Parses a Boolean from the supplied input string.
+        /// @param [in] source String from which to parse.
+        /// @param [out] dest Filled with the result of the parse.
+        /// @return `true` if the parse was successful and able to consume the whole string, `false` otherwise.
+        static bool ParseBoolean(const TStringValue& source, TBooleanValue* const dest)
+        {
+            static const wchar_t* const trueStrings[] = { L"t", L"true", L"on", L"y", L"yes", L"enabled", L"1" };
+            static const wchar_t* const falseStrings[] = { L"f", L"false", L"off", L"n", L"no", L"disabled", L"0" };
+
+            // Check if the string represents a value of TRUE.
+            for (int i = 0; i < _countof(trueStrings); ++i)
+            {
+                if (0 == _wcsicmp(source.c_str(), trueStrings[i]))
+                {
+                    *dest = (TBooleanValue)true;
+                    return true;
+                }
+            }
+
+            // Check if the string represents a value of FALSE.
+            for (int i = 0; i < _countof(falseStrings); ++i)
+            {
+                if (0 == _wcsicmp(source.c_str(), falseStrings[i]))
+                {
+                    *dest = (TBooleanValue)false;
+                    return true;
+                }
+            }
+
+            return false;
+        }
+
+        /// Parses a signed integer value from the supplied input string.
+        /// @param [in] source String from which to parse.
+        /// @param [out] dest Filled with the result of the parse.
+        /// @return `true` if the parse was successful and able to consume the whole string, `false` otherwise.
+        static bool ParseInteger(const TStringValue& source, TIntegerValue* const dest)
+        {
+            intmax_t value = 0ll;
+            wchar_t* endptr = nullptr;
+
+            // Parse out a number in any representable base.
+            value = wcstoll(source.c_str(), &endptr, 0);
+
+            // Verify that the number is not out of range.
+            if (ERANGE == errno && (LLONG_MIN == value || LLONG_MAX == value))
+                return false;
+            if (value > std::numeric_limits<TIntegerValue>::max() || value < std::numeric_limits<TIntegerValue>::min())
+                return false;
+
+            // Verify that the whole string was consumed.
+            if (L'\0' != *endptr)
+                return false;
+
+            *dest = (TIntegerValue)value;
+            return true;
+        }
+
+        /// Parses a name and a value for the specified configuration file line, which must first have been classified as containing a value.
+        /// @param [in] configFileLine Buffer containing the configuration file line.
+        /// @param [out] nameString Filled with the name of the configuration setting.
+        /// @param [out] valueString Filled with the value specified for the configuration setting.
+        static void ParseNameAndValue(const wchar_t* const configFileLine, std::wstring& nameString, TStringValue& valueString)
+        {
+            // Skip to the start of the name part of the line.
+            const wchar_t* name = configFileLine;
+            while (iswblank(name[0]))
+                name += 1;
+
+            // Find the length of the configuration name.
+            int nameLength = 1;
+            while (IsAllowedNameCharacter(name[nameLength]))
+                nameLength += 1;
+
+            // Advance to the value portion of the string.
+            const wchar_t* value = &name[nameLength + 1];
+
+            // Skip over whitespace and the '=' sign.
+            while ((L'=' == value[0]) || (iswblank(value[0])))
+                value += 1;
+
+            // Find the length of the configuration value.
+            int valueLength = 1;
+            while (IsAllowedValueCharacter(value[valueLength]))
+                valueLength += 1;
+
+            nameString = std::move(std::wstring(name, nameLength));
+            valueString = std::move(TStringValue(value, valueLength));
+        }
+
+        /// Parses a section name from the specified configuration file line, which must first have been classified as containing a section name.
+        /// @param [in] configFileLine Buffer containing the configuration file line.
+        /// @param [out] sectionString Filled with the name of the configuration section.
+        static void ParseSectionName(const wchar_t* const configFileLine, std::wstring& sectionString)
+        {
+            // Skip to the '[' character and then advance once more to the section name itself.
+            const wchar_t* section = configFileLine;
+            while (L'[' != section[0])
+                section += 1;
+            section += 1;
+
+            // Find the length of the section name.
+            int sectionLength = 1;
+            while (L']' != section[sectionLength])
+                sectionLength += 1;
+
+            sectionString = std::move(std::wstring(section, sectionLength));
+        }
+
+        /// Reads a single line from the specified file handle, verifies that it fits within the specified buffer, and removes trailing whitespace.
+        /// @param [in] filehandle Handle to the file from which to read.
+        /// @param [out] lineBuffer Filled with text read from the specified file.
+        /// @param [in] lineBufferCount Length, in character units, of the line buffer.
+        /// @return Length of the string that was read, with -1 indicating an error condition.
+        static int ReadAndTrimLine(FILE* const filehandle, wchar_t* const lineBuffer, const int lineBufferCount)
+        {
+            // Results in a null-terminated string guaranteed, but might not be the whole line if the buffer is too small.
+            if (lineBuffer != fgetws(lineBuffer, lineBufferCount, filehandle))
+                return -1;
+
+            // If the line fits in the buffer, then either its detected length is small by comparison to the buffer size or, if it perfectly fits in the buffer, then the last character is a newline.
+            int lineLength = (int)wcsnlen(lineBuffer, lineBufferCount);
+            if (((lineBufferCount - 1) == lineLength) && (L'\n' != lineBuffer[lineLength - 1]))
+                return -1;
+
+            // Trim off any whitespace on the end of the line.
+            while (iswspace(lineBuffer[lineLength - 1]))
+                lineLength -= 1;
+
+            lineBuffer[lineLength] = L'\0';
+
+            return lineLength;
+        }
+
+
+        // -------- INSTANCE METHODS --------------------------------------- //
+        // See "Configuration.h" for documentation.
+
+        EFileReadResult ConfigurationFileReader::ReadConfigurationFile(std::wstring_view configFileName, ConfigurationData& configToFill)
+        {
+            FileHandle configFileHandle;
+            _wfopen_s(&configFileHandle, configFileName.data(), L"r");
+
+            if (nullptr == configFileHandle)
+            {
+                FormatString(readErrorMessage, L"%s - Unable to open configuration file.", configFileName.data());
+                return EFileReadResult::FileNotFound;
+            }
+
+            PrepareForRead();
+
+            // Parse the configuration file, one line at a time.
+            std::unordered_set<std::wstring> seenSections;
+            std::wstring thisSection = kSectionNameGlobal;
+
+            int configLineNumber = 1;
+            TemporaryBuffer<wchar_t> configLineBuffer;
+            int configLineLength = ReadAndTrimLine(configFileHandle, configLineBuffer, configLineBuffer.Count());
+            bool skipValueLines = false;
+
+            while (configLineLength >= 0)
+            {
+                switch (ClassifyConfigurationFileLine(configLineBuffer, configLineLength))
+                {
+                case ELineClassification::Error:
+                    FormatString(readErrorMessage, L"%s:%d - Unable to parse line.", configFileName.data(), configLineNumber);
+                    return EFileReadResult::Malformed;
+
+                case ELineClassification::Ignore:
                     break;
-                }
 
-                // Extract out the name and value from the current line.
-                ExtractNameValuePairFromConfigurationFileLine(extractedName, extractedValue, configurationLineBuffer);
-
-                if (0 != seenConfigurationValuesInCurrentSection.count(extractedName))
+                case ELineClassification::Section:
                 {
-                    // Warning: duplicate value within the current section.
-                    HandleErrorDuplicateValue(configurationFilePath, configurationLineNumber, currentConfigurationSectionName.c_str(), extractedName.c_str());
-                }
+                    std::wstring section;
+                    ParseSectionName(configLineBuffer, section);
 
-                // Verify the name is recognized.
-                if (0 == currentConfigurationSection->count(extractedName))
-                {
-                    // Warning: unsupported value in current section.
-                    HandleErrorUnsupportedValue(configurationFilePath, configurationLineNumber, currentConfigurationSectionName.c_str(), extractedName.c_str());
-                    break;
-                }
-
-                // Extract information on the value.
-                extractedValueInfo = (*currentConfigurationSection)[extractedName];
-
-                // Parse the value according to its specified and supposed type.
-                // Apply the setting immediately after parsing.
-                union
-                {
-                    int64_t integerValue;
-                    bool booleanValue;
-                    std::wstring* stringValue;
-                } parsedValue;
-
-                switch (extractedValueInfo.type)
-                {
-                case EConfigurationValueType::ConfigurationValueTypeInteger:
-
-                    // Parse the value.
-                    if (false == ParseIntegerValue(parsedValue.integerValue, extractedValue))
+                    if (0 != seenSections.count(section))
                     {
-                        // Warning: unable to parse the value.
-                        HandleErrorMalformedValue(configurationFilePath, configurationLineNumber, currentConfigurationSectionName.c_str(), extractedName.c_str());
-                        break;
+                        FormatString(readErrorMessage, L"%s:%d - Section \"%s\" is duplicated.", configFileName.data(), configLineNumber, section.c_str());
+                        return EFileReadResult::Malformed;
                     }
 
-                    // Attempt to apply the value.
-                    if ((nullptr == extractedValueInfo.applyFunc) || (false == ((TFuncApplyIntSetting)extractedValueInfo.applyFunc)(parsedValue.integerValue)))
-                        HandleErrorCannotApplyValue(configurationFilePath, configurationLineNumber, extractedValue.c_str(), currentConfigurationSectionName.c_str(), extractedName.c_str());
-                    else
-                        HandleSuccessAppliedValue(configurationFilePath, configurationLineNumber, extractedValue.c_str(), currentConfigurationSectionName.c_str(), extractedName.c_str());
-
-                    break;
-
-                case EConfigurationValueType::ConfigurationValueTypeBoolean:
-
-                    // Parse the value.
-                    if (false == ParseBooleanValue(parsedValue.booleanValue, extractedValue))
+                    const ESectionAction sectionAction = ActionForSection(section);
+                    switch (sectionAction)
                     {
-                        // Warning: unable to parse the value.
-                        HandleErrorMalformedValue(configurationFilePath, configurationLineNumber, currentConfigurationSectionName.c_str(), extractedName.c_str());
+                    case ESectionAction::Error:
+                        FormatString(readErrorMessage, L"%s:%d - Section \"%s\" is invalid.", configFileName.data(), configLineNumber, section.c_str());
+                        return EFileReadResult::Malformed;
+
+                    case ESectionAction::Read:
+                        thisSection = std::move(section);
+                        seenSections.insert(thisSection);
+                        skipValueLines = false;
                         break;
+
+                    case ESectionAction::Skip:
+                        skipValueLines = true;
+                        break;
+
+                    default:
+                        FormatString(readErrorMessage, L"%s:%d - Internal error while processing section name.", configFileName.data(), configLineNumber);
+                        return EFileReadResult::Malformed;
                     }
+                }
+                break;
 
-                    // Attempt to apply the value.
-                    if ((nullptr == extractedValueInfo.applyFunc) || (false == ((TFuncApplyBoolSetting)extractedValueInfo.applyFunc)(parsedValue.booleanValue)))
-                        HandleErrorCannotApplyValue(configurationFilePath, configurationLineNumber, extractedValue.c_str(), currentConfigurationSectionName.c_str(), extractedName.c_str());
-                    else
-                        HandleSuccessAppliedValue(configurationFilePath, configurationLineNumber, extractedValue.c_str(), currentConfigurationSectionName.c_str(), extractedName.c_str());
+                case ELineClassification::Value:
+                    if (false == skipValueLines)
+                    {
+                        std::wstring name;
+                        TStringValue value;
+                        ParseNameAndValue(configLineBuffer, name, value);
 
-                    break;
+                        const EValueType valueType = TypeForValue(thisSection, name);
 
-                case EConfigurationValueType::ConfigurationValueTypeString:
+                        // If the value type does not identify it as multi-valued, make sure this is the first time the setting is seen.
+                        switch (valueType)
+                        {
+                        case EValueType::Integer:
+                        case EValueType::Boolean:
+                        case EValueType::String:
+                            if (configToFill.SectionNamePairExists(thisSection, name))
+                            {
+                                FormatString(readErrorMessage, L"%s:%d - Configuration setting \"%s\" only supports a single value.", configFileName.data(), configLineNumber, name.c_str());
+                                return EFileReadResult::Malformed;
+                            }
 
-                    // No special parsing operation is required for a string-typed value.
-                    parsedValue.stringValue = &extractedValue;
+                        default:
+                            break;
+                        }
 
-                    // Attempt to apply the value.
-                    if ((nullptr == extractedValueInfo.applyFunc) || (false == ((TFuncApplyStringSetting)extractedValueInfo.applyFunc)(*parsedValue.stringValue)))
-                        HandleErrorCannotApplyValue(configurationFilePath, configurationLineNumber, extractedValue.c_str(), currentConfigurationSectionName.c_str(), extractedName.c_str());
-                    else
-                        HandleSuccessAppliedValue(configurationFilePath, configurationLineNumber, extractedValue.c_str(), currentConfigurationSectionName.c_str(), extractedName.c_str());
+                        // Attempt to parse the value.
+                        switch (valueType)
+                        {
+                        case EValueType::Error:
+                            FormatString(readErrorMessage, L"%s:%d - Configuration setting \"%s\" is invalid.", configFileName.data(), configLineNumber, name.c_str());
+                            return EFileReadResult::Malformed;
 
+                        case EValueType::Integer:
+                        case EValueType::IntegerMultiValue:
+                        {
+                            TIntegerValue intValue = (TIntegerValue)0;
+
+                            if (false == ParseInteger(value, &intValue))
+                            {
+                                FormatString(readErrorMessage, L"%s:%d - Value \"%s\" is not a valid integer.", configFileName.data(), configLineNumber, value.c_str());
+                                return EFileReadResult::Malformed;
+                            }
+
+                            if (false == CheckValue(thisSection, name, intValue))
+                            {
+                                FormatString(readErrorMessage, L"%s:%d - Configuration setting \"%s\" with value \"%s\" is invalid.", configFileName.data(), configLineNumber, name.c_str(), value.c_str());
+                                return EFileReadResult::Malformed;
+                            }
+
+                            if (false == configToFill.Insert(thisSection, name, intValue))
+                            {
+                                FormatString(readErrorMessage, L"%s:%d - Value \"%s\" for configuration setting \"%s\" is duplicated.", configFileName.data(), configLineNumber, value.c_str(), name.c_str());
+                                return EFileReadResult::Malformed;
+                            }
+                        }
+                        break;
+
+                        case EValueType::Boolean:
+                        case EValueType::BooleanMultiValue:
+                        {
+                            TBooleanValue boolValue = (TBooleanValue)false;
+
+                            if (false == ParseBoolean(value, &boolValue))
+                            {
+                                FormatString(readErrorMessage, L"%s:%d - Value \"%s\" is not a valid Boolean.", configFileName.data(), configLineNumber, value.c_str());
+                                return EFileReadResult::Malformed;
+                            }
+
+                            if (false == CheckValue(thisSection, name, boolValue))
+                            {
+                                FormatString(readErrorMessage, L"%s:%d - Configuration setting \"%s\" with value \"%s\" is invalid.", configFileName.data(), configLineNumber, name.c_str(), value.c_str());
+                                return EFileReadResult::Malformed;
+                            }
+
+                            if (false == configToFill.Insert(thisSection, name, boolValue))
+                            {
+                                FormatString(readErrorMessage, L"%s:%d - Value \"%s\" for configuration setting \"%s\" is duplicated.", configFileName.data(), configLineNumber, value.c_str(), name.c_str());
+                                return EFileReadResult::Malformed;
+                            }
+                        }
+                        break;
+
+                        case EValueType::String:
+                        case EValueType::StringMultiValue:
+                            if (false == CheckValue(thisSection, name, value))
+                            {
+                                FormatString(readErrorMessage, L"%s:%d - Configuration setting \"%s\" with value \"%s\" is invalid.", configFileName.data(), configLineNumber, name.c_str(), value.c_str());
+                                return EFileReadResult::Malformed;
+                            }
+
+                            if (false == configToFill.Insert(thisSection, name, value))
+                            {
+                                FormatString(readErrorMessage, L"%s:%d - Value \"%s\" for configuration setting \"%s\" is duplicated.", configFileName.data(), configLineNumber, value.c_str(), name.c_str());
+                                return EFileReadResult::Malformed;
+                            }
+                            break;
+
+                        default:
+                            FormatString(readErrorMessage, L"%s:%d - Internal error while processing configuration setting.", configFileName.data(), configLineNumber);
+                            return EFileReadResult::Malformed;
+                        }
+                    }
                     break;
 
                 default:
-                    // This should never happen and is an internal error.
-                    HandleErrorInternal(__LINE__);
-                    fclose(configurationFileHandle);
-                    return;
+                    FormatString(readErrorMessage, L"%s:%d - Internal error while processing line.", configFileName.data(), configLineNumber);
+                    return EFileReadResult::Malformed;
                 }
 
-                seenConfigurationValuesInCurrentSection.insert(extractedName);
-                break;
-
-            default:
-                // Error: unable to parse the current configuration file line.
-                HandleErrorCannotParseConfigurationFileLine(configurationFilePath, configurationLineNumber);
-                fclose(configurationFileHandle);
-                return;
+                configLineLength = ReadAndTrimLine(configFileHandle, configLineBuffer, configLineBuffer.Count());
+                configLineNumber += 1;
             }
 
-            configurationLineLength = ReadAndTrimSingleLine(configurationLineBuffer, _countof(configurationLineBuffer), configurationFileHandle);
-            configurationLineNumber += 1;
-        }
-
-        if (!feof(configurationFileHandle))
-        {
-            // Stopped reading the configuration file early due to some condition other than end-of-file.
-            // This indicates an error.
-
-            if (ferror(configurationFileHandle))
+            if (!feof(configFileHandle))
             {
-                // Error: file I/O problem.
-                HandleErrorFileIO(configurationFilePath);
-                fclose(configurationFileHandle);
-                return;
+                // Stopped reading the configuration file early due to some condition other than end-of-file.
+                // This indicates an error.
 
+                if (ferror(configFileHandle))
+                {
+                    FormatString(readErrorMessage, L"%s - I/O error while reading.", configFileName.data(), configLineNumber);
+                    return EFileReadResult::Malformed;
+
+                }
+                else if (configLineLength < 0)
+                {
+                    FormatString(readErrorMessage, L"%s:%d - Line is too long.", configFileName.data(), configLineNumber);
+                    return EFileReadResult::Malformed;
+                }
             }
-            else if (configurationLineLength < 0)
-            {
-                // Error: line is too long.
-                HandleErrorLineTooLong(configurationFilePath, configurationLineNumber);
-                fclose(configurationFileHandle);
-                return;
-            }
+
+            return EFileReadResult::Success;
         }
-    }
-
-    fclose(configurationFileHandle);
-}
 
 
-// -------- HELPERS -------------------------------------------------------- //
-// See "Configuration.h" for documentation.
+        // -------- CONCRETE INSTANCE METHODS ------------------------------ //
+        // See "Configuration.h" for documentation.
 
-EConfigurationLineType Configuration::ClassifyConfigurationFileLine(LPCWSTR buf, const size_t length)
-{
-    // Skip over all whitespace at the start of the input line.
-    LPCWSTR realBuf = buf;
-    size_t realLength = length;
-    while (realLength != 0 && iswblank(realBuf[0]))
-    {
-        realLength -= 1;
-        realBuf += 1;
-    }
-
-    // Sanity check: zero-length and all-whitespace lines can be safely ignored.
-    // Also filter out comments this way.
-    if (0 == realLength || L';' == realBuf[0] || L'#' == realBuf[0])
-        return EConfigurationLineType::ConfigurationLineTypeIgnore;
-
-    // Non-comments must, by definition, have at least three characters in them, excluding all whitespace.
-    // For section headers, this must mean '[' + section name + ']'.
-    // For values, this must mean name + '=' + value.
-    if (realLength < 3)
-        return EConfigurationLineType::ConfigurationLineTypeError;
-
-    if (L'[' == realBuf[0])
-    {
-        // The line cannot be a section header unless the second character is alphanumeric (there must be at least one character in the name of the section).
-        if (!iswalnum(realBuf[1]))
-            return EConfigurationLineType::ConfigurationLineTypeError;
-
-        // Verify that the line is a valid section header by checking for alphanumeric characters between two square brackets.
-        size_t i = 2;
-        for (; i < realLength && L']' != realBuf[i]; ++i)
+        void ConfigurationFileReader::PrepareForRead(void)
         {
-            if (!iswalnum(realBuf[i]))
-                return EConfigurationLineType::ConfigurationLineTypeError;
-        }
-        if (L']' != realBuf[i])
-            return EConfigurationLineType::ConfigurationLineTypeError;
-
-        // Verify that the remainder of the line is just whitespace.
-        for (i += 1; i < realLength; ++i)
-        {
-            if (!iswblank(realBuf[i]))
-                return EConfigurationLineType::ConfigurationLineTypeError;
-        }
-
-        return EConfigurationLineType::ConfigurationLineTypeSection;
-    }
-    else if (IsAllowedValueNameCharacter(realBuf[0]))
-    {
-        // Search for whitespace or an equals sign, with all characters in between needing to be allowed as value name characters.
-        size_t i = 1;
-        for (; i < realLength && L'=' != realBuf[i] && !iswblank(realBuf[i]); ++i)
-        {
-            if (!IsAllowedValueNameCharacter(realBuf[i]))
-                return EConfigurationLineType::ConfigurationLineTypeError;
-        }
-
-        // Skip over any whitespace present, then check for an equals sign.
-        for (; i < realLength && iswblank(realBuf[i]); ++i);
-        if (L'=' != realBuf[i])
-            return EConfigurationLineType::ConfigurationLineTypeError;
-
-        // Skip over any whitespace present, then verify the next character is allowed to start a value setting.
-        for (i += 1; i < realLength && iswblank(realBuf[i]); ++i);
-        if (!IsAllowedValueSettingCharacter(realBuf[i]))
-            return EConfigurationLineType::ConfigurationLineTypeError;
-
-        // Skip over the value setting characters that follow.
-        for (i += 1; i < realLength && IsAllowedValueSettingCharacter(realBuf[i]); ++i);
-
-        // Verify that the remainder of the line is just whitespace.
-        for (; i < realLength; ++i)
-        {
-            if (!iswblank(realBuf[i]))
-                return EConfigurationLineType::ConfigurationLineTypeError;
-        }
-
-        return EConfigurationLineType::ConfigurationLineTypeValue;
-    }
-
-    return EConfigurationLineType::ConfigurationLineTypeError;
-}
-
-// ---------
-
-void Configuration::ExtractNameValuePairFromConfigurationFileLine(std::wstring& name, std::wstring& value, LPWSTR configFileLine)
-{
-    // Skip to the start of the configuration name.
-    LPWSTR configBuf = configFileLine;
-    while (iswblank(configBuf[0]))
-        configBuf += 1;
-
-    // Find the length of the configuration name.
-    size_t configLength = 1;
-    while (IsAllowedValueNameCharacter(configBuf[configLength]))
-        configLength += 1;
-
-    // nullptr-terminate the configuration name, then assign to the output string.
-    configBuf[configLength] = L'\0';
-    name = configBuf;
-
-    // Advance to the value portion of the string.
-    configBuf = &configBuf[configLength + 1];
-
-    // Skip over whitespace and the '=' sign.
-    while ((L'=' == configBuf[0]) || (iswblank(configBuf[0])))
-        configBuf += 1;
-
-    // Find the length of the configuration value.
-    configLength = 1;
-    while (IsAllowedValueSettingCharacter(configBuf[configLength]))
-        configLength += 1;
-
-    // Trim off any dangling whitespace.
-    while ((1 < configLength) && (iswblank(configBuf[configLength - 1])))
-        configLength -= 1;
-
-    configBuf[configLength] = L'\0';
-    value = configBuf;
-}
-
-// ---------
-
-int Configuration::IsAllowedValueNameCharacter(const wchar_t charToTest)
-{
-    switch (charToTest)
-    {
-    case L'.':
-        return true;
-
-    default:
-        return iswalnum(charToTest);
-    }
-}
-
-// ---------
-
-int Configuration::IsAllowedValueSettingCharacter(const wchar_t charToTest)
-{
-    switch (charToTest)
-    {
-    case L',':
-    case L'.':
-    case L';':
-    case L':':
-    case L'\'':
-    case L'\\':
-    case L'{':
-    case L'[':
-    case L'}':
-    case L']':
-    case L'-':
-    case L'_':
-    case L' ':
-    case L'+':
-    case L'=':
-    case L'!':
-    case L'@':
-    case L'#':
-    case L'$':
-    case L'%':
-    case L'^':
-    case L'&':
-    case L'(':
-    case L')':
-        return true;
-
-    default:
-        return iswalnum(charToTest);
-    }
-}
-
-// ---------
-
-bool Configuration::ParseIntegerValue(int64_t& dest, const std::wstring& source)
-{
-    int64_t value = 0ll;
-    LPWSTR endptr = nullptr;
-
-    // Parse out a number in any representable base.
-    value = wcstoll(source.c_str(), &endptr, 0);
-
-    // Verify that the number is not out of range.
-    if (ERANGE == errno && (LLONG_MIN == value || LLONG_MAX == value))
-        return false;
-
-    // Verify that the whole string was consumed.
-    if (L'\0' != *endptr)
-        return false;
-
-    // Set the output.
-    dest = value;
-    return true;
-}
-
-// ---------
-
-bool Configuration::ParseBooleanValue(bool& dest, const std::wstring& source)
-{
-    static const std::wstring trueStrings[] = { L"t", L"true", L"on", L"y", L"yes", L"enabled", L"1" };
-    static const std::wstring falseStrings[] = { L"f", L"false", L"off", L"n", L"no", L"disabled", L"0" };
-
-    // Check if the string represents a value of TRUE.
-    for (size_t i = 0; i < _countof(trueStrings); ++i)
-    {
-        if (0 == _wcsicmp(source.c_str(), trueStrings[i].c_str()))
-        {
-            dest = true;
-            return true;
+            // Nothing to do here.
         }
     }
-
-    // Check if the string represents a value of FALSE.
-    for (size_t i = 0; i < _countof(falseStrings); ++i)
-    {
-        if (0 == _wcsicmp(source.c_str(), falseStrings[i].c_str()))
-        {
-            dest = false;
-            return true;
-        }
-    }
-
-    return false;
-}
-
-// ---------
-
-void Configuration::ExtractSectionNameFromConfigurationFileLine(std::wstring& sectionName, LPWSTR configFileLine)
-{
-    // Skip to the '[' character.
-    LPWSTR realBuf = configFileLine;
-    while (L'[' != realBuf[0])
-        realBuf += 1;
-    realBuf += 1;
-
-    // Find the length of the section name.
-    size_t realLength = 1;
-    while (L']' != realBuf[realLength])
-        realLength += 1;
-
-    // nullptr-terminate the section name, then assign to the output string.
-    realBuf[realLength] = L'\0';
-    sectionName = realBuf;
-}
-
-// ---------
-
-int Configuration::ReadAndTrimSingleLine(LPWSTR buf, const int count, FILE* filehandle)
-{
-    if (buf != fgetws(buf, count, filehandle))
-        return -1;
-
-    // Verify that the line fits within the buffer, otherwise the line is too long.
-    int linelength = (int)wcsnlen(buf, count);
-    if (count - 1 == linelength && L'\n' != buf[linelength - 1])
-    {
-        // Line is too long.
-        return -1;
-    }
-
-    // Remove the trailing newline character from the configuration line that was read.
-    if (L'\n' == buf[linelength - 1])
-    {
-        linelength -= 1;
-        buf[linelength] = L'\0';
-    }
-
-    return linelength;
-}
-
-
-// -------- APPLICATION-SPECIFIC METHODS ----------------------------------- //
-// See "Configuration.h" for documentation.
-
-size_t Configuration::GetConfigurationFilePath(LPWSTR buf, const DWORD count)
-{
-    wchar_t configurationFileName[kMaximumConfigurationFileNameLength];
-    DWORD lenConfigurationFileName = (size_t)LoadString(Globals::GetInstanceHandle(), IDS_XIDI_CONFIGURATION_FILE_NAME, configurationFileName, _countof(configurationFileName));
-    DWORD lenInstancePath = (size_t)GetModuleFileName(Globals::GetInstanceHandle(), buf, count);
-
-    // Search for the final '\' character in the instance path, by working backwards, and truncate the entire length of the string after.
-    // This extracts the directory name from the module file name.
-    for (lenInstancePath -= 1; lenInstancePath >= 0 && L'\\' != buf[lenInstancePath]; --lenInstancePath);
-    if (0 == lenInstancePath)
-        return 0;
-
-    lenInstancePath += 1;
-    buf[lenInstancePath] = L'\0';
-
-    // If there is room, concatenate the configuration file name to the directory name.
-    if (lenConfigurationFileName + lenInstancePath >= count)
-        return 0;
-
-    wcscat_s(buf, count, configurationFileName);
-
-    return lenInstancePath + lenConfigurationFileName - 1;
-}
-
-// ---------
-
-void Configuration::HandleErrorCannotOpenConfigurationFile(LPCWSTR filename)
-{
-    // Do nothing.
-    // In this scenario, the default settings will be applied.
-}
-
-// ---------
-
-void Configuration::HandleErrorCannotParseConfigurationFileLine(LPCWSTR filename, const DWORD linenum)
-{
-    Log::WriteFormattedLogMessage(ELogLevel::LogLevelError, L"Unable to parse line %u of configuration file \"%s\".", linenum, filename);
-}
-
-// ---------
-
-void Configuration::HandleErrorDuplicateConfigurationSection(LPCWSTR filename, LPCWSTR section)
-{
-    Log::WriteFormattedLogMessage(ELogLevel::LogLevelError, L"Duplicate section \"%s\" in configuration file \"%s\".", section, filename);
-}
-
-// ---------
-
-void Configuration::HandleErrorUnsupportedConfigurationSection(LPCWSTR filename, LPCWSTR section)
-{
-    Log::WriteFormattedLogMessage(ELogLevel::LogLevelError, L"Unsupported section \"%s\" in configuration file \"%s\".", section, filename);
-}
-
-// ---------
-
-void Configuration::HandleErrorLineTooLong(LPCWSTR filename, const DWORD linenum)
-{
-    Log::WriteFormattedLogMessage(ELogLevel::LogLevelError, L"Line %u is too long in configuration file \"%s\".", linenum, filename);
-}
-
-// ---------
-
-void Configuration::HandleErrorValueOutsideSection(LPCWSTR filename, const DWORD linenum)
-{
-    Log::WriteFormattedLogMessage(ELogLevel::LogLevelWarning, L"Value at line %u specified outside of a section in configuration file \"%s\".", linenum, filename);
-}
-
-// ---------
-
-void Configuration::HandleErrorDuplicateValue(LPCWSTR filename, const DWORD linenum, LPCWSTR section, LPCWSTR value)
-{
-    Log::WriteFormattedLogMessage(ELogLevel::LogLevelWarning, L"Duplicate value \"%s\" in section \"%s\" on line %u of configuration file \"%s\".", value, section, linenum, filename);
-}
-
-// ---------
-
-void Configuration::HandleErrorMalformedValue(LPCWSTR filename, const DWORD linenum, LPCWSTR section, LPCWSTR value)
-{
-    Log::WriteFormattedLogMessage(ELogLevel::LogLevelWarning, L"Malformed setting for value \"%s\" in section \"%s\" on line %u of configuration file \"%s\".", value, section, linenum, filename);
-}
-
-// ---------
-
-void Configuration::HandleErrorUnsupportedValue(LPCWSTR filename, const DWORD linenum, LPCWSTR section, LPCWSTR value)
-{
-    Log::WriteFormattedLogMessage(ELogLevel::LogLevelWarning, L"Unsupported value \"%s\" in section \"%s\" on line %u of configuration file \"%s\".", value, section, linenum, filename);
-}
-
-// ---------
-
-void Configuration::HandleErrorCannotApplyValue(LPCWSTR filename, const DWORD linenum, LPCWSTR setting, LPCWSTR section, LPCWSTR value)
-{
-    Log::WriteFormattedLogMessage(ELogLevel::LogLevelWarning, L"Cannot apply setting \"%s\" for value \"%s\" in section \"%s\" on line %u of configuration file \"%s\".", setting, value, section, linenum, filename);
-}
-
-// ---------
-
-void Configuration::HandleErrorFileIO(LPCWSTR filename)
-{
-    Log::WriteFormattedLogMessage(ELogLevel::LogLevelError, L"I/O error while attempting to read configuration file \"%s\".", filename);
-}
-
-// ---------
-
-void Configuration::HandleErrorInternal(const DWORD code)
-{
-    Log::WriteFormattedLogMessage(ELogLevel::LogLevelError, L"Internal error %u while attempting to read configuration file.", code);
-}
-
-// ---------
-
-void Configuration::HandleSuccessAppliedValue(LPCWSTR filename, const DWORD linenum, LPCWSTR setting, LPCWSTR section, LPCWSTR value)
-{
-    Log::WriteFormattedLogMessage(ELogLevel::LogLevelInfo, L"Successfully applied setting \"%s\" for value \"%s\" in section \"%s\" on line %u of configuration file \"%s\".", setting, value, section, linenum, filename);
 }

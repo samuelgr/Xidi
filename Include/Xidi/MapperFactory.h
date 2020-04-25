@@ -13,73 +13,34 @@
 
 #include "Mapper/Base.h"
 
-#include <string>
-#include <unordered_map>
-
 
 namespace Xidi
 {
-    /// Enumerates the known types of mappers that can be created.
-    enum class EMapper
+    namespace Mapper
     {
-        DefaultMapper,
-        XInputNativeMapper,
-        XInputSharedTriggersMapper,
-        StandardGamepadMapper,
-        ExtendedGamepadMapper
-    };
+        // -------- TYPE DEFINITIONS --------------------------------------- //
 
-    /// Creates and returns pointers to new mapper objects on request.
-    /// Intended to be used along with other logic that configures the types of mappers that should be created.
-    /// Specifies a default mapper type but allows a configuration change that would alter the type of mappers returned.
-    /// All methods are class methods.
-    class MapperFactory
-    {
-    public:
+        /// Enumerates the known types of mappers that can be created.
+        enum class EType
+        {
+            ExtendedGamepad,
+            StandardGamepad,
+            XInputNative,
+            XInputSharedTriggers,
+        };
+
+
         // -------- CONSTANTS ---------------------------------------------- //
 
-        /// Specifies the default mapper type that, absent any other changes, will be created upon request.
-        static const EMapper kDefaultMapperType = EMapper::StandardGamepadMapper;
+        /// Default mapper type.
+        /// Mappers of this type will be created unless overridden by a configuration file.
+        inline constexpr EType kDefaultMapperType = EType::StandardGamepad;
 
 
-    private:
-        // -------- CLASS VARIABLES ---------------------------------------- //
-
-        /// Specifies the currently-configured mapper type.
-        static EMapper configuredMapperType;
-
-        /// Maps strings to mapper types.
-        /// Used for accepting configuration setting values.
-        static std::unordered_map<std::wstring, EMapper> mapperTypeStrings;
-
-
-        // -------- CONSTRUCTION AND DESTRUCTION --------------------------- //
-
-        /// Default constructor. Should never be invoked.
-        MapperFactory(void);
-
-
-    public:
-        // -------- CLASS METHODS ------------------------------------------ //
-
-        /// Applies a configuration setting that configures the type of mapper to create.
-        /// @param [in] value Setting value to be applied.
-        /// @return `true` if setting could be applied, `false` otherwise.
-        static bool ApplyConfigurationMapperType(const std::wstring& value);
+        // -------- FUNCTIONS ---------------------------------------------- //
 
         /// Creates a new mapper of the configured type, using the `new` operator.
         /// @return Pointer to the newly-created mapper, or `nullptr` in the event of an error.
-        static Mapper::Base* CreateMapper(void);
-
-        /// Creates a new mapper of the specified type, using the `new` operator.
-        /// @return Pointer to the newly-created mapper, or `nullptr` in the event of an error.
-        static Mapper::Base* CreateMapperOfType(EMapper type);
-
-        /// Resets the mapper configuration to default.
-        static void ResetMapperType(void);
-
-        /// Configures a new type of mapper to create.
-        /// @param [in] type Mapper type to configure.
-        static void SetMapperType(EMapper type);
-    };
+        Mapper::Base* Create(void);
+    }
 }

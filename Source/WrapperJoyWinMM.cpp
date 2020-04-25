@@ -120,7 +120,7 @@ void WrapperJoyWinMM::Initialize(void)
     if (FALSE == isInitialized)
     {
         // Create a mapper and set its data format.
-        mapper = MapperFactory::CreateMapper();
+        mapper = Mapper::Create();
         if (DI_OK != mapper->SetApplicationDataFormat(&joyStateDataFormat))
             Log::WriteLogMessage(ELogLevel::LogLevelError, L"Failed to set device state data format. XInput controllers will not function.");
 

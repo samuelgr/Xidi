@@ -38,6 +38,7 @@
     <ClInclude Include="Include\Xidi\TemporaryBuffer.h" />
     <ClInclude Include="Include\Xidi\VirtualDirectInputDevice.h" />
     <ClInclude Include="Include\Xidi\WrapperIDirectInput.h" />
+    <ClInclude Include="Include\Xidi\XidiConfigReader.h" />
     <ClInclude Include="Include\Xidi\XInputController.h" />
     <ClInclude Include="Resources\DInput8.h" />
     <ClInclude Include="Resources\Xidi.h" />
@@ -68,6 +69,7 @@
     <ClCompile Include="Source\ExportApiDirectInput.cpp" />
     <ClCompile Include="Source\DllMain.cpp" />
     <ClCompile Include="Source\VirtualDirectInputDevice.cpp" />
+    <ClCompile Include="Source\XidiConfigReader.cpp" />
     <ClCompile Include="Source\XInputController.cpp" />
   </ItemGroup>
   <ItemGroup>

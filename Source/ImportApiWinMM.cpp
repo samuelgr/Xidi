@@ -11,9 +11,11 @@
  *****************************************************************************/
 
 #include "ApiWindows.h"
+#include "Configuration.h"
 #include "Globals.h"
 #include "ImportApiWinMM.h"
 #include "Log.h"
+#include "Strings.h"
 
 #include <mutex>
 #include <string_view>
@@ -223,6 +225,22 @@ namespace Xidi
 
         // -------- INTERNAL FUNCTIONS --------------------------------------------- //
 
+        /// Retrieves the library path for the WinMM library that should be used for importing functions.
+        /// @return Library path.
+        static std::wstring_view GetImportLibraryPathWinMM(void)
+        {
+            const Configuration::Configuration& config = Globals::GetConfiguration();
+
+            if ((true == config.IsDataValid()) && (true == config.GetData().SectionNamePairExists(Strings::kStrConfigurationSectionImport, Strings::kStrConfigurationSettingImportWinMM)))
+            {
+                return config.GetData()[Strings::kStrConfigurationSectionImport][Strings::kStrConfigurationSettingImportWinMM].FirstValue().GetStringValue();
+            }
+            else
+            {
+                return Strings::kStrSystemLibraryFilenameWinMM;
+            }
+        }
+
         /// Logs a warning event related to failure to import a particular function from the import library.
         /// @param [in] functionName Name of the function whose import attempt failed.
         static void LogImportFailed(LPCWSTR functionName)
@@ -276,7 +294,7 @@ namespace Xidi
                     ZeroMemory(&importTable, sizeof(importTable));
 
                     // Obtain the full library path string.
-                    std::wstring_view libraryPath = Globals::GetLibraryPathWinMM();
+                    std::wstring_view libraryPath = GetImportLibraryPathWinMM();
 
                     // Attempt to load the library.
                     LogInitializeLibraryPath(libraryPath.data());

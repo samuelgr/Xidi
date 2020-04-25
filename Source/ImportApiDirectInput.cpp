@@ -11,9 +11,11 @@
  *****************************************************************************/
 
 #include "ApiDirectInput.h"
+#include "Configuration.h"
 #include "Globals.h"
 #include "ImportApiDirectInput.h"
 #include "Log.h"
+#include "Strings.h"
 
 #include <mutex>
 #include <string_view>
@@ -49,6 +51,38 @@ namespace Xidi
 
 
         // -------- INTERNAL FUNCTIONS --------------------------------------------- //
+
+        /// Retrieves the library path for the DirectInput library that should be used for importing functions.
+        /// @return Library path.
+        static std::wstring_view GetImportLibraryPathDirectInput(void)
+        {
+            const Configuration::Configuration& config = Globals::GetConfiguration();
+
+            if ((true == config.IsDataValid()) && (true == config.GetData().SectionNamePairExists(Strings::kStrConfigurationSectionImport, Strings::kStrConfigurationSettingImportDirectInput)))
+            {
+                return config.GetData()[Strings::kStrConfigurationSectionImport][Strings::kStrConfigurationSettingImportDirectInput].FirstValue().GetStringValue();
+            }
+            else
+            {
+                return Strings::kStrSystemLibraryFilenameDirectInput;
+            }
+        }
+
+        /// Retrieves the library path for the DirectInput8 library that should be used for importing functions.
+        /// @return Library path.
+        static std::wstring_view GetImportLibraryPathDirectInput8(void)
+        {
+            const Configuration::Configuration& config = Globals::GetConfiguration();
+
+            if ((true == config.IsDataValid()) && (true == config.GetData().SectionNamePairExists(Strings::kStrConfigurationSectionImport, Strings::kStrConfigurationSettingImportDirectInput8)))
+            {
+                return config.GetData()[Strings::kStrConfigurationSectionImport][Strings::kStrConfigurationSettingImportDirectInput8].FirstValue().GetStringValue();
+            }
+            else
+            {
+                return Strings::kStrSystemLibraryFilenameDirectInput8;
+            }
+        }
 
         /// Logs a warning event related to failure to import a particular function from the import library.
         /// @param [in] functionName Name of the function whose import attempt failed.
@@ -104,9 +138,9 @@ namespace Xidi
 
                     // Obtain the full library path string.
 #if DIRECTINPUT_VERSION >= 0x0800
-                    std::wstring_view libraryPath = Globals::GetLibraryPathDirectInput8();
+                    std::wstring_view libraryPath = GetImportLibraryPathDirectInput8();
 #else
-                    std::wstring_view libraryPath = Globals::GetLibraryPathDirectInput();
+                    std::wstring_view libraryPath = GetImportLibraryPathDirectInput();
 #endif
 
                     // Attempt to load the library.

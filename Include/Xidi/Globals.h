@@ -13,6 +13,7 @@
 #pragma once
 
 #include "ApiWindows.h"
+#include "Configuration.h"
 
 #include <string>
 #include <string_view>
@@ -24,21 +25,10 @@ namespace Xidi
     {
         // -------- FUNCTIONS ---------------------------------------------- //
 
-        /// Applies a setting that specifies a custom path for the import library for DirectInput functions.
-        /// @param [in] value Setting value to be applied.
-        /// @return `true` if setting could be applied, `false` otherwise.
-        bool ApplyOverrideImportDirectInput(std::wstring& value);
-
-        /// Applies a setting that specifies a custom path for the import library for DirectInput8 functions.
-        /// @param [in] value Setting value to be applied.
-        /// @return `true` if setting could be applied, `false` otherwise.
-        bool ApplyOverrideImportDirectInput8(std::wstring& value);
-
-        /// Applies a setting that specifies a custom path for the import library for WinMM functions.
-        /// @param [in] value Setting value to be applied.
-        /// @return `true` if setting could be applied, `false` otherwise.
-        bool ApplyOverrideImportWinMM(std::wstring& value);
-
+        /// Retrieves the configuration object that represents the contents of a configuration file.
+        /// @return Read-only configuration object reference.
+        const Configuration::Configuration& GetConfiguration(void);
+        
         /// Retrieves a pseudohandle to the current process.
         /// @return Current process pseudohandle.
         HANDLE GetCurrentProcessHandle(void);
@@ -50,18 +40,6 @@ namespace Xidi
         /// Retrieves the handle of the instance that represents the current running form of this code.
         /// @return Instance handle for this code.
         HINSTANCE GetInstanceHandle(void);
-
-        /// Retrieves the library path for the DirectInput library that should be used for importing functions.
-        /// @return Library path.
-        std::wstring_view GetLibraryPathDirectInput(void);
-
-        /// Retrieves the library path for the DirectInput8 library that should be used for importing functions.
-        /// @return Library path.
-        std::wstring_view GetLibraryPathDirectInput8(void);
-
-        /// Retrieves the library path for the WinMM library that should be used for importing functions.
-        /// @return Library path.
-        std::wstring_view GetLibraryPathWinMM(void);
 
         /// Retrieves information on the current system. This includes architecture, page size, and so on.
         /// @return Reference to a read-only structure containing system information.

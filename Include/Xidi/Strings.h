@@ -49,16 +49,16 @@ namespace Xidi
         inline constexpr std::wstring_view kStrConfigurationSectionLog = L"Log";
 
         /// Configuration file setting for specifying if the log is enabled.
-        inline constexpr std::wstring_view kStrConfigurationSectionLogEnabled = L"Enabled";
+        inline constexpr std::wstring_view kStrConfigurationSettingLogEnabled = L"Enabled";
 
         /// Configuration file setting for specifying the logging verbosity level.
-        inline constexpr std::wstring_view kStrConfigurationSectionLogLevel = L"Level";
+        inline constexpr std::wstring_view kStrConfigurationSettingLogLevel = L"Level";
 
         /// Configuration file section name for mapper-related settings.
         inline constexpr std::wstring_view kStrConfigurationSectionMapper = L"Mapper";
 
         /// Configuration file setting for specifying the mapper type.
-        inline constexpr std::wstring_view kStrConfigurationSectionMapperType = L"Type";
+        inline constexpr std::wstring_view kStrConfigurationSettingMapperType = L"Type";
 
 
         // -------- RUN-TIME CONSTANTS ------------------------------------- //

@@ -38,6 +38,7 @@
     <ClInclude Include="Include\Xidi\Strings.h" />
     <ClInclude Include="Include\Xidi\TemporaryBuffer.h" />
     <ClInclude Include="Include\Xidi\WrapperJoyWinMM.h" />
+    <ClInclude Include="Include\Xidi\XidiConfigReader.h" />
     <ClInclude Include="Include\Xidi\XInputController.h" />
     <ClInclude Include="Resources\WinMM.h" />
     <ClInclude Include="Resources\Xidi.h" />
@@ -68,6 +69,7 @@
     </ClCompile>
     <ClCompile Include="Source\DllMain.cpp" />
     <ClCompile Include="Source\WrapperJoyWinMM.cpp" />
+    <ClCompile Include="Source\XidiConfigReader.cpp" />
     <ClCompile Include="Source\XInputController.cpp" />
   </ItemGroup>
   <ItemGroup>

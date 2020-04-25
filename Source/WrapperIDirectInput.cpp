@@ -115,7 +115,7 @@ HRESULT STDMETHODCALLTYPE WrapperIDirectInput::CreateDevice(REFGUID rguid, Earli
         // Is an XInput GUID, so create a fake device that will communicate with the XInput controller of the specified index.
         Log::WriteFormattedLogMessage(ELogLevel::LogLevelInfo, L"Binding to Xidi virtual XInput device for player %u.", (xinputIndex + 1));
 
-        VirtualDirectInputDevice* newWrappedDevice = new VirtualDirectInputDevice(underlyingDIObjectUsesUnicode, new XInputController(xinputIndex), MapperFactory::CreateMapper());
+        VirtualDirectInputDevice* newWrappedDevice = new VirtualDirectInputDevice(underlyingDIObjectUsesUnicode, new XInputController(xinputIndex), Mapper::Create());
         newWrappedDevice->AddRef();
         *lplpDirectInputDevice = newWrappedDevice;
 

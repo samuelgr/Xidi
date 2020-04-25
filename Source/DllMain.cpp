@@ -26,12 +26,9 @@
 /// @return `TRUE` if this function successfully initialized or uninitialized this library, `FALSE` otherwise.
 BOOL APIENTRY DllMain(HMODULE hModule, DWORD ulReasonForCall, LPVOID lpReserved)
 {
-    BOOL result = TRUE;
-
     switch (ulReasonForCall)
     {
         case DLL_PROCESS_ATTACH:
-            Xidi::Configuration::ParseAndApplyConfigurationFile();
             break;
 
         case DLL_THREAD_ATTACH:
@@ -41,9 +38,8 @@ BOOL APIENTRY DllMain(HMODULE hModule, DWORD ulReasonForCall, LPVOID lpReserved)
             break;
 
         case DLL_PROCESS_DETACH:
-            Xidi::Log::FinalizeLog();
             break;
     }
 
-    return result;
+    return TRUE;
 }
