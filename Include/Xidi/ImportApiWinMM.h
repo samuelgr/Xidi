@@ -36,7 +36,7 @@ namespace Xidi
             BOOL        (WINAPI* PlaySoundA)(LPCSTR, HMODULE, DWORD);
             BOOL        (WINAPI* PlaySoundW)(LPCWSTR, HMODULE, DWORD);
             LRESULT     (WINAPI* SendDriverMessage)(HDRVR, UINT, LPARAM, LPARAM);
-            
+
             MMRESULT    (WINAPI* auxGetDevCapsA)(UINT_PTR, LPAUXCAPSA, UINT);
             MMRESULT    (WINAPI* auxGetDevCapsW)(UINT_PTR, LPAUXCAPSW, UINT);
             UINT        (WINAPI* auxGetNumDevs)(void);
@@ -78,7 +78,7 @@ namespace Xidi
 
             MMRESULT    (WINAPI* midiConnect)(HMIDI, HMIDIOUT, LPVOID);
             MMRESULT    (WINAPI* midiDisconnect)(HMIDI, HMIDIOUT, LPVOID);
-            
+
             MMRESULT    (WINAPI* midiInAddBuffer)(HMIDIIN, LPMIDIHDR, UINT);
             MMRESULT    (WINAPI* midiInClose)(HMIDIIN);
             MMRESULT    (WINAPI* midiInGetDevCapsA)(UINT_PTR, LPMIDIINCAPSA, UINT);
@@ -94,7 +94,7 @@ namespace Xidi
             MMRESULT    (WINAPI* midiInStart)(HMIDIIN);
             MMRESULT    (WINAPI* midiInStop)(HMIDIIN);
             MMRESULT    (WINAPI* midiInUnprepareHeader)(HMIDIIN, LPMIDIHDR, UINT);
-            
+
             MMRESULT    (WINAPI* midiOutCacheDrumPatches)(HMIDIOUT, UINT, WORD*, UINT);
             MMRESULT    (WINAPI* midiOutCachePatches)(HMIDIOUT, UINT, WORD*, UINT);
             MMRESULT    (WINAPI* midiOutClose)(HMIDIOUT);
@@ -113,7 +113,7 @@ namespace Xidi
             MMRESULT    (WINAPI* midiOutSetVolume)(HMIDIOUT, DWORD);
             MMRESULT    (WINAPI* midiOutShortMsg)(HMIDIOUT, DWORD);
             MMRESULT    (WINAPI* midiOutUnprepareHeader)(HMIDIOUT, LPMIDIHDR, UINT);
-            
+
             MMRESULT    (WINAPI* midiStreamClose)(HMIDISTRM);
             MMRESULT    (WINAPI* midiStreamOpen)(LPHMIDISTRM, LPUINT, DWORD, DWORD_PTR, DWORD_PTR, DWORD);
             MMRESULT    (WINAPI* midiStreamOut)(HMIDISTRM, LPMIDIHDR, UINT);
@@ -159,10 +159,10 @@ namespace Xidi
             FOURCC      (WINAPI* mmioStringToFOURCCA)(LPCSTR, UINT);
             FOURCC      (WINAPI* mmioStringToFOURCCW)(LPCWSTR, UINT);
             LONG        (WINAPI* mmioWrite)(HMMIO, const char*, LONG);
-            
+
             BOOL        (WINAPI* sndPlaySoundA)(LPCSTR lpszSound, UINT fuSound);
             BOOL        (WINAPI* sndPlaySoundW)(LPCWSTR lpszSound, UINT fuSound);
-            
+
             MMRESULT    (WINAPI* timeBeginPeriod)(UINT);
             MMRESULT    (WINAPI* timeEndPeriod)(UINT);
             MMRESULT    (WINAPI* timeGetDevCaps)(LPTIMECAPS, UINT);
@@ -212,8 +212,8 @@ namespace Xidi
             MMRESULT    (WINAPI* waveOutUnprepareHeader)(HWAVEOUT, LPWAVEHDR, UINT);
             MMRESULT    (WINAPI* waveOutWrite)(HWAVEOUT, LPWAVEHDR, UINT);
         };
-        
-        
+
+
     private:
         // -------- CLASS VARIABLES ---------------------------------------- //
 
@@ -235,11 +235,11 @@ namespace Xidi
 
         // Dynamically loads the WinMM library and sets up all imported function calls.
         static void Initialize(void);
-        
-        
+
+
         // -------- CLASS METHODS: IMPORTED FUNCTIONS ---------------------- //
         // See WinMM documentation for more information.
-        
+
         static LRESULT      CloseDriver(HDRVR hdrvr, LPARAM lParam1, LPARAM lParam2);
         static LRESULT      DefDriverProc(DWORD_PTR dwDriverId, HDRVR hdrvr, UINT msg, LONG lParam1, LONG lParam2);
         static BOOL         DriverCallback(DWORD dwCallBack, DWORD dwFlags, HDRVR hdrvr, DWORD msg, DWORD dwUser, DWORD dwParam1, DWORD dwParam2);
@@ -256,7 +256,7 @@ namespace Xidi
         static MMRESULT     auxGetVolume(UINT uDeviceID, LPDWORD lpdwVolume);
         static MMRESULT     auxOutMessage(UINT uDeviceID, UINT uMsg, DWORD_PTR dwParam1, DWORD_PTR dwParam2);
         static MMRESULT     auxSetVolume(UINT uDeviceID, DWORD dwVolume);
-        
+
         static MMRESULT     joyConfigChanged(DWORD dwFlags);
         static MMRESULT     joyGetDevCapsA(UINT_PTR uJoyID, LPJOYCAPSA pjc, UINT cbjc);
         static MMRESULT     joyGetDevCapsW(UINT_PTR uJoyID, LPJOYCAPSW pjc, UINT cbjc);
@@ -267,7 +267,7 @@ namespace Xidi
         static MMRESULT     joyReleaseCapture(UINT uJoyID);
         static MMRESULT     joySetCapture(HWND hwnd, UINT uJoyID, UINT uPeriod, BOOL fChanged);
         static MMRESULT     joySetThreshold(UINT uJoyID, UINT uThreshold);
-        
+
         static BOOL         mciDriverNotify(HWND hwndCallback, MCIDEVICEID IDDevice, UINT uStatus);
         static UINT         mciDriverYield(MCIDEVICEID IDDevice);
         static BOOL         mciExecute(LPCSTR pszCommand);
@@ -288,10 +288,10 @@ namespace Xidi
         static MCIERROR     mciSendStringW(LPCWSTR lpszCommand, LPWSTR lpszReturnString, UINT cchReturn, HANDLE hwndCallback);
         static BOOL         mciSetDriverData(MCIDEVICEID IDDevice, DWORD_PTR data);
         static UINT         mciSetYieldProc(MCIDEVICEID IDDevice, YIELDPROC yp, DWORD dwYieldData);
-        
+
         static MMRESULT     midiConnect(HMIDI hMidi, HMIDIOUT hmo, LPVOID pReserved);
         static MMRESULT     midiDisconnect(HMIDI hMidi, HMIDIOUT hmo, LPVOID pReserved);
-        
+
         static MMRESULT     midiInAddBuffer(HMIDIIN hMidiIn, LPMIDIHDR lpMidiInHdr, UINT cbMidiInHdr);
         static MMRESULT     midiInClose(HMIDIIN hMidiIn);
         static MMRESULT     midiInGetDevCapsA(UINT_PTR uDeviceID, LPMIDIINCAPSA lpMidiInCaps, UINT cbMidiInCaps);
@@ -307,7 +307,7 @@ namespace Xidi
         static MMRESULT     midiInStart(HMIDIIN hMidiIn);
         static MMRESULT     midiInStop(HMIDIIN hMidiIn);
         static MMRESULT     midiInUnprepareHeader(HMIDIIN hMidiIn, LPMIDIHDR lpMidiInHdr, UINT cbMidiInHdr);
-        
+
         static MMRESULT     midiOutCacheDrumPatches(HMIDIOUT hmo, UINT wPatch, WORD *lpKeyArray, UINT wFlags);
         static MMRESULT     midiOutCachePatches(HMIDIOUT hmo, UINT wBank, WORD *lpPatchArray, UINT wFlags);
         static MMRESULT     midiOutClose(HMIDIOUT hmo);
@@ -326,7 +326,7 @@ namespace Xidi
         static MMRESULT     midiOutSetVolume(HMIDIOUT hmo, DWORD dwVolume);
         static MMRESULT     midiOutShortMsg(HMIDIOUT hmo, DWORD dwMsg);
         static MMRESULT     midiOutUnprepareHeader(HMIDIOUT hmo, LPMIDIHDR lpMidiOutHdr, UINT cbMidiOutHdr);
-        
+
         static MMRESULT     midiStreamClose(HMIDISTRM hStream);
         static MMRESULT     midiStreamOpen(LPHMIDISTRM lphStream, LPUINT puDeviceID, DWORD cMidi, DWORD_PTR dwCallback, DWORD_PTR dwInstance, DWORD fdwOpen);
         static MMRESULT     midiStreamOut(HMIDISTRM hMidiStream, LPMIDIHDR lpMidiHdr, UINT cbMidiHdr);
@@ -335,7 +335,7 @@ namespace Xidi
         static MMRESULT     midiStreamProperty(HMIDISTRM hm, LPBYTE lppropdata, DWORD dwProperty);
         static MMRESULT     midiStreamRestart(HMIDISTRM hms);
         static MMRESULT     midiStreamStop(HMIDISTRM hms);
-        
+
         static MMRESULT     mixerClose(HMIXER hmx);
         static MMRESULT     mixerGetControlDetailsA(HMIXEROBJ hmxobj, LPMIXERCONTROLDETAILS pmxcd, DWORD fdwDetails);
         static MMRESULT     mixerGetControlDetailsW(HMIXEROBJ hmxobj, LPMIXERCONTROLDETAILS pmxcd, DWORD fdwDetails);
@@ -350,7 +350,7 @@ namespace Xidi
         static DWORD        mixerMessage(HMIXER driverID, UINT uMsg, DWORD_PTR dwParam1, DWORD_PTR dwParam2);
         static MMRESULT     mixerOpen(LPHMIXER phmx, UINT uMxId, DWORD_PTR dwCallback, DWORD_PTR dwInstance, DWORD fdwOpen);
         static MMRESULT     mixerSetControlDetails(HMIXEROBJ hmxobj, LPMIXERCONTROLDETAILS pmxcd, DWORD fdwDetails);
-        
+
         static MMRESULT     mmioAdvance(HMMIO hmmio, LPMMIOINFO lpmmioinfo, UINT wFlags);
         static MMRESULT     mmioAscend(HMMIO hmmio, LPMMCKINFO lpck, UINT wFlags);
         static MMRESULT     mmioClose(HMMIO hmmio, UINT wFlags);
@@ -372,10 +372,10 @@ namespace Xidi
         static FOURCC       mmioStringToFOURCCA(LPCSTR sz, UINT wFlags);
         static FOURCC       mmioStringToFOURCCW(LPCWSTR sz, UINT wFlags);
         static LONG         mmioWrite(HMMIO hmmio, const char* pch, LONG cch);
-        
+
         static BOOL         sndPlaySoundA(LPCSTR lpszSound, UINT fuSound);
         static BOOL         sndPlaySoundW(LPCWSTR lpszSound, UINT fuSound);
-        
+
         static MMRESULT     timeBeginPeriod(UINT uPeriod);
         static MMRESULT     timeEndPeriod(UINT uPeriod);
         static MMRESULT     timeGetDevCaps(LPTIMECAPS ptc, UINT cbtc);
@@ -383,7 +383,7 @@ namespace Xidi
         static DWORD        timeGetTime(void);
         static MMRESULT     timeKillEvent(UINT uTimerID);
         static MMRESULT     timeSetEvent(UINT uDelay, UINT uResolution, LPTIMECALLBACK lpTimeProc, DWORD_PTR dwUser, UINT fuEvent);
-        
+
         static MMRESULT     waveInAddBuffer(HWAVEIN hwi, LPWAVEHDR pwh, UINT cbwh);
         static MMRESULT     waveInClose(HWAVEIN hwi);
         static MMRESULT     waveInGetDevCapsA(UINT_PTR uDeviceID, LPWAVEINCAPSA pwic, UINT cbwic);
@@ -400,7 +400,7 @@ namespace Xidi
         static MMRESULT     waveInStart(HWAVEIN hwi);
         static MMRESULT     waveInStop(HWAVEIN hwi);
         static MMRESULT     waveInUnprepareHeader(HWAVEIN hwi, LPWAVEHDR pwh, UINT cbwh);
-        
+
         static MMRESULT     waveOutBreakLoop(HWAVEOUT hwo);
         static MMRESULT     waveOutClose(HWAVEOUT hwo);
         static MMRESULT     waveOutGetDevCapsA(UINT_PTR uDeviceID, LPWAVEOUTCAPSA pwoc, UINT cbwoc);
@@ -424,17 +424,17 @@ namespace Xidi
         static MMRESULT     waveOutSetVolume(HWAVEOUT hwo, DWORD dwVolume);
         static MMRESULT     waveOutUnprepareHeader(HWAVEOUT hwo, LPWAVEHDR pwh, UINT cbwh);
         static MMRESULT     waveOutWrite(HWAVEOUT hwo, LPWAVEHDR pwh, UINT cbwh);
-        
-        
+
+
     private:
         // -------- HELPERS ------------------------------------------------ //
 
         // Logs a warning event related to failure to import a particular function from the import library.
         static void LogImportFailed(LPCTSTR functionName);
-        
+
         // Logs a debug event related to attempting to load the system-provided library for importing functions.
         static void LogInitializeLibraryPath(LPCTSTR libraryPath);
-        
+
         // Logs an error event related to failure to initialize the import table.
         static void LogInitializeFailed(void);
 

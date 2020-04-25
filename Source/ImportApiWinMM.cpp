@@ -35,11 +35,11 @@ void ImportApiWinMM::Initialize(void)
     {
         // Initialize the import table.
         ZeroMemory(&importTable, sizeof(importTable));
-        
+
         // Obtain the full library path string.
         std::wstring libraryPath;
         Globals::FillWinMMLibraryPath(libraryPath);
-        
+
         // Attempt to load the library.
         LogInitializeLibraryPath(libraryPath.c_str());
         HMODULE loadedLibrary = LoadLibraryEx(libraryPath.c_str(), NULL, 0);
@@ -48,12 +48,12 @@ void ImportApiWinMM::Initialize(void)
             LogInitializeFailed();
             return;
         }
-        
+
         // Attempt to obtain the addresses of all imported API functions.
         FARPROC procAddress = NULL;
-        
+
         // ---------
-        
+
         procAddress = GetProcAddress(loadedLibrary, "CloseDriver");
         if (NULL == procAddress) LogImportFailed(L"CloseDriver");
         importTable.CloseDriver = (LRESULT(WINAPI*)(HDRVR, LPARAM, LPARAM))procAddress;
@@ -91,73 +91,73 @@ void ImportApiWinMM::Initialize(void)
         importTable.SendDriverMessage = (LRESULT(WINAPI*)(HDRVR, UINT, LPARAM, LPARAM))procAddress;
 
         // ---------
-        
+
         procAddress = GetProcAddress(loadedLibrary, "auxGetDevCapsA");
         if (NULL == procAddress) LogImportFailed(L"auxGetDevCapsA");
         importTable.auxGetDevCapsA = (MMRESULT(WINAPI*)(UINT_PTR, LPAUXCAPSA, UINT))procAddress;
-        
+
         procAddress = GetProcAddress(loadedLibrary, "auxGetDevCapsW");
         if (NULL == procAddress) LogImportFailed(L"auxGetDevCapsW");
         importTable.auxGetDevCapsW = (MMRESULT(WINAPI*)(UINT_PTR, LPAUXCAPSW, UINT))procAddress;
-        
+
         procAddress = GetProcAddress(loadedLibrary, "auxGetNumDevs");
         if (NULL == procAddress) LogImportFailed(L"auxGetNumDevs");
         importTable.auxGetNumDevs = (UINT(WINAPI*)(void))procAddress;
-        
+
         procAddress = GetProcAddress(loadedLibrary, "auxGetVolume");
         if (NULL == procAddress) LogImportFailed(L"auxGetVolume");
         importTable.auxGetVolume = (MMRESULT(WINAPI*)(UINT, LPDWORD))procAddress;
-        
+
         procAddress = GetProcAddress(loadedLibrary, "auxOutMessage");
         if (NULL == procAddress) LogImportFailed(L"auxOutMessage");
         importTable.auxOutMessage = (MMRESULT(WINAPI*)(UINT, UINT, DWORD_PTR, DWORD_PTR))procAddress;
-        
+
         procAddress = GetProcAddress(loadedLibrary, "auxSetVolume");
         if (NULL == procAddress) LogImportFailed(L"auxSetVolume");
         importTable.auxSetVolume = (MMRESULT(WINAPI*)(UINT, DWORD))procAddress;
-        
+
         // ---------
-        
+
         procAddress = GetProcAddress(loadedLibrary, "joyConfigChanged");
         if (NULL == procAddress) LogImportFailed(L"joyConfigChanged");
         importTable.joyConfigChanged = (MMRESULT(WINAPI*)(DWORD))procAddress;
-        
+
         procAddress = GetProcAddress(loadedLibrary, "joyGetDevCapsA");
         if (NULL == procAddress) LogImportFailed(L"joyGetDevCapsA");
         importTable.joyGetDevCapsA = (MMRESULT(WINAPI*)(UINT_PTR, LPJOYCAPSA, UINT))procAddress;
-        
+
         procAddress = GetProcAddress(loadedLibrary, "joyGetDevCapsW");
         if (NULL == procAddress) LogImportFailed(L"joyGetDevCapsW");
         importTable.joyGetDevCapsW = (MMRESULT(WINAPI*)(UINT_PTR, LPJOYCAPSW, UINT))procAddress;
-        
+
         procAddress = GetProcAddress(loadedLibrary, "joyGetNumDevs");
         if (NULL == procAddress) LogImportFailed(L"joyGetNumDevs");
         importTable.joyGetNumDevs = (UINT(WINAPI*)(void))procAddress;
-        
+
         procAddress = GetProcAddress(loadedLibrary, "joyGetPos");
         if (NULL == procAddress) LogImportFailed(L"joyGetPos");
         importTable.joyGetPos = (MMRESULT(WINAPI*)(UINT, LPJOYINFO))procAddress;
-        
+
         procAddress = GetProcAddress(loadedLibrary, "joyGetPosEx");
         if (NULL == procAddress) LogImportFailed(L"joyGetPosEx");
         importTable.joyGetPosEx = (MMRESULT(WINAPI*)(UINT, LPJOYINFOEX))procAddress;
-        
+
         procAddress = GetProcAddress(loadedLibrary, "joyGetThreshold");
         if (NULL == procAddress) LogImportFailed(L"joyGetThreshold");
         importTable.joyGetThreshold = (MMRESULT(WINAPI*)(UINT, LPUINT))procAddress;
-        
+
         procAddress = GetProcAddress(loadedLibrary, "joyReleaseCapture");
         if (NULL == procAddress) LogImportFailed(L"joyReleaseCapture");
         importTable.joyReleaseCapture = (MMRESULT(WINAPI*)(UINT))procAddress;
-        
+
         procAddress = GetProcAddress(loadedLibrary, "joySetCapture");
         if (NULL == procAddress) LogImportFailed(L"joySetCapture");
         importTable.joySetCapture = (MMRESULT(WINAPI*)(HWND, UINT, UINT, BOOL))procAddress;
-        
+
         procAddress = GetProcAddress(loadedLibrary, "joySetThreshold");
         if (NULL == procAddress) LogImportFailed(L"joySetThreshold");
         importTable.joySetThreshold = (MMRESULT(WINAPI*)(UINT, UINT))procAddress;
-        
+
         // ---------
 
         procAddress = GetProcAddress(loadedLibrary, "mciDriverNotify");
@@ -311,7 +311,7 @@ void ImportApiWinMM::Initialize(void)
         procAddress = GetProcAddress(loadedLibrary, "midiInUnprepareHeader");
         if (NULL == procAddress) LogImportFailed(L"midiInUnprepareHeader");
         importTable.midiInUnprepareHeader = (MMRESULT(WINAPI*)(HMIDIIN, LPMIDIHDR, UINT))procAddress;
-        
+
         // ---------
 
         procAddress = GetProcAddress(loadedLibrary, "midiOutCacheDrumPatches");
@@ -479,291 +479,291 @@ void ImportApiWinMM::Initialize(void)
         importTable.mixerSetControlDetails = (MMRESULT(WINAPI*)(HMIXEROBJ, LPMIXERCONTROLDETAILS, DWORD))procAddress;
 
         // ---------
-        
+
         procAddress = GetProcAddress(loadedLibrary, "mmioAdvance");
         if (NULL == procAddress) LogImportFailed(L"mmioAdvance");
         importTable.mmioAdvance = (MMRESULT(WINAPI*)(HMMIO, LPMMIOINFO, UINT))procAddress;
-        
+
         procAddress = GetProcAddress(loadedLibrary, "mmioAscend");
         if (NULL == procAddress) LogImportFailed(L"mmioAscend");
         importTable.mmioAscend = (MMRESULT(WINAPI*)(HMMIO, LPMMCKINFO, UINT))procAddress;
-        
+
         procAddress = GetProcAddress(loadedLibrary, "mmioClose");
         if (NULL == procAddress) LogImportFailed(L"mmioClose");
         importTable.mmioClose = (MMRESULT(WINAPI*)(HMMIO, UINT))procAddress;
-        
+
         procAddress = GetProcAddress(loadedLibrary, "mmioCreateChunk");
         if (NULL == procAddress) LogImportFailed(L"mmioCreateChunk");
         importTable.mmioCreateChunk = (MMRESULT(WINAPI*)(HMMIO, LPMMCKINFO, UINT))procAddress;
-        
+
         procAddress = GetProcAddress(loadedLibrary, "mmioDescend");
         if (NULL == procAddress) LogImportFailed(L"mmioDescend");
         importTable.mmioDescend = (MMRESULT(WINAPI*)(HMMIO, LPMMCKINFO, LPCMMCKINFO, UINT))procAddress;
-        
+
         procAddress = GetProcAddress(loadedLibrary, "mmioFlush");
         if (NULL == procAddress) LogImportFailed(L"mmioFlush");
         importTable.mmioFlush = (MMRESULT(WINAPI*)(HMMIO, UINT))procAddress;
-        
+
         procAddress = GetProcAddress(loadedLibrary, "mmioGetInfo");
         if (NULL == procAddress) LogImportFailed(L"mmioGetInfo");
         importTable.mmioGetInfo = (MMRESULT(WINAPI*)(HMMIO, LPMMIOINFO, UINT))procAddress;
-        
+
         procAddress = GetProcAddress(loadedLibrary, "mmioInstallIOProcA");
         if (NULL == procAddress) LogImportFailed(L"mmioInstallIOProcA");
         importTable.mmioInstallIOProcA = (LPMMIOPROC(WINAPI*)(FOURCC, LPMMIOPROC, DWORD))procAddress;
-        
+
         procAddress = GetProcAddress(loadedLibrary, "mmioInstallIOProcW");
         if (NULL == procAddress) LogImportFailed(L"mmioInstallIOProcW");
         importTable.mmioInstallIOProcW = (LPMMIOPROC(WINAPI*)(FOURCC, LPMMIOPROC, DWORD))procAddress;
-        
+
         procAddress = GetProcAddress(loadedLibrary, "mmioOpenA");
         if (NULL == procAddress) LogImportFailed(L"mmioOpenA");
         importTable.mmioOpenA = (HMMIO(WINAPI*)(LPSTR, LPMMIOINFO, DWORD))procAddress;
-        
+
         procAddress = GetProcAddress(loadedLibrary, "mmioOpenW");
         if (NULL == procAddress) LogImportFailed(L"mmioOpenW");
         importTable.mmioOpenW = (HMMIO(WINAPI*)(LPWSTR, LPMMIOINFO, DWORD))procAddress;
-        
+
         procAddress = GetProcAddress(loadedLibrary, "mmioRead");
         if (NULL == procAddress) LogImportFailed(L"mmioRead");
         importTable.mmioRead = (LONG(WINAPI*)(HMMIO, HPSTR, LONG))procAddress;
-        
+
         procAddress = GetProcAddress(loadedLibrary, "mmioRenameA");
         if (NULL == procAddress) LogImportFailed(L"mmioRenameA");
         importTable.mmioRenameA = (MMRESULT(WINAPI*)(LPCSTR, LPCSTR, LPCMMIOINFO, DWORD))procAddress;
-        
+
         procAddress = GetProcAddress(loadedLibrary, "mmioRenameW");
         if (NULL == procAddress) LogImportFailed(L"mmioRenameW");
         importTable.mmioRenameW = (MMRESULT(WINAPI*)(LPCWSTR, LPCWSTR, LPCMMIOINFO, DWORD))procAddress;
-        
+
         procAddress = GetProcAddress(loadedLibrary, "mmioSeek");
         if (NULL == procAddress) LogImportFailed(L"mmioSeek");
         importTable.mmioSeek = (LONG(WINAPI*)(HMMIO, LONG, int))procAddress;
-        
+
         procAddress = GetProcAddress(loadedLibrary, "mmioSendMessage");
         if (NULL == procAddress) LogImportFailed(L"mmioSendMessage");
         importTable.mmioSendMessage = (LRESULT(WINAPI*)(HMMIO, UINT, LPARAM, LPARAM))procAddress;
-        
+
         procAddress = GetProcAddress(loadedLibrary, "mmioSetBuffer");
         if (NULL == procAddress) LogImportFailed(L"mmioSetBuffer");
         importTable.mmioSetBuffer = (MMRESULT(WINAPI*)(HMMIO, LPSTR, LONG, UINT))procAddress;
-        
+
         procAddress = GetProcAddress(loadedLibrary, "mmioSetInfo");
         if (NULL == procAddress) LogImportFailed(L"mmioSetInfo");
         importTable.mmioSetInfo = (MMRESULT(WINAPI*)(HMMIO, LPCMMIOINFO, UINT))procAddress;
-        
+
         procAddress = GetProcAddress(loadedLibrary, "mmioStringToFOURCCA");
         if (NULL == procAddress) LogImportFailed(L"mmioStringToFOURCCA");
         importTable.mmioStringToFOURCCA = (FOURCC(WINAPI*)(LPCSTR, UINT))procAddress;
-        
+
         procAddress = GetProcAddress(loadedLibrary, "mmioStringToFOURCCW");
         if (NULL == procAddress) LogImportFailed(L"mmioStringToFOURCCW");
         importTable.mmioStringToFOURCCW = (FOURCC(WINAPI*)(LPCWSTR, UINT))procAddress;
-        
+
         procAddress = GetProcAddress(loadedLibrary, "mmioWrite");
         if (NULL == procAddress) LogImportFailed(L"mmioWrite");
         importTable.mmioWrite = (LONG(WINAPI*)(HMMIO, const char*, LONG))procAddress;
-        
+
         // ---------
-        
+
         procAddress = GetProcAddress(loadedLibrary, "sndPlaySoundA");
         if (NULL == procAddress) LogImportFailed(L"sndPlaySoundA");
         importTable.sndPlaySoundA = (BOOL(WINAPI*)(LPCSTR, UINT))procAddress;
-        
+
         procAddress = GetProcAddress(loadedLibrary, "sndPlaySoundW");
         if (NULL == procAddress) LogImportFailed(L"sndPlaySoundW");
         importTable.sndPlaySoundW = (BOOL(WINAPI*)(LPCWSTR, UINT))procAddress;
-        
+
         // ---------
 
         procAddress = GetProcAddress(loadedLibrary, "timeBeginPeriod");
         if (NULL == procAddress) LogImportFailed(L"timeBeginPeriod");
         importTable.timeBeginPeriod = (MMRESULT(WINAPI*)(UINT))procAddress;
-        
+
         procAddress = GetProcAddress(loadedLibrary, "timeEndPeriod");
         if (NULL == procAddress) LogImportFailed(L"timeEndPeriod");
         importTable.timeEndPeriod = (MMRESULT(WINAPI*)(UINT))procAddress;
-        
+
         procAddress = GetProcAddress(loadedLibrary, "timeGetDevCaps");
         if (NULL == procAddress) LogImportFailed(L"timeGetDevCaps");
         importTable.timeGetDevCaps = (MMRESULT(WINAPI*)(LPTIMECAPS, UINT))procAddress;
-        
+
         procAddress = GetProcAddress(loadedLibrary, "timeGetSystemTime");
         if (NULL == procAddress) LogImportFailed(L"timeGetSystemTime");
         importTable.timeGetSystemTime = (MMRESULT(WINAPI*)(LPMMTIME, UINT))procAddress;
-        
+
         procAddress = GetProcAddress(loadedLibrary, "timeGetTime");
         if (NULL == procAddress) LogImportFailed(L"timeGetTime");
         importTable.timeGetTime = (DWORD(WINAPI*)(void))procAddress;
-        
+
         procAddress = GetProcAddress(loadedLibrary, "timeKillEvent");
         if (NULL == procAddress) LogImportFailed(L"timeKillEvent");
         importTable.timeKillEvent = (MMRESULT(WINAPI*)(UINT))procAddress;
-        
+
         procAddress = GetProcAddress(loadedLibrary, "timeSetEvent");
         if (NULL == procAddress) LogImportFailed(L"timeSetEvent");
         importTable.timeSetEvent = (MMRESULT(WINAPI*)(UINT, UINT, LPTIMECALLBACK, DWORD_PTR, UINT))procAddress;
-        
+
         // ---------
-        
+
         procAddress = GetProcAddress(loadedLibrary, "waveInAddBuffer");
         if (NULL == procAddress) LogImportFailed(L"waveInAddBuffer");
         importTable.waveInAddBuffer = (MMRESULT(WINAPI*)(HWAVEIN, LPWAVEHDR, UINT))procAddress;
-        
+
         procAddress = GetProcAddress(loadedLibrary, "waveInClose");
         if (NULL == procAddress) LogImportFailed(L"waveInClose");
         importTable.waveInClose = (MMRESULT(WINAPI*)(HWAVEIN))procAddress;
-        
+
         procAddress = GetProcAddress(loadedLibrary, "waveInGetDevCapsA");
         if (NULL == procAddress) LogImportFailed(L"waveInGetDevCapsA");
         importTable.waveInGetDevCapsA = (MMRESULT(WINAPI*)(UINT_PTR, LPWAVEINCAPSA, UINT))procAddress;
-        
+
         procAddress = GetProcAddress(loadedLibrary, "waveInGetDevCapsW");
         if (NULL == procAddress) LogImportFailed(L"waveInGetDevCapsW");
         importTable.waveInGetDevCapsW = (MMRESULT(WINAPI*)(UINT_PTR, LPWAVEINCAPSW, UINT))procAddress;
-        
+
         procAddress = GetProcAddress(loadedLibrary, "waveInGetErrorTextA");
         if (NULL == procAddress) LogImportFailed(L"waveInGetErrorTextA");
         importTable.waveInGetErrorTextA = (MMRESULT(WINAPI*)(MMRESULT, LPCSTR, UINT))procAddress;
-        
+
         procAddress = GetProcAddress(loadedLibrary, "waveInGetErrorTextW");
         if (NULL == procAddress) LogImportFailed(L"waveInGetErrorTextW");
         importTable.waveInGetErrorTextW = (MMRESULT(WINAPI*)(MMRESULT, LPWSTR, UINT))procAddress;
-        
+
         procAddress = GetProcAddress(loadedLibrary, "waveInGetID");
         if (NULL == procAddress) LogImportFailed(L"waveInGetID");
         importTable.waveInGetID = (MMRESULT(WINAPI*)(HWAVEIN, LPUINT))procAddress;
-        
+
         procAddress = GetProcAddress(loadedLibrary, "waveInGetNumDevs");
         if (NULL == procAddress) LogImportFailed(L"waveInGetNumDevs");
         importTable.waveInGetNumDevs = (UINT(WINAPI*)(void))procAddress;
-        
+
         procAddress = GetProcAddress(loadedLibrary, "waveInGetPosition");
         if (NULL == procAddress) LogImportFailed(L"waveInGetPosition");
         importTable.waveInGetPosition = (MMRESULT(WINAPI*)(HWAVEIN, LPMMTIME, UINT))procAddress;
-        
+
         procAddress = GetProcAddress(loadedLibrary, "waveInMessage");
         if (NULL == procAddress) LogImportFailed(L"waveInMessage");
         importTable.waveInMessage = (DWORD(WINAPI*)(HWAVEIN, UINT, DWORD_PTR, DWORD_PTR))procAddress;
-        
+
         procAddress = GetProcAddress(loadedLibrary, "waveInOpen");
         if (NULL == procAddress) LogImportFailed(L"waveInOpen");
         importTable.waveInOpen = (MMRESULT(WINAPI*)(LPHWAVEIN, UINT, LPCWAVEFORMATEX, DWORD_PTR, DWORD_PTR, DWORD))procAddress;
-        
+
         procAddress = GetProcAddress(loadedLibrary, "waveInPrepareHeader");
         if (NULL == procAddress) LogImportFailed(L"waveInPrepareHeader");
         importTable.waveInPrepareHeader = (MMRESULT(WINAPI*)(HWAVEIN, LPWAVEHDR, UINT))procAddress;
-        
+
         procAddress = GetProcAddress(loadedLibrary, "waveInReset");
         if (NULL == procAddress) LogImportFailed(L"waveInReset");
         importTable.waveInReset = (MMRESULT(WINAPI*)(HWAVEIN))procAddress;
-        
+
         procAddress = GetProcAddress(loadedLibrary, "waveInStart");
         if (NULL == procAddress) LogImportFailed(L"waveInStart");
         importTable.waveInStart = (MMRESULT(WINAPI*)(HWAVEIN))procAddress;
-        
+
         procAddress = GetProcAddress(loadedLibrary, "waveInStop");
         if (NULL == procAddress) LogImportFailed(L"waveInStop");
         importTable.waveInStop = (MMRESULT(WINAPI*)(HWAVEIN))procAddress;
-        
+
         procAddress = GetProcAddress(loadedLibrary, "waveInUnprepareHeader");
         if (NULL == procAddress) LogImportFailed(L"waveInUnprepareHeader");
         importTable.waveInUnprepareHeader = (MMRESULT(WINAPI*)(HWAVEIN, LPWAVEHDR, UINT))procAddress;
-        
+
         // ---------
-        
+
         procAddress = GetProcAddress(loadedLibrary, "waveOutBreakLoop");
         if (NULL == procAddress) LogImportFailed(L"waveOutBreakLoop");
         importTable.waveOutBreakLoop = (MMRESULT(WINAPI*)(HWAVEOUT))procAddress;
-        
+
         procAddress = GetProcAddress(loadedLibrary, "waveOutClose");
         if (NULL == procAddress) LogImportFailed(L"waveOutClose");
         importTable.waveOutClose = (MMRESULT(WINAPI*)(HWAVEOUT))procAddress;
-        
+
         procAddress = GetProcAddress(loadedLibrary, "waveOutGetDevCapsA");
         if (NULL == procAddress) LogImportFailed(L"waveOutGetDevCapsA");
         importTable.waveOutGetDevCapsA = (MMRESULT(WINAPI*)(UINT_PTR, LPWAVEOUTCAPSA, UINT))procAddress;
-        
+
         procAddress = GetProcAddress(loadedLibrary, "waveOutGetDevCapsW");
         if (NULL == procAddress) LogImportFailed(L"waveOutGetDevCapsW");
         importTable.waveOutGetDevCapsW = (MMRESULT(WINAPI*)(UINT_PTR, LPWAVEOUTCAPSW, UINT))procAddress;
-        
+
         procAddress = GetProcAddress(loadedLibrary, "waveOutGetErrorTextA");
         if (NULL == procAddress) LogImportFailed(L"waveOutGetErrorTextA");
         importTable.waveOutGetErrorTextA = (MMRESULT(WINAPI*)(MMRESULT, LPCSTR, UINT))procAddress;
-        
+
         procAddress = GetProcAddress(loadedLibrary, "waveOutGetErrorTextW");
         if (NULL == procAddress) LogImportFailed(L"waveOutGetErrorTextW");
         importTable.waveOutGetErrorTextW = (MMRESULT(WINAPI*)(MMRESULT, LPWSTR, UINT))procAddress;
-        
+
         procAddress = GetProcAddress(loadedLibrary, "waveOutGetID");
         if (NULL == procAddress) LogImportFailed(L"waveOutGetID");
         importTable.waveOutGetID = (MMRESULT(WINAPI*)(HWAVEOUT, LPUINT))procAddress;
-        
+
         procAddress = GetProcAddress(loadedLibrary, "waveOutGetNumDevs");
         if (NULL == procAddress) LogImportFailed(L"waveOutGetNumDevs");
         importTable.waveOutGetNumDevs = (UINT(WINAPI*)(void))procAddress;
-        
+
         procAddress = GetProcAddress(loadedLibrary, "waveOutGetPitch");
         if (NULL == procAddress) LogImportFailed(L"waveOutGetPitch");
         importTable.waveOutGetPitch = (MMRESULT(WINAPI*)(HWAVEOUT, LPDWORD))procAddress;
-        
+
         procAddress = GetProcAddress(loadedLibrary, "waveOutGetPlaybackRate");
         if (NULL == procAddress) LogImportFailed(L"waveOutGetPlaybackRate");
         importTable.waveOutGetPlaybackRate = (MMRESULT(WINAPI*)(HWAVEOUT, LPDWORD))procAddress;
-        
+
         procAddress = GetProcAddress(loadedLibrary, "waveOutGetPosition");
         if (NULL == procAddress) LogImportFailed(L"waveOutGetPosition");
         importTable.waveOutGetPosition = (MMRESULT(WINAPI*)(HWAVEOUT, LPMMTIME, UINT))procAddress;
-        
+
         procAddress = GetProcAddress(loadedLibrary, "waveOutGetVolume");
         if (NULL == procAddress) LogImportFailed(L"waveOutGetVolume");
         importTable.waveOutGetVolume = (MMRESULT(WINAPI*)(HWAVEOUT, LPDWORD))procAddress;
-        
+
         procAddress = GetProcAddress(loadedLibrary, "waveOutMessage");
         if (NULL == procAddress) LogImportFailed(L"waveOutMessage");
         importTable.waveOutMessage = (DWORD(WINAPI*)(HWAVEOUT, UINT, DWORD_PTR, DWORD_PTR))procAddress;
-        
+
         procAddress = GetProcAddress(loadedLibrary, "waveOutOpen");
         if (NULL == procAddress) LogImportFailed(L"waveOutOpen");
         importTable.waveOutOpen = (MMRESULT(WINAPI*)(LPHWAVEOUT, UINT_PTR, LPWAVEFORMATEX, DWORD_PTR, DWORD_PTR, DWORD))procAddress;
-        
+
         procAddress = GetProcAddress(loadedLibrary, "waveOutPause");
         if (NULL == procAddress) LogImportFailed(L"waveOutPause");
         importTable.waveOutPause = (MMRESULT(WINAPI*)(HWAVEOUT))procAddress;
-        
+
         procAddress = GetProcAddress(loadedLibrary, "waveOutPrepareHeader");
         if (NULL == procAddress) LogImportFailed(L"waveOutPrepareHeader");
         importTable.waveOutPrepareHeader = (MMRESULT(WINAPI*)(HWAVEOUT, LPWAVEHDR, UINT))procAddress;
-        
+
         procAddress = GetProcAddress(loadedLibrary, "waveOutReset");
         if (NULL == procAddress) LogImportFailed(L"waveOutReset");
         importTable.waveOutReset = (MMRESULT(WINAPI*)(HWAVEOUT))procAddress;
-        
+
         procAddress = GetProcAddress(loadedLibrary, "waveOutRestart");
         if (NULL == procAddress) LogImportFailed(L"waveOutRestart");
         importTable.waveOutRestart = (MMRESULT(WINAPI*)(HWAVEOUT))procAddress;
-        
+
         procAddress = GetProcAddress(loadedLibrary, "waveOutSetPitch");
         if (NULL == procAddress) LogImportFailed(L"waveOutSetPitch");
         importTable.waveOutSetPitch = (MMRESULT(WINAPI*)(HWAVEOUT, DWORD))procAddress;
-        
+
         procAddress = GetProcAddress(loadedLibrary, "waveOutSetPlaybackRate");
         if (NULL == procAddress) LogImportFailed(L"waveOutSetPlaybackRate");
         importTable.waveOutSetPlaybackRate = (MMRESULT(WINAPI*)(HWAVEOUT, DWORD))procAddress;
-        
+
         procAddress = GetProcAddress(loadedLibrary, "waveOutSetVolume");
         if (NULL == procAddress) LogImportFailed(L"waveOutSetVolume");
         importTable.waveOutSetVolume = (MMRESULT(WINAPI*)(HWAVEOUT, DWORD))procAddress;
-        
+
         procAddress = GetProcAddress(loadedLibrary, "waveOutUnprepareHeader");
         if (NULL == procAddress) LogImportFailed(L"waveOutUnprepareHeader");
         importTable.waveOutUnprepareHeader = (MMRESULT(WINAPI*)(HWAVEOUT, LPWAVEHDR, UINT))procAddress;
-        
+
         procAddress = GetProcAddress(loadedLibrary, "waveOutWrite");
         if (NULL == procAddress) LogImportFailed(L"waveOutWrite");
         importTable.waveOutWrite = (MMRESULT(WINAPI*)(HWAVEOUT, LPWAVEHDR, UINT))procAddress;
-        
+
         // Initialization complete.
         importTableIsInitialized = TRUE;
         LogInitializeSucceeded();
@@ -2766,7 +2766,7 @@ MMRESULT ImportApiWinMM::waveOutReset(HWAVEOUT hwo)
 
     if (NULL == importTable.waveOutReset)
         LogMissingFunctionCalled(L"waveOutReset");
-    
+
     return importTable.waveOutReset(hwo);
 }
 
@@ -2778,7 +2778,7 @@ MMRESULT ImportApiWinMM::waveOutRestart(HWAVEOUT hwo)
 
     if (NULL == importTable.waveOutRestart)
         LogMissingFunctionCalled(L"waveOutRestart");
-    
+
     return importTable.waveOutRestart(hwo);
 }
 
@@ -2790,7 +2790,7 @@ MMRESULT ImportApiWinMM::waveOutSetPitch(HWAVEOUT hwo, DWORD dwPitch)
 
     if (NULL == importTable.waveOutSetPitch)
         LogMissingFunctionCalled(L"waveOutSetPitch");
-    
+
     return importTable.waveOutSetPitch(hwo, dwPitch);
 }
 
@@ -2802,7 +2802,7 @@ MMRESULT ImportApiWinMM::waveOutSetPlaybackRate(HWAVEOUT hwo, DWORD dwRate)
 
     if (NULL == importTable.waveOutSetPlaybackRate)
         LogMissingFunctionCalled(L"waveOutSetPlaybackRate");
-    
+
     return importTable.waveOutSetPlaybackRate(hwo, dwRate);
 }
 
@@ -2814,7 +2814,7 @@ MMRESULT ImportApiWinMM::waveOutSetVolume(HWAVEOUT hwo, DWORD dwVolume)
 
     if (NULL == importTable.waveOutSetVolume)
         LogMissingFunctionCalled(L"waveOutSetVolume");
-    
+
     return importTable.waveOutSetVolume(hwo, dwVolume);
 }
 
@@ -2826,7 +2826,7 @@ MMRESULT ImportApiWinMM::waveOutUnprepareHeader(HWAVEOUT hwo, LPWAVEHDR pwh, UIN
 
     if (NULL == importTable.waveOutUnprepareHeader)
         LogMissingFunctionCalled(L"waveOutUnprepareHeader");
-    
+
     return importTable.waveOutUnprepareHeader(hwo, pwh, cbwh);
 }
 
@@ -2838,7 +2838,7 @@ MMRESULT ImportApiWinMM::waveOutWrite(HWAVEOUT hwo, LPWAVEHDR pwh, UINT cbwh)
 
     if (NULL == importTable.waveOutWrite)
         LogMissingFunctionCalled(L"waveOutWrite");
-    
+
     return importTable.waveOutWrite(hwo, pwh, cbwh);
 }
 

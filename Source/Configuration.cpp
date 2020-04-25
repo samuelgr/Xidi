@@ -78,17 +78,17 @@ void Configuration::ParseAndApplyConfigurationFile(void)
         std::unordered_set<std::wstring> seenConfigurationValuesInCurrentSection;
         std::unordered_map<std::wstring, SConfigurationValueApplyInfo>* currentConfigurationSection = NULL;
         std::wstring currentConfigurationSectionName = L"";
-        
+
         wchar_t configurationLineBuffer[kMaximumConfigurationLineLength];
         int configurationLineLength = ReadAndTrimSingleLine(configurationLineBuffer, _countof(configurationLineBuffer), configurationFileHandle);
         unsigned int configurationLineNumber = 1;
-        
+
         while (configurationLineLength >= 0)
         {
             std::wstring extractedName;
             std::wstring extractedValue;
             SConfigurationValueApplyInfo extractedValueInfo;
-            
+
             switch (ClassifyConfigurationFileLine(configurationLineBuffer, configurationLineLength))
             {
             case EConfigurationLineType::ConfigurationLineTypeIgnore:
@@ -131,7 +131,7 @@ void Configuration::ParseAndApplyConfigurationFile(void)
                     HandleErrorValueOutsideSection(configurationFilePath, configurationLineNumber);
                     break;
                 }
-                
+
                 // Extract out the name and value from the current line.
                 ExtractNameValuePairFromConfigurationFileLine(extractedName, extractedValue, configurationLineBuffer);
 
@@ -151,7 +151,7 @@ void Configuration::ParseAndApplyConfigurationFile(void)
 
                 // Extract information on the value.
                 extractedValueInfo = (*currentConfigurationSection)[extractedName];
-                
+
                 // Parse the value according to its specified and supposed type.
                 // Apply the setting immediately after parsing.
                 union
@@ -160,11 +160,11 @@ void Configuration::ParseAndApplyConfigurationFile(void)
                     bool booleanValue;
                     std::wstring* stringValue;
                 } parsedValue;
-                
+
                 switch (extractedValueInfo.type)
                 {
                 case EConfigurationValueType::ConfigurationValueTypeInteger:
-                    
+
                     // Parse the value.
                     if (false == ParseIntegerValue(parsedValue.integerValue, extractedValue))
                     {
@@ -172,17 +172,17 @@ void Configuration::ParseAndApplyConfigurationFile(void)
                         HandleErrorMalformedValue(configurationFilePath, configurationLineNumber, currentConfigurationSectionName.c_str(), extractedName.c_str());
                         break;
                     }
-                    
+
                     // Attempt to apply the value.
                     if ((NULL == extractedValueInfo.applyFunc) || (false == ((TFuncApplyIntSetting)extractedValueInfo.applyFunc)(parsedValue.integerValue)))
                         HandleErrorCannotApplyValue(configurationFilePath, configurationLineNumber, extractedValue.c_str(), currentConfigurationSectionName.c_str(), extractedName.c_str());
                     else
                         HandleSuccessAppliedValue(configurationFilePath, configurationLineNumber, extractedValue.c_str(), currentConfigurationSectionName.c_str(), extractedName.c_str());
-                    
+
                     break;
 
                 case EConfigurationValueType::ConfigurationValueTypeBoolean:
-                    
+
                     // Parse the value.
                     if (false == ParseBooleanValue(parsedValue.booleanValue, extractedValue))
                     {
@@ -190,26 +190,26 @@ void Configuration::ParseAndApplyConfigurationFile(void)
                         HandleErrorMalformedValue(configurationFilePath, configurationLineNumber, currentConfigurationSectionName.c_str(), extractedName.c_str());
                         break;
                     }
-                    
+
                     // Attempt to apply the value.
                     if ((NULL == extractedValueInfo.applyFunc) || (false == ((TFuncApplyBoolSetting)extractedValueInfo.applyFunc)(parsedValue.booleanValue)))
                         HandleErrorCannotApplyValue(configurationFilePath, configurationLineNumber, extractedValue.c_str(), currentConfigurationSectionName.c_str(), extractedName.c_str());
                     else
                         HandleSuccessAppliedValue(configurationFilePath, configurationLineNumber, extractedValue.c_str(), currentConfigurationSectionName.c_str(), extractedName.c_str());
-                    
+
                     break;
 
                 case EConfigurationValueType::ConfigurationValueTypeString:
-                    
+
                     // No special parsing operation is required for a string-typed value.
                     parsedValue.stringValue = &extractedValue;
-                    
+
                     // Attempt to apply the value.
                     if ((NULL == extractedValueInfo.applyFunc) || (false == ((TFuncApplyStringSetting)extractedValueInfo.applyFunc)(*parsedValue.stringValue)))
                         HandleErrorCannotApplyValue(configurationFilePath, configurationLineNumber, extractedValue.c_str(), currentConfigurationSectionName.c_str(), extractedName.c_str());
                     else
                         HandleSuccessAppliedValue(configurationFilePath, configurationLineNumber, extractedValue.c_str(), currentConfigurationSectionName.c_str(), extractedName.c_str());
-                    
+
                     break;
 
                 default:
@@ -218,7 +218,7 @@ void Configuration::ParseAndApplyConfigurationFile(void)
                     fclose(configurationFileHandle);
                     return;
                 }
-                
+
                 seenConfigurationValuesInCurrentSection.insert(extractedName);
                 break;
 
@@ -228,11 +228,11 @@ void Configuration::ParseAndApplyConfigurationFile(void)
                 fclose(configurationFileHandle);
                 return;
             }
-            
+
             configurationLineLength = ReadAndTrimSingleLine(configurationLineBuffer, _countof(configurationLineBuffer), configurationFileHandle);
             configurationLineNumber += 1;
         }
-        
+
         if (!feof(configurationFileHandle))
         {
             // Stopped reading the configuration file early due to some condition other than end-of-file.
@@ -255,7 +255,7 @@ void Configuration::ParseAndApplyConfigurationFile(void)
             }
         }
     }
-    
+
     fclose(configurationFileHandle);
 }
 
@@ -273,7 +273,7 @@ EConfigurationLineType Configuration::ClassifyConfigurationFileLine(LPCWSTR buf,
         realLength -= 1;
         realBuf += 1;
     }
-    
+
     // Sanity check: zero-length and all-whitespace lines can be safely ignored.
     // Also filter out comments this way.
     if (0 == realLength || L';' == realBuf[0] || L'#' == realBuf[0])
@@ -284,13 +284,13 @@ EConfigurationLineType Configuration::ClassifyConfigurationFileLine(LPCWSTR buf,
     // For values, this must mean name + '=' + value.
     if (realLength < 3)
         return EConfigurationLineType::ConfigurationLineTypeError;
-    
+
     if (L'[' == realBuf[0])
     {
         // The line cannot be a section header unless the second character is alphanumeric (there must be at least one character in the name of the section).
         if (!iswalnum(realBuf[1]))
             return EConfigurationLineType::ConfigurationLineTypeError;
-        
+
         // Verify that the line is a valid section header by checking for alphanumeric characters between two square brackets.
         size_t i = 2;
         for (; i < realLength && L']' != realBuf[i]; ++i)
@@ -324,12 +324,12 @@ EConfigurationLineType Configuration::ClassifyConfigurationFileLine(LPCWSTR buf,
         for (; i < realLength && iswblank(realBuf[i]); ++i);
         if (L'=' != realBuf[i])
             return EConfigurationLineType::ConfigurationLineTypeError;
-        
+
         // Skip over any whitespace present, then verify the next character is allowed to start a value setting.
         for (i += 1; i < realLength && iswblank(realBuf[i]); ++i);
         if (!IsAllowedValueSettingCharacter(realBuf[i]))
             return EConfigurationLineType::ConfigurationLineTypeError;
-        
+
         // Skip over the value setting characters that follow.
         for (i += 1; i < realLength && IsAllowedValueSettingCharacter(realBuf[i]); ++i);
 
@@ -339,7 +339,7 @@ EConfigurationLineType Configuration::ClassifyConfigurationFileLine(LPCWSTR buf,
             if (!iswblank(realBuf[i]))
                 return EConfigurationLineType::ConfigurationLineTypeError;
         }
-        
+
         return EConfigurationLineType::ConfigurationLineTypeValue;
     }
 
@@ -379,7 +379,7 @@ void Configuration::ExtractNameValuePairFromConfigurationFileLine(std::wstring& 
     // Trim off any dangling whitespace.
     while ((1 < configLength) && (iswblank(configBuf[configLength - 1])))
         configLength -= 1;
-    
+
     configBuf[configLength] = L'\0';
     value = configBuf;
 }
@@ -448,11 +448,11 @@ bool Configuration::ParseIntegerValue(int64_t& dest, const std::wstring& source)
     // Verify that the number is not out of range.
     if (ERANGE == errno && (LLONG_MIN == value || LLONG_MAX == value))
         return false;
-    
+
     // Verify that the whole string was consumed.
     if (L'\0' != *endptr)
         return false;
-    
+
     // Set the output.
     dest = value;
     return true;
@@ -464,7 +464,7 @@ bool Configuration::ParseBooleanValue(bool& dest, const std::wstring& source)
 {
     static const std::wstring trueStrings[] = { L"t", L"true", L"on", L"y", L"yes", L"enabled", L"1" };
     static const std::wstring falseStrings[] = { L"f", L"false", L"off", L"n", L"no", L"disabled", L"0" };
-    
+
     // Check if the string represents a value of TRUE.
     for (size_t i = 0; i < _countof(trueStrings); ++i)
     {
@@ -484,7 +484,7 @@ bool Configuration::ParseBooleanValue(bool& dest, const std::wstring& source)
             return true;
         }
     }
-    
+
     return false;
 }
 
@@ -497,7 +497,7 @@ void Configuration::ExtractSectionNameFromConfigurationFileLine(std::wstring& se
     while (L'[' != realBuf[0])
         realBuf += 1;
     realBuf += 1;
-    
+
     // Find the length of the section name.
     size_t realLength = 1;
     while (L']' != realBuf[realLength])
@@ -542,13 +542,13 @@ size_t Configuration::GetConfigurationFilePath(LPWSTR buf, const DWORD count)
     wchar_t configurationFileName[kMaximumConfigurationFileNameLength];
     DWORD lenConfigurationFileName = (size_t)LoadString(Globals::GetInstanceHandle(), IDS_XIDI_CONFIGURATION_FILE_NAME, configurationFileName, _countof(configurationFileName));
     DWORD lenInstancePath = (size_t)GetModuleFileName(Globals::GetInstanceHandle(), buf, count);
-    
+
     // Search for the final '\' character in the instance path, by working backwards, and truncate the entire length of the string after.
     // This extracts the directory name from the module file name.
     for (lenInstancePath -= 1; lenInstancePath >= 0 && L'\\' != buf[lenInstancePath]; --lenInstancePath);
     if (0 == lenInstancePath)
         return 0;
-    
+
     lenInstancePath += 1;
     buf[lenInstancePath] = L'\0';
 
@@ -557,7 +557,7 @@ size_t Configuration::GetConfigurationFilePath(LPWSTR buf, const DWORD count)
         return 0;
 
     wcscat_s(buf, count, configurationFileName);
-    
+
     return lenInstancePath + lenConfigurationFileName - 1;
 }
 

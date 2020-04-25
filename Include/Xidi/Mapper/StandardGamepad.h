@@ -26,7 +26,7 @@ namespace Xidi
         {
         public:
             // -------- TYPE DEFINITIONS ----------------------------------- //
-            
+
             /// Identifies each button modelled by this mapper.
             /// Values specify DirectInput instance number.
             enum EButton : TInstanceIdx
@@ -43,7 +43,7 @@ namespace Xidi
                 ButtonStart                     = 9,
                 ButtonLeftStick                 = 10,
                 ButtonRightStick                = 11,
-                
+
                 ButtonCount                     = 12
             };
 
@@ -55,7 +55,7 @@ namespace Xidi
                 AxisY                           = 1,
                 AxisZ                           = 2,
                 AxisRZ                          = 3,
-                
+
                 AxisCount                       = 4
             };
 
@@ -64,14 +64,14 @@ namespace Xidi
             enum EPov : TInstanceIdx
             {
                 PovDpad                         = 0,
-                
+
                 PovCount                        = 1
             };
-            
-            
+
+
             // -------- CONCRETE INSTANCE METHODS -------------------------- //
             // See "Mapper/Base.h" for documentation.
-            
+
             virtual const TInstanceIdx AxisInstanceIndex(REFGUID axisGUID, const TInstanceIdx instanceNumber);
             virtual const TInstanceCount AxisTypeCount(REFGUID axisGUID);
             virtual const GUID AxisTypeFromInstanceNumber(const TInstanceIdx instanceNumber);

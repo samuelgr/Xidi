@@ -24,7 +24,7 @@ namespace Xidi
     {
     public:
         // -------- TYPE DEFINITIONS --------------------------------------- //
-        
+
         // Fields specify the addresses of the imported DirectInput API functions.
         struct SImportTable
         {
@@ -40,8 +40,8 @@ namespace Xidi
             HRESULT (STDMETHODCALLTYPE* DllCanUnloadNow)(void);
             HRESULT (STDMETHODCALLTYPE* DllGetClassObject)(REFCLSID, REFIID, LPVOID*);
         };
-        
-        
+
+
     private:
         // -------- CLASS VARIABLES ---------------------------------------- //
 
@@ -51,7 +51,7 @@ namespace Xidi
         // Specifies whether or not the import table has been initialized.
         static BOOL importTableIsInitialized;
 
-        
+
         // -------- CONSTRUCTION AND DESTRUCTION --------------------------- //
 
         // Default constructor. Should never be invoked.
@@ -60,14 +60,14 @@ namespace Xidi
 
     public:
         // -------- CLASS METHODS ------------------------------------------ //
-        
+
         // Dynamically loads the DirectInput library and sets up all imported function calls.
         static void Initialize(void);
-        
-        
+
+
         // -------- CLASS METHODS: IMPORTED FUNCTIONS ---------------------- //
         // See DirectInput and COM documentation for more information.
-        
+
 #if DIRECTINPUT_VERSION >= 0x0800
         static HRESULT DirectInput8Create(HINSTANCE hinst, DWORD dwVersion, REFIID riidltf, LPVOID* ppvOut, LPUNKNOWN punkOuter);
 #else
@@ -79,20 +79,20 @@ namespace Xidi
         static HRESULT DllUnregisterServer(void);
         static HRESULT DllCanUnloadNow(void);
         static HRESULT DllGetClassObject(REFCLSID rclsid, REFIID riid, LPVOID* ppv);
-        
-        
+
+
     private:
         // -------- HELPERS ------------------------------------------------ //
 
         // Logs a warning event related to failure to import a particular function from the import library.
         static void LogImportFailed(LPCWSTR functionName);
-        
+
         // Logs a debug event related to attempting to load the system-provided library for importing functions.
         static void LogInitializeLibraryPath(LPCWSTR libraryPath);
-        
+
         // Logs an error event related to failure to initialize the import table because the import library could not be loaded.
         static void LogInitializeFailed(LPCWSTR libraryPath);
-        
+
         // Logs an informational event related to successful initialization of the import table.
         static void LogInitializeSucceeded(void);
 

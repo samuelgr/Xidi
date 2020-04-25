@@ -21,14 +21,6 @@
 using namespace Xidi;
 
 
-// -------- CONSTANTS ------------------------------------------------------ //
-// See "XInputControllerIdentification.h" for documentation.
-
-const GUID ControllerIdentification::kXInputProductGUID = { 0xffffffff, 0x0000, 0x0000, { 0x00, 0x00, 'X', 'I', 'N', 'P', 'U', 'T' } };
-
-const GUID ControllerIdentification::kXInputBaseInstGUID = { 0xffffffff, 0x0000, 0x0000, { 'X', 'I', 'N', 'P', 'U', 'T', 0x00, 0x00 } };
-
-
 // -------- HELPERS -------------------------------------------------------- //
 // See "XInputControllerIdentification.h" for documentation.
 
@@ -51,7 +43,7 @@ void ControllerIdentification::SetInstanceInXInputInstanceGUID(GUID& xguid, cons
 BOOL ControllerIdentification::DoesDirectInputControllerSupportXInput(EarliestIDirectInput* dicontext, REFGUID instanceGUID, std::wstring* devicePath)
 {
     BOOL deviceSupportsXInput = FALSE;
-    
+
     EarliestIDirectInputDevice* didevice = NULL;
     HRESULT result = dicontext->CreateDevice(instanceGUID, &didevice, NULL);
 
@@ -60,7 +52,7 @@ BOOL ControllerIdentification::DoesDirectInputControllerSupportXInput(EarliestID
         // Get the GUID and device path of the DirectInput device.
         DIPROPGUIDANDPATH devinfo;
         ZeroMemory(&devinfo, sizeof(devinfo));
-        
+
         devinfo.diph.dwHeaderSize = sizeof(devinfo.diph);
         devinfo.diph.dwSize = sizeof(devinfo);
         devinfo.diph.dwHow = DIPH_DEVICE;
@@ -110,7 +102,7 @@ BOOL ControllerIdentification::EnumerateXInputControllersA(LPDIENUMDEVICESCALLBA
         // See if the application wants to enumerate more devices.
         if (DIENUM_CONTINUE != appResult)
             return DIENUM_STOP;
-        
+
     }
 
     return DIENUM_CONTINUE;
@@ -134,7 +126,7 @@ BOOL ControllerIdentification::EnumerateXInputControllersW(LPDIENUMDEVICESCALLBA
 
         // Submit the device to the application.
         HRESULT appResult = lpCallback(instanceInfo, pvRef);
-        
+
         // Clean up.
         delete instanceInfo;
 
@@ -152,7 +144,7 @@ int ControllerIdentification::FillXInputControllerNameA(LPSTR buf, const size_t 
 {
     CHAR xidiControllerNameFormatString[128];
     LoadStringA(Globals::GetInstanceHandle(), IDS_XIDI_CONTROLLERIDENTIFICATION_CONTROLLER_NAME_FORMAT, xidiControllerNameFormatString, _countof(xidiControllerNameFormatString));
-    
+
     return sprintf_s(buf, bufcount, xidiControllerNameFormatString, (controllerIndex + 1));
 }
 
@@ -162,7 +154,7 @@ int ControllerIdentification::FillXInputControllerNameW(LPWSTR buf, const size_t
 {
     WCHAR xidiControllerNameFormatString[128];
     LoadStringW(Globals::GetInstanceHandle(), IDS_XIDI_CONTROLLERIDENTIFICATION_CONTROLLER_NAME_FORMAT, xidiControllerNameFormatString, _countof(xidiControllerNameFormatString));
-    
+
     return swprintf_s(buf, bufcount, xidiControllerNameFormatString, (controllerIndex + 1));
 }
 
@@ -196,6 +188,6 @@ LONG ControllerIdentification::XInputControllerIndexForInstanceGUID(REFGUID inst
         if (realXInputGUID == instanceGUID)
             resultIndex = (LONG)xindex;
     }
-    
+
     return resultIndex;
 }

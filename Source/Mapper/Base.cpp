@@ -63,7 +63,7 @@ static const wchar_t* DataFormatStringFromObjectUniqueIdentifier(const GUID* pgu
 static void DumpDataFormatToLog(LPCDIDATAFORMAT lpdf)
 {
     Log::WriteLogMessage(ELogLevel::LogLevelDebug, L"Begin dump of data format.");
-    
+
     // First, dump the top-level structure members along with some preliminary validity checks.
     Log::WriteLogMessage(ELogLevel::LogLevelDebug, L"  Metadata:");
     Log::WriteFormattedLogMessage(ELogLevel::LogLevelDebug, L"    dwSize = %d (%s; expected %d)", lpdf->dwSize, (sizeof(DIDATAFORMAT) == lpdf->dwSize ? L"OK" : L"INCORRECT"), sizeof(DIDATAFORMAT));
@@ -78,7 +78,7 @@ static void DumpDataFormatToLog(LPCDIDATAFORMAT lpdf)
     {
         Log::WriteFormattedLogMessage(ELogLevel::LogLevelDebug, L"    rgodf[%3d]: { pguid = %s, dwOfs = %d, dwType = 0x%x, dwFlags = 0x%x }", i, DataFormatStringFromObjectUniqueIdentifier(lpdf->rgodf[i].pguid), lpdf->rgodf[i].dwOfs, lpdf->rgodf[i].dwType, lpdf->rgodf[i].dwFlags);
     }
-    
+
     Log::WriteLogMessage(ELogLevel::LogLevelDebug, L"End dump of data format.");
 }
 
@@ -86,7 +86,7 @@ static void DumpDataFormatToLog(LPCDIDATAFORMAT lpdf)
 /// Returns a string representation.
 /// @param [in] dwHow Value to check.
 /// @return String representation of the identification method, even if unknown.
-static wchar_t* PropertyStringFromIdentificationMethod(DWORD dwHow)
+static const wchar_t* PropertyStringFromIdentificationMethod(DWORD dwHow)
 {
     if (DIPH_DEVICE == dwHow)
         return L"DIPH_DEVICE";
@@ -139,7 +139,7 @@ Base::~Base(void)
 DWORD Base::SizeofInstance(const EInstanceType type)
 {
     DWORD szInstance = 0;
-    
+
     switch (type)
     {
     case InstanceTypeAxis:
@@ -246,7 +246,7 @@ BOOL Base::CheckAndSetOffsets(BOOL* base, const DWORD count)
 void Base::FillObjectInstanceInfoA(LPDIDEVICEOBJECTINSTANCEA instanceInfo, EInstanceType instanceType, TInstanceIdx instanceNumber)
 {
     CHAR instanceFormatString[128];
-    
+
     // Obtain the number of objects of each type.
     const TInstanceCount numAxes = NumInstancesOfType(EInstanceType::InstanceTypeAxis);
     const TInstanceCount numPov = NumInstancesOfType(EInstanceType::InstanceTypePov);
@@ -298,7 +298,7 @@ void Base::FillObjectInstanceInfoA(LPDIDEVICEOBJECTINSTANCEA instanceInfo, EInst
 void Base::FillObjectInstanceInfoW(LPDIDEVICEOBJECTINSTANCEW instanceInfo, EInstanceType instanceType, TInstanceIdx instanceNumber)
 {
     WCHAR instanceFormatString[128];
-    
+
     // Obtain the number of objects of each type.
     const TInstanceCount numAxes = NumInstancesOfType(EInstanceType::InstanceTypeAxis);
     const TInstanceCount numPov = NumInstancesOfType(EInstanceType::InstanceTypePov);
@@ -309,7 +309,7 @@ void Base::FillObjectInstanceInfoW(LPDIDEVICEOBJECTINSTANCEW instanceInfo, EInst
     instanceInfo->dwSize = sizeof(*instanceInfo);
     instanceInfo->dwType = DIDFT_MAKEINSTANCE(instanceNumber);
     instanceInfo->dwFlags = 0;
-    
+
     // Fill in the rest of the structure based on the instance type.
     switch (instanceType)
     {
@@ -319,7 +319,7 @@ void Base::FillObjectInstanceInfoW(LPDIDEVICEOBJECTINSTANCEW instanceInfo, EInst
         instanceInfo->dwType |= DIDFT_ABSAXIS;
         AxisTypeToStringW(instanceInfo->guidType, instanceInfo->tszName, _countof(instanceInfo->tszName));
         break;
-    
+
     case EInstanceType::InstanceTypePov:
         instanceInfo->dwOfs = (numAxes * SizeofInstance(EInstanceType::InstanceTypeAxis)) + (instanceNumber * SizeofInstance(instanceType));
         instanceInfo->guidType = GUID_POV;
@@ -327,7 +327,7 @@ void Base::FillObjectInstanceInfoW(LPDIDEVICEOBJECTINSTANCEW instanceInfo, EInst
         LoadStringW(Globals::GetInstanceHandle(), IDS_XIDI_MAPPER_BASE_POVNAME_FORMAT, instanceFormatString, _countof(instanceFormatString));
         swprintf_s(instanceInfo->tszName, _countof(instanceInfo->tszName), instanceFormatString, (unsigned)(1 + instanceNumber));
         break;
-    
+
     case EInstanceType::InstanceTypeButton:
         instanceInfo->dwOfs = (numAxes * SizeofInstance(EInstanceType::InstanceTypeAxis)) + (numPov * SizeofInstance(EInstanceType::InstanceTypePov)) + (instanceNumber * SizeofInstance(instanceType));
         instanceInfo->guidType = GUID_Button;
@@ -439,7 +439,7 @@ LONG Base::MapValueInRangeToRange(const LONG originalValue, const LONG originalM
     // Calculate the original value's position within the original range spread.
     const double originalSpread = (double)(originalMax - originalMin);
     const double originalFraction = (double)(originalValue - originalMin) / originalSpread;
-    
+
     // Calculate the new range spread.
     const double newSpread = (double)(newMax - newMin);
 
@@ -458,7 +458,7 @@ TInstance Base::SelectInstance(const EInstanceType instanceType, BOOL* instanceU
         instanceUsed[instanceToSelect] = TRUE;
         selectedInstance = Base::MakeInstanceIdentifier(instanceType, instanceToSelect);
     }
-    
+
     return selectedInstance;
 }
 
@@ -524,7 +524,7 @@ HRESULT Base::EnumerateMappedObjects(BOOL useUnicode, LPDIENUMDEVICEOBJECTSCALLB
 
     // Allocate a structure for repeated submission to the application, using the heap for security purposes.
     UObjectInstanceInfo* objectDescriptor = new UObjectInstanceInfo;
-    
+
     // If requested, enumerate axes.
     if (DIDFT_ALL == enumerationFlags || enumerationFlags & DIDFT_AXIS)
     {
@@ -535,10 +535,10 @@ HRESULT Base::EnumerateMappedObjects(BOOL useUnicode, LPDIENUMDEVICEOBJECTSCALLB
                 FillObjectInstanceInfoW(&objectDescriptor->w, EInstanceType::InstanceTypeAxis, (TInstanceIdx)i);
             else
                 FillObjectInstanceInfoA(&objectDescriptor->a, EInstanceType::InstanceTypeAxis, (TInstanceIdx)i);
-            
+
             // Submit the button to the application.
             BOOL appResponse = appCallback((LPCDIDEVICEOBJECTINSTANCE)objectDescriptor, appCbParam);
-            
+
             // See if the application requested that the enumeration stop and, if so, honor that request
             switch (appResponse)
             {
@@ -564,10 +564,10 @@ HRESULT Base::EnumerateMappedObjects(BOOL useUnicode, LPDIENUMDEVICEOBJECTSCALLB
                 FillObjectInstanceInfoW(&objectDescriptor->w, EInstanceType::InstanceTypePov, (TInstanceIdx)i);
             else
                 FillObjectInstanceInfoA(&objectDescriptor->a, EInstanceType::InstanceTypePov, (TInstanceIdx)i);
-            
+
             // Submit the button to the application.
             BOOL appResponse = appCallback((LPCDIDEVICEOBJECTINSTANCE)objectDescriptor, appCbParam);
-            
+
             // See if the application requested that the enumeration stop and, if so, honor that request
             switch (appResponse)
             {
@@ -593,10 +593,10 @@ HRESULT Base::EnumerateMappedObjects(BOOL useUnicode, LPDIENUMDEVICEOBJECTSCALLB
                 FillObjectInstanceInfoW(&objectDescriptor->w, EInstanceType::InstanceTypeButton, (TInstanceIdx)i);
             else
                 FillObjectInstanceInfoA(&objectDescriptor->a, EInstanceType::InstanceTypeButton, (TInstanceIdx)i);
-            
+
             // Submit the button to the application.
             BOOL appResponse = appCallback((LPCDIDEVICEOBJECTINSTANCE)objectDescriptor, appCbParam);
-            
+
             // See if the application requested that the enumeration stop and, if so, honor that request
             switch (appResponse)
             {
@@ -611,7 +611,7 @@ HRESULT Base::EnumerateMappedObjects(BOOL useUnicode, LPDIENUMDEVICEOBJECTSCALLB
             }
         }
     }
-    
+
     delete objectDescriptor;
     return DI_OK;
 }
@@ -628,20 +628,20 @@ void Base::FillDeviceCapabilities(LPDIDEVCAPS lpDIDevCaps)
 HRESULT Base::GetMappedObjectInfo(BOOL useUnicode, LPDIDEVICEOBJECTINSTANCE pdidoi, DWORD dwObj, DWORD dwHow)
 {
     TInstance instance = InstanceIdentifierFromDirectInputSpec(dwObj, dwHow);
-    
+
     // Verify that the structure size is corect, as required by the DirectInput API.
     if (pdidoi->dwSize != sizeof(*pdidoi)) return DIERR_INVALIDPARAM;
-    
+
     // Check if an instance was identifiable above, if not then the object could not be located
     if (instance < 0)
         return DIERR_OBJECTNOTFOUND;
-    
+
     // Fill the specified structure with information about the specified object.
     if (useUnicode)
         FillObjectInstanceInfoW((LPDIDEVICEOBJECTINSTANCEW)pdidoi, ExtractIdentifierInstanceType(instance), ExtractIdentifierInstanceIndex(instance));
     else
         FillObjectInstanceInfoA((LPDIDEVICEOBJECTINSTANCEA)pdidoi, ExtractIdentifierInstanceType(instance), ExtractIdentifierInstanceIndex(instance));
-    
+
     return DI_OK;
 }
 
@@ -654,10 +654,10 @@ HRESULT Base::GetMappedProperty(REFGUID rguidProp, LPDIPROPHEADER pdiph)
         Log::WriteLogMessage(ELogLevel::LogLevelDebug, L"Attempting to get a property.");
         DumpPropertyHeaderToLog(pdiph);
     }
-    
+
     // Lazily initialize the axis properties (this is idempotent).
     InitializeAxisProperties();
-    
+
     // First verify that this property is handled by this mapper.
     if (!IsPropertyHandledByMapper(rguidProp))
         return DIERR_UNSUPPORTED;
@@ -669,16 +669,16 @@ HRESULT Base::GetMappedProperty(REFGUID rguidProp, LPDIPROPHEADER pdiph)
     // Verify whole-device properties have the correct value for object identification.
     if (DIPH_DEVICE == pdiph->dwHow && 0 != pdiph->dwObj)
         return DIERR_INVALIDPARAM;
-    
+
     // Branch based on the property requested.
     if (&DIPROP_AXISMODE == &rguidProp)
     {
         // Axis mode is easy: there is only one mode supported by the mapper.
-        
+
         // Verify correct size. This one needs to be DIPROPDWORD.
         if (pdiph->dwSize != sizeof(DIPROPDWORD))
             return DIERR_INVALIDPARAM;
-        
+
         // Provide output that the axis mode is absolute.
         ((LPDIPROPDWORD)pdiph)->dwData = DIPROPAXISMODE_ABS;
     }
@@ -710,7 +710,7 @@ HRESULT Base::GetMappedProperty(REFGUID rguidProp, LPDIPROPHEADER pdiph)
         // Verify that the instance target is an axis.
         if (EInstanceType::InstanceTypeAxis != ExtractIdentifierInstanceType(instance))
             return DIERR_UNSUPPORTED;
-        
+
         // Provide the requested data, branching by specific property.
         if (&DIPROP_DEADZONE == &rguidProp)
             ((LPDIPROPDWORD)pdiph)->dwData = axisProperties[ExtractIdentifierInstanceIndex(instance)].deadzone;
@@ -736,7 +736,7 @@ HRESULT Base::GetMappedProperty(REFGUID rguidProp, LPDIPROPHEADER pdiph)
 TInstance Base::InstanceForOffset(DWORD offset)
 {
     TInstance result = (TInstance)-1;
-    
+
     if (IsApplicationDataFormatSet())
     {
         auto it = offsetToInstance.find(offset);
@@ -763,7 +763,7 @@ BOOL Base::IsPropertyHandledByMapper(REFGUID guidProperty)
 
     if (&guidProperty == &DIPROP_AXISMODE || &guidProperty == &DIPROP_DEADZONE || &guidProperty == &DIPROP_RANGE || &guidProperty == &DIPROP_SATURATION)
         propertyHandled = TRUE;
-    
+
     return propertyHandled;
 }
 
@@ -789,7 +789,7 @@ LONG Base::OffsetForInstance(TInstance instance)
 LONG Base::OffsetForXInputControllerElement(EXInputControllerElement xElement)
 {
     LONG result = -1;
-    
+
     TInstance xInstance = MapXInputElementToDirectInputInstance(xElement);
     if (xInstance >= 0)
         result = OffsetForInstance(xInstance);
@@ -806,10 +806,10 @@ HRESULT Base::SetApplicationDataFormat(LPCDIDATAFORMAT lpdf)
         Log::WriteLogMessage(ELogLevel::LogLevelDebug, L"Attempting to set application's requested data format.");
         DumpDataFormatToLog(lpdf);
     }
-    
+
     // Initialize the maps.
     ResetApplicationDataFormat();
-    
+
     // Ensure the data packet size is a multiple of 4, as required by DirectInput.
     if (0 != (lpdf->dwDataSize % 4))
         return DIERR_INVALIDPARAM;
@@ -820,17 +820,17 @@ HRESULT Base::SetApplicationDataFormat(LPCDIDATAFORMAT lpdf)
 
     // Save the application's data packet size.
     dataPacketSize = lpdf->dwDataSize;
-    
+
     // Obtain the number of instances of each type in the mapping by asking the subclass.
     const TInstanceCount numButtons = NumInstancesOfType(EInstanceType::InstanceTypeButton);
     const TInstanceCount numAxes = NumInstancesOfType(EInstanceType::InstanceTypeAxis);
     const TInstanceCount numPov = NumInstancesOfType(EInstanceType::InstanceTypePov);
-    
+
     // Track the next unused instance of each, essentially allowing a "dequeue" operation when the application does not specify a specific instance.
     TInstanceIdx nextUnusedButton = 0;
     TInstanceIdx nextUnusedAxis = 0;
     TInstanceIdx nextUnusedPov = 0;
-    
+
     // Keep track of which instances were added to the mapping of each type as well as each offset.
     // It is an error to specify an instance multiple times, specify a non-existant instance, or specify multiple pieces of information at the same offset.
     BOOL* buttonUsed = new BOOL[numButtons];
@@ -841,7 +841,7 @@ HRESULT Base::SetApplicationDataFormat(LPCDIDATAFORMAT lpdf)
     for (TInstanceCount i = 0; i < numAxes; ++i) axisUsed[i] = FALSE;
     for (TInstanceCount i = 0; i < numPov; ++i) povUsed[i] = FALSE;
     for (DWORD i = 0; i < lpdf->dwDataSize; ++i) offsetUsed[i] = FALSE;
-    
+
     // Iterate over each of the object specifications provided by the application.
     for (DWORD i = 0; i < lpdf->dwNumObjs; ++i)
     {
@@ -1041,7 +1041,7 @@ HRESULT Base::SetApplicationDataFormat(LPCDIDATAFORMAT lpdf)
         while (TRUE == buttonUsed[nextUnusedButton] && nextUnusedButton < numButtons) nextUnusedButton += 1;
         while (TRUE == povUsed[nextUnusedPov] && nextUnusedPov < numPov) nextUnusedPov += 1;
     }
-    
+
     delete[] buttonUsed;
     delete[] axisUsed;
     delete[] povUsed;
@@ -1061,7 +1061,7 @@ HRESULT Base::SetMappedProperty(REFGUID rguidProp, LPCDIPROPHEADER pdiph)
         Log::WriteLogMessage(ELogLevel::LogLevelDebug, L"Attempting to set a property.");
         DumpPropertyHeaderToLog(pdiph);
     }
-    
+
     // Lazily initialize the axis properties (this is idempotent).
     InitializeAxisProperties();
 
@@ -1142,7 +1142,7 @@ HRESULT Base::SetMappedProperty(REFGUID rguidProp, LPCDIPROPHEADER pdiph)
 
             if (newDeadzone < kMinAxisDeadzoneSaturation || newDeadzone > kMaxAxisDeadzoneSaturation)
                 return DIERR_INVALIDPARAM;
-            
+
             for (TInstanceIdx instance = startInstance; instance <= endInstance; ++instance)
             {
                 axisProperties[ExtractIdentifierInstanceIndex(instance)].deadzone = newDeadzone;
@@ -1164,7 +1164,7 @@ HRESULT Base::SetMappedProperty(REFGUID rguidProp, LPCDIPROPHEADER pdiph)
         {
             LONG newRangeMin = ((LPDIPROPRANGE)pdiph)->lMin;
             LONG newRangeMax = ((LPDIPROPRANGE)pdiph)->lMax;
-            
+
             if (!(newRangeMin < newRangeMax))
                 return DIERR_INVALIDPARAM;
 
@@ -1202,7 +1202,7 @@ void Base::ResetApplicationDataFormat(void)
 HRESULT Base::WriteApplicationBufferedEvents(XInputController* xController, LPDIDEVICEOBJECTDATA appEventBuf, DWORD& eventCount, const BOOL peek)
 {
     xController->LockEventBuffer();
-    
+
     // Initialize before writing application events.
     const DWORD maxAppEvents = eventCount;
     const DWORD numControllerEvents = xController->BufferedEventsCount();
@@ -1239,7 +1239,7 @@ HRESULT Base::WriteApplicationBufferedEvents(XInputController* xController, LPDI
                 // If triggers are treated as buttons, then the value of the trigger needs to be correctly formatted to be a button value.
                 if (EInstanceType::InstanceTypeButton == ExtractIdentifierInstanceType(appEventInstance) && (EXInputControllerElement::TriggerLT == xEvent.controllerElement || EXInputControllerElement::TriggerRT == xEvent.controllerElement))
                     xEvent.value = (xEvent.value > XINPUT_GAMEPAD_TRIGGER_THRESHOLD ? (LONG)0x0080 : (LONG)0x0000);
-                
+
                 // Value depends on the instance type.
                 if (EInstanceType::InstanceTypeAxis == ExtractIdentifierInstanceType(appEventInstance))
                 {
@@ -1308,7 +1308,7 @@ HRESULT Base::WriteApplicationBufferedEvents(XInputController* xController, LPDI
                     // If button or POV, value is already in DirectInput format so just copy directly.
                     appEventBuf[eventCount].dwData = (DWORD)xEvent.value;
                 }
-                
+
                 // Increment the number of events written to the application buffer.
                 eventCount += 1;
             }
@@ -1316,7 +1316,7 @@ HRESULT Base::WriteApplicationBufferedEvents(XInputController* xController, LPDI
     }
 
     xController->UnlockEventBuffer();
-    
+
     return (eventBufferOverflowed ? DI_BUFFEROVERFLOW : DI_OK);
 }
 
@@ -1326,17 +1326,17 @@ HRESULT Base::WriteApplicationControllerState(XINPUT_GAMEPAD& xState, LPVOID app
 {
     // Lazily initialize the axis properties (this is idempotent).
     InitializeAxisProperties();
-    
+
     // First verify sufficient buffer space.
     if (appDataSize < dataPacketSize)
         return DIERR_INVALIDPARAM;
 
     // Keep track of instances already mapped, for error checking.
     std::unordered_set<TInstance> mappedInstances;
-    
+
     // Initialize the application structure. Everything not explicitly written will return 0.
     ZeroMemory(appDataBuf, appDataSize);
-    
+
     // Triggers are handled differently, so handle them first as a special case.
     {
         TInstance instanceLT = MapXInputElementToDirectInputInstance(EXInputControllerElement::TriggerLT);
@@ -1367,14 +1367,14 @@ HRESULT Base::WriteApplicationControllerState(XINPUT_GAMEPAD& xState, LPVOID app
                 leftTriggerMultiplier = 1;
             else
                 return DIERR_GENERIC;
-            
+
             // Compute the axis value for the shared axis.
             LONG triggerSharedAxisValue = (leftTriggerMultiplier * (LONG)xState.bLeftTrigger) + (leftTriggerMultiplier * -1 * (LONG)xState.bRightTrigger);
             triggerSharedAxisValue = MapValueInRangeToRange(triggerSharedAxisValue, XInputController::kTriggerRangeMax * -1, XInputController::kTriggerRangeMax, axisProperties[ExtractIdentifierInstanceIndex(instanceLT)].rangeMin, axisProperties[ExtractIdentifierInstanceIndex(instanceLT)].rangeMax);
-            
+
             // Add the shared axis to the set.
             mappedInstances.insert(instanceLT);
-            
+
             // Write the shared axis value to the application data structure.
             WriteAxisValueToApplicationDataStructure(instanceLT, triggerSharedAxisValue, appDataBuf);
         }
@@ -1473,7 +1473,7 @@ HRESULT Base::WriteApplicationControllerState(XINPUT_GAMEPAD& xState, LPVOID app
                 return DIERR_GENERIC;
 
             mappedInstances.insert(instanceAxis);
-            
+
             LONG axisValue = MapValueInRangeToRange((LONG)xState.sThumbLX, XInputController::kStickRangeMin, XInputController::kStickRangeMax, axisProperties[ExtractIdentifierInstanceIndex(instanceAxis)].rangeMin, axisProperties[ExtractIdentifierInstanceIndex(instanceAxis)].rangeMax);
             WriteAxisValueToApplicationDataStructure(instanceAxis, axisValue, appDataBuf);
         }
@@ -1546,7 +1546,7 @@ HRESULT Base::WriteApplicationControllerState(XINPUT_GAMEPAD& xState, LPVOID app
             WritePovValueToApplicationDataStructure(instanceDpad, XInputController::DirectInputPovStateFromXInputButtonState(xState.wButtons), appDataBuf);
         }
     }
-    
+
     // Buttons A, B, X, Y, LB, RB, Back, Start, Left stick, and Right stick
     {
         TInstance instanceButton;
@@ -1606,7 +1606,7 @@ HRESULT Base::WriteApplicationControllerState(XINPUT_GAMEPAD& xState, LPVOID app
                 return DIERR_GENERIC;
             if (0 != mappedInstances.count(instanceButton))
                 return DIERR_GENERIC;
-            
+
             mappedInstances.insert(instanceButton);
             WriteButtonValueToApplicationDataStructure(instanceButton, (xState.wButtons & XINPUT_GAMEPAD_Y ? 1 : 0), appDataBuf);
         }
@@ -1701,16 +1701,16 @@ HRESULT Base::WriteApplicationControllerState(XINPUT_GAMEPAD& xState, LPVOID app
             WriteButtonValueToApplicationDataStructure(instanceButton, (xState.wButtons & XINPUT_GAMEPAD_RIGHT_THUMB ? 1 : 0), appDataBuf);
         }
     }
-    
+
     // Set to "centered" any other POVs in the application's data format.
     if (povOffsetsUnused.size() > 0)
     {
         const LONG povCenteredValue = XInputController::DirectInputPovStateFromXInputButtonState(0);
-        
+
         for (auto it = povOffsetsUnused.begin(); it != povOffsetsUnused.end(); ++it)
             WriteValueToApplicationOffset(povCenteredValue, *it, appDataBuf);
     }
-    
+
     return DI_OK;
 }
 

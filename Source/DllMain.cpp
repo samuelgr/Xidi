@@ -27,7 +27,7 @@
 BOOL APIENTRY DllMain(HMODULE hModule, DWORD ulReasonForCall, LPVOID lpReserved)
 {
     BOOL result = TRUE;
-    
+
     switch (ulReasonForCall)
     {
         case DLL_PROCESS_ATTACH:

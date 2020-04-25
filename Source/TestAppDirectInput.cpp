@@ -10,14 +10,10 @@
  *   for testing the functionality of this library via DirectInput.
  *****************************************************************************/
 
-#include "ApiDirectInput.h"
-#include "Configuration.h"
+#include <initguid.h>
+#include <dinput.h>
+
 #include "ControllerIdentification.h"
-#include "ExportApiDirectInput.h"
-#include "Globals.h"
-#include "ImportApiDirectInput.h"
-#include "Log.h"
-#include "MapperFactory.h"
 #include "Mapper/Base.h"
 
 #include <iostream>
@@ -45,10 +41,10 @@ struct SInteractiveTestData
 
 // Routes calls to exported methods based on the DirectInput version.
 #if DIRECTINPUT_VERSION >= 0x0800
-#define ExportedDirectInputCreateMethod         ExportApiDirectInputDirectInput8Create
+#define ExportedDirectInputCreateMethod         DirectInput8Create
 #define Use_IID_IDirectInput                    IID_IDirectInput8
 #else
-#define ExportedDirectInputCreateMethod         ExportApiDirectInputDirectInputCreateEx
+#define ExportedDirectInputCreateMethod         DirectInputCreateEx
 #define Use_IID_IDirectInput                    IID_IDirectInput7
 #endif
 
@@ -109,7 +105,7 @@ static const DIDATAFORMAT dataFormat = {sizeof(DIDATAFORMAT), sizeof(DIOBJECTDAT
 // -------- HELPERS -------------------------------------------------------- //
 
 #if DIRECTINPUT_VERSION >= 0x0800
-LPWSTR DirectInputDeviceTypeToString(BYTE type)
+LPCWSTR DirectInputDeviceTypeToString(BYTE type)
 {
     switch (type)
     {
@@ -154,7 +150,7 @@ LPWSTR DirectInputDeviceTypeToString(BYTE type)
     }
 }
 #else
-LPWSTR DirectInputDeviceTypeToString(BYTE type)
+LPCWSTR DirectInputDeviceTypeToString(BYTE type)
 {
     switch (type)
     {
@@ -176,11 +172,11 @@ LPWSTR DirectInputDeviceTypeToString(BYTE type)
 }
 #endif
 
-LPWSTR DirectInputAxisTypeToString(REFGUID axisTypeGUID)
+LPCWSTR DirectInputAxisTypeToString(REFGUID axisTypeGUID)
 {
     if (axisTypeGUID == GUID_XAxis)
         return L"X";
-    
+
     if (axisTypeGUID == GUID_YAxis)
         return L"Y";
 
@@ -195,7 +191,7 @@ LPWSTR DirectInputAxisTypeToString(REFGUID axisTypeGUID)
 
     if (axisTypeGUID == GUID_RzAxis)
         return L"RotZ";
-    
+
     return NULL;
 }
 
@@ -206,17 +202,16 @@ LPWSTR DirectInputAxisTypeToString(REFGUID axisTypeGUID)
 BOOL STDMETHODCALLTYPE EnumDevicesTestCallback(LPCDIDEVICEINSTANCE lpddi, LPVOID pvRef)
 {
     DWORD* testValuePtr = (DWORD*)pvRef;
-    GUID xProductGUID;
-    ControllerIdentification::GetProductGUID(xProductGUID);
+    GUID xProductGUID = ControllerIdentification::kXInputProductGUID;
 
     wcout << L"    ";
-    
+
     if (*testValuePtr != testValue)
         wcout << L"[pvRef fail] ";
 
     if (!flagCallbackExpected)
         wcout << L"[flagCallbackExpected fail] ";
-    
+
     wcout << L"Found " << DirectInputDeviceTypeToString(GET_DIDEVICE_TYPE(lpddi->dwDevType)) << ": " << lpddi->tszProductName;
 
 #if DIRECTINPUT_VERSION >= 0x0800
@@ -228,12 +223,12 @@ BOOL STDMETHODCALLTYPE EnumDevicesTestCallback(LPCDIDEVICEINSTANCE lpddi, LPVOID
         instanceGuidToTest = lpddi->guidInstance;
         flagInstanceGuidToTestFound = TRUE;
         flagCallbackExpected = FALSE;
-    
+
         wcout << L", supported" << endl;
     }
     else
         wcout << endl;
-    
+
     return flagCallbackExpected ? DIENUM_CONTINUE : DIENUM_STOP;
 }
 
@@ -249,10 +244,10 @@ BOOL STDMETHODCALLTYPE EnumObjectsAxesTestCallback(LPCDIDEVICEOBJECTINSTANCE lpd
     if (DIDFT_GETTYPE(lpddoi->dwType) != DIDFT_ABSAXIS)
         wcout << L"[dwType fail] ";
 
-    LPWSTR axisString = DirectInputAxisTypeToString(lpddoi->guidType);
+    LPCWSTR axisString = DirectInputAxisTypeToString(lpddoi->guidType);
     if (NULL == axisString)
         wcout << L"[guidType fail] ";
-    
+
     wcout << L"Instance " << DIDFT_GETINSTANCE(lpddoi->dwType) << L" @" << lpddoi->dwOfs << L": ";
     if (NULL == axisString)
         wcout << L"UNKNOWN" << endl;
@@ -325,14 +320,11 @@ int RunTestApp(int argc, char* argv[])
     DWORD numErrors;
     LatestIDirectInput* directInputIface;
     LatestIDirectInputDevice* directInputDeviceIface;
-    
-    
+
+
     ////////////////////////////////////
     ////////   Initialization
-    
-    // Initialize the imported DirectInput8 API.
-    ImportApiDirectInput::Initialize();
-    
+
     // Create the main interface to DirectInput.
     result = ExportedDirectInputCreateMethod(GetModuleHandle(NULL), DIRECTINPUT_VERSION, Use_IID_IDirectInput, (LPVOID*)&directInputIface, NULL);
     if (DI_OK != result)
@@ -340,16 +332,16 @@ int RunTestApp(int argc, char* argv[])
         wcerr << L"Unable to obtain IDirectInput interface pointer: code " << result << L"." << endl;
         return -1;
     }
-    
-    
+
+
     ////////////////////////////////////
     ////////   Enumeration
-    
+
     // Enumerate all devices attached to the system.
     flagCallbackExpected = TRUE;
-    
+
     wcout << L"Begin IDirectInput->EnumDevices" << endl;
-    
+
 #if DIRECTINPUT_VERSION >= 0x0800
     result = directInputIface->EnumDevices(DI8DEVCLASS_ALL, &EnumDevicesTestCallback, (LPVOID)&testValue, DIEDFL_ATTACHEDONLY);
 #else
@@ -360,7 +352,7 @@ int RunTestApp(int argc, char* argv[])
         wcerr << L"Unable to enumerate attached devices: code " << result << L"." << endl;
         return -1;
     }
-    
+
     // Test that the callback was invoked the required number of times.
     if (flagCallbackExpected && flagInstanceGuidToTestFound)
         wcout << L"FAIL: IDirectInput->EnumDevices callback test" << endl;
@@ -382,7 +374,7 @@ int RunTestApp(int argc, char* argv[])
 
     // Obtain a pointer to the interface of the device.
     result = directInputIface->CreateDevice(instanceGuidToTest, (EarliestIDirectInputDevice**)&directInputDeviceIface, NULL);
-    
+
     if (DI_OK != result)
     {
         wcerr << L"Unable to obtain IDirectInputDevice interface pointer: code " << result << L"." << endl;
@@ -405,18 +397,18 @@ int RunTestApp(int argc, char* argv[])
     }
 
     wcout << L"Device presents " << deviceCapabilities.dwAxes << L" axes, " << deviceCapabilities.dwButtons << L" buttons, and " << deviceCapabilities.dwPOVs << L" POV controllers." << endl << endl;
-    
+
 
     ////////////////////////////////////
     ////////   Device Object Enumeration
 
     wcout << L"Begin IDirectInputDevice->EnumObjects" << endl;
-    
+
     // Attempt to enumerate axes.
     wcout << L"  Axes..." << endl;
     testCounter = 0;
     result = directInputDeviceIface->EnumObjects(&EnumObjectsAxesTestCallback, (LPVOID)&testValue, DIDFT_AXIS);
-    
+
     if (DI_OK != result)
     {
         wcerr << L"Unable to obtain get device axes: code " << result << L"." << endl;
@@ -574,16 +566,16 @@ int RunTestApp(int argc, char* argv[])
         wcout << L"FAIL: Unsupported request type object info test." << endl;
     else
         wcout << L"PASS: Unsupported request type object info test." << endl;
-    
+
     // Finished checking objects.
     wcout << L"End IDirectInputDevice->GetObjectInfo" << endl << endl;
-    
-    
+
+
     ////////////////////////////////////
     ////////   Device Properties
 
     wcout << L"Begin IDirectInputDevice->[Set|Get]Property" << endl;
-    
+
     DIPROPRANGE rangeTest;
     DIPROPDWORD deadzoneTest;
     DIPROPDWORD bufferSize;
@@ -704,7 +696,7 @@ int RunTestApp(int argc, char* argv[])
         wcout << L"FAIL: Set out-of-range deadzone test." << endl;
     else
         wcout << L"PASS: Set out-of-range deadzone test." << endl;
-    
+
     // Write a deadzone for the whole device, but use an invalid "dwObj".
     deadzoneTest.dwData = 51;
     deadzoneTest.diph.dwHow = DIPH_DEVICE;
@@ -776,14 +768,14 @@ int RunTestApp(int argc, char* argv[])
         wcout << L"FAIL: Get reasonable buffer size test." << endl;
     else
         wcout << L"PASS: Get reasonable buffer size test." << endl;
-    
-    
+
+
     ////////////////////////////////////
     ////////   Interactive Mode Preparation
 
     wcout << L"Preparing to launch interactive mode... ";
 
-    
+
     // Set the input buffer size to 128kB to avoid possible overflows during interactive testing.
     bufferSize.dwData = 128 * 1024;
     result = directInputDeviceIface->SetProperty(DIPROP_BUFFERSIZE, &bufferSize.diph);
@@ -792,7 +784,7 @@ int RunTestApp(int argc, char* argv[])
         wcout << L"FAILED" << endl << L"Unable to set input buffer size." << endl;
         return -1;
     }
-    
+
     // Set deadzone and saturation for the whole device.
     deadzoneTest.dwData = 2500;
     deadzoneTest.diph.dwHow = DIPH_DEVICE;
@@ -870,7 +862,7 @@ int RunTestApp(int argc, char* argv[])
     }
 
     CopyMemory(&testBufferedData, &testData, sizeof(testData));
-    
+
     wcout << L"DONE" << endl;
     wcout << L"Device state is updated twice per second, with multiple polls in between." << endl;
     wcout << L"All axes are set to a range of -100 to +100, with 25% each deadzone/saturation." << endl;
@@ -896,7 +888,7 @@ int RunTestApp(int argc, char* argv[])
             wcout << L"Failed to retrieve device buffered events." << endl;
             return -1;
         }
-        
+
         // Apply the buffered input events to the test buffer.
         BYTE* bufptr = (BYTE*)&testBufferedData;
         for (DWORD i = 0; i < bufferedDataCount; ++i)
@@ -912,7 +904,7 @@ int RunTestApp(int argc, char* argv[])
                 *((DWORD*)(&bufptr[bufferedData[i].dwOfs])) = (DWORD)bufferedData[i].dwData;
             }
         }
-        
+
         // Retrieve the device's new state.
         result = directInputDeviceIface->GetDeviceState(sizeof(testData), (LPVOID)&testData);
         if (DI_OK != result)
@@ -941,7 +933,7 @@ int RunTestApp(int argc, char* argv[])
         wcout << L"Device presents " << deviceCapabilities.dwAxes << L" axes, " << deviceCapabilities.dwButtons << L" buttons, and " << deviceCapabilities.dwPOVs << L" POV controllers." << endl;
 
         wcout << endl;
-        
+
         wcout << L"Device state:" << endl;
 
         wcout << endl;
@@ -949,13 +941,13 @@ int RunTestApp(int argc, char* argv[])
         wcout << L"   X Axis  = " << testData.axisX << endl;
         wcout << L"   Y Axis  = " << testData.axisY << endl;
         wcout << L"   Z Axis  = " << testData.axisZ << endl;
-        
+
         wcout << endl;
-        
+
         wcout << L"   Rx Axis = " << testData.axisRx << endl;
         wcout << L"   Ry Axis = " << testData.axisRy << endl;
         wcout << L"   Rz Axis = " << testData.axisRz << endl;
-        
+
         wcout << endl;
 
         wcout << L"   Dpad    = " << testData.povs[0] << endl;
@@ -968,7 +960,7 @@ int RunTestApp(int argc, char* argv[])
             if (0x80 == testData.buttons[i])
                 wcout << L" " << (i + 1);
         }
-        
+
         for (int i = 0; i < 10; ++i)
         {
             // Poll the device to update its state.
@@ -983,15 +975,15 @@ int RunTestApp(int argc, char* argv[])
         }
     }
 
-    
+
     ////////////////////////////////////
     ////////   Cleanup and Exit
-    
+
     wcout << L"\nExiting." << endl;
-    
+
     directInputDeviceIface->Release();
     directInputIface->Release();
-    
+
     return 0;
 }
 
@@ -1000,12 +992,7 @@ int RunTestApp(int argc, char* argv[])
 
 int main(int argc, char* argv[])
 {
-    Globals::SetInstanceHandle(GetModuleHandle(NULL));
-    Configuration::ParseAndApplyConfigurationFile();
-    
     int result = RunTestApp(argc, argv);
-    
-    Log::FinalizeLog();
     system("pause");
     return result;
 }

@@ -29,7 +29,7 @@ namespace Xidi
     {
     private:
         // -------- TYPE DEFINITIONS ----------------------------------------------- //
-        
+
         /// Holds controller state information retrieved from the mapper.
         struct SJoyStateData
         {
@@ -42,22 +42,22 @@ namespace Xidi
             LONG pov;                                                       ///< POV (D-pad) value.
             BYTE buttons[32];                                               ///< Values for up to 32 buttons.
         };
-        
-        
+
+
         // -------- CLASS VARIABLES ------------------------------------------------ //
-        
+
         /// Fixed set of four XInput controllers.
         static XInputController* controllers[XInputController::kMaxNumXInputControllers];
-        
+
         /// Mapping scheme to be applied to all controllers.
         static Mapper::Base* mapper;
-        
+
         /// Specifies if the class is initialized.
         static BOOL isInitialized;
-        
+
         /// Specifies the format of each field in SJoyStateData in DirectInput-compatible format.
         static DIOBJECTDATAFORMAT joyStateObjectDataFormat[];
-        
+
         /// Specifies the overall data format of SJoyStateData in DirectInput-compatible format.
         static const DIDATAFORMAT joyStateDataFormat;
 
@@ -68,22 +68,22 @@ namespace Xidi
         /// Holds information about all devices WinMM makes available.
         /// String specifies the device identifier (vendor ID and product ID string), bool value specifies whether the device supports XInput.
         static std::vector<std::pair<std::wstring, bool>> joySystemDeviceInfo;
-        
-        
+
+
         // -------- CONSTRUCTION AND DESTRUCTION ----------------------------------- //
-        
+
         /// Default constructor. Should never be invoked.
         WrapperJoyWinMM(void);
-        
-        
+
+
         // -------- CLASS METHODS -------------------------------------------------- //
-        
+
         /// Initializes this class.
         static void Initialize(void);
 
 
         // -------- HELPERS -------------------------------------------------------- //
-        
+
         /// Creates the joystick index map.
         /// Requires that the system device information data structure already be filled.
         /// If the user's preferred controller is absent or supports XInput, virtual devices are presented first, otherwise they are presented last.
@@ -96,7 +96,7 @@ namespace Xidi
         /// Callback during DirectInput device enumeration.
         /// Used internally to detect which WinMM devices support XInput.
         static BOOL STDMETHODCALLTYPE CreateSystemDeviceInfoEnumCallback(LPCDIDEVICEINSTANCE lpddi, LPVOID pvRef);
-        
+
         /// Communicates with the relevant controller and the mapper to fill the provided structure with device state information.
         /// @param [in] joyID WinMM joystick ID.
         /// @param [out] joyStateData Structure to fill with device state information.
@@ -125,8 +125,8 @@ namespace Xidi
         /// @param [in] uJoyID WinMM joystick ID supplied by the application.
         /// @return Internal joystick index to either handle or pass to WinMM.
         static int TranslateApplicationJoyIndex(UINT uJoyID);
-        
-        
+
+
     public:
         // -------- METHODS: WinMM JOYSTICK ---------------------------------------- //
         static MMRESULT JoyConfigChanged(DWORD dwFlags);

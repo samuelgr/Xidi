@@ -42,147 +42,150 @@ inline static void LogSystemCreateSuccess(void)
 }
 
 
-// -------- DLL EXPORT FUNCTIONS ------------------------------------------- //
-// See DirectInput and COM documentation for more information.
+extern "C"
+{
+    // -------- DLL EXPORT FUNCTIONS --------------------------------------- //
+    // See DirectInput and COM documentation for more information.
 
 #if DIRECTINPUT_VERSION >= 0x0800
-HRESULT WINAPI ExportApiDirectInputDirectInput8Create(HINSTANCE hinst, DWORD dwVersion, REFIID riidltf, LPVOID* ppvOut, LPUNKNOWN punkOuter)
-{
-    IDirectInput8* diObject = NULL;
-
-    if (dwVersion < DINPUT_VER_MIN || dwVersion > DINPUT_VER_MAX)
+    HRESULT WINAPI ExportApiDirectInputDirectInput8Create(HINSTANCE hinst, DWORD dwVersion, REFIID riidltf, LPVOID* ppvOut, LPUNKNOWN punkOuter)
     {
-        LogVersionOutOfRange(DINPUT_VER_MIN, DINPUT_VER_MAX, dwVersion);
-        return E_FAIL;
-    }
+        IDirectInput8* diObject = NULL;
 
-    HRESULT result = ImportApiDirectInput::DirectInput8Create(hinst, dwVersion, riidltf, (LPVOID*)&diObject, punkOuter);
-    if (DI_OK != result)
-    {
-        LogSystemCreateError(result);
+        if (dwVersion < DINPUT_VER_MIN || dwVersion > DINPUT_VER_MAX)
+        {
+            LogVersionOutOfRange(DINPUT_VER_MIN, DINPUT_VER_MAX, dwVersion);
+            return E_FAIL;
+        }
+
+        HRESULT result = ImportApiDirectInput::DirectInput8Create(hinst, dwVersion, riidltf, (LPVOID*)&diObject, punkOuter);
+        if (DI_OK != result)
+        {
+            LogSystemCreateError(result);
+            return result;
+        }
+
+        diObject = new WrapperIDirectInput(diObject, (IID_IDirectInput8W == riidltf));
+        *ppvOut = (LPVOID)diObject;
+
+        LogSystemCreateSuccess();
         return result;
     }
-
-    diObject = new WrapperIDirectInput(diObject, (IID_IDirectInput8W == riidltf));
-    *ppvOut = (LPVOID)diObject;
-
-    LogSystemCreateSuccess();
-    return result;
-}
 #else
-HRESULT WINAPI ExportApiDirectInputDirectInputCreateA(HINSTANCE hinst, DWORD dwVersion, LPDIRECTINPUTA* ppDI, LPUNKNOWN punkOuter)
-{
-    IDirectInput* diObject = NULL;
-
-    if (dwVersion < DINPUT_VER_MIN || dwVersion > DINPUT_VER_MAX)
+    HRESULT WINAPI ExportApiDirectInputDirectInputCreateA(HINSTANCE hinst, DWORD dwVersion, LPDIRECTINPUTA* ppDI, LPUNKNOWN punkOuter)
     {
-        LogVersionOutOfRange(DINPUT_VER_MIN, DINPUT_VER_MAX, dwVersion);
-        return E_FAIL;
-    }
+        IDirectInput* diObject = NULL;
 
-    HRESULT result = ImportApiDirectInput::DirectInputCreateA(hinst, DIRECTINPUT_VERSION, (LPDIRECTINPUTA*)&diObject, punkOuter);
-    if (DI_OK != result)
-    {
-        LogSystemCreateError(result);
+        if (dwVersion < DINPUT_VER_MIN || dwVersion > DINPUT_VER_MAX)
+        {
+            LogVersionOutOfRange(DINPUT_VER_MIN, DINPUT_VER_MAX, dwVersion);
+            return E_FAIL;
+        }
+
+        HRESULT result = ImportApiDirectInput::DirectInputCreateA(hinst, DIRECTINPUT_VERSION, (LPDIRECTINPUTA*)&diObject, punkOuter);
+        if (DI_OK != result)
+        {
+            LogSystemCreateError(result);
+            return result;
+        }
+
+        diObject = new WrapperIDirectInput((LatestIDirectInput*)diObject, FALSE);
+        *ppDI = (LPDIRECTINPUTA)diObject;
+
+        LogSystemCreateSuccess();
         return result;
     }
 
-    diObject = new WrapperIDirectInput((LatestIDirectInput*)diObject, FALSE);
-    *ppDI = (LPDIRECTINPUTA)diObject;
+    // ---------
 
-    LogSystemCreateSuccess();
-    return result;
-}
-
-// ---------
-
-HRESULT WINAPI ExportApiDirectInputDirectInputCreateW(HINSTANCE hinst, DWORD dwVersion, LPDIRECTINPUTW* ppDI, LPUNKNOWN punkOuter)
-{
-    IDirectInput* diObject = NULL;
-
-    if (dwVersion < DINPUT_VER_MIN || dwVersion > DINPUT_VER_MAX)
+    HRESULT WINAPI ExportApiDirectInputDirectInputCreateW(HINSTANCE hinst, DWORD dwVersion, LPDIRECTINPUTW* ppDI, LPUNKNOWN punkOuter)
     {
-        LogVersionOutOfRange(DINPUT_VER_MIN, DINPUT_VER_MAX, dwVersion);
-        return E_FAIL;
-    }
+        IDirectInput* diObject = NULL;
 
-    HRESULT result = ImportApiDirectInput::DirectInputCreateW(hinst, DIRECTINPUT_VERSION, (LPDIRECTINPUTW*)&diObject, punkOuter);
-    if (DI_OK != result)
-    {
-        LogSystemCreateError(result);
+        if (dwVersion < DINPUT_VER_MIN || dwVersion > DINPUT_VER_MAX)
+        {
+            LogVersionOutOfRange(DINPUT_VER_MIN, DINPUT_VER_MAX, dwVersion);
+            return E_FAIL;
+        }
+
+        HRESULT result = ImportApiDirectInput::DirectInputCreateW(hinst, DIRECTINPUT_VERSION, (LPDIRECTINPUTW*)&diObject, punkOuter);
+        if (DI_OK != result)
+        {
+            LogSystemCreateError(result);
+            return result;
+        }
+
+        diObject = new WrapperIDirectInput((LatestIDirectInput*)diObject, TRUE);
+        *ppDI = (LPDIRECTINPUTW)diObject;
+
+        LogSystemCreateSuccess();
         return result;
     }
 
-    diObject = new WrapperIDirectInput((LatestIDirectInput*)diObject, TRUE);
-    *ppDI = (LPDIRECTINPUTW)diObject;
+    // ---------
 
-    LogSystemCreateSuccess();
-    return result;
-}
-
-// ---------
-
-HRESULT WINAPI ExportApiDirectInputDirectInputCreateEx(HINSTANCE hinst, DWORD dwVersion, REFIID riidltf, LPVOID *ppvOut, LPUNKNOWN punkOuter)
-{
-    IDirectInput* diObject = NULL;
-
-    if (dwVersion < DINPUT_VER_MIN || dwVersion > DINPUT_VER_MAX)
+    HRESULT WINAPI ExportApiDirectInputDirectInputCreateEx(HINSTANCE hinst, DWORD dwVersion, REFIID riidltf, LPVOID *ppvOut, LPUNKNOWN punkOuter)
     {
-        LogVersionOutOfRange(DINPUT_VER_MIN, DINPUT_VER_MAX, dwVersion);
-        return E_FAIL;
-    }
+        IDirectInput* diObject = NULL;
 
-    HRESULT result;
-    BOOL useUnicode = FALSE;
-    
-    if (IID_IDirectInput2W == riidltf || IID_IDirectInput7W == riidltf)
-    {
-        useUnicode = TRUE;
-        result = ImportApiDirectInput::DirectInputCreateEx(hinst, DIRECTINPUT_VERSION, IID_IDirectInput7W, (LPVOID*)&diObject, punkOuter);
-    }
-    else
-    {
-        result = ImportApiDirectInput::DirectInputCreateEx(hinst, DIRECTINPUT_VERSION, IID_IDirectInput7A, (LPVOID*)&diObject, punkOuter);
-    }
-    
-    if (DI_OK != result)
-    {
-        LogSystemCreateError(result);
+        if (dwVersion < DINPUT_VER_MIN || dwVersion > DINPUT_VER_MAX)
+        {
+            LogVersionOutOfRange(DINPUT_VER_MIN, DINPUT_VER_MAX, dwVersion);
+            return E_FAIL;
+        }
+
+        HRESULT result;
+        BOOL useUnicode = FALSE;
+
+        if (IID_IDirectInput2W == riidltf || IID_IDirectInput7W == riidltf)
+        {
+            useUnicode = TRUE;
+            result = ImportApiDirectInput::DirectInputCreateEx(hinst, DIRECTINPUT_VERSION, IID_IDirectInput7W, (LPVOID*)&diObject, punkOuter);
+        }
+        else
+        {
+            result = ImportApiDirectInput::DirectInputCreateEx(hinst, DIRECTINPUT_VERSION, IID_IDirectInput7A, (LPVOID*)&diObject, punkOuter);
+        }
+
+        if (DI_OK != result)
+        {
+            LogSystemCreateError(result);
+            return result;
+        }
+
+        diObject = new WrapperIDirectInput((LatestIDirectInput*)diObject, useUnicode);
+        *ppvOut = (LPVOID)diObject;
+
+        LogSystemCreateSuccess();
         return result;
     }
+    #endif
 
-    diObject = new WrapperIDirectInput((LatestIDirectInput*)diObject, useUnicode);
-    *ppvOut = (LPVOID)diObject;
+    // ---------
 
-    LogSystemCreateSuccess();
-    return result;
-}
-#endif
+    HRESULT WINAPI ExportApiDirectInputDllRegisterServer(void)
+    {
+        return ImportApiDirectInput::DllRegisterServer();
+    }
 
-// ---------
+    // ---------
 
-HRESULT WINAPI ExportApiDirectInputDllRegisterServer(void)
-{
-    return ImportApiDirectInput::DllRegisterServer();
-}
+    HRESULT WINAPI ExportApiDirectInputDllUnregisterServer(void)
+    {
+        return ImportApiDirectInput::DllUnregisterServer();
+    }
 
-// ---------
+    // ---------
 
-HRESULT WINAPI ExportApiDirectInputDllUnregisterServer(void)
-{
-    return ImportApiDirectInput::DllUnregisterServer();
-}
+    HRESULT WINAPI ExportApiDirectInputDllCanUnloadNow(void)
+    {
+        return ImportApiDirectInput::DllCanUnloadNow();
+    }
 
-// ---------
+    // ---------
 
-HRESULT WINAPI ExportApiDirectInputDllCanUnloadNow(void)
-{
-    return ImportApiDirectInput::DllCanUnloadNow();
-}
-
-// ---------
-
-HRESULT WINAPI ExportApiDirectInputDllGetClassObject(REFCLSID rclsid, REFIID riid, LPVOID* ppv)
-{
-    return ImportApiDirectInput::DllGetClassObject(rclsid, riid, ppv);
+    HRESULT WINAPI ExportApiDirectInputDllGetClassObject(REFCLSID rclsid, REFIID riid, LPVOID* ppv)
+    {
+        return ImportApiDirectInput::DllGetClassObject(rclsid, riid, ppv);
+    }
 }

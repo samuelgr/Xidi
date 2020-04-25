@@ -97,39 +97,39 @@ void Log::InitializeAndCreateLog(void)
         PWSTR folderPath;
         HRESULT result = SHGetKnownFolderPath(FOLDERID_Desktop, 0, NULL, &folderPath);
         if (S_OK != result) return;
-        
+
         std::wstring logFilePath = folderPath;
         logFilePath += L"\\";
         CoTaskMemFree(folderPath);
-        
+
         // The log file will be named according to the version of Xidi that is being used, plus the name of the executable and a suffix.
         WCHAR logFileNameBuffer[2048];
-        
+
         // First is the name of the executable.
         GetModuleFileName(NULL, logFileNameBuffer, _countof(logFileNameBuffer));
         std::wstring executableFileName = logFileNameBuffer;
         const size_t executableStartPos = executableFileName.find_last_of(L'\\');
         const size_t executableEndPos = executableFileName.find_last_of(L'.');
-        
+
         if ((std::wstring::npos != executableStartPos) && (std::wstring::npos != executableEndPos) && (executableStartPos < executableEndPos))
             logFilePath += executableFileName.substr(executableStartPos + 1, executableEndPos - executableStartPos - 1);
 
         logFilePath += L"_";
-        
+
         // Next is the version of Xidi.
         LoadStringW(Globals::GetInstanceHandle(), IDS_XIDI_VERSION_NAME, logFileNameBuffer, _countof(logFileNameBuffer));
         logFilePath += logFileNameBuffer;
-        
+
         // Finally is the suffix.
         logFilePath += kLogFileNameSuffix;
-        
+
         // Open the log file for writing.
         _wfopen_s(&fileHandle, logFilePath.c_str(), L"w, ccs=UTF-8");
         if (NULL == fileHandle) return;
 
         // Write out the log file header.
         wchar_t logHeaderStringBuffer[1024];
-        
+
         // Header part 1: Xidi version name.
         LoadString(Globals::GetInstanceHandle(), IDS_XIDI_VERSION_NAME, logHeaderStringBuffer, _countof(logHeaderStringBuffer));
         OutputText(logHeaderStringBuffer);
@@ -221,7 +221,7 @@ void Log::OutputFormattedText(LPCWSTR format, va_list args)
 {
     if (!IsLogReady())
         InitializeAndCreateLog();
-    
+
     if (IsLogReady())
     {
         vfwprintf_s(fileHandle, format, args);
@@ -235,7 +235,7 @@ void Log::OutputText(LPCWSTR message)
 {
     if (!IsLogReady())
         InitializeAndCreateLog();
-    
+
     if (IsLogReady())
     {
         fputws(message, fileHandle);
@@ -267,7 +267,7 @@ void Log::OutputStamp(ELogLevel severity)
 
     // Stamp part 4: separation between date/time and severity
     OutputText(L"](");
-    
+
     // Stamp part 5: severity
     switch (severity)
     {
@@ -282,7 +282,7 @@ void Log::OutputStamp(ELogLevel severity)
     case ELogLevel::LogLevelWarning:
         OutputText(L"W");
         break;
-    
+
     case ELogLevel::LogLevelInfo:
         OutputText(L"I");
         break;

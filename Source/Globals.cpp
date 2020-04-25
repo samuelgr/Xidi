@@ -49,7 +49,7 @@ bool Globals::ApplyOverrideImportDirectInput(std::wstring& value)
 
     if (true == validValue)
         gOverrideImportDirectInput = value;
-    
+
     return validValue;
 }
 

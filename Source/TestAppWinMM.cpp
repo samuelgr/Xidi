@@ -10,18 +10,11 @@
  *      for testing the functionality of this library via WinMM.
  *****************************************************************************/
 
-#include "ApiWindows.h"
-#include "Configuration.h"
-#include "ExportApiWinMM.h"
-#include "Globals.h"
-#include "ImportApiWinMM.h"
-#include "Log.h"
-
 #include <iostream>
+#include <Windows.h>
 #include <RegStr.h>
 
 using namespace std;
-using namespace Xidi;
 
 
 // -------- HELPERS -------------------------------------------------------- //
@@ -31,19 +24,19 @@ using namespace Xidi;
 size_t GetJoystickName(UINT index, wchar_t* buf, size_t count)
 {
     // Sanity check.
-    if (ExportApiWinMMJoyGetNumDevs() <= index)
+    if (joyGetNumDevs() <= index)
         return 0;
 
     // Get the registry key name.
     JOYCAPS joyCaps;
-    if (JOYERR_NOERROR != ExportApiWinMMJoyGetDevCapsW((UINT_PTR)-1, &joyCaps, sizeof(joyCaps)))
+    if (JOYERR_NOERROR != joyGetDevCapsW((UINT_PTR)-1, &joyCaps, sizeof(joyCaps)))
         return 0;
 
     // Open the correct registry key to determine the location to look for the joystick's actual OEM name.
     HKEY registryKey;
     wchar_t registryPath[1024];
     swprintf_s(registryPath, _countof(registryPath), REGSTR_PATH_JOYCONFIG L"\\%s\\" REGSTR_KEY_JOYCURR, joyCaps.szRegKey);
-    
+
     LRESULT result = RegCreateKeyEx(HKEY_CURRENT_USER, registryPath, 0, NULL, REG_OPTION_VOLATILE, KEY_QUERY_VALUE, NULL, &registryKey, NULL);
     if (ERROR_SUCCESS != result)
         return 0;
@@ -54,7 +47,7 @@ size_t GetJoystickName(UINT index, wchar_t* buf, size_t count)
 
     wchar_t registryValueData[256];
     DWORD registryValueSize = sizeof(registryValueData);
-    
+
     result = RegGetValue(registryKey, NULL, registryValueName, RRF_RT_REG_SZ, NULL, registryValueData, &registryValueSize);
     RegCloseKey(registryKey);
 
@@ -63,7 +56,7 @@ size_t GetJoystickName(UINT index, wchar_t* buf, size_t count)
 
     // Open the correct registry key to look for the joystick's OEM name.
     swprintf_s(registryPath, _countof(registryPath), REGSTR_PATH_JOYOEM L"\\%s", registryValueData);
-    
+
     result = RegCreateKeyEx(HKEY_CURRENT_USER, registryPath, 0, NULL, REG_OPTION_VOLATILE, KEY_QUERY_VALUE, NULL, &registryKey, NULL);
     if (ERROR_SUCCESS != result)
         return 0;
@@ -86,35 +79,34 @@ int RunTestApp(int argc, char* argv[])
     ////////////////////////////////////
     ////////   Initialization
 
-    // Initialize the imported WinMM API.
-    ImportApiWinMM::Initialize();
+    // Nothing to do here.
 
-    
+
     ////////////////////////////////////
     ////////   Enumeration
 
     // Check the number of devices to enumerate.
-    UINT numJoysticks = ExportApiWinMMJoyGetNumDevs();
+    UINT numJoysticks = joyGetNumDevs();
     if (0 == numJoysticks)
     {
         wcerr << L"No joysticks supported by current driver." << endl;
         return -1;
     }
-    
+
     // Enumerate all the devices attached to the system.
     wcout << L"Driver reports " << numJoysticks << L" joysticks are available." << endl << endl;
     wcout << L"Begin enumerating devices via joyGetDevCaps" << endl;
-    
+
     UINT devIdx = numJoysticks;
     for (DWORD i = 0; i < numJoysticks; ++i)
     {
         JOYCAPS joyCaps;
 
-        result = ExportApiWinMMJoyGetDevCapsW(i, &joyCaps, sizeof(joyCaps));
+        result = joyGetDevCapsW(i, &joyCaps, sizeof(joyCaps));
         if (JOYERR_NOERROR == result)
         {
             wchar_t joystickName[1024];
-            
+
             if (0 == GetJoystickName(i, joystickName, _countof(joystickName)))
                 wcout << L"    Joystick \"(unknown)\" detected at " << i;
             else
@@ -127,7 +119,7 @@ int RunTestApp(int argc, char* argv[])
                     wcout << L", selected";
                 }
             }
-            
+
             wcout << endl;
         }
     }
@@ -145,7 +137,7 @@ int RunTestApp(int argc, char* argv[])
     ////////   Device Capabilities
 
     JOYCAPS joyCaps;
-    result = ExportApiWinMMJoyGetDevCapsW(devIdx, &joyCaps, sizeof(joyCaps));
+    result = joyGetDevCapsW(devIdx, &joyCaps, sizeof(joyCaps));
     if (JOYERR_NOERROR != result)
     {
         wcerr << L"Unable to obtain get device capabilities: code " << result << L"." << endl;
@@ -192,8 +184,8 @@ int RunTestApp(int argc, char* argv[])
     {
         system("cls");
         wcout << L"Update #" << (i+1) << endl;
-        
-        result = ExportApiWinMMJoyGetPosEx(devIdx, &testData);
+
+        result = joyGetPosEx(devIdx, &testData);
         if (JOYERR_NOERROR != result)
         {
             wcout << L"Failed to retrieve device state." << endl;
@@ -254,12 +246,7 @@ int RunTestApp(int argc, char* argv[])
 
 int main(int argc, char* argv[])
 {
-    Globals::SetInstanceHandle(GetModuleHandle(NULL));
-    Configuration::ParseAndApplyConfigurationFile();
-    
     int result = RunTestApp(argc, argv);
-
-    Log::FinalizeLog();
     system("pause");
     return result;
 }

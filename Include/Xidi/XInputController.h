@@ -62,7 +62,7 @@ namespace Xidi
         /// Relevant only for applications that read buffered data.
         /// Value is set to reserve 1MB at most per controller, which holds tens of thousands of events.
         static const DWORD kEventBufferCountMax = (1 * 1024 * 1024) / sizeof(SControllerEvent);
-        
+
         /// Minimum value of readings from the left and right sticks, from the XInput documentation.
         static const LONG kStickRangeMin = -32768;
 
@@ -94,7 +94,7 @@ namespace Xidi
 
         /// Holds buffered events obtained from the controller.
         std::deque<SControllerEvent> bufferedEvents;
-        
+
         /// Specifies the next sequence number to use for reporting events in the buffer.
         DWORD bufferedEventsNextSequenceNumber;
 
@@ -113,24 +113,24 @@ namespace Xidi
 
         /// Flag to indicate if the event buffer has overflowed and events have been lost.
         BOOL eventBufferHasOverflowed;
-        
+
         /// Enforces mutual exclusion on operations that update the internal event state.
         CRITICAL_SECTION eventChangeCriticalSection;
-        
+
         /// Specifies if the controller is "acquired" in DirectInput terms.
         /// DirectInput requires controllers be acquired before applications can provide data from them.
         /// Also, many property changes and other operations are unavailable once a controller is acquired.
         BOOL isAcquired;
-        
+
         /// User index of the controller with which this instance should interface.
         DWORD xinputUserIndex;
-        
-        
+
+
         // -------- CONSTRUCTION AND DESTRUCTION --------------------------- //
 
         /// Default constructor. Should never be invoked.
         XInputController(void);
-        
+
     public:
         /// Constructs a new controller object given the index (0 to 3) of the controller with which to interface.
         /// If the value of the index is out of range, all method calls to the constructed object will fail.
@@ -138,10 +138,10 @@ namespace Xidi
 
         /// Default destructor.
         virtual ~XInputController(void);
-        
-        
+
+
         // -------- CLASS METHODS ------------------------------------------ //
-        
+
         /// Translates an XInput-style button reading to a DirectInput-style button reading.
         /// XInput uses one bit per button, so both a state and a mask are required to identify the button of interest.
         /// DirectInput uses the uppermost bit of a byte to indicate the button state.
@@ -149,18 +149,18 @@ namespace Xidi
         /// @param [in] buttonMask XInput button identifier (only 1 bit should be set).
         /// @return DirectInput button state indicator for the identified XInput button.
         static LONG DirectInputButtonStateFromXInputButtonReading(const WORD buttonState, const WORD buttonMask);
-        
+
         /// Extracts XInput directional pad state information and converts the format to a DirectInput-style POV reading.
         /// @param [in] buttonState XInput state information, which contains directional pad state.
         /// @return Corresponding DirectInput POV reading.
         static LONG DirectInputPovStateFromXInputButtonState(const WORD buttonState);
-        
+
         /// Specifies if the indicated controller is connected (i.e. physically present and can be queried).
         /// @param [in] xinputUserIndex User index of interest, in the range of 0 to (#kMaxNumXInputControllers - 1).
         /// @return `TRUE` if a controller exists at that index, `FALSE` otherwise.
         static BOOL IsControllerConnected(const DWORD xinputUserIndex);
-        
-        
+
+
     private:
         // -------- HELPERS -------------------------------------------------------- //
 
@@ -168,14 +168,14 @@ namespace Xidi
         /// @param [in] requestedSize Requested event buffer size, in number of elements.
         /// @return Allowed actual buffer size, in number of elements.
         DWORD AllowedEventCountForRequestedSize(DWORD requestedSize);
-        
+
         /// Clears the event buffer.
         void ClearBufferedEvents(void);
-        
+
         /// Sets the event buffer size.
         /// @param [in] requestedSize Requested event buffer size, in bytes.
         void SetEventBufferSize(DWORD requestedSize);
-        
+
         /// Submits a new event to the buffer.
         /// Simply enqueues it to the event buffer queue.
         /// @param [in] controllerElement Identifier of the XInput controller element that has been modified.
@@ -196,7 +196,7 @@ namespace Xidi
         /// Retrieves the number of buffered events present.
         /// @return Number of buffered events.
         DWORD BufferedEventsCount();
-        
+
         /// Fills in a DirectInput device capabilities structure with information about this controller's basic information.
         /// @param [out] lpDIDevCaps DirectInput device capability structure that should receive information.
         void FillDeviceCapabilities(LPDIDEVCAPS lpDIDevCaps);
@@ -217,11 +217,11 @@ namespace Xidi
         /// Retrieves and returns the XInput player index associated with this controller object.
         /// @return Associated XInput player index.
         DWORD GetPlayerIndex(void);
-        
+
         /// Specifies if the controller is currently acquired.
         /// @return `TRUE` if so, `FALSE` otherwise.
         BOOL IsAcquired(void);
-        
+
         /// Specifies if the indicated controller is connected (i.e. physically present and can be queried).
         /// @return `TRUE` if a controller exists at the index configured for this object, `FALSE` otherwise.
         BOOL IsConnected(void);
@@ -229,7 +229,7 @@ namespace Xidi
         /// Specifies if event buffering is enabled.
         /// @return `TRUE` if so, `FALSE` if not.
         BOOL IsEventBufferEnabled(void);
-        
+
         /// Specifies if the event buffer has overflowed.
         /// @return `TRUE` if so, `FALSE` if not.
         BOOL IsEventBufferOverflowed(void);
@@ -237,25 +237,25 @@ namespace Xidi
         /// Locks the event buffer for multiple operations.
         /// Idempotent; can be called multiple times from the same thread, so long as each call has an accompanying call to UnlockEventBuffer.
         void LockEventBuffer(void);
-        
+
         /// Retrieves the specified buffered event and places it into the specified location.
         /// Does not remove the event from the buffer.
         /// @param [out] event Buffer that should receive the requested event.
         /// @param [in] idx Index within the event buffer of the event of interest.
         /// @return `DI_OK` on success, `DIERR_NOTACQUIRED` if the controller was not previously acquired, or `DIERR_INVALIDPARAM` if the buffered event does not exist.
         HRESULT PeekBufferedEvent(SControllerEvent* event, DWORD idx);
-        
+
         /// Retrieves the first (oldest) buffered event from the controller and places it into the specified location.
         /// Removes the event from the buffer.
         /// @param [out] event Buffer that should receive the oldest buffered event.
         /// @return `DI_OK` on success, `DIERR_NOTACQUIRED` if the controller was not previously acquired, or `DIERR_INVALIDPARAM` if the event buffer is empty.
         HRESULT PopBufferedEvent(SControllerEvent* event);
-        
+
         /// Refreshes the controller state information and adds changes to the event buffer.
         /// Essentially the same as the IDirectInputDevice Poll method.
         /// @return `DI_OK` upon completion, or `DIERR_NOTACQUIRED` if the application did not first acquire the device.
         HRESULT RefreshControllerState(void);
-        
+
         /// Sets a DirectInput property of the controller.
         /// Corresponds directly to the IDirectInputDevice SetProperty method.
         /// @param [in] rguidProp DirectInput GUID of the property.

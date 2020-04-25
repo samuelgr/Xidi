@@ -25,7 +25,7 @@ namespace Xidi
     {
     private:
         // -------- CONSTANTS ---------------------------------------------- //
-        
+
         /// Holds the name of the DirectInput library to load from the system directory.
         static const std::wstring kDInputLibraryName;
 
@@ -37,8 +37,8 @@ namespace Xidi
 
         /// Maximum length of the system directory name.
         static const size_t kMaximumSystemDirectoryNameLength = 2048;
-        
-        
+
+
         // -------- CLASS VARIABLES ---------------------------------------- //
 
         /// Handle of the instance that represents the running form of Xidi, be it the library or the test application.
@@ -77,7 +77,7 @@ namespace Xidi
         /// @param [in] value Setting value to be applied.
         /// @return `true` if setting could be applied, `false` otherwise.
         static bool ApplyOverrideImportWinMM(std::wstring& value);
-        
+
         /// Sets the supplied string reference to be equal to the library path for the DirectInput library that should be used for importing functions.
         /// @param [out] stringToFill String to be filled with the path.
         static void FillDirectInputLibraryPath(std::wstring& stringToFill);
@@ -89,17 +89,17 @@ namespace Xidi
         /// Sets the supplied string reference to be equal to the library path for the WinMM library that should be used for importing functions.
         /// @param [out] stringToFill String to be filled with the path.
         static void FillWinMMLibraryPath(std::wstring& stringToFill);
-        
+
         /// Retrieves the handle of the instance that represents the current running form of Xidi, be it the library or the test application.
         /// @return Instance handle for Xidi.
         static HINSTANCE GetInstanceHandle(void);
-        
+
         /// Sets the handle of the instance that represents the current running form of Xidi, be it the library or the test application.
         /// Intended to be called only once during initialization.
         /// @param [in] newInstanceHandle Instance handle to set.
         static void SetInstanceHandle(HINSTANCE newInstanceHandle);
-        
-        
+
+
     private:
         // -------- HELPERS ------------------------------------------------ //
 
@@ -109,7 +109,7 @@ namespace Xidi
         /// @param [in] overridePath Non-default override path to be considered.
         /// @param [in] defaultLibraryFileName Default name to be used if the override path is not specified.
         static void FillLibraryPath(std::wstring& stringToFill, const std::wstring& overridePath, const std::wstring& defaultLibraryFileName);
-        
+
         /// Sets the supplied string reference equal to the system directory path.
         /// @param [out] stringToFill String to be filled.
         static void FillSystemDirectoryPath(std::wstring& stringToFill);

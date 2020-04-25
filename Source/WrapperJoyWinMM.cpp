@@ -123,20 +123,20 @@ void WrapperJoyWinMM::Initialize(void)
         mapper = MapperFactory::CreateMapper();
         if (DI_OK != mapper->SetApplicationDataFormat(&joyStateDataFormat))
             Log::WriteLogMessage(ELogLevel::LogLevelError, L"Failed to set device state data format.  XInput controllers will not function.");
-        
+
         // Create controllers, one for each XInput position.
         for (DWORD i = 0; i < _countof(controllers); ++i)
             controllers[i] = new XInputController(i);
-        
+
         // Enumerate all devices exposed by WinMM.
         CreateSystemDeviceInfo();
-        
+
         // Initialize the joystick index map.
         CreateJoyIndexMap();
-        
+
         // Ensure all controllers have their names published in the system registry.
         SetControllerNameRegistryInfo();
-        
+
         // Initialization complete.
         Log::WriteLogMessage(ELogLevel::LogLevelInfo, L"Completed initialization of WinMM joystick wrapper.");
         isInitialized = TRUE;
@@ -157,7 +157,7 @@ void WrapperJoyWinMM::CreateJoyIndexMap(void)
     joyIndexMap.clear();
     joyIndexMap.reserve(numDevicesTotal);
     Log::WriteFormattedLogMessage(ELogLevel::LogLevelDebug, L"Presenting the system with these WinMM devices:");
-    
+
     if ((false == joySystemDeviceInfo[0].second) && !(joySystemDeviceInfo[0].first.empty()))
     {
         // Preferred device is present but does not support XInput.
@@ -227,7 +227,7 @@ void WrapperJoyWinMM::CreateSystemDeviceInfo(void)
         Log::WriteFormattedLogMessage(ELogLevel::LogLevelWarning, L"Unable to enumerate system WinMM devices because the registry key \"%s\" could not be opened.", registryPath);
         return;
     }
-    
+
     // For each joystick device available in the system, see if it is present and, if so, get its device identifier (vendor ID and product ID string).
     Log::WriteLogMessage(ELogLevel::LogLevelDebug, L"Enumerating system WinMM devices...");
 
@@ -240,7 +240,7 @@ void WrapperJoyWinMM::CreateSystemDeviceInfo(void)
             Log::WriteFormattedLogMessage(ELogLevel::LogLevelDebug, L"    [%u]: (not present - failed to get capabilities)", (unsigned int)i);
             continue;
         }
-        
+
         // Use the registry to get device vendor ID and product ID string.
         wchar_t registryValueName[64];
         swprintf_s(registryValueName, _countof(registryValueName), REGSTR_VAL_JOYNOEMNAME, ((int)i + 1));
@@ -374,7 +374,7 @@ void WrapperJoyWinMM::SetControllerNameRegistryInfo(void)
     wchar_t registryPath[1024];
 
     FillRegistryKeyStringW(registryKeyName, _countof(registryKeyName));
-    
+
     // Place the names into the correct spots for the application to read.
     // These will be in HKCU\System\CurrentControlSet\Control\MediaProperties\PrivateProperties\Joystick\OEM\Xidi# and contain the name of the controller.
     for (DWORD i = 0; i < _countof(controllers); ++i)
@@ -399,12 +399,12 @@ void WrapperJoyWinMM::SetControllerNameRegistryInfo(void)
 
     result = RegCreateKeyEx(HKEY_CURRENT_USER, registryPath, 0, NULL, REG_OPTION_VOLATILE, KEY_SET_VALUE, NULL, &registryKey, NULL);
     if (ERROR_SUCCESS != result) return;
-    
+
     for (DWORD i = 0; i < joyIndexMap.size(); ++i)
     {
         wchar_t valueName[64];
         const int valueNameCount = swprintf_s(valueName, _countof(valueName), REGSTR_VAL_JOYNOEMNAME, (i + 1));
-        
+
         if (joyIndexMap[i] < 0)
         {
             // Map points to a Xidi virtual device.
@@ -474,10 +474,10 @@ MMRESULT WrapperJoyWinMM::JoyGetDevCapsA(UINT_PTR uJoyID, LPJOYCAPSA pjc, UINT c
         LOG_INVOCATION((unsigned int)uJoyID, result);
         return result;
     }
-    
+
     Initialize();
     const int realJoyID = TranslateApplicationJoyIndex((UINT)uJoyID);
-    
+
     if (realJoyID < 0)
     {
         // Querying an XInput controller.
@@ -542,7 +542,7 @@ MMRESULT WrapperJoyWinMM::JoyGetDevCapsA(UINT_PTR uJoyID, LPJOYCAPSA pjc, UINT c
         // Querying a non-XInput controller.
         // Replace the registry key but otherwise leave the response unchanged.
         MMRESULT result = ImportApiWinMM::joyGetDevCapsA((UINT_PTR)realJoyID, pjc, cbjc);
-        
+
         if (JOYERR_NOERROR == result)
             FillRegistryKeyStringA(pjc->szRegKey, _countof(pjc->szRegKey));
 
@@ -559,15 +559,15 @@ MMRESULT WrapperJoyWinMM::JoyGetDevCapsW(UINT_PTR uJoyID, LPJOYCAPSW pjc, UINT c
     if ((UINT_PTR)-1 == uJoyID)
     {
         FillRegistryKeyStringW(pjc->szRegKey, _countof(pjc->szRegKey));
-        
+
         const MMRESULT result = JOYERR_NOERROR;
         LOG_INVOCATION((unsigned int)uJoyID, result);
         return result;
     }
-    
+
     Initialize();
     const int realJoyID = TranslateApplicationJoyIndex((UINT)uJoyID);
-    
+
     if (realJoyID < 0)
     {
         // Querying an XInput controller.
@@ -635,7 +635,7 @@ MMRESULT WrapperJoyWinMM::JoyGetDevCapsW(UINT_PTR uJoyID, LPJOYCAPSW pjc, UINT c
 
         if (JOYERR_NOERROR == result)
             FillRegistryKeyStringW(pjc->szRegKey, _countof(pjc->szRegKey));
-        
+
         LOG_INVOCATION((unsigned int)uJoyID, result);
         return result;
     }
@@ -659,7 +659,7 @@ MMRESULT WrapperJoyWinMM::JoyGetPos(UINT uJoyID, LPJOYINFO pji)
 {
     Initialize();
     const int realJoyID = TranslateApplicationJoyIndex(uJoyID);
-    
+
     if (realJoyID < 0)
     {
         // Querying an XInput controller.
@@ -707,7 +707,7 @@ MMRESULT WrapperJoyWinMM::JoyGetPosEx(UINT uJoyID, LPJOYINFOEX pji)
 {
     Initialize();
     const int realJoyID = TranslateApplicationJoyIndex(uJoyID);
-    
+
     if (realJoyID < 0)
     {
         // Querying an XInput controller.
@@ -766,11 +766,11 @@ MMRESULT WrapperJoyWinMM::JoyGetThreshold(UINT uJoyID, LPUINT puThreshold)
 {
     Initialize();
     const int realJoyID = TranslateApplicationJoyIndex(uJoyID);
-    
+
     if (realJoyID < 0)
     {
         // Querying an XInput controller.
-        
+
         // Operation not supported.
         const MMRESULT result = JOYERR_NOCANDO;
         LOG_UNSUPPORTED_OPERATION();
@@ -792,11 +792,11 @@ MMRESULT WrapperJoyWinMM::JoyReleaseCapture(UINT uJoyID)
 {
     Initialize();
     const int realJoyID = TranslateApplicationJoyIndex(uJoyID);
-    
+
     if (realJoyID < 0)
     {
         // Querying an XInput controller.
-        
+
         // Operation not supported.
         const MMRESULT result = JOYERR_NOCANDO;
         LOG_UNSUPPORTED_OPERATION();
@@ -818,11 +818,11 @@ MMRESULT WrapperJoyWinMM::JoySetCapture(HWND hwnd, UINT uJoyID, UINT uPeriod, BO
 {
     Initialize();
     const int realJoyID = TranslateApplicationJoyIndex(uJoyID);
-    
+
     if (realJoyID < 0)
     {
         // Querying an XInput controller.
-        
+
         // Operation not supported.
         const MMRESULT result = JOYERR_NOCANDO;
         LOG_UNSUPPORTED_OPERATION();
@@ -844,11 +844,11 @@ MMRESULT WrapperJoyWinMM::JoySetThreshold(UINT uJoyID, UINT uThreshold)
 {
     Initialize();
     const int realJoyID = TranslateApplicationJoyIndex(uJoyID);
-    
+
     if (realJoyID < 0)
     {
         // Querying an XInput controller.
-        
+
         // Operation not supported.
         const MMRESULT result = JOYERR_NOCANDO;
         LOG_UNSUPPORTED_OPERATION();

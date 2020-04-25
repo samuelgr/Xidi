@@ -33,7 +33,7 @@ XInputController::XInputController(DWORD xinputUserIndex) : bufferedEvents(), bu
 XInputController::~XInputController(void)
 {
     ClearBufferedEvents();
-    
+
     EnterCriticalSection(&eventChangeCriticalSection);
     DeleteCriticalSection(&eventChangeCriticalSection);
 }
@@ -133,7 +133,7 @@ DWORD XInputController::AllowedEventCountForRequestedSize(DWORD requestedSize)
 void XInputController::ClearBufferedEvents(void)
 {
     LockEventBuffer();
-    
+
     bufferedEvents.clear();
     eventBufferHasOverflowed = FALSE;
 
@@ -145,9 +145,9 @@ void XInputController::ClearBufferedEvents(void)
 void XInputController::SetEventBufferSize(DWORD requestedSize)
 {
     const DWORD actualCount = AllowedEventCountForRequestedSize(requestedSize);
-    
+
     Log::WriteFormattedLogMessage(ELogLevel::LogLevelDebug, L"Setting event buffer size on XInput player %u to %d events, based on a requested size of %d.", GetPlayerIndex() + 1, actualCount, requestedSize);
-    
+
     if (actualCount == eventBufferCountActual)
     {
         // Requested change is ineffective.
@@ -155,7 +155,7 @@ void XInputController::SetEventBufferSize(DWORD requestedSize)
         eventBufferSizeRequested = requestedSize;
         return;
     }
-    
+
     LockEventBuffer();
 
     if (0 == requestedSize)
@@ -171,7 +171,7 @@ void XInputController::SetEventBufferSize(DWORD requestedSize)
     else if (actualCount > eventBufferCountActual)
     {
         // Increasing the event buffer size.
-        
+
         // Just update the stored values.
         // Because the buffer may have overflowed previously, do not modify that flag.
         eventBufferSizeRequested = requestedSize;
@@ -180,12 +180,12 @@ void XInputController::SetEventBufferSize(DWORD requestedSize)
     else
     {
         // Decreasing the event buffer size.
-        
+
         // First, drop any events that are in excess of the buffer size.
         // If this is required, the buffer has overflowed.
         if (bufferedEvents.size() > actualCount)
             eventBufferHasOverflowed = TRUE;
-        
+
         while (bufferedEvents.size() > actualCount)
             bufferedEvents.pop_front();
 
@@ -193,7 +193,7 @@ void XInputController::SetEventBufferSize(DWORD requestedSize)
         eventBufferSizeRequested = requestedSize;
         eventBufferCountActual = actualCount;
     }
-    
+
     UnlockEventBuffer();
 }
 
@@ -202,14 +202,14 @@ void XInputController::SetEventBufferSize(DWORD requestedSize)
 void XInputController::SubmitBufferedEvent(EXInputControllerElement controllerElement, LONG value, DWORD timestamp)
 {
     LockEventBuffer();
-    
+
     // Create the event.
     SControllerEvent newEvent;
     newEvent.controllerElement = controllerElement;
     newEvent.value = value;
     newEvent.timestamp = timestamp;
     newEvent.sequenceNumber = bufferedEventsNextSequenceNumber;
-    
+
     if (bufferedEvents.size() == eventBufferCountActual)
     {
         // Buffer is at capacity.
@@ -223,13 +223,13 @@ void XInputController::SubmitBufferedEvent(EXInputControllerElement controllerEl
         // Exit any overflow state that might have existed beforehand.
         eventBufferHasOverflowed = FALSE;
     }
-    
+
     // Enqueue the event.
     bufferedEvents.push_back(newEvent);
-    
+
     // Increment the sequence number.
     bufferedEventsNextSequenceNumber += 1;
-    
+
     UnlockEventBuffer();
 }
 
@@ -254,11 +254,11 @@ HRESULT XInputController::AcquireController(void)
 DWORD XInputController::BufferedEventsCount()
 {
     DWORD numEvents = 0;
-    
+
     LockEventBuffer();
     numEvents = (DWORD)bufferedEvents.size();
     UnlockEventBuffer();
-    
+
     return numEvents;
 }
 
@@ -304,7 +304,7 @@ HRESULT XInputController::GetControllerProperty(REFGUID rguidProp, LPDIPROPHEADE
         // All other properties are unsupported.
         return DIERR_UNSUPPORTED;
     }
-    
+
     return DI_OK;
 }
 
@@ -316,7 +316,7 @@ HRESULT XInputController::GetCurrentDeviceState(XINPUT_STATE* state)
 
     // Copy the most recent controller state into the specified buffer.
     *state = controllerState;
-    
+
     return DI_OK;
 }
 
@@ -405,7 +405,7 @@ HRESULT XInputController::PopBufferedEvent(SControllerEvent* event)
 HRESULT XInputController::RefreshControllerState(void)
 {
     if (!IsAcquired()) return DIERR_NOTACQUIRED;
-    
+
     // Get updated state information for the controller.
     XINPUT_STATE newControllerState;
     DWORD result = XInputGetState(xinputUserIndex, &newControllerState);
@@ -414,7 +414,7 @@ HRESULT XInputController::RefreshControllerState(void)
     // If the device was unplugged or otherwise has become unavailable, reset its state to everything being neutral.
     if (ERROR_SUCCESS != result)
         ZeroMemory(&newControllerState.Gamepad, sizeof(newControllerState.Gamepad));
-    
+
     // Add device events to the event buffer if buffered events are enabled.
     if (0 != eventBufferCountActual)
     {
@@ -485,14 +485,14 @@ HRESULT XInputController::RefreshControllerState(void)
         // Determine if the application state change event should be notified.
         shouldNotifyApplicationEvent = ((NULL != controllerStateChangedEvent) && (0 == memcmp((void*)&controllerState, (void*)&newControllerState, sizeof(controllerState))));
     }
-    
+
     // Copy the new controller state to the current controller state.
     controllerState = newControllerState;
 
     // Notify the application if the controller state changed.
     if (shouldNotifyApplicationEvent)
         SetEvent(controllerStateChangedEvent);
-    
+
     return DI_OK;
 }
 
@@ -503,11 +503,11 @@ HRESULT XInputController::SetControllerProperty(REFGUID rguidProp, LPCDIPROPHEAD
     // Verify the correct header size.
     if (pdiph->dwHeaderSize != sizeof(DIPROPHEADER))
         return DIERR_INVALIDPARAM;
-    
+
     // Verify whole-device properties have the correct value for object identification.
     if (DIPH_DEVICE == pdiph->dwHow && 0 != pdiph->dwObj)
         return DIERR_INVALIDPARAM;
-    
+
     // Branch based on the property in question.
     if (&DIPROP_BUFFERSIZE == &rguidProp)
     {

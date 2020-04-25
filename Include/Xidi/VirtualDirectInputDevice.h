@@ -24,10 +24,10 @@ namespace Xidi
     {
     private:
         // -------- INSTANCE VARIABLES --------------------------------------------- //
-        
+
         /// Controller with which to interface.
         XInputController* controller;
-        
+
         /// Mapping scheme to be applied to the wrapped DirectInput device.
         Mapper::Base* mapper;
 
@@ -39,13 +39,13 @@ namespace Xidi
 
         /// Specifies whether or not to use Unicode (this depends on the application configuration).
         BOOL useUnicode;
-        
-        
+
+
         // -------- CONSTRUCTION AND DESTRUCTION ----------------------------------- //
-        
+
         /// Default constructor. Should never be invoked.
         VirtualDirectInputDevice(void);
-        
+
     public:
         /// Constructs a WrapperIDirectInput object, given a mapper and a controller.
         /// @param [in] useUnicode Specifies if the object should use Unicode versions of methods.
@@ -55,15 +55,15 @@ namespace Xidi
 
         /// Default destructor.
         virtual ~VirtualDirectInputDevice(void);
-        
-        
+
+
     public:
         // -------- METHODS: IUnknown ---------------------------------------------- //
         virtual HRESULT STDMETHODCALLTYPE QueryInterface(REFIID riid, LPVOID* ppvObj);
         virtual ULONG STDMETHODCALLTYPE AddRef(void);
         virtual ULONG STDMETHODCALLTYPE Release(void);
-        
-        
+
+
         // -------- METHODS: IDirectInputDevice COMMON ----------------------------- //
         virtual HRESULT STDMETHODCALLTYPE Acquire(void);
         virtual HRESULT STDMETHODCALLTYPE CreateEffect(REFGUID rguid, LPCDIEFFECT lpeff, LPDIRECTINPUTEFFECT* ppdeff, LPUNKNOWN punkOuter);

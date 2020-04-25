@@ -100,7 +100,7 @@ HRESULT STDMETHODCALLTYPE VirtualDirectInputDevice::QueryInterface(REFIID riid, 
 {
     if (NULL == ppvObj)
         return E_INVALIDARG;
-    
+
     HRESULT result = S_OK;
     *ppvObj = NULL;
 
@@ -146,7 +146,7 @@ ULONG STDMETHODCALLTYPE VirtualDirectInputDevice::Release(void)
 HRESULT STDMETHODCALLTYPE VirtualDirectInputDevice::Acquire(void)
 {
     HRESULT result = DIERR_INVALIDPARAM;
-    
+
     // Can only acquire the device once the data format has been set.
     if (mapper->IsApplicationDataFormatSet())
         result = controller->AcquireController();
@@ -164,7 +164,7 @@ HRESULT STDMETHODCALLTYPE VirtualDirectInputDevice::CreateEffect(REFGUID rguid, 
 
     Log::WriteLogMessage(ELogLevel::LogLevelWarning, L"Application attempted a force-feedback operation, which is not currently supported.");
     LOG_INVOCATION(ELogLevel::LogLevelInfo, controller->GetPlayerIndex() + 1, result);
-    
+
     return result;
 }
 
@@ -190,7 +190,7 @@ HRESULT STDMETHODCALLTYPE VirtualDirectInputDevice::EnumEffects(LPDIENUMEFFECTSC
 
     Log::WriteLogMessage(ELogLevel::LogLevelWarning, L"Application attempted a force-feedback operation, which is not currently supported.");
     LOG_INVOCATION(ELogLevel::LogLevelInfo, controller->GetPlayerIndex() + 1, result);
-    
+
     return result;
 }
 
@@ -203,7 +203,7 @@ HRESULT STDMETHODCALLTYPE VirtualDirectInputDevice::EnumEffectsInFile(LPCWSTR lp
 
     Log::WriteLogMessage(ELogLevel::LogLevelWarning, L"Application attempted a force-feedback operation, which is not currently supported.");
     LOG_INVOCATION(ELogLevel::LogLevelInfo, controller->GetPlayerIndex() + 1, result);
-    
+
     return result;
 }
 
@@ -236,7 +236,7 @@ HRESULT STDMETHODCALLTYPE VirtualDirectInputDevice::GetCapabilities(LPDIDEVCAPS 
         LOG_INVOCATION(ELogLevel::LogLevelInfo, controller->GetPlayerIndex() + 1, result);
         return result;
     }
-    
+
     controller->FillDeviceCapabilities(lpDIDevCaps);
     mapper->FillDeviceCapabilities(lpDIDevCaps);
 
@@ -256,7 +256,7 @@ HRESULT STDMETHODCALLTYPE VirtualDirectInputDevice::GetDeviceData(DWORD cbObject
         LOG_INVOCATION(ELogLevel::LogLevelSuperDebug, controller->GetPlayerIndex() + 1, result);
         return result;
     }
-    
+
     // Verify that the controller has been acquired.
     // This avoids allocating memory in the face of a known error case.
     if (!controller->IsAcquired())
@@ -265,7 +265,7 @@ HRESULT STDMETHODCALLTYPE VirtualDirectInputDevice::GetDeviceData(DWORD cbObject
         LOG_INVOCATION(ELogLevel::LogLevelSuperDebug, controller->GetPlayerIndex() + 1, result);
         return result;
     }
-    
+
     // Verify provided count. Cannot be NULL.
     if (NULL == pdwInOut)
     {
@@ -273,7 +273,7 @@ HRESULT STDMETHODCALLTYPE VirtualDirectInputDevice::GetDeviceData(DWORD cbObject
         LOG_INVOCATION(ELogLevel::LogLevelSuperDebug, controller->GetPlayerIndex() + 1, result);
         return result;
     }
-    
+
     // Cause the mapper to read events from the controller and map them to application events.
     const HRESULT result = mapper->WriteApplicationBufferedEvents(controller, rgdod, *pdwInOut, (0 != (dwFlags & DIGDD_PEEK)));
     LOG_INVOCATION(ELogLevel::LogLevelSuperDebug, controller->GetPlayerIndex() + 1, result);
@@ -300,7 +300,7 @@ HRESULT STDMETHODCALLTYPE VirtualDirectInputDevice::GetDeviceState(DWORD cbData,
         controller->RefreshControllerState();
 
     polledSinceLastGetDeviceState = FALSE;
-    
+
     // Get the current state from the controller.
     XINPUT_STATE currentControllerState;
     HRESULT result = controller->GetCurrentDeviceState(&currentControllerState);
@@ -456,7 +456,7 @@ HRESULT STDMETHODCALLTYPE VirtualDirectInputDevice::SetProperty(REFGUID rguidPro
     HRESULT result = DI_OK;
 
     Log::WriteFormattedLogMessage(ELogLevel::LogLevelDebug, L"Received a request to SET property %s on XInput player %u, handled by the %s.", StringFromPropertyUniqueIdentifier(rguidProp), controller->GetPlayerIndex() + 1, (mapper->IsPropertyHandledByMapper(rguidProp) ? L"MAPPER" : L"CONTROLLER"));
-    
+
     if (mapper->IsPropertyHandledByMapper(rguidProp))
         result = mapper->SetMappedProperty(rguidProp, pdiph);
     else
