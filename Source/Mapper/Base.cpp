@@ -30,7 +30,7 @@ using namespace Xidi::Mapper;
 /// @return String representation of the GUID's semantics, even if unknown.
 static const wchar_t* DataFormatStringFromObjectUniqueIdentifier(const GUID* pguid)
 {
-    if (NULL == pguid)
+    if (nullptr == pguid)
         return L"(any)";
     if (GUID_XAxis == *pguid)
         return L"X Axis";
@@ -120,7 +120,7 @@ static void DumpPropertyHeaderToLog(LPCDIPROPHEADER pdiph)
 // -------- CONSTRUCTION AND DESTRUCTION ----------------------------------- //
 // See "Mapper/Base.h" for documentation.
 
-Base::Base(void) : axisProperties(NULL), cachedValueXInputLT(XInputController::kTriggerNeutral), cachedValueXInputRT(XInputController::kTriggerNeutral), dataPacketSize(0), instanceToOffset(), mapsValid(FALSE), offsetToInstance(), axisOffsetsUnused(), buttonOffsetsUnused(), povOffsetsUnused() {}
+Base::Base(void) : axisProperties(nullptr), cachedValueXInputLT(XInputController::kTriggerNeutral), cachedValueXInputRT(XInputController::kTriggerNeutral), dataPacketSize(0), instanceToOffset(), mapsValid(FALSE), offsetToInstance(), axisOffsetsUnused(), buttonOffsetsUnused(), povOffsetsUnused() {}
 
 // ---------
 
@@ -129,7 +129,7 @@ Base::~Base(void)
     instanceToOffset.clear();
     offsetToInstance.clear();
 
-    if (NULL != axisProperties) delete[] axisProperties;
+    if (nullptr != axisProperties) delete[] axisProperties;
 }
 
 
@@ -142,12 +142,12 @@ DWORD Base::SizeofInstance(const EInstanceType type)
 
     switch (type)
     {
-    case InstanceTypeAxis:
-    case InstanceTypePov:
+    case EInstanceType::InstanceTypeAxis:
+    case EInstanceType::InstanceTypePov:
         szInstance = sizeof(LONG);
         break;
 
-    case InstanceTypeButton:
+    case EInstanceType::InstanceTypeButton:
         szInstance = sizeof(BYTE);
         break;
     }
@@ -348,7 +348,7 @@ void Base::FillObjectInstanceInfoW(LPDIDEVICEOBJECTINSTANCEW instanceInfo, EInst
 
 void Base::InitializeAxisProperties(void)
 {
-    if (NULL == axisProperties)
+    if (nullptr == axisProperties)
     {
         const TInstanceCount numAxes = NumInstancesOfType(EInstanceType::InstanceTypeAxis);
 
@@ -386,7 +386,7 @@ TInstance Base::InstanceIdentifierFromDirectInputIdentifier(DWORD diIdentifier)
         break;
     }
 
-    if (type < 0 || idx >= NumInstancesOfType(type))
+    if ((int)type < 0 || idx >= NumInstancesOfType(type))
         return (TInstance)-1;
 
     return MakeInstanceIdentifier(type, idx);
@@ -862,7 +862,7 @@ HRESULT Base::SetApplicationDataFormat(LPCDIDATAFORMAT lpdf)
                 invalidParamsDetected = TRUE;
             else
             {
-                if (NULL == dataFormat->pguid)
+                if (nullptr == dataFormat->pguid)
                 {
                     // Any axis type allowed.
 
@@ -946,7 +946,7 @@ HRESULT Base::SetApplicationDataFormat(LPCDIDATAFORMAT lpdf)
                 invalidParamsDetected = TRUE;
             else
             {
-                if (NULL == dataFormat->pguid || GUID_Button == *dataFormat->pguid)
+                if (nullptr == dataFormat->pguid || GUID_Button == *dataFormat->pguid)
                 {
                     // Type unspecified or specified as a button.
 
@@ -987,7 +987,7 @@ HRESULT Base::SetApplicationDataFormat(LPCDIDATAFORMAT lpdf)
                 invalidParamsDetected = TRUE;
             else
             {
-                if (NULL == dataFormat->pguid || GUID_POV == *dataFormat->pguid)
+                if (nullptr == dataFormat->pguid || GUID_POV == *dataFormat->pguid)
                 {
                     // Type unspecified or specified as a POV.
 
@@ -1221,7 +1221,7 @@ HRESULT Base::WriteApplicationBufferedEvents(XInputController* xController, LPDI
             xController->PopBufferedEvent(&xEvent);
 
         // If not writing the event data anywhere, skip over the rest.
-        if (NULL != appEventBuf)
+        if (nullptr != appEventBuf)
         {
             // Figure out the application instance that corresponds to the XInput controller element.
             const TInstance appEventInstance = MapXInputElementToDirectInputInstance(xEvent.controllerElement);

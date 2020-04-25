@@ -31,7 +31,7 @@ const std::wstring Globals::kWinMMLibraryName = L"winmm.dll";
 // -------- CLASS VARIABLES ------------------------------------------------ //
 // See "Globals.h" for documentation.
 
-HINSTANCE Globals::gInstanceHandle = NULL;
+HINSTANCE Globals::gInstanceHandle = nullptr;
 
 std::wstring Globals::gOverrideImportDirectInput = L"";
 

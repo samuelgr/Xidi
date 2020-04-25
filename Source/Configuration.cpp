@@ -55,7 +55,7 @@ std::unordered_map<std::wstring, std::unordered_map<std::wstring, SConfiguration
 void Configuration::ParseAndApplyConfigurationFile(void)
 {
     wchar_t configurationFilePath[kMaximumConfigurationFilePathLength];
-    FILE* configurationFileHandle = NULL;
+    FILE* configurationFileHandle = nullptr;
 
     // Get the configuration file path.
     if (0 == GetConfigurationFilePath(configurationFilePath, _countof(configurationFilePath)))
@@ -66,7 +66,7 @@ void Configuration::ParseAndApplyConfigurationFile(void)
 
     // Attempt to open the configuration file.
     _wfopen_s(&configurationFileHandle, configurationFilePath, L"r");
-    if (NULL == configurationFileHandle)
+    if (nullptr == configurationFileHandle)
     {
         HandleErrorCannotOpenConfigurationFile(configurationFilePath);
         return;
@@ -76,7 +76,7 @@ void Configuration::ParseAndApplyConfigurationFile(void)
     {
         std::unordered_set<std::wstring> seenConfigurationSections;
         std::unordered_set<std::wstring> seenConfigurationValuesInCurrentSection;
-        std::unordered_map<std::wstring, SConfigurationValueApplyInfo>* currentConfigurationSection = NULL;
+        std::unordered_map<std::wstring, SConfigurationValueApplyInfo>* currentConfigurationSection = nullptr;
         std::wstring currentConfigurationSectionName = L"";
 
         wchar_t configurationLineBuffer[kMaximumConfigurationLineLength];
@@ -125,7 +125,7 @@ void Configuration::ParseAndApplyConfigurationFile(void)
                 break;
 
             case EConfigurationLineType::ConfigurationLineTypeValue:
-                if (NULL == currentConfigurationSection)
+                if (nullptr == currentConfigurationSection)
                 {
                     // Warning: value specified outside a section (i.e. before the first section header in the configuration file).
                     HandleErrorValueOutsideSection(configurationFilePath, configurationLineNumber);
@@ -174,7 +174,7 @@ void Configuration::ParseAndApplyConfigurationFile(void)
                     }
 
                     // Attempt to apply the value.
-                    if ((NULL == extractedValueInfo.applyFunc) || (false == ((TFuncApplyIntSetting)extractedValueInfo.applyFunc)(parsedValue.integerValue)))
+                    if ((nullptr == extractedValueInfo.applyFunc) || (false == ((TFuncApplyIntSetting)extractedValueInfo.applyFunc)(parsedValue.integerValue)))
                         HandleErrorCannotApplyValue(configurationFilePath, configurationLineNumber, extractedValue.c_str(), currentConfigurationSectionName.c_str(), extractedName.c_str());
                     else
                         HandleSuccessAppliedValue(configurationFilePath, configurationLineNumber, extractedValue.c_str(), currentConfigurationSectionName.c_str(), extractedName.c_str());
@@ -192,7 +192,7 @@ void Configuration::ParseAndApplyConfigurationFile(void)
                     }
 
                     // Attempt to apply the value.
-                    if ((NULL == extractedValueInfo.applyFunc) || (false == ((TFuncApplyBoolSetting)extractedValueInfo.applyFunc)(parsedValue.booleanValue)))
+                    if ((nullptr == extractedValueInfo.applyFunc) || (false == ((TFuncApplyBoolSetting)extractedValueInfo.applyFunc)(parsedValue.booleanValue)))
                         HandleErrorCannotApplyValue(configurationFilePath, configurationLineNumber, extractedValue.c_str(), currentConfigurationSectionName.c_str(), extractedName.c_str());
                     else
                         HandleSuccessAppliedValue(configurationFilePath, configurationLineNumber, extractedValue.c_str(), currentConfigurationSectionName.c_str(), extractedName.c_str());
@@ -205,7 +205,7 @@ void Configuration::ParseAndApplyConfigurationFile(void)
                     parsedValue.stringValue = &extractedValue;
 
                     // Attempt to apply the value.
-                    if ((NULL == extractedValueInfo.applyFunc) || (false == ((TFuncApplyStringSetting)extractedValueInfo.applyFunc)(*parsedValue.stringValue)))
+                    if ((nullptr == extractedValueInfo.applyFunc) || (false == ((TFuncApplyStringSetting)extractedValueInfo.applyFunc)(*parsedValue.stringValue)))
                         HandleErrorCannotApplyValue(configurationFilePath, configurationLineNumber, extractedValue.c_str(), currentConfigurationSectionName.c_str(), extractedName.c_str());
                     else
                         HandleSuccessAppliedValue(configurationFilePath, configurationLineNumber, extractedValue.c_str(), currentConfigurationSectionName.c_str(), extractedName.c_str());
@@ -360,7 +360,7 @@ void Configuration::ExtractNameValuePairFromConfigurationFileLine(std::wstring& 
     while (IsAllowedValueNameCharacter(configBuf[configLength]))
         configLength += 1;
 
-    // NULL-terminate the configuration name, then assign to the output string.
+    // nullptr-terminate the configuration name, then assign to the output string.
     configBuf[configLength] = L'\0';
     name = configBuf;
 
@@ -440,7 +440,7 @@ int Configuration::IsAllowedValueSettingCharacter(const wchar_t charToTest)
 bool Configuration::ParseIntegerValue(int64_t& dest, const std::wstring& source)
 {
     int64_t value = 0ll;
-    LPWSTR endptr = NULL;
+    LPWSTR endptr = nullptr;
 
     // Parse out a number in any representable base.
     value = wcstoll(source.c_str(), &endptr, 0);
@@ -503,7 +503,7 @@ void Configuration::ExtractSectionNameFromConfigurationFileLine(std::wstring& se
     while (L']' != realBuf[realLength])
         realLength += 1;
 
-    // NULL-terminate the section name, then assign to the output string.
+    // nullptr-terminate the section name, then assign to the output string.
     realBuf[realLength] = L'\0';
     sectionName = realBuf;
 }

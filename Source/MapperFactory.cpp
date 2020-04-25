@@ -60,7 +60,7 @@ Mapper::Base* MapperFactory::CreateMapper(void)
 
 Mapper::Base* MapperFactory::CreateMapperOfType(EMapper type)
 {
-    Mapper::Base* newMapper = NULL;
+    Mapper::Base* newMapper = nullptr;
 
     if (EMapper::DefaultMapper == type)
         type = kDefaultMapperType;

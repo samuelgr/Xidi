@@ -59,7 +59,7 @@ namespace Xidi
 
 XInputController* WrapperJoyWinMM::controllers[XInputController::kMaxNumXInputControllers];
 
-Mapper::Base* WrapperJoyWinMM::mapper = NULL;
+Mapper::Base* WrapperJoyWinMM::mapper = nullptr;
 
 BOOL WrapperJoyWinMM::isInitialized = FALSE;
 
@@ -222,7 +222,7 @@ void WrapperJoyWinMM::CreateSystemDeviceInfo(void)
 
     wchar_t registryPath[1024];
     swprintf_s(registryPath, _countof(registryPath), REGSTR_PATH_JOYCONFIG L"\\%s\\" REGSTR_KEY_JOYCURR, joyCaps.szRegKey);
-    if (ERROR_SUCCESS != RegCreateKeyEx(HKEY_CURRENT_USER, registryPath, 0, NULL, REG_OPTION_VOLATILE, KEY_QUERY_VALUE, NULL, &registryKey, NULL))
+    if (ERROR_SUCCESS != RegCreateKeyEx(HKEY_CURRENT_USER, registryPath, 0, nullptr, REG_OPTION_VOLATILE, KEY_QUERY_VALUE, nullptr, &registryKey, nullptr))
     {
         Log::WriteFormattedLogMessage(ELogLevel::LogLevelWarning, L"Unable to enumerate system WinMM devices because the registry key \"%s\" could not be opened.", registryPath);
         return;
@@ -247,7 +247,7 @@ void WrapperJoyWinMM::CreateSystemDeviceInfo(void)
 
         wchar_t registryValueData[64];
         DWORD registryValueSize = sizeof(registryValueData);
-        if (ERROR_SUCCESS != RegGetValue(registryKey, NULL, registryValueName, RRF_RT_REG_SZ, NULL, registryValueData, &registryValueSize))
+        if (ERROR_SUCCESS != RegGetValue(registryKey, nullptr, registryValueName, RRF_RT_REG_SZ, nullptr, registryValueData, &registryValueSize))
         {
             // If the registry value does not exist, this is past the end of the number of devices WinMM sees.
             joySystemDeviceInfo.push_back({ L"", false });
@@ -266,8 +266,8 @@ void WrapperJoyWinMM::CreateSystemDeviceInfo(void)
     // Enumerate all devices using DirectInput8 to find any XInput devices with matching vendor and product identifiers.
     // This will provide information on whether each WinMM device supports XInput.
     Log::WriteLogMessage(ELogLevel::LogLevelDebug, L"Using DirectInput to detect XInput devices...");
-    IDirectInput8* directInputInterface = NULL;
-    if (S_OK != ImportApiDirectInput::DirectInput8Create(Globals::GetInstanceHandle(), DIRECTINPUT_VERSION, IID_IDirectInput8, (LPVOID*)&directInputInterface, NULL))
+    IDirectInput8* directInputInterface = nullptr;
+    if (S_OK != ImportApiDirectInput::DirectInput8Create(Globals::GetInstanceHandle(), DIRECTINPUT_VERSION, IID_IDirectInput8, (LPVOID*)&directInputInterface, nullptr))
     {
         Log::WriteLogMessage(ELogLevel::LogLevelDebug, L"Unable to detect XInput devices because a DirectInput interface object could not be created.");
         return;
@@ -300,8 +300,8 @@ BOOL STDMETHODCALLTYPE WrapperJoyWinMM::CreateSystemDeviceInfoEnumCallback(LPCDI
 
         // Skip to the part of the path string that identifies vendor and product.
         const wchar_t* devicePathSubstring = wcsstr(devicePathString, L"VID_");
-        if (NULL == devicePathSubstring) devicePathSubstring = wcsstr(devicePathString, L"vid_");
-        if (NULL != devicePathSubstring)
+        if (nullptr == devicePathSubstring) devicePathSubstring = wcsstr(devicePathString, L"vid_");
+        if (nullptr != devicePathSubstring)
         {
             // For each element of the WinMM devices list, see if the vendor and product IDs match the one DirectInput presented as being compatible with XInput.
             // If so, mark it in the list as being an XInput controller.
@@ -383,7 +383,7 @@ void WrapperJoyWinMM::SetControllerNameRegistryInfo(void)
         const int valueDataCount = ControllerIdentification::FillXInputControllerNameW(valueData, _countof(valueData), i);
 
         swprintf_s(registryPath, _countof(registryPath), REGSTR_PATH_JOYOEM L"\\%s%u", registryKeyName, i + 1);
-        result = RegCreateKeyEx(HKEY_CURRENT_USER, registryPath, 0, NULL, REG_OPTION_VOLATILE, KEY_SET_VALUE, NULL, &registryKey, NULL);
+        result = RegCreateKeyEx(HKEY_CURRENT_USER, registryPath, 0, nullptr, REG_OPTION_VOLATILE, KEY_SET_VALUE, nullptr, &registryKey, nullptr);
         if (ERROR_SUCCESS != result) return;
 
         result = RegSetValueEx(registryKey, REGSTR_VAL_JOYOEMNAME, 0, REG_SZ, (const BYTE*)valueData, (sizeof(wchar_t) * (valueDataCount + 1)));
@@ -397,7 +397,7 @@ void WrapperJoyWinMM::SetControllerNameRegistryInfo(void)
     // Do this by consuming the joystick index map and system device information data structure.
     swprintf_s(registryPath, _countof(registryPath), REGSTR_PATH_JOYCONFIG L"\\%s\\" REGSTR_KEY_JOYCURR, registryKeyName);
 
-    result = RegCreateKeyEx(HKEY_CURRENT_USER, registryPath, 0, NULL, REG_OPTION_VOLATILE, KEY_SET_VALUE, NULL, &registryKey, NULL);
+    result = RegCreateKeyEx(HKEY_CURRENT_USER, registryPath, 0, nullptr, REG_OPTION_VOLATILE, KEY_SET_VALUE, nullptr, &registryKey, nullptr);
     if (ERROR_SUCCESS != result) return;
 
     for (DWORD i = 0; i < joyIndexMap.size(); ++i)

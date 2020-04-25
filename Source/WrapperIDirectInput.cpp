@@ -292,7 +292,7 @@ BOOL STDMETHODCALLTYPE WrapperIDirectInput::CallbackEnumGameControllersXInputSca
     {
         WCHAR productName[_countof(lpddi->tszProductName) + 1];
         ZeroMemory(productName, sizeof(productName));
-        mbstowcs_s(NULL, productName, _countof(productName) - 1, lpddi->tszProductName, _countof(lpddi->tszProductName));
+        mbstowcs_s(nullptr, productName, _countof(productName) - 1, lpddi->tszProductName, _countof(lpddi->tszProductName));
 
         callbackInfo->seenInstanceIdentifiers.insert(lpddi->guidInstance);
         Log::WriteFormattedLogMessage(ELogLevel::LogLevelDebug, L"Enumerate: DirectInput device \"%s\" supports XInput and will not be presented to the application.", productName);
@@ -330,7 +330,7 @@ BOOL STDMETHODCALLTYPE WrapperIDirectInput::CallbackEnumDevicesFilteredA(LPCDIDE
         // If the device has not been seen already, add it to the set and present it to the application.
         WCHAR productName[_countof(lpddi->tszProductName) + 1];
         ZeroMemory(productName, sizeof(productName));
-        mbstowcs_s(NULL, productName, _countof(productName) - 1, lpddi->tszProductName, _countof(lpddi->tszProductName));
+        mbstowcs_s(nullptr, productName, _countof(productName) - 1, lpddi->tszProductName, _countof(lpddi->tszProductName));
 
         callbackInfo->seenInstanceIdentifiers.insert(lpddi->guidInstance);
         callbackInfo->callbackReturnCode = ((LPDIENUMDEVICESCALLBACKA)(callbackInfo->lpCallback))(lpddi, callbackInfo->pvRef);

@@ -110,14 +110,14 @@ namespace Xidi
         static EConfigurationLineType ClassifyConfigurationFileLine(LPCWSTR buf, const size_t length);
 
         /// Extracts a name and a value for the specified configuration file line, which must first have been classified as containing a value.
-        /// Modifies the buffer by changing a value to the NULL character, indicating the end of the portion of interest in the input configuration file line.
+        /// Modifies the buffer by changing a value to the null character, indicating the end of the portion of interest in the input configuration file line.
         /// @param [out] name Filled with the name of the configuration setting.
         /// @param [out] value Filled with the value specified for the configuration setting.
         /// @param [in] configFileLine Buffer containing the configuration file line.
         static void ExtractNameValuePairFromConfigurationFileLine(std::wstring& name, std::wstring& value, LPWSTR configFileLine);
 
         /// Extracts a section name from the specified configuration file line, which must first have been classified as containing a section name.
-        /// Modifies the buffer by changing a value to the NULL character, indicating the end of the portion of interest in the input configuration file line.
+        /// Modifies the buffer by changing a value to the null character, indicating the end of the portion of interest in the input configuration file line.
         /// @param [out] sectionName Filled with the name of the configuration section.
         /// @param [in] configFileLine Buffer containing the configuration file line.
         static void ExtractSectionNameFromConfigurationFileLine(std::wstring& sectionName, LPWSTR configFileLine);

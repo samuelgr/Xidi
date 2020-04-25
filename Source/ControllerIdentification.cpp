@@ -18,176 +18,185 @@
 #include <guiddef.h>
 #include <Xinput.h>
 
-using namespace Xidi;
 
-
-// -------- HELPERS -------------------------------------------------------- //
-// See "XInputControllerIdentification.h" for documentation.
-
-WORD ControllerIdentification::ExtractInstanceFromXInputInstanceGUID(REFGUID xguid)
+namespace Xidi
 {
-    return (*((WORD*)(&xguid.Data4[6])));
-}
-
-// ---------
-
-void ControllerIdentification::SetInstanceInXInputInstanceGUID(GUID& xguid, const WORD xindex)
-{
-    *((WORD*)(&xguid.Data4[6])) = xindex;
-}
-
-
-// -------- CLASS METHODS -------------------------------------------------- //
-// See "XInputControllerIdentification.h" for documentation.
-
-BOOL ControllerIdentification::DoesDirectInputControllerSupportXInput(EarliestIDirectInput* dicontext, REFGUID instanceGUID, std::wstring* devicePath)
-{
-    BOOL deviceSupportsXInput = FALSE;
-
-    EarliestIDirectInputDevice* didevice = NULL;
-    HRESULT result = dicontext->CreateDevice(instanceGUID, &didevice, NULL);
-
-    if (DI_OK == result)
+    namespace ControllerIdentification
     {
-        // Get the GUID and device path of the DirectInput device.
-        DIPROPGUIDANDPATH devinfo;
-        ZeroMemory(&devinfo, sizeof(devinfo));
+        // -------- INTERNAL FUNCTIONS ------------------------------------- //
 
-        devinfo.diph.dwHeaderSize = sizeof(devinfo.diph);
-        devinfo.diph.dwSize = sizeof(devinfo);
-        devinfo.diph.dwHow = DIPH_DEVICE;
-
-        result = didevice->GetProperty(DIPROP_GUIDANDPATH, &devinfo.diph);
-
-        if (DI_OK == result)
+         /// Extracts and returns the instance index from an XInput controller's GUID.
+        /// Does not verify that the supplied GUID actually represents an XInput instance GUID.
+        /// @param [in] xguid XInput controller's instance GUID.
+        /// @return Instance index (a.k.a. XInput player number).
+        static WORD ExtractInstanceFromXInputInstanceGUID(REFGUID xguid)
         {
-            // The documented "best" way of determining if a device supports XInput is to look for "&IG_" in the device path string.
-            if (NULL != wcsstr(devinfo.wszPath, L"&IG_") || NULL != wcsstr(devinfo.wszPath, L"&ig_"))
-            {
-                deviceSupportsXInput = TRUE;
-
-                if (NULL != devicePath)
-                    *devicePath = devinfo.wszPath;
-            }
+            return (*((WORD*)(&xguid.Data4[6])));
         }
 
-        didevice->Release();
+        /// Turns the provided base instance GUID for an XInput controller into an instance GUID for a controller of the specified index.
+        /// Does not verify that the supplied GUID actually represents an XInput instance GUID.
+        /// @param [in,out] xguid GUID whose XInput instance field should be set.
+        /// @param [in] xindex Instance index (a.k.a. XInput player number).
+        void SetInstanceInXInputInstanceGUID(GUID& xguid, const WORD xindex)
+        {
+            *((WORD*)(&xguid.Data4[6])) = xindex;
+        }
+
+
+        // -------- FUNCTIONS ---------------------------------------------- //
+        // See "ControllerIdentification.h" for documentation.
+
+        BOOL DoesDirectInputControllerSupportXInput(EarliestIDirectInput* dicontext, REFGUID instanceGUID, std::wstring* devicePath)
+        {
+            BOOL deviceSupportsXInput = FALSE;
+
+            EarliestIDirectInputDevice* didevice = nullptr;
+            HRESULT result = dicontext->CreateDevice(instanceGUID, &didevice, nullptr);
+
+            if (DI_OK == result)
+            {
+                // Get the GUID and device path of the DirectInput device.
+                DIPROPGUIDANDPATH devinfo;
+                ZeroMemory(&devinfo, sizeof(devinfo));
+
+                devinfo.diph.dwHeaderSize = sizeof(devinfo.diph);
+                devinfo.diph.dwSize = sizeof(devinfo);
+                devinfo.diph.dwHow = DIPH_DEVICE;
+
+                result = didevice->GetProperty(DIPROP_GUIDANDPATH, &devinfo.diph);
+
+                if (DI_OK == result)
+                {
+                    // The documented "best" way of determining if a device supports XInput is to look for "&IG_" in the device path string.
+                    if (nullptr != wcsstr(devinfo.wszPath, L"&IG_") || nullptr != wcsstr(devinfo.wszPath, L"&ig_"))
+                    {
+                        deviceSupportsXInput = TRUE;
+
+                        if (nullptr != devicePath)
+                            *devicePath = devinfo.wszPath;
+                    }
+                }
+
+                didevice->Release();
+            }
+
+            return deviceSupportsXInput;
+        }
+
+        // ---------
+
+        BOOL EnumerateXInputControllersA(LPDIENUMDEVICESCALLBACKA lpCallback, LPVOID pvRef)
+        {
+            for (WORD idx = 0; idx < XInputController::kMaxNumXInputControllers; ++idx)
+            {
+                // Create a DirectInput device structure
+                DIDEVICEINSTANCEA* instanceInfo = new DIDEVICEINSTANCEA;
+                ZeroMemory(instanceInfo, sizeof(*instanceInfo));
+                instanceInfo->dwSize = sizeof(*instanceInfo);
+                MakeInstanceGUID(instanceInfo->guidInstance, idx);
+                instanceInfo->guidProduct = kXInputProductGUID;
+                instanceInfo->dwDevType = DINPUT_DEVTYPE_XINPUT_GAMEPAD;
+                FillXInputControllerNameA(instanceInfo->tszInstanceName, _countof(instanceInfo->tszInstanceName), idx);
+                FillXInputControllerNameA(instanceInfo->tszProductName, _countof(instanceInfo->tszProductName), idx);
+
+                // Submit the device to the application.
+                HRESULT appResult = lpCallback(instanceInfo, pvRef);
+
+                // Clean up.
+                delete instanceInfo;
+
+                // See if the application wants to enumerate more devices.
+                if (DIENUM_CONTINUE != appResult)
+                    return DIENUM_STOP;
+
+            }
+
+            return DIENUM_CONTINUE;
+        }
+
+        // ---------
+
+        BOOL EnumerateXInputControllersW(LPDIENUMDEVICESCALLBACKW lpCallback, LPVOID pvRef)
+        {
+            for (WORD idx = 0; idx < XInputController::kMaxNumXInputControllers; ++idx)
+            {
+                // Create a DirectInput device structure
+                DIDEVICEINSTANCEW* instanceInfo = new DIDEVICEINSTANCEW;
+                ZeroMemory(instanceInfo, sizeof(*instanceInfo));
+                instanceInfo->dwSize = sizeof(*instanceInfo);
+                MakeInstanceGUID(instanceInfo->guidInstance, idx);
+                instanceInfo->guidProduct = kXInputProductGUID;
+                instanceInfo->dwDevType = DINPUT_DEVTYPE_XINPUT_GAMEPAD;
+                FillXInputControllerNameW(instanceInfo->tszInstanceName, _countof(instanceInfo->tszInstanceName), idx);
+                FillXInputControllerNameW(instanceInfo->tszProductName, _countof(instanceInfo->tszProductName), idx);
+
+                // Submit the device to the application.
+                HRESULT appResult = lpCallback(instanceInfo, pvRef);
+
+                // Clean up.
+                delete instanceInfo;
+
+                // See if the application wants to enumerate more devices.
+                if (DIENUM_CONTINUE != appResult)
+                    return DIENUM_STOP;
+            }
+
+            return DIENUM_CONTINUE;
+        }
+
+        // ---------
+
+        int FillXInputControllerNameA(LPSTR buf, const size_t bufcount, const DWORD controllerIndex)
+        {
+            CHAR xidiControllerNameFormatString[128];
+            LoadStringA(Globals::GetInstanceHandle(), IDS_XIDI_CONTROLLERIDENTIFICATION_CONTROLLER_NAME_FORMAT, xidiControllerNameFormatString, _countof(xidiControllerNameFormatString));
+
+            return sprintf_s(buf, bufcount, xidiControllerNameFormatString, (controllerIndex + 1));
+        }
+
+        // ---------
+
+        int FillXInputControllerNameW(LPWSTR buf, const size_t bufcount, const DWORD controllerIndex)
+        {
+            WCHAR xidiControllerNameFormatString[128];
+            LoadStringW(Globals::GetInstanceHandle(), IDS_XIDI_CONTROLLERIDENTIFICATION_CONTROLLER_NAME_FORMAT, xidiControllerNameFormatString, _countof(xidiControllerNameFormatString));
+
+            return swprintf_s(buf, bufcount, xidiControllerNameFormatString, (controllerIndex + 1));
+        }
+
+        // ---------
+
+        void GetProductGUID(GUID& xguid)
+        {
+            xguid = kXInputProductGUID;
+        }
+
+        // ---------
+
+        void MakeInstanceGUID(GUID& xguid, const WORD xindex)
+        {
+            xguid = kXInputBaseInstGUID;
+            SetInstanceInXInputInstanceGUID(xguid, xindex);
+        }
+
+        // ---------
+
+        LONG XInputControllerIndexForInstanceGUID(REFGUID instanceGUID)
+        {
+            LONG resultIndex = -1;
+            WORD xindex = ExtractInstanceFromXInputInstanceGUID(instanceGUID);
+
+            if (xindex < XInputController::kMaxNumXInputControllers)
+            {
+                GUID realXInputGUID;
+                MakeInstanceGUID(realXInputGUID, xindex);
+
+                if (realXInputGUID == instanceGUID)
+                    resultIndex = (LONG)xindex;
+            }
+
+            return resultIndex;
+        }
     }
-
-    return deviceSupportsXInput;
-}
-
-// ---------
-
-BOOL ControllerIdentification::EnumerateXInputControllersA(LPDIENUMDEVICESCALLBACKA lpCallback, LPVOID pvRef)
-{
-    for (WORD idx = 0; idx < XInputController::kMaxNumXInputControllers; ++idx)
-    {
-        // Create a DirectInput device structure
-        DIDEVICEINSTANCEA* instanceInfo = new DIDEVICEINSTANCEA;
-        ZeroMemory(instanceInfo, sizeof(*instanceInfo));
-        instanceInfo->dwSize = sizeof(*instanceInfo);
-        MakeInstanceGUID(instanceInfo->guidInstance, idx);
-        instanceInfo->guidProduct = kXInputProductGUID;
-        instanceInfo->dwDevType = DINPUT_DEVTYPE_XINPUT_GAMEPAD;
-        FillXInputControllerNameA(instanceInfo->tszInstanceName, _countof(instanceInfo->tszInstanceName), idx);
-        FillXInputControllerNameA(instanceInfo->tszProductName, _countof(instanceInfo->tszProductName), idx);
-
-        // Submit the device to the application.
-        HRESULT appResult = lpCallback(instanceInfo, pvRef);
-
-        // Clean up.
-        delete instanceInfo;
-
-        // See if the application wants to enumerate more devices.
-        if (DIENUM_CONTINUE != appResult)
-            return DIENUM_STOP;
-
-    }
-
-    return DIENUM_CONTINUE;
-}
-
-// ---------
-
-BOOL ControllerIdentification::EnumerateXInputControllersW(LPDIENUMDEVICESCALLBACKW lpCallback, LPVOID pvRef)
-{
-    for (WORD idx = 0; idx < XInputController::kMaxNumXInputControllers; ++idx)
-    {
-        // Create a DirectInput device structure
-        DIDEVICEINSTANCEW* instanceInfo = new DIDEVICEINSTANCEW;
-        ZeroMemory(instanceInfo, sizeof(*instanceInfo));
-        instanceInfo->dwSize = sizeof(*instanceInfo);
-        MakeInstanceGUID(instanceInfo->guidInstance, idx);
-        instanceInfo->guidProduct = kXInputProductGUID;
-        instanceInfo->dwDevType = DINPUT_DEVTYPE_XINPUT_GAMEPAD;
-        FillXInputControllerNameW(instanceInfo->tszInstanceName, _countof(instanceInfo->tszInstanceName), idx);
-        FillXInputControllerNameW(instanceInfo->tszProductName, _countof(instanceInfo->tszProductName), idx);
-
-        // Submit the device to the application.
-        HRESULT appResult = lpCallback(instanceInfo, pvRef);
-
-        // Clean up.
-        delete instanceInfo;
-
-        // See if the application wants to enumerate more devices.
-        if (DIENUM_CONTINUE != appResult)
-            return DIENUM_STOP;
-    }
-
-    return DIENUM_CONTINUE;
-}
-
-// ---------
-
-int ControllerIdentification::FillXInputControllerNameA(LPSTR buf, const size_t bufcount, const DWORD controllerIndex)
-{
-    CHAR xidiControllerNameFormatString[128];
-    LoadStringA(Globals::GetInstanceHandle(), IDS_XIDI_CONTROLLERIDENTIFICATION_CONTROLLER_NAME_FORMAT, xidiControllerNameFormatString, _countof(xidiControllerNameFormatString));
-
-    return sprintf_s(buf, bufcount, xidiControllerNameFormatString, (controllerIndex + 1));
-}
-
-// ---------
-
-int ControllerIdentification::FillXInputControllerNameW(LPWSTR buf, const size_t bufcount, const DWORD controllerIndex)
-{
-    WCHAR xidiControllerNameFormatString[128];
-    LoadStringW(Globals::GetInstanceHandle(), IDS_XIDI_CONTROLLERIDENTIFICATION_CONTROLLER_NAME_FORMAT, xidiControllerNameFormatString, _countof(xidiControllerNameFormatString));
-
-    return swprintf_s(buf, bufcount, xidiControllerNameFormatString, (controllerIndex + 1));
-}
-
-// ---------
-
-void ControllerIdentification::GetProductGUID(GUID& xguid)
-{
-    xguid = kXInputProductGUID;
-}
-
-// ---------
-
-void ControllerIdentification::MakeInstanceGUID(GUID& xguid, const WORD xindex)
-{
-    xguid = kXInputBaseInstGUID;
-    SetInstanceInXInputInstanceGUID(xguid, xindex);
-}
-
-// ---------
-
-LONG ControllerIdentification::XInputControllerIndexForInstanceGUID(REFGUID instanceGUID)
-{
-    LONG resultIndex = -1;
-    WORD xindex = ExtractInstanceFromXInputInstanceGUID(instanceGUID);
-
-    if (xindex < XInputController::kMaxNumXInputControllers)
-    {
-        GUID realXInputGUID;
-        MakeInstanceGUID(realXInputGUID, xindex);
-
-        if (realXInputGUID == instanceGUID)
-            resultIndex = (LONG)xindex;
-    }
-
-    return resultIndex;
 }

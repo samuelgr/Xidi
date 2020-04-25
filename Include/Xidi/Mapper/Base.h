@@ -41,7 +41,7 @@ namespace Xidi
         typedef TInstanceIdx TInstanceCount;
 
         /// Enumerates supported types of elements to be the targets of mapping.
-        enum EInstanceType : TInstanceType
+        enum class EInstanceType : TInstanceType
         {
             InstanceTypeAxis,                                               ///< Specifies an axis.
             InstanceTypePov,                                                ///< Specifies a point-of-view controller.

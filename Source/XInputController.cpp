@@ -23,7 +23,7 @@ using namespace Xidi;
 // -------- CONSTRUCTION AND DESTRUCTION ----------------------------------- //
 // See "XInputController.h" for documentation.
 
-XInputController::XInputController(DWORD xinputUserIndex) : bufferedEvents(), bufferedEventsNextSequenceNumber(0), controllerState(), controllerStateChangedEvent(NULL), eventBufferSizeRequested(0), eventBufferCountActual(0), eventBufferHasOverflowed(FALSE), isAcquired(FALSE), xinputUserIndex(xinputUserIndex)
+XInputController::XInputController(DWORD xinputUserIndex) : bufferedEvents(), bufferedEventsNextSequenceNumber(0), controllerState(), controllerStateChangedEvent(nullptr), eventBufferSizeRequested(0), eventBufferCountActual(0), eventBufferHasOverflowed(FALSE), isAcquired(FALSE), xinputUserIndex(xinputUserIndex)
 {
     InitializeCriticalSectionEx(&eventChangeCriticalSection, 1000, CRITICAL_SECTION_NO_DEBUG_INFO);
 }
@@ -372,7 +372,7 @@ HRESULT XInputController::PeekBufferedEvent(SControllerEvent* event, DWORD idx)
 
     HRESULT result = DI_OK;
 
-    if (idx >= BufferedEventsCount() || NULL == event)
+    if (idx >= BufferedEventsCount() || nullptr == event)
         result = DIERR_INVALIDPARAM;
     else
         *event = bufferedEvents[idx];
@@ -390,7 +390,7 @@ HRESULT XInputController::PopBufferedEvent(SControllerEvent* event)
 
     LockEventBuffer();
 
-    if (NULL != event)
+    if (nullptr != event)
         *event = bufferedEvents[0];
 
     bufferedEvents.pop_front();
@@ -478,12 +478,12 @@ HRESULT XInputController::RefreshControllerState(void)
         UnlockEventBuffer();
 
         // Determine if the application state change event should be notified.
-        shouldNotifyApplicationEvent = ((NULL != controllerStateChangedEvent) && (currentEventSequenceNumber != bufferedEventsNextSequenceNumber));
+        shouldNotifyApplicationEvent = ((nullptr != controllerStateChangedEvent) && (currentEventSequenceNumber != bufferedEventsNextSequenceNumber));
     }
     else
     {
         // Determine if the application state change event should be notified.
-        shouldNotifyApplicationEvent = ((NULL != controllerStateChangedEvent) && (0 == memcmp((void*)&controllerState, (void*)&newControllerState, sizeof(controllerState))));
+        shouldNotifyApplicationEvent = ((nullptr != controllerStateChangedEvent) && (0 == memcmp((void*)&controllerState, (void*)&newControllerState, sizeof(controllerState))));
     }
 
     // Copy the new controller state to the current controller state.

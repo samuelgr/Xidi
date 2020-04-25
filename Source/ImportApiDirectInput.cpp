@@ -45,48 +45,48 @@ void ImportApiDirectInput::Initialize(void)
 
         // Attempt to load the library.
         LogInitializeLibraryPath(libraryPath.c_str());
-        HMODULE loadedLibrary = LoadLibraryEx(libraryPath.c_str(), NULL, 0);
-        if (NULL == loadedLibrary)
+        HMODULE loadedLibrary = LoadLibraryEx(libraryPath.c_str(), nullptr, 0);
+        if (nullptr == loadedLibrary)
         {
             LogInitializeFailed(libraryPath.c_str());
             return;
         }
 
         // Attempt to obtain the addresses of all imported API functions.
-        FARPROC procAddress = NULL;
+        FARPROC procAddress = nullptr;
 
 #if DIRECTINPUT_VERSION >= 0x0800
         procAddress = GetProcAddress(loadedLibrary, "DirectInput8Create");
-        if (NULL == procAddress) LogImportFailed(L"DirectInput8Create");
+        if (nullptr == procAddress) LogImportFailed(L"DirectInput8Create");
         importTable.DirectInput8Create = (HRESULT(STDMETHODCALLTYPE*)(HINSTANCE, DWORD, REFIID, LPVOID*, LPUNKNOWN))procAddress;
 #else
         procAddress = GetProcAddress(loadedLibrary, "DirectInputCreateA");
-        if (NULL == procAddress) LogImportFailed(L"DirectInputCreateA");
+        if (nullptr == procAddress) LogImportFailed(L"DirectInputCreateA");
         importTable.DirectInputCreateA = (HRESULT(STDMETHODCALLTYPE*)(HINSTANCE, DWORD, LPDIRECTINPUTA*, LPUNKNOWN))procAddress;
 
         procAddress = GetProcAddress(loadedLibrary, "DirectInputCreateW");
-        if (NULL == procAddress) LogImportFailed(L"DirectInputCreateW");
+        if (nullptr == procAddress) LogImportFailed(L"DirectInputCreateW");
         importTable.DirectInputCreateW = (HRESULT(STDMETHODCALLTYPE*)(HINSTANCE, DWORD, LPDIRECTINPUTW*, LPUNKNOWN))procAddress;
 
         procAddress = GetProcAddress(loadedLibrary, "DirectInputCreateEx");
-        if (NULL == procAddress) LogImportFailed(L"DirectInputCreateEx");
+        if (nullptr == procAddress) LogImportFailed(L"DirectInputCreateEx");
         importTable.DirectInputCreateEx = (HRESULT(STDMETHODCALLTYPE*)(HINSTANCE, DWORD, REFIID, LPVOID*, LPUNKNOWN))procAddress;
 #endif
 
         procAddress = GetProcAddress(loadedLibrary, "DllRegisterServer");
-        if (NULL == procAddress) LogImportFailed(L"DllRegisterServer");
+        if (nullptr == procAddress) LogImportFailed(L"DllRegisterServer");
         importTable.DllRegisterServer = (HRESULT(STDMETHODCALLTYPE*)(void))procAddress;
 
         procAddress = GetProcAddress(loadedLibrary, "DllUnregisterServer");
-        if (NULL == procAddress) LogImportFailed(L"DllUnregisterServer");
+        if (nullptr == procAddress) LogImportFailed(L"DllUnregisterServer");
         importTable.DllUnregisterServer = (HRESULT(STDMETHODCALLTYPE*)(void))procAddress;
 
         procAddress = GetProcAddress(loadedLibrary, "DllCanUnloadNow");
-        if (NULL == procAddress) LogImportFailed(L"DllCanUnloadNow");
+        if (nullptr == procAddress) LogImportFailed(L"DllCanUnloadNow");
         importTable.DllCanUnloadNow = (HRESULT(STDMETHODCALLTYPE*)(void))procAddress;
 
         procAddress = GetProcAddress(loadedLibrary, "DllGetClassObject");
-        if (NULL == procAddress) LogImportFailed(L"DllGetClassObject");
+        if (nullptr == procAddress) LogImportFailed(L"DllGetClassObject");
         importTable.DllGetClassObject = (HRESULT(STDMETHODCALLTYPE*)(REFCLSID, REFIID, LPVOID*))procAddress;
 
         // Initialization complete.
@@ -102,7 +102,7 @@ HRESULT ImportApiDirectInput::DirectInput8Create(HINSTANCE hinst, DWORD dwVersio
 {
     Initialize();
 
-    if (NULL == importTable.DirectInput8Create)
+    if (nullptr == importTable.DirectInput8Create)
         LogMissingFunctionCalled(L"DirectInput8Create");
 
     return importTable.DirectInput8Create(hinst, dwVersion, riidltf, ppvOut, punkOuter);
@@ -112,7 +112,7 @@ HRESULT ImportApiDirectInput::DirectInputCreateA(HINSTANCE hinst, DWORD dwVersio
 {
     Initialize();
 
-    if (NULL == importTable.DirectInputCreateA)
+    if (nullptr == importTable.DirectInputCreateA)
         LogMissingFunctionCalled(L"DirectInputCreateA");
 
     return importTable.DirectInputCreateA(hinst, dwVersion, ppDI, punkOuter);
@@ -124,7 +124,7 @@ HRESULT ImportApiDirectInput::DirectInputCreateW(HINSTANCE hinst, DWORD dwVersio
 {
     Initialize();
 
-    if (NULL == importTable.DirectInputCreateW)
+    if (nullptr == importTable.DirectInputCreateW)
         LogMissingFunctionCalled(L"DirectInputCreateW");
 
     return importTable.DirectInputCreateW(hinst, dwVersion, ppDI, punkOuter);
@@ -136,7 +136,7 @@ HRESULT ImportApiDirectInput::DirectInputCreateEx(HINSTANCE hinst, DWORD dwVersi
 {
     Initialize();
 
-    if (NULL == importTable.DirectInputCreateEx)
+    if (nullptr == importTable.DirectInputCreateEx)
         LogMissingFunctionCalled(L"DirectInputCreateEx");
 
     return importTable.DirectInputCreateEx(hinst, dwVersion, riidltf, ppvOut, punkOuter);
@@ -149,7 +149,7 @@ HRESULT ImportApiDirectInput::DllRegisterServer(void)
 {
     Initialize();
 
-    if (NULL == importTable.DllRegisterServer)
+    if (nullptr == importTable.DllRegisterServer)
         LogMissingFunctionCalled(L"DllRegisterServer");
 
     return importTable.DllRegisterServer();
@@ -161,7 +161,7 @@ HRESULT ImportApiDirectInput::DllUnregisterServer(void)
 {
     Initialize();
 
-    if (NULL == importTable.DllUnregisterServer)
+    if (nullptr == importTable.DllUnregisterServer)
         LogMissingFunctionCalled(L"DllUnregisterServer");
 
     return importTable.DllUnregisterServer();
@@ -173,7 +173,7 @@ HRESULT ImportApiDirectInput::DllCanUnloadNow(void)
 {
     Initialize();
 
-    if (NULL == importTable.DllCanUnloadNow)
+    if (nullptr == importTable.DllCanUnloadNow)
         LogMissingFunctionCalled(L"DllCanUnloadNow");
 
     return importTable.DllCanUnloadNow();
@@ -185,7 +185,7 @@ HRESULT ImportApiDirectInput::DllGetClassObject(REFCLSID rclsid, REFIID riid, LP
 {
     Initialize();
 
-    if (NULL == importTable.DllGetClassObject)
+    if (nullptr == importTable.DllGetClassObject)
         LogMissingFunctionCalled(L"DllGetClassObject");
 
     return importTable.DllGetClassObject(rclsid, riid, ppv);

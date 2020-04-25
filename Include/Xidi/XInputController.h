@@ -21,7 +21,7 @@
 namespace Xidi
 {
     /// Identifies each input component of an XInput-based controller.
-    enum EXInputControllerElement
+    enum class EXInputControllerElement
     {
         StickLeftHorizontal,                                                ///< Left stick, horizontal axis.
         StickLeftVertical,                                                  ///< Left stick, vertical axis.
@@ -264,7 +264,7 @@ namespace Xidi
         HRESULT SetControllerProperty(REFGUID rguidProp, LPCDIPROPHEADER pdiph);
 
         /// Sets the event to be notified if the controller's state changes.
-        /// @param [in] hEvent Windows event handle to trigger, or `NULL` to disable this functionality.
+        /// @param [in] hEvent Windows event handle to trigger, or `nullptr` to disable this functionality.
         /// @return `DI_POLLEDDEVICE` to indicate that events are only dispatched when the IDirectInputDevice Poll method is invoked.
         HRESULT SetControllerStateChangedEvent(HANDLE hEvent);
 

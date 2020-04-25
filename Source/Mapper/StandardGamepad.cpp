@@ -138,15 +138,15 @@ const TInstanceCount StandardGamepad::NumInstancesOfType(const EInstanceType typ
     switch (type)
     {
     case EInstanceType::InstanceTypeAxis:
-        numInstances = EAxis::AxisCount;
+        numInstances = (TInstanceCount)EAxis::AxisCount;
         break;
 
     case EInstanceType::InstanceTypePov:
-        numInstances = EPov::PovCount;
+        numInstances = (TInstanceCount)EPov::PovCount;
         break;
 
     case EInstanceType::InstanceTypeButton:
-        numInstances = EButton::ButtonCount;
+        numInstances = (TInstanceCount)EButton::ButtonCount;
     }
 
     return numInstances;

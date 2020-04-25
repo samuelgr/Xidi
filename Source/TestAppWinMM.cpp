@@ -37,7 +37,7 @@ size_t GetJoystickName(UINT index, wchar_t* buf, size_t count)
     wchar_t registryPath[1024];
     swprintf_s(registryPath, _countof(registryPath), REGSTR_PATH_JOYCONFIG L"\\%s\\" REGSTR_KEY_JOYCURR, joyCaps.szRegKey);
 
-    LRESULT result = RegCreateKeyEx(HKEY_CURRENT_USER, registryPath, 0, NULL, REG_OPTION_VOLATILE, KEY_QUERY_VALUE, NULL, &registryKey, NULL);
+    LRESULT result = RegCreateKeyEx(HKEY_CURRENT_USER, registryPath, 0, nullptr, REG_OPTION_VOLATILE, KEY_QUERY_VALUE, nullptr, &registryKey, nullptr);
     if (ERROR_SUCCESS != result)
         return 0;
 
@@ -48,7 +48,7 @@ size_t GetJoystickName(UINT index, wchar_t* buf, size_t count)
     wchar_t registryValueData[256];
     DWORD registryValueSize = sizeof(registryValueData);
 
-    result = RegGetValue(registryKey, NULL, registryValueName, RRF_RT_REG_SZ, NULL, registryValueData, &registryValueSize);
+    result = RegGetValue(registryKey, nullptr, registryValueName, RRF_RT_REG_SZ, nullptr, registryValueData, &registryValueSize);
     RegCloseKey(registryKey);
 
     if (ERROR_SUCCESS != result)
@@ -57,13 +57,13 @@ size_t GetJoystickName(UINT index, wchar_t* buf, size_t count)
     // Open the correct registry key to look for the joystick's OEM name.
     swprintf_s(registryPath, _countof(registryPath), REGSTR_PATH_JOYOEM L"\\%s", registryValueData);
 
-    result = RegCreateKeyEx(HKEY_CURRENT_USER, registryPath, 0, NULL, REG_OPTION_VOLATILE, KEY_QUERY_VALUE, NULL, &registryKey, NULL);
+    result = RegCreateKeyEx(HKEY_CURRENT_USER, registryPath, 0, nullptr, REG_OPTION_VOLATILE, KEY_QUERY_VALUE, nullptr, &registryKey, nullptr);
     if (ERROR_SUCCESS != result)
         return 0;
 
     // Read the joystick's OEM name.
     registryValueSize = (DWORD)count * sizeof(wchar_t);
-    result = RegGetValue(registryKey, NULL, REGSTR_VAL_JOYOEMNAME, RRF_RT_REG_SZ, NULL, buf, &registryValueSize);
+    result = RegGetValue(registryKey, nullptr, REGSTR_VAL_JOYOEMNAME, RRF_RT_REG_SZ, nullptr, buf, &registryValueSize);
 
     return (ERROR_SUCCESS == result ? registryValueSize / sizeof(wchar_t) : 0);
 }
@@ -113,7 +113,7 @@ int RunTestApp(int argc, char* argv[])
             {
                 wcout << L"    Joystick \"" << joystickName << L"\" detected at " << i;
 
-                if ((i < devIdx) && (NULL != wcsstr(joystickName, L"Xidi: ")))
+                if ((i < devIdx) && (nullptr != wcsstr(joystickName, L"Xidi: ")))
                 {
                     devIdx = i;
                     wcout << L", selected";

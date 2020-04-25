@@ -50,7 +50,7 @@ extern "C"
 #if DIRECTINPUT_VERSION >= 0x0800
     HRESULT WINAPI ExportApiDirectInputDirectInput8Create(HINSTANCE hinst, DWORD dwVersion, REFIID riidltf, LPVOID* ppvOut, LPUNKNOWN punkOuter)
     {
-        IDirectInput8* diObject = NULL;
+        IDirectInput8* diObject = nullptr;
 
         if (dwVersion < DINPUT_VER_MIN || dwVersion > DINPUT_VER_MAX)
         {
@@ -74,7 +74,7 @@ extern "C"
 #else
     HRESULT WINAPI ExportApiDirectInputDirectInputCreateA(HINSTANCE hinst, DWORD dwVersion, LPDIRECTINPUTA* ppDI, LPUNKNOWN punkOuter)
     {
-        IDirectInput* diObject = NULL;
+        IDirectInput* diObject = nullptr;
 
         if (dwVersion < DINPUT_VER_MIN || dwVersion > DINPUT_VER_MAX)
         {
@@ -100,7 +100,7 @@ extern "C"
 
     HRESULT WINAPI ExportApiDirectInputDirectInputCreateW(HINSTANCE hinst, DWORD dwVersion, LPDIRECTINPUTW* ppDI, LPUNKNOWN punkOuter)
     {
-        IDirectInput* diObject = NULL;
+        IDirectInput* diObject = nullptr;
 
         if (dwVersion < DINPUT_VER_MIN || dwVersion > DINPUT_VER_MAX)
         {
@@ -126,7 +126,7 @@ extern "C"
 
     HRESULT WINAPI ExportApiDirectInputDirectInputCreateEx(HINSTANCE hinst, DWORD dwVersion, REFIID riidltf, LPVOID *ppvOut, LPUNKNOWN punkOuter)
     {
-        IDirectInput* diObject = NULL;
+        IDirectInput* diObject = nullptr;
 
         if (dwVersion < DINPUT_VER_MIN || dwVersion > DINPUT_VER_MAX)
         {

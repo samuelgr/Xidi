@@ -36,7 +36,7 @@ static const wchar_t kLogSeparator[] = L"-------------------------";
 // -------- CLASS VARIABLES ------------------------------------------------ //
 // See "Log.h" for documentation.
 
-FILE* Log::fileHandle = NULL;
+FILE* Log::fileHandle = nullptr;
 
 ELogLevel Log::configuredSeverity = ELogLevel::LogLevelError;
 
@@ -72,7 +72,7 @@ void Log::FinalizeLog(void)
     if (IsLogReady())
     {
         fclose(fileHandle);
-        fileHandle = NULL;
+        fileHandle = nullptr;
     }
 }
 
@@ -95,7 +95,7 @@ void Log::InitializeAndCreateLog(void)
         // Determine the file path for the log file.
         // It will be placed on the current user's desktop.
         PWSTR folderPath;
-        HRESULT result = SHGetKnownFolderPath(FOLDERID_Desktop, 0, NULL, &folderPath);
+        HRESULT result = SHGetKnownFolderPath(FOLDERID_Desktop, 0, nullptr, &folderPath);
         if (S_OK != result) return;
 
         std::wstring logFilePath = folderPath;
@@ -106,7 +106,7 @@ void Log::InitializeAndCreateLog(void)
         WCHAR logFileNameBuffer[2048];
 
         // First is the name of the executable.
-        GetModuleFileName(NULL, logFileNameBuffer, _countof(logFileNameBuffer));
+        GetModuleFileName(nullptr, logFileNameBuffer, _countof(logFileNameBuffer));
         std::wstring executableFileName = logFileNameBuffer;
         const size_t executableStartPos = executableFileName.find_last_of(L'\\');
         const size_t executableEndPos = executableFileName.find_last_of(L'.');
@@ -125,7 +125,7 @@ void Log::InitializeAndCreateLog(void)
 
         // Open the log file for writing.
         _wfopen_s(&fileHandle, logFilePath.c_str(), L"w, ccs=UTF-8");
-        if (NULL == fileHandle) return;
+        if (nullptr == fileHandle) return;
 
         // Write out the log file header.
         wchar_t logHeaderStringBuffer[1024];
@@ -136,7 +136,7 @@ void Log::InitializeAndCreateLog(void)
         OutputText(L"\n");
 
         // Header part 2: application file name
-        if (0 != GetModuleFileName(NULL, logHeaderStringBuffer, _countof(logHeaderStringBuffer)))
+        if (0 != GetModuleFileName(nullptr, logHeaderStringBuffer, _countof(logHeaderStringBuffer)))
         {
             OutputText(logHeaderStringBuffer);
             OutputText(L"\n");
@@ -194,7 +194,7 @@ void Log::WriteLogMessage(ELogLevel severity, LPCWSTR message)
 
 bool Log::IsLogReady(void)
 {
-    return (NULL != fileHandle);
+    return (nullptr != fileHandle);
 }
 
 // ---------
@@ -253,14 +253,14 @@ void Log::OutputStamp(ELogLevel severity)
     OutputText(L"[");
 
     // Stamp part 2: date
-    if (0 != GetDateFormat(LOCALE_NAME_USER_DEFAULT, DATE_SHORTDATE, NULL, NULL, stampStringBuffer, _countof(stampStringBuffer)))
+    if (0 != GetDateFormat(LOCALE_NAME_USER_DEFAULT, DATE_SHORTDATE, nullptr, nullptr, stampStringBuffer, _countof(stampStringBuffer)))
     {
         OutputText(stampStringBuffer);
         OutputText(L" ");
     }
 
     // Stamp part 3: time
-    if (0 != GetTimeFormat(LOCALE_NAME_USER_DEFAULT, 0, NULL, NULL, stampStringBuffer, _countof(stampStringBuffer)))
+    if (0 != GetTimeFormat(LOCALE_NAME_USER_DEFAULT, 0, nullptr, nullptr, stampStringBuffer, _countof(stampStringBuffer)))
     {
         OutputText(stampStringBuffer);
     }

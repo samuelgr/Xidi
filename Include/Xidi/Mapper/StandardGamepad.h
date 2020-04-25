@@ -29,7 +29,7 @@ namespace Xidi
 
             /// Identifies each button modelled by this mapper.
             /// Values specify DirectInput instance number.
-            enum EButton : TInstanceIdx
+            enum class EButton : TInstanceIdx
             {
                 ButtonA                         = 0,
                 ButtonB                         = 1,
@@ -49,7 +49,7 @@ namespace Xidi
 
             /// Identifies each axis modelled by this mapper.
             /// Values specify DirectInput instance number.
-            enum EAxis : TInstanceIdx
+            enum class EAxis : TInstanceIdx
             {
                 AxisX                           = 0,
                 AxisY                           = 1,
@@ -61,7 +61,7 @@ namespace Xidi
 
             /// Identifies each point-of-view controller modelled by this mapper.
             /// Values specify DirectInput instance number.
-            enum EPov : TInstanceIdx
+            enum class EPov : TInstanceIdx
             {
                 PovDpad                         = 0,
 

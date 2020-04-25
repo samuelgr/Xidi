@@ -192,7 +192,7 @@ LPCWSTR DirectInputAxisTypeToString(REFGUID axisTypeGUID)
     if (axisTypeGUID == GUID_RzAxis)
         return L"RotZ";
 
-    return NULL;
+    return nullptr;
 }
 
 
@@ -245,11 +245,11 @@ BOOL STDMETHODCALLTYPE EnumObjectsAxesTestCallback(LPCDIDEVICEOBJECTINSTANCE lpd
         wcout << L"[dwType fail] ";
 
     LPCWSTR axisString = DirectInputAxisTypeToString(lpddoi->guidType);
-    if (NULL == axisString)
+    if (nullptr == axisString)
         wcout << L"[guidType fail] ";
 
     wcout << L"Instance " << DIDFT_GETINSTANCE(lpddoi->dwType) << L" @" << lpddoi->dwOfs << L": ";
-    if (NULL == axisString)
+    if (nullptr == axisString)
         wcout << L"UNKNOWN" << endl;
     else
         wcout << axisString << endl;
@@ -326,7 +326,7 @@ int RunTestApp(int argc, char* argv[])
     ////////   Initialization
 
     // Create the main interface to DirectInput.
-    result = ExportedDirectInputCreateMethod(GetModuleHandle(NULL), DIRECTINPUT_VERSION, Use_IID_IDirectInput, (LPVOID*)&directInputIface, NULL);
+    result = ExportedDirectInputCreateMethod(GetModuleHandle(nullptr), DIRECTINPUT_VERSION, Use_IID_IDirectInput, (LPVOID*)&directInputIface, nullptr);
     if (DI_OK != result)
     {
         wcerr << L"Unable to obtain IDirectInput interface pointer: code " << result << L"." << endl;
@@ -373,7 +373,7 @@ int RunTestApp(int argc, char* argv[])
     ////////   Device Creation
 
     // Obtain a pointer to the interface of the device.
-    result = directInputIface->CreateDevice(instanceGuidToTest, (EarliestIDirectInputDevice**)&directInputDeviceIface, NULL);
+    result = directInputIface->CreateDevice(instanceGuidToTest, (EarliestIDirectInputDevice**)&directInputDeviceIface, nullptr);
 
     if (DI_OK != result)
     {

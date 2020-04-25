@@ -98,11 +98,11 @@ VirtualDirectInputDevice::~VirtualDirectInputDevice(void)
 
 HRESULT STDMETHODCALLTYPE VirtualDirectInputDevice::QueryInterface(REFIID riid, LPVOID* ppvObj)
 {
-    if (NULL == ppvObj)
+    if (nullptr == ppvObj)
         return E_INVALIDARG;
 
     HRESULT result = S_OK;
-    *ppvObj = NULL;
+    *ppvObj = nullptr;
 
 #if DIRECTINPUT_VERSION >= 0x0800
     if (IsEqualIID(riid, IID_IUnknown) || IsEqualIID(riid, IID_IDirectInputDevice8A) || IsEqualIID(riid, IID_IDirectInputDevice8W))
@@ -266,8 +266,8 @@ HRESULT STDMETHODCALLTYPE VirtualDirectInputDevice::GetDeviceData(DWORD cbObject
         return result;
     }
 
-    // Verify provided count. Cannot be NULL.
-    if (NULL == pdwInOut)
+    // Verify provided count. Cannot be nullptr.
+    if (nullptr == pdwInOut)
     {
         const HRESULT result = DIERR_INVALIDPARAM;
         LOG_INVOCATION(ELogLevel::LogLevelSuperDebug, controller->GetPlayerIndex() + 1, result);

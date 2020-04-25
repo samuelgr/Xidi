@@ -20,7 +20,7 @@
 namespace Xidi
 {
     /// Enumerates the known types of mappers that can be created.
-    enum EMapper
+    enum class EMapper
     {
         DefaultMapper,
         XInputNativeMapper,
@@ -68,11 +68,11 @@ namespace Xidi
         static bool ApplyConfigurationMapperType(const std::wstring& value);
 
         /// Creates a new mapper of the configured type, using the `new` operator.
-        /// @return Pointer to the newly-created mapper, or `NULL` in the event of an error.
+        /// @return Pointer to the newly-created mapper, or `nullptr` in the event of an error.
         static Mapper::Base* CreateMapper(void);
 
         /// Creates a new mapper of the specified type, using the `new` operator.
-        /// @return Pointer to the newly-created mapper, or `NULL` in the event of an error.
+        /// @return Pointer to the newly-created mapper, or `nullptr` in the event of an error.
         static Mapper::Base* CreateMapperOfType(EMapper type);
 
         /// Resets the mapper configuration to default.
