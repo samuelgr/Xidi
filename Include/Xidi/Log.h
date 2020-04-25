@@ -20,7 +20,7 @@
 
 /// Produces a nicely-formatted string representation of the name of the current function.
 /// Intended to be used for generating log messages.
-#define XIDI_LOG_FORMATTED_FUNCTION_NAME        _T(__FUNCTION__ "()")
+#define XIDI_LOG_FORMATTED_FUNCTION_NAME        __FUNCTIONW__ L"()"
 
 
 namespace Xidi
@@ -108,14 +108,14 @@ namespace Xidi
         /// Adds a timestamp to the start of the message and a line break at the end.
         /// @param [in] severity Severity of the message.
         /// @param [in] format Message string, possibly with format specifiers.
-        static void WriteFormattedLogMessage(ELogLevel severity, LPCTSTR format, ...);
+        static void WriteFormattedLogMessage(ELogLevel severity, LPCWSTR format, ...);
         
         /// Writes the specified log message to the log, filtering based on specified and configured minimum severity.
         /// Requires both a severity and a message string.
         /// Adds a timestamp to the start of the message and a line break at the end.
         /// @param [in] severity Severity of the message.
         /// @param [in] message Message text.
-        static void WriteLogMessage(ELogLevel severity, LPCTSTR message);
+        static void WriteLogMessage(ELogLevel severity, LPCWSTR message);
         
         
     private:
@@ -128,24 +128,24 @@ namespace Xidi
         /// Formats and outputs a single log line.
         /// @param [in] severity Severity of the message.
         /// @param [in] message Message text.
-        static void LogLineOutputString(ELogLevel severity, LPCTSTR message);
+        static void LogLineOutputString(ELogLevel severity, LPCWSTR message);
 
         /// Formats and outputs a single log line, with support for format specifiers.
         /// @param [in] severity Severity of the message.
         /// @param [in] format Message string, possibly with format specifiers.
         /// @param [in] args Variable-length list of arguments to be used for any format specifiers in the message string.
-        static void LogLineOutputFormat(ELogLevel severity, LPCTSTR format, va_list args);
+        static void LogLineOutputFormat(ELogLevel severity, LPCWSTR format, va_list args);
         
         /// Formats and outputs some text to the log.
         /// Will cause lazy initialization of the log if invoked when the log is not yet created or initialized.
         /// @param [in] format Message string, possibly with format specifiers.
         /// @param [in] args Variable-length list of arguments to be used for any format specifiers in the message string.
-        static void OutputFormattedText(LPCTSTR format, va_list args);
+        static void OutputFormattedText(LPCWSTR format, va_list args);
         
         /// Outputs some text to the log.
         /// Will cause lazy initialization of the log if invoked when the log is not yet created or initialized.
         /// @param [in] message Message text.
-        static void OutputText(LPCTSTR message);
+        static void OutputText(LPCWSTR message);
         
         /// Outputs a log stamp, which includes a date and time plus a severity indicator.
         /// Invoked to write the beginning part of each log message line.

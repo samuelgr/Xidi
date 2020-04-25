@@ -30,7 +30,7 @@ static const size_t kLogResourceBufferSize = 1024;
 static const WCHAR kLogFileNameSuffix[] = L".log";
 
 /// Separator string to use within the log file.
-static const TCHAR kLogSeparator[] = _T("-------------------------");
+static const wchar_t kLogSeparator[] = L"-------------------------";
 
 
 // -------- CLASS VARIABLES ------------------------------------------------ //
@@ -128,23 +128,23 @@ void Log::InitializeAndCreateLog(void)
         if (NULL == fileHandle) return;
 
         // Write out the log file header.
-        TCHAR logHeaderStringBuffer[1024];
+        wchar_t logHeaderStringBuffer[1024];
         
         // Header part 1: Xidi version name.
         LoadString(Globals::GetInstanceHandle(), IDS_XIDI_VERSION_NAME, logHeaderStringBuffer, _countof(logHeaderStringBuffer));
         OutputText(logHeaderStringBuffer);
-        OutputText(_T("\n"));
+        OutputText(L"\n");
 
         // Header part 2: application file name
         if (0 != GetModuleFileName(NULL, logHeaderStringBuffer, _countof(logHeaderStringBuffer)))
         {
             OutputText(logHeaderStringBuffer);
-            OutputText(_T("\n"));
+            OutputText(L"\n");
         }
 
         // Header part 3: separator
         OutputText(kLogSeparator);
-        OutputText(_T("\n"));
+        OutputText(L"\n");
     }
 }
 
@@ -167,7 +167,7 @@ bool Log::WillOutputLogMessageOfSeverity(ELogLevel severity)
 
 // ---------
 
-void Log::WriteFormattedLogMessage(ELogLevel severity, LPCTSTR format, ...)
+void Log::WriteFormattedLogMessage(ELogLevel severity, LPCWSTR format, ...)
 {
     if (WillOutputLogMessageOfSeverity(severity))
     {
@@ -182,7 +182,7 @@ void Log::WriteFormattedLogMessage(ELogLevel severity, LPCTSTR format, ...)
 
 // ---------
 
-void Log::WriteLogMessage(ELogLevel severity, LPCTSTR message)
+void Log::WriteLogMessage(ELogLevel severity, LPCWSTR message)
 {
     if (WillOutputLogMessageOfSeverity(severity))
         LogLineOutputString(severity, message);
@@ -199,46 +199,46 @@ bool Log::IsLogReady(void)
 
 // ---------
 
-void Log::LogLineOutputString(ELogLevel severity, LPCTSTR message)
+void Log::LogLineOutputString(ELogLevel severity, LPCWSTR message)
 {
     OutputStamp(severity);
     OutputText(message);
-    OutputText(_T("\n"));
+    OutputText(L"\n");
 }
 
 // ---------
 
-void Log::LogLineOutputFormat(ELogLevel severity, LPCTSTR format, va_list args)
+void Log::LogLineOutputFormat(ELogLevel severity, LPCWSTR format, va_list args)
 {
     OutputStamp(severity);
     OutputFormattedText(format, args);
-    OutputText(_T("\n"));
+    OutputText(L"\n");
 }
 
 // ---------
 
-void Log::OutputFormattedText(LPCTSTR format, va_list args)
+void Log::OutputFormattedText(LPCWSTR format, va_list args)
 {
     if (!IsLogReady())
         InitializeAndCreateLog();
     
     if (IsLogReady())
     {
-        _vftprintf_s(fileHandle, format, args);
+        vfwprintf_s(fileHandle, format, args);
         fflush(fileHandle);
     }
 }
 
 // ---------
 
-void Log::OutputText(LPCTSTR message)
+void Log::OutputText(LPCWSTR message)
 {
     if (!IsLogReady())
         InitializeAndCreateLog();
     
     if (IsLogReady())
     {
-        _fputts(message, fileHandle);
+        fputws(message, fileHandle);
         fflush(fileHandle);
     }
 }
@@ -247,16 +247,16 @@ void Log::OutputText(LPCTSTR message)
 
 void Log::OutputStamp(ELogLevel severity)
 {
-    TCHAR stampStringBuffer[1024];
+    wchar_t stampStringBuffer[1024];
 
     // Stamp part 1: open square bracket
-    OutputText(_T("["));
+    OutputText(L"[");
 
     // Stamp part 2: date
     if (0 != GetDateFormat(LOCALE_NAME_USER_DEFAULT, DATE_SHORTDATE, NULL, NULL, stampStringBuffer, _countof(stampStringBuffer)))
     {
         OutputText(stampStringBuffer);
-        OutputText(_T(" "));
+        OutputText(L" ");
     }
 
     // Stamp part 3: time
@@ -266,40 +266,40 @@ void Log::OutputStamp(ELogLevel severity)
     }
 
     // Stamp part 4: separation between date/time and severity
-    OutputText(_T("]("));
+    OutputText(L"](");
     
     // Stamp part 5: severity
     switch (severity)
     {
     case ELogLevel::LogLevelForced:
-        OutputText(_T("F"));
+        OutputText(L"F");
         break;
 
     case ELogLevel::LogLevelError:
-        OutputText(_T("E"));
+        OutputText(L"E");
         break;
 
     case ELogLevel::LogLevelWarning:
-        OutputText(_T("W"));
+        OutputText(L"W");
         break;
     
     case ELogLevel::LogLevelInfo:
-        OutputText(_T("I"));
+        OutputText(L"I");
         break;
 
     case ELogLevel::LogLevelDebug:
-        OutputText(_T("D"));
+        OutputText(L"D");
         break;
 
     case ELogLevel::LogLevelSuperDebug:
-        OutputText(_T("X"));
+        OutputText(L"X");
         break;
 
     default:
-        OutputText(_T("U"));
+        OutputText(L"U");
         break;
     }
 
     // Stamp part 6: close round bracket and space to the actual message
-    OutputText(_T(") "));
+    OutputText(L") ");
 }

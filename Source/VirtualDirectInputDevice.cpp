@@ -23,7 +23,7 @@ using namespace Xidi;
 // -------- MACROS --------------------------------------------------------- //
 
 /// Logs a DirectInput interface method invocation.
-#define LOG_INVOCATION(lvl, player, result) Log::WriteFormattedLogMessage(lvl, _T("Invoked %s on XInput player %u, result = 0x%08x."), XIDI_LOG_FORMATTED_FUNCTION_NAME, player, result);
+#define LOG_INVOCATION(lvl, player, result) Log::WriteFormattedLogMessage(lvl, L"Invoked %s on XInput player %u, result = 0x%08x.", XIDI_LOG_FORMATTED_FUNCTION_NAME, player, result);
 
 
 // -------- INTERNAL FUNCTIONS --------------------------------------------- //
@@ -32,49 +32,49 @@ using namespace Xidi;
 /// Returns a string that represents the specified GUID.
 /// @param [in] pguid GUID to check.
 /// @return String representation of the GUID's semantics, even if unknown.
-static const TCHAR* StringFromPropertyUniqueIdentifier(REFGUID rguidProp)
+static const wchar_t* StringFromPropertyUniqueIdentifier(REFGUID rguidProp)
 {
 #if DIRECTINPUT_VERSION >= 0x0800
     if (&DIPROP_APPDATA == &rguidProp)
-        return _T("DIPROP_APPDATA");
+        return L"DIPROP_APPDATA";
     if (&DIPROP_CPOINTS == &rguidProp)
-        return _T("DIPROP_CPOINTS");
+        return L"DIPROP_CPOINTS";
     if (&DIPROP_KEYNAME == &rguidProp)
-        return _T("DIPROP_KEYNAME");
+        return L"DIPROP_KEYNAME";
     if (&DIPROP_SCANCODE == &rguidProp)
-        return _T("DIPROP_SCANCODE");
+        return L"DIPROP_SCANCODE";
     if (&DIPROP_TYPENAME == &rguidProp)
-        return _T("DIPROP_TYPENAME");
+        return L"DIPROP_TYPENAME";
     if (&DIPROP_USERNAME == &rguidProp)
-        return _T("DIPROP_USERNAME");
+        return L"DIPROP_USERNAME";
     if (&DIPROP_VIDPID == &rguidProp)
-        return _T("DIPROP_VIDPID");
+        return L"DIPROP_VIDPID";
 #endif
 
     if (&DIPROP_AUTOCENTER == &rguidProp)
-        return _T("DIPROP_AUTOCENTER");
+        return L"DIPROP_AUTOCENTER";
     if (&DIPROP_AXISMODE == &rguidProp)
-        return _T("DIPROP_AXISMODE");
+        return L"DIPROP_AXISMODE";
     if (&DIPROP_BUFFERSIZE == &rguidProp)
-        return _T("DIPROP_BUFFERSIZE");
+        return L"DIPROP_BUFFERSIZE";
     if (&DIPROP_CALIBRATION == &rguidProp)
-        return _T("DIPROP_CALIBRATION");
+        return L"DIPROP_CALIBRATION";
     if (&DIPROP_CALIBRATIONMODE == &rguidProp)
-        return _T("DIPROP_CALIBRATIONMODE");
+        return L"DIPROP_CALIBRATIONMODE";
     if (&DIPROP_DEADZONE == &rguidProp)
-        return _T("DIPROP_DEADZONE");
+        return L"DIPROP_DEADZONE";
     if (&DIPROP_FFGAIN == &rguidProp)
-        return _T("DIPROP_FFGAIN");
+        return L"DIPROP_FFGAIN";
     if (&DIPROP_INSTANCENAME == &rguidProp)
-        return _T("DIPROP_INSTANCENAME");
+        return L"DIPROP_INSTANCENAME";
     if (&DIPROP_PRODUCTNAME == &rguidProp)
-        return _T("DIPROP_PRODUCTNAME");
+        return L"DIPROP_PRODUCTNAME";
     if (&DIPROP_RANGE == &rguidProp)
-        return _T("DIPROP_RANGE");
+        return L"DIPROP_RANGE";
     if (&DIPROP_SATURATION == &rguidProp)
-        return _T("DIPROP_SATURATION");
+        return L"DIPROP_SATURATION";
 
-    return _T("(unknown)");
+    return L"(unknown)";
 }
 
 
@@ -87,7 +87,7 @@ VirtualDirectInputDevice::VirtualDirectInputDevice(BOOL useUnicode, XInputContro
 
 VirtualDirectInputDevice::~VirtualDirectInputDevice(void)
 {
-    Log::WriteFormattedLogMessage(ELogLevel::LogLevelInfo, _T("Destroying controller object for XInput player %u."), controller->GetPlayerIndex() + 1);
+    Log::WriteFormattedLogMessage(ELogLevel::LogLevelInfo, L"Destroying controller object for XInput player %u.", controller->GetPlayerIndex() + 1);
     delete controller;
     delete mapper;
 }
@@ -162,7 +162,7 @@ HRESULT STDMETHODCALLTYPE VirtualDirectInputDevice::CreateEffect(REFGUID rguid, 
     // Operation not supported.
     const HRESULT result = DIERR_UNSUPPORTED;
 
-    Log::WriteLogMessage(ELogLevel::LogLevelWarning, _T("Application attempted a force-feedback operation, which is not currently supported."));
+    Log::WriteLogMessage(ELogLevel::LogLevelWarning, L"Application attempted a force-feedback operation, which is not currently supported.");
     LOG_INVOCATION(ELogLevel::LogLevelInfo, controller->GetPlayerIndex() + 1, result);
     
     return result;
@@ -175,7 +175,7 @@ HRESULT STDMETHODCALLTYPE VirtualDirectInputDevice::EnumCreatedEffectObjects(LPD
     // Operation not supported.
     const HRESULT result = DIERR_UNSUPPORTED;
 
-    Log::WriteLogMessage(ELogLevel::LogLevelWarning, _T("Application attempted a force-feedback operation, which is not currently supported."));
+    Log::WriteLogMessage(ELogLevel::LogLevelWarning, L"Application attempted a force-feedback operation, which is not currently supported.");
     LOG_INVOCATION(ELogLevel::LogLevelInfo, controller->GetPlayerIndex() + 1, result);
 
     return result;
@@ -188,7 +188,7 @@ HRESULT STDMETHODCALLTYPE VirtualDirectInputDevice::EnumEffects(LPDIENUMEFFECTSC
     // Operation not supported.
     const HRESULT result = DIERR_UNSUPPORTED;
 
-    Log::WriteLogMessage(ELogLevel::LogLevelWarning, _T("Application attempted a force-feedback operation, which is not currently supported."));
+    Log::WriteLogMessage(ELogLevel::LogLevelWarning, L"Application attempted a force-feedback operation, which is not currently supported.");
     LOG_INVOCATION(ELogLevel::LogLevelInfo, controller->GetPlayerIndex() + 1, result);
     
     return result;
@@ -196,12 +196,12 @@ HRESULT STDMETHODCALLTYPE VirtualDirectInputDevice::EnumEffects(LPDIENUMEFFECTSC
 
 // ---------
 
-HRESULT STDMETHODCALLTYPE VirtualDirectInputDevice::EnumEffectsInFile(LPCTSTR lptszFileName, LPDIENUMEFFECTSINFILECALLBACK pec, LPVOID pvRef, DWORD dwFlags)
+HRESULT STDMETHODCALLTYPE VirtualDirectInputDevice::EnumEffectsInFile(LPCWSTR lptszFileName, LPDIENUMEFFECTSINFILECALLBACK pec, LPVOID pvRef, DWORD dwFlags)
 {
     // Operation not supported.
     const HRESULT result = DIERR_UNSUPPORTED;
 
-    Log::WriteLogMessage(ELogLevel::LogLevelWarning, _T("Application attempted a force-feedback operation, which is not currently supported."));
+    Log::WriteLogMessage(ELogLevel::LogLevelWarning, L"Application attempted a force-feedback operation, which is not currently supported.");
     LOG_INVOCATION(ELogLevel::LogLevelInfo, controller->GetPlayerIndex() + 1, result);
     
     return result;
@@ -351,7 +351,7 @@ HRESULT STDMETHODCALLTYPE VirtualDirectInputDevice::GetProperty(REFGUID rguidPro
 {
     HRESULT result = DI_OK;
 
-    Log::WriteFormattedLogMessage(ELogLevel::LogLevelDebug, _T("Received a request to GET property %s on XInput player %u, handled by the %s."), StringFromPropertyUniqueIdentifier(rguidProp), controller->GetPlayerIndex() + 1, (mapper->IsPropertyHandledByMapper(rguidProp) ? _T("MAPPER") : _T("CONTROLLER")));
+    Log::WriteFormattedLogMessage(ELogLevel::LogLevelDebug, L"Received a request to GET property %s on XInput player %u, handled by the %s.", StringFromPropertyUniqueIdentifier(rguidProp), controller->GetPlayerIndex() + 1, (mapper->IsPropertyHandledByMapper(rguidProp) ? L"MAPPER" : L"CONTROLLER"));
 
     if (mapper->IsPropertyHandledByMapper(rguidProp))
         result = mapper->GetMappedProperty(rguidProp, pdiph);
@@ -432,9 +432,9 @@ HRESULT STDMETHODCALLTYPE VirtualDirectInputDevice::SetDataFormat(LPCDIDATAFORMA
     HRESULT result = mapper->SetApplicationDataFormat(lpdf);
 
     if (S_OK == result)
-        Log::WriteFormattedLogMessage(ELogLevel::LogLevelInfo, _T("Accepted application-supplied data format for XInput player %u."), controller->GetPlayerIndex() + 1);
+        Log::WriteFormattedLogMessage(ELogLevel::LogLevelInfo, L"Accepted application-supplied data format for XInput player %u.", controller->GetPlayerIndex() + 1);
     else
-        Log::WriteFormattedLogMessage(ELogLevel::LogLevelError, _T("Rejected application-supplied data format for XInput player %u."), controller->GetPlayerIndex() + 1);
+        Log::WriteFormattedLogMessage(ELogLevel::LogLevelError, L"Rejected application-supplied data format for XInput player %u.", controller->GetPlayerIndex() + 1);
 
     LOG_INVOCATION(ELogLevel::LogLevelInfo, controller->GetPlayerIndex() + 1, result);
     return result;
@@ -455,7 +455,7 @@ HRESULT STDMETHODCALLTYPE VirtualDirectInputDevice::SetProperty(REFGUID rguidPro
 {
     HRESULT result = DI_OK;
 
-    Log::WriteFormattedLogMessage(ELogLevel::LogLevelDebug, _T("Received a request to SET property %s on XInput player %u, handled by the %s."), StringFromPropertyUniqueIdentifier(rguidProp), controller->GetPlayerIndex() + 1, (mapper->IsPropertyHandledByMapper(rguidProp) ? _T("MAPPER") : _T("CONTROLLER")));
+    Log::WriteFormattedLogMessage(ELogLevel::LogLevelDebug, L"Received a request to SET property %s on XInput player %u, handled by the %s.", StringFromPropertyUniqueIdentifier(rguidProp), controller->GetPlayerIndex() + 1, (mapper->IsPropertyHandledByMapper(rguidProp) ? L"MAPPER" : L"CONTROLLER"));
     
     if (mapper->IsPropertyHandledByMapper(rguidProp))
         result = mapper->SetMappedProperty(rguidProp, pdiph);
@@ -477,7 +477,7 @@ HRESULT STDMETHODCALLTYPE VirtualDirectInputDevice::Unacquire(void)
 
 // ---------
 
-HRESULT STDMETHODCALLTYPE VirtualDirectInputDevice::WriteEffectToFile(LPCTSTR lptszFileName, DWORD dwEntries, LPDIFILEEFFECT rgDiFileEft, DWORD dwFlags)
+HRESULT STDMETHODCALLTYPE VirtualDirectInputDevice::WriteEffectToFile(LPCWSTR lptszFileName, DWORD dwEntries, LPDIFILEEFFECT rgDiFileEft, DWORD dwFlags)
 {
     // Operation not supported.
     const HRESULT result = DIERR_UNSUPPORTED;
@@ -490,7 +490,7 @@ HRESULT STDMETHODCALLTYPE VirtualDirectInputDevice::WriteEffectToFile(LPCTSTR lp
 // -------- METHODS: IDirectInputDevice8 ONLY ------------------------------ //
 // See DirectInput documentation for more information.
 
-HRESULT STDMETHODCALLTYPE VirtualDirectInputDevice::BuildActionMap(LPDIACTIONFORMAT lpdiaf, LPCTSTR lpszUserName, DWORD dwFlags)
+HRESULT STDMETHODCALLTYPE VirtualDirectInputDevice::BuildActionMap(LPDIACTIONFORMAT lpdiaf, LPCWSTR lpszUserName, DWORD dwFlags)
 {
     // Operation not supported.
     const HRESULT result = DIERR_UNSUPPORTED;
@@ -510,7 +510,7 @@ HRESULT STDMETHODCALLTYPE VirtualDirectInputDevice::GetImageInfo(LPDIDEVICEIMAGE
 
 // ---------
 
-HRESULT STDMETHODCALLTYPE VirtualDirectInputDevice::SetActionMap(LPDIACTIONFORMAT lpdiActionFormat, LPCTSTR lptszUserName, DWORD dwFlags)
+HRESULT STDMETHODCALLTYPE VirtualDirectInputDevice::SetActionMap(LPDIACTIONFORMAT lpdiActionFormat, LPCWSTR lptszUserName, DWORD dwFlags)
 {
     // Operation not supported.
     const HRESULT result = DIERR_UNSUPPORTED;

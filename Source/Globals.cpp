@@ -21,11 +21,11 @@ using namespace Xidi;
 // -------- CONSTANTS ------------------------------------------------------ //
 // See "Globals.h" for documentation.
 
-const std::wstring Globals::kDInputLibraryName = _T("dinput.dll");
+const std::wstring Globals::kDInputLibraryName = L"dinput.dll";
 
-const std::wstring Globals::kDInput8LibraryName = _T("dinput8.dll");
+const std::wstring Globals::kDInput8LibraryName = L"dinput8.dll";
 
-const std::wstring Globals::kWinMMLibraryName = _T("winmm.dll");
+const std::wstring Globals::kWinMMLibraryName = L"winmm.dll";
 
 
 // -------- CLASS VARIABLES ------------------------------------------------ //
@@ -33,11 +33,11 @@ const std::wstring Globals::kWinMMLibraryName = _T("winmm.dll");
 
 HINSTANCE Globals::gInstanceHandle = NULL;
 
-std::wstring Globals::gOverrideImportDirectInput = _T("");
+std::wstring Globals::gOverrideImportDirectInput = L"";
 
-std::wstring Globals::gOverrideImportDirectInput8 = _T("");
+std::wstring Globals::gOverrideImportDirectInput8 = L"";
 
-std::wstring Globals::gOverrideImportWinMM = _T("");
+std::wstring Globals::gOverrideImportWinMM = L"";
 
 
 // -------- CLASS METHODS -------------------------------------------------- //
@@ -122,7 +122,7 @@ void Globals::FillLibraryPath(std::wstring& stringToFill, const std::wstring& ov
     {
         // No override path specified, so use the system directory plus library filename.
         FillSystemDirectoryPath(stringToFill);
-        stringToFill += _T('\\');
+        stringToFill += L'\\';
         stringToFill += defaultLibraryFileName;
     }
     else
@@ -136,7 +136,7 @@ void Globals::FillLibraryPath(std::wstring& stringToFill, const std::wstring& ov
 
 void Globals::FillSystemDirectoryPath(std::wstring& stringToFill)
 {
-    TCHAR systemDirectoryPath[kMaximumSystemDirectoryNameLength];
+    wchar_t systemDirectoryPath[kMaximumSystemDirectoryNameLength];
     GetSystemDirectory(systemDirectoryPath, kMaximumSystemDirectoryNameLength);
 
     stringToFill = systemDirectoryPath;

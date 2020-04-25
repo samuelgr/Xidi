@@ -32,13 +32,13 @@ using namespace Xidi;
 // -------- MACROS --------------------------------------------------------- //
 
 /// Logs a WinMM device-specific function invocation.
-#define LOG_INVOCATION(joyID, result)       Log::WriteFormattedLogMessage(ELogLevel::LogLevelInfo, _T("Invoked %s on device %d, result = %u."), XIDI_LOG_FORMATTED_FUNCTION_NAME, joyID, result);
+#define LOG_INVOCATION(joyID, result)       Log::WriteFormattedLogMessage(ELogLevel::LogLevelInfo, L"Invoked %s on device %d, result = %u.", XIDI_LOG_FORMATTED_FUNCTION_NAME, joyID, result);
 
 /// Logs invocation of an unsupported WinMM operation.
-#define LOG_UNSUPPORTED_OPERATION()         Log::WriteFormattedLogMessage(ELogLevel::LogLevelWarning, _T("Application invoked %s on a Xidi virtual device, which is not supported."), XIDI_LOG_FORMATTED_FUNCTION_NAME);
+#define LOG_UNSUPPORTED_OPERATION()         Log::WriteFormattedLogMessage(ELogLevel::LogLevelWarning, L"Application invoked %s on a Xidi virtual device, which is not supported.", XIDI_LOG_FORMATTED_FUNCTION_NAME);
 
 /// Logs invocation of a WinMM operation with invalid parameters.
-#define LOG_INVALID_PARAMS()                Log::WriteFormattedLogMessage(ELogLevel::LogLevelWarning, _T("Application invoked %s on a Xidi virtual device, which failed due to invalid parameters."), XIDI_LOG_FORMATTED_FUNCTION_NAME);
+#define LOG_INVALID_PARAMS()                Log::WriteFormattedLogMessage(ELogLevel::LogLevelWarning, L"Application invoked %s on a Xidi virtual device, which failed due to invalid parameters.", XIDI_LOG_FORMATTED_FUNCTION_NAME);
 
 
 // -------- LOCAL TYPES ---------------------------------------------------- //
@@ -122,7 +122,7 @@ void WrapperJoyWinMM::Initialize(void)
         // Create a mapper and set its data format.
         mapper = MapperFactory::CreateMapper();
         if (DI_OK != mapper->SetApplicationDataFormat(&joyStateDataFormat))
-            Log::WriteLogMessage(ELogLevel::LogLevelError, _T("Failed to set device state data format.  XInput controllers will not function."));
+            Log::WriteLogMessage(ELogLevel::LogLevelError, L"Failed to set device state data format.  XInput controllers will not function.");
         
         // Create controllers, one for each XInput position.
         for (DWORD i = 0; i < _countof(controllers); ++i)
@@ -138,7 +138,7 @@ void WrapperJoyWinMM::Initialize(void)
         SetControllerNameRegistryInfo();
         
         // Initialization complete.
-        Log::WriteLogMessage(ELogLevel::LogLevelInfo, _T("Completed initialization of WinMM joystick wrapper."));
+        Log::WriteLogMessage(ELogLevel::LogLevelInfo, L"Completed initialization of WinMM joystick wrapper.");
         isInitialized = TRUE;
     }
 }
@@ -156,7 +156,7 @@ void WrapperJoyWinMM::CreateJoyIndexMap(void)
     // In the event of an error, it is safest to avoid enabling any Xidi virtual controllers to prevent binding both to the WinMM version and the Xidi version of the same one.
     joyIndexMap.clear();
     joyIndexMap.reserve(numDevicesTotal);
-    Log::WriteFormattedLogMessage(ELogLevel::LogLevelDebug, _T("Presenting the system with these WinMM devices:"));
+    Log::WriteFormattedLogMessage(ELogLevel::LogLevelDebug, L"Presenting the system with these WinMM devices:");
     
     if ((false == joySystemDeviceInfo[0].second) && !(joySystemDeviceInfo[0].first.empty()))
     {
@@ -167,14 +167,14 @@ void WrapperJoyWinMM::CreateJoyIndexMap(void)
         {
             if ((false == joySystemDeviceInfo[i].second) && !(joySystemDeviceInfo[i].first.empty()))
             {
-                Log::WriteFormattedLogMessage(ELogLevel::LogLevelDebug, _T("    [%u]: System-supplied WinMM device %u"), (unsigned int)joyIndexMap.size(), (unsigned int)i);
+                Log::WriteFormattedLogMessage(ELogLevel::LogLevelDebug, L"    [%u]: System-supplied WinMM device %u", (unsigned int)joyIndexMap.size(), (unsigned int)i);
                 joyIndexMap.push_back(i);
             }
         }
 
         for (int i = 0; i < (int)numXInputVirtualDevices; ++i)
         {
-            Log::WriteFormattedLogMessage(ELogLevel::LogLevelDebug, _T("    [%u]: Xidi virtual device for player %u"), (unsigned int)joyIndexMap.size(), (unsigned int)(i + 1));
+            Log::WriteFormattedLogMessage(ELogLevel::LogLevelDebug, L"    [%u]: Xidi virtual device for player %u", (unsigned int)joyIndexMap.size(), (unsigned int)(i + 1));
             joyIndexMap.push_back(-(i + 1));
         }
     }
@@ -185,7 +185,7 @@ void WrapperJoyWinMM::CreateJoyIndexMap(void)
 
         for (int i = 0; i < (int)numXInputVirtualDevices; ++i)
         {
-            Log::WriteFormattedLogMessage(ELogLevel::LogLevelDebug, _T("    [%u]: Xidi virtual device for player %u"), (unsigned int)joyIndexMap.size(), (unsigned int)(i + 1));
+            Log::WriteFormattedLogMessage(ELogLevel::LogLevelDebug, L"    [%u]: Xidi virtual device for player %u", (unsigned int)joyIndexMap.size(), (unsigned int)(i + 1));
             joyIndexMap.push_back(-(i + 1));
         }
 
@@ -193,7 +193,7 @@ void WrapperJoyWinMM::CreateJoyIndexMap(void)
         {
             if ((false == joySystemDeviceInfo[i].second) && !(joySystemDeviceInfo[i].first.empty()))
             {
-                Log::WriteFormattedLogMessage(ELogLevel::LogLevelDebug, _T("    [%u]: System-supplied WinMM device %u"), (unsigned int)joyIndexMap.size(), (unsigned int)i);
+                Log::WriteFormattedLogMessage(ELogLevel::LogLevelDebug, L"    [%u]: System-supplied WinMM device %u", (unsigned int)joyIndexMap.size(), (unsigned int)i);
                 joyIndexMap.push_back(i);
             }
         }
@@ -205,7 +205,7 @@ void WrapperJoyWinMM::CreateJoyIndexMap(void)
 void WrapperJoyWinMM::CreateSystemDeviceInfo(void)
 {
     const size_t numDevicesFromSystem = (size_t)ImportApiWinMM::joyGetNumDevs();
-    Log::WriteFormattedLogMessage(ELogLevel::LogLevelDebug, _T("System provides %u WinMM devices."), (unsigned int)numDevicesFromSystem);
+    Log::WriteFormattedLogMessage(ELogLevel::LogLevelDebug, L"System provides %u WinMM devices.", (unsigned int)numDevicesFromSystem);
 
     // Initialize the system device information data structure.
     joySystemDeviceInfo.clear();
@@ -216,60 +216,60 @@ void WrapperJoyWinMM::CreateSystemDeviceInfo(void)
     HKEY registryKey;
     if (JOYERR_NOERROR != ImportApiWinMM::joyGetDevCaps((UINT_PTR)-1, &joyCaps, sizeof(joyCaps)))
     {
-        Log::WriteLogMessage(ELogLevel::LogLevelWarning, _T("Unable to enumerate system WinMM devices because the correct registry key could not be identified by the system."));
+        Log::WriteLogMessage(ELogLevel::LogLevelWarning, L"Unable to enumerate system WinMM devices because the correct registry key could not be identified by the system.");
         return;
     }
 
-    TCHAR registryPath[1024];
-    _stprintf_s(registryPath, _countof(registryPath), REGSTR_PATH_JOYCONFIG _T("\\%s\\") REGSTR_KEY_JOYCURR, joyCaps.szRegKey);
+    wchar_t registryPath[1024];
+    swprintf_s(registryPath, _countof(registryPath), REGSTR_PATH_JOYCONFIG L"\\%s\\" REGSTR_KEY_JOYCURR, joyCaps.szRegKey);
     if (ERROR_SUCCESS != RegCreateKeyEx(HKEY_CURRENT_USER, registryPath, 0, NULL, REG_OPTION_VOLATILE, KEY_QUERY_VALUE, NULL, &registryKey, NULL))
     {
-        Log::WriteFormattedLogMessage(ELogLevel::LogLevelWarning, _T("Unable to enumerate system WinMM devices because the registry key \"%s\" could not be opened."), registryPath);
+        Log::WriteFormattedLogMessage(ELogLevel::LogLevelWarning, L"Unable to enumerate system WinMM devices because the registry key \"%s\" could not be opened.", registryPath);
         return;
     }
     
     // For each joystick device available in the system, see if it is present and, if so, get its device identifier (vendor ID and product ID string).
-    Log::WriteLogMessage(ELogLevel::LogLevelDebug, _T("Enumerating system WinMM devices..."));
+    Log::WriteLogMessage(ELogLevel::LogLevelDebug, L"Enumerating system WinMM devices...");
 
     for (size_t i = 0; i < numDevicesFromSystem; ++i)
     {
         // Get the device capabilities. If this fails, the device is not present and can be skipped.
         if (JOYERR_NOERROR != ImportApiWinMM::joyGetDevCaps((UINT_PTR)i, &joyCaps, sizeof(joyCaps)))
         {
-            joySystemDeviceInfo.push_back({ _T(""), false });
-            Log::WriteFormattedLogMessage(ELogLevel::LogLevelDebug, _T("    [%u]: (not present - failed to get capabilities)"), (unsigned int)i);
+            joySystemDeviceInfo.push_back({ L"", false });
+            Log::WriteFormattedLogMessage(ELogLevel::LogLevelDebug, L"    [%u]: (not present - failed to get capabilities)", (unsigned int)i);
             continue;
         }
         
         // Use the registry to get device vendor ID and product ID string.
-        TCHAR registryValueName[64];
-        _stprintf_s(registryValueName, _countof(registryValueName), REGSTR_VAL_JOYNOEMNAME, ((int)i + 1));
+        wchar_t registryValueName[64];
+        swprintf_s(registryValueName, _countof(registryValueName), REGSTR_VAL_JOYNOEMNAME, ((int)i + 1));
 
-        TCHAR registryValueData[64];
+        wchar_t registryValueData[64];
         DWORD registryValueSize = sizeof(registryValueData);
         if (ERROR_SUCCESS != RegGetValue(registryKey, NULL, registryValueName, RRF_RT_REG_SZ, NULL, registryValueData, &registryValueSize))
         {
             // If the registry value does not exist, this is past the end of the number of devices WinMM sees.
-            joySystemDeviceInfo.push_back({ _T(""), false });
-            Log::WriteFormattedLogMessage(ELogLevel::LogLevelDebug, _T("    [%u]: (not present - failed to get vendor and product ID strings)"), (unsigned int)i);
+            joySystemDeviceInfo.push_back({ L"", false });
+            Log::WriteFormattedLogMessage(ELogLevel::LogLevelDebug, L"    [%u]: (not present - failed to get vendor and product ID strings)", (unsigned int)i);
             continue;
         }
 
         // Add the vendor ID and product ID string to the list.
         joySystemDeviceInfo.push_back({ registryValueData, false });
-        Log::WriteFormattedLogMessage(ELogLevel::LogLevelDebug, _T("    [%u]: %s"), (unsigned int)i, registryValueData);
+        Log::WriteFormattedLogMessage(ELogLevel::LogLevelDebug, L"    [%u]: %s", (unsigned int)i, registryValueData);
     }
 
-    Log::WriteLogMessage(ELogLevel::LogLevelDebug, _T("Done enumerating system WinMM devices."));
+    Log::WriteLogMessage(ELogLevel::LogLevelDebug, L"Done enumerating system WinMM devices.");
     RegCloseKey(registryKey);
 
     // Enumerate all devices using DirectInput8 to find any XInput devices with matching vendor and product identifiers.
     // This will provide information on whether each WinMM device supports XInput.
-    Log::WriteLogMessage(ELogLevel::LogLevelDebug, _T("Using DirectInput to detect XInput devices..."));
+    Log::WriteLogMessage(ELogLevel::LogLevelDebug, L"Using DirectInput to detect XInput devices...");
     IDirectInput8* directInputInterface = NULL;
     if (S_OK != ImportApiDirectInput::DirectInput8Create(Globals::GetInstanceHandle(), DIRECTINPUT_VERSION, IID_IDirectInput8, (LPVOID*)&directInputInterface, NULL))
     {
-        Log::WriteLogMessage(ELogLevel::LogLevelDebug, _T("Unable to detect XInput devices because a DirectInput interface object could not be created."));
+        Log::WriteLogMessage(ELogLevel::LogLevelDebug, L"Unable to detect XInput devices because a DirectInput interface object could not be created.");
         return;
     }
 
@@ -278,11 +278,11 @@ void WrapperJoyWinMM::CreateSystemDeviceInfo(void)
     callbackInfo.directInputInterface = directInputInterface;
     if (S_OK != directInputInterface->EnumDevices(DI8DEVCLASS_GAMECTRL, CreateSystemDeviceInfoEnumCallback, (LPVOID)&callbackInfo, 0))
     {
-        Log::WriteLogMessage(ELogLevel::LogLevelDebug, _T("Unable to detect XInput devices because enumeration of DirectInput devices failed."));
+        Log::WriteLogMessage(ELogLevel::LogLevelDebug, L"Unable to detect XInput devices because enumeration of DirectInput devices failed.");
         return;
     }
 
-    Log::WriteLogMessage(ELogLevel::LogLevelDebug, _T("Done detecting XInput devices."));
+    Log::WriteLogMessage(ELogLevel::LogLevelDebug, L"Done detecting XInput devices.");
 }
 
 // --------
@@ -299,8 +299,8 @@ BOOL STDMETHODCALLTYPE WrapperJoyWinMM::CreateSystemDeviceInfoEnumCallback(LPCDI
         const WCHAR* devicePathString = devicePath.c_str();
 
         // Skip to the part of the path string that identifies vendor and product.
-        const TCHAR* devicePathSubstring = _tcsstr(devicePathString, _T("VID_"));
-        if (NULL == devicePathSubstring) devicePathSubstring = _tcsstr(devicePathString, _T("vid_"));
+        const wchar_t* devicePathSubstring = wcsstr(devicePathString, L"VID_");
+        if (NULL == devicePathSubstring) devicePathSubstring = wcsstr(devicePathString, L"vid_");
         if (NULL != devicePathSubstring)
         {
             // For each element of the WinMM devices list, see if the vendor and product IDs match the one DirectInput presented as being compatible with XInput.
@@ -316,10 +316,10 @@ BOOL STDMETHODCALLTYPE WrapperJoyWinMM::CreateSystemDeviceInfoEnumCallback(LPCDI
                     continue;
 
                 // Check for a matching vendor and product ID. If so, mark the device as supporting XInput.
-                if (0 == _tcsnicmp(callbackInfo->systemDeviceInfo->at(i).first.c_str(), devicePathSubstring, callbackInfo->systemDeviceInfo->at(i).first.length()))
+                if (0 == _wcsnicmp(callbackInfo->systemDeviceInfo->at(i).first.c_str(), devicePathSubstring, callbackInfo->systemDeviceInfo->at(i).first.length()))
                 {
                     callbackInfo->systemDeviceInfo->at(i).second = true;
-                    Log::WriteFormattedLogMessage(ELogLevel::LogLevelDebug, _T("    [%u]: XInput device"), (unsigned int)i);
+                    Log::WriteFormattedLogMessage(ELogLevel::LogLevelDebug, L"    [%u]: XInput device", (unsigned int)i);
                 }
             }
         }
@@ -370,8 +370,8 @@ void WrapperJoyWinMM::SetControllerNameRegistryInfo(void)
 {
     HKEY registryKey;
     LSTATUS result;
-    TCHAR registryKeyName[128];
-    TCHAR registryPath[1024];
+    wchar_t registryKeyName[128];
+    wchar_t registryPath[1024];
 
     FillRegistryKeyStringW(registryKeyName, _countof(registryKeyName));
     
@@ -379,14 +379,14 @@ void WrapperJoyWinMM::SetControllerNameRegistryInfo(void)
     // These will be in HKCU\System\CurrentControlSet\Control\MediaProperties\PrivateProperties\Joystick\OEM\Xidi# and contain the name of the controller.
     for (DWORD i = 0; i < _countof(controllers); ++i)
     {
-        TCHAR valueData[64];
+        wchar_t valueData[64];
         const int valueDataCount = ControllerIdentification::FillXInputControllerNameW(valueData, _countof(valueData), i);
 
-        _stprintf_s(registryPath, _countof(registryPath), REGSTR_PATH_JOYOEM _T("\\%s%u"), registryKeyName, i + 1);
+        swprintf_s(registryPath, _countof(registryPath), REGSTR_PATH_JOYOEM L"\\%s%u", registryKeyName, i + 1);
         result = RegCreateKeyEx(HKEY_CURRENT_USER, registryPath, 0, NULL, REG_OPTION_VOLATILE, KEY_SET_VALUE, NULL, &registryKey, NULL);
         if (ERROR_SUCCESS != result) return;
 
-        result = RegSetValueEx(registryKey, REGSTR_VAL_JOYOEMNAME, 0, REG_SZ, (const BYTE*)valueData, (sizeof(TCHAR) * (valueDataCount + 1)));
+        result = RegSetValueEx(registryKey, REGSTR_VAL_JOYOEMNAME, 0, REG_SZ, (const BYTE*)valueData, (sizeof(wchar_t) * (valueDataCount + 1)));
         RegCloseKey(registryKey);
 
         if (ERROR_SUCCESS != result) return;
@@ -395,15 +395,15 @@ void WrapperJoyWinMM::SetControllerNameRegistryInfo(void)
     // Next, add OEM string references to HKCU\System\CurrentControlSet\Control\MediaResources\Joystick\Xidi.
     // These will point a WinMM-based application to another part of the registry, by reference, which actually contain the names.
     // Do this by consuming the joystick index map and system device information data structure.
-    _stprintf_s(registryPath, _countof(registryPath), REGSTR_PATH_JOYCONFIG _T("\\%s\\") REGSTR_KEY_JOYCURR, registryKeyName);
+    swprintf_s(registryPath, _countof(registryPath), REGSTR_PATH_JOYCONFIG L"\\%s\\" REGSTR_KEY_JOYCURR, registryKeyName);
 
     result = RegCreateKeyEx(HKEY_CURRENT_USER, registryPath, 0, NULL, REG_OPTION_VOLATILE, KEY_SET_VALUE, NULL, &registryKey, NULL);
     if (ERROR_SUCCESS != result) return;
     
     for (DWORD i = 0; i < joyIndexMap.size(); ++i)
     {
-        TCHAR valueName[64];
-        const int valueNameCount = _stprintf_s(valueName, _countof(valueName), REGSTR_VAL_JOYNOEMNAME, (i + 1));
+        wchar_t valueName[64];
+        const int valueNameCount = swprintf_s(valueName, _countof(valueName), REGSTR_VAL_JOYNOEMNAME, (i + 1));
         
         if (joyIndexMap[i] < 0)
         {
@@ -411,18 +411,18 @@ void WrapperJoyWinMM::SetControllerNameRegistryInfo(void)
 
             // Index is just -1 * the value in the map.
             // Use this value to create the correct string to write to the registry.
-            TCHAR valueData[64];
-            const int valueDataCount = _stprintf_s(valueData, _countof(valueData), _T("%s%u"), registryKeyName, ((UINT)(-joyIndexMap[i])));
+            wchar_t valueData[64];
+            const int valueDataCount = swprintf_s(valueData, _countof(valueData), L"%s%u", registryKeyName, ((UINT)(-joyIndexMap[i])));
 
             // Write the value to the registry.
-            RegSetValueEx(registryKey, valueName, 0, REG_SZ, (const BYTE*)valueData, (sizeof(TCHAR) * (valueDataCount + 1)));
+            RegSetValueEx(registryKey, valueName, 0, REG_SZ, (const BYTE*)valueData, (sizeof(wchar_t) * (valueDataCount + 1)));
         }
         else
         {
             // Map points to a non-Xidi device.
 
             // Just reference the string directly.
-            const TCHAR* valueData = joySystemDeviceInfo[joyIndexMap[i]].first.c_str();
+            const wchar_t* valueData = joySystemDeviceInfo[joyIndexMap[i]].first.c_str();
             const int valueDataCount = (int)joySystemDeviceInfo[joyIndexMap[i]].first.length();
 
             // Write the value to the registry.
@@ -447,7 +447,7 @@ int WrapperJoyWinMM::TranslateApplicationJoyIndex(UINT uJoyID)
 
 MMRESULT WrapperJoyWinMM::JoyConfigChanged(DWORD dwFlags)
 {
-    Log::WriteLogMessage(ELogLevel::LogLevelInfo, _T("Refreshing joystick state due to a configuration change."));
+    Log::WriteLogMessage(ELogLevel::LogLevelInfo, L"Refreshing joystick state due to a configuration change.");
     Initialize();
 
     // Redirect to the imported API so that its view of the registry can be updated.
@@ -649,7 +649,7 @@ UINT WrapperJoyWinMM::JoyGetNumDevs(void)
 
     // Number of controllers = number of XInput controllers + number of driver-reported controllers.
     UINT result = (UINT)joyIndexMap.size();
-    Log::WriteFormattedLogMessage(ELogLevel::LogLevelDebug, _T("Invoked %s, result = %u."), XIDI_LOG_FORMATTED_FUNCTION_NAME, result);
+    Log::WriteFormattedLogMessage(ELogLevel::LogLevelDebug, L"Invoked %s, result = %u.", XIDI_LOG_FORMATTED_FUNCTION_NAME, result);
     return result;
 }
 

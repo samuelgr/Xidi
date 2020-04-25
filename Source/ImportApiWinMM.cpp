@@ -55,713 +55,713 @@ void ImportApiWinMM::Initialize(void)
         // ---------
         
         procAddress = GetProcAddress(loadedLibrary, "CloseDriver");
-        if (NULL == procAddress) LogImportFailed(_T("CloseDriver"));
+        if (NULL == procAddress) LogImportFailed(L"CloseDriver");
         importTable.CloseDriver = (LRESULT(WINAPI*)(HDRVR, LPARAM, LPARAM))procAddress;
 
         procAddress = GetProcAddress(loadedLibrary, "DefDriverProc");
-        if (NULL == procAddress) LogImportFailed(_T("DefDriverProc"));
+        if (NULL == procAddress) LogImportFailed(L"DefDriverProc");
         importTable.DefDriverProc = (LRESULT(WINAPI*)(DWORD_PTR, HDRVR, UINT, LONG, LONG))procAddress;
 
         procAddress = GetProcAddress(loadedLibrary, "DriverCallback");
-        if (NULL == procAddress) LogImportFailed(_T("DriverCallback"));
+        if (NULL == procAddress) LogImportFailed(L"DriverCallback");
         importTable.DriverCallback = (BOOL(WINAPI*)(DWORD, DWORD, HDRVR, DWORD, DWORD, DWORD, DWORD))procAddress;
 
         procAddress = GetProcAddress(loadedLibrary, "DrvGetModuleHandle");
-        if (NULL == procAddress) LogImportFailed(_T("DrvGetModuleHandle"));
+        if (NULL == procAddress) LogImportFailed(L"DrvGetModuleHandle");
         importTable.DrvGetModuleHandle = (HMODULE(WINAPI*)(HDRVR))procAddress;
 
         procAddress = GetProcAddress(loadedLibrary, "GetDriverModuleHandle");
-        if (NULL == procAddress) LogImportFailed(_T("GetDriverModuleHandle"));
+        if (NULL == procAddress) LogImportFailed(L"GetDriverModuleHandle");
         importTable.GetDriverModuleHandle = (HMODULE(WINAPI*)(HDRVR))procAddress;
 
         procAddress = GetProcAddress(loadedLibrary, "OpenDriver");
-        if (NULL == procAddress) LogImportFailed(_T("OpenDriver"));
+        if (NULL == procAddress) LogImportFailed(L"OpenDriver");
         importTable.OpenDriver = (HDRVR(WINAPI*)(LPCWSTR, LPCWSTR, LPARAM))procAddress;
 
         procAddress = GetProcAddress(loadedLibrary, "PlaySoundA");
-        if (NULL == procAddress) LogImportFailed(_T("PlaySoundA"));
+        if (NULL == procAddress) LogImportFailed(L"PlaySoundA");
         importTable.PlaySoundA = (BOOL(WINAPI*)(LPCSTR, HMODULE, DWORD))procAddress;
 
         procAddress = GetProcAddress(loadedLibrary, "PlaySoundW");
-        if (NULL == procAddress) LogImportFailed(_T("PlaySoundW"));
+        if (NULL == procAddress) LogImportFailed(L"PlaySoundW");
         importTable.PlaySoundW = (BOOL(WINAPI*)(LPCWSTR, HMODULE, DWORD))procAddress;
 
         procAddress = GetProcAddress(loadedLibrary, "SendDriverMessage");
-        if (NULL == procAddress) LogImportFailed(_T("SendDriverMessage"));
+        if (NULL == procAddress) LogImportFailed(L"SendDriverMessage");
         importTable.SendDriverMessage = (LRESULT(WINAPI*)(HDRVR, UINT, LPARAM, LPARAM))procAddress;
 
         // ---------
         
         procAddress = GetProcAddress(loadedLibrary, "auxGetDevCapsA");
-        if (NULL == procAddress) LogImportFailed(_T("auxGetDevCapsA"));
+        if (NULL == procAddress) LogImportFailed(L"auxGetDevCapsA");
         importTable.auxGetDevCapsA = (MMRESULT(WINAPI*)(UINT_PTR, LPAUXCAPSA, UINT))procAddress;
         
         procAddress = GetProcAddress(loadedLibrary, "auxGetDevCapsW");
-        if (NULL == procAddress) LogImportFailed(_T("auxGetDevCapsW"));
+        if (NULL == procAddress) LogImportFailed(L"auxGetDevCapsW");
         importTable.auxGetDevCapsW = (MMRESULT(WINAPI*)(UINT_PTR, LPAUXCAPSW, UINT))procAddress;
         
         procAddress = GetProcAddress(loadedLibrary, "auxGetNumDevs");
-        if (NULL == procAddress) LogImportFailed(_T("auxGetNumDevs"));
+        if (NULL == procAddress) LogImportFailed(L"auxGetNumDevs");
         importTable.auxGetNumDevs = (UINT(WINAPI*)(void))procAddress;
         
         procAddress = GetProcAddress(loadedLibrary, "auxGetVolume");
-        if (NULL == procAddress) LogImportFailed(_T("auxGetVolume"));
+        if (NULL == procAddress) LogImportFailed(L"auxGetVolume");
         importTable.auxGetVolume = (MMRESULT(WINAPI*)(UINT, LPDWORD))procAddress;
         
         procAddress = GetProcAddress(loadedLibrary, "auxOutMessage");
-        if (NULL == procAddress) LogImportFailed(_T("auxOutMessage"));
+        if (NULL == procAddress) LogImportFailed(L"auxOutMessage");
         importTable.auxOutMessage = (MMRESULT(WINAPI*)(UINT, UINT, DWORD_PTR, DWORD_PTR))procAddress;
         
         procAddress = GetProcAddress(loadedLibrary, "auxSetVolume");
-        if (NULL == procAddress) LogImportFailed(_T("auxSetVolume"));
+        if (NULL == procAddress) LogImportFailed(L"auxSetVolume");
         importTable.auxSetVolume = (MMRESULT(WINAPI*)(UINT, DWORD))procAddress;
         
         // ---------
         
         procAddress = GetProcAddress(loadedLibrary, "joyConfigChanged");
-        if (NULL == procAddress) LogImportFailed(_T("joyConfigChanged"));
+        if (NULL == procAddress) LogImportFailed(L"joyConfigChanged");
         importTable.joyConfigChanged = (MMRESULT(WINAPI*)(DWORD))procAddress;
         
         procAddress = GetProcAddress(loadedLibrary, "joyGetDevCapsA");
-        if (NULL == procAddress) LogImportFailed(_T("joyGetDevCapsA"));
+        if (NULL == procAddress) LogImportFailed(L"joyGetDevCapsA");
         importTable.joyGetDevCapsA = (MMRESULT(WINAPI*)(UINT_PTR, LPJOYCAPSA, UINT))procAddress;
         
         procAddress = GetProcAddress(loadedLibrary, "joyGetDevCapsW");
-        if (NULL == procAddress) LogImportFailed(_T("joyGetDevCapsW"));
+        if (NULL == procAddress) LogImportFailed(L"joyGetDevCapsW");
         importTable.joyGetDevCapsW = (MMRESULT(WINAPI*)(UINT_PTR, LPJOYCAPSW, UINT))procAddress;
         
         procAddress = GetProcAddress(loadedLibrary, "joyGetNumDevs");
-        if (NULL == procAddress) LogImportFailed(_T("joyGetNumDevs"));
+        if (NULL == procAddress) LogImportFailed(L"joyGetNumDevs");
         importTable.joyGetNumDevs = (UINT(WINAPI*)(void))procAddress;
         
         procAddress = GetProcAddress(loadedLibrary, "joyGetPos");
-        if (NULL == procAddress) LogImportFailed(_T("joyGetPos"));
+        if (NULL == procAddress) LogImportFailed(L"joyGetPos");
         importTable.joyGetPos = (MMRESULT(WINAPI*)(UINT, LPJOYINFO))procAddress;
         
         procAddress = GetProcAddress(loadedLibrary, "joyGetPosEx");
-        if (NULL == procAddress) LogImportFailed(_T("joyGetPosEx"));
+        if (NULL == procAddress) LogImportFailed(L"joyGetPosEx");
         importTable.joyGetPosEx = (MMRESULT(WINAPI*)(UINT, LPJOYINFOEX))procAddress;
         
         procAddress = GetProcAddress(loadedLibrary, "joyGetThreshold");
-        if (NULL == procAddress) LogImportFailed(_T("joyGetThreshold"));
+        if (NULL == procAddress) LogImportFailed(L"joyGetThreshold");
         importTable.joyGetThreshold = (MMRESULT(WINAPI*)(UINT, LPUINT))procAddress;
         
         procAddress = GetProcAddress(loadedLibrary, "joyReleaseCapture");
-        if (NULL == procAddress) LogImportFailed(_T("joyReleaseCapture"));
+        if (NULL == procAddress) LogImportFailed(L"joyReleaseCapture");
         importTable.joyReleaseCapture = (MMRESULT(WINAPI*)(UINT))procAddress;
         
         procAddress = GetProcAddress(loadedLibrary, "joySetCapture");
-        if (NULL == procAddress) LogImportFailed(_T("joySetCapture"));
+        if (NULL == procAddress) LogImportFailed(L"joySetCapture");
         importTable.joySetCapture = (MMRESULT(WINAPI*)(HWND, UINT, UINT, BOOL))procAddress;
         
         procAddress = GetProcAddress(loadedLibrary, "joySetThreshold");
-        if (NULL == procAddress) LogImportFailed(_T("joySetThreshold"));
+        if (NULL == procAddress) LogImportFailed(L"joySetThreshold");
         importTable.joySetThreshold = (MMRESULT(WINAPI*)(UINT, UINT))procAddress;
         
         // ---------
 
         procAddress = GetProcAddress(loadedLibrary, "mciDriverNotify");
-        if (NULL == procAddress) LogImportFailed(_T("mciDriverNotify"));
+        if (NULL == procAddress) LogImportFailed(L"mciDriverNotify");
         importTable.mciDriverNotify = (decltype(importTable.mciDriverNotify))procAddress;
 
         procAddress = GetProcAddress(loadedLibrary, "mciDriverYield");
-        if (NULL == procAddress) LogImportFailed(_T("mciDriverYield"));
+        if (NULL == procAddress) LogImportFailed(L"mciDriverYield");
         importTable.mciDriverYield = (decltype(importTable.mciDriverYield))procAddress;
 
         procAddress = GetProcAddress(loadedLibrary, "mciExecute");
-        if (NULL == procAddress) LogImportFailed(_T("mciExecute"));
+        if (NULL == procAddress) LogImportFailed(L"mciExecute");
         importTable.mciExecute = (decltype(importTable.mciExecute))procAddress;
 
         procAddress = GetProcAddress(loadedLibrary, "mciFreeCommandResource");
-        if (NULL == procAddress) LogImportFailed(_T("mciFreeCommandResource"));
+        if (NULL == procAddress) LogImportFailed(L"mciFreeCommandResource");
         importTable.mciFreeCommandResource = (decltype(importTable.mciFreeCommandResource))procAddress;
 
         procAddress = GetProcAddress(loadedLibrary, "mciGetCreatorTask");
-        if (NULL == procAddress) LogImportFailed(_T("mciGetCreatorTask"));
+        if (NULL == procAddress) LogImportFailed(L"mciGetCreatorTask");
         importTable.mciGetCreatorTask = (decltype(importTable.mciGetCreatorTask))procAddress;
 
         procAddress = GetProcAddress(loadedLibrary, "mciGetDeviceIDA");
-        if (NULL == procAddress) LogImportFailed(_T("mciGetDeviceIDA"));
+        if (NULL == procAddress) LogImportFailed(L"mciGetDeviceIDA");
         importTable.mciGetDeviceIDA = (decltype(importTable.mciGetDeviceIDA))procAddress;
 
         procAddress = GetProcAddress(loadedLibrary, "mciGetDeviceIDW");
-        if (NULL == procAddress) LogImportFailed(_T("mciGetDeviceIDW"));
+        if (NULL == procAddress) LogImportFailed(L"mciGetDeviceIDW");
         importTable.mciGetDeviceIDW = (decltype(importTable.mciGetDeviceIDW))procAddress;
 
         procAddress = GetProcAddress(loadedLibrary, "mciGetDeviceIDFromElementIDA");
-        if (NULL == procAddress) LogImportFailed(_T("mciGetDeviceIDFromElementIDA"));
+        if (NULL == procAddress) LogImportFailed(L"mciGetDeviceIDFromElementIDA");
         importTable.mciGetDeviceIDFromElementIDA = (decltype(importTable.mciGetDeviceIDFromElementIDA))procAddress;
 
         procAddress = GetProcAddress(loadedLibrary, "mciGetDeviceIDFromElementIDW");
-        if (NULL == procAddress) LogImportFailed(_T("mciGetDeviceIDFromElementIDW"));
+        if (NULL == procAddress) LogImportFailed(L"mciGetDeviceIDFromElementIDW");
         importTable.mciGetDeviceIDFromElementIDW = (decltype(importTable.mciGetDeviceIDFromElementIDW))procAddress;
 
         procAddress = GetProcAddress(loadedLibrary, "mciGetDriverData");
-        if (NULL == procAddress) LogImportFailed(_T("mciGetDriverData"));
+        if (NULL == procAddress) LogImportFailed(L"mciGetDriverData");
         importTable.mciGetDriverData = (decltype(importTable.mciGetDriverData))procAddress;
 
         procAddress = GetProcAddress(loadedLibrary, "mciGetErrorStringA");
-        if (NULL == procAddress) LogImportFailed(_T("mciGetErrorStringA"));
+        if (NULL == procAddress) LogImportFailed(L"mciGetErrorStringA");
         importTable.mciGetErrorStringA = (decltype(importTable.mciGetErrorStringA))procAddress;
 
         procAddress = GetProcAddress(loadedLibrary, "mciGetErrorStringW");
-        if (NULL == procAddress) LogImportFailed(_T("mciGetErrorStringW"));
+        if (NULL == procAddress) LogImportFailed(L"mciGetErrorStringW");
         importTable.mciGetErrorStringW = (decltype(importTable.mciGetErrorStringW))procAddress;
 
         procAddress = GetProcAddress(loadedLibrary, "mciGetYieldProc");
-        if (NULL == procAddress) LogImportFailed(_T("mciGetYieldProc"));
+        if (NULL == procAddress) LogImportFailed(L"mciGetYieldProc");
         importTable.mciGetYieldProc = (decltype(importTable.mciGetYieldProc))procAddress;
 
         procAddress = GetProcAddress(loadedLibrary, "mciLoadCommandResource");
-        if (NULL == procAddress) LogImportFailed(_T("mciLoadCommandResource"));
+        if (NULL == procAddress) LogImportFailed(L"mciLoadCommandResource");
         importTable.mciLoadCommandResource = (decltype(importTable.mciLoadCommandResource))procAddress;
 
         procAddress = GetProcAddress(loadedLibrary, "mciSendCommandA");
-        if (NULL == procAddress) LogImportFailed(_T("mciSendCommandA"));
+        if (NULL == procAddress) LogImportFailed(L"mciSendCommandA");
         importTable.mciSendCommandA = (decltype(importTable.mciSendCommandA))procAddress;
 
         procAddress = GetProcAddress(loadedLibrary, "mciSendCommandW");
-        if (NULL == procAddress) LogImportFailed(_T("mciSendCommandW"));
+        if (NULL == procAddress) LogImportFailed(L"mciSendCommandW");
         importTable.mciSendCommandW = (decltype(importTable.mciSendCommandW))procAddress;
 
         procAddress = GetProcAddress(loadedLibrary, "mciSendStringA");
-        if (NULL == procAddress) LogImportFailed(_T("mciSendStringA"));
+        if (NULL == procAddress) LogImportFailed(L"mciSendStringA");
         importTable.mciSendStringA = (decltype(importTable.mciSendStringA))procAddress;
 
         procAddress = GetProcAddress(loadedLibrary, "mciSendStringW");
-        if (NULL == procAddress) LogImportFailed(_T("mciSendStringW"));
+        if (NULL == procAddress) LogImportFailed(L"mciSendStringW");
         importTable.mciSendStringW = (decltype(importTable.mciSendStringW))procAddress;
 
         procAddress = GetProcAddress(loadedLibrary, "mciSetDriverData");
-        if (NULL == procAddress) LogImportFailed(_T("mciSetDriverData"));
+        if (NULL == procAddress) LogImportFailed(L"mciSetDriverData");
         importTable.mciSetDriverData = (decltype(importTable.mciSetDriverData))procAddress;
 
         procAddress = GetProcAddress(loadedLibrary, "mciSetYieldProc");
-        if (NULL == procAddress) LogImportFailed(_T("mciSetYieldProc"));
+        if (NULL == procAddress) LogImportFailed(L"mciSetYieldProc");
         importTable.mciSetYieldProc = (decltype(importTable.mciSetYieldProc))procAddress;
 
         // ---------
 
         procAddress = GetProcAddress(loadedLibrary, "midiConnect");
-        if (NULL == procAddress) LogImportFailed(_T("midiConnect"));
+        if (NULL == procAddress) LogImportFailed(L"midiConnect");
         importTable.midiConnect = (MMRESULT(WINAPI*)(HMIDI, HMIDIOUT, LPVOID))procAddress;
 
         procAddress = GetProcAddress(loadedLibrary, "midiDisconnect");
-        if (NULL == procAddress) LogImportFailed(_T("midiDisconnect"));
+        if (NULL == procAddress) LogImportFailed(L"midiDisconnect");
         importTable.midiDisconnect = (MMRESULT(WINAPI*)(HMIDI, HMIDIOUT, LPVOID))procAddress;
 
         // ---------
 
         procAddress = GetProcAddress(loadedLibrary, "midiInAddBuffer");
-        if (NULL == procAddress) LogImportFailed(_T("midiInAddBuffer"));
+        if (NULL == procAddress) LogImportFailed(L"midiInAddBuffer");
         importTable.midiInAddBuffer = (MMRESULT(WINAPI*)(HMIDIIN, LPMIDIHDR, UINT))procAddress;
 
         procAddress = GetProcAddress(loadedLibrary, "midiInClose");
-        if (NULL == procAddress) LogImportFailed(_T("midiInClose"));
+        if (NULL == procAddress) LogImportFailed(L"midiInClose");
         importTable.midiInClose = (MMRESULT(WINAPI*)(HMIDIIN))procAddress;
 
         procAddress = GetProcAddress(loadedLibrary, "midiInGetDevCapsA");
-        if (NULL == procAddress) LogImportFailed(_T("midiInGetDevCapsA"));
+        if (NULL == procAddress) LogImportFailed(L"midiInGetDevCapsA");
         importTable.midiInGetDevCapsA = (MMRESULT(WINAPI*)(UINT_PTR, LPMIDIINCAPSA, UINT))procAddress;
 
         procAddress = GetProcAddress(loadedLibrary, "midiInGetDevCapsW");
-        if (NULL == procAddress) LogImportFailed(_T("midiInGetDevCapsW"));
+        if (NULL == procAddress) LogImportFailed(L"midiInGetDevCapsW");
         importTable.midiInGetDevCapsW = (MMRESULT(WINAPI*)(UINT_PTR, LPMIDIINCAPSW, UINT))procAddress;
 
         procAddress = GetProcAddress(loadedLibrary, "midiInGetErrorTextA");
-        if (NULL == procAddress) LogImportFailed(_T("midiInGetErrorTextA"));
+        if (NULL == procAddress) LogImportFailed(L"midiInGetErrorTextA");
         importTable.midiInGetErrorTextA = (MMRESULT(WINAPI*)(MMRESULT, LPSTR, UINT))procAddress;
 
         procAddress = GetProcAddress(loadedLibrary, "midiInGetErrorTextW");
-        if (NULL == procAddress) LogImportFailed(_T("midiInGetErrorTextW"));
+        if (NULL == procAddress) LogImportFailed(L"midiInGetErrorTextW");
         importTable.midiInGetErrorTextW = (MMRESULT(WINAPI*)(MMRESULT, LPWSTR, UINT))procAddress;
 
         procAddress = GetProcAddress(loadedLibrary, "midiInGetID");
-        if (NULL == procAddress) LogImportFailed(_T("midiInGetID"));
+        if (NULL == procAddress) LogImportFailed(L"midiInGetID");
         importTable.midiInGetID = (MMRESULT(WINAPI*)(HMIDIIN, LPUINT))procAddress;
 
         procAddress = GetProcAddress(loadedLibrary, "midiInGetNumDevs");
-        if (NULL == procAddress) LogImportFailed(_T("midiInGetNumDevs"));
+        if (NULL == procAddress) LogImportFailed(L"midiInGetNumDevs");
         importTable.midiInGetNumDevs = (UINT(WINAPI*)(void))procAddress;
 
         procAddress = GetProcAddress(loadedLibrary, "midiInMessage");
-        if (NULL == procAddress) LogImportFailed(_T("midiInMessage"));
+        if (NULL == procAddress) LogImportFailed(L"midiInMessage");
         importTable.midiInMessage = (DWORD(WINAPI*)(HMIDIIN, UINT, DWORD_PTR, DWORD_PTR))procAddress;
 
         procAddress = GetProcAddress(loadedLibrary, "midiInOpen");
-        if (NULL == procAddress) LogImportFailed(_T("midiInOpen"));
+        if (NULL == procAddress) LogImportFailed(L"midiInOpen");
         importTable.midiInOpen = (MMRESULT(WINAPI*)(LPHMIDIIN, UINT, DWORD_PTR, DWORD_PTR, DWORD))procAddress;
 
         procAddress = GetProcAddress(loadedLibrary, "midiInPrepareHeader");
-        if (NULL == procAddress) LogImportFailed(_T("midiInPrepareHeader"));
+        if (NULL == procAddress) LogImportFailed(L"midiInPrepareHeader");
         importTable.midiInPrepareHeader = (MMRESULT(WINAPI*)(HMIDIIN, LPMIDIHDR, UINT))procAddress;
 
         procAddress = GetProcAddress(loadedLibrary, "midiInReset");
-        if (NULL == procAddress) LogImportFailed(_T("midiInReset"));
+        if (NULL == procAddress) LogImportFailed(L"midiInReset");
         importTable.midiInReset = (MMRESULT(WINAPI*)(HMIDIIN))procAddress;
 
         procAddress = GetProcAddress(loadedLibrary, "midiInStart");
-        if (NULL == procAddress) LogImportFailed(_T("midiInStart"));
+        if (NULL == procAddress) LogImportFailed(L"midiInStart");
         importTable.midiInStart = (MMRESULT(WINAPI*)(HMIDIIN))procAddress;
 
         procAddress = GetProcAddress(loadedLibrary, "midiInStop");
-        if (NULL == procAddress) LogImportFailed(_T("midiInStop"));
+        if (NULL == procAddress) LogImportFailed(L"midiInStop");
         importTable.midiInStop = (MMRESULT(WINAPI*)(HMIDIIN))procAddress;
 
         procAddress = GetProcAddress(loadedLibrary, "midiInUnprepareHeader");
-        if (NULL == procAddress) LogImportFailed(_T("midiInUnprepareHeader"));
+        if (NULL == procAddress) LogImportFailed(L"midiInUnprepareHeader");
         importTable.midiInUnprepareHeader = (MMRESULT(WINAPI*)(HMIDIIN, LPMIDIHDR, UINT))procAddress;
         
         // ---------
 
         procAddress = GetProcAddress(loadedLibrary, "midiOutCacheDrumPatches");
-        if (NULL == procAddress) LogImportFailed(_T("midiOutCacheDrumPatches"));
+        if (NULL == procAddress) LogImportFailed(L"midiOutCacheDrumPatches");
         importTable.midiOutCacheDrumPatches = (MMRESULT(WINAPI*)(HMIDIOUT, UINT, WORD*, UINT))procAddress;
 
         procAddress = GetProcAddress(loadedLibrary, "midiOutCachePatches");
-        if (NULL == procAddress) LogImportFailed(_T("midiOutCachePatches"));
+        if (NULL == procAddress) LogImportFailed(L"midiOutCachePatches");
         importTable.midiOutCachePatches = (MMRESULT(WINAPI*)(HMIDIOUT, UINT, WORD*, UINT))procAddress;
 
         procAddress = GetProcAddress(loadedLibrary, "midiOutClose");
-        if (NULL == procAddress) LogImportFailed(_T("midiOutClose"));
+        if (NULL == procAddress) LogImportFailed(L"midiOutClose");
         importTable.midiOutClose = (MMRESULT(WINAPI*)(HMIDIOUT))procAddress;
 
         procAddress = GetProcAddress(loadedLibrary, "midiOutGetDevCapsA");
-        if (NULL == procAddress) LogImportFailed(_T("midiOutGetDevCapsA"));
+        if (NULL == procAddress) LogImportFailed(L"midiOutGetDevCapsA");
         importTable.midiOutGetDevCapsA = (MMRESULT(WINAPI*)(UINT_PTR, LPMIDIOUTCAPSA, UINT))procAddress;
 
         procAddress = GetProcAddress(loadedLibrary, "midiOutGetDevCapsW");
-        if (NULL == procAddress) LogImportFailed(_T("midiOutGetDevCapsW"));
+        if (NULL == procAddress) LogImportFailed(L"midiOutGetDevCapsW");
         importTable.midiOutGetDevCapsW = (MMRESULT(WINAPI*)(UINT_PTR, LPMIDIOUTCAPSW, UINT))procAddress;
 
         procAddress = GetProcAddress(loadedLibrary, "midiOutGetErrorTextA");
-        if (NULL == procAddress) LogImportFailed(_T("midiOutGetErrorTextA"));
+        if (NULL == procAddress) LogImportFailed(L"midiOutGetErrorTextA");
         importTable.midiOutGetErrorTextA = (UINT(WINAPI*)(MMRESULT, LPSTR, UINT))procAddress;
 
         procAddress = GetProcAddress(loadedLibrary, "midiOutGetErrorTextW");
-        if (NULL == procAddress) LogImportFailed(_T("midiOutGetErrorTextW"));
+        if (NULL == procAddress) LogImportFailed(L"midiOutGetErrorTextW");
         importTable.midiOutGetErrorTextW = (UINT(WINAPI*)(MMRESULT, LPWSTR, UINT))procAddress;
 
         procAddress = GetProcAddress(loadedLibrary, "midiOutGetID");
-        if (NULL == procAddress) LogImportFailed(_T("midiOutGetID"));
+        if (NULL == procAddress) LogImportFailed(L"midiOutGetID");
         importTable.midiOutGetID = (MMRESULT(WINAPI*)(HMIDIOUT, LPUINT))procAddress;
 
         procAddress = GetProcAddress(loadedLibrary, "midiOutGetNumDevs");
-        if (NULL == procAddress) LogImportFailed(_T("midiOutGetNumDevs"));
+        if (NULL == procAddress) LogImportFailed(L"midiOutGetNumDevs");
         importTable.midiOutGetNumDevs = (UINT(WINAPI*)(void))procAddress;
 
         procAddress = GetProcAddress(loadedLibrary, "midiOutGetVolume");
-        if (NULL == procAddress) LogImportFailed(_T("midiOutGetVolume"));
+        if (NULL == procAddress) LogImportFailed(L"midiOutGetVolume");
         importTable.midiOutGetVolume = (MMRESULT(WINAPI*)(HMIDIOUT, LPDWORD))procAddress;
 
         procAddress = GetProcAddress(loadedLibrary, "midiOutLongMsg");
-        if (NULL == procAddress) LogImportFailed(_T("midiOutLongMsg"));
+        if (NULL == procAddress) LogImportFailed(L"midiOutLongMsg");
         importTable.midiOutLongMsg = (MMRESULT(WINAPI*)(HMIDIOUT, LPMIDIHDR, UINT))procAddress;
 
         procAddress = GetProcAddress(loadedLibrary, "midiOutMessage");
-        if (NULL == procAddress) LogImportFailed(_T("midiOutMessage"));
+        if (NULL == procAddress) LogImportFailed(L"midiOutMessage");
         importTable.midiOutMessage = (DWORD(WINAPI*)(HMIDIOUT, UINT, DWORD_PTR, DWORD_PTR))procAddress;
 
         procAddress = GetProcAddress(loadedLibrary, "midiOutOpen");
-        if (NULL == procAddress) LogImportFailed(_T("midiOutOpen"));
+        if (NULL == procAddress) LogImportFailed(L"midiOutOpen");
         importTable.midiOutOpen = (MMRESULT(WINAPI*)(LPHMIDIOUT, UINT, DWORD_PTR, DWORD_PTR, DWORD))procAddress;
 
         procAddress = GetProcAddress(loadedLibrary, "midiOutPrepareHeader");
-        if (NULL == procAddress) LogImportFailed(_T("midiOutPrepareHeader"));
+        if (NULL == procAddress) LogImportFailed(L"midiOutPrepareHeader");
         importTable.midiOutPrepareHeader = (MMRESULT(WINAPI*)(HMIDIOUT, LPMIDIHDR, UINT))procAddress;
 
         procAddress = GetProcAddress(loadedLibrary, "midiOutReset");
-        if (NULL == procAddress) LogImportFailed(_T("midiOutReset"));
+        if (NULL == procAddress) LogImportFailed(L"midiOutReset");
         importTable.midiOutReset = (MMRESULT(WINAPI*)(HMIDIOUT))procAddress;
 
         procAddress = GetProcAddress(loadedLibrary, "midiOutSetVolume");
-        if (NULL == procAddress) LogImportFailed(_T("midiOutSetVolume"));
+        if (NULL == procAddress) LogImportFailed(L"midiOutSetVolume");
         importTable.midiOutSetVolume = (MMRESULT(WINAPI*)(HMIDIOUT, DWORD))procAddress;
 
         procAddress = GetProcAddress(loadedLibrary, "midiOutShortMsg");
-        if (NULL == procAddress) LogImportFailed(_T("midiOutShortMsg"));
+        if (NULL == procAddress) LogImportFailed(L"midiOutShortMsg");
         importTable.midiOutShortMsg = (MMRESULT(WINAPI*)(HMIDIOUT, DWORD))procAddress;
 
         procAddress = GetProcAddress(loadedLibrary, "midiOutUnprepareHeader");
-        if (NULL == procAddress) LogImportFailed(_T("midiOutUnprepareHeader"));
+        if (NULL == procAddress) LogImportFailed(L"midiOutUnprepareHeader");
         importTable.midiOutUnprepareHeader = (MMRESULT(WINAPI*)(HMIDIOUT, LPMIDIHDR, UINT))procAddress;
 
         // ---------
 
         procAddress = GetProcAddress(loadedLibrary, "midiStreamClose");
-        if (NULL == procAddress) LogImportFailed(_T("midiStreamClose"));
+        if (NULL == procAddress) LogImportFailed(L"midiStreamClose");
         importTable.midiStreamClose = (MMRESULT(WINAPI*)(HMIDISTRM))procAddress;
 
         procAddress = GetProcAddress(loadedLibrary, "midiStreamOpen");
-        if (NULL == procAddress) LogImportFailed(_T("midiStreamOpen"));
+        if (NULL == procAddress) LogImportFailed(L"midiStreamOpen");
         importTable.midiStreamOpen = (MMRESULT(WINAPI*)(LPHMIDISTRM, LPUINT, DWORD, DWORD_PTR, DWORD_PTR, DWORD))procAddress;
 
         procAddress = GetProcAddress(loadedLibrary, "midiStreamOut");
-        if (NULL == procAddress) LogImportFailed(_T("midiStreamOut"));
+        if (NULL == procAddress) LogImportFailed(L"midiStreamOut");
         importTable.midiStreamOut = (MMRESULT(WINAPI*)(HMIDISTRM, LPMIDIHDR, UINT))procAddress;
 
         procAddress = GetProcAddress(loadedLibrary, "midiStreamPause");
-        if (NULL == procAddress) LogImportFailed(_T("midiStreamPause"));
+        if (NULL == procAddress) LogImportFailed(L"midiStreamPause");
         importTable.midiStreamPause = (MMRESULT(WINAPI*)(HMIDISTRM))procAddress;
 
         procAddress = GetProcAddress(loadedLibrary, "midiStreamPosition");
-        if (NULL == procAddress) LogImportFailed(_T("midiStreamPosition"));
+        if (NULL == procAddress) LogImportFailed(L"midiStreamPosition");
         importTable.midiStreamPosition = (MMRESULT(WINAPI*)(HMIDISTRM, LPMMTIME, UINT))procAddress;
 
         procAddress = GetProcAddress(loadedLibrary, "midiStreamProperty");
-        if (NULL == procAddress) LogImportFailed(_T("midiStreamProperty"));
+        if (NULL == procAddress) LogImportFailed(L"midiStreamProperty");
         importTable.midiStreamProperty = (MMRESULT(WINAPI*)(HMIDISTRM, LPBYTE, DWORD))procAddress;
 
         procAddress = GetProcAddress(loadedLibrary, "midiStreamRestart");
-        if (NULL == procAddress) LogImportFailed(_T("midiStreamRestart"));
+        if (NULL == procAddress) LogImportFailed(L"midiStreamRestart");
         importTable.midiStreamRestart = (MMRESULT(WINAPI*)(HMIDISTRM))procAddress;
 
         procAddress = GetProcAddress(loadedLibrary, "midiStreamStop");
-        if (NULL == procAddress) LogImportFailed(_T("midiStreamStop"));
+        if (NULL == procAddress) LogImportFailed(L"midiStreamStop");
         importTable.midiStreamStop = (MMRESULT(WINAPI*)(HMIDISTRM))procAddress;
 
         // ---------
 
         procAddress = GetProcAddress(loadedLibrary, "mixerClose");
-        if (NULL == procAddress) LogImportFailed(_T("mixerClose"));
+        if (NULL == procAddress) LogImportFailed(L"mixerClose");
         importTable.mixerClose = (MMRESULT(WINAPI*)(HMIXER))procAddress;
 
         procAddress = GetProcAddress(loadedLibrary, "mixerGetControlDetailsA");
-        if (NULL == procAddress) LogImportFailed(_T("mixerGetControlDetailsA"));
+        if (NULL == procAddress) LogImportFailed(L"mixerGetControlDetailsA");
         importTable.mixerGetControlDetailsA = (MMRESULT(WINAPI*)(HMIXEROBJ, LPMIXERCONTROLDETAILS, DWORD))procAddress;
 
         procAddress = GetProcAddress(loadedLibrary, "mixerGetControlDetailsW");
-        if (NULL == procAddress) LogImportFailed(_T("mixerGetControlDetailsW"));
+        if (NULL == procAddress) LogImportFailed(L"mixerGetControlDetailsW");
         importTable.mixerGetControlDetailsW = (MMRESULT(WINAPI*)(HMIXEROBJ, LPMIXERCONTROLDETAILS, DWORD))procAddress;
 
         procAddress = GetProcAddress(loadedLibrary, "mixerGetDevCapsA");
-        if (NULL == procAddress) LogImportFailed(_T("mixerGetDevCapsA"));
+        if (NULL == procAddress) LogImportFailed(L"mixerGetDevCapsA");
         importTable.mixerGetDevCapsA = (MMRESULT(WINAPI*)(UINT_PTR, LPMIXERCAPS, UINT))procAddress;
 
         procAddress = GetProcAddress(loadedLibrary, "mixerGetDevCapsW");
-        if (NULL == procAddress) LogImportFailed(_T("mixerGetDevCapsW"));
+        if (NULL == procAddress) LogImportFailed(L"mixerGetDevCapsW");
         importTable.mixerGetDevCapsW = (MMRESULT(WINAPI*)(UINT_PTR, LPMIXERCAPS, UINT))procAddress;
 
         procAddress = GetProcAddress(loadedLibrary, "mixerGetID");
-        if (NULL == procAddress) LogImportFailed(_T("mixerGetID"));
+        if (NULL == procAddress) LogImportFailed(L"mixerGetID");
         importTable.mixerGetID = (MMRESULT(WINAPI*)(HMIXEROBJ, UINT*, DWORD))procAddress;
 
         procAddress = GetProcAddress(loadedLibrary, "mixerGetLineControlsA");
-        if (NULL == procAddress) LogImportFailed(_T("mixerGetLineControlsA"));
+        if (NULL == procAddress) LogImportFailed(L"mixerGetLineControlsA");
         importTable.mixerGetLineControlsA = (MMRESULT(WINAPI*)(HMIXEROBJ, LPMIXERLINECONTROLS, DWORD))procAddress;
 
         procAddress = GetProcAddress(loadedLibrary, "mixerGetLineControlsW");
-        if (NULL == procAddress) LogImportFailed(_T("mixerGetLineControlsW"));
+        if (NULL == procAddress) LogImportFailed(L"mixerGetLineControlsW");
         importTable.mixerGetLineControlsW = (MMRESULT(WINAPI*)(HMIXEROBJ, LPMIXERLINECONTROLS, DWORD))procAddress;
 
         procAddress = GetProcAddress(loadedLibrary, "mixerGetLineInfoA");
-        if (NULL == procAddress) LogImportFailed(_T("mixerGetLineInfoA"));
+        if (NULL == procAddress) LogImportFailed(L"mixerGetLineInfoA");
         importTable.mixerGetLineInfoA = (MMRESULT(WINAPI*)(HMIXEROBJ, LPMIXERLINE, DWORD))procAddress;
 
         procAddress = GetProcAddress(loadedLibrary, "mixerGetLineInfoW");
-        if (NULL == procAddress) LogImportFailed(_T("mixerGetLineInfoW"));
+        if (NULL == procAddress) LogImportFailed(L"mixerGetLineInfoW");
         importTable.mixerGetLineInfoW = (MMRESULT(WINAPI*)(HMIXEROBJ, LPMIXERLINE, DWORD))procAddress;
 
         procAddress = GetProcAddress(loadedLibrary, "mixerGetNumDevs");
-        if (NULL == procAddress) LogImportFailed(_T("mixerGetNumDevs"));
+        if (NULL == procAddress) LogImportFailed(L"mixerGetNumDevs");
         importTable.mixerGetNumDevs = (UINT(WINAPI*)(void))procAddress;
 
         procAddress = GetProcAddress(loadedLibrary, "mixerMessage");
-        if (NULL == procAddress) LogImportFailed(_T("mixerMessage"));
+        if (NULL == procAddress) LogImportFailed(L"mixerMessage");
         importTable.mixerMessage = (DWORD(WINAPI*)(HMIXER, UINT, DWORD_PTR, DWORD_PTR))procAddress;
 
         procAddress = GetProcAddress(loadedLibrary, "mixerOpen");
-        if (NULL == procAddress) LogImportFailed(_T("mixerOpen"));
+        if (NULL == procAddress) LogImportFailed(L"mixerOpen");
         importTable.mixerOpen = (MMRESULT(WINAPI*)(LPHMIXER, UINT, DWORD_PTR, DWORD_PTR, DWORD))procAddress;
 
         procAddress = GetProcAddress(loadedLibrary, "mixerSetControlDetails");
-        if (NULL == procAddress) LogImportFailed(_T("mixerSetControlDetails"));
+        if (NULL == procAddress) LogImportFailed(L"mixerSetControlDetails");
         importTable.mixerSetControlDetails = (MMRESULT(WINAPI*)(HMIXEROBJ, LPMIXERCONTROLDETAILS, DWORD))procAddress;
 
         // ---------
         
         procAddress = GetProcAddress(loadedLibrary, "mmioAdvance");
-        if (NULL == procAddress) LogImportFailed(_T("mmioAdvance"));
+        if (NULL == procAddress) LogImportFailed(L"mmioAdvance");
         importTable.mmioAdvance = (MMRESULT(WINAPI*)(HMMIO, LPMMIOINFO, UINT))procAddress;
         
         procAddress = GetProcAddress(loadedLibrary, "mmioAscend");
-        if (NULL == procAddress) LogImportFailed(_T("mmioAscend"));
+        if (NULL == procAddress) LogImportFailed(L"mmioAscend");
         importTable.mmioAscend = (MMRESULT(WINAPI*)(HMMIO, LPMMCKINFO, UINT))procAddress;
         
         procAddress = GetProcAddress(loadedLibrary, "mmioClose");
-        if (NULL == procAddress) LogImportFailed(_T("mmioClose"));
+        if (NULL == procAddress) LogImportFailed(L"mmioClose");
         importTable.mmioClose = (MMRESULT(WINAPI*)(HMMIO, UINT))procAddress;
         
         procAddress = GetProcAddress(loadedLibrary, "mmioCreateChunk");
-        if (NULL == procAddress) LogImportFailed(_T("mmioCreateChunk"));
+        if (NULL == procAddress) LogImportFailed(L"mmioCreateChunk");
         importTable.mmioCreateChunk = (MMRESULT(WINAPI*)(HMMIO, LPMMCKINFO, UINT))procAddress;
         
         procAddress = GetProcAddress(loadedLibrary, "mmioDescend");
-        if (NULL == procAddress) LogImportFailed(_T("mmioDescend"));
+        if (NULL == procAddress) LogImportFailed(L"mmioDescend");
         importTable.mmioDescend = (MMRESULT(WINAPI*)(HMMIO, LPMMCKINFO, LPCMMCKINFO, UINT))procAddress;
         
         procAddress = GetProcAddress(loadedLibrary, "mmioFlush");
-        if (NULL == procAddress) LogImportFailed(_T("mmioFlush"));
+        if (NULL == procAddress) LogImportFailed(L"mmioFlush");
         importTable.mmioFlush = (MMRESULT(WINAPI*)(HMMIO, UINT))procAddress;
         
         procAddress = GetProcAddress(loadedLibrary, "mmioGetInfo");
-        if (NULL == procAddress) LogImportFailed(_T("mmioGetInfo"));
+        if (NULL == procAddress) LogImportFailed(L"mmioGetInfo");
         importTable.mmioGetInfo = (MMRESULT(WINAPI*)(HMMIO, LPMMIOINFO, UINT))procAddress;
         
         procAddress = GetProcAddress(loadedLibrary, "mmioInstallIOProcA");
-        if (NULL == procAddress) LogImportFailed(_T("mmioInstallIOProcA"));
+        if (NULL == procAddress) LogImportFailed(L"mmioInstallIOProcA");
         importTable.mmioInstallIOProcA = (LPMMIOPROC(WINAPI*)(FOURCC, LPMMIOPROC, DWORD))procAddress;
         
         procAddress = GetProcAddress(loadedLibrary, "mmioInstallIOProcW");
-        if (NULL == procAddress) LogImportFailed(_T("mmioInstallIOProcW"));
+        if (NULL == procAddress) LogImportFailed(L"mmioInstallIOProcW");
         importTable.mmioInstallIOProcW = (LPMMIOPROC(WINAPI*)(FOURCC, LPMMIOPROC, DWORD))procAddress;
         
         procAddress = GetProcAddress(loadedLibrary, "mmioOpenA");
-        if (NULL == procAddress) LogImportFailed(_T("mmioOpenA"));
+        if (NULL == procAddress) LogImportFailed(L"mmioOpenA");
         importTable.mmioOpenA = (HMMIO(WINAPI*)(LPSTR, LPMMIOINFO, DWORD))procAddress;
         
         procAddress = GetProcAddress(loadedLibrary, "mmioOpenW");
-        if (NULL == procAddress) LogImportFailed(_T("mmioOpenW"));
+        if (NULL == procAddress) LogImportFailed(L"mmioOpenW");
         importTable.mmioOpenW = (HMMIO(WINAPI*)(LPWSTR, LPMMIOINFO, DWORD))procAddress;
         
         procAddress = GetProcAddress(loadedLibrary, "mmioRead");
-        if (NULL == procAddress) LogImportFailed(_T("mmioRead"));
+        if (NULL == procAddress) LogImportFailed(L"mmioRead");
         importTable.mmioRead = (LONG(WINAPI*)(HMMIO, HPSTR, LONG))procAddress;
         
         procAddress = GetProcAddress(loadedLibrary, "mmioRenameA");
-        if (NULL == procAddress) LogImportFailed(_T("mmioRenameA"));
+        if (NULL == procAddress) LogImportFailed(L"mmioRenameA");
         importTable.mmioRenameA = (MMRESULT(WINAPI*)(LPCSTR, LPCSTR, LPCMMIOINFO, DWORD))procAddress;
         
         procAddress = GetProcAddress(loadedLibrary, "mmioRenameW");
-        if (NULL == procAddress) LogImportFailed(_T("mmioRenameW"));
+        if (NULL == procAddress) LogImportFailed(L"mmioRenameW");
         importTable.mmioRenameW = (MMRESULT(WINAPI*)(LPCWSTR, LPCWSTR, LPCMMIOINFO, DWORD))procAddress;
         
         procAddress = GetProcAddress(loadedLibrary, "mmioSeek");
-        if (NULL == procAddress) LogImportFailed(_T("mmioSeek"));
+        if (NULL == procAddress) LogImportFailed(L"mmioSeek");
         importTable.mmioSeek = (LONG(WINAPI*)(HMMIO, LONG, int))procAddress;
         
         procAddress = GetProcAddress(loadedLibrary, "mmioSendMessage");
-        if (NULL == procAddress) LogImportFailed(_T("mmioSendMessage"));
+        if (NULL == procAddress) LogImportFailed(L"mmioSendMessage");
         importTable.mmioSendMessage = (LRESULT(WINAPI*)(HMMIO, UINT, LPARAM, LPARAM))procAddress;
         
         procAddress = GetProcAddress(loadedLibrary, "mmioSetBuffer");
-        if (NULL == procAddress) LogImportFailed(_T("mmioSetBuffer"));
+        if (NULL == procAddress) LogImportFailed(L"mmioSetBuffer");
         importTable.mmioSetBuffer = (MMRESULT(WINAPI*)(HMMIO, LPSTR, LONG, UINT))procAddress;
         
         procAddress = GetProcAddress(loadedLibrary, "mmioSetInfo");
-        if (NULL == procAddress) LogImportFailed(_T("mmioSetInfo"));
+        if (NULL == procAddress) LogImportFailed(L"mmioSetInfo");
         importTable.mmioSetInfo = (MMRESULT(WINAPI*)(HMMIO, LPCMMIOINFO, UINT))procAddress;
         
         procAddress = GetProcAddress(loadedLibrary, "mmioStringToFOURCCA");
-        if (NULL == procAddress) LogImportFailed(_T("mmioStringToFOURCCA"));
+        if (NULL == procAddress) LogImportFailed(L"mmioStringToFOURCCA");
         importTable.mmioStringToFOURCCA = (FOURCC(WINAPI*)(LPCSTR, UINT))procAddress;
         
         procAddress = GetProcAddress(loadedLibrary, "mmioStringToFOURCCW");
-        if (NULL == procAddress) LogImportFailed(_T("mmioStringToFOURCCW"));
+        if (NULL == procAddress) LogImportFailed(L"mmioStringToFOURCCW");
         importTable.mmioStringToFOURCCW = (FOURCC(WINAPI*)(LPCWSTR, UINT))procAddress;
         
         procAddress = GetProcAddress(loadedLibrary, "mmioWrite");
-        if (NULL == procAddress) LogImportFailed(_T("mmioWrite"));
+        if (NULL == procAddress) LogImportFailed(L"mmioWrite");
         importTable.mmioWrite = (LONG(WINAPI*)(HMMIO, const char*, LONG))procAddress;
         
         // ---------
         
         procAddress = GetProcAddress(loadedLibrary, "sndPlaySoundA");
-        if (NULL == procAddress) LogImportFailed(_T("sndPlaySoundA"));
+        if (NULL == procAddress) LogImportFailed(L"sndPlaySoundA");
         importTable.sndPlaySoundA = (BOOL(WINAPI*)(LPCSTR, UINT))procAddress;
         
         procAddress = GetProcAddress(loadedLibrary, "sndPlaySoundW");
-        if (NULL == procAddress) LogImportFailed(_T("sndPlaySoundW"));
+        if (NULL == procAddress) LogImportFailed(L"sndPlaySoundW");
         importTable.sndPlaySoundW = (BOOL(WINAPI*)(LPCWSTR, UINT))procAddress;
         
         // ---------
 
         procAddress = GetProcAddress(loadedLibrary, "timeBeginPeriod");
-        if (NULL == procAddress) LogImportFailed(_T("timeBeginPeriod"));
+        if (NULL == procAddress) LogImportFailed(L"timeBeginPeriod");
         importTable.timeBeginPeriod = (MMRESULT(WINAPI*)(UINT))procAddress;
         
         procAddress = GetProcAddress(loadedLibrary, "timeEndPeriod");
-        if (NULL == procAddress) LogImportFailed(_T("timeEndPeriod"));
+        if (NULL == procAddress) LogImportFailed(L"timeEndPeriod");
         importTable.timeEndPeriod = (MMRESULT(WINAPI*)(UINT))procAddress;
         
         procAddress = GetProcAddress(loadedLibrary, "timeGetDevCaps");
-        if (NULL == procAddress) LogImportFailed(_T("timeGetDevCaps"));
+        if (NULL == procAddress) LogImportFailed(L"timeGetDevCaps");
         importTable.timeGetDevCaps = (MMRESULT(WINAPI*)(LPTIMECAPS, UINT))procAddress;
         
         procAddress = GetProcAddress(loadedLibrary, "timeGetSystemTime");
-        if (NULL == procAddress) LogImportFailed(_T("timeGetSystemTime"));
+        if (NULL == procAddress) LogImportFailed(L"timeGetSystemTime");
         importTable.timeGetSystemTime = (MMRESULT(WINAPI*)(LPMMTIME, UINT))procAddress;
         
         procAddress = GetProcAddress(loadedLibrary, "timeGetTime");
-        if (NULL == procAddress) LogImportFailed(_T("timeGetTime"));
+        if (NULL == procAddress) LogImportFailed(L"timeGetTime");
         importTable.timeGetTime = (DWORD(WINAPI*)(void))procAddress;
         
         procAddress = GetProcAddress(loadedLibrary, "timeKillEvent");
-        if (NULL == procAddress) LogImportFailed(_T("timeKillEvent"));
+        if (NULL == procAddress) LogImportFailed(L"timeKillEvent");
         importTable.timeKillEvent = (MMRESULT(WINAPI*)(UINT))procAddress;
         
         procAddress = GetProcAddress(loadedLibrary, "timeSetEvent");
-        if (NULL == procAddress) LogImportFailed(_T("timeSetEvent"));
+        if (NULL == procAddress) LogImportFailed(L"timeSetEvent");
         importTable.timeSetEvent = (MMRESULT(WINAPI*)(UINT, UINT, LPTIMECALLBACK, DWORD_PTR, UINT))procAddress;
         
         // ---------
         
         procAddress = GetProcAddress(loadedLibrary, "waveInAddBuffer");
-        if (NULL == procAddress) LogImportFailed(_T("waveInAddBuffer"));
+        if (NULL == procAddress) LogImportFailed(L"waveInAddBuffer");
         importTable.waveInAddBuffer = (MMRESULT(WINAPI*)(HWAVEIN, LPWAVEHDR, UINT))procAddress;
         
         procAddress = GetProcAddress(loadedLibrary, "waveInClose");
-        if (NULL == procAddress) LogImportFailed(_T("waveInClose"));
+        if (NULL == procAddress) LogImportFailed(L"waveInClose");
         importTable.waveInClose = (MMRESULT(WINAPI*)(HWAVEIN))procAddress;
         
         procAddress = GetProcAddress(loadedLibrary, "waveInGetDevCapsA");
-        if (NULL == procAddress) LogImportFailed(_T("waveInGetDevCapsA"));
+        if (NULL == procAddress) LogImportFailed(L"waveInGetDevCapsA");
         importTable.waveInGetDevCapsA = (MMRESULT(WINAPI*)(UINT_PTR, LPWAVEINCAPSA, UINT))procAddress;
         
         procAddress = GetProcAddress(loadedLibrary, "waveInGetDevCapsW");
-        if (NULL == procAddress) LogImportFailed(_T("waveInGetDevCapsW"));
+        if (NULL == procAddress) LogImportFailed(L"waveInGetDevCapsW");
         importTable.waveInGetDevCapsW = (MMRESULT(WINAPI*)(UINT_PTR, LPWAVEINCAPSW, UINT))procAddress;
         
         procAddress = GetProcAddress(loadedLibrary, "waveInGetErrorTextA");
-        if (NULL == procAddress) LogImportFailed(_T("waveInGetErrorTextA"));
+        if (NULL == procAddress) LogImportFailed(L"waveInGetErrorTextA");
         importTable.waveInGetErrorTextA = (MMRESULT(WINAPI*)(MMRESULT, LPCSTR, UINT))procAddress;
         
         procAddress = GetProcAddress(loadedLibrary, "waveInGetErrorTextW");
-        if (NULL == procAddress) LogImportFailed(_T("waveInGetErrorTextW"));
+        if (NULL == procAddress) LogImportFailed(L"waveInGetErrorTextW");
         importTable.waveInGetErrorTextW = (MMRESULT(WINAPI*)(MMRESULT, LPWSTR, UINT))procAddress;
         
         procAddress = GetProcAddress(loadedLibrary, "waveInGetID");
-        if (NULL == procAddress) LogImportFailed(_T("waveInGetID"));
+        if (NULL == procAddress) LogImportFailed(L"waveInGetID");
         importTable.waveInGetID = (MMRESULT(WINAPI*)(HWAVEIN, LPUINT))procAddress;
         
         procAddress = GetProcAddress(loadedLibrary, "waveInGetNumDevs");
-        if (NULL == procAddress) LogImportFailed(_T("waveInGetNumDevs"));
+        if (NULL == procAddress) LogImportFailed(L"waveInGetNumDevs");
         importTable.waveInGetNumDevs = (UINT(WINAPI*)(void))procAddress;
         
         procAddress = GetProcAddress(loadedLibrary, "waveInGetPosition");
-        if (NULL == procAddress) LogImportFailed(_T("waveInGetPosition"));
+        if (NULL == procAddress) LogImportFailed(L"waveInGetPosition");
         importTable.waveInGetPosition = (MMRESULT(WINAPI*)(HWAVEIN, LPMMTIME, UINT))procAddress;
         
         procAddress = GetProcAddress(loadedLibrary, "waveInMessage");
-        if (NULL == procAddress) LogImportFailed(_T("waveInMessage"));
+        if (NULL == procAddress) LogImportFailed(L"waveInMessage");
         importTable.waveInMessage = (DWORD(WINAPI*)(HWAVEIN, UINT, DWORD_PTR, DWORD_PTR))procAddress;
         
         procAddress = GetProcAddress(loadedLibrary, "waveInOpen");
-        if (NULL == procAddress) LogImportFailed(_T("waveInOpen"));
+        if (NULL == procAddress) LogImportFailed(L"waveInOpen");
         importTable.waveInOpen = (MMRESULT(WINAPI*)(LPHWAVEIN, UINT, LPCWAVEFORMATEX, DWORD_PTR, DWORD_PTR, DWORD))procAddress;
         
         procAddress = GetProcAddress(loadedLibrary, "waveInPrepareHeader");
-        if (NULL == procAddress) LogImportFailed(_T("waveInPrepareHeader"));
+        if (NULL == procAddress) LogImportFailed(L"waveInPrepareHeader");
         importTable.waveInPrepareHeader = (MMRESULT(WINAPI*)(HWAVEIN, LPWAVEHDR, UINT))procAddress;
         
         procAddress = GetProcAddress(loadedLibrary, "waveInReset");
-        if (NULL == procAddress) LogImportFailed(_T("waveInReset"));
+        if (NULL == procAddress) LogImportFailed(L"waveInReset");
         importTable.waveInReset = (MMRESULT(WINAPI*)(HWAVEIN))procAddress;
         
         procAddress = GetProcAddress(loadedLibrary, "waveInStart");
-        if (NULL == procAddress) LogImportFailed(_T("waveInStart"));
+        if (NULL == procAddress) LogImportFailed(L"waveInStart");
         importTable.waveInStart = (MMRESULT(WINAPI*)(HWAVEIN))procAddress;
         
         procAddress = GetProcAddress(loadedLibrary, "waveInStop");
-        if (NULL == procAddress) LogImportFailed(_T("waveInStop"));
+        if (NULL == procAddress) LogImportFailed(L"waveInStop");
         importTable.waveInStop = (MMRESULT(WINAPI*)(HWAVEIN))procAddress;
         
         procAddress = GetProcAddress(loadedLibrary, "waveInUnprepareHeader");
-        if (NULL == procAddress) LogImportFailed(_T("waveInUnprepareHeader"));
+        if (NULL == procAddress) LogImportFailed(L"waveInUnprepareHeader");
         importTable.waveInUnprepareHeader = (MMRESULT(WINAPI*)(HWAVEIN, LPWAVEHDR, UINT))procAddress;
         
         // ---------
         
         procAddress = GetProcAddress(loadedLibrary, "waveOutBreakLoop");
-        if (NULL == procAddress) LogImportFailed(_T("waveOutBreakLoop"));
+        if (NULL == procAddress) LogImportFailed(L"waveOutBreakLoop");
         importTable.waveOutBreakLoop = (MMRESULT(WINAPI*)(HWAVEOUT))procAddress;
         
         procAddress = GetProcAddress(loadedLibrary, "waveOutClose");
-        if (NULL == procAddress) LogImportFailed(_T("waveOutClose"));
+        if (NULL == procAddress) LogImportFailed(L"waveOutClose");
         importTable.waveOutClose = (MMRESULT(WINAPI*)(HWAVEOUT))procAddress;
         
         procAddress = GetProcAddress(loadedLibrary, "waveOutGetDevCapsA");
-        if (NULL == procAddress) LogImportFailed(_T("waveOutGetDevCapsA"));
+        if (NULL == procAddress) LogImportFailed(L"waveOutGetDevCapsA");
         importTable.waveOutGetDevCapsA = (MMRESULT(WINAPI*)(UINT_PTR, LPWAVEOUTCAPSA, UINT))procAddress;
         
         procAddress = GetProcAddress(loadedLibrary, "waveOutGetDevCapsW");
-        if (NULL == procAddress) LogImportFailed(_T("waveOutGetDevCapsW"));
+        if (NULL == procAddress) LogImportFailed(L"waveOutGetDevCapsW");
         importTable.waveOutGetDevCapsW = (MMRESULT(WINAPI*)(UINT_PTR, LPWAVEOUTCAPSW, UINT))procAddress;
         
         procAddress = GetProcAddress(loadedLibrary, "waveOutGetErrorTextA");
-        if (NULL == procAddress) LogImportFailed(_T("waveOutGetErrorTextA"));
+        if (NULL == procAddress) LogImportFailed(L"waveOutGetErrorTextA");
         importTable.waveOutGetErrorTextA = (MMRESULT(WINAPI*)(MMRESULT, LPCSTR, UINT))procAddress;
         
         procAddress = GetProcAddress(loadedLibrary, "waveOutGetErrorTextW");
-        if (NULL == procAddress) LogImportFailed(_T("waveOutGetErrorTextW"));
+        if (NULL == procAddress) LogImportFailed(L"waveOutGetErrorTextW");
         importTable.waveOutGetErrorTextW = (MMRESULT(WINAPI*)(MMRESULT, LPWSTR, UINT))procAddress;
         
         procAddress = GetProcAddress(loadedLibrary, "waveOutGetID");
-        if (NULL == procAddress) LogImportFailed(_T("waveOutGetID"));
+        if (NULL == procAddress) LogImportFailed(L"waveOutGetID");
         importTable.waveOutGetID = (MMRESULT(WINAPI*)(HWAVEOUT, LPUINT))procAddress;
         
         procAddress = GetProcAddress(loadedLibrary, "waveOutGetNumDevs");
-        if (NULL == procAddress) LogImportFailed(_T("waveOutGetNumDevs"));
+        if (NULL == procAddress) LogImportFailed(L"waveOutGetNumDevs");
         importTable.waveOutGetNumDevs = (UINT(WINAPI*)(void))procAddress;
         
         procAddress = GetProcAddress(loadedLibrary, "waveOutGetPitch");
-        if (NULL == procAddress) LogImportFailed(_T("waveOutGetPitch"));
+        if (NULL == procAddress) LogImportFailed(L"waveOutGetPitch");
         importTable.waveOutGetPitch = (MMRESULT(WINAPI*)(HWAVEOUT, LPDWORD))procAddress;
         
         procAddress = GetProcAddress(loadedLibrary, "waveOutGetPlaybackRate");
-        if (NULL == procAddress) LogImportFailed(_T("waveOutGetPlaybackRate"));
+        if (NULL == procAddress) LogImportFailed(L"waveOutGetPlaybackRate");
         importTable.waveOutGetPlaybackRate = (MMRESULT(WINAPI*)(HWAVEOUT, LPDWORD))procAddress;
         
         procAddress = GetProcAddress(loadedLibrary, "waveOutGetPosition");
-        if (NULL == procAddress) LogImportFailed(_T("waveOutGetPosition"));
+        if (NULL == procAddress) LogImportFailed(L"waveOutGetPosition");
         importTable.waveOutGetPosition = (MMRESULT(WINAPI*)(HWAVEOUT, LPMMTIME, UINT))procAddress;
         
         procAddress = GetProcAddress(loadedLibrary, "waveOutGetVolume");
-        if (NULL == procAddress) LogImportFailed(_T("waveOutGetVolume"));
+        if (NULL == procAddress) LogImportFailed(L"waveOutGetVolume");
         importTable.waveOutGetVolume = (MMRESULT(WINAPI*)(HWAVEOUT, LPDWORD))procAddress;
         
         procAddress = GetProcAddress(loadedLibrary, "waveOutMessage");
-        if (NULL == procAddress) LogImportFailed(_T("waveOutMessage"));
+        if (NULL == procAddress) LogImportFailed(L"waveOutMessage");
         importTable.waveOutMessage = (DWORD(WINAPI*)(HWAVEOUT, UINT, DWORD_PTR, DWORD_PTR))procAddress;
         
         procAddress = GetProcAddress(loadedLibrary, "waveOutOpen");
-        if (NULL == procAddress) LogImportFailed(_T("waveOutOpen"));
+        if (NULL == procAddress) LogImportFailed(L"waveOutOpen");
         importTable.waveOutOpen = (MMRESULT(WINAPI*)(LPHWAVEOUT, UINT_PTR, LPWAVEFORMATEX, DWORD_PTR, DWORD_PTR, DWORD))procAddress;
         
         procAddress = GetProcAddress(loadedLibrary, "waveOutPause");
-        if (NULL == procAddress) LogImportFailed(_T("waveOutPause"));
+        if (NULL == procAddress) LogImportFailed(L"waveOutPause");
         importTable.waveOutPause = (MMRESULT(WINAPI*)(HWAVEOUT))procAddress;
         
         procAddress = GetProcAddress(loadedLibrary, "waveOutPrepareHeader");
-        if (NULL == procAddress) LogImportFailed(_T("waveOutPrepareHeader"));
+        if (NULL == procAddress) LogImportFailed(L"waveOutPrepareHeader");
         importTable.waveOutPrepareHeader = (MMRESULT(WINAPI*)(HWAVEOUT, LPWAVEHDR, UINT))procAddress;
         
         procAddress = GetProcAddress(loadedLibrary, "waveOutReset");
-        if (NULL == procAddress) LogImportFailed(_T("waveOutReset"));
+        if (NULL == procAddress) LogImportFailed(L"waveOutReset");
         importTable.waveOutReset = (MMRESULT(WINAPI*)(HWAVEOUT))procAddress;
         
         procAddress = GetProcAddress(loadedLibrary, "waveOutRestart");
-        if (NULL == procAddress) LogImportFailed(_T("waveOutRestart"));
+        if (NULL == procAddress) LogImportFailed(L"waveOutRestart");
         importTable.waveOutRestart = (MMRESULT(WINAPI*)(HWAVEOUT))procAddress;
         
         procAddress = GetProcAddress(loadedLibrary, "waveOutSetPitch");
-        if (NULL == procAddress) LogImportFailed(_T("waveOutSetPitch"));
+        if (NULL == procAddress) LogImportFailed(L"waveOutSetPitch");
         importTable.waveOutSetPitch = (MMRESULT(WINAPI*)(HWAVEOUT, DWORD))procAddress;
         
         procAddress = GetProcAddress(loadedLibrary, "waveOutSetPlaybackRate");
-        if (NULL == procAddress) LogImportFailed(_T("waveOutSetPlaybackRate"));
+        if (NULL == procAddress) LogImportFailed(L"waveOutSetPlaybackRate");
         importTable.waveOutSetPlaybackRate = (MMRESULT(WINAPI*)(HWAVEOUT, DWORD))procAddress;
         
         procAddress = GetProcAddress(loadedLibrary, "waveOutSetVolume");
-        if (NULL == procAddress) LogImportFailed(_T("waveOutSetVolume"));
+        if (NULL == procAddress) LogImportFailed(L"waveOutSetVolume");
         importTable.waveOutSetVolume = (MMRESULT(WINAPI*)(HWAVEOUT, DWORD))procAddress;
         
         procAddress = GetProcAddress(loadedLibrary, "waveOutUnprepareHeader");
-        if (NULL == procAddress) LogImportFailed(_T("waveOutUnprepareHeader"));
+        if (NULL == procAddress) LogImportFailed(L"waveOutUnprepareHeader");
         importTable.waveOutUnprepareHeader = (MMRESULT(WINAPI*)(HWAVEOUT, LPWAVEHDR, UINT))procAddress;
         
         procAddress = GetProcAddress(loadedLibrary, "waveOutWrite");
-        if (NULL == procAddress) LogImportFailed(_T("waveOutWrite"));
+        if (NULL == procAddress) LogImportFailed(L"waveOutWrite");
         importTable.waveOutWrite = (MMRESULT(WINAPI*)(HWAVEOUT, LPWAVEHDR, UINT))procAddress;
         
         // Initialization complete.
@@ -777,7 +777,7 @@ LRESULT ImportApiWinMM::CloseDriver(HDRVR hdrvr, LPARAM lParam1, LPARAM lParam2)
     Initialize();
 
     if (NULL == importTable.CloseDriver)
-        LogMissingFunctionCalled(_T("CloseDriver"));
+        LogMissingFunctionCalled(L"CloseDriver");
 
     return importTable.CloseDriver(hdrvr, lParam1, lParam2);
 }
@@ -789,7 +789,7 @@ LRESULT ImportApiWinMM::DefDriverProc(DWORD_PTR dwDriverId, HDRVR hdrvr, UINT ms
     Initialize();
 
     if (NULL == importTable.DefDriverProc)
-        LogMissingFunctionCalled(_T("DefDriverProc"));
+        LogMissingFunctionCalled(L"DefDriverProc");
 
     return importTable.DefDriverProc(dwDriverId, hdrvr, msg, lParam1, lParam2);
 }
@@ -801,7 +801,7 @@ BOOL ImportApiWinMM::DriverCallback(DWORD dwCallBack, DWORD dwFlags, HDRVR hdrvr
     Initialize();
 
     if (NULL == importTable.DriverCallback)
-        LogMissingFunctionCalled(_T("DriverCallback"));
+        LogMissingFunctionCalled(L"DriverCallback");
 
     return importTable.DriverCallback(dwCallBack, dwFlags, hdrvr, msg, dwUser, dwParam1, dwParam2);
 }
@@ -813,7 +813,7 @@ HMODULE ImportApiWinMM::DrvGetModuleHandle(HDRVR hDriver)
     Initialize();
 
     if (NULL == importTable.DrvGetModuleHandle)
-        LogMissingFunctionCalled(_T("DrvGetModuleHandle"));
+        LogMissingFunctionCalled(L"DrvGetModuleHandle");
 
     return importTable.DrvGetModuleHandle(hDriver);
 }
@@ -825,7 +825,7 @@ HMODULE ImportApiWinMM::GetDriverModuleHandle(HDRVR hdrvr)
     Initialize();
 
     if (NULL == importTable.GetDriverModuleHandle)
-        LogMissingFunctionCalled(_T("GetDriverModuleHandle"));
+        LogMissingFunctionCalled(L"GetDriverModuleHandle");
 
     return importTable.GetDriverModuleHandle(hdrvr);
 }
@@ -837,7 +837,7 @@ HDRVR ImportApiWinMM::OpenDriver(LPCWSTR lpDriverName, LPCWSTR lpSectionName, LP
     Initialize();
 
     if (NULL == importTable.OpenDriver)
-        LogMissingFunctionCalled(_T("OpenDriver"));
+        LogMissingFunctionCalled(L"OpenDriver");
 
     return importTable.OpenDriver(lpDriverName, lpSectionName, lParam);
 }
@@ -849,7 +849,7 @@ BOOL ImportApiWinMM::PlaySoundA(LPCSTR pszSound, HMODULE hmod, DWORD fdwSound)
     Initialize();
 
     if (NULL == importTable.PlaySoundA)
-        LogMissingFunctionCalled(_T("PlaySoundA"));
+        LogMissingFunctionCalled(L"PlaySoundA");
 
     return importTable.PlaySoundA(pszSound, hmod, fdwSound);
 }
@@ -861,7 +861,7 @@ BOOL ImportApiWinMM::PlaySoundW(LPCWSTR pszSound, HMODULE hmod, DWORD fdwSound)
     Initialize();
 
     if (NULL == importTable.PlaySoundW)
-        LogMissingFunctionCalled(_T("PlaySoundW"));
+        LogMissingFunctionCalled(L"PlaySoundW");
 
     return importTable.PlaySoundW(pszSound, hmod, fdwSound);
 }
@@ -873,7 +873,7 @@ LRESULT ImportApiWinMM::SendDriverMessage(HDRVR hdrvr, UINT msg, LPARAM lParam1,
     Initialize();
 
     if (NULL == importTable.SendDriverMessage)
-        LogMissingFunctionCalled(_T("SendDriverMessage"));
+        LogMissingFunctionCalled(L"SendDriverMessage");
 
     return importTable.SendDriverMessage(hdrvr, msg, lParam1, lParam2);
 }
@@ -885,7 +885,7 @@ MMRESULT ImportApiWinMM::auxGetDevCapsA(UINT_PTR uDeviceID, LPAUXCAPSA lpCaps, U
     Initialize();
 
     if (NULL == importTable.auxGetDevCapsA)
-        LogMissingFunctionCalled(_T("auxGetDevCapsA"));
+        LogMissingFunctionCalled(L"auxGetDevCapsA");
 
     return importTable.auxGetDevCapsA(uDeviceID, lpCaps, cbCaps);
 }
@@ -897,7 +897,7 @@ MMRESULT ImportApiWinMM::auxGetDevCapsW(UINT_PTR uDeviceID, LPAUXCAPSW lpCaps, U
     Initialize();
 
     if (NULL == importTable.auxGetDevCapsW)
-        LogMissingFunctionCalled(_T("auxGetDevCapsW"));
+        LogMissingFunctionCalled(L"auxGetDevCapsW");
 
     return importTable.auxGetDevCapsW(uDeviceID, lpCaps, cbCaps);
 }
@@ -909,7 +909,7 @@ UINT ImportApiWinMM::auxGetNumDevs(void)
     Initialize();
 
     if (NULL == importTable.auxGetNumDevs)
-        LogMissingFunctionCalled(_T("auxGetNumDevs"));
+        LogMissingFunctionCalled(L"auxGetNumDevs");
 
     return importTable.auxGetNumDevs();
 }
@@ -921,7 +921,7 @@ MMRESULT ImportApiWinMM::auxGetVolume(UINT uDeviceID, LPDWORD lpdwVolume)
     Initialize();
 
     if (NULL == importTable.auxGetVolume)
-        LogMissingFunctionCalled(_T("auxGetVolume"));
+        LogMissingFunctionCalled(L"auxGetVolume");
 
     return importTable.auxGetVolume(uDeviceID, lpdwVolume);
 }
@@ -933,7 +933,7 @@ MMRESULT ImportApiWinMM::auxOutMessage(UINT uDeviceID, UINT uMsg, DWORD_PTR dwPa
     Initialize();
 
     if (NULL == importTable.auxOutMessage)
-        LogMissingFunctionCalled(_T("auxOutMessage"));
+        LogMissingFunctionCalled(L"auxOutMessage");
 
     return importTable.auxOutMessage(uDeviceID, uMsg, dwParam1, dwParam2);
 }
@@ -945,7 +945,7 @@ MMRESULT ImportApiWinMM::auxSetVolume(UINT uDeviceID, DWORD dwVolume)
     Initialize();
 
     if (NULL == importTable.auxSetVolume)
-        LogMissingFunctionCalled(_T("auxSetVolume"));
+        LogMissingFunctionCalled(L"auxSetVolume");
 
     return importTable.auxSetVolume(uDeviceID, dwVolume);
 }
@@ -957,7 +957,7 @@ MMRESULT ImportApiWinMM::joyConfigChanged(DWORD dwFlags)
     Initialize();
 
     if (NULL == importTable.joyConfigChanged)
-        LogMissingFunctionCalled(_T("joyConfigChanged"));
+        LogMissingFunctionCalled(L"joyConfigChanged");
 
     return importTable.joyConfigChanged(dwFlags);
 }
@@ -969,7 +969,7 @@ MMRESULT ImportApiWinMM::joyGetDevCapsA(UINT_PTR uJoyID, LPJOYCAPSA pjc, UINT cb
     Initialize();
 
     if (NULL == importTable.joyGetDevCapsA)
-        LogMissingFunctionCalled(_T("joyGetDevCapsA"));
+        LogMissingFunctionCalled(L"joyGetDevCapsA");
 
     return importTable.joyGetDevCapsA(uJoyID, pjc, cbjc);
 }
@@ -981,7 +981,7 @@ MMRESULT ImportApiWinMM::joyGetDevCapsW(UINT_PTR uJoyID, LPJOYCAPSW pjc, UINT cb
     Initialize();
 
     if (NULL == importTable.joyGetDevCapsW)
-        LogMissingFunctionCalled(_T("joyGetDevCapsW"));
+        LogMissingFunctionCalled(L"joyGetDevCapsW");
 
     return importTable.joyGetDevCapsW(uJoyID, pjc, cbjc);
 }
@@ -993,7 +993,7 @@ UINT ImportApiWinMM::joyGetNumDevs(void)
     Initialize();
 
     if (NULL == importTable.joyGetNumDevs)
-        LogMissingFunctionCalled(_T("joyGetNumDevs"));
+        LogMissingFunctionCalled(L"joyGetNumDevs");
 
     return importTable.joyGetNumDevs();
 }
@@ -1005,7 +1005,7 @@ MMRESULT ImportApiWinMM::joyGetPos(UINT uJoyID, LPJOYINFO pji)
     Initialize();
 
     if (NULL == importTable.joyGetPos)
-        LogMissingFunctionCalled(_T("joyGetPos"));
+        LogMissingFunctionCalled(L"joyGetPos");
 
     return importTable.joyGetPos(uJoyID, pji);
 }
@@ -1017,7 +1017,7 @@ MMRESULT ImportApiWinMM::joyGetPosEx(UINT uJoyID, LPJOYINFOEX pji)
     Initialize();
 
     if (NULL == importTable.joyGetPosEx)
-        LogMissingFunctionCalled(_T("joyGetPosEx"));
+        LogMissingFunctionCalled(L"joyGetPosEx");
 
     return importTable.joyGetPosEx(uJoyID, pji);
 }
@@ -1029,7 +1029,7 @@ MMRESULT ImportApiWinMM::joyGetThreshold(UINT uJoyID, LPUINT puThreshold)
     Initialize();
 
     if (NULL == importTable.joyGetThreshold)
-        LogMissingFunctionCalled(_T("joyGetThreshold"));
+        LogMissingFunctionCalled(L"joyGetThreshold");
 
     return importTable.joyGetThreshold(uJoyID, puThreshold);
 }
@@ -1041,7 +1041,7 @@ MMRESULT ImportApiWinMM::joyReleaseCapture(UINT uJoyID)
     Initialize();
 
     if (NULL == importTable.joyReleaseCapture)
-        LogMissingFunctionCalled(_T("joyReleaseCapture"));
+        LogMissingFunctionCalled(L"joyReleaseCapture");
 
     return importTable.joyReleaseCapture(uJoyID);
 }
@@ -1053,7 +1053,7 @@ MMRESULT ImportApiWinMM::joySetCapture(HWND hwnd, UINT uJoyID, UINT uPeriod, BOO
     Initialize();
 
     if (NULL == importTable.joySetCapture)
-        LogMissingFunctionCalled(_T("joySetCapture"));
+        LogMissingFunctionCalled(L"joySetCapture");
 
     return importTable.joySetCapture(hwnd, uJoyID, uPeriod, fChanged);
 }
@@ -1065,7 +1065,7 @@ MMRESULT ImportApiWinMM::joySetThreshold(UINT uJoyID, UINT uThreshold)
     Initialize();
 
     if (NULL == importTable.joySetThreshold)
-        LogMissingFunctionCalled(_T("joySetThreshold"));
+        LogMissingFunctionCalled(L"joySetThreshold");
 
     return importTable.joySetThreshold(uJoyID, uThreshold);
 }
@@ -1077,7 +1077,7 @@ BOOL ImportApiWinMM::mciDriverNotify(HWND hwndCallback, MCIDEVICEID IDDevice, UI
     Initialize();
 
     if (NULL == importTable.mciDriverNotify)
-        LogMissingFunctionCalled(_T("mciDriverNotify"));
+        LogMissingFunctionCalled(L"mciDriverNotify");
 
     return importTable.mciDriverNotify(hwndCallback, IDDevice, uStatus);
 }
@@ -1089,7 +1089,7 @@ UINT ImportApiWinMM::mciDriverYield(MCIDEVICEID IDDevice)
     Initialize();
 
     if (NULL == importTable.mciDriverYield)
-        LogMissingFunctionCalled(_T("mciDriverYield"));
+        LogMissingFunctionCalled(L"mciDriverYield");
 
     return importTable.mciDriverYield(IDDevice);
 }
@@ -1101,7 +1101,7 @@ BOOL ImportApiWinMM::mciExecute(LPCSTR pszCommand)
     Initialize();
 
     if (NULL == importTable.mciExecute)
-        LogMissingFunctionCalled(_T("mciExecute"));
+        LogMissingFunctionCalled(L"mciExecute");
 
     return importTable.mciExecute(pszCommand);
 }
@@ -1113,7 +1113,7 @@ BOOL ImportApiWinMM::mciFreeCommandResource(UINT uResource)
     Initialize();
 
     if (NULL == importTable.mciFreeCommandResource)
-        LogMissingFunctionCalled(_T("mciFreeCommandResource"));
+        LogMissingFunctionCalled(L"mciFreeCommandResource");
 
     return importTable.mciFreeCommandResource(uResource);
 }
@@ -1125,7 +1125,7 @@ HANDLE ImportApiWinMM::mciGetCreatorTask(MCIDEVICEID IDDevice)
     Initialize();
 
     if (NULL == importTable.mciGetCreatorTask)
-        LogMissingFunctionCalled(_T("mciGetCreatorTask"));
+        LogMissingFunctionCalled(L"mciGetCreatorTask");
 
     return importTable.mciGetCreatorTask(IDDevice);
 }
@@ -1137,7 +1137,7 @@ MCIDEVICEID ImportApiWinMM::mciGetDeviceIDA(LPCSTR lpszDevice)
     Initialize();
 
     if (NULL == importTable.mciGetDeviceIDA)
-        LogMissingFunctionCalled(_T("mciGetDeviceIDA"));
+        LogMissingFunctionCalled(L"mciGetDeviceIDA");
 
     return importTable.mciGetDeviceIDA(lpszDevice);
 }
@@ -1149,7 +1149,7 @@ MCIDEVICEID ImportApiWinMM::mciGetDeviceIDW(LPCWSTR lpszDevice)
     Initialize();
 
     if (NULL == importTable.mciGetDeviceIDW)
-        LogMissingFunctionCalled(_T("mciGetDeviceIDW"));
+        LogMissingFunctionCalled(L"mciGetDeviceIDW");
 
     return importTable.mciGetDeviceIDW(lpszDevice);
 }
@@ -1161,7 +1161,7 @@ MCIDEVICEID ImportApiWinMM::mciGetDeviceIDFromElementIDA(DWORD dwElementID, LPCS
     Initialize();
 
     if (NULL == importTable.mciGetDeviceIDFromElementIDA)
-        LogMissingFunctionCalled(_T("mciGetDeviceIDFromElementIDA"));
+        LogMissingFunctionCalled(L"mciGetDeviceIDFromElementIDA");
 
     return importTable.mciGetDeviceIDFromElementIDA(dwElementID, lpstrType);
 }
@@ -1173,7 +1173,7 @@ MCIDEVICEID ImportApiWinMM::mciGetDeviceIDFromElementIDW(DWORD dwElementID, LPCW
     Initialize();
 
     if (NULL == importTable.mciGetDeviceIDFromElementIDW)
-        LogMissingFunctionCalled(_T("mciGetDeviceIDFromElementIDW"));
+        LogMissingFunctionCalled(L"mciGetDeviceIDFromElementIDW");
 
     return importTable.mciGetDeviceIDFromElementIDW(dwElementID, lpstrType);
 }
@@ -1185,7 +1185,7 @@ DWORD_PTR ImportApiWinMM::mciGetDriverData(MCIDEVICEID IDDevice)
     Initialize();
 
     if (NULL == importTable.mciGetDriverData)
-        LogMissingFunctionCalled(_T("mciGetDriverData"));
+        LogMissingFunctionCalled(L"mciGetDriverData");
 
     return importTable.mciGetDriverData(IDDevice);
 }
@@ -1197,7 +1197,7 @@ BOOL ImportApiWinMM::mciGetErrorStringA(DWORD fdwError, LPCSTR lpszErrorText, UI
     Initialize();
 
     if (NULL == importTable.mciGetErrorStringA)
-        LogMissingFunctionCalled(_T("mciGetErrorStringA"));
+        LogMissingFunctionCalled(L"mciGetErrorStringA");
 
     return importTable.mciGetErrorStringA(fdwError, lpszErrorText, cchErrorText);
 }
@@ -1209,7 +1209,7 @@ BOOL ImportApiWinMM::mciGetErrorStringW(DWORD fdwError, LPWSTR lpszErrorText, UI
     Initialize();
 
     if (NULL == importTable.mciGetErrorStringW)
-        LogMissingFunctionCalled(_T("mciGetErrorStringW"));
+        LogMissingFunctionCalled(L"mciGetErrorStringW");
 
     return importTable.mciGetErrorStringW(fdwError, lpszErrorText, cchErrorText);
 }
@@ -1221,7 +1221,7 @@ YIELDPROC ImportApiWinMM::mciGetYieldProc(MCIDEVICEID IDDevice, LPDWORD lpdwYiel
     Initialize();
 
     if (NULL == importTable.mciGetYieldProc)
-        LogMissingFunctionCalled(_T("mciGetYieldProc"));
+        LogMissingFunctionCalled(L"mciGetYieldProc");
 
     return importTable.mciGetYieldProc(IDDevice, lpdwYieldData);
 }
@@ -1233,7 +1233,7 @@ UINT ImportApiWinMM::mciLoadCommandResource(HINSTANCE hInst, LPCWSTR lpwstrResou
     Initialize();
 
     if (NULL == importTable.mciLoadCommandResource)
-        LogMissingFunctionCalled(_T("mciLoadCommandResource"));
+        LogMissingFunctionCalled(L"mciLoadCommandResource");
 
     return importTable.mciLoadCommandResource(hInst, lpwstrResourceName, uType);
 }
@@ -1245,7 +1245,7 @@ MCIERROR ImportApiWinMM::mciSendCommandA(MCIDEVICEID IDDevice, UINT uMsg, DWORD_
     Initialize();
 
     if (NULL == importTable.mciSendCommandA)
-        LogMissingFunctionCalled(_T("mciSendCommandA"));
+        LogMissingFunctionCalled(L"mciSendCommandA");
 
     return importTable.mciSendCommandA(IDDevice, uMsg, fdwCommand, dwParam);
 }
@@ -1257,7 +1257,7 @@ MCIERROR ImportApiWinMM::mciSendCommandW(MCIDEVICEID IDDevice, UINT uMsg, DWORD_
     Initialize();
 
     if (NULL == importTable.mciSendCommandW)
-        LogMissingFunctionCalled(_T("mciSendCommandW"));
+        LogMissingFunctionCalled(L"mciSendCommandW");
 
     return importTable.mciSendCommandW(IDDevice, uMsg, fdwCommand, dwParam);
 }
@@ -1269,7 +1269,7 @@ MCIERROR ImportApiWinMM::mciSendStringA(LPCSTR lpszCommand, LPSTR lpszReturnStri
     Initialize();
 
     if (NULL == importTable.mciSendStringA)
-        LogMissingFunctionCalled(_T("mciSendStringA"));
+        LogMissingFunctionCalled(L"mciSendStringA");
 
     return importTable.mciSendStringA(lpszCommand, lpszReturnString, cchReturn, hwndCallback);
 }
@@ -1281,7 +1281,7 @@ MCIERROR ImportApiWinMM::mciSendStringW(LPCWSTR lpszCommand, LPWSTR lpszReturnSt
     Initialize();
 
     if (NULL == importTable.mciSendStringW)
-        LogMissingFunctionCalled(_T("mciSendStringW"));
+        LogMissingFunctionCalled(L"mciSendStringW");
 
     return importTable.mciSendStringW(lpszCommand, lpszReturnString, cchReturn, hwndCallback);
 }
@@ -1293,7 +1293,7 @@ BOOL ImportApiWinMM::mciSetDriverData(MCIDEVICEID IDDevice, DWORD_PTR data)
     Initialize();
 
     if (NULL == importTable.mciSetDriverData)
-        LogMissingFunctionCalled(_T("mciSetDriverData"));
+        LogMissingFunctionCalled(L"mciSetDriverData");
 
     return importTable.mciSetDriverData(IDDevice, data);
 }
@@ -1305,7 +1305,7 @@ UINT ImportApiWinMM::mciSetYieldProc(MCIDEVICEID IDDevice, YIELDPROC yp, DWORD d
     Initialize();
 
     if (NULL == importTable.mciSetYieldProc)
-        LogMissingFunctionCalled(_T("mciSetYieldProc"));
+        LogMissingFunctionCalled(L"mciSetYieldProc");
 
     return importTable.mciSetYieldProc(IDDevice, yp, dwYieldData);
 }
@@ -1317,7 +1317,7 @@ MMRESULT ImportApiWinMM::midiConnect(HMIDI hMidi, HMIDIOUT hmo, LPVOID pReserved
     Initialize();
 
     if (NULL == importTable.midiConnect)
-        LogMissingFunctionCalled(_T("midiConnect"));
+        LogMissingFunctionCalled(L"midiConnect");
 
     return importTable.midiConnect(hMidi, hmo, pReserved);
 }
@@ -1329,7 +1329,7 @@ MMRESULT ImportApiWinMM::midiDisconnect(HMIDI hMidi, HMIDIOUT hmo, LPVOID pReser
     Initialize();
 
     if (NULL == importTable.midiDisconnect)
-        LogMissingFunctionCalled(_T("midiDisconnect"));
+        LogMissingFunctionCalled(L"midiDisconnect");
 
     return importTable.midiDisconnect(hMidi, hmo, pReserved);
 }
@@ -1341,7 +1341,7 @@ MMRESULT ImportApiWinMM::midiInAddBuffer(HMIDIIN hMidiIn, LPMIDIHDR lpMidiInHdr,
     Initialize();
 
     if (NULL == importTable.midiInAddBuffer)
-        LogMissingFunctionCalled(_T("midiInAddBuffer"));
+        LogMissingFunctionCalled(L"midiInAddBuffer");
 
     return importTable.midiInAddBuffer(hMidiIn, lpMidiInHdr, cbMidiInHdr);
 }
@@ -1353,7 +1353,7 @@ MMRESULT ImportApiWinMM::midiInClose(HMIDIIN hMidiIn)
     Initialize();
 
     if (NULL == importTable.midiInClose)
-        LogMissingFunctionCalled(_T("midiInClose"));
+        LogMissingFunctionCalled(L"midiInClose");
 
     return importTable.midiInClose(hMidiIn);
 }
@@ -1365,7 +1365,7 @@ MMRESULT ImportApiWinMM::midiInGetDevCapsA(UINT_PTR uDeviceID, LPMIDIINCAPSA lpM
     Initialize();
 
     if (NULL == importTable.midiInGetDevCapsA)
-        LogMissingFunctionCalled(_T("midiInGetDevCapsA"));
+        LogMissingFunctionCalled(L"midiInGetDevCapsA");
 
     return importTable.midiInGetDevCapsA(uDeviceID, lpMidiInCaps, cbMidiInCaps);
 }
@@ -1377,7 +1377,7 @@ MMRESULT ImportApiWinMM::midiInGetDevCapsW(UINT_PTR uDeviceID, LPMIDIINCAPSW lpM
     Initialize();
 
     if (NULL == importTable.midiInGetDevCapsW)
-        LogMissingFunctionCalled(_T("midiInGetDevCapsW"));
+        LogMissingFunctionCalled(L"midiInGetDevCapsW");
 
     return importTable.midiInGetDevCapsW(uDeviceID, lpMidiInCaps, cbMidiInCaps);
 }
@@ -1389,7 +1389,7 @@ MMRESULT ImportApiWinMM::midiInGetErrorTextA(MMRESULT wError, LPSTR lpText, UINT
     Initialize();
 
     if (NULL == importTable.midiInGetErrorTextA)
-        LogMissingFunctionCalled(_T("midiInGetErrorTextA"));
+        LogMissingFunctionCalled(L"midiInGetErrorTextA");
 
     return importTable.midiInGetErrorTextA(wError, lpText, cchText);
 }
@@ -1401,7 +1401,7 @@ MMRESULT ImportApiWinMM::midiInGetErrorTextW(MMRESULT wError, LPWSTR lpText, UIN
     Initialize();
 
     if (NULL == importTable.midiInGetErrorTextW)
-        LogMissingFunctionCalled(_T("midiInGetErrorTextW"));
+        LogMissingFunctionCalled(L"midiInGetErrorTextW");
 
     return importTable.midiInGetErrorTextW(wError, lpText, cchText);
 }
@@ -1413,7 +1413,7 @@ MMRESULT ImportApiWinMM::midiInGetID(HMIDIIN hmi, LPUINT puDeviceID)
     Initialize();
 
     if (NULL == importTable.midiInGetID)
-        LogMissingFunctionCalled(_T("midiInGetID"));
+        LogMissingFunctionCalled(L"midiInGetID");
 
     return importTable.midiInGetID(hmi, puDeviceID);
 }
@@ -1425,7 +1425,7 @@ UINT ImportApiWinMM::midiInGetNumDevs(void)
     Initialize();
 
     if (NULL == importTable.midiInGetNumDevs)
-        LogMissingFunctionCalled(_T("midiInGetNumDevs"));
+        LogMissingFunctionCalled(L"midiInGetNumDevs");
 
     return importTable.midiInGetNumDevs();
 }
@@ -1437,7 +1437,7 @@ DWORD ImportApiWinMM::midiInMessage(HMIDIIN deviceID, UINT msg, DWORD_PTR dw1, D
     Initialize();
 
     if (NULL == importTable.midiInMessage)
-        LogMissingFunctionCalled(_T("midiInMessage"));
+        LogMissingFunctionCalled(L"midiInMessage");
 
     return importTable.midiInMessage(deviceID, msg, dw1, dw2);
 }
@@ -1449,7 +1449,7 @@ MMRESULT ImportApiWinMM::midiInOpen(LPHMIDIIN lphMidiIn, UINT uDeviceID, DWORD_P
     Initialize();
 
     if (NULL == importTable.midiInOpen)
-        LogMissingFunctionCalled(_T("midiInOpen"));
+        LogMissingFunctionCalled(L"midiInOpen");
 
     return importTable.midiInOpen(lphMidiIn, uDeviceID, dwCallback, dwCallbackInstance, dwFlags);
 }
@@ -1461,7 +1461,7 @@ MMRESULT ImportApiWinMM::midiInPrepareHeader(HMIDIIN hMidiIn, LPMIDIHDR lpMidiIn
     Initialize();
 
     if (NULL == importTable.midiInPrepareHeader)
-        LogMissingFunctionCalled(_T("midiInPrepareHeader"));
+        LogMissingFunctionCalled(L"midiInPrepareHeader");
 
     return importTable.midiInPrepareHeader(hMidiIn, lpMidiInHdr, cbMidiInHdr);
 }
@@ -1473,7 +1473,7 @@ MMRESULT ImportApiWinMM::midiInReset(HMIDIIN hMidiIn)
     Initialize();
 
     if (NULL == importTable.midiInReset)
-        LogMissingFunctionCalled(_T("midiInReset"));
+        LogMissingFunctionCalled(L"midiInReset");
 
     return importTable.midiInReset(hMidiIn);
 }
@@ -1485,7 +1485,7 @@ MMRESULT ImportApiWinMM::midiInStart(HMIDIIN hMidiIn)
     Initialize();
 
     if (NULL == importTable.midiInStart)
-        LogMissingFunctionCalled(_T("midiInStart"));
+        LogMissingFunctionCalled(L"midiInStart");
 
     return importTable.midiInStart(hMidiIn);
 }
@@ -1497,7 +1497,7 @@ MMRESULT ImportApiWinMM::midiInStop(HMIDIIN hMidiIn)
     Initialize();
 
     if (NULL == importTable.midiInStop)
-        LogMissingFunctionCalled(_T("midiInStop"));
+        LogMissingFunctionCalled(L"midiInStop");
 
     return importTable.midiInStop(hMidiIn);
 }
@@ -1509,7 +1509,7 @@ MMRESULT ImportApiWinMM::midiInUnprepareHeader(HMIDIIN hMidiIn, LPMIDIHDR lpMidi
     Initialize();
 
     if (NULL == importTable.midiInUnprepareHeader)
-        LogMissingFunctionCalled(_T("midiInUnprepareHeader"));
+        LogMissingFunctionCalled(L"midiInUnprepareHeader");
 
     return importTable.midiInUnprepareHeader(hMidiIn, lpMidiInHdr, cbMidiInHdr);
 }
@@ -1521,7 +1521,7 @@ MMRESULT ImportApiWinMM::midiOutCacheDrumPatches(HMIDIOUT hmo, UINT wPatch, WORD
     Initialize();
 
     if (NULL == importTable.midiOutCacheDrumPatches)
-        LogMissingFunctionCalled(_T("midiOutCacheDrumPatches"));
+        LogMissingFunctionCalled(L"midiOutCacheDrumPatches");
 
     return importTable.midiOutCacheDrumPatches(hmo, wPatch, lpKeyArray, wFlags);
 }
@@ -1533,7 +1533,7 @@ MMRESULT ImportApiWinMM::midiOutCachePatches(HMIDIOUT hmo, UINT wBank, WORD* lpP
     Initialize();
 
     if (NULL == importTable.midiOutCachePatches)
-        LogMissingFunctionCalled(_T("midiOutCachePatches"));
+        LogMissingFunctionCalled(L"midiOutCachePatches");
 
     return importTable.midiOutCachePatches(hmo, wBank, lpPatchArray, wFlags);
 }
@@ -1545,7 +1545,7 @@ MMRESULT ImportApiWinMM::midiOutClose(HMIDIOUT hmo)
     Initialize();
 
     if (NULL == importTable.midiOutClose)
-        LogMissingFunctionCalled(_T("midiOutClose"));
+        LogMissingFunctionCalled(L"midiOutClose");
 
     return importTable.midiOutClose(hmo);
 }
@@ -1557,7 +1557,7 @@ MMRESULT ImportApiWinMM::midiOutGetDevCapsA(UINT_PTR uDeviceID, LPMIDIOUTCAPSA l
     Initialize();
 
     if (NULL == importTable.midiOutGetDevCapsA)
-        LogMissingFunctionCalled(_T("midiOutGetDevCapsA"));
+        LogMissingFunctionCalled(L"midiOutGetDevCapsA");
 
     return importTable.midiOutGetDevCapsA(uDeviceID, lpMidiOutCaps, cbMidiOutCaps);
 }
@@ -1569,7 +1569,7 @@ MMRESULT ImportApiWinMM::midiOutGetDevCapsW(UINT_PTR uDeviceID, LPMIDIOUTCAPSW l
     Initialize();
 
     if (NULL == importTable.midiOutGetDevCapsW)
-        LogMissingFunctionCalled(_T("midiOutGetDevCapsW"));
+        LogMissingFunctionCalled(L"midiOutGetDevCapsW");
 
     return importTable.midiOutGetDevCapsW(uDeviceID, lpMidiOutCaps, cbMidiOutCaps);
 }
@@ -1581,7 +1581,7 @@ UINT ImportApiWinMM::midiOutGetErrorTextA(MMRESULT mmrError, LPSTR lpText, UINT 
     Initialize();
 
     if (NULL == importTable.midiOutGetErrorTextA)
-        LogMissingFunctionCalled(_T("midiOutGetErrorTextA"));
+        LogMissingFunctionCalled(L"midiOutGetErrorTextA");
 
     return importTable.midiOutGetErrorTextA(mmrError, lpText, cchText);
 }
@@ -1593,7 +1593,7 @@ UINT ImportApiWinMM::midiOutGetErrorTextW(MMRESULT mmrError, LPWSTR lpText, UINT
     Initialize();
 
     if (NULL == importTable.midiOutGetErrorTextW)
-        LogMissingFunctionCalled(_T("midiOutGetErrorTextW"));
+        LogMissingFunctionCalled(L"midiOutGetErrorTextW");
 
     return importTable.midiOutGetErrorTextW(mmrError, lpText, cchText);
 }
@@ -1605,7 +1605,7 @@ MMRESULT ImportApiWinMM::midiOutGetID(HMIDIOUT hmo, LPUINT puDeviceID)
     Initialize();
 
     if (NULL == importTable.midiOutGetID)
-        LogMissingFunctionCalled(_T("midiOutGetID"));
+        LogMissingFunctionCalled(L"midiOutGetID");
 
     return importTable.midiOutGetID(hmo, puDeviceID);
 }
@@ -1617,7 +1617,7 @@ UINT ImportApiWinMM::midiOutGetNumDevs(void)
     Initialize();
 
     if (NULL == importTable.midiOutGetNumDevs)
-        LogMissingFunctionCalled(_T("midiOutGetNumDevs"));
+        LogMissingFunctionCalled(L"midiOutGetNumDevs");
 
     return importTable.midiOutGetNumDevs();
 }
@@ -1629,7 +1629,7 @@ MMRESULT ImportApiWinMM::midiOutGetVolume(HMIDIOUT hmo, LPDWORD lpdwVolume)
     Initialize();
 
     if (NULL == importTable.midiOutGetVolume)
-        LogMissingFunctionCalled(_T("midiOutGetVolume"));
+        LogMissingFunctionCalled(L"midiOutGetVolume");
 
     return importTable.midiOutGetVolume(hmo, lpdwVolume);
 }
@@ -1641,7 +1641,7 @@ MMRESULT ImportApiWinMM::midiOutLongMsg(HMIDIOUT hmo, LPMIDIHDR lpMidiOutHdr, UI
     Initialize();
 
     if (NULL == importTable.midiOutLongMsg)
-        LogMissingFunctionCalled(_T("midiOutLongMsg"));
+        LogMissingFunctionCalled(L"midiOutLongMsg");
 
     return importTable.midiOutLongMsg(hmo, lpMidiOutHdr, cbMidiOutHdr);
 }
@@ -1653,7 +1653,7 @@ DWORD ImportApiWinMM::midiOutMessage(HMIDIOUT deviceID, UINT msg, DWORD_PTR dw1,
     Initialize();
 
     if (NULL == importTable.midiOutMessage)
-        LogMissingFunctionCalled(_T("midiOutMessage"));
+        LogMissingFunctionCalled(L"midiOutMessage");
 
     return importTable.midiOutMessage(deviceID, msg, dw1, dw2);
 }
@@ -1665,7 +1665,7 @@ MMRESULT ImportApiWinMM::midiOutOpen(LPHMIDIOUT lphmo, UINT uDeviceID, DWORD_PTR
     Initialize();
 
     if (NULL == importTable.midiOutOpen)
-        LogMissingFunctionCalled(_T("midiOutOpen"));
+        LogMissingFunctionCalled(L"midiOutOpen");
 
     return importTable.midiOutOpen(lphmo, uDeviceID, dwCallback, dwCallbackInstance, dwFlags);
 }
@@ -1677,7 +1677,7 @@ MMRESULT ImportApiWinMM::midiOutPrepareHeader(HMIDIOUT hmo, LPMIDIHDR lpMidiOutH
     Initialize();
 
     if (NULL == importTable.midiOutPrepareHeader)
-        LogMissingFunctionCalled(_T("midiOutPrepareHeader"));
+        LogMissingFunctionCalled(L"midiOutPrepareHeader");
 
     return importTable.midiOutPrepareHeader(hmo, lpMidiOutHdr, cbMidiOutHdr);
 }
@@ -1689,7 +1689,7 @@ MMRESULT ImportApiWinMM::midiOutReset(HMIDIOUT hmo)
     Initialize();
 
     if (NULL == importTable.midiOutReset)
-        LogMissingFunctionCalled(_T("midiOutReset"));
+        LogMissingFunctionCalled(L"midiOutReset");
 
     return importTable.midiOutReset(hmo);
 }
@@ -1701,7 +1701,7 @@ MMRESULT ImportApiWinMM::midiOutSetVolume(HMIDIOUT hmo, DWORD dwVolume)
     Initialize();
 
     if (NULL == importTable.midiOutSetVolume)
-        LogMissingFunctionCalled(_T("midiOutSetVolume"));
+        LogMissingFunctionCalled(L"midiOutSetVolume");
 
     return importTable.midiOutSetVolume(hmo, dwVolume);
 }
@@ -1713,7 +1713,7 @@ MMRESULT ImportApiWinMM::midiOutShortMsg(HMIDIOUT hmo, DWORD dwMsg)
     Initialize();
 
     if (NULL == importTable.midiOutShortMsg)
-        LogMissingFunctionCalled(_T("midiOutShortMsg"));
+        LogMissingFunctionCalled(L"midiOutShortMsg");
 
     return importTable.midiOutShortMsg(hmo, dwMsg);
 }
@@ -1725,7 +1725,7 @@ MMRESULT ImportApiWinMM::midiOutUnprepareHeader(HMIDIOUT hmo, LPMIDIHDR lpMidiOu
     Initialize();
 
     if (NULL == importTable.midiOutUnprepareHeader)
-        LogMissingFunctionCalled(_T("midiOutUnprepareHeader"));
+        LogMissingFunctionCalled(L"midiOutUnprepareHeader");
 
     return importTable.midiOutUnprepareHeader(hmo, lpMidiOutHdr, cbMidiOutHdr);
 }
@@ -1737,7 +1737,7 @@ MMRESULT ImportApiWinMM::midiStreamClose(HMIDISTRM hStream)
     Initialize();
 
     if (NULL == importTable.midiStreamClose)
-        LogMissingFunctionCalled(_T("midiStreamClose"));
+        LogMissingFunctionCalled(L"midiStreamClose");
 
     return importTable.midiStreamClose(hStream);
 }
@@ -1749,7 +1749,7 @@ MMRESULT ImportApiWinMM::midiStreamOpen(LPHMIDISTRM lphStream, LPUINT puDeviceID
     Initialize();
 
     if (NULL == importTable.midiStreamOpen)
-        LogMissingFunctionCalled(_T("midiStreamOpen"));
+        LogMissingFunctionCalled(L"midiStreamOpen");
 
     return importTable.midiStreamOpen(lphStream, puDeviceID, cMidi, dwCallback, dwInstance, fdwOpen);
 }
@@ -1761,7 +1761,7 @@ MMRESULT ImportApiWinMM::midiStreamOut(HMIDISTRM hMidiStream, LPMIDIHDR lpMidiHd
     Initialize();
 
     if (NULL == importTable.midiStreamOut)
-        LogMissingFunctionCalled(_T("midiStreamOut"));
+        LogMissingFunctionCalled(L"midiStreamOut");
 
     return importTable.midiStreamOut(hMidiStream, lpMidiHdr, cbMidiHdr);
 }
@@ -1773,7 +1773,7 @@ MMRESULT ImportApiWinMM::midiStreamPause(HMIDISTRM hms)
     Initialize();
 
     if (NULL == importTable.midiStreamPause)
-        LogMissingFunctionCalled(_T("midiStreamPause"));
+        LogMissingFunctionCalled(L"midiStreamPause");
 
     return importTable.midiStreamPause(hms);
 }
@@ -1785,7 +1785,7 @@ MMRESULT ImportApiWinMM::midiStreamPosition(HMIDISTRM hms, LPMMTIME pmmt, UINT c
     Initialize();
 
     if (NULL == importTable.midiStreamPosition)
-        LogMissingFunctionCalled(_T("midiStreamPosition"));
+        LogMissingFunctionCalled(L"midiStreamPosition");
 
     return importTable.midiStreamPosition(hms, pmmt, cbmmt);
 }
@@ -1797,7 +1797,7 @@ MMRESULT ImportApiWinMM::midiStreamProperty(HMIDISTRM hm, LPBYTE lppropdata, DWO
     Initialize();
 
     if (NULL == importTable.midiStreamProperty)
-        LogMissingFunctionCalled(_T("midiStreamProperty"));
+        LogMissingFunctionCalled(L"midiStreamProperty");
 
     return importTable.midiStreamProperty(hm, lppropdata, dwProperty);
 }
@@ -1809,7 +1809,7 @@ MMRESULT ImportApiWinMM::midiStreamRestart(HMIDISTRM hms)
     Initialize();
 
     if (NULL == importTable.midiStreamRestart)
-        LogMissingFunctionCalled(_T("midiStreamRestart"));
+        LogMissingFunctionCalled(L"midiStreamRestart");
 
     return importTable.midiStreamRestart(hms);
 }
@@ -1821,7 +1821,7 @@ MMRESULT ImportApiWinMM::midiStreamStop(HMIDISTRM hms)
     Initialize();
 
     if (NULL == importTable.midiStreamStop)
-        LogMissingFunctionCalled(_T("midiStreamStop"));
+        LogMissingFunctionCalled(L"midiStreamStop");
 
     return importTable.midiStreamStop(hms);
 }
@@ -1833,7 +1833,7 @@ MMRESULT ImportApiWinMM::mixerClose(HMIXER hmx)
     Initialize();
 
     if (NULL == importTable.mixerClose)
-        LogMissingFunctionCalled(_T("mixerClose"));
+        LogMissingFunctionCalled(L"mixerClose");
 
     return importTable.mixerClose(hmx);
 }
@@ -1845,7 +1845,7 @@ MMRESULT ImportApiWinMM::mixerGetControlDetailsA(HMIXEROBJ hmxobj, LPMIXERCONTRO
     Initialize();
 
     if (NULL == importTable.mixerGetControlDetailsA)
-        LogMissingFunctionCalled(_T("mixerGetControlDetailsA"));
+        LogMissingFunctionCalled(L"mixerGetControlDetailsA");
 
     return importTable.mixerGetControlDetailsA(hmxobj, pmxcd, fdwDetails);
 }
@@ -1857,7 +1857,7 @@ MMRESULT ImportApiWinMM::mixerGetControlDetailsW(HMIXEROBJ hmxobj, LPMIXERCONTRO
     Initialize();
 
     if (NULL == importTable.mixerGetControlDetailsW)
-        LogMissingFunctionCalled(_T("mixerGetControlDetailsW"));
+        LogMissingFunctionCalled(L"mixerGetControlDetailsW");
 
     return importTable.mixerGetControlDetailsW(hmxobj, pmxcd, fdwDetails);
 }
@@ -1869,7 +1869,7 @@ MMRESULT ImportApiWinMM::mixerGetDevCapsA(UINT_PTR uMxId, LPMIXERCAPS pmxcaps, U
     Initialize();
 
     if (NULL == importTable.mixerGetDevCapsA)
-        LogMissingFunctionCalled(_T("mixerGetDevCapsA"));
+        LogMissingFunctionCalled(L"mixerGetDevCapsA");
 
     return importTable.mixerGetDevCapsA(uMxId, pmxcaps, cbmxcaps);
 }
@@ -1881,7 +1881,7 @@ MMRESULT ImportApiWinMM::mixerGetDevCapsW(UINT_PTR uMxId, LPMIXERCAPS pmxcaps, U
     Initialize();
 
     if (NULL == importTable.mixerGetDevCapsW)
-        LogMissingFunctionCalled(_T("mixerGetDevCapsW"));
+        LogMissingFunctionCalled(L"mixerGetDevCapsW");
 
     return importTable.mixerGetDevCapsW(uMxId, pmxcaps, cbmxcaps);
 }
@@ -1893,7 +1893,7 @@ MMRESULT ImportApiWinMM::mixerGetID(HMIXEROBJ hmxobj, UINT* puMxId, DWORD fdwId)
     Initialize();
 
     if (NULL == importTable.mixerGetID)
-        LogMissingFunctionCalled(_T("mixerGetID"));
+        LogMissingFunctionCalled(L"mixerGetID");
 
     return importTable.mixerGetID(hmxobj, puMxId, fdwId);
 }
@@ -1905,7 +1905,7 @@ MMRESULT ImportApiWinMM::mixerGetLineControlsA(HMIXEROBJ hmxobj, LPMIXERLINECONT
     Initialize();
 
     if (NULL == importTable.mixerGetLineControlsA)
-        LogMissingFunctionCalled(_T("mixerGetLineControlsA"));
+        LogMissingFunctionCalled(L"mixerGetLineControlsA");
 
     return importTable.mixerGetLineControlsA(hmxobj, pmxlc, fdwControls);
 }
@@ -1917,7 +1917,7 @@ MMRESULT ImportApiWinMM::mixerGetLineControlsW(HMIXEROBJ hmxobj, LPMIXERLINECONT
     Initialize();
 
     if (NULL == importTable.mixerGetLineControlsW)
-        LogMissingFunctionCalled(_T("mixerGetLineControlsW"));
+        LogMissingFunctionCalled(L"mixerGetLineControlsW");
 
     return importTable.mixerGetLineControlsW(hmxobj, pmxlc, fdwControls);
 }
@@ -1929,7 +1929,7 @@ MMRESULT ImportApiWinMM::mixerGetLineInfoA(HMIXEROBJ hmxobj, LPMIXERLINE pmxl, D
     Initialize();
 
     if (NULL == importTable.mixerGetLineInfoA)
-        LogMissingFunctionCalled(_T("mixerGetLineInfoA"));
+        LogMissingFunctionCalled(L"mixerGetLineInfoA");
 
     return importTable.mixerGetLineInfoA(hmxobj, pmxl, fdwInfo);
 }
@@ -1941,7 +1941,7 @@ MMRESULT ImportApiWinMM::mixerGetLineInfoW(HMIXEROBJ hmxobj, LPMIXERLINE pmxl, D
     Initialize();
 
     if (NULL == importTable.mixerGetLineInfoW)
-        LogMissingFunctionCalled(_T("mixerGetLineInfoW"));
+        LogMissingFunctionCalled(L"mixerGetLineInfoW");
 
     return importTable.mixerGetLineInfoW(hmxobj, pmxl, fdwInfo);
 }
@@ -1953,7 +1953,7 @@ UINT ImportApiWinMM::mixerGetNumDevs(void)
     Initialize();
 
     if (NULL == importTable.mixerGetNumDevs)
-        LogMissingFunctionCalled(_T("mixerGetNumDevs"));
+        LogMissingFunctionCalled(L"mixerGetNumDevs");
 
     return importTable.mixerGetNumDevs();
 }
@@ -1965,7 +1965,7 @@ DWORD ImportApiWinMM::mixerMessage(HMIXER driverID, UINT uMsg, DWORD_PTR dwParam
     Initialize();
 
     if (NULL == importTable.mixerMessage)
-        LogMissingFunctionCalled(_T("mixerMessage"));
+        LogMissingFunctionCalled(L"mixerMessage");
 
     return importTable.mixerMessage(driverID, uMsg, dwParam1, dwParam2);
 }
@@ -1977,7 +1977,7 @@ MMRESULT ImportApiWinMM::mixerOpen(LPHMIXER phmx, UINT uMxId, DWORD_PTR dwCallba
     Initialize();
 
     if (NULL == importTable.mixerOpen)
-        LogMissingFunctionCalled(_T("mixerOpen"));
+        LogMissingFunctionCalled(L"mixerOpen");
 
     return importTable.mixerOpen(phmx, uMxId, dwCallback, dwInstance, fdwOpen);
 }
@@ -1989,7 +1989,7 @@ MMRESULT ImportApiWinMM::mixerSetControlDetails(HMIXEROBJ hmxobj, LPMIXERCONTROL
     Initialize();
 
     if (NULL == importTable.mixerSetControlDetails)
-        LogMissingFunctionCalled(_T("mixerSetControlDetails"));
+        LogMissingFunctionCalled(L"mixerSetControlDetails");
 
     return importTable.mixerSetControlDetails(hmxobj, pmxcd, fdwDetails);
 }
@@ -2001,7 +2001,7 @@ MMRESULT ImportApiWinMM::mmioAdvance(HMMIO hmmio, LPMMIOINFO lpmmioinfo, UINT wF
     Initialize();
 
     if (NULL == importTable.mmioAdvance)
-        LogMissingFunctionCalled(_T("mmioAdvance"));
+        LogMissingFunctionCalled(L"mmioAdvance");
 
     return importTable.mmioAdvance(hmmio, lpmmioinfo, wFlags);
 }
@@ -2014,7 +2014,7 @@ MMRESULT ImportApiWinMM::mmioAscend(HMMIO hmmio, LPMMCKINFO lpck, UINT wFlags)
     Initialize();
 
     if (NULL == importTable.mmioAscend)
-        LogMissingFunctionCalled(_T("mmioAscend"));
+        LogMissingFunctionCalled(L"mmioAscend");
 
     return importTable.mmioAscend(hmmio, lpck, wFlags);
 }
@@ -2027,7 +2027,7 @@ MMRESULT ImportApiWinMM::mmioClose(HMMIO hmmio, UINT wFlags)
     Initialize();
 
     if (NULL == importTable.mmioClose)
-        LogMissingFunctionCalled(_T("mmioClose"));
+        LogMissingFunctionCalled(L"mmioClose");
 
     return importTable.mmioClose(hmmio, wFlags);
 }
@@ -2040,7 +2040,7 @@ MMRESULT ImportApiWinMM::mmioCreateChunk(HMMIO hmmio, LPMMCKINFO lpck, UINT wFla
     Initialize();
 
     if (NULL == importTable.mmioCreateChunk)
-        LogMissingFunctionCalled(_T("mmioCreateChunk"));
+        LogMissingFunctionCalled(L"mmioCreateChunk");
 
     return importTable.mmioCreateChunk(hmmio, lpck, wFlags);
 }
@@ -2053,7 +2053,7 @@ MMRESULT ImportApiWinMM::mmioDescend(HMMIO hmmio, LPMMCKINFO lpck, LPCMMCKINFO l
     Initialize();
 
     if (NULL == importTable.mmioDescend)
-        LogMissingFunctionCalled(_T("mmioDescend"));
+        LogMissingFunctionCalled(L"mmioDescend");
 
     return importTable.mmioDescend(hmmio, lpck, lpckParent, wFlags);
 }
@@ -2066,7 +2066,7 @@ MMRESULT ImportApiWinMM::mmioFlush(HMMIO hmmio, UINT fuFlush)
     Initialize();
 
     if (NULL == importTable.mmioFlush)
-        LogMissingFunctionCalled(_T("mmioFlush"));
+        LogMissingFunctionCalled(L"mmioFlush");
 
     return importTable.mmioFlush(hmmio, fuFlush);
 }
@@ -2079,7 +2079,7 @@ MMRESULT ImportApiWinMM::mmioGetInfo(HMMIO hmmio, LPMMIOINFO lpmmioinfo, UINT wF
     Initialize();
 
     if (NULL == importTable.mmioGetInfo)
-        LogMissingFunctionCalled(_T("mmioGetInfo"));
+        LogMissingFunctionCalled(L"mmioGetInfo");
 
     return importTable.mmioGetInfo(hmmio, lpmmioinfo, wFlags);
 }
@@ -2092,7 +2092,7 @@ LPMMIOPROC ImportApiWinMM::mmioInstallIOProcA(FOURCC fccIOProc, LPMMIOPROC pIOPr
     Initialize();
 
     if (NULL == importTable.mmioInstallIOProcA)
-        LogMissingFunctionCalled(_T("mmioInstallIOProcA"));
+        LogMissingFunctionCalled(L"mmioInstallIOProcA");
 
     return importTable.mmioInstallIOProcA(fccIOProc, pIOProc, dwFlags);
 }
@@ -2105,7 +2105,7 @@ LPMMIOPROC ImportApiWinMM::mmioInstallIOProcW(FOURCC fccIOProc, LPMMIOPROC pIOPr
     Initialize();
 
     if (NULL == importTable.mmioInstallIOProcW)
-        LogMissingFunctionCalled(_T("mmioInstallIOProcW"));
+        LogMissingFunctionCalled(L"mmioInstallIOProcW");
 
     return importTable.mmioInstallIOProcW(fccIOProc, pIOProc, dwFlags);
 }
@@ -2118,7 +2118,7 @@ HMMIO ImportApiWinMM::mmioOpenA(LPSTR szFilename, LPMMIOINFO lpmmioinfo, DWORD d
     Initialize();
 
     if (NULL == importTable.mmioOpenA)
-        LogMissingFunctionCalled(_T("mmioOpenA"));
+        LogMissingFunctionCalled(L"mmioOpenA");
 
     return importTable.mmioOpenA(szFilename, lpmmioinfo, dwOpenFlags);
 }
@@ -2131,7 +2131,7 @@ HMMIO ImportApiWinMM::mmioOpenW(LPWSTR szFilename, LPMMIOINFO lpmmioinfo, DWORD 
     Initialize();
 
     if (NULL == importTable.mmioOpenW)
-        LogMissingFunctionCalled(_T("mmioOpenW"));
+        LogMissingFunctionCalled(L"mmioOpenW");
 
     return importTable.mmioOpenW(szFilename, lpmmioinfo, dwOpenFlags);
 }
@@ -2144,7 +2144,7 @@ LONG ImportApiWinMM::mmioRead(HMMIO hmmio, HPSTR pch, LONG cch)
     Initialize();
 
     if (NULL == importTable.mmioRead)
-        LogMissingFunctionCalled(_T("mmioRead"));
+        LogMissingFunctionCalled(L"mmioRead");
 
     return importTable.mmioRead(hmmio, pch, cch);
 }
@@ -2157,7 +2157,7 @@ MMRESULT ImportApiWinMM::mmioRenameA(LPCSTR szFilename, LPCSTR szNewFilename, LP
     Initialize();
 
     if (NULL == importTable.mmioRenameA)
-        LogMissingFunctionCalled(_T("mmioRenameA"));
+        LogMissingFunctionCalled(L"mmioRenameA");
 
     return importTable.mmioRenameA(szFilename, szNewFilename, lpmmioinfo, dwRenameFlags);
 }
@@ -2170,7 +2170,7 @@ MMRESULT ImportApiWinMM::mmioRenameW(LPCWSTR szFilename, LPCWSTR szNewFilename, 
     Initialize();
 
     if (NULL == importTable.mmioRenameW)
-        LogMissingFunctionCalled(_T("mmioRenameW"));
+        LogMissingFunctionCalled(L"mmioRenameW");
 
     return importTable.mmioRenameW(szFilename, szNewFilename, lpmmioinfo, dwRenameFlags);
 }
@@ -2183,7 +2183,7 @@ LONG ImportApiWinMM::mmioSeek(HMMIO hmmio, LONG lOffset, int iOrigin)
     Initialize();
 
     if (NULL == importTable.mmioSeek)
-        LogMissingFunctionCalled(_T("mmioSeek"));
+        LogMissingFunctionCalled(L"mmioSeek");
 
     return importTable.mmioSeek(hmmio, lOffset, iOrigin);
 }
@@ -2196,7 +2196,7 @@ LRESULT ImportApiWinMM::mmioSendMessage(HMMIO hmmio, UINT wMsg, LPARAM lParam1, 
     Initialize();
 
     if (NULL == importTable.mmioSendMessage)
-        LogMissingFunctionCalled(_T("mmioSendMessage"));
+        LogMissingFunctionCalled(L"mmioSendMessage");
 
     return importTable.mmioSendMessage(hmmio, wMsg, lParam1, lParam2);
 }
@@ -2209,7 +2209,7 @@ MMRESULT ImportApiWinMM::mmioSetBuffer(HMMIO hmmio, LPSTR pchBuffer, LONG cchBuf
     Initialize();
 
     if (NULL == importTable.mmioSetBuffer)
-        LogMissingFunctionCalled(_T("mmioSetBuffer"));
+        LogMissingFunctionCalled(L"mmioSetBuffer");
 
     return importTable.mmioSetBuffer(hmmio, pchBuffer, cchBuffer, wFlags);
 }
@@ -2222,7 +2222,7 @@ MMRESULT ImportApiWinMM::mmioSetInfo(HMMIO hmmio, LPCMMIOINFO lpmmioinfo, UINT w
     Initialize();
 
     if (NULL == importTable.mmioSetInfo)
-        LogMissingFunctionCalled(_T("mmioSetInfo"));
+        LogMissingFunctionCalled(L"mmioSetInfo");
 
     return importTable.mmioSetInfo(hmmio, lpmmioinfo, wFlags);
 }
@@ -2235,7 +2235,7 @@ FOURCC ImportApiWinMM::mmioStringToFOURCCA(LPCSTR sz, UINT wFlags)
     Initialize();
 
     if (NULL == importTable.mmioStringToFOURCCA)
-        LogMissingFunctionCalled(_T("mmioStringToFOURCCA"));
+        LogMissingFunctionCalled(L"mmioStringToFOURCCA");
 
     return importTable.mmioStringToFOURCCA(sz, wFlags);
 }
@@ -2248,7 +2248,7 @@ FOURCC ImportApiWinMM::mmioStringToFOURCCW(LPCWSTR sz, UINT wFlags)
     Initialize();
 
     if (NULL == importTable.mmioStringToFOURCCW)
-        LogMissingFunctionCalled(_T("mmioStringToFOURCCW"));
+        LogMissingFunctionCalled(L"mmioStringToFOURCCW");
 
     return importTable.mmioStringToFOURCCW(sz, wFlags);
 }
@@ -2261,7 +2261,7 @@ LONG ImportApiWinMM::mmioWrite(HMMIO hmmio, const char* pch, LONG cch)
     Initialize();
 
     if (NULL == importTable.mmioWrite)
-        LogMissingFunctionCalled(_T("mmioWrite"));
+        LogMissingFunctionCalled(L"mmioWrite");
 
     return importTable.mmioWrite(hmmio, pch, cch);
 }
@@ -2273,7 +2273,7 @@ BOOL ImportApiWinMM::sndPlaySoundA(LPCSTR lpszSound, UINT fuSound)
     Initialize();
 
     if (NULL == importTable.sndPlaySoundA)
-        LogMissingFunctionCalled(_T("sndPlaySoundA"));
+        LogMissingFunctionCalled(L"sndPlaySoundA");
 
     return importTable.sndPlaySoundA(lpszSound, fuSound);
 }
@@ -2285,7 +2285,7 @@ BOOL ImportApiWinMM::sndPlaySoundW(LPCWSTR lpszSound, UINT fuSound)
     Initialize();
 
     if (NULL == importTable.sndPlaySoundW)
-        LogMissingFunctionCalled(_T("sndPlaySoundW"));
+        LogMissingFunctionCalled(L"sndPlaySoundW");
 
     return importTable.sndPlaySoundW(lpszSound, fuSound);
 }
@@ -2297,7 +2297,7 @@ MMRESULT ImportApiWinMM::timeBeginPeriod(UINT uPeriod)
     Initialize();
 
     if (NULL == importTable.timeBeginPeriod)
-        LogMissingFunctionCalled(_T("timeBeginPeriod"));
+        LogMissingFunctionCalled(L"timeBeginPeriod");
 
     return importTable.timeBeginPeriod(uPeriod);
 }
@@ -2309,7 +2309,7 @@ MMRESULT ImportApiWinMM::timeEndPeriod(UINT uPeriod)
     Initialize();
 
     if (NULL == importTable.timeEndPeriod)
-        LogMissingFunctionCalled(_T("timeEndPeriod"));
+        LogMissingFunctionCalled(L"timeEndPeriod");
 
     return importTable.timeEndPeriod(uPeriod);
 }
@@ -2321,7 +2321,7 @@ MMRESULT ImportApiWinMM::timeGetDevCaps(LPTIMECAPS ptc, UINT cbtc)
     Initialize();
 
     if (NULL == importTable.timeGetDevCaps)
-        LogMissingFunctionCalled(_T("timeGetDevCaps"));
+        LogMissingFunctionCalled(L"timeGetDevCaps");
 
     return importTable.timeGetDevCaps(ptc, cbtc);
 }
@@ -2333,7 +2333,7 @@ MMRESULT ImportApiWinMM::timeGetSystemTime(LPMMTIME pmmt, UINT cbmmt)
     Initialize();
 
     if (NULL == importTable.timeGetSystemTime)
-        LogMissingFunctionCalled(_T("timeGetSystemTime"));
+        LogMissingFunctionCalled(L"timeGetSystemTime");
 
     return importTable.timeGetSystemTime(pmmt, cbmmt);
 }
@@ -2345,7 +2345,7 @@ DWORD ImportApiWinMM::timeGetTime(void)
     Initialize();
 
     if (NULL == importTable.timeGetTime)
-        LogMissingFunctionCalled(_T("timeGetTime"));
+        LogMissingFunctionCalled(L"timeGetTime");
 
     return importTable.timeGetTime();
 }
@@ -2357,7 +2357,7 @@ MMRESULT ImportApiWinMM::timeKillEvent(UINT uTimerID)
     Initialize();
 
     if (NULL == importTable.timeKillEvent)
-        LogMissingFunctionCalled(_T("timeKillEvent"));
+        LogMissingFunctionCalled(L"timeKillEvent");
 
     return importTable.timeKillEvent(uTimerID);
 }
@@ -2369,7 +2369,7 @@ MMRESULT ImportApiWinMM::timeSetEvent(UINT uDelay, UINT uResolution, LPTIMECALLB
     Initialize();
 
     if (NULL == importTable.timeSetEvent)
-        LogMissingFunctionCalled(_T("timeSetEvent"));
+        LogMissingFunctionCalled(L"timeSetEvent");
 
     return importTable.timeSetEvent(uDelay, uResolution, lpTimeProc, dwUser, fuEvent);
 }
@@ -2381,7 +2381,7 @@ MMRESULT ImportApiWinMM::waveInAddBuffer(HWAVEIN hwi, LPWAVEHDR pwh, UINT cbwh)
     Initialize();
 
     if (NULL == importTable.waveInAddBuffer)
-        LogMissingFunctionCalled(_T("waveInAddBuffer"));
+        LogMissingFunctionCalled(L"waveInAddBuffer");
 
     return importTable.waveInAddBuffer(hwi, pwh, cbwh);
 }
@@ -2393,7 +2393,7 @@ MMRESULT ImportApiWinMM::waveInClose(HWAVEIN hwi)
     Initialize();
 
     if (NULL == importTable.waveInClose)
-        LogMissingFunctionCalled(_T("waveInClose"));
+        LogMissingFunctionCalled(L"waveInClose");
 
     return importTable.waveInClose(hwi);
 }
@@ -2405,7 +2405,7 @@ MMRESULT ImportApiWinMM::waveInGetDevCapsA(UINT_PTR uDeviceID, LPWAVEINCAPSA pwi
     Initialize();
 
     if (NULL == importTable.waveInGetDevCapsA)
-        LogMissingFunctionCalled(_T("waveInGetDevCapsA"));
+        LogMissingFunctionCalled(L"waveInGetDevCapsA");
 
     return importTable.waveInGetDevCapsA(uDeviceID, pwic, cbwic);
 }
@@ -2417,7 +2417,7 @@ MMRESULT ImportApiWinMM::waveInGetDevCapsW(UINT_PTR uDeviceID, LPWAVEINCAPSW pwi
     Initialize();
 
     if (NULL == importTable.waveInGetDevCapsW)
-        LogMissingFunctionCalled(_T("waveInGetDevCapsW"));
+        LogMissingFunctionCalled(L"waveInGetDevCapsW");
 
     return importTable.waveInGetDevCapsW(uDeviceID, pwic, cbwic);
 }
@@ -2429,7 +2429,7 @@ MMRESULT ImportApiWinMM::waveInGetErrorTextA(MMRESULT mmrError, LPCSTR pszText, 
     Initialize();
 
     if (NULL == importTable.waveInGetErrorTextA)
-        LogMissingFunctionCalled(_T("waveInGetErrorTextA"));
+        LogMissingFunctionCalled(L"waveInGetErrorTextA");
 
     return importTable.waveInGetErrorTextA(mmrError, pszText, cchText);
 }
@@ -2441,7 +2441,7 @@ MMRESULT ImportApiWinMM::waveInGetErrorTextW(MMRESULT mmrError, LPWSTR pszText, 
     Initialize();
 
     if (NULL == importTable.waveInGetErrorTextW)
-        LogMissingFunctionCalled(_T("waveInGetErrorTextW"));
+        LogMissingFunctionCalled(L"waveInGetErrorTextW");
 
     return importTable.waveInGetErrorTextW(mmrError, pszText, cchText);
 }
@@ -2453,7 +2453,7 @@ MMRESULT ImportApiWinMM::waveInGetID(HWAVEIN hwi, LPUINT puDeviceID)
     Initialize();
 
     if (NULL == importTable.waveInGetID)
-        LogMissingFunctionCalled(_T("waveInGetID"));
+        LogMissingFunctionCalled(L"waveInGetID");
 
     return importTable.waveInGetID(hwi, puDeviceID);
 }
@@ -2465,7 +2465,7 @@ UINT ImportApiWinMM::waveInGetNumDevs(void)
     Initialize();
 
     if (NULL == importTable.waveInGetNumDevs)
-        LogMissingFunctionCalled(_T("waveInGetNumDevs"));
+        LogMissingFunctionCalled(L"waveInGetNumDevs");
 
     return importTable.waveInGetNumDevs();
 }
@@ -2477,7 +2477,7 @@ MMRESULT ImportApiWinMM::waveInGetPosition(HWAVEIN hwi, LPMMTIME pmmt, UINT cbmm
     Initialize();
 
     if (NULL == importTable.waveInGetPosition)
-        LogMissingFunctionCalled(_T("waveInGetPosition"));
+        LogMissingFunctionCalled(L"waveInGetPosition");
 
     return importTable.waveInGetPosition(hwi, pmmt, cbmmt);
 }
@@ -2489,7 +2489,7 @@ DWORD ImportApiWinMM::waveInMessage(HWAVEIN deviceID, UINT uMsg, DWORD_PTR dwPar
     Initialize();
 
     if (NULL == importTable.waveInMessage)
-        LogMissingFunctionCalled(_T("waveInMessage"));
+        LogMissingFunctionCalled(L"waveInMessage");
 
     return importTable.waveInMessage(deviceID, uMsg, dwParam1, dwParam2);
 }
@@ -2501,7 +2501,7 @@ MMRESULT ImportApiWinMM::waveInOpen(LPHWAVEIN phwi, UINT uDeviceID, LPCWAVEFORMA
     Initialize();
 
     if (NULL == importTable.waveInOpen)
-        LogMissingFunctionCalled(_T("waveInOpen"));
+        LogMissingFunctionCalled(L"waveInOpen");
 
     return importTable.waveInOpen(phwi, uDeviceID, pwfx, dwCallback, dwCallbackInstance, fdwOpen);
 }
@@ -2513,7 +2513,7 @@ MMRESULT ImportApiWinMM::waveInPrepareHeader(HWAVEIN hwi, LPWAVEHDR pwh, UINT cb
     Initialize();
 
     if (NULL == importTable.waveInPrepareHeader)
-        LogMissingFunctionCalled(_T("waveInPrepareHeader"));
+        LogMissingFunctionCalled(L"waveInPrepareHeader");
 
     return importTable.waveInPrepareHeader(hwi, pwh, cbwh);
 }
@@ -2525,7 +2525,7 @@ MMRESULT ImportApiWinMM::waveInReset(HWAVEIN hwi)
     Initialize();
 
     if (NULL == importTable.waveInReset)
-        LogMissingFunctionCalled(_T("waveInReset"));
+        LogMissingFunctionCalled(L"waveInReset");
 
     return importTable.waveInReset(hwi);
 }
@@ -2537,7 +2537,7 @@ MMRESULT ImportApiWinMM::waveInStart(HWAVEIN hwi)
     Initialize();
 
     if (NULL == importTable.waveInStart)
-        LogMissingFunctionCalled(_T("waveInStart"));
+        LogMissingFunctionCalled(L"waveInStart");
 
     return importTable.waveInStart(hwi);
 }
@@ -2549,7 +2549,7 @@ MMRESULT ImportApiWinMM::waveInStop(HWAVEIN hwi)
     Initialize();
 
     if (NULL == importTable.waveInStop)
-        LogMissingFunctionCalled(_T("waveInStop"));
+        LogMissingFunctionCalled(L"waveInStop");
 
     return importTable.waveInStop(hwi);
 }
@@ -2561,7 +2561,7 @@ MMRESULT ImportApiWinMM::waveInUnprepareHeader(HWAVEIN hwi, LPWAVEHDR pwh, UINT 
     Initialize();
 
     if (NULL == importTable.waveInUnprepareHeader)
-        LogMissingFunctionCalled(_T("waveInUnprepareHeader"));
+        LogMissingFunctionCalled(L"waveInUnprepareHeader");
 
     return importTable.waveInUnprepareHeader(hwi, pwh, cbwh);
 }
@@ -2573,7 +2573,7 @@ MMRESULT ImportApiWinMM::waveOutBreakLoop(HWAVEOUT hwo)
     Initialize();
 
     if (NULL == importTable.waveOutBreakLoop)
-        LogMissingFunctionCalled(_T("waveOutBreakLoop"));
+        LogMissingFunctionCalled(L"waveOutBreakLoop");
 
     return importTable.waveOutBreakLoop(hwo);
 }
@@ -2585,7 +2585,7 @@ MMRESULT ImportApiWinMM::waveOutClose(HWAVEOUT hwo)
     Initialize();
 
     if (NULL == importTable.waveOutClose)
-        LogMissingFunctionCalled(_T("waveOutClose"));
+        LogMissingFunctionCalled(L"waveOutClose");
 
     return importTable.waveOutClose(hwo);
 }
@@ -2597,7 +2597,7 @@ MMRESULT ImportApiWinMM::waveOutGetDevCapsA(UINT_PTR uDeviceID, LPWAVEOUTCAPSA p
     Initialize();
 
     if (NULL == importTable.waveOutGetDevCapsA)
-        LogMissingFunctionCalled(_T("waveOutGetDevCapsA"));
+        LogMissingFunctionCalled(L"waveOutGetDevCapsA");
 
     return importTable.waveOutGetDevCapsA(uDeviceID, pwoc, cbwoc);
 }
@@ -2609,7 +2609,7 @@ MMRESULT ImportApiWinMM::waveOutGetDevCapsW(UINT_PTR uDeviceID, LPWAVEOUTCAPSW p
     Initialize();
 
     if (NULL == importTable.waveOutGetDevCapsW)
-        LogMissingFunctionCalled(_T("waveOutGetDevCapsW"));
+        LogMissingFunctionCalled(L"waveOutGetDevCapsW");
 
     return importTable.waveOutGetDevCapsW(uDeviceID, pwoc, cbwoc);
 }
@@ -2621,7 +2621,7 @@ MMRESULT ImportApiWinMM::waveOutGetErrorTextA(MMRESULT mmrError, LPCSTR pszText,
     Initialize();
 
     if (NULL == importTable.waveOutGetErrorTextA)
-        LogMissingFunctionCalled(_T("waveOutGetErrorTextA"));
+        LogMissingFunctionCalled(L"waveOutGetErrorTextA");
 
     return importTable.waveOutGetErrorTextA(mmrError, pszText, cchText);
 }
@@ -2633,7 +2633,7 @@ MMRESULT ImportApiWinMM::waveOutGetErrorTextW(MMRESULT mmrError, LPWSTR pszText,
     Initialize();
 
     if (NULL == importTable.waveOutGetErrorTextW)
-        LogMissingFunctionCalled(_T("waveOutGetErrorTextW"));
+        LogMissingFunctionCalled(L"waveOutGetErrorTextW");
 
     return importTable.waveOutGetErrorTextW(mmrError, pszText, cchText);
 }
@@ -2645,7 +2645,7 @@ MMRESULT ImportApiWinMM::waveOutGetID(HWAVEOUT hwo, LPUINT puDeviceID)
     Initialize();
 
     if (NULL == importTable.waveOutGetID)
-        LogMissingFunctionCalled(_T("waveOutGetID"));
+        LogMissingFunctionCalled(L"waveOutGetID");
 
     return importTable.waveOutGetID(hwo, puDeviceID);
 }
@@ -2657,7 +2657,7 @@ UINT ImportApiWinMM::waveOutGetNumDevs(void)
     Initialize();
 
     if (NULL == importTable.waveOutGetNumDevs)
-        LogMissingFunctionCalled(_T("waveOutGetNumDevs"));
+        LogMissingFunctionCalled(L"waveOutGetNumDevs");
 
     return importTable.waveOutGetNumDevs();
 }
@@ -2669,7 +2669,7 @@ MMRESULT ImportApiWinMM::waveOutGetPitch(HWAVEOUT hwo, LPDWORD pdwPitch)
     Initialize();
 
     if (NULL == importTable.waveOutGetPitch)
-        LogMissingFunctionCalled(_T("waveOutGetPitch"));
+        LogMissingFunctionCalled(L"waveOutGetPitch");
 
     return importTable.waveOutGetPitch(hwo, pdwPitch);
 }
@@ -2681,7 +2681,7 @@ MMRESULT ImportApiWinMM::waveOutGetPlaybackRate(HWAVEOUT hwo, LPDWORD pdwRate)
     Initialize();
 
     if (NULL == importTable.waveOutGetPlaybackRate)
-        LogMissingFunctionCalled(_T("waveOutGetPlaybackRate"));
+        LogMissingFunctionCalled(L"waveOutGetPlaybackRate");
 
     return importTable.waveOutGetPlaybackRate(hwo, pdwRate);
 }
@@ -2693,7 +2693,7 @@ MMRESULT ImportApiWinMM::waveOutGetPosition(HWAVEOUT hwo, LPMMTIME pmmt, UINT cb
     Initialize();
 
     if (NULL == importTable.waveOutGetPosition)
-        LogMissingFunctionCalled(_T("waveOutGetPosition"));
+        LogMissingFunctionCalled(L"waveOutGetPosition");
 
     return importTable.waveOutGetPosition(hwo, pmmt, cbmmt);
 }
@@ -2705,7 +2705,7 @@ MMRESULT ImportApiWinMM::waveOutGetVolume(HWAVEOUT hwo, LPDWORD pdwVolume)
     Initialize();
 
     if (NULL == importTable.waveOutGetVolume)
-        LogMissingFunctionCalled(_T("waveOutGetVolume"));
+        LogMissingFunctionCalled(L"waveOutGetVolume");
 
     return importTable.waveOutGetVolume(hwo, pdwVolume);
 }
@@ -2717,7 +2717,7 @@ DWORD ImportApiWinMM::waveOutMessage(HWAVEOUT deviceID, UINT uMsg, DWORD_PTR dwP
     Initialize();
 
     if (NULL == importTable.waveOutMessage)
-        LogMissingFunctionCalled(_T("waveOutMessage"));
+        LogMissingFunctionCalled(L"waveOutMessage");
 
     return importTable.waveOutMessage(deviceID, uMsg, dwParam1, dwParam2);
 }
@@ -2729,7 +2729,7 @@ MMRESULT ImportApiWinMM::waveOutOpen(LPHWAVEOUT phwo, UINT_PTR uDeviceID, LPWAVE
     Initialize();
 
     if (NULL == importTable.waveOutOpen)
-        LogMissingFunctionCalled(_T("waveOutOpen"));
+        LogMissingFunctionCalled(L"waveOutOpen");
 
     return importTable.waveOutOpen(phwo, uDeviceID, pwfx, dwCallback, dwCallbackInstance, fdwOpen);
 }
@@ -2741,7 +2741,7 @@ MMRESULT ImportApiWinMM::waveOutPause(HWAVEOUT hwo)
     Initialize();
 
     if (NULL == importTable.waveOutPause)
-        LogMissingFunctionCalled(_T("waveOutPause"));
+        LogMissingFunctionCalled(L"waveOutPause");
 
     return importTable.waveOutPause(hwo);
 }
@@ -2753,7 +2753,7 @@ MMRESULT ImportApiWinMM::waveOutPrepareHeader(HWAVEOUT hwo, LPWAVEHDR pwh, UINT 
     Initialize();
 
     if (NULL == importTable.waveOutPrepareHeader)
-        LogMissingFunctionCalled(_T("waveOutPrepareHeader"));
+        LogMissingFunctionCalled(L"waveOutPrepareHeader");
 
     return importTable.waveOutPrepareHeader(hwo, pwh, cbwh);
 }
@@ -2765,7 +2765,7 @@ MMRESULT ImportApiWinMM::waveOutReset(HWAVEOUT hwo)
     Initialize();
 
     if (NULL == importTable.waveOutReset)
-        LogMissingFunctionCalled(_T("waveOutReset"));
+        LogMissingFunctionCalled(L"waveOutReset");
     
     return importTable.waveOutReset(hwo);
 }
@@ -2777,7 +2777,7 @@ MMRESULT ImportApiWinMM::waveOutRestart(HWAVEOUT hwo)
     Initialize();
 
     if (NULL == importTable.waveOutRestart)
-        LogMissingFunctionCalled(_T("waveOutRestart"));
+        LogMissingFunctionCalled(L"waveOutRestart");
     
     return importTable.waveOutRestart(hwo);
 }
@@ -2789,7 +2789,7 @@ MMRESULT ImportApiWinMM::waveOutSetPitch(HWAVEOUT hwo, DWORD dwPitch)
     Initialize();
 
     if (NULL == importTable.waveOutSetPitch)
-        LogMissingFunctionCalled(_T("waveOutSetPitch"));
+        LogMissingFunctionCalled(L"waveOutSetPitch");
     
     return importTable.waveOutSetPitch(hwo, dwPitch);
 }
@@ -2801,7 +2801,7 @@ MMRESULT ImportApiWinMM::waveOutSetPlaybackRate(HWAVEOUT hwo, DWORD dwRate)
     Initialize();
 
     if (NULL == importTable.waveOutSetPlaybackRate)
-        LogMissingFunctionCalled(_T("waveOutSetPlaybackRate"));
+        LogMissingFunctionCalled(L"waveOutSetPlaybackRate");
     
     return importTable.waveOutSetPlaybackRate(hwo, dwRate);
 }
@@ -2813,7 +2813,7 @@ MMRESULT ImportApiWinMM::waveOutSetVolume(HWAVEOUT hwo, DWORD dwVolume)
     Initialize();
 
     if (NULL == importTable.waveOutSetVolume)
-        LogMissingFunctionCalled(_T("waveOutSetVolume"));
+        LogMissingFunctionCalled(L"waveOutSetVolume");
     
     return importTable.waveOutSetVolume(hwo, dwVolume);
 }
@@ -2825,7 +2825,7 @@ MMRESULT ImportApiWinMM::waveOutUnprepareHeader(HWAVEOUT hwo, LPWAVEHDR pwh, UIN
     Initialize();
 
     if (NULL == importTable.waveOutUnprepareHeader)
-        LogMissingFunctionCalled(_T("waveOutUnprepareHeader"));
+        LogMissingFunctionCalled(L"waveOutUnprepareHeader");
     
     return importTable.waveOutUnprepareHeader(hwo, pwh, cbwh);
 }
@@ -2837,7 +2837,7 @@ MMRESULT ImportApiWinMM::waveOutWrite(HWAVEOUT hwo, LPWAVEHDR pwh, UINT cbwh)
     Initialize();
 
     if (NULL == importTable.waveOutWrite)
-        LogMissingFunctionCalled(_T("waveOutWrite"));
+        LogMissingFunctionCalled(L"waveOutWrite");
     
     return importTable.waveOutWrite(hwo, pwh, cbwh);
 }
@@ -2846,35 +2846,35 @@ MMRESULT ImportApiWinMM::waveOutWrite(HWAVEOUT hwo, LPWAVEHDR pwh, UINT cbwh)
 // -------- HELPERS -------------------------------------------------------- //
 // See "ImportApiWinMM.h" for documentation.
 
-void ImportApiWinMM::LogImportFailed(LPCTSTR functionName)
+void ImportApiWinMM::LogImportFailed(LPCWSTR functionName)
 {
-    Log::WriteFormattedLogMessage(ELogLevel::LogLevelWarning, _T("Import library is missing WinMM function \"%s\". Attempts to call it will fail."), functionName);
+    Log::WriteFormattedLogMessage(ELogLevel::LogLevelWarning, L"Import library is missing WinMM function \"%s\". Attempts to call it will fail.", functionName);
 }
 
 // --------
 
-void ImportApiWinMM::LogInitializeLibraryPath(LPCTSTR libraryPath)
+void ImportApiWinMM::LogInitializeLibraryPath(LPCWSTR libraryPath)
 {
-    Log::WriteFormattedLogMessage(ELogLevel::LogLevelDebug, _T("Attempting to import WinMM functions from \"%s\"."), libraryPath);
+    Log::WriteFormattedLogMessage(ELogLevel::LogLevelDebug, L"Attempting to import WinMM functions from \"%s\".", libraryPath);
 }
 
 // --------
 
 void ImportApiWinMM::LogInitializeFailed(void)
 {
-    Log::WriteLogMessage(ELogLevel::LogLevelError, _T("Failed to initialize imported WinMM functions."));
+    Log::WriteLogMessage(ELogLevel::LogLevelError, L"Failed to initialize imported WinMM functions.");
 }
 
 // --------
 
 void ImportApiWinMM::LogInitializeSucceeded(void)
 {
-    Log::WriteFormattedLogMessage(ELogLevel::LogLevelInfo, _T("Successfully initialized imported WinMM functions."));
+    Log::WriteFormattedLogMessage(ELogLevel::LogLevelInfo, L"Successfully initialized imported WinMM functions.");
 }
 
 // --------
 
-void ImportApiWinMM::LogMissingFunctionCalled(LPCTSTR functionName)
+void ImportApiWinMM::LogMissingFunctionCalled(LPCWSTR functionName)
 {
-    Log::WriteFormattedLogMessage(ELogLevel::LogLevelError, _T("Application has attempted to call missing WinMM import function \"%s\"."), functionName);
+    Log::WriteFormattedLogMessage(ELogLevel::LogLevelError, L"Application has attempted to call missing WinMM import function \"%s\".", functionName);
 }

@@ -28,10 +28,10 @@ using namespace Xidi;
 EMapper MapperFactory::configuredMapperType = kDefaultMapperType;
 
 std::unordered_map<std::wstring, EMapper> MapperFactory::mapperTypeStrings = {
-    {_T("StandardGamepad"),                     EMapper::StandardGamepadMapper},
-    {_T("ExtendedGamepad"),                     EMapper::ExtendedGamepadMapper},
-    {_T("XInputNative"),                        EMapper::XInputNativeMapper},
-    {_T("XInputSharedTriggers"),                EMapper::XInputSharedTriggersMapper}
+    {L"StandardGamepad",                     EMapper::StandardGamepadMapper},
+    {L"ExtendedGamepad",                     EMapper::ExtendedGamepadMapper},
+    {L"XInputNative",                        EMapper::XInputNativeMapper},
+    {L"XInputSharedTriggers",                EMapper::XInputSharedTriggersMapper}
 };
 
 

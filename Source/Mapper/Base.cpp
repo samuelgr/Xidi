@@ -28,90 +28,90 @@ using namespace Xidi::Mapper;
 /// Returns a string that represents the specified GUID.
 /// @param [in] pguid GUID to check.
 /// @return String representation of the GUID's semantics, even if unknown.
-static const TCHAR* DataFormatStringFromObjectUniqueIdentifier(const GUID* pguid)
+static const wchar_t* DataFormatStringFromObjectUniqueIdentifier(const GUID* pguid)
 {
     if (NULL == pguid)
-        return _T("(any)");
+        return L"(any)";
     if (GUID_XAxis == *pguid)
-        return _T("X Axis");
+        return L"X Axis";
     if (GUID_YAxis == *pguid)
-        return _T("Y Axis");
+        return L"Y Axis";
     if (GUID_ZAxis == *pguid)
-        return _T("Z Axis");
+        return L"Z Axis";
     if (GUID_RxAxis == *pguid)
-        return _T("RotX Axis");
+        return L"RotX Axis";
     if (GUID_RyAxis == *pguid)
-        return _T("RotY Axis");
+        return L"RotY Axis";
     if (GUID_RzAxis == *pguid)
-        return _T("RotZ Axis");
+        return L"RotZ Axis";
     if (GUID_Slider == *pguid)
-        return _T("Slider");
+        return L"Slider";
     if (GUID_Button == *pguid)
-        return _T("Button");
+        return L"Button";
     if (GUID_Key == *pguid)
-        return _T("Key");
+        return L"Key";
     if (GUID_POV == *pguid)
-        return _T("POV");
+        return L"POV";
     if (GUID_Unknown == *pguid)
-        return _T("Unknown from GUID");
+        return L"Unknown from GUID";
 
-    return _T("(unknown)");
+    return L"(unknown)";
 }
 
 /// Dumps a data format definition to the log.
 /// Intended as a debugging aid.
 static void DumpDataFormatToLog(LPCDIDATAFORMAT lpdf)
 {
-    Log::WriteLogMessage(ELogLevel::LogLevelDebug, _T("Begin dump of data format."));
+    Log::WriteLogMessage(ELogLevel::LogLevelDebug, L"Begin dump of data format.");
     
     // First, dump the top-level structure members along with some preliminary validity checks.
-    Log::WriteLogMessage(ELogLevel::LogLevelDebug, _T("  Metadata:"));
-    Log::WriteFormattedLogMessage(ELogLevel::LogLevelDebug, _T("    dwSize = %d (%s; expected %d)"), lpdf->dwSize, (sizeof(DIDATAFORMAT) == lpdf->dwSize ? _T("OK") : _T("INCORRECT")), sizeof(DIDATAFORMAT));
-    Log::WriteFormattedLogMessage(ELogLevel::LogLevelDebug, _T("    dwObjSize = %d (%s; expected %d)"), lpdf->dwObjSize, (sizeof(DIOBJECTDATAFORMAT) == lpdf->dwObjSize ? _T("OK") : _T("INCORRECT")), sizeof(DIOBJECTDATAFORMAT));
-    Log::WriteFormattedLogMessage(ELogLevel::LogLevelDebug, _T("    dwFlags = 0x%x (%s)"), lpdf->dwFlags, (DIDF_ABSAXIS == lpdf->dwFlags ? _T("DIDF_ABSAXIS") : (DIDF_RELAXIS == lpdf->dwFlags ? _T("DIDF_RELAXIS") : _T("UNKNOWN VALUE"))));
-    Log::WriteFormattedLogMessage(ELogLevel::LogLevelDebug, _T("    dwDataSize = %d (%s)"), lpdf->dwDataSize, (0 == lpdf->dwDataSize % 4 ? _T("POSSIBLY OK; is a multiple of 4") : _T("INCORRECT; must be a multiple of 4")));
-    Log::WriteFormattedLogMessage(ELogLevel::LogLevelDebug, _T("    dwNumObjs = %d"), lpdf->dwNumObjs);
+    Log::WriteLogMessage(ELogLevel::LogLevelDebug, L"  Metadata:");
+    Log::WriteFormattedLogMessage(ELogLevel::LogLevelDebug, L"    dwSize = %d (%s; expected %d)", lpdf->dwSize, (sizeof(DIDATAFORMAT) == lpdf->dwSize ? L"OK" : L"INCORRECT"), sizeof(DIDATAFORMAT));
+    Log::WriteFormattedLogMessage(ELogLevel::LogLevelDebug, L"    dwObjSize = %d (%s; expected %d)", lpdf->dwObjSize, (sizeof(DIOBJECTDATAFORMAT) == lpdf->dwObjSize ? L"OK" : L"INCORRECT"), sizeof(DIOBJECTDATAFORMAT));
+    Log::WriteFormattedLogMessage(ELogLevel::LogLevelDebug, L"    dwFlags = 0x%x (%s)", lpdf->dwFlags, (DIDF_ABSAXIS == lpdf->dwFlags ? L"DIDF_ABSAXIS" : (DIDF_RELAXIS == lpdf->dwFlags ? L"DIDF_RELAXIS" : L"UNKNOWN VALUE")));
+    Log::WriteFormattedLogMessage(ELogLevel::LogLevelDebug, L"    dwDataSize = %d (%s)", lpdf->dwDataSize, (0 == lpdf->dwDataSize % 4 ? L"POSSIBLY OK; is a multiple of 4" : L"INCORRECT; must be a multiple of 4"));
+    Log::WriteFormattedLogMessage(ELogLevel::LogLevelDebug, L"    dwNumObjs = %d", lpdf->dwNumObjs);
 
     // Second, dump the individual objects.
-    Log::WriteLogMessage(ELogLevel::LogLevelDebug, _T("  Objects:"));
+    Log::WriteLogMessage(ELogLevel::LogLevelDebug, L"  Objects:");
     for (DWORD i = 0; i < lpdf->dwNumObjs; ++i)
     {
-        Log::WriteFormattedLogMessage(ELogLevel::LogLevelDebug, _T("    rgodf[%3d]: { pguid = %s, dwOfs = %d, dwType = 0x%x, dwFlags = 0x%x }"), i, DataFormatStringFromObjectUniqueIdentifier(lpdf->rgodf[i].pguid), lpdf->rgodf[i].dwOfs, lpdf->rgodf[i].dwType, lpdf->rgodf[i].dwFlags);
+        Log::WriteFormattedLogMessage(ELogLevel::LogLevelDebug, L"    rgodf[%3d]: { pguid = %s, dwOfs = %d, dwType = 0x%x, dwFlags = 0x%x }", i, DataFormatStringFromObjectUniqueIdentifier(lpdf->rgodf[i].pguid), lpdf->rgodf[i].dwOfs, lpdf->rgodf[i].dwType, lpdf->rgodf[i].dwFlags);
     }
     
-    Log::WriteLogMessage(ELogLevel::LogLevelDebug, _T("End dump of data format."));
+    Log::WriteLogMessage(ELogLevel::LogLevelDebug, L"End dump of data format.");
 }
 
 /// Compares the specified value to the possible values for the dwHow member of a property header.
 /// Returns a string representation.
 /// @param [in] dwHow Value to check.
 /// @return String representation of the identification method, even if unknown.
-static TCHAR* PropertyStringFromIdentificationMethod(DWORD dwHow)
+static wchar_t* PropertyStringFromIdentificationMethod(DWORD dwHow)
 {
     if (DIPH_DEVICE == dwHow)
-        return _T("DIPH_DEVICE");
+        return L"DIPH_DEVICE";
     if (DIPH_BYOFFSET == dwHow)
-        return _T("DIPH_BYOFFSET");
+        return L"DIPH_BYOFFSET";
     if (DIPH_BYUSAGE == dwHow)
-        return _T("DIPH_BYUSAGE");
+        return L"DIPH_BYUSAGE";
     if (DIPH_BYID == dwHow)
-        return _T("DIPH_BYID");
+        return L"DIPH_BYID";
 
-    return _T("(unknown)");
+    return L"(unknown)";
 }
 
 /// Dumps the top-level members of a property request (either get or set).
 /// @param [in] pdiph Pointer to the property header.
 static void DumpPropertyHeaderToLog(LPCDIPROPHEADER pdiph)
 {
-    Log::WriteLogMessage(ELogLevel::LogLevelDebug, _T("Begin dump of property request header."));
+    Log::WriteLogMessage(ELogLevel::LogLevelDebug, L"Begin dump of property request header.");
 
-    Log::WriteFormattedLogMessage(ELogLevel::LogLevelDebug, _T("    dwSize = %d"), pdiph->dwSize);
-    Log::WriteFormattedLogMessage(ELogLevel::LogLevelDebug, _T("    dwHeaderSize = %d (%s; expected %d)"), pdiph->dwHeaderSize, (sizeof(DIPROPHEADER) == pdiph->dwHeaderSize ? _T("OK") : _T("INCORRECT")), sizeof(DIPROPHEADER));
-    Log::WriteFormattedLogMessage(ELogLevel::LogLevelDebug, _T("    dwObj = %d (%s)"), pdiph->dwObj, (DIPH_DEVICE != pdiph->dwHow || 0 == pdiph->dwObj ? _T("POSSIBLY OK") : _T("INCORRECT; must be 0 in this case")));
-    Log::WriteFormattedLogMessage(ELogLevel::LogLevelDebug, _T("    dwHow = %d (%s)"), pdiph->dwHow, PropertyStringFromIdentificationMethod(pdiph->dwHow));
+    Log::WriteFormattedLogMessage(ELogLevel::LogLevelDebug, L"    dwSize = %d", pdiph->dwSize);
+    Log::WriteFormattedLogMessage(ELogLevel::LogLevelDebug, L"    dwHeaderSize = %d (%s; expected %d)", pdiph->dwHeaderSize, (sizeof(DIPROPHEADER) == pdiph->dwHeaderSize ? L"OK" : L"INCORRECT"), sizeof(DIPROPHEADER));
+    Log::WriteFormattedLogMessage(ELogLevel::LogLevelDebug, L"    dwObj = %d (%s)", pdiph->dwObj, (DIPH_DEVICE != pdiph->dwHow || 0 == pdiph->dwObj ? L"POSSIBLY OK" : L"INCORRECT; must be 0 in this case"));
+    Log::WriteFormattedLogMessage(ELogLevel::LogLevelDebug, L"    dwHow = %d (%s)", pdiph->dwHow, PropertyStringFromIdentificationMethod(pdiph->dwHow));
 
-    Log::WriteLogMessage(ELogLevel::LogLevelDebug, _T("End dump of property request header."));
+    Log::WriteLogMessage(ELogLevel::LogLevelDebug, L"End dump of property request header.");
 }
 
 
@@ -427,7 +427,7 @@ LONG Base::InvertAxisValue(LONG originalValue, LONG rangeMin, LONG rangeMax)
 
 void Base::MapInstanceAndOffset(TInstance instance, DWORD offset)
 {
-    Log::WriteFormattedLogMessage(ELogLevel::LogLevelDebug, _T("Mapping instance (type=%lld, index=%lld) to data format offset %d."), (int64_t)ExtractIdentifierInstanceType(instance), (int64_t)ExtractIdentifierInstanceIndex(instance), offset);
+    Log::WriteFormattedLogMessage(ELogLevel::LogLevelDebug, L"Mapping instance (type=%lld, index=%lld) to data format offset %d.", (int64_t)ExtractIdentifierInstanceType(instance), (int64_t)ExtractIdentifierInstanceIndex(instance), offset);
     instanceToOffset.insert({instance, offset});
     offsetToInstance.insert({offset, instance});
 }
@@ -651,7 +651,7 @@ HRESULT Base::GetMappedProperty(REFGUID rguidProp, LPDIPROPHEADER pdiph)
 {
     if (Log::WillOutputLogMessageOfSeverity(ELogLevel::LogLevelDebug))
     {
-        Log::WriteLogMessage(ELogLevel::LogLevelDebug, _T("Attempting to get a property."));
+        Log::WriteLogMessage(ELogLevel::LogLevelDebug, L"Attempting to get a property.");
         DumpPropertyHeaderToLog(pdiph);
     }
     
@@ -803,7 +803,7 @@ HRESULT Base::SetApplicationDataFormat(LPCDIDATAFORMAT lpdf)
 {
     if (Log::WillOutputLogMessageOfSeverity(ELogLevel::LogLevelDebug))
     {
-        Log::WriteLogMessage(ELogLevel::LogLevelDebug, _T("Attempting to set application's requested data format."));
+        Log::WriteLogMessage(ELogLevel::LogLevelDebug, L"Attempting to set application's requested data format.");
         DumpDataFormatToLog(lpdf);
     }
     
@@ -883,7 +883,7 @@ HRESULT Base::SetApplicationDataFormat(LPCDIDATAFORMAT lpdf)
                     {
                         // Instance was unable to be selected, and any instance was allowed.
                         // This is okay, it just means the application data format has field for an axis that does not actually exist on the controller.
-                        Log::WriteFormattedLogMessage(ELogLevel::LogLevelDebug, _T("Any axis type allowed; mapping unused axis at offset %d."), dataFormat->dwOfs);
+                        Log::WriteFormattedLogMessage(ELogLevel::LogLevelDebug, L"Any axis type allowed; mapping unused axis at offset %d.", dataFormat->dwOfs);
                         axisOffsetsUnused.insert(dataFormat->dwOfs);
                     }
                 }
@@ -913,7 +913,7 @@ HRESULT Base::SetApplicationDataFormat(LPCDIDATAFORMAT lpdf)
                         {
                             // No more unused instances of the requested axis type exist.
                             // This is okay, it just means the application data format has a field for an axis that does not actually exist on the controller.
-                            Log::WriteFormattedLogMessage(ELogLevel::LogLevelDebug, _T("Specific axis type required; mapping unused axis at offset %d."), dataFormat->dwOfs);
+                            Log::WriteFormattedLogMessage(ELogLevel::LogLevelDebug, L"Specific axis type required; mapping unused axis at offset %d.", dataFormat->dwOfs);
                             axisOffsetsUnused.insert(dataFormat->dwOfs);
                         }
                     }
@@ -967,7 +967,7 @@ HRESULT Base::SetApplicationDataFormat(LPCDIDATAFORMAT lpdf)
                     {
                         // Instance was unable to be selected, and any instance was allowed.
                         // This is okay, it just means the application data format has field for a button that does not actually exist on the controller.
-                        Log::WriteFormattedLogMessage(ELogLevel::LogLevelDebug, _T("Mapping unused button at offset %d."), dataFormat->dwOfs);
+                        Log::WriteFormattedLogMessage(ELogLevel::LogLevelDebug, L"Mapping unused button at offset %d.", dataFormat->dwOfs);
                         buttonOffsetsUnused.insert(dataFormat->dwOfs);
                     }
                 }
@@ -1008,7 +1008,7 @@ HRESULT Base::SetApplicationDataFormat(LPCDIDATAFORMAT lpdf)
                     {
                         // Instance was unable to be selected, and any instance was allowed.
                         // This is okay, it just means the application data format has field for a POV that does not actually exist on the controller.
-                        Log::WriteFormattedLogMessage(ELogLevel::LogLevelDebug, _T("Mapping unused POV at offset %d."), dataFormat->dwOfs);
+                        Log::WriteFormattedLogMessage(ELogLevel::LogLevelDebug, L"Mapping unused POV at offset %d.", dataFormat->dwOfs);
                         povOffsetsUnused.insert(dataFormat->dwOfs);
                     }
                 }
@@ -1058,7 +1058,7 @@ HRESULT Base::SetMappedProperty(REFGUID rguidProp, LPCDIPROPHEADER pdiph)
 {
     if (Log::WillOutputLogMessageOfSeverity(ELogLevel::LogLevelDebug))
     {
-        Log::WriteLogMessage(ELogLevel::LogLevelDebug, _T("Attempting to set a property."));
+        Log::WriteLogMessage(ELogLevel::LogLevelDebug, L"Attempting to set a property.");
         DumpPropertyHeaderToLog(pdiph);
     }
     

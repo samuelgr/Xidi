@@ -107,30 +107,30 @@ namespace Xidi
         /// @param [in] buf Buffer containing the configuration file line.
         /// @param [in] length Number of characters in the buffer.
         /// @return Configuration line classification.
-        static EConfigurationLineType ClassifyConfigurationFileLine(LPCTSTR buf, const size_t length);
+        static EConfigurationLineType ClassifyConfigurationFileLine(LPCWSTR buf, const size_t length);
 
         /// Extracts a name and a value for the specified configuration file line, which must first have been classified as containing a value.
         /// Modifies the buffer by changing a value to the NULL character, indicating the end of the portion of interest in the input configuration file line.
         /// @param [out] name Filled with the name of the configuration setting.
         /// @param [out] value Filled with the value specified for the configuration setting.
         /// @param [in] configFileLine Buffer containing the configuration file line.
-        static void ExtractNameValuePairFromConfigurationFileLine(std::wstring& name, std::wstring& value, LPTSTR configFileLine);
+        static void ExtractNameValuePairFromConfigurationFileLine(std::wstring& name, std::wstring& value, LPWSTR configFileLine);
         
         /// Extracts a section name from the specified configuration file line, which must first have been classified as containing a section name.
         /// Modifies the buffer by changing a value to the NULL character, indicating the end of the portion of interest in the input configuration file line.
         /// @param [out] sectionName Filled with the name of the configuration section.
         /// @param [in] configFileLine Buffer containing the configuration file line.
-        static void ExtractSectionNameFromConfigurationFileLine(std::wstring& sectionName, LPTSTR configFileLine);
+        static void ExtractSectionNameFromConfigurationFileLine(std::wstring& sectionName, LPWSTR configFileLine);
         
         /// Tests if the supplied character is allowed as a value name (the part before the '=' sign in the configuration file).
         /// @param [in] charToTest Character to test.
         /// @return Nonzero if true or zero if false (similar interface to cctype functions).
-        static int IsAllowedValueNameCharacter(const TCHAR charToTest);
+        static int IsAllowedValueNameCharacter(const wchar_t charToTest);
 
         /// Tests if the supplied character is allowed as a value setting (the part after the '=' sign in the configuration file).
         /// @param [in] charToTest Character to test.
         /// @return Nonzero if true or zero if false (similar interface to cctype functions).
-        static int IsAllowedValueSettingCharacter(const TCHAR charToTest);
+        static int IsAllowedValueSettingCharacter(const wchar_t charToTest);
         
         /// Parses a signed integer value from the supplied input string.
         /// Sets the destination parameter's value to the result of the parse, although it remains unmodified on parse failure.
@@ -151,7 +151,7 @@ namespace Xidi
         /// @param [in] count Number of characters the buffer can hold.
         /// @param [in] filehandle Handle to the file from which to read.
         /// @return Length of the string that was read, with negative indicating an error condition.
-        static int ReadAndTrimSingleLine(LPTSTR buf, const int count, FILE* filehandle);
+        static int ReadAndTrimSingleLine(LPWSTR buf, const int count, FILE* filehandle);
 
 
         // -------- APPLICATION-SPECIFIC METHODS ----------------------------------- //
@@ -160,57 +160,57 @@ namespace Xidi
         /// @param [out] buf Buffer to fill.
         /// @param [in] count Number of characters that fit in the buffer.
         /// @return Number of characters written to the buffer.
-        static size_t GetConfigurationFilePath(LPTSTR buf, const DWORD count);
+        static size_t GetConfigurationFilePath(LPWSTR buf, const DWORD count);
         
         /// Handles an error related to being unable to open a configuration file.
         /// @param [in] filename String containing the name of the configuration file.
-        static void HandleErrorCannotOpenConfigurationFile(LPCTSTR filename);
+        static void HandleErrorCannotOpenConfigurationFile(LPCWSTR filename);
 
         /// Handles an error related to being unable to parse a specific line of the configuration file.
         /// @param [in] filename String containing the name of the configuration file.
         /// @param [in] linenum Configuration file line number at which the error was encountered.
-        static void HandleErrorCannotParseConfigurationFileLine(LPCTSTR filename, const DWORD linenum);
+        static void HandleErrorCannotParseConfigurationFileLine(LPCWSTR filename, const DWORD linenum);
 
         /// Handles an error related to a section present in the configuration file multiple times.
         /// @param [in] filename String containing the name of the configuration file.
         /// @param [in] section Name of the affected configuration section.
-        static void HandleErrorDuplicateConfigurationSection(LPCTSTR filename, LPCTSTR section);
+        static void HandleErrorDuplicateConfigurationSection(LPCWSTR filename, LPCWSTR section);
 
         /// Handles an error related to a section present in the configuration file that is unsupported by this application.
         /// @param [in] filename String containing the name of the configuration file.
         /// @param [in] section Name of the affected configuration section.
-        static void HandleErrorUnsupportedConfigurationSection(LPCTSTR filename, LPCTSTR section);
+        static void HandleErrorUnsupportedConfigurationSection(LPCWSTR filename, LPCWSTR section);
 
         /// Handles an error due to a configuration file's line length being too long.
         /// @param [in] filename String containing the name of the configuration file.
         /// @param [in] linenum Configuration file line number at which the error was encountered.
-        static void HandleErrorLineTooLong(LPCTSTR filename, const DWORD linenum);
+        static void HandleErrorLineTooLong(LPCWSTR filename, const DWORD linenum);
 
         /// Handles a semantic error in which a value is specified outside of a section.
         /// @param [in] filename String containing the name of the configuration file.
         /// @param [in] linenum Configuration file line number at which the error was encountered.
-        static void HandleErrorValueOutsideSection(LPCTSTR filename, const DWORD linenum);
+        static void HandleErrorValueOutsideSection(LPCWSTR filename, const DWORD linenum);
 
         /// Handles a semantic error in which a value is specified multiple times in a section.
         /// @param [in] filename String containing the name of the configuration file.
         /// @param [in] linenum Configuration file line number at which the error was encountered.
         /// @param [in] section Name of the affected configuration section.
         /// @param [in] value Value specified in the configuration file.
-        static void HandleErrorDuplicateValue(LPCTSTR filename, const DWORD linenum, LPCTSTR section, LPCTSTR value);
+        static void HandleErrorDuplicateValue(LPCWSTR filename, const DWORD linenum, LPCWSTR section, LPCWSTR value);
 
         /// Handles a semantic error in which a value is specified in a section and its name is recognized but its type is malformed and the value could not be parsed.
         /// @param [in] filename String containing the name of the configuration file.
         /// @param [in] linenum Configuration file line number at which the error was encountered.
         /// @param [in] section Name of the affected configuration section.
         /// @param [in] value Value specified in the configuration file.
-        static void HandleErrorMalformedValue(LPCTSTR filename, const DWORD linenum, LPCTSTR section, LPCTSTR value);
+        static void HandleErrorMalformedValue(LPCWSTR filename, const DWORD linenum, LPCWSTR section, LPCWSTR value);
         
         /// Handles a semantic error in which a value is specified in a section that does not recognize that value.
         /// @param [in] filename String containing the name of the configuration file.
         /// @param [in] linenum Configuration file line number at which the error was encountered.
         /// @param [in] section Name of the affected configuration section.
         /// @param [in] value Value specified in the configuration file.
-        static void HandleErrorUnsupportedValue(LPCTSTR filename, const DWORD linenum, LPCTSTR section, LPCTSTR value);
+        static void HandleErrorUnsupportedValue(LPCWSTR filename, const DWORD linenum, LPCWSTR section, LPCWSTR value);
 
         /// Handles a semantic error in which a value is parsed correctly but is rejected by the function that is supposed to apply it.
         /// @param [in] filename String containing the name of the configuration file.
@@ -218,11 +218,11 @@ namespace Xidi
         /// @param [in] setting Name of the affected configuration setting.
         /// @param [in] section Name of the affected configuration section.
         /// @param [in] value Value specified in the configuration file.
-        static void HandleErrorCannotApplyValue(LPCTSTR filename, const DWORD linenum, LPCTSTR setting, LPCTSTR section, LPCTSTR value);
+        static void HandleErrorCannotApplyValue(LPCWSTR filename, const DWORD linenum, LPCWSTR setting, LPCWSTR section, LPCWSTR value);
         
         /// Handles file I/O errors while reading the configuration file.
         /// @param [in] filename String containing the name of the configuration file.
-        static void HandleErrorFileIO(LPCTSTR filename);
+        static void HandleErrorFileIO(LPCWSTR filename);
 
         /// Handles a miscellaneous internal error related to being unable to read the configuration file.
         /// The code should be presented to the user.
@@ -235,6 +235,6 @@ namespace Xidi
         /// @param [in] setting Name of the affected configuration setting.
         /// @param [in] section Name of the affected configuration section.
         /// @param [in] value Value specified in the configuration file.
-        static void HandleSuccessAppliedValue(LPCTSTR filename, const DWORD linenum, LPCTSTR setting, LPCTSTR section, LPCTSTR value);
+        static void HandleSuccessAppliedValue(LPCWSTR filename, const DWORD linenum, LPCWSTR setting, LPCWSTR section, LPCWSTR value);
     };
 }

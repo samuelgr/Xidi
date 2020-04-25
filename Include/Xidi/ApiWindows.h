@@ -14,6 +14,7 @@
 
 // -------- WINDOWS API ---------------------------------------------------- //
 
+#define NOMINMAX
+
 #include <sdkddkver.h>
 #include <windows.h>
-#include <tchar.h>
