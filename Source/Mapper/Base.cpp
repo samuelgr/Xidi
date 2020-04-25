@@ -12,8 +12,8 @@
 
 #include "ApiDirectInput.h"
 #include "Globals.h"
-#include "Log.h"
 #include "Mapper/Base.h"
+#include "Message.h"
 
 #include <unordered_set>
 #include <Xinput.h>
@@ -62,24 +62,24 @@ static const wchar_t* DataFormatStringFromObjectUniqueIdentifier(const GUID* pgu
 /// Intended as a debugging aid.
 static void DumpDataFormatToLog(LPCDIDATAFORMAT lpdf)
 {
-    Log::WriteLogMessage(ELogLevel::LogLevelDebug, L"Begin dump of data format.");
+    Message::Output(Message::ESeverity::Debug, L"Begin dump of data format.");
 
     // First, dump the top-level structure members along with some preliminary validity checks.
-    Log::WriteLogMessage(ELogLevel::LogLevelDebug, L"  Metadata:");
-    Log::WriteFormattedLogMessage(ELogLevel::LogLevelDebug, L"    dwSize = %d (%s; expected %d)", lpdf->dwSize, (sizeof(DIDATAFORMAT) == lpdf->dwSize ? L"OK" : L"INCORRECT"), sizeof(DIDATAFORMAT));
-    Log::WriteFormattedLogMessage(ELogLevel::LogLevelDebug, L"    dwObjSize = %d (%s; expected %d)", lpdf->dwObjSize, (sizeof(DIOBJECTDATAFORMAT) == lpdf->dwObjSize ? L"OK" : L"INCORRECT"), sizeof(DIOBJECTDATAFORMAT));
-    Log::WriteFormattedLogMessage(ELogLevel::LogLevelDebug, L"    dwFlags = 0x%x (%s)", lpdf->dwFlags, (DIDF_ABSAXIS == lpdf->dwFlags ? L"DIDF_ABSAXIS" : (DIDF_RELAXIS == lpdf->dwFlags ? L"DIDF_RELAXIS" : L"UNKNOWN VALUE")));
-    Log::WriteFormattedLogMessage(ELogLevel::LogLevelDebug, L"    dwDataSize = %d (%s)", lpdf->dwDataSize, (0 == lpdf->dwDataSize % 4 ? L"POSSIBLY OK; is a multiple of 4" : L"INCORRECT; must be a multiple of 4"));
-    Log::WriteFormattedLogMessage(ELogLevel::LogLevelDebug, L"    dwNumObjs = %d", lpdf->dwNumObjs);
+    Message::Output(Message::ESeverity::Debug, L"  Metadata:");
+    Message::OutputFormatted(Message::ESeverity::Debug, L"    dwSize = %d (%s; expected %d)", lpdf->dwSize, (sizeof(DIDATAFORMAT) == lpdf->dwSize ? L"OK" : L"INCORRECT"), sizeof(DIDATAFORMAT));
+    Message::OutputFormatted(Message::ESeverity::Debug, L"    dwObjSize = %d (%s; expected %d)", lpdf->dwObjSize, (sizeof(DIOBJECTDATAFORMAT) == lpdf->dwObjSize ? L"OK" : L"INCORRECT"), sizeof(DIOBJECTDATAFORMAT));
+    Message::OutputFormatted(Message::ESeverity::Debug, L"    dwFlags = 0x%x (%s)", lpdf->dwFlags, (DIDF_ABSAXIS == lpdf->dwFlags ? L"DIDF_ABSAXIS" : (DIDF_RELAXIS == lpdf->dwFlags ? L"DIDF_RELAXIS" : L"UNKNOWN VALUE")));
+    Message::OutputFormatted(Message::ESeverity::Debug, L"    dwDataSize = %d (%s)", lpdf->dwDataSize, (0 == lpdf->dwDataSize % 4 ? L"POSSIBLY OK; is a multiple of 4" : L"INCORRECT; must be a multiple of 4"));
+    Message::OutputFormatted(Message::ESeverity::Debug, L"    dwNumObjs = %d", lpdf->dwNumObjs);
 
     // Second, dump the individual objects.
-    Log::WriteLogMessage(ELogLevel::LogLevelDebug, L"  Objects:");
+    Message::Output(Message::ESeverity::Debug, L"  Objects:");
     for (DWORD i = 0; i < lpdf->dwNumObjs; ++i)
     {
-        Log::WriteFormattedLogMessage(ELogLevel::LogLevelDebug, L"    rgodf[%3d]: { pguid = %s, dwOfs = %d, dwType = 0x%x, dwFlags = 0x%x }", i, DataFormatStringFromObjectUniqueIdentifier(lpdf->rgodf[i].pguid), lpdf->rgodf[i].dwOfs, lpdf->rgodf[i].dwType, lpdf->rgodf[i].dwFlags);
+        Message::OutputFormatted(Message::ESeverity::Debug, L"    rgodf[%3d]: { pguid = %s, dwOfs = %d, dwType = 0x%x, dwFlags = 0x%x }", i, DataFormatStringFromObjectUniqueIdentifier(lpdf->rgodf[i].pguid), lpdf->rgodf[i].dwOfs, lpdf->rgodf[i].dwType, lpdf->rgodf[i].dwFlags);
     }
 
-    Log::WriteLogMessage(ELogLevel::LogLevelDebug, L"End dump of data format.");
+    Message::Output(Message::ESeverity::Debug, L"End dump of data format.");
 }
 
 /// Compares the specified value to the possible values for the dwHow member of a property header.
@@ -104,14 +104,14 @@ static const wchar_t* PropertyStringFromIdentificationMethod(DWORD dwHow)
 /// @param [in] pdiph Pointer to the property header.
 static void DumpPropertyHeaderToLog(LPCDIPROPHEADER pdiph)
 {
-    Log::WriteLogMessage(ELogLevel::LogLevelDebug, L"Begin dump of property request header.");
+    Message::Output(Message::ESeverity::Debug, L"Begin dump of property request header.");
 
-    Log::WriteFormattedLogMessage(ELogLevel::LogLevelDebug, L"    dwSize = %d", pdiph->dwSize);
-    Log::WriteFormattedLogMessage(ELogLevel::LogLevelDebug, L"    dwHeaderSize = %d (%s; expected %d)", pdiph->dwHeaderSize, (sizeof(DIPROPHEADER) == pdiph->dwHeaderSize ? L"OK" : L"INCORRECT"), sizeof(DIPROPHEADER));
-    Log::WriteFormattedLogMessage(ELogLevel::LogLevelDebug, L"    dwObj = %d (%s)", pdiph->dwObj, (DIPH_DEVICE != pdiph->dwHow || 0 == pdiph->dwObj ? L"POSSIBLY OK" : L"INCORRECT; must be 0 in this case"));
-    Log::WriteFormattedLogMessage(ELogLevel::LogLevelDebug, L"    dwHow = %d (%s)", pdiph->dwHow, PropertyStringFromIdentificationMethod(pdiph->dwHow));
+    Message::OutputFormatted(Message::ESeverity::Debug, L"    dwSize = %d", pdiph->dwSize);
+    Message::OutputFormatted(Message::ESeverity::Debug, L"    dwHeaderSize = %d (%s; expected %d)", pdiph->dwHeaderSize, (sizeof(DIPROPHEADER) == pdiph->dwHeaderSize ? L"OK" : L"INCORRECT"), sizeof(DIPROPHEADER));
+    Message::OutputFormatted(Message::ESeverity::Debug, L"    dwObj = %d (%s)", pdiph->dwObj, (DIPH_DEVICE != pdiph->dwHow || 0 == pdiph->dwObj ? L"POSSIBLY OK" : L"INCORRECT; must be 0 in this case"));
+    Message::OutputFormatted(Message::ESeverity::Debug, L"    dwHow = %d (%s)", pdiph->dwHow, PropertyStringFromIdentificationMethod(pdiph->dwHow));
 
-    Log::WriteLogMessage(ELogLevel::LogLevelDebug, L"End dump of property request header.");
+    Message::Output(Message::ESeverity::Debug, L"End dump of property request header.");
 }
 
 
@@ -427,7 +427,7 @@ LONG Base::InvertAxisValue(LONG originalValue, LONG rangeMin, LONG rangeMax)
 
 void Base::MapInstanceAndOffset(TInstance instance, DWORD offset)
 {
-    Log::WriteFormattedLogMessage(ELogLevel::LogLevelDebug, L"Mapping instance (type=%lld, index=%lld) to data format offset %d.", (int64_t)ExtractIdentifierInstanceType(instance), (int64_t)ExtractIdentifierInstanceIndex(instance), offset);
+    Message::OutputFormatted(Message::ESeverity::Debug, L"Mapping instance (type=%lld, index=%lld) to data format offset %d.", (int64_t)ExtractIdentifierInstanceType(instance), (int64_t)ExtractIdentifierInstanceIndex(instance), offset);
     instanceToOffset.insert({instance, offset});
     offsetToInstance.insert({offset, instance});
 }
@@ -649,9 +649,9 @@ HRESULT Base::GetMappedObjectInfo(BOOL useUnicode, LPDIDEVICEOBJECTINSTANCE pdid
 
 HRESULT Base::GetMappedProperty(REFGUID rguidProp, LPDIPROPHEADER pdiph)
 {
-    if (Log::WillOutputLogMessageOfSeverity(ELogLevel::LogLevelDebug))
+    if (Message::WillOutputMessageOfSeverity(Message::ESeverity::Debug))
     {
-        Log::WriteLogMessage(ELogLevel::LogLevelDebug, L"Attempting to get a property.");
+        Message::Output(Message::ESeverity::Debug, L"Attempting to get a property.");
         DumpPropertyHeaderToLog(pdiph);
     }
 
@@ -801,9 +801,9 @@ LONG Base::OffsetForXInputControllerElement(EXInputControllerElement xElement)
 
 HRESULT Base::SetApplicationDataFormat(LPCDIDATAFORMAT lpdf)
 {
-    if (Log::WillOutputLogMessageOfSeverity(ELogLevel::LogLevelDebug))
+    if (Message::WillOutputMessageOfSeverity(Message::ESeverity::Debug))
     {
-        Log::WriteLogMessage(ELogLevel::LogLevelDebug, L"Attempting to set application's requested data format.");
+        Message::Output(Message::ESeverity::Debug, L"Attempting to set application's requested data format.");
         DumpDataFormatToLog(lpdf);
     }
 
@@ -883,7 +883,7 @@ HRESULT Base::SetApplicationDataFormat(LPCDIDATAFORMAT lpdf)
                     {
                         // Instance was unable to be selected, and any instance was allowed.
                         // This is okay, it just means the application data format has field for an axis that does not actually exist on the controller.
-                        Log::WriteFormattedLogMessage(ELogLevel::LogLevelDebug, L"Any axis type allowed; mapping unused axis at offset %d.", dataFormat->dwOfs);
+                        Message::OutputFormatted(Message::ESeverity::Debug, L"Any axis type allowed; mapping unused axis at offset %d.", dataFormat->dwOfs);
                         axisOffsetsUnused.insert(dataFormat->dwOfs);
                     }
                 }
@@ -913,7 +913,7 @@ HRESULT Base::SetApplicationDataFormat(LPCDIDATAFORMAT lpdf)
                         {
                             // No more unused instances of the requested axis type exist.
                             // This is okay, it just means the application data format has a field for an axis that does not actually exist on the controller.
-                            Log::WriteFormattedLogMessage(ELogLevel::LogLevelDebug, L"Specific axis type required; mapping unused axis at offset %d.", dataFormat->dwOfs);
+                            Message::OutputFormatted(Message::ESeverity::Debug, L"Specific axis type required; mapping unused axis at offset %d.", dataFormat->dwOfs);
                             axisOffsetsUnused.insert(dataFormat->dwOfs);
                         }
                     }
@@ -967,7 +967,7 @@ HRESULT Base::SetApplicationDataFormat(LPCDIDATAFORMAT lpdf)
                     {
                         // Instance was unable to be selected, and any instance was allowed.
                         // This is okay, it just means the application data format has field for a button that does not actually exist on the controller.
-                        Log::WriteFormattedLogMessage(ELogLevel::LogLevelDebug, L"Mapping unused button at offset %d.", dataFormat->dwOfs);
+                        Message::OutputFormatted(Message::ESeverity::Debug, L"Mapping unused button at offset %d.", dataFormat->dwOfs);
                         buttonOffsetsUnused.insert(dataFormat->dwOfs);
                     }
                 }
@@ -1008,7 +1008,7 @@ HRESULT Base::SetApplicationDataFormat(LPCDIDATAFORMAT lpdf)
                     {
                         // Instance was unable to be selected, and any instance was allowed.
                         // This is okay, it just means the application data format has field for a POV that does not actually exist on the controller.
-                        Log::WriteFormattedLogMessage(ELogLevel::LogLevelDebug, L"Mapping unused POV at offset %d.", dataFormat->dwOfs);
+                        Message::OutputFormatted(Message::ESeverity::Debug, L"Mapping unused POV at offset %d.", dataFormat->dwOfs);
                         povOffsetsUnused.insert(dataFormat->dwOfs);
                     }
                 }
@@ -1056,9 +1056,9 @@ HRESULT Base::SetApplicationDataFormat(LPCDIDATAFORMAT lpdf)
 
 HRESULT Base::SetMappedProperty(REFGUID rguidProp, LPCDIPROPHEADER pdiph)
 {
-    if (Log::WillOutputLogMessageOfSeverity(ELogLevel::LogLevelDebug))
+    if (Message::WillOutputMessageOfSeverity(Message::ESeverity::Debug))
     {
-        Log::WriteLogMessage(ELogLevel::LogLevelDebug, L"Attempting to set a property.");
+        Message::Output(Message::ESeverity::Debug, L"Attempting to set a property.");
         DumpPropertyHeaderToLog(pdiph);
     }
 

@@ -11,7 +11,7 @@
  *****************************************************************************/
 
 #include "ApiDirectInput.h"
-#include "Log.h"
+#include "Message.h"
 #include "XInputController.h"
 
 #include <deque>
@@ -146,7 +146,7 @@ void XInputController::SetEventBufferSize(DWORD requestedSize)
 {
     const DWORD actualCount = AllowedEventCountForRequestedSize(requestedSize);
 
-    Log::WriteFormattedLogMessage(ELogLevel::LogLevelDebug, L"Setting event buffer size on XInput player %u to %d events, based on a requested size of %d.", GetPlayerIndex() + 1, actualCount, requestedSize);
+    Message::OutputFormatted(Message::ESeverity::Debug, L"Setting event buffer size on XInput player %u to %d events, based on a requested size of %d.", GetPlayerIndex() + 1, actualCount, requestedSize);
 
     if (actualCount == eventBufferCountActual)
     {

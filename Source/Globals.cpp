@@ -12,9 +12,12 @@
 
 #include "ApiWindows.h"
 #include "Configuration.h"
+#include "Globals.h"
+#include "Message.h"
 #include "Strings.h"
 #include "XidiConfigReader.h"
 
+#include <cstdint>
 #include <memory>
 #include <mutex>
 #include <string>
@@ -75,6 +78,33 @@ namespace Xidi
         };
 
 
+        // -------- INTERNAL FUNCTIONS ------------------------------------- //
+
+        /// Enables the log, if it is configured in the configuration file.
+        static void EnableLogIfConfigured(void)
+        {
+            const Configuration::Configuration& config = GetConfiguration();
+
+            bool logEnabled = false;
+            int64_t logLevel = 0;
+
+            if (true == config.IsDataValid())
+            {
+                if (true == config.GetData().SectionNamePairExists(Strings::kStrConfigurationSectionLog, Strings::kStrConfigurationSettingLogEnabled))
+                    logEnabled = config.GetData()[Strings::kStrConfigurationSectionLog][Strings::kStrConfigurationSettingLogEnabled].FirstValue().GetBooleanValue();
+
+                if (true == config.GetData().SectionNamePairExists(Strings::kStrConfigurationSectionLog, Strings::kStrConfigurationSettingLogLevel))
+                    logLevel = config.GetData()[Strings::kStrConfigurationSectionLog][Strings::kStrConfigurationSettingLogLevel].FirstValue().GetIntegerValue();
+            }
+
+            if ((true == logEnabled) && (logLevel > 0))
+            {
+                Message::CreateAndEnableLogFile();
+                Message::SetMinimumSeverityForOutput((Message::ESeverity)logLevel);
+            }
+        }
+
+
         // -------- FUNCTIONS ---------------------------------------------- //
         // See "Globals.h" for documentation.
 
@@ -85,6 +115,9 @@ namespace Xidi
             static std::once_flag readConfigFlag;
             std::call_once(readConfigFlag, [](){
                 configuration.ReadConfigurationFile(Strings::kStrConfigurationFilename);
+
+                if (Configuration::EFileReadResult::Malformed == configuration.GetFileReadResult())
+                    Message::Output(Message::ESeverity::Error, configuration.GetReadErrorMessage().data());
             });
 
             return configuration;
@@ -116,6 +149,13 @@ namespace Xidi
         const SYSTEM_INFO& GetSystemInformation(void)
         {
             return GlobalData::GetInstance().gSystemInformation;
+        }
+
+        // --------
+
+        void Initialize(void)
+        {
+            EnableLogIfConfigured();
         }
     }
 }

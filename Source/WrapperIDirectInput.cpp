@@ -13,8 +13,8 @@
 #include "ApiDirectInput.h"
 #include "ApiGUID.h"
 #include "ControllerIdentification.h"
-#include "Log.h"
 #include "MapperFactory.h"
+#include "Message.h"
 #include "VirtualDirectInputDevice.h"
 #include "WrapperIDirectInput.h"
 #include "XInputController.h"
@@ -103,7 +103,7 @@ HRESULT STDMETHODCALLTYPE WrapperIDirectInput::CreateDevice(REFGUID rguid, Earli
     if (-1 == xinputIndex)
     {
         // Not an XInput GUID, so just create the device as requested by the application.
-        Log::WriteLogMessage(ELogLevel::LogLevelInfo, L"Binding to a non-XInput device. Xidi will not handle communication with it.");
+        Message::Output(Message::ESeverity::Info, L"Binding to a non-XInput device. Xidi will not handle communication with it.");
 
         if (underlyingDIObjectUsesUnicode)
             return underlyingDIObject.w->CreateDevice(rguid, (EarliestIDirectInputDeviceW**)lplpDirectInputDevice, pUnkOuter);
@@ -113,7 +113,7 @@ HRESULT STDMETHODCALLTYPE WrapperIDirectInput::CreateDevice(REFGUID rguid, Earli
     else
     {
         // Is an XInput GUID, so create a fake device that will communicate with the XInput controller of the specified index.
-        Log::WriteFormattedLogMessage(ELogLevel::LogLevelInfo, L"Binding to Xidi virtual XInput device for player %u.", (xinputIndex + 1));
+        Message::OutputFormatted(Message::ESeverity::Info, L"Binding to Xidi virtual XInput device for player %u.", (xinputIndex + 1));
 
         VirtualDirectInputDevice* newWrappedDevice = new VirtualDirectInputDevice(underlyingDIObjectUsesUnicode, new XInputController(xinputIndex), Mapper::Create());
         newWrappedDevice->AddRef();
@@ -143,7 +143,7 @@ HRESULT STDMETHODCALLTYPE WrapperIDirectInput::EnumDevices(DWORD dwDevType, LPDI
     callbackInfo.seenInstanceIdentifiers.clear();
 
     HRESULT enumResult = DI_OK;
-    Log::WriteLogMessage(ELogLevel::LogLevelDebug, L"Starting to enumerate DirectInput devices.");
+    Message::Output(Message::ESeverity::Debug, L"Starting to enumerate DirectInput devices.");
 
     // Enumerating game controllers requires some manipulation.
     if (gameControllersRequested)
@@ -162,7 +162,7 @@ HRESULT STDMETHODCALLTYPE WrapperIDirectInput::EnumDevices(DWORD dwDevType, LPDI
 
         if (systemHasXInputDevices)
         {
-            Log::WriteLogMessage(ELogLevel::LogLevelDebug, L"Enumerate: System has XInput devices, so Xidi virtual XInput devices are being presented to the application before other controllers.");
+            Message::Output(Message::ESeverity::Debug, L"Enumerate: System has XInput devices, so Xidi virtual XInput devices are being presented to the application before other controllers.");
 
             if (underlyingDIObjectUsesUnicode)
                 callbackInfo.callbackReturnCode = ControllerIdentification::EnumerateXInputControllersW((LPDIENUMDEVICESCALLBACKW)lpCallback, pvRef);
@@ -171,7 +171,7 @@ HRESULT STDMETHODCALLTYPE WrapperIDirectInput::EnumDevices(DWORD dwDevType, LPDI
 
             if (DIENUM_CONTINUE != callbackInfo.callbackReturnCode)
             {
-                Log::WriteLogMessage(ELogLevel::LogLevelDebug, L"Application has terminated enumeration.");
+                Message::Output(Message::ESeverity::Debug, L"Application has terminated enumeration.");
                 return enumResult;
             }
         }
@@ -186,7 +186,7 @@ HRESULT STDMETHODCALLTYPE WrapperIDirectInput::EnumDevices(DWORD dwDevType, LPDI
 
         if (DIENUM_CONTINUE != callbackInfo.callbackReturnCode)
         {
-            Log::WriteLogMessage(ELogLevel::LogLevelDebug, L"Application has terminated enumeration.");
+            Message::Output(Message::ESeverity::Debug, L"Application has terminated enumeration.");
             return enumResult;
         }
 
@@ -194,7 +194,7 @@ HRESULT STDMETHODCALLTYPE WrapperIDirectInput::EnumDevices(DWORD dwDevType, LPDI
         // These will be the last controllers seen by the application.
         if (!systemHasXInputDevices)
         {
-            Log::WriteLogMessage(ELogLevel::LogLevelDebug, L"Enumerate: System has no XInput devices, so Xidi virtual XInput devices are being presented to the application after other controllers.");
+            Message::Output(Message::ESeverity::Debug, L"Enumerate: System has no XInput devices, so Xidi virtual XInput devices are being presented to the application after other controllers.");
 
             if (underlyingDIObjectUsesUnicode)
                 callbackInfo.callbackReturnCode = ControllerIdentification::EnumerateXInputControllersW((LPDIENUMDEVICESCALLBACKW)lpCallback, pvRef);
@@ -203,7 +203,7 @@ HRESULT STDMETHODCALLTYPE WrapperIDirectInput::EnumDevices(DWORD dwDevType, LPDI
 
             if (DIENUM_CONTINUE != callbackInfo.callbackReturnCode)
             {
-                Log::WriteLogMessage(ELogLevel::LogLevelDebug, L"Application has terminated enumeration.");
+                Message::Output(Message::ESeverity::Debug, L"Application has terminated enumeration.");
                 return enumResult;
             }
         }
@@ -219,11 +219,11 @@ HRESULT STDMETHODCALLTYPE WrapperIDirectInput::EnumDevices(DWORD dwDevType, LPDI
 
     if (DIENUM_CONTINUE != callbackInfo.callbackReturnCode)
     {
-        Log::WriteLogMessage(ELogLevel::LogLevelDebug, L"Application has terminated enumeration.");
+        Message::Output(Message::ESeverity::Debug, L"Application has terminated enumeration.");
         return enumResult;
     }
 
-    Log::WriteLogMessage(ELogLevel::LogLevelDebug, L"Finished enumerating DirectInput devices.");
+    Message::Output(Message::ESeverity::Debug, L"Finished enumerating DirectInput devices.");
     return enumResult;
 }
 
@@ -295,7 +295,7 @@ BOOL STDMETHODCALLTYPE WrapperIDirectInput::CallbackEnumGameControllersXInputSca
         mbstowcs_s(nullptr, productName, _countof(productName) - 1, lpddi->tszProductName, _countof(lpddi->tszProductName));
 
         callbackInfo->seenInstanceIdentifiers.insert(lpddi->guidInstance);
-        Log::WriteFormattedLogMessage(ELogLevel::LogLevelDebug, L"Enumerate: DirectInput device \"%s\" supports XInput and will not be presented to the application.", productName);
+        Message::OutputFormatted(Message::ESeverity::Debug, L"Enumerate: DirectInput device \"%s\" supports XInput and will not be presented to the application.", productName);
     }
 
     return DIENUM_CONTINUE;
@@ -313,7 +313,7 @@ BOOL STDMETHODCALLTYPE WrapperIDirectInput::CallbackEnumGameControllersXInputSca
         LPCWSTR productName = lpddi->tszProductName;
 
         callbackInfo->seenInstanceIdentifiers.insert(lpddi->guidInstance);
-        Log::WriteFormattedLogMessage(ELogLevel::LogLevelDebug, L"Enumerate: DirectInput device \"%s\" supports XInput and will not be presented to the application.", productName);
+        Message::OutputFormatted(Message::ESeverity::Debug, L"Enumerate: DirectInput device \"%s\" supports XInput and will not be presented to the application.", productName);
     }
 
     return DIENUM_CONTINUE;
@@ -334,7 +334,7 @@ BOOL STDMETHODCALLTYPE WrapperIDirectInput::CallbackEnumDevicesFilteredA(LPCDIDE
 
         callbackInfo->seenInstanceIdentifiers.insert(lpddi->guidInstance);
         callbackInfo->callbackReturnCode = ((LPDIENUMDEVICESCALLBACKA)(callbackInfo->lpCallback))(lpddi, callbackInfo->pvRef);
-        Log::WriteFormattedLogMessage(ELogLevel::LogLevelDebug, L"Enumerate: DirectInput device \"%s\" is being presented to the application.", productName);
+        Message::OutputFormatted(Message::ESeverity::Debug, L"Enumerate: DirectInput device \"%s\" is being presented to the application.", productName);
         return callbackInfo->callbackReturnCode;
     }
     else
@@ -357,7 +357,7 @@ BOOL STDMETHODCALLTYPE WrapperIDirectInput::CallbackEnumDevicesFilteredW(LPCDIDE
 
         callbackInfo->seenInstanceIdentifiers.insert(lpddi->guidInstance);
         callbackInfo->callbackReturnCode = ((LPDIENUMDEVICESCALLBACKW)(callbackInfo->lpCallback))(lpddi, callbackInfo->pvRef);
-        Log::WriteFormattedLogMessage(ELogLevel::LogLevelDebug, L"Enumerate: DirectInput device \"%s\" is being presented to the application.", productName);
+        Message::OutputFormatted(Message::ESeverity::Debug, L"Enumerate: DirectInput device \"%s\" is being presented to the application.", productName);
         return callbackInfo->callbackReturnCode;
     }
     else
@@ -398,7 +398,7 @@ HRESULT STDMETHODCALLTYPE WrapperIDirectInput::CreateDeviceEx(REFGUID rguid, REF
     {
         if (!(IsEqualIID(riid, IID_IDirectInputDevice2W) || IsEqualIID(riid, IID_IDirectInputDevice7W)))
         {
-            Log::WriteLogMessage(ELogLevel::LogLevelWarning, L"CreateDeviceEx failed due to an invalid IID.");
+            Message::Output(Message::ESeverity::Warning, L"CreateDeviceEx failed due to an invalid IID.");
             return E_INVALIDARG;
         }
     }
@@ -406,7 +406,7 @@ HRESULT STDMETHODCALLTYPE WrapperIDirectInput::CreateDeviceEx(REFGUID rguid, REF
     {
         if (!(IsEqualIID(riid, IID_IDirectInputDevice2A) || IsEqualIID(riid, IID_IDirectInputDevice7A)))
         {
-            Log::WriteLogMessage(ELogLevel::LogLevelWarning, L"CreateDeviceEx failed due to an invalid IID.");
+            Message::Output(Message::ESeverity::Warning, L"CreateDeviceEx failed due to an invalid IID.");
             return E_INVALIDARG;
         }
     }

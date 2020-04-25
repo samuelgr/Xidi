@@ -14,7 +14,7 @@
 #include "Configuration.h"
 #include "Globals.h"
 #include "ImportApiWinMM.h"
-#include "Log.h"
+#include "Message.h"
 #include "Strings.h"
 
 #include <mutex>
@@ -245,34 +245,34 @@ namespace Xidi
         /// @param [in] functionName Name of the function whose import attempt failed.
         static void LogImportFailed(LPCWSTR functionName)
         {
-            Log::WriteFormattedLogMessage(ELogLevel::LogLevelWarning, L"Import library is missing WinMM function \"%s\". Attempts to call it will fail.", functionName);
+            Message::OutputFormatted(Message::ESeverity::Warning, L"Import library is missing WinMM function \"%s\". Attempts to call it will fail.", functionName);
         }
 
         /// Logs a debug event related to attempting to load the system-provided library for importing functions.
         /// @param [in] libraryPath Path of the library that was loaded.
         static void LogInitializeLibraryPath(LPCWSTR libraryPath)
         {
-            Log::WriteFormattedLogMessage(ELogLevel::LogLevelDebug, L"Attempting to import WinMM functions from \"%s\".", libraryPath);
+            Message::OutputFormatted(Message::ESeverity::Debug, L"Attempting to import WinMM functions from \"%s\".", libraryPath);
         }
 
         /// Logs an error event related to failure to initialize the import table because the import library could not be loaded.
         /// @param [in] libraryPath Path of the library that was loaded.
         static void LogInitializeFailed(void)
         {
-            Log::WriteLogMessage(ELogLevel::LogLevelError, L"Failed to initialize imported WinMM functions.");
+            Message::Output(Message::ESeverity::Error, L"Failed to initialize imported WinMM functions.");
         }
 
         /// Logs an informational event related to successful initialization of the import table.
         static void LogInitializeSucceeded(void)
         {
-            Log::WriteFormattedLogMessage(ELogLevel::LogLevelInfo, L"Successfully initialized imported WinMM functions.");
+            Message::OutputFormatted(Message::ESeverity::Info, L"Successfully initialized imported WinMM functions.");
         }
 
         /// Logs an error event related to a missing import function that has been invoked.
         /// @param [in] functionName Name of the function that was invoked.
         static void LogMissingFunctionCalled(LPCWSTR functionName)
         {
-            Log::WriteFormattedLogMessage(ELogLevel::LogLevelError, L"Application has attempted to call missing WinMM import function \"%s\".", functionName);
+            Message::OutputFormatted(Message::ESeverity::Error, L"Application has attempted to call missing WinMM import function \"%s\".", functionName);
         }
 
         

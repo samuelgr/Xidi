@@ -10,9 +10,7 @@
  *****************************************************************************/
 
 #include "ApiWindows.h"
-#include "Configuration.h"
 #include "Globals.h"
-#include "Log.h"
 
 
 // -------- ENTRY POINT ---------------------------------------------------- //
@@ -29,6 +27,7 @@ BOOL APIENTRY DllMain(HMODULE hModule, DWORD ulReasonForCall, LPVOID lpReserved)
     switch (ulReasonForCall)
     {
         case DLL_PROCESS_ATTACH:
+            Xidi::Globals::Initialize();
             break;
 
         case DLL_THREAD_ATTACH:

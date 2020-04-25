@@ -44,5 +44,9 @@ namespace Xidi
         /// Retrieves information on the current system. This includes architecture, page size, and so on.
         /// @return Reference to a read-only structure containing system information.
         const SYSTEM_INFO& GetSystemInformation(void);
+
+        /// Performs run-time initialization.
+        /// This function only performs operations that are safe to perform within a DLL entry point.
+        void Initialize(void);
     }
 }

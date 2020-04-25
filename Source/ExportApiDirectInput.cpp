@@ -11,7 +11,7 @@
  *****************************************************************************/
 
 #include "ImportApiDirectInput.h"
-#include "Log.h"
+#include "Message.h"
 #include "WrapperIDirectInput.h"
 
 using namespace Xidi;
@@ -25,20 +25,20 @@ using namespace Xidi;
 /// @param [in] receivedVersion Actual version received.
 inline static void LogVersionOutOfRange(DWORD minVersion, DWORD maxVersion, DWORD receivedVersion)
 {
-    Log::WriteFormattedLogMessage(ELogLevel::LogLevelError, L"Failed to create a DirectInput interface object because the version is out of range (expected 0x%04x to 0x%04x, got 0x%04x).", minVersion, maxVersion, receivedVersion);
+    Message::OutputFormatted(Message::ESeverity::Error, L"Failed to create a DirectInput interface object because the version is out of range (expected 0x%04x to 0x%04x, got 0x%04x).", minVersion, maxVersion, receivedVersion);
 }
 
 /// Logs an error event indicating that an instance of IDirectInput(8) could not be created due to an error having been returned by the system.
 /// @param [in] errorCode Error code returned by the system.
 inline static void LogSystemCreateError(HRESULT errorCode)
 {
-    Log::WriteFormattedLogMessage(ELogLevel::LogLevelError, L"Failed to create a DirectInput interface object because the imported function returned code 0x%08x.", errorCode);
+    Message::OutputFormatted(Message::ESeverity::Error, L"Failed to create a DirectInput interface object because the imported function returned code 0x%08x.", errorCode);
 }
 
 /// Logs an informational event indicating that an instance of IDirectInput(8) was created successfully.
 inline static void LogSystemCreateSuccess(void)
 {
-    Log::WriteLogMessage(ELogLevel::LogLevelInfo, L"Successfully created a DirectInput interface object.");
+    Message::Output(Message::ESeverity::Info, L"Successfully created a DirectInput interface object.");
 }
 
 
