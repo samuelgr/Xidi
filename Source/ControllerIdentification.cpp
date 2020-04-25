@@ -6,8 +6,8 @@
  * Copyright (c) 2016-2020
  *************************************************************************//**
  * @file ControllerIdentification.cpp
- *   Implementation of helpers for identifying and enumerating
- *   XInput-based game controllers.
+ *   Implementation of functions for identifying and enumerating XInput-based
+ *   game controllers.
  *****************************************************************************/
 
 #include "ApiDirectInput.h"
