@@ -12,7 +12,7 @@
 
 #pragma once
 
-#include "Mapper/Base.h"
+#include "Mapper.h"
 
 
 namespace Xidi
@@ -22,7 +22,7 @@ namespace Xidi
         /// Provides a mapping to the button layout of a standard DirectInput-compatible gamepad.
         /// LT and RT triggers are mapped to their own buttons.
         /// Right stick is mapped to the Z and Z-Rot axes.
-        class StandardGamepad : public Base
+        class StandardGamepad : public IMapper
         {
         public:
             // -------- TYPE DEFINITIONS ----------------------------------- //

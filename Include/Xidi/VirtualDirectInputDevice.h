@@ -13,8 +13,8 @@
 #pragma once
 
 #include "ApiDirectInput.h"
+#include "Mapper.h"
 #include "XInputController.h"
-#include "Mapper/Base.h"
 
 
 namespace Xidi
@@ -29,7 +29,7 @@ namespace Xidi
         XInputController* controller;
 
         /// Mapping scheme to be applied to the wrapped DirectInput device.
-        Mapper::Base* mapper;
+        Mapper::IMapper* mapper;
 
         /// Specifies whether or not the device was polled since the last time its state was obtained.
         BOOL polledSinceLastGetDeviceState;
@@ -51,7 +51,7 @@ namespace Xidi
         /// @param [in] useUnicode Specifies if the object should use Unicode versions of methods.
         /// @param [in] controller XInput controller object to associate with this object.
         /// @param [in] mapper Mapper object to associate with this object.
-        VirtualDirectInputDevice(BOOL useUnicode, XInputController* controller, Mapper::Base* mapper);
+        VirtualDirectInputDevice(BOOL useUnicode, XInputController* controller, Mapper::IMapper* mapper);
 
         /// Default destructor.
         virtual ~VirtualDirectInputDevice(void);

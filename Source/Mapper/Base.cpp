@@ -12,7 +12,7 @@
 
 #include "ApiDirectInput.h"
 #include "Globals.h"
-#include "Mapper/Base.h"
+#include "Mapper.h"
 #include "Message.h"
 
 #include <unordered_set>
@@ -120,11 +120,11 @@ static void DumpPropertyHeaderToLog(LPCDIPROPHEADER pdiph)
 // -------- CONSTRUCTION AND DESTRUCTION ----------------------------------- //
 // See "Mapper/Base.h" for documentation.
 
-Base::Base(void) : axisProperties(nullptr), cachedValueXInputLT(XInputController::kTriggerNeutral), cachedValueXInputRT(XInputController::kTriggerNeutral), dataPacketSize(0), instanceToOffset(), mapsValid(FALSE), offsetToInstance(), axisOffsetsUnused(), buttonOffsetsUnused(), povOffsetsUnused() {}
+IMapper::IMapper(void) : axisProperties(nullptr), cachedValueXInputLT(XInputController::kTriggerNeutral), cachedValueXInputRT(XInputController::kTriggerNeutral), dataPacketSize(0), instanceToOffset(), mapsValid(FALSE), offsetToInstance(), axisOffsetsUnused(), buttonOffsetsUnused(), povOffsetsUnused() {}
 
 // ---------
 
-Base::~Base(void)
+IMapper::~IMapper(void)
 {
     instanceToOffset.clear();
     offsetToInstance.clear();
@@ -136,7 +136,7 @@ Base::~Base(void)
 // -------- CLASS METHODS -------------------------------------------------- //
 // See "Mapper/Base.h" for documentation.
 
-DWORD Base::SizeofInstance(const EInstanceType type)
+DWORD IMapper::SizeofInstance(const EInstanceType type)
 {
     DWORD szInstance = 0;
 
@@ -159,7 +159,7 @@ DWORD Base::SizeofInstance(const EInstanceType type)
 // -------- HELPERS -------------------------------------------------------- //
 // See "Mapper/Base.h" for documentation.
 
-LONG Base::ApplyAxisPropertiesToRawValue(const TInstance axisInstance, const LONG value)
+LONG IMapper::ApplyAxisPropertiesToRawValue(const TInstance axisInstance, const LONG value)
 {
     // Calculate axis physical range of motion, center axis position and the value's displacement from it.
     TInstanceIdx axisIndex = ExtractIdentifierInstanceIndex(axisInstance);
@@ -190,7 +190,7 @@ LONG Base::ApplyAxisPropertiesToRawValue(const TInstance axisInstance, const LON
 
 // ---------
 
-void Base::AxisTypeToStringA(REFGUID axisTypeGUID, LPSTR buf, const int bufcount)
+void IMapper::AxisTypeToStringA(REFGUID axisTypeGUID, LPSTR buf, const int bufcount)
 {
     if (axisTypeGUID == GUID_XAxis)
         LoadStringA(Globals::GetInstanceHandle(), IDS_XIDI_MAPPER_BASE_AXISNAME_X, buf, bufcount);
@@ -210,7 +210,7 @@ void Base::AxisTypeToStringA(REFGUID axisTypeGUID, LPSTR buf, const int bufcount
 
 // ---------
 
-void Base::AxisTypeToStringW(REFGUID axisTypeGUID, LPWSTR buf, const int bufcount)
+void IMapper::AxisTypeToStringW(REFGUID axisTypeGUID, LPWSTR buf, const int bufcount)
 {
     if (axisTypeGUID == GUID_XAxis)
         LoadStringW(Globals::GetInstanceHandle(), IDS_XIDI_MAPPER_BASE_AXISNAME_X, buf, bufcount);
@@ -230,7 +230,7 @@ void Base::AxisTypeToStringW(REFGUID axisTypeGUID, LPWSTR buf, const int bufcoun
 
 // ---------
 
-BOOL Base::CheckAndSetOffsets(BOOL* base, const DWORD count)
+BOOL IMapper::CheckAndSetOffsets(BOOL* base, const DWORD count)
 {
     for (DWORD i = 0; i < count; ++i)
         if (base[i] != FALSE) return FALSE;
@@ -243,7 +243,7 @@ BOOL Base::CheckAndSetOffsets(BOOL* base, const DWORD count)
 
 // ---------
 
-void Base::FillObjectInstanceInfoA(LPDIDEVICEOBJECTINSTANCEA instanceInfo, EInstanceType instanceType, TInstanceIdx instanceNumber)
+void IMapper::FillObjectInstanceInfoA(LPDIDEVICEOBJECTINSTANCEA instanceInfo, EInstanceType instanceType, TInstanceIdx instanceNumber)
 {
     CHAR instanceFormatString[128];
 
@@ -295,7 +295,7 @@ void Base::FillObjectInstanceInfoA(LPDIDEVICEOBJECTINSTANCEA instanceInfo, EInst
 
 // ---------
 
-void Base::FillObjectInstanceInfoW(LPDIDEVICEOBJECTINSTANCEW instanceInfo, EInstanceType instanceType, TInstanceIdx instanceNumber)
+void IMapper::FillObjectInstanceInfoW(LPDIDEVICEOBJECTINSTANCEW instanceInfo, EInstanceType instanceType, TInstanceIdx instanceNumber)
 {
     WCHAR instanceFormatString[128];
 
@@ -346,7 +346,7 @@ void Base::FillObjectInstanceInfoW(LPDIDEVICEOBJECTINSTANCEW instanceInfo, EInst
 
 // ---------
 
-void Base::InitializeAxisProperties(void)
+void IMapper::InitializeAxisProperties(void)
 {
     if (nullptr == axisProperties)
     {
@@ -366,7 +366,7 @@ void Base::InitializeAxisProperties(void)
 
 // ---------
 
-TInstance Base::InstanceIdentifierFromDirectInputIdentifier(DWORD diIdentifier)
+TInstance IMapper::InstanceIdentifierFromDirectInputIdentifier(DWORD diIdentifier)
 {
     EInstanceType type = (EInstanceType)-1;
     TInstanceIdx idx = (TInstanceIdx)DIDFT_GETINSTANCE(diIdentifier);
@@ -394,7 +394,7 @@ TInstance Base::InstanceIdentifierFromDirectInputIdentifier(DWORD diIdentifier)
 
 // ---------
 
-TInstance Base::InstanceIdentifierFromDirectInputSpec(DWORD dwObj, DWORD dwHow)
+TInstance IMapper::InstanceIdentifierFromDirectInputSpec(DWORD dwObj, DWORD dwHow)
 {
     TInstance instance = (TInstance)-1;
 
@@ -417,7 +417,7 @@ TInstance Base::InstanceIdentifierFromDirectInputSpec(DWORD dwObj, DWORD dwHow)
 
 // ---------
 
-LONG Base::InvertAxisValue(LONG originalValue, LONG rangeMin, LONG rangeMax)
+LONG IMapper::InvertAxisValue(LONG originalValue, LONG rangeMin, LONG rangeMax)
 {
     const LONG rangeCenter = (rangeMax + rangeMin) / 2;
     return (rangeCenter + (rangeCenter - originalValue));
@@ -425,7 +425,7 @@ LONG Base::InvertAxisValue(LONG originalValue, LONG rangeMin, LONG rangeMax)
 
 // ---------
 
-void Base::MapInstanceAndOffset(TInstance instance, DWORD offset)
+void IMapper::MapInstanceAndOffset(TInstance instance, DWORD offset)
 {
     Message::OutputFormatted(Message::ESeverity::Debug, L"Mapping instance (type=%lld, index=%lld) to data format offset %d.", (int64_t)ExtractIdentifierInstanceType(instance), (int64_t)ExtractIdentifierInstanceIndex(instance), offset);
     instanceToOffset.insert({instance, offset});
@@ -434,7 +434,7 @@ void Base::MapInstanceAndOffset(TInstance instance, DWORD offset)
 
 // ---------
 
-LONG Base::MapValueInRangeToRange(const LONG originalValue, const LONG originalMin, const LONG originalMax, const LONG newMin, const LONG newMax)
+LONG IMapper::MapValueInRangeToRange(const LONG originalValue, const LONG originalMin, const LONG originalMax, const LONG newMin, const LONG newMax)
 {
     // Calculate the original value's position within the original range spread.
     const double originalSpread = (double)(originalMax - originalMin);
@@ -449,14 +449,14 @@ LONG Base::MapValueInRangeToRange(const LONG originalValue, const LONG originalM
 
 // ---------
 
-TInstance Base::SelectInstance(const EInstanceType instanceType, BOOL* instanceUsed, const TInstanceCount instanceCount, const TInstanceIdx instanceToSelect)
+TInstance IMapper::SelectInstance(const EInstanceType instanceType, BOOL* instanceUsed, const TInstanceCount instanceCount, const TInstanceIdx instanceToSelect)
 {
     TInstance selectedInstance = (TInstance)-1;
 
     if ((instanceToSelect >= 0) && (instanceToSelect < instanceCount) && (FALSE == instanceUsed[instanceToSelect]))
     {
         instanceUsed[instanceToSelect] = TRUE;
-        selectedInstance = Base::MakeInstanceIdentifier(instanceType, instanceToSelect);
+        selectedInstance = IMapper::MakeInstanceIdentifier(instanceType, instanceToSelect);
     }
 
     return selectedInstance;
@@ -464,7 +464,7 @@ TInstance Base::SelectInstance(const EInstanceType instanceType, BOOL* instanceU
 
 // ---------
 
-void Base::WriteAxisValueToApplicationDataStructure(const TInstance axisInstance, const LONG value, LPVOID appData)
+void IMapper::WriteAxisValueToApplicationDataStructure(const TInstance axisInstance, const LONG value, LPVOID appData)
 {
     // Verify that the application cares about the axis in question.
     if (0 == instanceToOffset.count(axisInstance)) return;
@@ -475,7 +475,7 @@ void Base::WriteAxisValueToApplicationDataStructure(const TInstance axisInstance
 
 // ---------
 
-void Base::WriteButtonValueToApplicationDataStructure(const TInstance buttonInstance, const BYTE value, LPVOID appData)
+void IMapper::WriteButtonValueToApplicationDataStructure(const TInstance buttonInstance, const BYTE value, LPVOID appData)
 {
     // Verify that the application cares about the button in question.
     if (0 == instanceToOffset.count(buttonInstance)) return;
@@ -487,7 +487,7 @@ void Base::WriteButtonValueToApplicationDataStructure(const TInstance buttonInst
 
 // ---------
 
-void Base::WritePovValueToApplicationDataStructure(const TInstance povInstance, const LONG value, LPVOID appData)
+void IMapper::WritePovValueToApplicationDataStructure(const TInstance povInstance, const LONG value, LPVOID appData)
 {
     // Verify that the application cares about the button in question.
     if (0 == instanceToOffset.count(povInstance)) return;
@@ -499,14 +499,14 @@ void Base::WritePovValueToApplicationDataStructure(const TInstance povInstance, 
 
 // ---------
 
-void Base::WriteValueToApplicationOffset(const LONG value, const DWORD offset, LPVOID appData)
+void IMapper::WriteValueToApplicationOffset(const LONG value, const DWORD offset, LPVOID appData)
 {
     *((LONG*)(&((BYTE*)appData)[offset])) = value;
 }
 
 // ---------
 
-void Base::WriteValueToApplicationOffset(const BYTE value, const DWORD offset, LPVOID appData)
+void IMapper::WriteValueToApplicationOffset(const BYTE value, const DWORD offset, LPVOID appData)
 {
     *((BYTE*)(&((BYTE*)appData)[offset])) = value;
 }
@@ -515,7 +515,7 @@ void Base::WriteValueToApplicationOffset(const BYTE value, const DWORD offset, L
 // -------- INSTANCE METHODS ----------------------------------------------- //
 // See "Mapper/Base.h" for documentation.
 
-HRESULT Base::EnumerateMappedObjects(BOOL useUnicode, LPDIENUMDEVICEOBJECTSCALLBACK appCallback, LPVOID appCbParam, DWORD enumerationFlags)
+HRESULT IMapper::EnumerateMappedObjects(BOOL useUnicode, LPDIENUMDEVICEOBJECTSCALLBACK appCallback, LPVOID appCbParam, DWORD enumerationFlags)
 {
     // Obtain the number of objects of each type.
     const TInstanceCount numAxes = NumInstancesOfType(EInstanceType::InstanceTypeAxis);
@@ -618,14 +618,14 @@ HRESULT Base::EnumerateMappedObjects(BOOL useUnicode, LPDIENUMDEVICEOBJECTSCALLB
 
 // ---------
 
-void Base::FillDeviceCapabilities(LPDIDEVCAPS lpDIDevCaps)
+void IMapper::FillDeviceCapabilities(LPDIDEVCAPS lpDIDevCaps)
 {
     lpDIDevCaps->dwAxes = (DWORD)NumInstancesOfType(EInstanceType::InstanceTypeAxis);
     lpDIDevCaps->dwButtons = (DWORD)NumInstancesOfType(EInstanceType::InstanceTypeButton);
     lpDIDevCaps->dwPOVs = (DWORD)NumInstancesOfType(EInstanceType::InstanceTypePov);
 }
 
-HRESULT Base::GetMappedObjectInfo(BOOL useUnicode, LPDIDEVICEOBJECTINSTANCE pdidoi, DWORD dwObj, DWORD dwHow)
+HRESULT IMapper::GetMappedObjectInfo(BOOL useUnicode, LPDIDEVICEOBJECTINSTANCE pdidoi, DWORD dwObj, DWORD dwHow)
 {
     TInstance instance = InstanceIdentifierFromDirectInputSpec(dwObj, dwHow);
 
@@ -647,7 +647,7 @@ HRESULT Base::GetMappedObjectInfo(BOOL useUnicode, LPDIDEVICEOBJECTINSTANCE pdid
 
 // ---------
 
-HRESULT Base::GetMappedProperty(REFGUID rguidProp, LPDIPROPHEADER pdiph)
+HRESULT IMapper::GetMappedProperty(REFGUID rguidProp, LPDIPROPHEADER pdiph)
 {
     if (Message::WillOutputMessageOfSeverity(Message::ESeverity::Debug))
     {
@@ -733,7 +733,7 @@ HRESULT Base::GetMappedProperty(REFGUID rguidProp, LPDIPROPHEADER pdiph)
 
 // ---------
 
-TInstance Base::InstanceForOffset(DWORD offset)
+TInstance IMapper::InstanceForOffset(DWORD offset)
 {
     TInstance result = (TInstance)-1;
 
@@ -750,14 +750,14 @@ TInstance Base::InstanceForOffset(DWORD offset)
 
 // ---------
 
-BOOL Base::IsApplicationDataFormatSet(void)
+BOOL IMapper::IsApplicationDataFormatSet(void)
 {
     return mapsValid;
 }
 
 // ---------
 
-BOOL Base::IsPropertyHandledByMapper(REFGUID guidProperty)
+BOOL IMapper::IsPropertyHandledByMapper(REFGUID guidProperty)
 {
     BOOL propertyHandled = FALSE;
 
@@ -769,7 +769,7 @@ BOOL Base::IsPropertyHandledByMapper(REFGUID guidProperty)
 
 // ---------
 
-LONG Base::OffsetForInstance(TInstance instance)
+LONG IMapper::OffsetForInstance(TInstance instance)
 {
     LONG result = -1;
 
@@ -786,7 +786,7 @@ LONG Base::OffsetForInstance(TInstance instance)
 
 // ---------
 
-LONG Base::OffsetForXInputControllerElement(EXInputControllerElement xElement)
+LONG IMapper::OffsetForXInputControllerElement(EXInputControllerElement xElement)
 {
     LONG result = -1;
 
@@ -799,7 +799,7 @@ LONG Base::OffsetForXInputControllerElement(EXInputControllerElement xElement)
 
 // ---------
 
-HRESULT Base::SetApplicationDataFormat(LPCDIDATAFORMAT lpdf)
+HRESULT IMapper::SetApplicationDataFormat(LPCDIDATAFORMAT lpdf)
 {
     if (Message::WillOutputMessageOfSeverity(Message::ESeverity::Debug))
     {
@@ -1054,7 +1054,7 @@ HRESULT Base::SetApplicationDataFormat(LPCDIDATAFORMAT lpdf)
 
 // ---------
 
-HRESULT Base::SetMappedProperty(REFGUID rguidProp, LPCDIPROPHEADER pdiph)
+HRESULT IMapper::SetMappedProperty(REFGUID rguidProp, LPCDIPROPHEADER pdiph)
 {
     if (Message::WillOutputMessageOfSeverity(Message::ESeverity::Debug))
     {
@@ -1186,7 +1186,7 @@ HRESULT Base::SetMappedProperty(REFGUID rguidProp, LPCDIPROPHEADER pdiph)
 
 // ---------
 
-void Base::ResetApplicationDataFormat(void)
+void IMapper::ResetApplicationDataFormat(void)
 {
     instanceToOffset.clear();
     offsetToInstance.clear();
@@ -1199,7 +1199,7 @@ void Base::ResetApplicationDataFormat(void)
 
 // ---------
 
-HRESULT Base::WriteApplicationBufferedEvents(XInputController* xController, LPDIDEVICEOBJECTDATA appEventBuf, DWORD& eventCount, const BOOL peek)
+HRESULT IMapper::WriteApplicationBufferedEvents(XInputController* xController, LPDIDEVICEOBJECTDATA appEventBuf, DWORD& eventCount, const BOOL peek)
 {
     xController->LockEventBuffer();
 
@@ -1322,7 +1322,7 @@ HRESULT Base::WriteApplicationBufferedEvents(XInputController* xController, LPDI
 
 // ---------
 
-HRESULT Base::WriteApplicationControllerState(XINPUT_GAMEPAD& xState, LPVOID appDataBuf, DWORD appDataSize)
+HRESULT IMapper::WriteApplicationControllerState(XINPUT_GAMEPAD& xState, LPVOID appDataBuf, DWORD appDataSize)
 {
     // Lazily initialize the axis properties (this is idempotent).
     InitializeAxisProperties();
@@ -1718,7 +1718,7 @@ HRESULT Base::WriteApplicationControllerState(XINPUT_GAMEPAD& xState, LPVOID app
 // -------- CONCRETE INSTANCE METHODS -------------------------------------- //
 // See "Mapper/Base.h" for documentation.
 
-LONG Base::XInputTriggerSharedAxisDirection(EXInputControllerElement trigger)
+LONG IMapper::XInputTriggerSharedAxisDirection(EXInputControllerElement trigger)
 {
     if (EXInputControllerElement::TriggerLT == trigger)
         return 1;

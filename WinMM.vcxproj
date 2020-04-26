@@ -33,7 +33,6 @@
     <ClInclude Include="Include\Xidi\Mapper\XInputSharedTriggers.h" />
     <ClInclude Include="Include\Xidi\Mapper\StandardGamepad.h" />
     <ClInclude Include="Include\Xidi\ControllerIdentification.h" />
-    <ClInclude Include="Include\Xidi\Mapper\Base.h" />
     <ClInclude Include="Include\Xidi\Message.h" />
     <ClInclude Include="Include\Xidi\Strings.h" />
     <ClInclude Include="Include\Xidi\TemporaryBuffer.h" />

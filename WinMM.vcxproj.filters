@@ -24,9 +24,6 @@
     <ClInclude Include="Include\Xidi\ApiWindows.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="Include\Xidi\Mapper\Base.h">
-      <Filter>Header Files\Mapper</Filter>
-    </ClInclude>
     <ClInclude Include="Include\Xidi\ControllerIdentification.h">
       <Filter>Header Files</Filter>
     </ClInclude>

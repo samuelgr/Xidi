@@ -13,7 +13,7 @@
 
 #pragma once
 
-#include "Mapper/Base.h"
+#include "Mapper.h"
 
 
 namespace Xidi
@@ -22,7 +22,7 @@ namespace Xidi
     {
         /// Provides a mapping to the default button layout of an XInput controller when accessed via DirectInput, with the triggers sharing an axis.
         /// Right stick is mapped to Rx and Ry axes, and triggers are mapped to share the Z axis.
-        class XInputSharedTriggers : public Base
+        class XInputSharedTriggers : public IMapper
         {
         public:
             // -------- TYPE DEFINITIONS ----------------------------------------------- //

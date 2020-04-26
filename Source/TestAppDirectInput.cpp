@@ -14,7 +14,7 @@
 #include <dinput.h>
 
 #include "ControllerIdentification.h"
-#include "Mapper/Base.h"
+#include "Mapper.h"
 
 #include <iostream>
 
@@ -589,7 +589,7 @@ int RunTestApp(int argc, char* argv[])
     rangeTest.diph.dwObj = DIDFT_ABSAXIS | DIDFT_MAKEINSTANCE(0);
     rangeTest.diph.dwSize = sizeof(rangeTest);
     result = directInputDeviceIface->GetProperty(DIPROP_RANGE, &rangeTest.diph);
-    if (DIERR_INVALIDPARAM != result || Mapper::Base::kDefaultAxisRangeMax == rangeTest.lMax)
+    if (DIERR_INVALIDPARAM != result || Mapper::IMapper::kDefaultAxisRangeMax == rangeTest.lMax)
         wcout << L"FAIL: Invalid header size test." << endl;
     else
         wcout << L"PASS: Invalid header size test." << endl;
@@ -598,7 +598,7 @@ int RunTestApp(int argc, char* argv[])
     rangeTest.diph.dwSize = 0;
     rangeTest.diph.dwHeaderSize = sizeof(rangeTest.diph);
     result = directInputDeviceIface->GetProperty(DIPROP_RANGE, &rangeTest.diph);
-    if (DIERR_INVALIDPARAM != result || Mapper::Base::kDefaultAxisRangeMax == rangeTest.lMax)
+    if (DIERR_INVALIDPARAM != result || Mapper::IMapper::kDefaultAxisRangeMax == rangeTest.lMax)
         wcout << L"FAIL: Invalid structure size test." << endl;
     else
         wcout << L"PASS: Invalid structure size test." << endl;
@@ -606,7 +606,7 @@ int RunTestApp(int argc, char* argv[])
     // Set sizes and expect to get default values back.
     rangeTest.diph.dwSize = sizeof(rangeTest);
     result = directInputDeviceIface->GetProperty(DIPROP_RANGE, &rangeTest.diph);
-    if (DI_OK != result || Mapper::Base::kDefaultAxisRangeMax != rangeTest.lMax || Mapper::Base::kDefaultAxisRangeMin != rangeTest.lMin)
+    if (DI_OK != result || Mapper::IMapper::kDefaultAxisRangeMax != rangeTest.lMax || Mapper::IMapper::kDefaultAxisRangeMin != rangeTest.lMin)
         wcout << L"FAIL: Default range test." << endl;
     else
         wcout << L"PASS: Default range test." << endl;
@@ -690,7 +690,7 @@ int RunTestApp(int argc, char* argv[])
         wcout << L"PASS: Single axis valid deadzone test." << endl;
 
     // Write a deadzone out of range.
-    deadzoneTest.dwData = Mapper::Base::kMaxAxisDeadzoneSaturation * 2;
+    deadzoneTest.dwData = Mapper::IMapper::kMaxAxisDeadzoneSaturation * 2;
     result = directInputDeviceIface->SetProperty(DIPROP_DEADZONE, &deadzoneTest.diph);
     if (DIERR_INVALIDPARAM != result)
         wcout << L"FAIL: Set out-of-range deadzone test." << endl;

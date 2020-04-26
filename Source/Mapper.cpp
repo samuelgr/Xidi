@@ -12,7 +12,6 @@
 #include "Configuration.h"
 #include "Globals.h"
 #include "Mapper.h"
-#include "Mapper/Base.h"
 #include "Mapper/ExtendedGamepad.h"
 #include "Mapper/XInputNative.h"
 #include "Mapper/XInputSharedTriggers.h"
@@ -42,9 +41,9 @@ namespace Xidi
 
         /// Creates a new mapper of the specified type, using the `new` operator.
         /// @return Pointer to the newly-created mapper, or `nullptr` in the event of an error.
-        static Base* CreateMapperOfType(const EType type)
+        static IMapper* CreateMapperOfType(const EType type)
         {
-            Base* newMapper = nullptr;
+            IMapper* newMapper = nullptr;
 
             switch (type)
             {
@@ -72,7 +71,7 @@ namespace Xidi
         // -------- FUNCTIONS ------------------------------------------------------ //
         // See "Mapper.h" for documentation.
 
-        Base* Create(void)
+        IMapper* Create(void)
         {
             static EType configuredMapperType = kDefaultMapperType;
 

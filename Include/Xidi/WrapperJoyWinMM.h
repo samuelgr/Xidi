@@ -13,8 +13,8 @@
 
 #include "ApiDirectInput.h"
 #include "ApiWindows.h"
+#include "Mapper.h"
 #include "XInputController.h"
-#include "Mapper/Base.h"
 
 #include <string>
 #include <utility>
@@ -50,7 +50,7 @@ namespace Xidi
         static XInputController* controllers[XInputController::kMaxNumXInputControllers];
 
         /// Mapping scheme to be applied to all controllers.
-        static Mapper::Base* mapper;
+        static Mapper::IMapper* mapper;
 
         /// Specifies if the class is initialized.
         static BOOL isInitialized;
