@@ -50,7 +50,7 @@ namespace Xidi
         static XInputController* controllers[XInputController::kMaxNumXInputControllers];
 
         /// Mapping scheme to be applied to all controllers.
-        static Mapper::IMapper* mapper;
+        static IMapper* mapper;
 
         /// Specifies if the class is initialized.
         static BOOL isInitialized;

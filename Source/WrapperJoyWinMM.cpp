@@ -59,7 +59,7 @@ namespace Xidi
 
 XInputController* WrapperJoyWinMM::controllers[XInputController::kMaxNumXInputControllers];
 
-Mapper::IMapper* WrapperJoyWinMM::mapper = nullptr;
+IMapper* WrapperJoyWinMM::mapper = nullptr;
 
 BOOL WrapperJoyWinMM::isInitialized = FALSE;
 
@@ -120,7 +120,7 @@ void WrapperJoyWinMM::Initialize(void)
     if (FALSE == isInitialized)
     {
         // Create a mapper and set its data format.
-        mapper = Mapper::Create();
+        mapper = IMapper::Create();
         if (DI_OK != mapper->SetApplicationDataFormat(&joyStateDataFormat))
             Message::Output(Message::ESeverity::Error, L"Failed to set device state data format. XInput controllers will not function.");
 
@@ -502,18 +502,18 @@ MMRESULT WrapperJoyWinMM::JoyGetDevCapsA(UINT_PTR uJoyID, LPJOYCAPSA pjc, UINT c
         pjc->wMaxButtons = _countof(SJoyStateData::buttons);
         pjc->wNumAxes = (WORD)mappedDeviceCaps.dwAxes;
         pjc->wNumButtons = (WORD)mappedDeviceCaps.dwButtons;
-        pjc->wXmin = (WORD)Mapper::IMapper::kDefaultAxisRangeMin;
-        pjc->wXmax = (WORD)Mapper::IMapper::kDefaultAxisRangeMax;
-        pjc->wYmin = (WORD)Mapper::IMapper::kDefaultAxisRangeMin;
-        pjc->wYmax = (WORD)Mapper::IMapper::kDefaultAxisRangeMax;
-        pjc->wZmin = (WORD)Mapper::IMapper::kDefaultAxisRangeMin;
-        pjc->wZmax = (WORD)Mapper::IMapper::kDefaultAxisRangeMax;
-        pjc->wRmin = (WORD)Mapper::IMapper::kDefaultAxisRangeMin;
-        pjc->wRmax = (WORD)Mapper::IMapper::kDefaultAxisRangeMax;
-        pjc->wUmin = (WORD)Mapper::IMapper::kDefaultAxisRangeMin;
-        pjc->wUmax = (WORD)Mapper::IMapper::kDefaultAxisRangeMax;
-        pjc->wVmin = (WORD)Mapper::IMapper::kDefaultAxisRangeMin;
-        pjc->wVmax = (WORD)Mapper::IMapper::kDefaultAxisRangeMax;
+        pjc->wXmin = (WORD)IMapper::kDefaultAxisRangeMin;
+        pjc->wXmax = (WORD)IMapper::kDefaultAxisRangeMax;
+        pjc->wYmin = (WORD)IMapper::kDefaultAxisRangeMin;
+        pjc->wYmax = (WORD)IMapper::kDefaultAxisRangeMax;
+        pjc->wZmin = (WORD)IMapper::kDefaultAxisRangeMin;
+        pjc->wZmax = (WORD)IMapper::kDefaultAxisRangeMax;
+        pjc->wRmin = (WORD)IMapper::kDefaultAxisRangeMin;
+        pjc->wRmax = (WORD)IMapper::kDefaultAxisRangeMax;
+        pjc->wUmin = (WORD)IMapper::kDefaultAxisRangeMin;
+        pjc->wUmax = (WORD)IMapper::kDefaultAxisRangeMax;
+        pjc->wVmin = (WORD)IMapper::kDefaultAxisRangeMin;
+        pjc->wVmax = (WORD)IMapper::kDefaultAxisRangeMax;
 
         if (mappedDeviceCaps.dwPOVs > 0)
             pjc->wCaps = JOYCAPS_HASPOV | JOYCAPS_POV4DIR;
@@ -592,18 +592,18 @@ MMRESULT WrapperJoyWinMM::JoyGetDevCapsW(UINT_PTR uJoyID, LPJOYCAPSW pjc, UINT c
         pjc->wMaxButtons = _countof(SJoyStateData::buttons);
         pjc->wNumAxes = (WORD)mappedDeviceCaps.dwAxes;
         pjc->wNumButtons = (WORD)mappedDeviceCaps.dwButtons;
-        pjc->wXmin = (WORD)Mapper::IMapper::kDefaultAxisRangeMin;
-        pjc->wXmax = (WORD)Mapper::IMapper::kDefaultAxisRangeMax;
-        pjc->wYmin = (WORD)Mapper::IMapper::kDefaultAxisRangeMin;
-        pjc->wYmax = (WORD)Mapper::IMapper::kDefaultAxisRangeMax;
-        pjc->wZmin = (WORD)Mapper::IMapper::kDefaultAxisRangeMin;
-        pjc->wZmax = (WORD)Mapper::IMapper::kDefaultAxisRangeMax;
-        pjc->wRmin = (WORD)Mapper::IMapper::kDefaultAxisRangeMin;
-        pjc->wRmax = (WORD)Mapper::IMapper::kDefaultAxisRangeMax;
-        pjc->wUmin = (WORD)Mapper::IMapper::kDefaultAxisRangeMin;
-        pjc->wUmax = (WORD)Mapper::IMapper::kDefaultAxisRangeMax;
-        pjc->wVmin = (WORD)Mapper::IMapper::kDefaultAxisRangeMin;
-        pjc->wVmax = (WORD)Mapper::IMapper::kDefaultAxisRangeMax;
+        pjc->wXmin = (WORD)IMapper::kDefaultAxisRangeMin;
+        pjc->wXmax = (WORD)IMapper::kDefaultAxisRangeMax;
+        pjc->wYmin = (WORD)IMapper::kDefaultAxisRangeMin;
+        pjc->wYmax = (WORD)IMapper::kDefaultAxisRangeMax;
+        pjc->wZmin = (WORD)IMapper::kDefaultAxisRangeMin;
+        pjc->wZmax = (WORD)IMapper::kDefaultAxisRangeMax;
+        pjc->wRmin = (WORD)IMapper::kDefaultAxisRangeMin;
+        pjc->wRmax = (WORD)IMapper::kDefaultAxisRangeMax;
+        pjc->wUmin = (WORD)IMapper::kDefaultAxisRangeMin;
+        pjc->wUmax = (WORD)IMapper::kDefaultAxisRangeMax;
+        pjc->wVmin = (WORD)IMapper::kDefaultAxisRangeMin;
+        pjc->wVmax = (WORD)IMapper::kDefaultAxisRangeMax;
 
         if (mappedDeviceCaps.dwPOVs > 0)
             pjc->wCaps = JOYCAPS_HASPOV | JOYCAPS_POV4DIR;

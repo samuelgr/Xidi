@@ -72,7 +72,7 @@ namespace Xidi
     bool XidiConfigReader::CheckValue(std::wstring_view section, std::wstring_view name, const Configuration::TStringValue& value)
     {
         if ((Strings::kStrConfigurationSectionMapper == section) && (Strings::kStrConfigurationSettingMapperType == name))
-            return (Mapper::EType::Invalid != Mapper::TypeFromString(value));
+            return (EMapperType::Invalid != IMapper::TypeFromString(value));
 
         return true;
     }

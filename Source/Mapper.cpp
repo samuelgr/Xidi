@@ -25,83 +25,80 @@
 
 namespace Xidi
 {
-    namespace Mapper
+    // -------- INTERNAL VARIABLES ----------------------------------------- //
+
+    static std::unordered_map<std::wstring_view, EMapperType> mapperTypeStrings = {
+        {L"ExtendedGamepad",                     EMapperType::ExtendedGamepad},
+        {L"StandardGamepad",                     EMapperType::StandardGamepad},
+        {L"XInputNative",                        EMapperType::XInputNative},
+        {L"XInputSharedTriggers",                EMapperType::XInputSharedTriggers}
+    };
+
+
+    // -------- INTERNAL FUNCTIONS ----------------------------------------- //
+
+    /// Creates a new mapper of the specified type, using the `new` operator.
+    /// @return Pointer to the newly-created mapper, or `nullptr` in the event of an error.
+    static IMapper* CreateMapperOfType(const EMapperType type)
     {
-        // -------- INTERNAL VARIABLES --------------------------------------------- //
+        IMapper* newMapper = nullptr;
 
-        static std::unordered_map<std::wstring_view, EType> mapperTypeStrings = {
-            {L"ExtendedGamepad",                     EType::ExtendedGamepad},
-            {L"StandardGamepad",                     EType::StandardGamepad},
-            {L"XInputNative",                        EType::XInputNative},
-            {L"XInputSharedTriggers",                EType::XInputSharedTriggers}
-        };
-
-
-        // -------- INTERNAL FUNCTIONS ------------------------------------- //
-
-        /// Creates a new mapper of the specified type, using the `new` operator.
-        /// @return Pointer to the newly-created mapper, or `nullptr` in the event of an error.
-        static IMapper* CreateMapperOfType(const EType type)
+        switch (type)
         {
-            IMapper* newMapper = nullptr;
+        case EMapperType::XInputNative:
+            newMapper = new Mapper::XInputNative();
+            break;
 
-            switch (type)
+        case EMapperType::XInputSharedTriggers:
+            newMapper = new Mapper::XInputSharedTriggers();
+            break;
+
+        case EMapperType::StandardGamepad:
+            newMapper = new Mapper::StandardGamepad();
+            break;
+
+        case EMapperType::ExtendedGamepad:
+            newMapper = new Mapper::ExtendedGamepad();
+            break;
+        }
+
+        return newMapper;
+    }
+
+
+    // -------- CLASS METHODS -------------------------------------------------- //
+    // See "Mapper.h" for documentation.
+
+    IMapper* IMapper::Create(void)
+    {
+        static EMapperType configuredMapperType = kDefaultMapperType;
+
+        // Mappers might be created multiple times, but always of the same type, so check the configuration once and cache the result.
+        static std::once_flag getConfiguredTypeFlag;
+        std::call_once(getConfiguredTypeFlag, []() {
+            const Configuration::Configuration& config = Globals::GetConfiguration();
+
+            if ((true == config.IsDataValid()) && (true == config.GetData().SectionNamePairExists(Strings::kStrConfigurationSectionMapper, Strings::kStrConfigurationSettingMapperType)))
             {
-            case EType::XInputNative:
-                newMapper = new Mapper::XInputNative();
-                break;
+                const EMapperType requestedMapperType = TypeFromString(config.GetData()[Strings::kStrConfigurationSectionMapper][Strings::kStrConfigurationSettingMapperType].FirstValue().GetStringValue());
 
-            case EType::XInputSharedTriggers:
-                newMapper = new Mapper::XInputSharedTriggers();
-                break;
-
-            case EType::StandardGamepad:
-                newMapper = new Mapper::StandardGamepad();
-                break;
-
-            case EType::ExtendedGamepad:
-                newMapper = new Mapper::ExtendedGamepad();
-                break;
+                if (EMapperType::Invalid != requestedMapperType)
+                    configuredMapperType = requestedMapperType;
             }
+        });
 
-            return newMapper;
-        }
+        return CreateMapperOfType(configuredMapperType);
+    }
 
+    // --------
 
-        // -------- FUNCTIONS ------------------------------------------------------ //
-        // See "Mapper.h" for documentation.
+    EMapperType IMapper::TypeFromString(std::wstring_view typeString)
+    {
+        auto it = mapperTypeStrings.find(typeString);
 
-        IMapper* Create(void)
-        {
-            static EType configuredMapperType = kDefaultMapperType;
-
-            // Mappers might be created multiple times, but always of the same type, so check the configuration once and cache the result.
-            static std::once_flag getConfiguredTypeFlag;
-            std::call_once(getConfiguredTypeFlag, []() {
-                const Configuration::Configuration& config = Globals::GetConfiguration();
-
-                if ((true == config.IsDataValid()) && (true == config.GetData().SectionNamePairExists(Strings::kStrConfigurationSectionMapper, Strings::kStrConfigurationSettingMapperType)))
-                {
-                    const EType requestedMapperType = TypeFromString(config.GetData()[Strings::kStrConfigurationSectionMapper][Strings::kStrConfigurationSettingMapperType].FirstValue().GetStringValue());
-
-                    if (EType::Invalid != requestedMapperType)
-                        configuredMapperType = requestedMapperType;
-                }
-            });
-
-            return CreateMapperOfType(configuredMapperType);
-        }
-
-        // --------
-
-        EType TypeFromString(std::wstring_view typeString)
-        {
-            auto it = mapperTypeStrings.find(typeString);
-
-            if (mapperTypeStrings.end() == it)
-                return EType::Invalid;
-            else
-                return it->second;
-        }
+        if (mapperTypeStrings.end() == it)
+            return EMapperType::Invalid;
+        else
+            return it->second;
     }
 }

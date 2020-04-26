@@ -19,7 +19,6 @@
 #include <Xinput.h>
 
 using namespace Xidi;
-using namespace Xidi::Mapper;
 
 
 // -------- INTERNAL FUNCTIONS --------------------------------------------- //
