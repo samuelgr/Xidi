@@ -18,7 +18,7 @@ using namespace Xidi;
 
 
 // -------- CONCRETE INSTANCE METHODS -------------------------------------- //
-// See "Mapper/Base.h" for documentation.
+// See "Mapper.h" for documentation.
 
 const TInstance ExtendedGamepadMapper::MapXInputElementToDirectInputInstance(EXInputControllerElement element)
 {

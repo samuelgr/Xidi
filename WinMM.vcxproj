@@ -56,7 +56,6 @@
     <ClCompile Include="Source\Mapper\XInputSharedTriggers.cpp" />
     <ClCompile Include="Source\Mapper\StandardGamepad.cpp" />
     <ClCompile Include="Source\ControllerIdentification.cpp" />
-    <ClCompile Include="Source\Mapper\Base.cpp" />
     <ClCompile Include="Source\Message.cpp" />
     <ClCompile Include="Source\Strings.cpp" />
     <ClCompile Include="Source\TemporaryBuffer.cpp" />

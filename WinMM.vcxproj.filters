@@ -92,9 +92,6 @@
     <ClCompile Include="Source\ControllerIdentification.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="Source\Mapper\Base.cpp">
-      <Filter>Source Files\Mapper</Filter>
-    </ClCompile>
     <ClCompile Include="Source\XInputController.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>

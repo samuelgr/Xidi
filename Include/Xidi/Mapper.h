@@ -201,11 +201,6 @@ namespace Xidi
             return (TInstanceIdx)(id & ((8 * sizeof(TInstanceIdx)) - 1));
         }
 
-        /// Specifies the number of bytes consumed by an instance of an object of the specified type.
-        /// @param [in] type Instance type.
-        /// @return Number of bytes consumed by an instance of that type of object, or 0 if the type is not recognized.
-        static DWORD SizeofInstance(const EInstanceType type);
-
 
     private:
         // -------- HELPERS -------------------------------------------- //

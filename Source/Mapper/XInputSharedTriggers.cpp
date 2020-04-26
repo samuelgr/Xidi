@@ -19,7 +19,7 @@ using namespace Xidi;
 
 
 // -------- CONCRETE INSTANCE METHODS -------------------------------------- //
-// See "Mapper/Base.h" for documentation.
+// See "Mapper.h" for documentation.
 
 const TInstanceIdx XInputSharedTriggersMapper::AxisInstanceIndex(REFGUID axisGUID, const TInstanceIdx instanceNumber)
 {

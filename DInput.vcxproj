@@ -63,7 +63,6 @@
     </ClCompile>
     <ClCompile Include="Source\ControllerIdentification.cpp" />
     <ClCompile Include="Source\ImportApiDirectInput.cpp" />
-    <ClCompile Include="Source\Mapper\Base.cpp" />
     <ClCompile Include="Source\VirtualDirectInputDevice.cpp" />
     <ClCompile Include="Source\WrapperIDirectInput.cpp" />
     <ClCompile Include="Source\ExportApiDirectInput.cpp" />
