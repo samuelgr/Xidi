@@ -16,13 +16,12 @@
 #include "Mapper/XInputSharedTriggers.h"
 
 using namespace Xidi;
-using namespace Xidi::Mapper;
 
 
 // -------- CONCRETE INSTANCE METHODS -------------------------------------- //
 // See "Mapper/Base.h" for documentation.
 
-const TInstanceIdx XInputSharedTriggers::AxisInstanceIndex(REFGUID axisGUID, const TInstanceIdx instanceNumber)
+const TInstanceIdx XInputSharedTriggersMapper::AxisInstanceIndex(REFGUID axisGUID, const TInstanceIdx instanceNumber)
 {
     // Only one axis of each type exists in this mapping.
     if (0 == instanceNumber)
@@ -39,7 +38,7 @@ const TInstanceIdx XInputSharedTriggers::AxisInstanceIndex(REFGUID axisGUID, con
 
 // ---------
 
-const TInstanceCount XInputSharedTriggers::AxisTypeCount(REFGUID axisGUID)
+const TInstanceCount XInputSharedTriggersMapper::AxisTypeCount(REFGUID axisGUID)
 {
     // Only one axis of each type exists in this mapping.
     // See if the first instance of the specified type exists and, if so, indicate as much.
@@ -51,7 +50,7 @@ const TInstanceCount XInputSharedTriggers::AxisTypeCount(REFGUID axisGUID)
 
 // ---------
 
-const GUID XInputSharedTriggers::AxisTypeFromInstanceNumber(const TInstanceIdx instanceNumber)
+const GUID XInputSharedTriggersMapper::AxisTypeFromInstanceNumber(const TInstanceIdx instanceNumber)
 {
     EAxis axisNumber = (EAxis)instanceNumber;
 
@@ -74,7 +73,7 @@ const GUID XInputSharedTriggers::AxisTypeFromInstanceNumber(const TInstanceIdx i
 
 // ---------
 
-const TInstance XInputSharedTriggers::MapXInputElementToDirectInputInstance(EXInputControllerElement element)
+const TInstance XInputSharedTriggersMapper::MapXInputElementToDirectInputInstance(EXInputControllerElement element)
 {
     switch (element)
     {
@@ -135,7 +134,7 @@ const TInstance XInputSharedTriggers::MapXInputElementToDirectInputInstance(EXIn
 
 // ---------
 
-const TInstanceCount XInputSharedTriggers::NumInstancesOfType(const EInstanceType type)
+const TInstanceCount XInputSharedTriggersMapper::NumInstancesOfType(const EInstanceType type)
 {
     TInstanceCount numInstances = 0;
 

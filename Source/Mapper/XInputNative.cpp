@@ -15,13 +15,12 @@
 #include "Mapper/XInputNative.h"
 
 using namespace Xidi;
-using namespace Xidi::Mapper;
 
 
 // -------- CONCRETE INSTANCE METHODS -------------------------------------- //
 // See "Mapper/Base.h" for documentation.
 
-const TInstanceIdx XInputNative::AxisInstanceIndex(REFGUID axisGUID, const TInstanceIdx instanceNumber)
+const TInstanceIdx XInputNativeMapper::AxisInstanceIndex(REFGUID axisGUID, const TInstanceIdx instanceNumber)
 {
     // Only one axis of each type exists in this mapping.
     if (0 == instanceNumber)
@@ -39,7 +38,7 @@ const TInstanceIdx XInputNative::AxisInstanceIndex(REFGUID axisGUID, const TInst
 
 // ---------
 
-const TInstanceCount XInputNative::AxisTypeCount(REFGUID axisGUID)
+const TInstanceCount XInputNativeMapper::AxisTypeCount(REFGUID axisGUID)
 {
     // Only one axis of each type exists in this mapping.
     // See if the first instance of the specified type exists and, if so, indicate as much.
@@ -51,7 +50,7 @@ const TInstanceCount XInputNative::AxisTypeCount(REFGUID axisGUID)
 
 // ---------
 
-const GUID XInputNative::AxisTypeFromInstanceNumber(const TInstanceIdx instanceNumber)
+const GUID XInputNativeMapper::AxisTypeFromInstanceNumber(const TInstanceIdx instanceNumber)
 {
     EAxis axisNumber = (EAxis)instanceNumber;
 
@@ -76,7 +75,7 @@ const GUID XInputNative::AxisTypeFromInstanceNumber(const TInstanceIdx instanceN
 
 // ---------
 
-const TInstance XInputNative::MapXInputElementToDirectInputInstance(EXInputControllerElement element)
+const TInstance XInputNativeMapper::MapXInputElementToDirectInputInstance(EXInputControllerElement element)
 {
     switch (element)
     {
@@ -137,7 +136,7 @@ const TInstance XInputNative::MapXInputElementToDirectInputInstance(EXInputContr
 
 // ---------
 
-const TInstanceCount XInputNative::NumInstancesOfType(const EInstanceType type)
+const TInstanceCount XInputNativeMapper::NumInstancesOfType(const EInstanceType type)
 {
     TInstanceCount numInstances = 0;
 

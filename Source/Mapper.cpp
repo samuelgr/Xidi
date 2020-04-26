@@ -39,26 +39,26 @@ namespace Xidi
 
     /// Creates a new mapper of the specified type, using the `new` operator.
     /// @return Pointer to the newly-created mapper, or `nullptr` in the event of an error.
-    static IMapper* CreateMapperOfType(const EMapperType type)
+    static Mapper* CreateMapperOfType(const EMapperType type)
     {
-        IMapper* newMapper = nullptr;
+        Mapper* newMapper = nullptr;
 
         switch (type)
         {
         case EMapperType::XInputNative:
-            newMapper = new Mapper::XInputNative();
+            newMapper = new XInputNativeMapper();
             break;
 
         case EMapperType::XInputSharedTriggers:
-            newMapper = new Mapper::XInputSharedTriggers();
+            newMapper = new XInputSharedTriggersMapper();
             break;
 
         case EMapperType::StandardGamepad:
-            newMapper = new Mapper::StandardGamepad();
+            newMapper = new StandardGamepadMapper();
             break;
 
         case EMapperType::ExtendedGamepad:
-            newMapper = new Mapper::ExtendedGamepad();
+            newMapper = new ExtendedGamepadMapper();
             break;
         }
 
@@ -69,7 +69,7 @@ namespace Xidi
     // -------- CLASS METHODS -------------------------------------------------- //
     // See "Mapper.h" for documentation.
 
-    IMapper* IMapper::Create(void)
+    Mapper* Mapper::Create(void)
     {
         static EMapperType configuredMapperType = kDefaultMapperType;
 
@@ -92,7 +92,7 @@ namespace Xidi
 
     // --------
 
-    EMapperType IMapper::TypeFromString(std::wstring_view typeString)
+    EMapperType Mapper::TypeFromString(std::wstring_view typeString)
     {
         auto it = mapperTypeStrings.find(typeString);
 

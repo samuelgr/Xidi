@@ -15,13 +15,12 @@
 #include "Mapper/StandardGamepad.h"
 
 using namespace Xidi;
-using namespace Xidi::Mapper;
 
 
 // -------- CONCRETE INSTANCE METHODS -------------------------------------- //
 // See "Mapper/Base.h" for documentation.
 
-const TInstanceIdx StandardGamepad::AxisInstanceIndex(REFGUID axisGUID, const TInstanceIdx instanceNumber)
+const TInstanceIdx StandardGamepadMapper::AxisInstanceIndex(REFGUID axisGUID, const TInstanceIdx instanceNumber)
 {
     // Only one axis of each type exists in this mapping.
     if (0 == instanceNumber)
@@ -37,7 +36,7 @@ const TInstanceIdx StandardGamepad::AxisInstanceIndex(REFGUID axisGUID, const TI
 
 // ---------
 
-const TInstanceCount StandardGamepad::AxisTypeCount(REFGUID axisGUID)
+const TInstanceCount StandardGamepadMapper::AxisTypeCount(REFGUID axisGUID)
 {
     // Only one axis of each type exists in this mapping.
     // See if the first instance of the specified type exists and, if so, indicate as much.
@@ -49,7 +48,7 @@ const TInstanceCount StandardGamepad::AxisTypeCount(REFGUID axisGUID)
 
 // ---------
 
-const GUID StandardGamepad::AxisTypeFromInstanceNumber(const TInstanceIdx instanceNumber)
+const GUID StandardGamepadMapper::AxisTypeFromInstanceNumber(const TInstanceIdx instanceNumber)
 {
     EAxis axisNumber = (EAxis)instanceNumber;
 
@@ -70,7 +69,7 @@ const GUID StandardGamepad::AxisTypeFromInstanceNumber(const TInstanceIdx instan
 
 // ---------
 
-const TInstance StandardGamepad::MapXInputElementToDirectInputInstance(EXInputControllerElement element)
+const TInstance StandardGamepadMapper::MapXInputElementToDirectInputInstance(EXInputControllerElement element)
 {
     switch (element)
     {
@@ -131,7 +130,7 @@ const TInstance StandardGamepad::MapXInputElementToDirectInputInstance(EXInputCo
 
 // ---------
 
-const TInstanceCount StandardGamepad::NumInstancesOfType(const EInstanceType type)
+const TInstanceCount StandardGamepadMapper::NumInstancesOfType(const EInstanceType type)
 {
     TInstanceCount numInstances = 0;
 

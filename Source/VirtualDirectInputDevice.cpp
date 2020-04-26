@@ -81,7 +81,7 @@ static const wchar_t* StringFromPropertyUniqueIdentifier(REFGUID rguidProp)
 // -------- CONSTRUCTION AND DESTRUCTION ----------------------------------- //
 // See "VirtualDirectInputDevice.h" for documentation.
 
-VirtualDirectInputDevice::VirtualDirectInputDevice(BOOL useUnicode, XInputController* controller, IMapper* mapper) : controller(controller), mapper(mapper), polledSinceLastGetDeviceState(FALSE), refcount(0), useUnicode(useUnicode) {}
+VirtualDirectInputDevice::VirtualDirectInputDevice(BOOL useUnicode, XInputController* controller, Mapper* mapper) : controller(controller), mapper(mapper), polledSinceLastGetDeviceState(FALSE), refcount(0), useUnicode(useUnicode) {}
 
 // ---------
 

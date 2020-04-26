@@ -65,7 +65,7 @@ namespace Xidi
 
     /// Abstract base class representing a mapped controller to the application.
     /// Subclasses define the button layout to present to the application and convert data received from a Controller to the format requested by the application.
-    class IMapper
+    class Mapper
     {
     public:
         // -------- CONSTANTS ------------------------------------------ //
@@ -158,17 +158,17 @@ namespace Xidi
         // -------- CONSTRUCTION AND DESTRUCTION ----------------------- //
 
         /// Default constructor.
-        IMapper(void);
+        Mapper(void);
 
         /// Default destructor.
-        virtual ~IMapper(void);
+        virtual ~Mapper(void);
 
 
         // -------- CLASS METHODS -------------------------------------- //
 
         /// Creates a new mapper of the configured type, using the `new` operator.
         /// @return Pointer to the newly-created mapper, or `nullptr` in the event of an error.
-        static IMapper* Create(void);
+        static Mapper* Create(void);
 
         /// Convert the specified string into a mapper type enumerator, which can be invalid if the string is not recognized.
         /// Valid strings are the same as the names of the enumerators themselves.

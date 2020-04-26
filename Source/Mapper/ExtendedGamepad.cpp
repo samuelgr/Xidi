@@ -15,13 +15,12 @@
 #include "Mapper/ExtendedGamepad.h"
 
 using namespace Xidi;
-using namespace Xidi::Mapper;
 
 
 // -------- CONCRETE INSTANCE METHODS -------------------------------------- //
 // See "Mapper/Base.h" for documentation.
 
-const TInstance ExtendedGamepad::MapXInputElementToDirectInputInstance(EXInputControllerElement element)
+const TInstance ExtendedGamepadMapper::MapXInputElementToDirectInputInstance(EXInputControllerElement element)
 {
     switch (element)
     {
