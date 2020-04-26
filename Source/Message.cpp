@@ -77,7 +77,7 @@ namespace Xidi
         /// @return `true` if the severity is forced interactive, `false` otherwise.
         static inline bool IsSeverityForcedInteractive(const ESeverity severity)
         {
-            return (severity < ESeverity::ForcedInteractiveBoundaryValue);
+            return (severity < ESeverity::LowerBoundConfigurableValue);
         }
 
         /// Selects a character to represent each level of severity, for use when outputting messages.
@@ -336,7 +336,8 @@ namespace Xidi
 
         void SetMinimumSeverityForOutput(const ESeverity severity)
         {
-            minimumSeverityForOutput = (ESeverity)((int)severity + (int)ESeverity::ForcedInteractiveBoundaryValue);
+            if (severity > ESeverity::LowerBoundConfigurableValue)
+                minimumSeverityForOutput = severity;
         }
 
         // --------
@@ -348,7 +349,7 @@ namespace Xidi
             if (IsDebuggerPresent())
                 return true;
 
-            if ((severity < ESeverity::ForcedInteractiveBoundaryValue) || (severity <= minimumSeverityForOutput))
+            if ((severity < ESeverity::LowerBoundConfigurableValue) || (severity <= minimumSeverityForOutput))
             {
                 // Counter-intuitive: severity *values* increase as severity *levels* decrease.
                 // This is checking if the actual severity *level* is above (*value* is below) the highest severity *level* that requires output be non-interactive.

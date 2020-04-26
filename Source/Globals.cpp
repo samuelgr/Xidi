@@ -99,8 +99,11 @@ namespace Xidi
 
             if ((true == logEnabled) && (logLevel > 0))
             {
+                // Offset the requested severity so that 0 = disabled, 1 = error, 2 = warning, etc.
+                const Message::ESeverity configureSeverity = (Message::ESeverity)(logLevel + (int64_t)Message::ESeverity::LowerBoundConfigurableValue);
+
                 Message::CreateAndEnableLogFile();
-                Message::SetMinimumSeverityForOutput((Message::ESeverity)logLevel);
+                Message::SetMinimumSeverityForOutput((Message::ESeverity)configureSeverity);
             }
         }
 

@@ -27,15 +27,15 @@ namespace Xidi
             ForcedInteractiveWarning,                                   ///< Warning, always output interactively.
             ForcedInteractiveInfo,                                      ///< Informational, always output interactively.
 
-            // Boundary value between forced interactive and optional output
-            ForcedInteractiveBoundaryValue,                             ///< Not used as a value, but separates forced interactive output from optional output.
+            // Lower bound value that is allowed to be configured.
+            LowerBoundConfigurableValue,                                ///< Not used as a value, but separates forced interactive output from the configurable levels of optional output.
 
             // Optional output
             Error,                                                      ///< Error. Causes a change in behavior if encountered, possibly leading to application termination.
             Warning,                                                    ///< Warning. May cause a change in behavior but is not critical and will not terminate the application.
             Info,                                                       ///< Informational. Useful status-related remarks for tracking application behavior.
-            Debug,                                                      ///< Debug. Only output in debug mode, and then only written to an attached debugger.
-            SuperDebug,                                                 ///< Super Debug. Includes detailed messages as above but goes beyond to include calls that happen frequently, making the logs large.
+            Debug,                                                      ///< Debug. Detailed messages showing internal operations and state.
+            SuperDebug,                                                 ///< Super Debug. Includes detailed messages as above but goes beyond to include message that can appear frequently and make the generated output large.
 
             // Upper sentinel value
             UpperBoundValue,                                            ///< Not used as a value. One higher than the maximum possible value in this enumeration.
@@ -46,7 +46,7 @@ namespace Xidi
 
         /// Specifies the default minimum severity required to output a message.
         /// Messages below the configured minimum severity severity (i.e. above the integer value that represents this severity) are not output.
-#if _DEBUG
+#ifdef _DEBUG
         static constexpr ESeverity kDefaultMinimumSeverityForOutput = ESeverity::Debug;
 #else
         static constexpr ESeverity kDefaultMinimumSeverityForOutput = ESeverity::Error;
@@ -77,8 +77,7 @@ namespace Xidi
         void OutputFormatted(const ESeverity severity, const wchar_t* format, ...);
 
         /// Sets the minimum message severity required for a message to be output.
-        /// Compares the supplied severity level to ESeverity::ForcedInteractiveBoundaryValue and, if not greater, sums them together and adds 1.
-        /// The effect of doing this is to map from forced severities to unforced severities (i.e. input is ESeverity::ForcedInteractiveError, actual minimum severity is ESeverity::Error).
+        /// Does nothing if the requested severity level is less than the minimum value allowed to be configured.
         /// @param [in] severity New minimum severity setting.
         void SetMinimumSeverityForOutput(const ESeverity severity);
 
