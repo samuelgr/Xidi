@@ -55,6 +55,17 @@ namespace Xidi
     };
 
 
+    // -------- INTERNAL TYPES --------------------------------------------- //
+
+    /// Used to select between Unicode and non-Unicode representations of device object instance information.
+    /// Intended to be used only when enumerating device object instances.
+    union UObjectInstanceInfo
+    {
+        DIDEVICEOBJECTINSTANCEA a;                                  ///< Non-Unicode version of the device object instance information.
+        DIDEVICEOBJECTINSTANCEW w;                                  ///< Unicode version of the device object instance information.
+    };
+
+
     // -------- INTERNAL FUNCTIONS ----------------------------------------- //
 
     /// Creates a new mapper of the specified type, using the `new` operator.
@@ -201,16 +212,17 @@ namespace Xidi
     // -------- CONSTRUCTION AND DESTRUCTION ------------------------------- //
     // See "Mapper.h" for documentation.
 
-    Mapper::Mapper(void) : axisProperties(nullptr), cachedValueXInputLT(XInputController::kTriggerNeutral), cachedValueXInputRT(XInputController::kTriggerNeutral), dataPacketSize(0), instanceToOffset(), mapsValid(FALSE), offsetToInstance(), axisOffsetsUnused(), buttonOffsetsUnused(), povOffsetsUnused() {}
+    Mapper::Mapper(void) : axisProperties(nullptr), cachedValueXInputLT(XInputController::kTriggerNeutral), cachedValueXInputRT(XInputController::kTriggerNeutral), dataPacketSize(0), instanceToOffset(), mapsValid(FALSE), offsetToInstance(), axisOffsetsUnused(), buttonOffsetsUnused(), povOffsetsUnused()
+    {
+        // Nothing to do here.
+    }
 
     // ---------
 
     Mapper::~Mapper(void)
     {
-        instanceToOffset.clear();
-        offsetToInstance.clear();
-
-        if (nullptr != axisProperties) delete[] axisProperties;
+        if (nullptr != axisProperties)
+            delete[] axisProperties;
     }
 
 

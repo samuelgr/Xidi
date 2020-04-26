@@ -26,6 +26,6 @@ namespace Xidi
         // -------- CONCRETE INSTANCE METHODS -------------------------- //
         // See "Mapper.h" for documentation.
 
-        virtual const TInstance MapXInputElementToDirectInputInstance(EXInputControllerElement element);
+        const TInstance MapXInputElementToDirectInputInstance(EXInputControllerElement element) override;
     };
 }

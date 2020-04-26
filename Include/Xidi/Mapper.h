@@ -93,10 +93,10 @@ namespace Xidi
         static constexpr DWORD kMaxDataPacketSize = 1048576;
 
 
+    private:
         // -------- TYPE DEFINITIONS ----------------------------------- //
 
-    private:
-        /// Internal type, holds all properties required to configure an axis (range, deadzone, and saturation).
+        /// Holds all properties required to configure an axis (range, deadzone, and saturation).
         /// See DirectInput documentation for more information on the meaning of each field.
         struct SAxisProperties
         {
@@ -104,14 +104,6 @@ namespace Xidi
             LONG rangeMax;                                                  ///< Maximum value of the axis range.
             DWORD deadzone;                                                 ///< Axis deadzone.
             DWORD saturation;                                               ///< Axis saturation.
-        };
-
-        /// Internal type, used to select between Unicode and non-Unicode representations of device object instance information.
-        /// Intended to be used only when enumerating device object instances.
-        union UObjectInstanceInfo
-        {
-            DIDEVICEOBJECTINSTANCEA a;                                  ///< Non-Unicode version of the device object instance information.
-            DIDEVICEOBJECTINSTANCEW w;                                  ///< Unicode version of the device object instance information.
         };
 
 
@@ -154,12 +146,13 @@ namespace Xidi
         std::set<DWORD> povOffsetsUnused;
 
 
-    public:
+    protected:
         // -------- CONSTRUCTION AND DESTRUCTION ----------------------- //
 
-        /// Default constructor.
+        /// Default constructor. Not available externally.
         Mapper(void);
 
+    public:
         /// Default destructor.
         virtual ~Mapper(void);
 

@@ -69,10 +69,10 @@ namespace Xidi
         // -------- CONCRETE INSTANCE METHODS -------------------------------------- //
         // See "Mapper.h" for documentation.
 
-        virtual const TInstanceIdx AxisInstanceIndex(REFGUID axisGUID, const TInstanceIdx instanceNumber);
-        virtual const TInstanceCount AxisTypeCount(REFGUID axisGUID);
-        virtual const GUID AxisTypeFromInstanceNumber(const TInstanceIdx instanceNumber);
-        virtual const TInstance MapXInputElementToDirectInputInstance(EXInputControllerElement element);
-        virtual const TInstanceCount NumInstancesOfType(const EInstanceType type);
+        const TInstanceIdx AxisInstanceIndex(REFGUID axisGUID, const TInstanceIdx instanceNumber) override;
+        const TInstanceCount AxisTypeCount(REFGUID axisGUID) override;
+        const GUID AxisTypeFromInstanceNumber(const TInstanceIdx instanceNumber) override;
+        const TInstance MapXInputElementToDirectInputInstance(EXInputControllerElement element) override;
+        const TInstanceCount NumInstancesOfType(const EInstanceType type) override;
     };
 }
