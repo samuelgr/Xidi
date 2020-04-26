@@ -25,10 +25,10 @@ namespace Xidi
         // -------- CONSTANTS ---------------------------------------------- //
 
         /// Dummy product GUID for XInput controllers.
-        static inline constexpr GUID kXInputProductGUID = { 0xffffffff, 0x0000, 0x0000, { 0x00, 0x00, 'X', 'I', 'N', 'P', 'U', 'T' } };
+        inline constexpr GUID kXInputProductGUID = { 0xffffffff, 0x0000, 0x0000, { 0x00, 0x00, 'X', 'I', 'N', 'P', 'U', 'T' } };
 
         /// Dummy instance base GUID for XInput controllers, from which instance GUIDs per controller may be derived.
-        static inline constexpr GUID kXInputBaseInstGUID = { 0xffffffff, 0x0000, 0x0000, { 'X', 'I', 'N', 'P', 'U', 'T', 0x00, 0x00 } };
+        inline constexpr GUID kXInputBaseInstGUID = { 0xffffffff, 0x0000, 0x0000, { 'X', 'I', 'N', 'P', 'U', 'T', 0x00, 0x00 } };
 
 
         // -------- FUNCTIONS ---------------------------------------------- //

@@ -71,26 +71,26 @@ namespace Xidi
         // -------- CONSTANTS ------------------------------------------ //
 
         /// Specifies the default minimum axis range value (based on DirectInput documentation).
-        static const LONG kDefaultAxisRangeMin = 0x00000000;
+        static constexpr LONG kDefaultAxisRangeMin = 0x00000000;
 
         /// Specifies the default maximum axis range value (based on DirectInput documentation).
-        static const LONG kDefaultAxisRangeMax = 0x0000ffff;
+        static constexpr LONG kDefaultAxisRangeMax = 0x0000ffff;
 
         /// Specifies the default axis deadzone (based on DirectInput documentation).
-        static const DWORD kDefaultAxisDeadzone = 0;
+        static constexpr DWORD kDefaultAxisDeadzone = 0;
 
         /// Specifies the default axis saturation (based on DirectInput documentation).
-        static const DWORD kDefaultAxisSaturation = 10000;
+        static constexpr DWORD kDefaultAxisSaturation = 10000;
 
         /// Specifies the minimum axis deadzone and saturation (based on DirectInput documentation).
-        static const DWORD kMinAxisDeadzoneSaturation = 0;
+        static constexpr DWORD kMinAxisDeadzoneSaturation = 0;
 
         /// Specifies the maximum axis deadzone and saturation (based on DirectInput documentation).
-        static const DWORD kMaxAxisDeadzoneSaturation = 10000;
+        static constexpr DWORD kMaxAxisDeadzoneSaturation = 10000;
 
         /// Specifies the maximum size of an application data packet, in bytes.
         /// Value is equal to 1MB.
-        static const DWORD kMaxDataPacketSize = 1048576;
+        static constexpr DWORD kMaxDataPacketSize = 1048576;
 
 
         // -------- TYPE DEFINITIONS ----------------------------------- //

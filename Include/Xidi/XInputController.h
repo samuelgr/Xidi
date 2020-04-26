@@ -61,32 +61,32 @@ namespace Xidi
         /// Maximum size of the event buffer, in number of elements.
         /// Relevant only for applications that read buffered data.
         /// Value is set to reserve 1MB at most per controller, which holds tens of thousands of events.
-        static const DWORD kEventBufferCountMax = (1 * 1024 * 1024) / sizeof(SControllerEvent);
+        static constexpr DWORD kEventBufferCountMax = (1 * 1024 * 1024) / sizeof(SControllerEvent);
 
         /// Minimum value of readings from the left and right sticks, from the XInput documentation.
-        static const LONG kStickRangeMin = -32768;
+        static constexpr LONG kStickRangeMin = -32768;
 
         /// Maximum value of readings from the left and right sticks, from the XInput documentation.
-        static const LONG kStickRangeMax = 32767;
+        static constexpr LONG kStickRangeMax = 32767;
 
         /// Neutral position value for the left and right sticks, from the XInput documentation.
-        static const LONG kStickNeutral = 0;
+        static constexpr LONG kStickNeutral = 0;
 
         /// Minimum value of readings from the LT and RT triggers, from the XInput documentation.
-        static const LONG kTriggerRangeMin = 0;
+        static constexpr LONG kTriggerRangeMin = 0;
 
         /// Maximum value of readings from the LT and RT triggers, from the XInput documentation.
-        static const LONG kTriggerRangeMax = 255;
+        static constexpr LONG kTriggerRangeMax = 255;
 
         /// Neutral position value for the LT and RT triggers, from the XInput documentation.
-        static const LONG kTriggerNeutral = 0;
+        static constexpr LONG kTriggerNeutral = 0;
 
         /// Mask for checking just the state of the dpad in an XINPUT_GAMEPAD structure.
-        static const WORD kDpadStateMask = (XINPUT_GAMEPAD_DPAD_UP | XINPUT_GAMEPAD_DPAD_DOWN | XINPUT_GAMEPAD_DPAD_LEFT | XINPUT_GAMEPAD_DPAD_RIGHT);
+        static constexpr WORD kDpadStateMask = (XINPUT_GAMEPAD_DPAD_UP | XINPUT_GAMEPAD_DPAD_DOWN | XINPUT_GAMEPAD_DPAD_LEFT | XINPUT_GAMEPAD_DPAD_RIGHT);
 
         /// Maximum number of XInput controllers.
         /// Valid user indices range from 0 to this number.
-        static const WORD kMaxNumXInputControllers = XUSER_MAX_COUNT;
+        static constexpr WORD kMaxNumXInputControllers = XUSER_MAX_COUNT;
 
 
     private:
