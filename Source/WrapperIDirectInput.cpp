@@ -13,7 +13,7 @@
 #include "ApiDirectInput.h"
 #include "ApiGUID.h"
 #include "ControllerIdentification.h"
-#include "MapperFactory.h"
+#include "Mapper.h"
 #include "Message.h"
 #include "VirtualDirectInputDevice.h"
 #include "WrapperIDirectInput.h"

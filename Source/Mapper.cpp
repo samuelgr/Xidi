@@ -5,13 +5,13 @@
  * Authored by Samuel Grossman
  * Copyright (c) 2016-2020
  *************************************************************************//**
- * @file MapperFactory.cpp
- *   Implementation of a class that creates mappers of different types.
+ * @file Mapper.cpp
+ *   Implementation of functionality common to all mappers.
  *****************************************************************************/
 
 #include "Configuration.h"
 #include "Globals.h"
-#include "MapperFactory.h"
+#include "Mapper.h"
 #include "Mapper/Base.h"
 #include "Mapper/ExtendedGamepad.h"
 #include "Mapper/XInputNative.h"
@@ -42,9 +42,9 @@ namespace Xidi
 
         /// Creates a new mapper of the specified type, using the `new` operator.
         /// @return Pointer to the newly-created mapper, or `nullptr` in the event of an error.
-        static Mapper::Base* CreateMapperOfType(const EType type)
+        static Base* CreateMapperOfType(const EType type)
         {
-            Mapper::Base* newMapper = nullptr;
+            Base* newMapper = nullptr;
 
             switch (type)
             {
@@ -70,9 +70,9 @@ namespace Xidi
 
 
         // -------- FUNCTIONS ------------------------------------------------------ //
-        // See "MapperFactory.h" for documentation.
+        // See "Mapper.h" for documentation.
 
-        Mapper::Base* Create(void)
+        Base* Create(void)
         {
             static EType configuredMapperType = kDefaultMapperType;
 

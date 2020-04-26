@@ -10,7 +10,7 @@
  *****************************************************************************/
 
 #include "Configuration.h"
-#include "MapperFactory.h"
+#include "Mapper.h"
 #include "Strings.h"
 #include "TemporaryBuffer.h"
 #include "XidiConfigReader.h"

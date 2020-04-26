@@ -5,8 +5,8 @@
  * Authored by Samuel Grossman
  * Copyright (c) 2016-2020
  *************************************************************************//**
- * @file MapperFactory.h
- *   Declaration of a class that creates mappers of different types.
+ * @file Mapper.h
+ *   Declaration of functionality common to all mappers.
  *****************************************************************************/
 
 #pragma once
@@ -45,7 +45,7 @@ namespace Xidi
 
         /// Creates a new mapper of the configured type, using the `new` operator.
         /// @return Pointer to the newly-created mapper, or `nullptr` in the event of an error.
-        Mapper::Base* Create(void);
+        Base* Create(void);
 
         /// Convert the specified string into a mapper type enumerator, which can be invalid if the string is not recognized.
         /// Valid strings are the same as the names of the enumerators themselves.

@@ -15,7 +15,7 @@
 #include "Globals.h"
 #include "ImportApiDirectInput.h"
 #include "ImportApiWinMM.h"
-#include "MapperFactory.h"
+#include "Mapper.h"
 #include "Message.h"
 #include "WrapperJoyWinMM.h"
 #include "XInputController.h"

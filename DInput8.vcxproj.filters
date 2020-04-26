@@ -54,7 +54,7 @@
     <ClInclude Include="Include\Xidi\ImportApiDirectInput.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="Include\Xidi\MapperFactory.h">
+    <ClInclude Include="Include\Xidi\Mapper.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="Include\Xidi\Globals.h">
@@ -128,7 +128,7 @@
     <ClCompile Include="Source\ImportApiDirectInput.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="Source\MapperFactory.cpp">
+    <ClCompile Include="Source\Mapper.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="Source\Globals.cpp">
