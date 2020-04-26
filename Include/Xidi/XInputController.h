@@ -126,12 +126,12 @@ namespace Xidi
         DWORD xinputUserIndex;
 
 
+    public:
         // -------- CONSTRUCTION AND DESTRUCTION --------------------------- //
 
         /// Default constructor. Should never be invoked.
-        XInputController(void);
+        XInputController(void) = delete;
 
-    public:
         /// Constructs a new controller object given the index (0 to 3) of the controller with which to interface.
         /// If the value of the index is out of range, all method calls to the constructed object will fail.
         XInputController(DWORD xinputUserIndex);

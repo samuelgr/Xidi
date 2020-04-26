@@ -41,12 +41,12 @@ namespace Xidi
         BOOL useUnicode;
 
 
+    public:
         // -------- CONSTRUCTION AND DESTRUCTION ----------------------------------- //
 
         /// Default constructor. Should never be invoked.
-        VirtualDirectInputDevice(void);
+        VirtualDirectInputDevice(void) = delete;
 
-    public:
         /// Constructs a WrapperIDirectInput object, given a mapper and a controller.
         /// @param [in] useUnicode Specifies if the object should use Unicode versions of methods.
         /// @param [in] controller XInput controller object to associate with this object.

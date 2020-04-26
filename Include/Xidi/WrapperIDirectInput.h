@@ -42,12 +42,12 @@ namespace Xidi
         BOOL underlyingDIObjectUsesUnicode;
 
 
+    public:
         // -------- CONSTRUCTION AND DESTRUCTION ----------------------------------- //
 
         /// Default constructor. Should never be invoked.
-        WrapperIDirectInput(void);
+        WrapperIDirectInput(void) = delete;
 
-    public:
         /// Constructs an WrapperIDirectInput object, given an underlying IDirectInput8 object to wrap.
         WrapperIDirectInput(LatestIDirectInput* underlyingDIObject, BOOL underlyingDIObjectUsesUnicode);
 
