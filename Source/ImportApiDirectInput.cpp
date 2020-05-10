@@ -124,76 +124,67 @@ namespace Xidi
 
         void Initialize(void)
         {
-            static volatile bool isInitialized = false;
+            static std::once_flag initializeFlag;
+            std::call_once(initializeFlag, []() {
+                // Initialize the import table.
+                ZeroMemory(&importTable, sizeof(importTable));
 
-            if (false == isInitialized)
-            {
-                static std::mutex initializeMutex;
-                std::lock_guard<std::mutex> lock(initializeMutex);
-                
-                if (false == isInitialized)
+                // Obtain the full library path string.
+#if DIRECTINPUT_VERSION >= 0x0800
+                std::wstring_view libraryPath = GetImportLibraryPathDirectInput8();
+#else
+                std::wstring_view libraryPath = GetImportLibraryPathDirectInput();
+#endif
+
+                // Attempt to load the library.
+                LogInitializeLibraryPath(libraryPath.data());
+                HMODULE loadedLibrary = LoadLibraryEx(libraryPath.data(), nullptr, 0);
+                if (nullptr == loadedLibrary)
                 {
-                    // Initialize the import table.
-                    ZeroMemory(&importTable, sizeof(importTable));
-
-                    // Obtain the full library path string.
-#if DIRECTINPUT_VERSION >= 0x0800
-                    std::wstring_view libraryPath = GetImportLibraryPathDirectInput8();
-#else
-                    std::wstring_view libraryPath = GetImportLibraryPathDirectInput();
-#endif
-
-                    // Attempt to load the library.
-                    LogInitializeLibraryPath(libraryPath.data());
-                    HMODULE loadedLibrary = LoadLibraryEx(libraryPath.data(), nullptr, 0);
-                    if (nullptr == loadedLibrary)
-                    {
-                        LogInitializeFailed(libraryPath.data());
-                        return;
-                    }
-
-                    // Attempt to obtain the addresses of all imported API functions.
-                    FARPROC procAddress = nullptr;
-
-#if DIRECTINPUT_VERSION >= 0x0800
-                    procAddress = GetProcAddress(loadedLibrary, "DirectInput8Create");
-                    if (nullptr == procAddress) LogImportFailed(L"DirectInput8Create");
-                    importTable.DirectInput8Create = (HRESULT(STDMETHODCALLTYPE*)(HINSTANCE, DWORD, REFIID, LPVOID*, LPUNKNOWN))procAddress;
-#else
-                    procAddress = GetProcAddress(loadedLibrary, "DirectInputCreateA");
-                    if (nullptr == procAddress) LogImportFailed(L"DirectInputCreateA");
-                    importTable.DirectInputCreateA = (HRESULT(STDMETHODCALLTYPE*)(HINSTANCE, DWORD, LPDIRECTINPUTA*, LPUNKNOWN))procAddress;
-
-                    procAddress = GetProcAddress(loadedLibrary, "DirectInputCreateW");
-                    if (nullptr == procAddress) LogImportFailed(L"DirectInputCreateW");
-                    importTable.DirectInputCreateW = (HRESULT(STDMETHODCALLTYPE*)(HINSTANCE, DWORD, LPDIRECTINPUTW*, LPUNKNOWN))procAddress;
-
-                    procAddress = GetProcAddress(loadedLibrary, "DirectInputCreateEx");
-                    if (nullptr == procAddress) LogImportFailed(L"DirectInputCreateEx");
-                    importTable.DirectInputCreateEx = (HRESULT(STDMETHODCALLTYPE*)(HINSTANCE, DWORD, REFIID, LPVOID*, LPUNKNOWN))procAddress;
-#endif
-
-                    procAddress = GetProcAddress(loadedLibrary, "DllRegisterServer");
-                    if (nullptr == procAddress) LogImportFailed(L"DllRegisterServer");
-                    importTable.DllRegisterServer = (HRESULT(STDMETHODCALLTYPE*)(void))procAddress;
-
-                    procAddress = GetProcAddress(loadedLibrary, "DllUnregisterServer");
-                    if (nullptr == procAddress) LogImportFailed(L"DllUnregisterServer");
-                    importTable.DllUnregisterServer = (HRESULT(STDMETHODCALLTYPE*)(void))procAddress;
-
-                    procAddress = GetProcAddress(loadedLibrary, "DllCanUnloadNow");
-                    if (nullptr == procAddress) LogImportFailed(L"DllCanUnloadNow");
-                    importTable.DllCanUnloadNow = (HRESULT(STDMETHODCALLTYPE*)(void))procAddress;
-
-                    procAddress = GetProcAddress(loadedLibrary, "DllGetClassObject");
-                    if (nullptr == procAddress) LogImportFailed(L"DllGetClassObject");
-                    importTable.DllGetClassObject = (HRESULT(STDMETHODCALLTYPE*)(REFCLSID, REFIID, LPVOID*))procAddress;
-
-                    // Initialization complete.
-                    isInitialized = true;
-                    LogInitializeSucceeded();
+                    LogInitializeFailed(libraryPath.data());
+                    return;
                 }
-            }
+
+                // Attempt to obtain the addresses of all imported API functions.
+                FARPROC procAddress = nullptr;
+
+#if DIRECTINPUT_VERSION >= 0x0800
+                procAddress = GetProcAddress(loadedLibrary, "DirectInput8Create");
+                if (nullptr == procAddress) LogImportFailed(L"DirectInput8Create");
+                importTable.DirectInput8Create = (HRESULT(STDMETHODCALLTYPE*)(HINSTANCE, DWORD, REFIID, LPVOID*, LPUNKNOWN))procAddress;
+#else
+                procAddress = GetProcAddress(loadedLibrary, "DirectInputCreateA");
+                if (nullptr == procAddress) LogImportFailed(L"DirectInputCreateA");
+                importTable.DirectInputCreateA = (HRESULT(STDMETHODCALLTYPE*)(HINSTANCE, DWORD, LPDIRECTINPUTA*, LPUNKNOWN))procAddress;
+
+                procAddress = GetProcAddress(loadedLibrary, "DirectInputCreateW");
+                if (nullptr == procAddress) LogImportFailed(L"DirectInputCreateW");
+                importTable.DirectInputCreateW = (HRESULT(STDMETHODCALLTYPE*)(HINSTANCE, DWORD, LPDIRECTINPUTW*, LPUNKNOWN))procAddress;
+
+                procAddress = GetProcAddress(loadedLibrary, "DirectInputCreateEx");
+                if (nullptr == procAddress) LogImportFailed(L"DirectInputCreateEx");
+                importTable.DirectInputCreateEx = (HRESULT(STDMETHODCALLTYPE*)(HINSTANCE, DWORD, REFIID, LPVOID*, LPUNKNOWN))procAddress;
+#endif
+
+                procAddress = GetProcAddress(loadedLibrary, "DllRegisterServer");
+                if (nullptr == procAddress) LogImportFailed(L"DllRegisterServer");
+                importTable.DllRegisterServer = (HRESULT(STDMETHODCALLTYPE*)(void))procAddress;
+
+                procAddress = GetProcAddress(loadedLibrary, "DllUnregisterServer");
+                if (nullptr == procAddress) LogImportFailed(L"DllUnregisterServer");
+                importTable.DllUnregisterServer = (HRESULT(STDMETHODCALLTYPE*)(void))procAddress;
+
+                procAddress = GetProcAddress(loadedLibrary, "DllCanUnloadNow");
+                if (nullptr == procAddress) LogImportFailed(L"DllCanUnloadNow");
+                importTable.DllCanUnloadNow = (HRESULT(STDMETHODCALLTYPE*)(void))procAddress;
+
+                procAddress = GetProcAddress(loadedLibrary, "DllGetClassObject");
+                if (nullptr == procAddress) LogImportFailed(L"DllGetClassObject");
+                importTable.DllGetClassObject = (HRESULT(STDMETHODCALLTYPE*)(REFCLSID, REFIID, LPVOID*))procAddress;
+
+                // Initialization complete.
+                LogInitializeSucceeded();
+            });
         }
 
 
