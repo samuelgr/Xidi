@@ -406,7 +406,7 @@ namespace Xidi
         /// @param [out] appDataBuf Application data buffer to which to write.
         /// @param [in] appDataSize Size of the application data buffer, in bytes. Must be at least as large as the application's data packet size, which is set when the application specifies its data format.
         /// @return `DI_OK` on success, another error code on failure.
-        HRESULT WriteApplicationControllerState(XINPUT_GAMEPAD& xState, LPVOID appDataBuf, DWORD appDataSize);
+        HRESULT WriteApplicationControllerState(const XINPUT_GAMEPAD& xState, LPVOID appDataBuf, DWORD appDataSize);
 
 
         // -------- ABSTRACT INSTANCE METHODS -------------------------- //

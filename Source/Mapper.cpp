@@ -409,7 +409,7 @@ namespace Xidi
         ZeroMemory(instanceInfo, sizeof(*instanceInfo));
         instanceInfo->dwSize = sizeof(*instanceInfo);
         instanceInfo->dwType = DIDFT_MAKEINSTANCE(instanceNumber);
-        instanceInfo->dwFlags = 0;
+        instanceInfo->dwFlags = DIDOI_POLLED;
 
         // Fill in the rest of the structure based on the instance type.
         switch (instanceType)
@@ -418,6 +418,7 @@ namespace Xidi
             instanceInfo->dwOfs = (instanceNumber * SizeofInstance(instanceType));
             instanceInfo->guidType = AxisTypeFromInstanceNumber(instanceNumber);
             instanceInfo->dwType |= DIDFT_ABSAXIS;
+            instanceInfo->dwFlags |= DIDOI_ASPECTPOSITION;
             AxisTypeToStringW(instanceInfo->guidType, instanceInfo->tszName, _countof(instanceInfo->tszName));
             break;
 
@@ -1421,7 +1422,7 @@ namespace Xidi
 
     // ---------
 
-    HRESULT Mapper::WriteApplicationControllerState(XINPUT_GAMEPAD& xState, LPVOID appDataBuf, DWORD appDataSize)
+    HRESULT Mapper::WriteApplicationControllerState(const XINPUT_GAMEPAD& xState, LPVOID appDataBuf, DWORD appDataSize)
     {
         // Lazily initialize the axis properties (this is idempotent).
         InitializeAxisProperties();
