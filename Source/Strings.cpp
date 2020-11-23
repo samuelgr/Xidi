@@ -6,7 +6,7 @@
  * Copyright (c) 2016-2020
  *************************************************************************//**
  * @file Strings.cpp
- *   Implementation of functions for manipulating Hookshot-specific strings.
+ *   Implementation of functions for manipulating Xidi-specific strings.
  *****************************************************************************/
 
 #include "ApiWindows.h"

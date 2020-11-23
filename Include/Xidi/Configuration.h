@@ -632,15 +632,15 @@ namespace Xidi
 
             // -------- INSTANCE METHODS ----------------------------------- //
 
-            /// Retrieves and returns a reference to the object that holds all of Hookshot's configuration settings.
+            /// Retrieves and returns a reference to the object that holds all of Xidi's configuration settings.
             /// @return Configuration settings object.
             inline const ConfigurationData& GetData(void) const
             {
                 return configData;
             }
 
-            /// Determines if the contents of the object that holds all of Hookshot's configuration settings are valid.
-            /// If a previous attempt to read the Hookshot configuration file failed,
+            /// Determines if the contents of the object that holds all of Xidi's configuration settings are valid.
+            /// If a previous attempt to read the Xidi configuration file failed,
             /// @return `true` if the contents are valid, `false` otherwise.
             inline EFileReadResult GetFileReadResult(void) const
             {

@@ -24,8 +24,7 @@ namespace Xidi
 {
     // -------- INTERNAL VARIABLES ----------------------------------------- //
 
-    /// Holds the layout of the Hookshot configuration file that is known statically.
-    /// At compile time, this encompasses all settings except for the dynamically-determined section whose name matches the file name of the currently-running executable, which is filled in at runtime.
+    /// Holds the layout of the Xidi configuration file that is known statically.
     static Configuration::TConfigurationFileLayout configurationFileLayout = {
         ConfigurationFileLayoutSection(Strings::kStrConfigurationSectionImport, {
             ConfigurationFileLayoutNameAndValueType(Strings::kStrConfigurationSettingImportDirectInput, Configuration::EValueType::String),

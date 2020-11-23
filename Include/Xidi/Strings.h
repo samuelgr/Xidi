@@ -98,7 +98,7 @@ namespace Xidi
         extern const std::wstring_view kStrConfigurationFilename;
 
         /// Expected filename for the log file.
-        /// Hookshot log filename = (current user's desktop)\Xidi_(Xidi Version)_(base name of the running executable)_(process ID).log
+        /// Xidi log filename = (current user's desktop)\Xidi_(Xidi Version)_(base name of the running executable)_(process ID).log
         extern const std::wstring_view kStrLogFilename;
 
 
