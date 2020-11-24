@@ -297,7 +297,7 @@ namespace Xidi
 
     // ---------
 
-    void Mapper::AxisTypeToStringA(REFGUID axisTypeGUID, LPSTR buf, const int bufcount)
+    template <> void Mapper::AxisTypeToString<LPSTR>(REFGUID axisTypeGUID, LPSTR buf, const int bufcount)
     {
         if (axisTypeGUID == GUID_XAxis)
             strncpy_s(buf, bufcount, XIDI_AXIS_NAME_X, _countof(XIDI_AXIS_NAME_X));
@@ -315,9 +315,7 @@ namespace Xidi
             strncpy_s(buf, bufcount, XIDI_AXIS_NAME_UNKNOWN, _countof(XIDI_AXIS_NAME_UNKNOWN));
     }
 
-    // ---------
-
-    void Mapper::AxisTypeToStringW(REFGUID axisTypeGUID, LPWSTR buf, const int bufcount)
+    template <> void Mapper::AxisTypeToString<LPWSTR>(REFGUID axisTypeGUID, LPWSTR buf, const int bufcount)
     {
         if (axisTypeGUID == GUID_XAxis)
             wcsncpy_s(buf, bufcount, _CRT_WIDE(XIDI_AXIS_NAME_X), _countof(_CRT_WIDE(XIDI_AXIS_NAME_X)));
@@ -337,6 +335,18 @@ namespace Xidi
 
     // ---------
 
+    template <> void Mapper::ButtonToString<LPSTR>(unsigned int buttonNumber, LPSTR buf, const int bufcount)
+    {
+        sprintf_s(buf, bufcount, XIDI_BUTTON_NAME_FORMAT, buttonNumber);
+    }
+
+    template <> void Mapper::ButtonToString<LPWSTR>(unsigned int buttonNumber, LPWSTR buf, const int bufcount)
+    {
+        swprintf_s(buf, bufcount, _CRT_WIDE(XIDI_BUTTON_NAME_FORMAT), buttonNumber);
+    }
+
+    // ---------
+
     BOOL Mapper::CheckAndSetOffsets(BOOL* base, const DWORD count)
     {
         for (DWORD i = 0; i < count; ++i)
@@ -350,7 +360,7 @@ namespace Xidi
 
     // ---------
 
-    void Mapper::FillObjectInstanceInfoA(LPDIDEVICEOBJECTINSTANCEA instanceInfo, EInstanceType instanceType, TInstanceIdx instanceNumber)
+    template <typename DeviceObjectInfoType> void Mapper::FillObjectInstanceInfo(DeviceObjectInfoType* instanceInfo, EInstanceType instanceType, TInstanceIdx instanceNumber)
     {
         // Obtain the number of objects of each type.
         const TInstanceCount numAxes = NumInstancesOfType(EInstanceType::InstanceTypeAxis);
@@ -371,21 +381,21 @@ namespace Xidi
             instanceInfo->guidType = AxisTypeFromInstanceNumber(instanceNumber);
             instanceInfo->dwType |= DIDFT_ABSAXIS;
             instanceInfo->dwFlags |= DIDOI_ASPECTPOSITION;
-            AxisTypeToStringA(instanceInfo->guidType, instanceInfo->tszName, _countof(instanceInfo->tszName));
+            AxisTypeToString(instanceInfo->guidType, instanceInfo->tszName, _countof(instanceInfo->tszName));
             break;
 
         case EInstanceType::InstanceTypePov:
             instanceInfo->dwOfs = (numAxes * SizeofInstance(EInstanceType::InstanceTypeAxis)) + (instanceNumber * SizeofInstance(instanceType));
             instanceInfo->guidType = GUID_POV;
             instanceInfo->dwType |= DIDFT_POV;
-            sprintf_s(instanceInfo->tszName, _countof(instanceInfo->tszName), XIDI_POV_NAME_FORMAT, (unsigned)(1 + instanceNumber));
+            PovToString((unsigned int)(1 + instanceNumber), instanceInfo->tszName, _countof(instanceInfo->tszName));
             break;
 
         case EInstanceType::InstanceTypeButton:
             instanceInfo->dwOfs = (numAxes * SizeofInstance(EInstanceType::InstanceTypeAxis)) + (numPov * SizeofInstance(EInstanceType::InstanceTypePov)) + (instanceNumber * SizeofInstance(instanceType));
             instanceInfo->guidType = GUID_Button;
             instanceInfo->dwType |= DIDFT_PSHBUTTON;
-            sprintf_s(instanceInfo->tszName, _countof(instanceInfo->tszName), XIDI_BUTTON_NAME_FORMAT, (unsigned)(1 + instanceNumber));
+            ButtonToString((unsigned int)(1 + instanceNumber), instanceInfo->tszName, _countof(instanceInfo->tszName));
             break;
         }
 
@@ -396,53 +406,8 @@ namespace Xidi
             instanceInfo->dwOfs = OffsetForInstance(MakeInstanceIdentifier(instanceType, instanceNumber));
     }
 
-    // ---------
-
-    void Mapper::FillObjectInstanceInfoW(LPDIDEVICEOBJECTINSTANCEW instanceInfo, EInstanceType instanceType, TInstanceIdx instanceNumber)
-    {
-        // Obtain the number of objects of each type.
-        const TInstanceCount numAxes = NumInstancesOfType(EInstanceType::InstanceTypeAxis);
-        const TInstanceCount numPov = NumInstancesOfType(EInstanceType::InstanceTypePov);
-        const TInstanceCount numButtons = NumInstancesOfType(EInstanceType::InstanceTypeButton);
-
-        // Initialize the structure and fill out common parts.
-        ZeroMemory(instanceInfo, sizeof(*instanceInfo));
-        instanceInfo->dwSize = sizeof(*instanceInfo);
-        instanceInfo->dwType = DIDFT_MAKEINSTANCE(instanceNumber);
-        instanceInfo->dwFlags = DIDOI_POLLED;
-
-        // Fill in the rest of the structure based on the instance type.
-        switch (instanceType)
-        {
-        case EInstanceType::InstanceTypeAxis:
-            instanceInfo->dwOfs = (instanceNumber * SizeofInstance(instanceType));
-            instanceInfo->guidType = AxisTypeFromInstanceNumber(instanceNumber);
-            instanceInfo->dwType |= DIDFT_ABSAXIS;
-            instanceInfo->dwFlags |= DIDOI_ASPECTPOSITION;
-            AxisTypeToStringW(instanceInfo->guidType, instanceInfo->tszName, _countof(instanceInfo->tszName));
-            break;
-
-        case EInstanceType::InstanceTypePov:
-            instanceInfo->dwOfs = (numAxes * SizeofInstance(EInstanceType::InstanceTypeAxis)) + (instanceNumber * SizeofInstance(instanceType));
-            instanceInfo->guidType = GUID_POV;
-            instanceInfo->dwType |= DIDFT_POV;
-            swprintf_s(instanceInfo->tszName, _countof(instanceInfo->tszName), _CRT_WIDE(XIDI_POV_NAME_FORMAT), (unsigned)(1 + instanceNumber));
-            break;
-
-        case EInstanceType::InstanceTypeButton:
-            instanceInfo->dwOfs = (numAxes * SizeofInstance(EInstanceType::InstanceTypeAxis)) + (numPov * SizeofInstance(EInstanceType::InstanceTypePov)) + (instanceNumber * SizeofInstance(instanceType));
-            instanceInfo->guidType = GUID_Button;
-            instanceInfo->dwType |= DIDFT_PSHBUTTON;
-            swprintf_s(instanceInfo->tszName, _countof(instanceInfo->tszName), _CRT_WIDE(XIDI_BUTTON_NAME_FORMAT), (unsigned)(1 + instanceNumber));
-            break;
-        }
-
-        // This is undocumented, but correct, DirectInput behavior.
-        // Documentation suggests that EnumObjects will always return a native offset that has nothing to do with application data format.
-        // However, in practice, DirectInput will use application data format offsets if they have been set, and 0xffffffff (-1) for any objects that do not exist in the application data format.
-        if (IsApplicationDataFormatSet())
-            instanceInfo->dwOfs = OffsetForInstance(MakeInstanceIdentifier(instanceType, instanceNumber));
-    }
+    template void Mapper::FillObjectInstanceInfo(LPDIDEVICEOBJECTINSTANCEA instanceInfo, EInstanceType instanceType, TInstanceIdx instanceNumber);
+    template void Mapper::FillObjectInstanceInfo(LPDIDEVICEOBJECTINSTANCEW instanceInfo, EInstanceType instanceType, TInstanceIdx instanceNumber);
 
     // ---------
 
@@ -549,6 +514,18 @@ namespace Xidi
 
     // ---------
 
+    template <> void Mapper::PovToString<LPSTR>(unsigned int povNumber, LPSTR buf, const int bufcount)
+    {
+        sprintf_s(buf, bufcount, XIDI_POV_NAME_FORMAT, povNumber);
+    }
+
+    template <> void Mapper::PovToString<LPWSTR>(unsigned int povNumber, LPWSTR buf, const int bufcount)
+    {
+        swprintf_s(buf, bufcount, _CRT_WIDE(XIDI_POV_NAME_FORMAT), povNumber);
+    }
+
+    // ---------
+
     TInstance Mapper::SelectInstance(const EInstanceType instanceType, BOOL* instanceUsed, const TInstanceCount instanceCount, const TInstanceIdx instanceToSelect)
     {
         TInstance selectedInstance = (TInstance)-1;
@@ -632,9 +609,9 @@ namespace Xidi
             {
                 // Fill the information structure to submit to the application.
                 if (useUnicode)
-                    FillObjectInstanceInfoW(&objectDescriptor->w, EInstanceType::InstanceTypeAxis, (TInstanceIdx)i);
+                    FillObjectInstanceInfo(&objectDescriptor->w, EInstanceType::InstanceTypeAxis, (TInstanceIdx)i);
                 else
-                    FillObjectInstanceInfoA(&objectDescriptor->a, EInstanceType::InstanceTypeAxis, (TInstanceIdx)i);
+                    FillObjectInstanceInfo(&objectDescriptor->a, EInstanceType::InstanceTypeAxis, (TInstanceIdx)i);
 
                 // Submit the button to the application.
                 BOOL appResponse = appCallback((LPCDIDEVICEOBJECTINSTANCE)objectDescriptor, appCbParam);
@@ -661,9 +638,9 @@ namespace Xidi
             {
                 // Fill the information structure to submit to the application.
                 if (useUnicode)
-                    FillObjectInstanceInfoW(&objectDescriptor->w, EInstanceType::InstanceTypePov, (TInstanceIdx)i);
+                    FillObjectInstanceInfo(&objectDescriptor->w, EInstanceType::InstanceTypePov, (TInstanceIdx)i);
                 else
-                    FillObjectInstanceInfoA(&objectDescriptor->a, EInstanceType::InstanceTypePov, (TInstanceIdx)i);
+                    FillObjectInstanceInfo(&objectDescriptor->a, EInstanceType::InstanceTypePov, (TInstanceIdx)i);
 
                 // Submit the button to the application.
                 BOOL appResponse = appCallback((LPCDIDEVICEOBJECTINSTANCE)objectDescriptor, appCbParam);
@@ -690,9 +667,9 @@ namespace Xidi
             {
                 // Fill the information structure to submit to the application.
                 if (useUnicode)
-                    FillObjectInstanceInfoW(&objectDescriptor->w, EInstanceType::InstanceTypeButton, (TInstanceIdx)i);
+                    FillObjectInstanceInfo(&objectDescriptor->w, EInstanceType::InstanceTypeButton, (TInstanceIdx)i);
                 else
-                    FillObjectInstanceInfoA(&objectDescriptor->a, EInstanceType::InstanceTypeButton, (TInstanceIdx)i);
+                    FillObjectInstanceInfo(&objectDescriptor->a, EInstanceType::InstanceTypeButton, (TInstanceIdx)i);
 
                 // Submit the button to the application.
                 BOOL appResponse = appCallback((LPCDIDEVICEOBJECTINSTANCE)objectDescriptor, appCbParam);
@@ -738,9 +715,9 @@ namespace Xidi
 
         // Fill the specified structure with information about the specified object.
         if (useUnicode)
-            FillObjectInstanceInfoW((LPDIDEVICEOBJECTINSTANCEW)pdidoi, ExtractIdentifierInstanceType(instance), ExtractIdentifierInstanceIndex(instance));
+            FillObjectInstanceInfo((LPDIDEVICEOBJECTINSTANCEW)pdidoi, ExtractIdentifierInstanceType(instance), ExtractIdentifierInstanceIndex(instance));
         else
-            FillObjectInstanceInfoA((LPDIDEVICEOBJECTINSTANCEA)pdidoi, ExtractIdentifierInstanceType(instance), ExtractIdentifierInstanceIndex(instance));
+            FillObjectInstanceInfo((LPDIDEVICEOBJECTINSTANCEA)pdidoi, ExtractIdentifierInstanceType(instance), ExtractIdentifierInstanceIndex(instance));
 
         return DI_OK;
     }

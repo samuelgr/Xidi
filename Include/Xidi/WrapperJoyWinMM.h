@@ -104,18 +104,11 @@ namespace Xidi
         static MMRESULT FillDeviceState(UINT joyID, SJoyStateData* joyStateData);
 
         /// Fills in the specified buffer with the name of the registry key to use for referencing controller names.
-        /// This is the non-Unicode version.
+        /// @tparam StringType Either LPSTR or LPWSTR depending on whether ASCII or Unicode is desired.
         /// @param [out] buf Buffer to be filled.
         /// @param [in] bufcount Number of characters that the buffer can hold.
         /// @return Number of characters written, or negative in the event of an error.
-        static int FillRegistryKeyStringA(LPSTR buf, const size_t bufcount);
-
-        /// Fills in the specified buffer with the name of the registry key to use for referencing controller names.
-        /// This is the Unicode version.
-        /// @param [out] buf Buffer to be filled.
-        /// @param [in] bufcount Number of characters that the buffer can hold.
-        /// @return Number of characters written, or negative in the event of an error.
-        static int FillRegistryKeyStringW(LPWSTR buf, const size_t bufcount);
+        template <typename StringType> static int FillRegistryKeyString(StringType buf, const size_t bufcount);
 
         /// Places the required keys and values into the registry so that WinMM-based applications can find the correct controller names.
         /// Consumes the system device information data structure.
@@ -130,8 +123,7 @@ namespace Xidi
     public:
         // -------- METHODS: WinMM JOYSTICK ---------------------------------------- //
         static MMRESULT JoyConfigChanged(DWORD dwFlags);
-        static MMRESULT JoyGetDevCapsA(UINT_PTR uJoyID, LPJOYCAPSA pjc, UINT cbjc);
-        static MMRESULT JoyGetDevCapsW(UINT_PTR uJoyID, LPJOYCAPSW pjc, UINT cbjc);
+        template <typename JoyCapsType> static MMRESULT JoyGetDevCaps(UINT_PTR uJoyID, JoyCapsType* pjc, UINT cbjc);
         static UINT JoyGetNumDevs(void);
         static MMRESULT JoyGetPos(UINT uJoyID, LPJOYINFO pji);
         static MMRESULT JoyGetPosEx(UINT uJoyID, LPJOYINFOEX pji);

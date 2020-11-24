@@ -44,34 +44,20 @@ namespace Xidi
         BOOL DoesDirectInputControllerSupportXInput(EarliestIDirectInput* dicontext, REFGUID instanceGUID, std::wstring* devicePath = nullptr);
 
         /// Performs a DirectInput-style controller enumeration of connected XInput controllers.
-        /// This is the non-Unicode version.
+        /// Callback parameter type was copied and pasted from DirectInput headers and modified to be amenable to being used in a template like this.
+        /// @tparam DeviceInstanceType Either DIDEVICEINSTANCEA or DIDEVICEINSTANCEW depending on whether ASCII or Unicode is desired.
         /// @param [in] lpCallback Application-supplied callback function. Refer to DirectInput documentation for more.
         /// @param [in] pvRef Application-supplied parameter. Refer to DirectInput documentation for more.
         /// @return `DIENUM_CONTINUE` or `DIENUM_STOP` depending on what the application's callback returned.
-        BOOL EnumerateXInputControllersA(LPDIENUMDEVICESCALLBACKA lpCallback, LPVOID pvRef);
-
-        /// Performs a DirectInput-style controller enumeration of connected XInput controllers.
-        /// This is the Unicode version.
-        /// @param [in] lpCallback Application-supplied callback function. Refer to DirectInput documentation for more.
-        /// @param [in] pvRef Application-supplied parameter. Refer to DirectInput documentation for more.
-        /// @return `DIENUM_CONTINUE` or `DIENUM_STOP` depending on what the application's callback returned.
-        BOOL EnumerateXInputControllersW(LPDIENUMDEVICESCALLBACKW lpCallback, LPVOID pvRef);
+        template <typename DeviceInstanceType> BOOL EnumerateXInputControllers(BOOL(FAR PASCAL* lpCallback)(const DeviceInstanceType*, LPVOID), LPVOID pvRef);
 
         /// Generates and places a string representing the XInput controller's product name for the controller at the specified index.
-        /// This is the non-Unicode version.
+        /// @tparam StringType Either LPSTR or LPWSTR depending on whether ASCII or Unicode is desired.
         /// @param [out] buf Buffer to fill.
         /// @param [in] bufcount Buffer size, expressed in terms of number of characters.
         /// @param [in] controllerIndex XInput controller index, which is used to determine the actual text to produce.
         /// @return Number of characters written, or negative in the event of an error.
-        int FillXInputControllerNameA(LPSTR buf, const size_t bufcount, const DWORD controllerIndex);
-
-        /// Generates and places a string representing the XInput controller's product name for the controller at the specified index.
-        /// This is the Unicode version.
-        /// @param [out] buf Buffer to fill.
-        /// @param [in] bufcount Buffer size, expressed in terms of number of characters.
-        /// @param [in] controllerIndex XInput controller index, which is used to determine the actual text to produce.
-        /// @return Number of characters written, or negative in the event of an error.
-        int FillXInputControllerNameW(LPWSTR buf, const size_t bufcount, const DWORD controllerIndex);
+        template <typename StringType> int FillXInputControllerName(StringType buf, const size_t bufcount, const DWORD controllerIndex);
 
         /// Generates an instance GUID for an XInput controller of the specified index and places it into the supplied GUID.
         /// @param [out] xguid GUID to fill.

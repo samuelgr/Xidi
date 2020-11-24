@@ -139,14 +139,14 @@ extern "C"
 
     MMRESULT WINAPI ExportApiWinMMJoyGetDevCapsA(UINT_PTR uJoyID, LPJOYCAPSA pjc, UINT cbjc)
     {
-        return WrapperJoyWinMM::JoyGetDevCapsA(uJoyID, pjc, cbjc);
+        return WrapperJoyWinMM::JoyGetDevCaps(uJoyID, pjc, cbjc);
     }
 
     // ---------
 
     MMRESULT WINAPI ExportApiWinMMJoyGetDevCapsW(UINT_PTR uJoyID, LPJOYCAPSW pjc, UINT cbjc)
     {
-        return WrapperJoyWinMM::JoyGetDevCapsW(uJoyID, pjc, cbjc);
+        return WrapperJoyWinMM::JoyGetDevCaps(uJoyID, pjc, cbjc);
     }
 
     // ---------

@@ -41,6 +41,25 @@ using namespace Xidi;
 #define LOG_INVALID_PARAMS()                Message::OutputFormatted(Message::ESeverity::Warning, L"Application invoked %s on a Xidi virtual device, which failed due to invalid parameters.", __FUNCTIONW__ L"()");
 
 
+// -------- INTERNAL FUNCTIONS --------------------------------------------- //
+
+/// Templated wrapper around the imported `joyGetDevCaps` WinMM function, which ordinarily exists in a Unicode and non-Unicode version separately.
+template <typename JoyCapsType> static inline MMRESULT ImportedJoyGetDevCaps(UINT_PTR uJoyID, JoyCapsType* pjc, UINT cbjc)
+{
+    return JOYERR_NOCANDO;
+}
+
+template <> static inline MMRESULT ImportedJoyGetDevCaps<JOYCAPSA>(UINT_PTR uJoyID, LPJOYCAPSA pjc, UINT cbjc)
+{
+    return ImportApiWinMM::joyGetDevCapsA(uJoyID, pjc, cbjc);
+}
+
+template <> static inline MMRESULT ImportedJoyGetDevCaps<JOYCAPSW>(UINT_PTR uJoyID, LPJOYCAPSW pjc, UINT cbjc)
+{
+    return ImportApiWinMM::joyGetDevCapsW(uJoyID, pjc, cbjc);
+}
+
+
 // -------- LOCAL TYPES ---------------------------------------------------- //
 
 namespace Xidi
@@ -352,14 +371,12 @@ MMRESULT WrapperJoyWinMM::FillDeviceState(UINT joyID, SJoyStateData* joyStateDat
 
 // ---------
 
-int WrapperJoyWinMM::FillRegistryKeyStringA(LPSTR buf, const size_t bufcount)
+template <> int WrapperJoyWinMM::FillRegistryKeyString<LPSTR>(LPSTR buf, const size_t bufcount)
 {
     return LoadStringA(Globals::GetInstanceHandle(), IDS_XIDI_PRODUCT_NAME, buf, (int)bufcount);
 }
 
-// ---------
-
-int WrapperJoyWinMM::FillRegistryKeyStringW(LPWSTR buf, const size_t bufcount)
+template <> int WrapperJoyWinMM::FillRegistryKeyString<LPWSTR>(LPWSTR buf, const size_t bufcount)
 {
     return LoadStringW(Globals::GetInstanceHandle(), IDS_XIDI_PRODUCT_NAME, buf, (int)bufcount);
 }
@@ -373,14 +390,14 @@ void WrapperJoyWinMM::SetControllerNameRegistryInfo(void)
     wchar_t registryKeyName[128];
     wchar_t registryPath[1024];
 
-    FillRegistryKeyStringW(registryKeyName, _countof(registryKeyName));
+    FillRegistryKeyString(registryKeyName, _countof(registryKeyName));
 
     // Place the names into the correct spots for the application to read.
     // These will be in HKCU\System\CurrentControlSet\Control\MediaProperties\PrivateProperties\Joystick\OEM\Xidi# and contain the name of the controller.
     for (DWORD i = 0; i < _countof(controllers); ++i)
     {
         wchar_t valueData[64];
-        const int valueDataCount = ControllerIdentification::FillXInputControllerNameW(valueData, _countof(valueData), i);
+        const int valueDataCount = ControllerIdentification::FillXInputControllerName(valueData, _countof(valueData), i);
 
         swprintf_s(registryPath, _countof(registryPath), REGSTR_PATH_JOYOEM L"\\%s%u", registryKeyName, i + 1);
         result = RegCreateKeyEx(HKEY_CURRENT_USER, registryPath, 0, nullptr, REG_OPTION_VOLATILE, KEY_SET_VALUE, nullptr, &registryKey, nullptr);
@@ -463,12 +480,12 @@ MMRESULT WrapperJoyWinMM::JoyConfigChanged(DWORD dwFlags)
 
 // ---------
 
-MMRESULT WrapperJoyWinMM::JoyGetDevCapsA(UINT_PTR uJoyID, LPJOYCAPSA pjc, UINT cbjc)
+template <typename JoyCapsType> MMRESULT WrapperJoyWinMM::JoyGetDevCaps(UINT_PTR uJoyID, JoyCapsType* pjc, UINT cbjc)
 {
     // Special case: index is specified as -1, which the API says just means fill in the registry key.
     if ((UINT_PTR)-1 == uJoyID)
     {
-        FillRegistryKeyStringA(pjc->szRegKey, _countof(pjc->szRegKey));
+        FillRegistryKeyString(pjc->szRegKey, _countof(pjc->szRegKey));
 
         const MMRESULT result = JOYERR_NOERROR;
         LOG_INVOCATION((unsigned int)uJoyID, result);
@@ -530,8 +547,8 @@ MMRESULT WrapperJoyWinMM::JoyGetDevCapsA(UINT_PTR uJoyID, LPJOYCAPSA pjc, UINT c
         if (mapper->AxisTypeCount(GUID_RxAxis) > 0)
             pjc->wCaps |= JOYCAPS_HASV;
 
-        FillRegistryKeyStringA(pjc->szRegKey, _countof(pjc->szRegKey));
-        ControllerIdentification::FillXInputControllerNameA(pjc->szPname, _countof(pjc->szPname), xJoyID);
+        FillRegistryKeyString(pjc->szRegKey, _countof(pjc->szRegKey));
+        ControllerIdentification::FillXInputControllerName(pjc->szPname, _countof(pjc->szPname), xJoyID);
 
         const MMRESULT result = JOYERR_NOERROR;
         LOG_INVOCATION((unsigned int)uJoyID, result);
@@ -541,105 +558,18 @@ MMRESULT WrapperJoyWinMM::JoyGetDevCapsA(UINT_PTR uJoyID, LPJOYCAPSA pjc, UINT c
     {
         // Querying a non-XInput controller.
         // Replace the registry key but otherwise leave the response unchanged.
-        MMRESULT result = ImportApiWinMM::joyGetDevCapsA((UINT_PTR)realJoyID, pjc, cbjc);
+        MMRESULT result = ImportedJoyGetDevCaps((UINT_PTR)realJoyID, pjc, cbjc);
 
         if (JOYERR_NOERROR == result)
-            FillRegistryKeyStringA(pjc->szRegKey, _countof(pjc->szRegKey));
+            FillRegistryKeyString(pjc->szRegKey, _countof(pjc->szRegKey));
 
         LOG_INVOCATION((unsigned int)uJoyID, result);
         return result;
     }
 }
 
-// ---------
-
-MMRESULT WrapperJoyWinMM::JoyGetDevCapsW(UINT_PTR uJoyID, LPJOYCAPSW pjc, UINT cbjc)
-{
-    // Special case: index is specified as -1, which the API says just means fill in the registry key.
-    if ((UINT_PTR)-1 == uJoyID)
-    {
-        FillRegistryKeyStringW(pjc->szRegKey, _countof(pjc->szRegKey));
-
-        const MMRESULT result = JOYERR_NOERROR;
-        LOG_INVOCATION((unsigned int)uJoyID, result);
-        return result;
-    }
-
-    Initialize();
-    const int realJoyID = TranslateApplicationJoyIndex((UINT)uJoyID);
-
-    if (realJoyID < 0)
-    {
-        // Querying an XInput controller.
-        const DWORD xJoyID = (DWORD)((-realJoyID) - 1);
-
-        // Check for the correct structure size.
-        if (sizeof(*pjc) != cbjc)
-        {
-            const MMRESULT result = JOYERR_PARMS;
-            LOG_INVALID_PARAMS();
-            LOG_INVOCATION((unsigned int)uJoyID, result);
-            return result;
-        }
-
-        // Get information from the mapper on the mapped device's capabilities.
-        DIDEVCAPS mappedDeviceCaps;
-        mapper->FillDeviceCapabilities(&mappedDeviceCaps);
-
-        // Fill in the provided structure.
-        ZeroMemory(pjc, sizeof(*pjc));
-        pjc->wMaxAxes = 6;
-        pjc->wMaxButtons = _countof(SJoyStateData::buttons);
-        pjc->wNumAxes = (WORD)mappedDeviceCaps.dwAxes;
-        pjc->wNumButtons = (WORD)mappedDeviceCaps.dwButtons;
-        pjc->wXmin = (WORD)Mapper::kDefaultAxisRangeMin;
-        pjc->wXmax = (WORD)Mapper::kDefaultAxisRangeMax;
-        pjc->wYmin = (WORD)Mapper::kDefaultAxisRangeMin;
-        pjc->wYmax = (WORD)Mapper::kDefaultAxisRangeMax;
-        pjc->wZmin = (WORD)Mapper::kDefaultAxisRangeMin;
-        pjc->wZmax = (WORD)Mapper::kDefaultAxisRangeMax;
-        pjc->wRmin = (WORD)Mapper::kDefaultAxisRangeMin;
-        pjc->wRmax = (WORD)Mapper::kDefaultAxisRangeMax;
-        pjc->wUmin = (WORD)Mapper::kDefaultAxisRangeMin;
-        pjc->wUmax = (WORD)Mapper::kDefaultAxisRangeMax;
-        pjc->wVmin = (WORD)Mapper::kDefaultAxisRangeMin;
-        pjc->wVmax = (WORD)Mapper::kDefaultAxisRangeMax;
-
-        if (mappedDeviceCaps.dwPOVs > 0)
-            pjc->wCaps = JOYCAPS_HASPOV | JOYCAPS_POV4DIR;
-
-        if (mapper->AxisTypeCount(GUID_ZAxis) > 0)
-            pjc->wCaps |= JOYCAPS_HASZ;
-
-        if (mapper->AxisTypeCount(GUID_RzAxis) > 0)
-            pjc->wCaps |= JOYCAPS_HASR;
-
-        if (mapper->AxisTypeCount(GUID_RyAxis) > 0)
-            pjc->wCaps |= JOYCAPS_HASU;
-
-        if (mapper->AxisTypeCount(GUID_RxAxis) > 0)
-            pjc->wCaps |= JOYCAPS_HASV;
-
-        FillRegistryKeyStringW(pjc->szRegKey, _countof(pjc->szRegKey));
-        ControllerIdentification::FillXInputControllerNameW(pjc->szPname, _countof(pjc->szPname), xJoyID);
-
-        const MMRESULT result = JOYERR_NOERROR;
-        LOG_INVOCATION((unsigned int)uJoyID, result);
-        return result;
-    }
-    else
-    {
-        // Querying a non-XInput controller.
-        // Replace the registry key with ours but otherwise leave the response unchanged.
-        MMRESULT result = ImportApiWinMM::joyGetDevCapsW((UINT_PTR)realJoyID, pjc, cbjc);
-
-        if (JOYERR_NOERROR == result)
-            FillRegistryKeyStringW(pjc->szRegKey, _countof(pjc->szRegKey));
-
-        LOG_INVOCATION((unsigned int)uJoyID, result);
-        return result;
-    }
-}
+template MMRESULT WrapperJoyWinMM::JoyGetDevCaps(UINT_PTR uJoyID, LPJOYCAPSA pjc, UINT cbjc);
+template MMRESULT WrapperJoyWinMM::JoyGetDevCaps(UINT_PTR uJoyID, LPJOYCAPSW pjc, UINT cbjc);
 
 // ---------
 

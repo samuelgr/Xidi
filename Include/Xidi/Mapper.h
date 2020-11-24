@@ -205,18 +205,18 @@ namespace Xidi
         LONG ApplyAxisPropertiesToRawValue(const TInstance axisInstance, const LONG value);
 
         /// Places a friendly name string for the specified axis type by GUID into the specified buffer.
-        /// This is the non-Unicode version.
+        /// @tparam StringType Either LPSTR or LPWSTR depending on whether ASCII or Unicode is desired.
         /// @param [in] axisTypeGUID DirectInput GUID that identifies the axis type.
         /// @param [out] buf Buffer into which to write the string.
         /// @param [in] bufcount Size of the buffer, in characters.
-        void AxisTypeToStringA(REFGUID axisTypeGUID, LPSTR buf, const int bufcount);
+        template <typename StringType> void AxisTypeToString(REFGUID axisTypeGUID, StringType buf, const int bufcount);
 
-        /// Places a friendly name string for the specified axis type by GUID into the specified buffer.
-        /// This is the Unicode version.
-        /// @param [in] axisTypeGUID DirectInput GUID that identifies the axis type.
+        /// Places a friendly name string for the specified button number into the specified buffer.
+        /// @tparam StringType Either LPSTR or LPWSTR depending on whether ASCII or Unicode is desired.
+        /// @param [in] buttonNumber Instance number of the desired button.
         /// @param [out] buf Buffer into which to write the string.
         /// @param [in] bufcount Size of the buffer, in characters.
-        void AxisTypeToStringW(REFGUID axisTypeGUID, LPWSTR buf, const int bufcount);
+        template <typename StringType> void ButtonToString(unsigned int buttonNumber, StringType buf, const int bufcount);
 
         /// Given an array of offsets and a count, checks that they are all unset (`FALSE`).
         /// If they are all unset, sets them (to `TRUE`) and returns `TRUE`.
@@ -227,18 +227,12 @@ namespace Xidi
         BOOL CheckAndSetOffsets(BOOL* base, const DWORD count);
 
         /// Given a DirectInput object instance info structure pointer, instance type, and instance number, fills the structure appropriately.
-        /// This is the non-Unicode version.
-        /// @param [out] instanceInfo DirectInput object instance information structure. Refer to DirectInput documentation for more.
-        /// @param [in] instanceType Type of instance being queried.
-        /// @param [in] instanceNumber Index of the instance being queried.
-        void FillObjectInstanceInfoA(LPDIDEVICEOBJECTINSTANCEA instanceInfo, EInstanceType instanceType, TInstanceIdx instanceNumber);
-
-        /// Given a DirectInput object instance info structure pointer, instance type, and instance number, fills the structure appropriately.
-        /// This is the Unicode version.
+        /// @tparam DeviceObjectInstanceType Either DIDEVICEOBJECTINSTANCEA or DIDEVICEOBJECTINSTANCEW depending on whether ASCII or Unicode is desired.
         /// @param [out] instanceInfo DirectInput object instance information structure.
         /// @param [in] instanceType Type of instance being queried.
         /// @param [in] instanceNumber Index of the instance being queried.
-        void FillObjectInstanceInfoW(LPDIDEVICEOBJECTINSTANCEW instanceInfo, EInstanceType instanceType, TInstanceIdx instanceNumber);
+        //void FillObjectInstanceInfoW(LPDIDEVICEOBJECTINSTANCEW instanceInfo, EInstanceType instanceType, TInstanceIdx instanceNumber);
+        template <typename DeviceObjectInfoType> void FillObjectInstanceInfo(DeviceObjectInfoType* instanceInfo, EInstanceType instanceType, TInstanceIdx instanceNumber);
 
         /// Initializes all axis properties. Idempotent; intended for lazy instantiation on first access.
         void InitializeAxisProperties(void);
@@ -277,6 +271,13 @@ namespace Xidi
         /// @param [in] newMax New range maximum value.
         /// @return Result of the computation.
         LONG MapValueInRangeToRange(const LONG originalValue, const LONG originalMin, const LONG originalMax, const LONG newMin, const LONG newMax);
+
+        /// Places a friendly name string for the specified POV number into the specified buffer.
+        /// @tparam StringType Either LPSTR or LPWSTR depending on whether ASCII or Unicode is desired.
+        /// @param [in] povNumber Instance number of the desired POV.
+        /// @param [out] buf Buffer into which to write the string.
+        /// @param [in] bufcount Size of the buffer, in characters.
+        template <typename StringType> void PovToString(unsigned int povNumber, StringType buf, const int bufcount);
 
         /// Attempts to select an instance to use for a DirectInput object while parsing an application-supplied data format.
         /// Checks that the specified instance (by index) is currently unset (`FALSE`) and, if so, sets it (to `TRUE`).

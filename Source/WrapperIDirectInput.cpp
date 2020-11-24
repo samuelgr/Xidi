@@ -165,9 +165,9 @@ HRESULT STDMETHODCALLTYPE WrapperIDirectInput::EnumDevices(DWORD dwDevType, LPDI
             Message::Output(Message::ESeverity::Debug, L"Enumerate: System has XInput devices, so Xidi virtual XInput devices are being presented to the application before other controllers.");
 
             if (underlyingDIObjectUsesUnicode)
-                callbackInfo.callbackReturnCode = ControllerIdentification::EnumerateXInputControllersW((LPDIENUMDEVICESCALLBACKW)lpCallback, pvRef);
+                callbackInfo.callbackReturnCode = ControllerIdentification::EnumerateXInputControllers((LPDIENUMDEVICESCALLBACKW)lpCallback, pvRef);
             else
-                callbackInfo.callbackReturnCode = ControllerIdentification::EnumerateXInputControllersA((LPDIENUMDEVICESCALLBACKA)lpCallback, pvRef);
+                callbackInfo.callbackReturnCode = ControllerIdentification::EnumerateXInputControllers((LPDIENUMDEVICESCALLBACKA)lpCallback, pvRef);
 
             if (DIENUM_CONTINUE != callbackInfo.callbackReturnCode)
             {
@@ -197,9 +197,9 @@ HRESULT STDMETHODCALLTYPE WrapperIDirectInput::EnumDevices(DWORD dwDevType, LPDI
             Message::Output(Message::ESeverity::Debug, L"Enumerate: System has no XInput devices, so Xidi virtual XInput devices are being presented to the application after other controllers.");
 
             if (underlyingDIObjectUsesUnicode)
-                callbackInfo.callbackReturnCode = ControllerIdentification::EnumerateXInputControllersW((LPDIENUMDEVICESCALLBACKW)lpCallback, pvRef);
+                callbackInfo.callbackReturnCode = ControllerIdentification::EnumerateXInputControllers((LPDIENUMDEVICESCALLBACKW)lpCallback, pvRef);
             else
-                callbackInfo.callbackReturnCode = ControllerIdentification::EnumerateXInputControllersA((LPDIENUMDEVICESCALLBACKA)lpCallback, pvRef);
+                callbackInfo.callbackReturnCode = ControllerIdentification::EnumerateXInputControllers((LPDIENUMDEVICESCALLBACKA)lpCallback, pvRef);
 
             if (DIENUM_CONTINUE != callbackInfo.callbackReturnCode)
             {
