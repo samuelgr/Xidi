@@ -136,9 +136,19 @@ namespace Xidi
             // Is an XInput GUID, so create a fake device that will communicate with the XInput controller of the specified index.
             Message::OutputFormatted(Message::ESeverity::Info, L"Binding to Xidi virtual XInput device for player %u.", (xinputIndex + 1));
 
-            VirtualDirectInputDevice* newWrappedDevice = new VirtualDirectInputDevice(underlyingDIObjectUsesUnicode, new XInputController(xinputIndex), Mapper::Create());
-            newWrappedDevice->AddRef();
-            *lplpDirectInputDevice = newWrappedDevice;
+            if (underlyingDIObjectUsesUnicode)
+            {
+                VirtualDirectInputDevice<true>* newWrappedDevice = new VirtualDirectInputDevice<true>(new XInputController(xinputIndex), Mapper::Create());
+                newWrappedDevice->AddRef();
+                *lplpDirectInputDevice = newWrappedDevice;
+            }
+            else
+            {
+                VirtualDirectInputDevice<false>* newWrappedDevice = new VirtualDirectInputDevice<false>(new XInputController(xinputIndex), Mapper::Create());
+                newWrappedDevice->AddRef();
+                *lplpDirectInputDevice = (EarliestIDirectInputDevice*)newWrappedDevice;
+            }
+            
 
             return DI_OK;
         }

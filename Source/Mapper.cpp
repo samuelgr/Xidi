@@ -55,17 +55,6 @@ namespace Xidi
     };
 
 
-    // -------- INTERNAL TYPES --------------------------------------------- //
-
-    /// Used to select between Unicode and non-Unicode representations of device object instance information.
-    /// Intended to be used only when enumerating device object instances.
-    union UObjectInstanceInfo
-    {
-        DIDEVICEOBJECTINSTANCEA a;                                  ///< Non-Unicode version of the device object instance information.
-        DIDEVICEOBJECTINSTANCEW w;                                  ///< Unicode version of the device object instance information.
-    };
-
-
     // -------- INTERNAL FUNCTIONS ----------------------------------------- //
 
     /// Creates a new mapper of the specified type, using the `new` operator.
@@ -592,7 +581,7 @@ namespace Xidi
     // -------- INSTANCE METHODS ------------------------------------------- //
     // See "Mapper.h" for documentation.
 
-    HRESULT Mapper::EnumerateMappedObjects(BOOL useUnicode, LPDIENUMDEVICEOBJECTSCALLBACK appCallback, LPVOID appCbParam, DWORD enumerationFlags)
+    template <typename DeviceObjectInstanceType> HRESULT Mapper::EnumerateMappedObjects(BOOL(FAR PASCAL* appCallback)(const DeviceObjectInstanceType*, LPVOID), LPVOID appCbParam, DWORD enumerationFlags)
     {
         // Obtain the number of objects of each type.
         const TInstanceCount numAxes = NumInstancesOfType(EInstanceType::InstanceTypeAxis);
@@ -600,7 +589,7 @@ namespace Xidi
         const TInstanceCount numButtons = NumInstancesOfType(EInstanceType::InstanceTypeButton);
 
         // Allocate a structure for repeated submission to the application, using the heap for security purposes.
-        UObjectInstanceInfo* objectDescriptor = new UObjectInstanceInfo;
+        DeviceObjectInstanceType* objectDescriptor = new DeviceObjectInstanceType;
 
         // If requested, enumerate axes.
         if (DIDFT_ALL == enumerationFlags || enumerationFlags & DIDFT_AXIS)
@@ -608,13 +597,10 @@ namespace Xidi
             for (TInstanceCount i = 0; i < numAxes; ++i)
             {
                 // Fill the information structure to submit to the application.
-                if (useUnicode)
-                    FillObjectInstanceInfo(&objectDescriptor->w, EInstanceType::InstanceTypeAxis, (TInstanceIdx)i);
-                else
-                    FillObjectInstanceInfo(&objectDescriptor->a, EInstanceType::InstanceTypeAxis, (TInstanceIdx)i);
+                FillObjectInstanceInfo(objectDescriptor, EInstanceType::InstanceTypeAxis, (TInstanceIdx)i);
 
                 // Submit the button to the application.
-                BOOL appResponse = appCallback((LPCDIDEVICEOBJECTINSTANCE)objectDescriptor, appCbParam);
+                BOOL appResponse = appCallback(objectDescriptor, appCbParam);
 
                 // See if the application requested that the enumeration stop and, if so, honor that request
                 switch (appResponse)
@@ -637,13 +623,10 @@ namespace Xidi
             for (TInstanceCount i = 0; i < numPov; ++i)
             {
                 // Fill the information structure to submit to the application.
-                if (useUnicode)
-                    FillObjectInstanceInfo(&objectDescriptor->w, EInstanceType::InstanceTypePov, (TInstanceIdx)i);
-                else
-                    FillObjectInstanceInfo(&objectDescriptor->a, EInstanceType::InstanceTypePov, (TInstanceIdx)i);
+                FillObjectInstanceInfo(objectDescriptor, EInstanceType::InstanceTypePov, (TInstanceIdx)i);
 
                 // Submit the button to the application.
-                BOOL appResponse = appCallback((LPCDIDEVICEOBJECTINSTANCE)objectDescriptor, appCbParam);
+                BOOL appResponse = appCallback(objectDescriptor, appCbParam);
 
                 // See if the application requested that the enumeration stop and, if so, honor that request
                 switch (appResponse)
@@ -666,13 +649,10 @@ namespace Xidi
             for (TInstanceCount i = 0; i < numButtons; ++i)
             {
                 // Fill the information structure to submit to the application.
-                if (useUnicode)
-                    FillObjectInstanceInfo(&objectDescriptor->w, EInstanceType::InstanceTypeButton, (TInstanceIdx)i);
-                else
-                    FillObjectInstanceInfo(&objectDescriptor->a, EInstanceType::InstanceTypeButton, (TInstanceIdx)i);
+                FillObjectInstanceInfo(objectDescriptor, EInstanceType::InstanceTypeButton, (TInstanceIdx)i);
 
                 // Submit the button to the application.
-                BOOL appResponse = appCallback((LPCDIDEVICEOBJECTINSTANCE)objectDescriptor, appCbParam);
+                BOOL appResponse = appCallback(objectDescriptor, appCbParam);
 
                 // See if the application requested that the enumeration stop and, if so, honor that request
                 switch (appResponse)
@@ -693,6 +673,9 @@ namespace Xidi
         return DI_OK;
     }
 
+    template HRESULT Mapper::EnumerateMappedObjects(LPDIENUMDEVICEOBJECTSCALLBACKA, LPVOID, DWORD);
+    template HRESULT Mapper::EnumerateMappedObjects(LPDIENUMDEVICEOBJECTSCALLBACKW, LPVOID, DWORD);
+
     // ---------
 
     void Mapper::FillDeviceCapabilities(LPDIDEVCAPS lpDIDevCaps)
@@ -702,7 +685,9 @@ namespace Xidi
         lpDIDevCaps->dwPOVs = (DWORD)NumInstancesOfType(EInstanceType::InstanceTypePov);
     }
 
-    HRESULT Mapper::GetMappedObjectInfo(BOOL useUnicode, LPDIDEVICEOBJECTINSTANCE pdidoi, DWORD dwObj, DWORD dwHow)
+    // ---------
+
+    template <typename DeviceObjectInstanceType> HRESULT Mapper::GetMappedObjectInfo(DeviceObjectInstanceType* pdidoi, DWORD dwObj, DWORD dwHow)
     {
         TInstance instance = InstanceIdentifierFromDirectInputSpec(dwObj, dwHow);
 
@@ -714,13 +699,13 @@ namespace Xidi
             return DIERR_OBJECTNOTFOUND;
 
         // Fill the specified structure with information about the specified object.
-        if (useUnicode)
-            FillObjectInstanceInfo((LPDIDEVICEOBJECTINSTANCEW)pdidoi, ExtractIdentifierInstanceType(instance), ExtractIdentifierInstanceIndex(instance));
-        else
-            FillObjectInstanceInfo((LPDIDEVICEOBJECTINSTANCEA)pdidoi, ExtractIdentifierInstanceType(instance), ExtractIdentifierInstanceIndex(instance));
+        FillObjectInstanceInfo(pdidoi, ExtractIdentifierInstanceType(instance), ExtractIdentifierInstanceIndex(instance));
 
         return DI_OK;
     }
+
+    template HRESULT Mapper::GetMappedObjectInfo(LPDIDEVICEOBJECTINSTANCEA, DWORD, DWORD);
+    template HRESULT Mapper::GetMappedObjectInfo(LPDIDEVICEOBJECTINSTANCEW, DWORD, DWORD);
 
     // ---------
 

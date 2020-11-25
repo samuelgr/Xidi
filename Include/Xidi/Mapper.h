@@ -327,12 +327,12 @@ namespace Xidi
 
         /// Enumerates objects present in the mapping in the way DirectInput would.
         /// Intended to replicate IDirectInputDevice's EnumObjects method.
-        /// @param [in] useUnicode Specifies if the implementation should fill strings with Unicode.
+        /// @tparam DeviceObjectInstanceType Either DIDEVICEOBJECTINSTANCEA or DIDEVICEOBJECTINSTANCEW depending on whether ASCII or Unicode is desired.
         /// @param [in] appCallback Callback function that should be invoked with each object's information. Refer to DirectInput documentation for more.
         /// @param [in] appCbParam Parameter to the callback function. Refer to DirectInput documentation for more.
         /// @param [in] enumerationFlags Flags used to control the enumeration. Refer to DirectInput documentation for more.
         /// @return `DI_OK` on success, `DIERR_INVALIDPARAM` if the application incorrectly responds to callbacks.
-        HRESULT EnumerateMappedObjects(BOOL useUnicode, LPDIENUMDEVICEOBJECTSCALLBACK appCallback, LPVOID appCbParam, DWORD enumerationFlags);
+        template <typename DeviceObjectInstanceType> HRESULT EnumerateMappedObjects(BOOL(FAR PASCAL* appCallback)(const DeviceObjectInstanceType*, LPVOID), LPVOID appCbParam, DWORD enumerationFlags);
 
         /// Fills in a DirectInput device capabilities structure with information about the mapped game controller's buttons and axes.
         /// Intended to be invoked with a structure pre-filled with other device information from the IDirectInputDevice GetCapabilities method.
@@ -341,12 +341,12 @@ namespace Xidi
 
         /// Fills in a DirectInput object information structure with information about a specific object of the mapped game controller.
         /// Corresponds directly to the IDirectInputDevice GetObjectInfo method.
-        /// @param [in] useUnicode Specifies if the implementation should fill strings with Unicode.
+        /// @tparam DeviceObjectInstanceType Either DIDEVICEOBJECTINSTANCEA or DIDEVICEOBJECTINSTANCEW depending on whether ASCII or Unicode is desired.
         /// @param [out] pdidoi DirectInput object information structure to be filled.
         /// @param [in] dwObj DirectInput object specification. Refer to DirectInput documentation for more.
         /// @param [in] dwHow Method by which to identify the object given its specification value. Refer to DirectInput documentation for more.
         /// @return `DI_OK` on success or something else on error. Same return codes as IDirectInputDevice GetObjectInfo method.
-        HRESULT GetMappedObjectInfo(BOOL useUnicode, LPDIDEVICEOBJECTINSTANCE pdidoi, DWORD dwObj, DWORD dwHow);
+        template <typename DeviceObjectInstanceType> HRESULT GetMappedObjectInfo(DeviceObjectInstanceType* pdidoi, DWORD dwObj, DWORD dwHow);
 
         /// Retrieves a DirectInput property that this mapper is intended to intercept and handle.
         /// Corresponds directly to the IDirectInputDevice GetProperty method for those properties handled by the mapper (see #IsPropertyHandledByMapper).

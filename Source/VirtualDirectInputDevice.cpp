@@ -80,11 +80,11 @@ namespace Xidi
     // -------- CONSTRUCTION AND DESTRUCTION ------------------------------- //
     // See "VirtualDirectInputDevice.h" for documentation.
 
-    VirtualDirectInputDevice::VirtualDirectInputDevice(BOOL useUnicode, XInputController* controller, Mapper* mapper) : controller(controller), mapper(mapper), polledSinceLastGetDeviceState(FALSE), refcount(0), useUnicode(useUnicode) {}
+    template <bool useUnicode> VirtualDirectInputDevice<useUnicode>::VirtualDirectInputDevice(XInputController* controller, Mapper* mapper) : controller(controller), mapper(mapper), polledSinceLastGetDeviceState(FALSE), refcount(0) {}
 
     // ---------
 
-    VirtualDirectInputDevice::~VirtualDirectInputDevice(void)
+    template <bool useUnicode> VirtualDirectInputDevice<useUnicode>::~VirtualDirectInputDevice(void)
     {
         Message::OutputFormatted(Message::ESeverity::Info, L"Destroying controller object for XInput player %u.", controller->GetPlayerIndex() + 1);
         delete controller;
@@ -95,7 +95,7 @@ namespace Xidi
     // -------- METHODS: IUnknown ------------------------------------------ //
     // See IUnknown documentation for more information.
 
-    HRESULT STDMETHODCALLTYPE VirtualDirectInputDevice::QueryInterface(REFIID riid, LPVOID* ppvObj)
+    template <bool useUnicode> HRESULT STDMETHODCALLTYPE VirtualDirectInputDevice<useUnicode>::QueryInterface(REFIID riid, LPVOID* ppvObj)
     {
         if (nullptr == ppvObj)
             return E_INVALIDARG;
@@ -120,7 +120,7 @@ namespace Xidi
 
     // ---------
 
-    ULONG STDMETHODCALLTYPE VirtualDirectInputDevice::AddRef(void)
+    template <bool useUnicode> ULONG STDMETHODCALLTYPE VirtualDirectInputDevice<useUnicode>::AddRef(void)
     {
         InterlockedIncrement(&refcount);
         return refcount;
@@ -128,7 +128,7 @@ namespace Xidi
 
     // ---------
 
-    ULONG STDMETHODCALLTYPE VirtualDirectInputDevice::Release(void)
+    template <bool useUnicode> ULONG STDMETHODCALLTYPE VirtualDirectInputDevice<useUnicode>::Release(void)
     {
         ULONG numRemainingRefs = InterlockedDecrement(&refcount);
 
@@ -142,7 +142,7 @@ namespace Xidi
     // -------- METHODS: IDirectInputDevice COMMON ------------------------- //
     // See DirectInput documentation for more information.
 
-    HRESULT STDMETHODCALLTYPE VirtualDirectInputDevice::Acquire(void)
+    template <bool useUnicode> HRESULT STDMETHODCALLTYPE VirtualDirectInputDevice<useUnicode>::Acquire(void)
     {
         HRESULT result = DIERR_INVALIDPARAM;
 
@@ -156,7 +156,7 @@ namespace Xidi
 
     // ---------
 
-    HRESULT STDMETHODCALLTYPE VirtualDirectInputDevice::CreateEffect(REFGUID rguid, LPCDIEFFECT lpeff, LPDIRECTINPUTEFFECT* ppdeff, LPUNKNOWN punkOuter)
+    template <bool useUnicode> HRESULT STDMETHODCALLTYPE VirtualDirectInputDevice<useUnicode>::CreateEffect(REFGUID rguid, LPCDIEFFECT lpeff, LPDIRECTINPUTEFFECT* ppdeff, LPUNKNOWN punkOuter)
     {
         // Operation not supported.
         const HRESULT result = DIERR_UNSUPPORTED;
@@ -169,7 +169,7 @@ namespace Xidi
 
     // ---------
 
-    HRESULT STDMETHODCALLTYPE VirtualDirectInputDevice::EnumCreatedEffectObjects(LPDIENUMCREATEDEFFECTOBJECTSCALLBACK lpCallback, LPVOID pvRef, DWORD fl)
+    template <bool useUnicode> HRESULT STDMETHODCALLTYPE VirtualDirectInputDevice<useUnicode>::EnumCreatedEffectObjects(LPDIENUMCREATEDEFFECTOBJECTSCALLBACK lpCallback, LPVOID pvRef, DWORD fl)
     {
         // Operation not supported.
         const HRESULT result = DIERR_UNSUPPORTED;
@@ -182,7 +182,7 @@ namespace Xidi
 
     // ---------
 
-    HRESULT STDMETHODCALLTYPE VirtualDirectInputDevice::EnumEffects(LPDIENUMEFFECTSCALLBACK lpCallback, LPVOID pvRef, DWORD dwEffType)
+    template <bool useUnicode> HRESULT STDMETHODCALLTYPE VirtualDirectInputDevice<useUnicode>::EnumEffects(DirectInputDeviceHelper<useUnicode>::EnumEffectsCallbackType lpCallback, LPVOID pvRef, DWORD dwEffType)
     {
         // Operation not supported.
         const HRESULT result = DIERR_UNSUPPORTED;
@@ -195,7 +195,7 @@ namespace Xidi
 
     // ---------
 
-    HRESULT STDMETHODCALLTYPE VirtualDirectInputDevice::EnumEffectsInFile(LPCWSTR lptszFileName, LPDIENUMEFFECTSINFILECALLBACK pec, LPVOID pvRef, DWORD dwFlags)
+    template <bool useUnicode> HRESULT STDMETHODCALLTYPE VirtualDirectInputDevice<useUnicode>::EnumEffectsInFile(DirectInputDeviceHelper<useUnicode>::ConstStringType lptszFileName, LPDIENUMEFFECTSINFILECALLBACK pec, LPVOID pvRef, DWORD dwFlags)
     {
         // Operation not supported.
         const HRESULT result = DIERR_UNSUPPORTED;
@@ -208,16 +208,16 @@ namespace Xidi
 
     // ---------
 
-    HRESULT STDMETHODCALLTYPE VirtualDirectInputDevice::EnumObjects(LPDIENUMDEVICEOBJECTSCALLBACK lpCallback, LPVOID pvRef, DWORD dwFlags)
+    template <bool useUnicode> HRESULT STDMETHODCALLTYPE VirtualDirectInputDevice<useUnicode>::EnumObjects(DirectInputDeviceHelper<useUnicode>::EnumObjectsCallbackType lpCallback, LPVOID pvRef, DWORD dwFlags)
     {
-        const HRESULT result = mapper->EnumerateMappedObjects(useUnicode, lpCallback, pvRef, dwFlags);
+        const HRESULT result = mapper->EnumerateMappedObjects(lpCallback, pvRef, dwFlags);
         LOG_INVOCATION(Message::ESeverity::Info, controller->GetPlayerIndex() + 1, result);
         return result;
     }
 
     // ---------
 
-    HRESULT STDMETHODCALLTYPE VirtualDirectInputDevice::Escape(LPDIEFFESCAPE pesc)
+    template <bool useUnicode> HRESULT STDMETHODCALLTYPE VirtualDirectInputDevice<useUnicode>::Escape(LPDIEFFESCAPE pesc)
     {
         // Operation not supported.
         const HRESULT result = DIERR_UNSUPPORTED;
@@ -227,7 +227,7 @@ namespace Xidi
 
     // ---------
 
-    HRESULT STDMETHODCALLTYPE VirtualDirectInputDevice::GetCapabilities(LPDIDEVCAPS lpDIDevCaps)
+    template <bool useUnicode> HRESULT STDMETHODCALLTYPE VirtualDirectInputDevice<useUnicode>::GetCapabilities(LPDIDEVCAPS lpDIDevCaps)
     {
         if (sizeof(*lpDIDevCaps) != lpDIDevCaps->dwSize)
         {
@@ -246,7 +246,7 @@ namespace Xidi
 
     // ---------
 
-    HRESULT STDMETHODCALLTYPE VirtualDirectInputDevice::GetDeviceData(DWORD cbObjectData, LPDIDEVICEOBJECTDATA rgdod, LPDWORD pdwInOut, DWORD dwFlags)
+    template <bool useUnicode> HRESULT STDMETHODCALLTYPE VirtualDirectInputDevice<useUnicode>::GetDeviceData(DWORD cbObjectData, LPDIDEVICEOBJECTDATA rgdod, LPDWORD pdwInOut, DWORD dwFlags)
     {
         // Verify the correct sizes of each structure.
         if (sizeof(DIDEVICEOBJECTDATA) != cbObjectData)
@@ -281,7 +281,7 @@ namespace Xidi
 
     // ---------
 
-    HRESULT STDMETHODCALLTYPE VirtualDirectInputDevice::GetDeviceInfo(LPDIDEVICEINSTANCE pdidi)
+    template <bool useUnicode> HRESULT STDMETHODCALLTYPE VirtualDirectInputDevice<useUnicode>::GetDeviceInfo(DirectInputDeviceHelper<useUnicode>::DeviceInstanceType pdidi)
     {
         // Not yet implemented.
         const HRESULT result = DIERR_UNSUPPORTED;
@@ -291,7 +291,7 @@ namespace Xidi
 
     // ---------
 
-    HRESULT STDMETHODCALLTYPE VirtualDirectInputDevice::GetDeviceState(DWORD cbData, LPVOID lpvData)
+    template <bool useUnicode> HRESULT STDMETHODCALLTYPE VirtualDirectInputDevice<useUnicode>::GetDeviceState(DWORD cbData, LPVOID lpvData)
     {
         // Handle games that forget to poll the device.
         // Don't bother buffering any changes, since this method has the effect of clearing the buffer anyway.
@@ -317,7 +317,7 @@ namespace Xidi
 
     // ---------
 
-    HRESULT STDMETHODCALLTYPE VirtualDirectInputDevice::GetEffectInfo(LPDIEFFECTINFO pdei, REFGUID rguid)
+    template <bool useUnicode> HRESULT STDMETHODCALLTYPE VirtualDirectInputDevice<useUnicode>::GetEffectInfo(DirectInputDeviceHelper<useUnicode>::EffectInfoType pdei, REFGUID rguid)
     {
         // Operation not supported.
         const HRESULT result = DIERR_UNSUPPORTED;
@@ -327,7 +327,7 @@ namespace Xidi
 
     // ---------
 
-    HRESULT STDMETHODCALLTYPE VirtualDirectInputDevice::GetForceFeedbackState(LPDWORD pdwOut)
+    template <bool useUnicode> HRESULT STDMETHODCALLTYPE VirtualDirectInputDevice<useUnicode>::GetForceFeedbackState(LPDWORD pdwOut)
     {
         // Operation not supported.
         const HRESULT result = DIERR_UNSUPPORTED;
@@ -337,16 +337,16 @@ namespace Xidi
 
     // ---------
 
-    HRESULT STDMETHODCALLTYPE VirtualDirectInputDevice::GetObjectInfo(LPDIDEVICEOBJECTINSTANCE pdidoi, DWORD dwObj, DWORD dwHow)
+    template <bool useUnicode> HRESULT STDMETHODCALLTYPE VirtualDirectInputDevice<useUnicode>::GetObjectInfo(DirectInputDeviceHelper<useUnicode>::DeviceObjectInstanceType pdidoi, DWORD dwObj, DWORD dwHow)
     {
-        const HRESULT result = mapper->GetMappedObjectInfo(useUnicode, pdidoi, dwObj, dwHow);
+        const HRESULT result = mapper->GetMappedObjectInfo(pdidoi, dwObj, dwHow);
         LOG_INVOCATION(Message::ESeverity::Info, controller->GetPlayerIndex() + 1, result);
         return result;
     }
 
     // ---------
 
-    HRESULT STDMETHODCALLTYPE VirtualDirectInputDevice::GetProperty(REFGUID rguidProp, LPDIPROPHEADER pdiph)
+    template <bool useUnicode> HRESULT STDMETHODCALLTYPE VirtualDirectInputDevice<useUnicode>::GetProperty(REFGUID rguidProp, LPDIPROPHEADER pdiph)
     {
         HRESULT result = DI_OK;
 
@@ -363,7 +363,7 @@ namespace Xidi
 
     // ---------
 
-    HRESULT STDMETHODCALLTYPE VirtualDirectInputDevice::Initialize(HINSTANCE hinst, DWORD dwVersion, REFGUID rguid)
+    template <bool useUnicode> HRESULT STDMETHODCALLTYPE VirtualDirectInputDevice<useUnicode>::Initialize(HINSTANCE hinst, DWORD dwVersion, REFGUID rguid)
     {
         // Operation not necessary.
         const HRESULT result = S_FALSE;
@@ -373,7 +373,7 @@ namespace Xidi
 
     // ---------
 
-    HRESULT STDMETHODCALLTYPE VirtualDirectInputDevice::Poll(void)
+    template <bool useUnicode> HRESULT STDMETHODCALLTYPE VirtualDirectInputDevice<useUnicode>::Poll(void)
     {
         const HRESULT result = controller->RefreshControllerState();
 
@@ -386,7 +386,7 @@ namespace Xidi
 
     // ---------
 
-    HRESULT STDMETHODCALLTYPE VirtualDirectInputDevice::RunControlPanel(HWND hwndOwner, DWORD dwFlags)
+    template <bool useUnicode> HRESULT STDMETHODCALLTYPE VirtualDirectInputDevice<useUnicode>::RunControlPanel(HWND hwndOwner, DWORD dwFlags)
     {
         // Operation not supported.
         const HRESULT result = DIERR_UNSUPPORTED;
@@ -396,7 +396,7 @@ namespace Xidi
 
     // ---------
 
-    HRESULT STDMETHODCALLTYPE VirtualDirectInputDevice::SendDeviceData(DWORD cbObjectData, LPCDIDEVICEOBJECTDATA rgdod, LPDWORD pdwInOut, DWORD fl)
+    template <bool useUnicode> HRESULT STDMETHODCALLTYPE VirtualDirectInputDevice<useUnicode>::SendDeviceData(DWORD cbObjectData, LPCDIDEVICEOBJECTDATA rgdod, LPDWORD pdwInOut, DWORD fl)
     {
         // Operation not supported.
         const HRESULT result = DIERR_UNSUPPORTED;
@@ -406,7 +406,7 @@ namespace Xidi
 
     // ---------
 
-    HRESULT STDMETHODCALLTYPE VirtualDirectInputDevice::SendForceFeedbackCommand(DWORD dwFlags)
+    template <bool useUnicode> HRESULT STDMETHODCALLTYPE VirtualDirectInputDevice<useUnicode>::SendForceFeedbackCommand(DWORD dwFlags)
     {
         // Operation not supported.
         const HRESULT result = DIERR_UNSUPPORTED;
@@ -416,7 +416,7 @@ namespace Xidi
 
     // ---------
 
-    HRESULT STDMETHODCALLTYPE VirtualDirectInputDevice::SetCooperativeLevel(HWND hwnd, DWORD dwFlags)
+    template <bool useUnicode> HRESULT STDMETHODCALLTYPE VirtualDirectInputDevice<useUnicode>::SetCooperativeLevel(HWND hwnd, DWORD dwFlags)
     {
         // Ineffective at present, but this may change.
         const HRESULT result = DI_OK;
@@ -426,7 +426,7 @@ namespace Xidi
 
     // ---------
 
-    HRESULT STDMETHODCALLTYPE VirtualDirectInputDevice::SetDataFormat(LPCDIDATAFORMAT lpdf)
+    template <bool useUnicode> HRESULT STDMETHODCALLTYPE VirtualDirectInputDevice<useUnicode>::SetDataFormat(LPCDIDATAFORMAT lpdf)
     {
         HRESULT result = mapper->SetApplicationDataFormat(lpdf);
 
@@ -441,7 +441,7 @@ namespace Xidi
 
     // ---------
 
-    HRESULT STDMETHODCALLTYPE VirtualDirectInputDevice::SetEventNotification(HANDLE hEvent)
+    template <bool useUnicode> HRESULT STDMETHODCALLTYPE VirtualDirectInputDevice<useUnicode>::SetEventNotification(HANDLE hEvent)
     {
         const HRESULT result = controller->SetControllerStateChangedEvent(hEvent);
         LOG_INVOCATION(Message::ESeverity::Info, controller->GetPlayerIndex() + 1, result);
@@ -450,7 +450,7 @@ namespace Xidi
 
     // ---------
 
-    HRESULT STDMETHODCALLTYPE VirtualDirectInputDevice::SetProperty(REFGUID rguidProp, LPCDIPROPHEADER pdiph)
+    template <bool useUnicode> HRESULT STDMETHODCALLTYPE VirtualDirectInputDevice<useUnicode>::SetProperty(REFGUID rguidProp, LPCDIPROPHEADER pdiph)
     {
         HRESULT result = DI_OK;
 
@@ -467,7 +467,7 @@ namespace Xidi
 
     // ---------
 
-    HRESULT STDMETHODCALLTYPE VirtualDirectInputDevice::Unacquire(void)
+    template <bool useUnicode> HRESULT STDMETHODCALLTYPE VirtualDirectInputDevice<useUnicode>::Unacquire(void)
     {
         const HRESULT result = controller->UnacquireController();
         LOG_INVOCATION(Message::ESeverity::Info, controller->GetPlayerIndex() + 1, result);
@@ -476,7 +476,7 @@ namespace Xidi
 
     // ---------
 
-    HRESULT STDMETHODCALLTYPE VirtualDirectInputDevice::WriteEffectToFile(LPCWSTR lptszFileName, DWORD dwEntries, LPDIFILEEFFECT rgDiFileEft, DWORD dwFlags)
+    template <bool useUnicode> HRESULT STDMETHODCALLTYPE VirtualDirectInputDevice<useUnicode>::WriteEffectToFile(DirectInputDeviceHelper<useUnicode>::ConstStringType lptszFileName, DWORD dwEntries, LPDIFILEEFFECT rgDiFileEft, DWORD dwFlags)
     {
         // Operation not supported.
         const HRESULT result = DIERR_UNSUPPORTED;
@@ -489,7 +489,7 @@ namespace Xidi
     // -------- METHODS: IDirectInputDevice8 ONLY ------------------------------ //
     // See DirectInput documentation for more information.
 
-    HRESULT STDMETHODCALLTYPE VirtualDirectInputDevice::BuildActionMap(LPDIACTIONFORMAT lpdiaf, LPCWSTR lpszUserName, DWORD dwFlags)
+    template <bool useUnicode> HRESULT STDMETHODCALLTYPE VirtualDirectInputDevice<useUnicode>::BuildActionMap(DirectInputDeviceHelper<useUnicode>::ActionFormatType lpdiaf, DirectInputDeviceHelper<useUnicode>::ConstStringType lpszUserName, DWORD dwFlags)
     {
         // Operation not supported.
         const HRESULT result = DIERR_UNSUPPORTED;
@@ -499,7 +499,7 @@ namespace Xidi
 
     // ---------
 
-    HRESULT STDMETHODCALLTYPE VirtualDirectInputDevice::GetImageInfo(LPDIDEVICEIMAGEINFOHEADER lpdiDevImageInfoHeader)
+    template <bool useUnicode> HRESULT STDMETHODCALLTYPE VirtualDirectInputDevice<useUnicode>::GetImageInfo(DirectInputDeviceHelper<useUnicode>::DeviceImageInfoHeaderType lpdiDevImageInfoHeader)
     {
         // Operation not supported.
         const HRESULT result = DIERR_UNSUPPORTED;
@@ -509,7 +509,7 @@ namespace Xidi
 
     // ---------
 
-    HRESULT STDMETHODCALLTYPE VirtualDirectInputDevice::SetActionMap(LPDIACTIONFORMAT lpdiActionFormat, LPCWSTR lptszUserName, DWORD dwFlags)
+    template <bool useUnicode> HRESULT STDMETHODCALLTYPE VirtualDirectInputDevice<useUnicode>::SetActionMap(DirectInputDeviceHelper<useUnicode>::ActionFormatType lpdiActionFormat, DirectInputDeviceHelper<useUnicode>::ConstStringType lptszUserName, DWORD dwFlags)
     {
         // Operation not supported.
         const HRESULT result = DIERR_UNSUPPORTED;
@@ -517,4 +517,11 @@ namespace Xidi
         return result;
     }
 #endif
+
+
+    // -------- EXPLICIT TEMPLATE INSTANTIATION ---------------------------- //
+    // Instantiates both the ASCII and Unicode versions of this class.
+
+    template class VirtualDirectInputDevice<false>;
+    template class VirtualDirectInputDevice<true>;
 }
