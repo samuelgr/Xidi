@@ -25,6 +25,32 @@
 using namespace Xidi;
 
 
+// -------- INTERNAL FUNCTIONS --------------------------------------------- //
+
+/// Templated helper for printing product names during a device enumeration operation.
+/// @tparam DeviceInstanceType DirectInput device instance type, either DIDEVICEINSTANCEA or DIDEVICEINSTANCEW depending on whether or not Unicode is desired.
+/// @param [in] severity Desired message severity.
+/// @param [in] baseMessage Base message text, should contain a format specifier for the product name.
+/// @param [in] deviceInstance Device instance whose product name should be printed.
+template <typename DeviceInstanceType> static void EnumDevicesOutputProductName(Message::ESeverity severity, const wchar_t* baseMessage, const DeviceInstanceType* deviceInstance) {}
+
+template <> static void EnumDevicesOutputProductName<DIDEVICEINSTANCEA>(Message::ESeverity severity, const wchar_t* baseMessage, LPCDIDEVICEINSTANCEA deviceInstance)
+{
+    WCHAR productName[_countof(deviceInstance->tszProductName) + 1];
+    ZeroMemory(productName, sizeof(productName));
+    mbstowcs_s(nullptr, productName, _countof(productName) - 1, deviceInstance->tszProductName, _countof(deviceInstance->tszProductName));
+    Message::OutputFormatted(severity, baseMessage, productName);
+}
+
+template <> static void EnumDevicesOutputProductName<DIDEVICEINSTANCEW>(Message::ESeverity severity, const wchar_t* baseMessage, LPCDIDEVICEINSTANCEW deviceInstance)
+{
+    LPCWSTR productName = deviceInstance->tszProductName;
+    Message::OutputFormatted(severity, baseMessage, productName);
+}
+
+
+//Message::OutputFormatted(Message::ESeverity::Debug, L"Enumerate: DirectInput device \"%s\" supports XInput and will not be presented to the application.", productName);
+
 // -------- LOCAL TYPES ---------------------------------------------------- //
 
 namespace Xidi
@@ -150,9 +176,9 @@ HRESULT STDMETHODCALLTYPE WrapperIDirectInput::EnumDevices(DWORD dwDevType, LPDI
     {
         // First scan the system for any XInput-compatible game controllers that match the enumeration request.
         if (underlyingDIObjectUsesUnicode)
-            enumResult = underlyingDIObject.w->EnumDevices(dwDevType, &WrapperIDirectInput::CallbackEnumGameControllersXInputScanW, (LPVOID)&callbackInfo, dwFlags);
+            enumResult = underlyingDIObject.w->EnumDevices(dwDevType, &WrapperIDirectInput::CallbackEnumGameControllersXInputScan<DIDEVICEINSTANCEW>, (LPVOID)&callbackInfo, dwFlags);
         else
-            enumResult = underlyingDIObject.a->EnumDevices(dwDevType, &WrapperIDirectInput::CallbackEnumGameControllersXInputScanA, (LPVOID)&callbackInfo, dwFlags);
+            enumResult = underlyingDIObject.a->EnumDevices(dwDevType, &WrapperIDirectInput::CallbackEnumGameControllersXInputScan<DIDEVICEINSTANCEA>, (LPVOID)&callbackInfo, dwFlags);
 
         if (DI_OK != enumResult) return enumResult;
 
@@ -178,9 +204,9 @@ HRESULT STDMETHODCALLTYPE WrapperIDirectInput::EnumDevices(DWORD dwDevType, LPDI
 
         // Third, enumerate all other game controllers, filtering out those that support XInput.
         if (underlyingDIObjectUsesUnicode)
-            enumResult = underlyingDIObject.w->EnumDevices(gameControllerDevClass, &WrapperIDirectInput::CallbackEnumDevicesFilteredW, (LPVOID)&callbackInfo, dwFlags);
+            enumResult = underlyingDIObject.w->EnumDevices(gameControllerDevClass, &WrapperIDirectInput::CallbackEnumDevicesFiltered<DIDEVICEINSTANCEW>, (LPVOID)&callbackInfo, dwFlags);
         else
-            enumResult = underlyingDIObject.a->EnumDevices(gameControllerDevClass, &WrapperIDirectInput::CallbackEnumDevicesFilteredA, (LPVOID)&callbackInfo, dwFlags);
+            enumResult = underlyingDIObject.a->EnumDevices(gameControllerDevClass, &WrapperIDirectInput::CallbackEnumDevicesFiltered<DIDEVICEINSTANCEA>, (LPVOID)&callbackInfo, dwFlags);
 
         if (DI_OK != enumResult) return enumResult;
 
@@ -211,9 +237,9 @@ HRESULT STDMETHODCALLTYPE WrapperIDirectInput::EnumDevices(DWORD dwDevType, LPDI
 
     // Enumerate anything else the application requested, filtering out game controllers.
     if (underlyingDIObjectUsesUnicode)
-        enumResult = underlyingDIObject.w->EnumDevices(dwDevType, &WrapperIDirectInput::CallbackEnumDevicesFilteredW, (LPVOID)&callbackInfo, dwFlags);
+        enumResult = underlyingDIObject.w->EnumDevices(dwDevType, &WrapperIDirectInput::CallbackEnumDevicesFiltered<DIDEVICEINSTANCEW>, (LPVOID)&callbackInfo, dwFlags);
     else
-        enumResult = underlyingDIObject.a->EnumDevices(dwDevType, &WrapperIDirectInput::CallbackEnumDevicesFilteredA, (LPVOID)&callbackInfo, dwFlags);
+        enumResult = underlyingDIObject.a->EnumDevices(dwDevType, &WrapperIDirectInput::CallbackEnumDevicesFiltered<DIDEVICEINSTANCEA>, (LPVOID)&callbackInfo, dwFlags);
 
     if (DI_OK != enumResult) return enumResult;
 
@@ -283,19 +309,15 @@ HRESULT STDMETHODCALLTYPE WrapperIDirectInput::RunControlPanel(HWND hwndOwner, D
 // -------- CALLBACKS: IDirectInput COMMON --------------------------------- //
 // See "WrapperIDirectInput.h" for documentation.
 
-BOOL STDMETHODCALLTYPE WrapperIDirectInput::CallbackEnumGameControllersXInputScanA(LPCDIDEVICEINSTANCEA lpddi, LPVOID pvRef)
+template <typename DeviceInstanceType> BOOL STDMETHODCALLTYPE WrapperIDirectInput::CallbackEnumGameControllersXInputScan(const DeviceInstanceType* lpddi, LPVOID pvRef)
 {
     SEnumDevicesCallbackInfo* callbackInfo = (SEnumDevicesCallbackInfo*)pvRef;
 
     // If the present controller supports XInput, indicate such by adding it to the set of instance identifiers of interest.
     if (ControllerIdentification::DoesDirectInputControllerSupportXInput(callbackInfo->instance->underlyingDIObject.t, lpddi->guidInstance))
     {
-        WCHAR productName[_countof(lpddi->tszProductName) + 1];
-        ZeroMemory(productName, sizeof(productName));
-        mbstowcs_s(nullptr, productName, _countof(productName) - 1, lpddi->tszProductName, _countof(lpddi->tszProductName));
-
         callbackInfo->seenInstanceIdentifiers.insert(lpddi->guidInstance);
-        Message::OutputFormatted(Message::ESeverity::Debug, L"Enumerate: DirectInput device \"%s\" supports XInput and will not be presented to the application.", productName);
+        EnumDevicesOutputProductName(Message::ESeverity::Debug, L"Enumerate: DirectInput device \"%s\" supports XInput and will not be presented to the application.", lpddi);
     }
 
     return DIENUM_CONTINUE;
@@ -303,61 +325,16 @@ BOOL STDMETHODCALLTYPE WrapperIDirectInput::CallbackEnumGameControllersXInputSca
 
 // --------
 
-BOOL STDMETHODCALLTYPE WrapperIDirectInput::CallbackEnumGameControllersXInputScanW(LPCDIDEVICEINSTANCEW lpddi, LPVOID pvRef)
-{
-    SEnumDevicesCallbackInfo* callbackInfo = (SEnumDevicesCallbackInfo*)pvRef;
-
-    // If the present controller supports XInput, indicate such by adding it to the set of instance identifiers of interest.
-    if (ControllerIdentification::DoesDirectInputControllerSupportXInput(callbackInfo->instance->underlyingDIObject.t, lpddi->guidInstance))
-    {
-        LPCWSTR productName = lpddi->tszProductName;
-
-        callbackInfo->seenInstanceIdentifiers.insert(lpddi->guidInstance);
-        Message::OutputFormatted(Message::ESeverity::Debug, L"Enumerate: DirectInput device \"%s\" supports XInput and will not be presented to the application.", productName);
-    }
-
-    return DIENUM_CONTINUE;
-}
-
-// --------
-
-BOOL STDMETHODCALLTYPE WrapperIDirectInput::CallbackEnumDevicesFilteredA(LPCDIDEVICEINSTANCEA lpddi, LPVOID pvRef)
+template <typename DeviceInstanceType> BOOL STDMETHODCALLTYPE WrapperIDirectInput::CallbackEnumDevicesFiltered(const DeviceInstanceType* lpddi, LPVOID pvRef)
 {
     SEnumDevicesCallbackInfo* callbackInfo = (SEnumDevicesCallbackInfo*)pvRef;
 
     if (0 == callbackInfo->seenInstanceIdentifiers.count(lpddi->guidInstance))
     {
         // If the device has not been seen already, add it to the set and present it to the application.
-        WCHAR productName[_countof(lpddi->tszProductName) + 1];
-        ZeroMemory(productName, sizeof(productName));
-        mbstowcs_s(nullptr, productName, _countof(productName) - 1, lpddi->tszProductName, _countof(lpddi->tszProductName));
-
         callbackInfo->seenInstanceIdentifiers.insert(lpddi->guidInstance);
-        callbackInfo->callbackReturnCode = ((LPDIENUMDEVICESCALLBACKA)(callbackInfo->lpCallback))(lpddi, callbackInfo->pvRef);
-        Message::OutputFormatted(Message::ESeverity::Debug, L"Enumerate: DirectInput device \"%s\" is being presented to the application.", productName);
-        return callbackInfo->callbackReturnCode;
-    }
-    else
-    {
-        // Otherwise, just skip the device and move onto the next one.
-        return DIENUM_CONTINUE;
-    }
-}
-
-// --------
-
-BOOL STDMETHODCALLTYPE WrapperIDirectInput::CallbackEnumDevicesFilteredW(LPCDIDEVICEINSTANCEW lpddi, LPVOID pvRef)
-{
-    SEnumDevicesCallbackInfo* callbackInfo = (SEnumDevicesCallbackInfo*)pvRef;
-
-    if (0 == callbackInfo->seenInstanceIdentifiers.count(lpddi->guidInstance))
-    {
-        // If the device has not been seen already, add it to the set and present it to the application.
-        LPCWSTR productName = lpddi->tszProductName;
-
-        callbackInfo->seenInstanceIdentifiers.insert(lpddi->guidInstance);
-        callbackInfo->callbackReturnCode = ((LPDIENUMDEVICESCALLBACKW)(callbackInfo->lpCallback))(lpddi, callbackInfo->pvRef);
-        Message::OutputFormatted(Message::ESeverity::Debug, L"Enumerate: DirectInput device \"%s\" is being presented to the application.", productName);
+        callbackInfo->callbackReturnCode = ((BOOL(FAR PASCAL *)(const DeviceInstanceType*,LPVOID))(callbackInfo->lpCallback))(lpddi, callbackInfo->pvRef);
+        EnumDevicesOutputProductName(Message::ESeverity::Debug, L"Enumerate: DirectInput device \"%s\" is being presented to the application.", lpddi);
         return callbackInfo->callbackReturnCode;
     }
     else

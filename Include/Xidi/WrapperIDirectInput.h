@@ -70,20 +70,12 @@ namespace Xidi
         // -------- CALLBACKS: IDirectInput COMMON --------------------------------- //
 
         // Callback used to scan for any XInput-compatible game controllers.
-        // This is the non-Unicode version.
-        static BOOL STDMETHODCALLTYPE CallbackEnumGameControllersXInputScanA(LPCDIDEVICEINSTANCEA lpddi, LPVOID pvRef);
-
-        // Callback used to scan for any XInput-compatible game controllers.
-        // This is the Unicode version.
-        static BOOL STDMETHODCALLTYPE CallbackEnumGameControllersXInputScanW(LPCDIDEVICEINSTANCEW lpddi, LPVOID pvRef);
+        /// @tparam DeviceInstanceType DirectInput device instance type, either DIDEVICEINSTANCEA or DIDEVICEINSTANCEW depending on whether or not Unicode is desired.
+        template <typename DeviceInstanceType> static BOOL STDMETHODCALLTYPE CallbackEnumGameControllersXInputScan(const DeviceInstanceType* lpddi, LPVOID pvRef);
 
         // Callback used to enumerate all devices to the application, filtering out those already seen.
-        // This is the non-Unicode version.
-        static BOOL STDMETHODCALLTYPE CallbackEnumDevicesFilteredA(LPCDIDEVICEINSTANCEA lpddi, LPVOID pvRef);
-
-        // Callback used to enumerate all devices to the application, filtering out those already seen.
-        // This is the Unicode version.
-        static BOOL STDMETHODCALLTYPE CallbackEnumDevicesFilteredW(LPCDIDEVICEINSTANCEW lpddi, LPVOID pvRef);
+        /// @tparam DeviceInstanceType DirectInput device instance type, either DIDEVICEINSTANCEA or DIDEVICEINSTANCEW depending on whether or not Unicode is desired.
+        template <typename DeviceInstanceType> static BOOL STDMETHODCALLTYPE CallbackEnumDevicesFiltered(const DeviceInstanceType* lpddi, LPVOID pvRef);
 
 #if DIRECTINPUT_VERSION >= 0x0800
         // -------- METHODS: IDirectInput8 ONLY ------------------------------------ //
