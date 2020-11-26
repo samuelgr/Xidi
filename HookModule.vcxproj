@@ -180,7 +180,7 @@
     <ClCompile Include="Source\Configuration.cpp" />
     <ClCompile Include="Source\DllMain.cpp" />
     <ClCompile Include="Source\Globals.cpp" />
-    <ClCompile Include="Source\HookshotMain.cpp" />
+    <ClCompile Include="Source\HookModuleMain.cpp" />
     <ClCompile Include="Source\MapperType.cpp" />
     <ClCompile Include="Source\Message.cpp" />
     <ClCompile Include="Source\Strings.cpp" />
@@ -203,6 +203,21 @@
   <ItemGroup>
     <ResourceCompile Include="Resources\HookModule.rc" />
     <ResourceCompile Include="Resources\Xidi.rc" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="DInput.vcxproj">
+      <Project>{34fedc3e-3fe8-43d0-9bde-1a15332d8c41}</Project>
+      <Private>false</Private>
+      <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
+      <LinkLibraryDependencies>false</LinkLibraryDependencies>
+    </ProjectReference>
+    <ProjectReference Include="DInput8.vcxproj">
+      <Project>{023441f6-2554-440f-9ffb-7e185ab7cf41}</Project>
+      <Private>false</Private>
+      <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
+      <UseLibraryDependencyInputs>false</UseLibraryDependencyInputs>
+      <LinkLibraryDependencies>false</LinkLibraryDependencies>
+    </ProjectReference>
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

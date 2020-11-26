@@ -5,7 +5,7 @@
  * Authored by Samuel Grossman
  * Copyright (c) 2016-2020
  *************************************************************************//**
- * @file HookshotMain.cpp
+ * @file HookModuleMain.cpp
  *   Entry point when injecting Xidi as a hook module.
  *****************************************************************************/
 
