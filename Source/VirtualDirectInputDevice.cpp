@@ -98,24 +98,37 @@ namespace Xidi
     template <bool useUnicode> HRESULT STDMETHODCALLTYPE VirtualDirectInputDevice<useUnicode>::QueryInterface(REFIID riid, LPVOID* ppvObj)
     {
         if (nullptr == ppvObj)
-            return E_INVALIDARG;
+            return E_POINTER;
 
-        HRESULT result = S_OK;
-        *ppvObj = nullptr;
+        bool validInterfaceRequested = false;
 
+        if (true == useUnicode)
+        {
 #if DIRECTINPUT_VERSION >= 0x0800
-        if (IsEqualIID(riid, IID_IUnknown) || IsEqualIID(riid, IID_IDirectInputDevice8A) || IsEqualIID(riid, IID_IDirectInputDevice8W))
+            if (IsEqualIID(riid, IID_IUnknown) || IsEqualIID(riid, IID_IDirectInputDevice8W))
 #else
-        if (IsEqualIID(riid, IID_IUnknown) || IsEqualIID(riid, IID_IDirectInputDevice7A) || IsEqualIID(riid, IID_IDirectInputDevice7W) || IsEqualIID(riid, IID_IDirectInputDevice2A) || IsEqualIID(riid, IID_IDirectInputDevice2W) || IsEqualIID(riid, IID_IDirectInputDeviceA) || IsEqualIID(riid, IID_IDirectInputDeviceW))
+            if (IsEqualIID(riid, IID_IUnknown) || IsEqualIID(riid, IID_IDirectInputDevice7W) || IsEqualIID(riid, IID_IDirectInputDevice2W) || IsEqualIID(riid, IID_IDirectInputDeviceW))
 #endif
+                validInterfaceRequested = true;
+        }
+        else
+        {
+#if DIRECTINPUT_VERSION >= 0x0800
+            if (IsEqualIID(riid, IID_IUnknown) || IsEqualIID(riid, IID_IDirectInputDevice8A))
+#else
+            if (IsEqualIID(riid, IID_IUnknown) || IsEqualIID(riid, IID_IDirectInputDevice7A) || IsEqualIID(riid, IID_IDirectInputDevice2A) || IsEqualIID(riid, IID_IDirectInputDeviceA))
+#endif
+                validInterfaceRequested = true;
+        }
+
+        if (true == validInterfaceRequested)
         {
             AddRef();
             *ppvObj = this;
+            return S_OK;
         }
-        else
-            result = E_NOINTERFACE;
 
-        return result;
+        return E_NOINTERFACE;
     }
 
     // ---------
