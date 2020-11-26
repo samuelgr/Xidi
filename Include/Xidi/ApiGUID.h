@@ -18,21 +18,16 @@
 #include <functional>
 
 
-// -------- HELPERS -------------------------------------------------------- //
+// -------- TYPE DEFINITIONS ----------------------------------------------- //
 
-// Used to produce hashes of GUID types.
+/// Used to produce hashes of GUID types.
 template <> struct std::hash<GUID>
 {
     size_t operator()(REFGUID keyval) const;
 };
 
-extern template struct std::hash<GUID>;
-
-
-// Used to compare GUID types for equality.
+/// Used to compare GUID types for equality.
 template <> struct std::equal_to<GUID>
 {
     bool operator()(REFGUID first, REFGUID second) const;
 };
-
-extern template struct std::equal_to<GUID>;
