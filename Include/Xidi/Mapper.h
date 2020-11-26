@@ -12,31 +12,16 @@
 #pragma once
 
 #include "ApiDirectInput.h"
+#include "MapperType.h"
 #include "XInputController.h"
 
 #include <set>
-#include <string_view>
 #include <unordered_map>
 #include <Xinput.h>
 
 
 namespace Xidi
 {
-    /// Enumerates the known types of mappers that can be created.
-    enum class EMapperType
-    {
-        Invalid = -1,
-
-        ExtendedGamepad,
-        StandardGamepad,
-        XInputNative,
-        XInputSharedTriggers,
-    };
-
-    /// Default mapper type.
-    /// Mappers of this type will be created unless overridden by a configuration file.
-    inline constexpr EMapperType kDefaultMapperType = EMapperType::StandardGamepad;
-
     /// Specifies the type to use for identifying controller element instance numbers.
     /// Valid indices are numbered from 0 and must be positive; negatives used as return codes represent invalid indices, typically indicating some kind of error.
     typedef SHORT TInstanceIdx;
@@ -162,12 +147,6 @@ namespace Xidi
         /// Creates a new mapper of the configured type, using the `new` operator.
         /// @return Pointer to the newly-created mapper, or `nullptr` in the event of an error.
         static Mapper* Create(void);
-
-        /// Convert the specified string into a mapper type enumerator, which can be invalid if the string is not recognized.
-        /// Valid strings are the same as the names of the enumerators themselves.
-        /// @param [in] typeString String representation of the mapper type enumerator.
-        /// @return Enumerator from the string.
-        static EMapperType TypeFromString(std::wstring_view typeString);
 
         /// Helper to combine an instance type and index into an instance identifier.
         /// @param [in] type Instance type.

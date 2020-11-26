@@ -12,7 +12,6 @@
 
 #pragma once
 
-#include "ApiDirectInput.h"
 #include "ApiGUID.h"
 
 #include <cstddef>

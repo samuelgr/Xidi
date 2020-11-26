@@ -14,6 +14,7 @@
 #include "Configuration.h"
 #include "Globals.h"
 #include "Mapper.h"
+#include "MapperType.h"
 #include "Mapper/ExtendedGamepad.h"
 #include "Mapper/XInputNative.h"
 #include "Mapper/XInputSharedTriggers.h"
@@ -23,7 +24,6 @@
 
 #include <cstring>
 #include <mutex>
-#include <string_view>
 #include <unordered_map>
 #include <unordered_set>
 #include <Xinput.h>
@@ -45,16 +45,6 @@
 
 namespace Xidi
 {
-    // -------- INTERNAL VARIABLES ----------------------------------------- //
-
-    static std::unordered_map<std::wstring_view, EMapperType> mapperTypeStrings = {
-        {L"ExtendedGamepad",                     EMapperType::ExtendedGamepad},
-        {L"StandardGamepad",                     EMapperType::StandardGamepad},
-        {L"XInputNative",                        EMapperType::XInputNative},
-        {L"XInputSharedTriggers",                EMapperType::XInputSharedTriggers}
-    };
-
-
     // -------- INTERNAL FUNCTIONS ----------------------------------------- //
 
     /// Creates a new mapper of the specified type, using the `new` operator.
@@ -229,7 +219,7 @@ namespace Xidi
 
             if ((true == config.IsDataValid()) && (true == config.GetData().SectionNamePairExists(Strings::kStrConfigurationSectionMapper, Strings::kStrConfigurationSettingMapperType)))
             {
-                const EMapperType requestedMapperType = TypeFromString(config.GetData()[Strings::kStrConfigurationSectionMapper][Strings::kStrConfigurationSettingMapperType].FirstValue().GetStringValue());
+                const EMapperType requestedMapperType = MapperTypeFromString(config.GetData()[Strings::kStrConfigurationSectionMapper][Strings::kStrConfigurationSettingMapperType].FirstValue().GetStringValue());
 
                 if (EMapperType::Invalid != requestedMapperType)
                     configuredMapperType = requestedMapperType;
@@ -237,18 +227,6 @@ namespace Xidi
         });
 
         return CreateMapperOfType(configuredMapperType);
-    }
-
-    // --------
-
-    EMapperType Mapper::TypeFromString(std::wstring_view typeString)
-    {
-        auto it = mapperTypeStrings.find(typeString);
-
-        if (mapperTypeStrings.end() == it)
-            return EMapperType::Invalid;
-        else
-            return it->second;
     }
 
 

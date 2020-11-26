@@ -10,7 +10,7 @@
  *****************************************************************************/
 
 #include "Configuration.h"
-#include "Mapper.h"
+#include "MapperType.h"
 #include "Strings.h"
 #include "TemporaryBuffer.h"
 #include "XidiConfigReader.h"
@@ -71,7 +71,7 @@ namespace Xidi
     bool XidiConfigReader::CheckValue(std::wstring_view section, std::wstring_view name, const Configuration::TStringValue& value)
     {
         if ((Strings::kStrConfigurationSectionMapper == section) && (Strings::kStrConfigurationSettingMapperType == name))
-            return (EMapperType::Invalid != Mapper::TypeFromString(value));
+            return (EMapperType::Invalid != MapperTypeFromString(value));
 
         return true;
     }
