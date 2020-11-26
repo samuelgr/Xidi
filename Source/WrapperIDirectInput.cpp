@@ -74,7 +74,7 @@ namespace Xidi
     template <bool useUnicode> HRESULT STDMETHODCALLTYPE WrapperIDirectInput<useUnicode>::QueryInterface(REFIID riid, LPVOID* ppvObj)
     {
         void* interfacePtr = nullptr;
-        const HRESULT result = underlyingDIObject->QueryInterface(riid, &newObject);
+        const HRESULT result = underlyingDIObject->QueryInterface(riid, &interfacePtr);
 
         if (S_OK == result)
         {
