@@ -308,7 +308,7 @@ namespace Xidi
         SWinMMEnumCallbackInfo* callbackInfo = (SWinMMEnumCallbackInfo*)pvRef;
 
         std::wstring devicePath;
-        BOOL deviceSupportsXInput = ControllerIdentification::DoesDirectInputControllerSupportXInput(callbackInfo->directInputInterface, lpddi->guidInstance, &devicePath);
+        BOOL deviceSupportsXInput = ControllerIdentification::DoesDirectInputControllerSupportXInput<EarliestIDirectInput, EarliestIDirectInputDevice>(callbackInfo->directInputInterface, lpddi->guidInstance, &devicePath);
 
         if (deviceSupportsXInput)
         {
