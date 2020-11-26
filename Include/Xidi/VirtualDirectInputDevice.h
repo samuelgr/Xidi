@@ -33,6 +33,7 @@ namespace Xidi
         typedef LPDIDEVICEIMAGEINFOHEADER DeviceImageInfoHeaderType;
 #endif
     };
+
     template <> struct DirectInputDeviceHelper<false> : public LatestIDirectInputDeviceA
     {
         typedef LPCSTR ConstStringType;
@@ -46,6 +47,7 @@ namespace Xidi
         typedef LPDIDEVICEIMAGEINFOHEADERA DeviceImageInfoHeaderType;
 #endif
     };
+
     template <> struct DirectInputDeviceHelper<true> : public LatestIDirectInputDeviceW
     {
         typedef LPCWSTR ConstStringType;
@@ -61,6 +63,7 @@ namespace Xidi
     };
 
     /// Inherits from whatever IDirectInputDevice version is appropriate.
+    /// @tparam useUnicode Specifies whether to use underlying Unicode interfaces (i.e. the "A" versions of interfaces and types).
     template <bool useUnicode> class VirtualDirectInputDevice : public DirectInputDeviceHelper<useUnicode>
     {
     private:

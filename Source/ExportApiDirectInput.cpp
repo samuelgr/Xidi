@@ -28,6 +28,12 @@ inline static void LogVersionOutOfRange(DWORD minVersion, DWORD maxVersion, DWOR
     Message::OutputFormatted(Message::ESeverity::Error, L"Failed to create a DirectInput interface object because the version is out of range (expected 0x%04x to 0x%04x, got 0x%04x).", minVersion, maxVersion, receivedVersion);
 }
 
+/// Logs an error event indicating that an instance of IDirectInput(8) could not be created due to an invalid interface parameter.
+inline static void LogInvalidInterfaceParam(void)
+{
+    Message::Output(Message::ESeverity::Error, L"Failed to create a DirectInput interface object because the requested IID is invalid.");
+}
+
 /// Logs an error event indicating that an instance of IDirectInput(8) could not be created due to an error having been returned by the system.
 /// @param [in] errorCode Error code returned by the system.
 inline static void LogSystemCreateError(HRESULT errorCode)
@@ -50,22 +56,32 @@ extern "C"
 #if DIRECTINPUT_VERSION >= 0x0800
     HRESULT WINAPI ExportApiDirectInputDirectInput8Create(HINSTANCE hinst, DWORD dwVersion, REFIID riidltf, LPVOID* ppvOut, LPUNKNOWN punkOuter)
     {
-        IDirectInput8* diObject = nullptr;
+        void* diObject = nullptr;
 
         if (dwVersion < DINPUT_VER_MIN || dwVersion > DINPUT_VER_MAX)
         {
             LogVersionOutOfRange(DINPUT_VER_MIN, DINPUT_VER_MAX, dwVersion);
-            return E_FAIL;
+            return DIERR_INVALIDPARAM;
         }
 
-        HRESULT result = ImportApiDirectInput::DirectInput8Create(hinst, dwVersion, riidltf, (LPVOID*)&diObject, punkOuter);
+        if ((IID_IDirectInput8W != riidltf) && (IID_IDirectInput8A != riidltf))
+        {
+            LogInvalidInterfaceParam();
+            return DIERR_INVALIDPARAM;
+        }
+
+        HRESULT result = ImportApiDirectInput::DirectInput8Create(hinst, dwVersion, riidltf, &diObject, punkOuter);
         if (DI_OK != result)
         {
             LogSystemCreateError(result);
             return result;
         }
 
-        diObject = new WrapperIDirectInput(diObject, (IID_IDirectInput8W == riidltf));
+        if (IID_IDirectInput8W == riidltf)
+            diObject = new WrapperIDirectInput<true>((IDirectInput8W*)diObject);
+        else
+            diObject = new WrapperIDirectInput<false>((IDirectInput8A*)diObject);
+
         *ppvOut = (LPVOID)diObject;
 
         LogSystemCreateSuccess();
@@ -74,7 +90,7 @@ extern "C"
 #else
     HRESULT WINAPI ExportApiDirectInputDirectInputCreateA(HINSTANCE hinst, DWORD dwVersion, LPDIRECTINPUTA* ppDI, LPUNKNOWN punkOuter)
     {
-        IDirectInput* diObject = nullptr;
+        IDirectInputA* diObject = nullptr;
 
         if (dwVersion < DINPUT_VER_MIN || dwVersion > DINPUT_VER_MAX)
         {
@@ -89,7 +105,7 @@ extern "C"
             return result;
         }
 
-        diObject = new WrapperIDirectInput((LatestIDirectInput*)diObject, FALSE);
+        diObject = new WrapperIDirectInput<false>((LatestIDirectInputA*)diObject);
         *ppDI = (LPDIRECTINPUTA)diObject;
 
         LogSystemCreateSuccess();
@@ -115,7 +131,7 @@ extern "C"
             return result;
         }
 
-        diObject = new WrapperIDirectInput((LatestIDirectInput*)diObject, TRUE);
+        diObject = new WrapperIDirectInput<true>((LatestIDirectInputW*)diObject);
         *ppDI = (LPDIRECTINPUTW)diObject;
 
         LogSystemCreateSuccess();
@@ -126,7 +142,7 @@ extern "C"
 
     HRESULT WINAPI ExportApiDirectInputDirectInputCreateEx(HINSTANCE hinst, DWORD dwVersion, REFIID riidltf, LPVOID *ppvOut, LPUNKNOWN punkOuter)
     {
-        IDirectInput* diObject = nullptr;
+        void* diObject = nullptr;
 
         if (dwVersion < DINPUT_VER_MIN || dwVersion > DINPUT_VER_MAX)
         {
@@ -134,10 +150,16 @@ extern "C"
             return E_FAIL;
         }
 
+        if ((IID_IDirectInputW != riidltf) && (IID_IDirectInput2W != riidltf) && (IID_IDirectInput7W != riidltf) && (IID_IDirectInputA != riidltf) && (IID_IDirectInput2A != riidltf) && (IID_IDirectInput7A != riidltf))
+        {
+            LogInvalidInterfaceParam();
+            return DIERR_INVALIDPARAM;
+        }
+
         HRESULT result;
         BOOL useUnicode = FALSE;
 
-        if (IID_IDirectInput2W == riidltf || IID_IDirectInput7W == riidltf)
+        if (IID_IDirectInputW == riidltf || IID_IDirectInput2W == riidltf || IID_IDirectInput7W == riidltf)
         {
             useUnicode = TRUE;
             result = ImportApiDirectInput::DirectInputCreateEx(hinst, DIRECTINPUT_VERSION, IID_IDirectInput7W, (LPVOID*)&diObject, punkOuter);
@@ -153,8 +175,12 @@ extern "C"
             return result;
         }
 
-        diObject = new WrapperIDirectInput((LatestIDirectInput*)diObject, useUnicode);
-        *ppvOut = (LPVOID)diObject;
+        if (TRUE == useUnicode)
+            diObject = new WrapperIDirectInput<true>((LatestIDirectInputW*)diObject);
+        else
+            diObject = new WrapperIDirectInput<false>((LatestIDirectInputA*)diObject);
+
+        *ppvOut = diObject;
 
         LogSystemCreateSuccess();
         return result;

@@ -47,11 +47,11 @@ namespace Xidi
         // -------- FUNCTIONS ---------------------------------------------- //
         // See "ControllerIdentification.h" for documentation.
 
-        BOOL DoesDirectInputControllerSupportXInput(EarliestIDirectInput* dicontext, REFGUID instanceGUID, std::wstring* devicePath)
+        template <typename EarliestIDirectInputType, typename EarliestIDirectInputDeviceType> BOOL DoesDirectInputControllerSupportXInput(EarliestIDirectInputType* dicontext, REFGUID instanceGUID, std::wstring* devicePath)
         {
             BOOL deviceSupportsXInput = FALSE;
 
-            EarliestIDirectInputDevice* didevice = nullptr;
+            EarliestIDirectInputDeviceType* didevice = nullptr;
             HRESULT result = dicontext->CreateDevice(instanceGUID, &didevice, nullptr);
 
             if (DI_OK == result)
@@ -83,6 +83,9 @@ namespace Xidi
 
             return deviceSupportsXInput;
         }
+
+        template BOOL DoesDirectInputControllerSupportXInput<typename EarliestIDirectInputA, typename EarliestIDirectInputDeviceA>(EarliestIDirectInputA*, REFGUID, std::wstring*);
+        template BOOL DoesDirectInputControllerSupportXInput<typename EarliestIDirectInputW, typename EarliestIDirectInputDeviceW>(EarliestIDirectInputW*, REFGUID, std::wstring*);
 
         // ---------
 

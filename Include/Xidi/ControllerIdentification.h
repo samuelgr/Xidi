@@ -37,11 +37,13 @@ namespace Xidi
         /// Determines if the specified DirectInput controller supports XInput.
         /// In so doing, an interface object is created to communicate with the controller.
         /// This interface object is released prior to returning from this method.
+        /// @tparam EarliestIDirectInputType Either EarliestIDirectInputA or EarliestIDirectInputW depending on whether or not Unicode is being used.
+        /// @tparam EarliestIDirectInputDeviceType Either EarliestIDirectInputDeviceA or EarliestIDirectInputDeviceW depending on whether or not Unicode is being used.
         /// @param [in] dicontext IDirectInput context from which the controller is to be obtained.
         /// @param [in] instanceGUID DirectInput instance GUID identifying the controller and obtained from the IDirectInput context.
         /// @param [out] devicePath If present, will be filled with the device identifying path, which was used to determine whether or not the controller supports XInput.
         /// @return `TRUE` if the controller supports XInput, `FALSE` otherwise.
-        BOOL DoesDirectInputControllerSupportXInput(EarliestIDirectInput* dicontext, REFGUID instanceGUID, std::wstring* devicePath = nullptr);
+        template <typename EarliestIDirectInputType, typename EarliestIDirectInputDeviceType> BOOL DoesDirectInputControllerSupportXInput(EarliestIDirectInputType* dicontext, REFGUID instanceGUID, std::wstring* devicePath = nullptr);
 
         /// Performs a DirectInput-style controller enumeration of connected XInput controllers.
         /// Callback parameter type was copied and pasted from DirectInput headers and modified to be amenable to being used in a template like this.
