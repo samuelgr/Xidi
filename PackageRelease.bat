@@ -1,4 +1,6 @@
 @echo off
+setlocal enabledelayedexpansion
+
 rem +--------------------------------------------------------------------------
 rem | Xidi
 rem |   DirectInput interface for XInput controllers.
@@ -59,9 +61,9 @@ for %%F in (%files_release% %files_sdk_lib% %files_sdk_include%) do (
         set files_are_missing=yes
     )
 )
-if not ""=="%files_release_build%" (
-    for %%P in (%project_platforms%) do (
-        for %%F in (%files_release_build%) do (
+for %%P in (%project_platforms%) do (
+    if not ""=="%files_release_build%!files_release_build_%%P!" (
+		for %%F in (%files_release_build% !files_release_build_%%P!) do (
             if not exist Output\%%P\Release\%%F (
                 echo Missing file: Output\%%P\Release\%%F
                 set files_are_missing=yes
@@ -87,11 +89,11 @@ for %%F in (%files_release%) do (
     echo %%F
     copy %%F %output_dir%
 )
-if not ""=="%files_release_build%" (
-    for %%P in (%project_platforms%) do (
+for %%P in (%project_platforms%) do (
+	if not ""=="%files_release_build%!files_release_build_%%P!" (
         md %output_dir%\%%P
 
-        for %%F in (%files_release_build%) do (
+        for %%F in (%files_release_build% !files_release_build_%%P!) do (
             echo Output\%%P\Release\%%F
             copy Output\%%P\Release\%%F %output_dir%\%%P
         )
