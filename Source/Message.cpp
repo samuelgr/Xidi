@@ -311,18 +311,29 @@ namespace Xidi
 
         void Output(const ESeverity severity, const wchar_t* message)
         {
+            const DWORD lastError = GetLastError();
+
             if (false == WillOutputMessageOfSeverity(severity))
+            {
+                SetLastError(lastError);
                 return;
+            }
 
             OutputInternal(severity, message);
+            SetLastError(lastError);
         }
 
         // ---------
 
         void OutputFormatted(const ESeverity severity, const wchar_t* format, ...)
         {
+            const DWORD lastError = GetLastError();
+
             if (false == WillOutputMessageOfSeverity(severity))
+            {
+                SetLastError(lastError);
                 return;
+            }
 
             va_list args;
             va_start(args, format);
@@ -330,6 +341,8 @@ namespace Xidi
             OutputFormattedInternal(severity, format, args);
 
             va_end(args);
+
+            SetLastError(lastError);
         }
 
         // --------
