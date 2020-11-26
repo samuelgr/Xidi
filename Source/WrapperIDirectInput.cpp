@@ -73,7 +73,43 @@ namespace Xidi
 
     template <bool useUnicode> HRESULT STDMETHODCALLTYPE WrapperIDirectInput<useUnicode>::QueryInterface(REFIID riid, LPVOID* ppvObj)
     {
-        return underlyingDIObject->QueryInterface(riid, ppvObj);
+        void* interfacePtr = nullptr;
+        const HRESULT result = underlyingDIObject->QueryInterface(riid, &newObject);
+
+        if (S_OK == result)
+        {
+            bool shouldWrapInterface = false;
+
+            if (useUnicode)
+            {
+#if DIRECTINPUT_VERSION >= 0x0800
+                if (IsEqualIID(riid, IID_IUnknown) || IsEqualIID(riid, IID_IDirectInput8W))
+#else
+                if (IsEqualIID(riid, IID_IUnknown) || IsEqualIID(riid, IID_IDirectInput7W) || IsEqualIID(riid, IID_IDirectInput2W) || IsEqualIID(riid, IID_IDirectInputW))
+#endif
+                {
+                    shouldWrapInterface = true;
+                }
+            }
+            else
+            {
+#if DIRECTINPUT_VERSION >= 0x0800
+                if (IsEqualIID(riid, IID_IUnknown) || IsEqualIID(riid, IID_IDirectInput8A))
+#else
+                if (IsEqualIID(riid, IID_IUnknown) || IsEqualIID(riid, IID_IDirectInput7A) || IsEqualIID(riid, IID_IDirectInput2A) || IsEqualIID(riid, IID_IDirectInputA))
+#endif
+                {
+                    shouldWrapInterface = true;
+                }
+            }
+
+            if (true == shouldWrapInterface)
+                *ppvObj = this;
+            else
+                *ppvObj = interfacePtr;
+        }
+
+        return result;
     }
 
     // ---------
