@@ -15,7 +15,6 @@
 #include "Globals.h"
 #include "XInputController.h"
 
-#include <guiddef.h>
 #include <Xinput.h>
 
 

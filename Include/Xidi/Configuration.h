@@ -630,6 +630,7 @@ namespace Xidi
             /// Copy constructor. Should never be invoked.
             Configuration(const Configuration& other) = delete;
 
+
             // -------- INSTANCE METHODS ----------------------------------- //
 
             /// Retrieves and returns a reference to the object that holds all of Xidi's configuration settings.

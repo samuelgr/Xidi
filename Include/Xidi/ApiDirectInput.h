@@ -41,6 +41,13 @@ typedef IDirectInputDevice8A                    LatestIDirectInputDeviceA;
 typedef IDirectInputDevice8W                    EarliestIDirectInputDeviceW;
 typedef IDirectInputDevice8W                    LatestIDirectInputDeviceW;
 
+#define IID_LatestIDirectInput                  IID_IDirectInput8
+#define IID_LatestIDirectInputA                 IID_IDirectInput8A
+#define IID_LatestIDirectInputW                 IID_IDirectInput8W
+#define IID_LatestIDirectInputDevice            IID_IDirectInputDevice8
+#define IID_LatestIDirectInputDeviceA           IID_IDirectInputDevice8A
+#define IID_LatestIDirectInputDeviceW           IID_IDirectInputDevice8W
+
 #else
 
 #define DINPUT_VER_MIN                          0x0200
@@ -60,5 +67,12 @@ typedef IDirectInputDeviceA                     EarliestIDirectInputDeviceA;
 typedef IDirectInputDevice7A                    LatestIDirectInputDeviceA;
 typedef IDirectInputDeviceW                     EarliestIDirectInputDeviceW;
 typedef IDirectInputDevice7W                    LatestIDirectInputDeviceW;
+
+#define IID_LatestIDirectInput                  IID_IDirectInput7
+#define IID_LatestIDirectInputA                 IID_IDirectInput7A
+#define IID_LatestIDirectInputW                 IID_IDirectInput7W
+#define IID_LatestIDirectInputDevice            IID_IDirectInputDevice7
+#define IID_LatestIDirectInputDeviceA           IID_IDirectInputDevice7A
+#define IID_LatestIDirectInputDeviceW           IID_IDirectInputDevice7W
 
 #endif

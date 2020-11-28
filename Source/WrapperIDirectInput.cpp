@@ -152,10 +152,10 @@ namespace Xidi
             // Is an XInput GUID, so create a fake device that will communicate with the XInput controller of the specified index.
             Message::OutputFormatted(Message::ESeverity::Info, L"Binding to Xidi virtual XInput device for player %u.", (xinputIndex + 1));
 
-            VirtualDirectInputDevice<useUnicode>* newWrappedDevice = new VirtualDirectInputDevice<useUnicode>(new XInputController(xinputIndex), Mapper::Create());
-            newWrappedDevice->AddRef();
-            *lplpDirectInputDevice = newWrappedDevice;
+            if (nullptr != pUnkOuter)
+                Message::Output(Message::ESeverity::Warning, L"Application requested COM aggregation, which is not implemented, while binding to a Xidi virtual device.");
 
+            *lplpDirectInputDevice = new VirtualDirectInputDevice<useUnicode>(new XInputController(xinputIndex), Mapper::Create());
             return DI_OK;
         }
     }
@@ -355,16 +355,16 @@ namespace Xidi
         {
             if (!(IsEqualIID(riid, IID_IDirectInputDeviceW) || IsEqualIID(riid, IID_IDirectInputDevice2W) || IsEqualIID(riid, IID_IDirectInputDevice7W)))
             {
-                Message::Output(Message::ESeverity::Warning, L"CreateDeviceEx failed due to an invalid IID.");
-                return E_INVALIDARG;
+                Message::Output(Message::ESeverity::Warning, L"CreateDeviceEx Unicode failed due to an invalid IID.");
+                return DIERR_NOINTERFACE;
             }
         }
         else
         {
             if (!(IsEqualIID(riid, IID_IDirectInputDeviceA) || IsEqualIID(riid, IID_IDirectInputDevice2A) || IsEqualIID(riid, IID_IDirectInputDevice7A)))
             {
-                Message::Output(Message::ESeverity::Warning, L"CreateDeviceEx failed due to an invalid IID.");
-                return E_INVALIDARG;
+                Message::Output(Message::ESeverity::Warning, L"CreateDeviceEx ASCII failed due to an invalid IID.");
+                return DIERR_NOINTERFACE;
             }
         }
 

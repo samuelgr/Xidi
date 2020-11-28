@@ -80,7 +80,7 @@ namespace Xidi
     // -------- CONSTRUCTION AND DESTRUCTION ------------------------------- //
     // See "VirtualDirectInputDevice.h" for documentation.
 
-    template <bool useUnicode> VirtualDirectInputDevice<useUnicode>::VirtualDirectInputDevice(XInputController* controller, Mapper* mapper) : controller(controller), mapper(mapper), polledSinceLastGetDeviceState(FALSE), refcount(0) {}
+    template <bool useUnicode> VirtualDirectInputDevice<useUnicode>::VirtualDirectInputDevice(XInputController* controller, Mapper* mapper) : controller(controller), mapper(mapper), polledSinceLastGetDeviceState(FALSE), refcount(1) {}
 
     // ---------
 

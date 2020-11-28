@@ -10,6 +10,7 @@
  *   library.
  *****************************************************************************/
 
+#include "DirectInputClassFactory.h"
 #include "ImportApiDirectInput.h"
 #include "Message.h"
 #include "WrapperIDirectInput.h"
@@ -205,13 +206,30 @@ extern "C"
 
     HRESULT WINAPI ExportApiDirectInputDllCanUnloadNow(void)
     {
-        return ImportApiDirectInput::DllCanUnloadNow();
+        // In practice, there should not be a need to unload Xidi or DirectInput DLLs.
+        return S_FALSE;
     }
 
     // ---------
 
     HRESULT WINAPI ExportApiDirectInputDllGetClassObject(REFCLSID rclsid, REFIID riid, LPVOID* ppv)
     {
+        if (DirectInputClassFactory::CanCreateObjectsOfClass(rclsid))
+        {
+            if (IsEqualIID(IID_IClassFactory, riid))
+            {
+                Message::Output(Message::ESeverity::Info, L"DllGetClassObject is intercepting the class object request because the class ID is supported and the interface ID is correct.");
+                *ppv = DirectInputClassFactory::GetInstance();
+                return S_OK;
+            }
+            else
+            {
+                Message::Output(Message::ESeverity::Warning, L"DllGetClassObject failed to intercept the class object request because the class ID is supported but the interface ID is incorrect.");
+                return E_NOINTERFACE;
+            }
+        }
+
+        Message::Output(Message::ESeverity::Info, L"DllGetClassObject is not intercepting the class object request because the class ID is unsupported.");
         return ImportApiDirectInput::DllGetClassObject(rclsid, riid, ppv);
     }
 }
