@@ -65,7 +65,7 @@ namespace Xidi
         static const HMODULE moduleHandle = LoadLibrary(importLibraryFilename.c_str());
         static const FARPROC moduleDllGetClassObjectProc = GetProcAddress(moduleHandle, "DllGetClassObject");
 
-        Message::OutputFormatted(Message::ESeverity::Info, L"Attempting to locate procedure DllGetClassObject in library %s.", importLibraryFilename.c_str());
+        Message::OutputFormatted(Message::ESeverity::Debug, L"Attempting to locate procedure DllGetClassObject in library %s.", importLibraryFilename.c_str());
 
         if (nullptr == moduleHandle)
             Message::OutputFormatted(Message::ESeverity::Warning, L"Unable to load library %s.", importLibraryFilename.c_str());
