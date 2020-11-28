@@ -59,18 +59,18 @@ namespace Xidi
     /// Retrieves the address of the DllGetClassObject function exported by the specified module, which should be located in the same directory as this hook module.
     /// @tparam moduleName Compile-time constant string of the base name of the module.
     /// @return Address of the desired procedure, or `nullptr` on failure.
-    template <const std::wstring_view* moduleName> static decltype(&DllGetClassObject) DllGetClassObjectProc(void)
+    template <const std::wstring_view* moduleName> static decltype(&DllGetClassObject) LocateDllGetClassObjectProc(void)
     {
         static const std::wstring importLibraryFilename(std::wstring(Strings::kStrExecutableDirectoryName) + std::wstring(*moduleName));
         static const HMODULE moduleHandle = LoadLibrary(importLibraryFilename.c_str());
-        static const FARPROC moduleDllGetClassObjectProc = GetProcAddress(moduleHandle, "DllGetClassObject");
+        static const FARPROC moduleDllGetClassObjectProc = GetProcAddress(moduleHandle, "LocateDllGetClassObjectProc");
 
-        Message::OutputFormatted(Message::ESeverity::Debug, L"Attempting to locate procedure DllGetClassObject in library %s.", importLibraryFilename.c_str());
+        Message::OutputFormatted(Message::ESeverity::Debug, L"LocateDllGetClassObjectProc is attempting to locate procedure DllGetClassObject in library %s.", importLibraryFilename.c_str());
 
         if (nullptr == moduleHandle)
-            Message::OutputFormatted(Message::ESeverity::Warning, L"Unable to load library %s.", importLibraryFilename.c_str());
+            Message::OutputFormatted(Message::ESeverity::Warning, L"LocateDllGetClassObjectProc is unable to load library %s.", importLibraryFilename.c_str());
         else if (nullptr == moduleDllGetClassObjectProc)
-            Message::OutputFormatted(Message::ESeverity::Warning, L"Unable to locate DllGetClassObject procedure in library %s.", importLibraryFilename.c_str());
+            Message::OutputFormatted(Message::ESeverity::Warning, L"LocateDllGetClassObjectProc is unable to locate DllGetClassObject procedure in library %s.", importLibraryFilename.c_str());
 
         return (decltype(&DllGetClassObject))moduleDllGetClassObjectProc;
     }
@@ -84,7 +84,7 @@ HRESULT StaticHook_CoCreateInstance::Hook(REFCLSID rclsid, LPUNKNOWN pUnkOuter, 
 {
     if (IsEqualCLSID(CLSID_DirectInput8, rclsid))
     {
-        static const decltype(&DllGetClassObject) procDllGetClassObject = Xidi::DllGetClassObjectProc<&Xidi::Strings::kStrLibraryNameDirectInput8>();
+        static const decltype(&DllGetClassObject) procDllGetClassObject = Xidi::LocateDllGetClassObjectProc<&Xidi::Strings::kStrLibraryNameDirectInput8>();
         
         if (nullptr != procDllGetClassObject)
         {
@@ -98,7 +98,7 @@ HRESULT StaticHook_CoCreateInstance::Hook(REFCLSID rclsid, LPUNKNOWN pUnkOuter, 
     }
     else if (IsEqualCLSID(CLSID_DirectInput, rclsid))
     {
-        static const decltype(&DllGetClassObject) procDllGetClassObject = Xidi::DllGetClassObjectProc<&Xidi::Strings::kStrLibraryNameDirectInput>();
+        static const decltype(&DllGetClassObject) procDllGetClassObject = Xidi::LocateDllGetClassObjectProc<&Xidi::Strings::kStrLibraryNameDirectInput>();
 
         if (nullptr != procDllGetClassObject)
         {
