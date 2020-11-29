@@ -63,7 +63,7 @@ namespace Xidi
     {
         static const std::wstring importLibraryFilename(std::wstring(Strings::kStrExecutableDirectoryName) + std::wstring(*moduleName));
         static const HMODULE moduleHandle = LoadLibrary(importLibraryFilename.c_str());
-        static const FARPROC moduleDllGetClassObjectProc = GetProcAddress(moduleHandle, "LocateDllGetClassObjectProc");
+        static const FARPROC moduleDllGetClassObjectProc = GetProcAddress(moduleHandle, "DllGetClassObject");
 
         Message::OutputFormatted(Message::ESeverity::Debug, L"LocateDllGetClassObjectProc is attempting to locate procedure DllGetClassObject in library %s.", importLibraryFilename.c_str());
 
