@@ -16,6 +16,7 @@
 #include "Strings.h"
 
 #include <string>
+#include <string_view>
 
 
 namespace Xidi
@@ -28,8 +29,25 @@ namespace Xidi
     {
         if (nullptr == procDllGetClassObject)
         {
-            Message::Output(Message::ESeverity::Error, L"Internal null pointer error while attempting to create an instance of a DirectInput COM object.");
+            Message::Output(Message::ESeverity::Error, L"CreateInstance encountered an internal null pointer error while attempting to create an instance of a COM object.");
             return E_FAIL;
+        }
+
+        if (Message::WillOutputMessageOfSeverity(Message::ESeverity::Debug))
+        {
+            LPOLESTR clsidString = nullptr;
+            LPOLESTR iidString = nullptr;
+
+            const HRESULT clsidStringResult = StringFromCLSID(rclsid, &clsidString);
+            const HRESULT iidStringResult = StringFromIID(riid, &iidString);
+
+            Message::OutputFormatted(Message::ESeverity::Debug, L"CreateInstance is attempting to create a COM object instance with CLSID=%s and IID=%s", (S_OK == clsidStringResult ? clsidString : L"(unknown)"), (S_OK == iidStringResult ? iidString : L"(unknown)"));
+
+            if (S_OK == clsidStringResult)
+                CoTaskMemFree(clsidString);
+
+            if (S_OK == iidStringResult)
+                CoTaskMemFree(iidString);
         }
 
         IClassFactory* comClassObject = nullptr;
@@ -52,6 +70,7 @@ namespace Xidi
             return newObjectResult;
         }
 
+        Message::Output(Message::ESeverity::Debug, L"CreateInstance successfully created an instance of a COM object.");
         *ppv = newObject;
         return S_OK;
     }
