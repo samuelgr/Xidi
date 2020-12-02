@@ -209,27 +209,27 @@ namespace Xidi
         /// @param [in] message Message text.
         static void OutputInternalUsingMessageBox(const ESeverity severity, const wchar_t* message)
         {
-            UINT messageBoxType = 0;
+            UINT messageBoxType = MB_SETFOREGROUND;
 
             switch (severity)
             {
             case ESeverity::ForcedInteractiveError:
             case ESeverity::Error:
-                messageBoxType = MB_ICONERROR;
+                messageBoxType |= MB_ICONERROR;
                 break;
 
             case ESeverity::ForcedInteractiveWarning:
             case ESeverity::Warning:
-                messageBoxType = MB_ICONWARNING;
+                messageBoxType |= MB_ICONWARNING;
                 break;
 
             case ESeverity::ForcedInteractiveInfo:
             case ESeverity::Info:
-                messageBoxType = MB_ICONINFORMATION;
+                messageBoxType |= MB_ICONINFORMATION;
                 break;
 
             default:
-                messageBoxType = MB_OK;
+                messageBoxType |= MB_OK;
                 break;
             }
 
