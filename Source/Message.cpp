@@ -325,7 +325,7 @@ namespace Xidi
 
         // ---------
 
-        void OutputFormatted(const ESeverity severity, const wchar_t* format, ...)
+        void OutputFormatted(const ESeverity severity, _Printf_format_string_ const wchar_t* format, ...)
         {
             const DWORD lastError = GetLastError();
 

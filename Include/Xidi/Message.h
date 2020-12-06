@@ -74,7 +74,7 @@ namespace Xidi
         /// Requires a severity, a message string with standard format specifiers, and values to be formatted.
         /// @param [in] severity Severity of the message.
         /// @param [in] format Message string, possibly with format specifiers.
-        void OutputFormatted(const ESeverity severity, const wchar_t* format, ...);
+        void OutputFormatted(const ESeverity severity, _Printf_format_string_ const wchar_t* format, ...);
 
         /// Sets the minimum message severity required for a message to be output.
         /// Does nothing if the requested severity level is less than the minimum value allowed to be configured.
