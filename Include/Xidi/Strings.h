@@ -23,6 +23,7 @@ namespace Xidi
     {
         // -------- COMPILE-TIME CONSTANTS --------------------------------- //
         // Can safely be used at any time, including to perform static initialization.
+        // Views are guaranteed to be null-terminated.
 
         /// Base name of the DirectInput library to import.
         inline constexpr std::wstring_view kStrLibraryNameDirectInput = L"dinput.dll";
@@ -63,6 +64,7 @@ namespace Xidi
 
         // -------- RUN-TIME CONSTANTS ------------------------------------- //
         // Not safe to access before run-time, and should not be used to perform dynamic initialization.
+        // Views are guaranteed to be null-terminated.
 
         /// Product name.
         /// Use this to identify Xidi in areas of user interaction.
