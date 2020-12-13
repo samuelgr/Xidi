@@ -100,12 +100,11 @@ namespace Xidi
             static std::once_flag initFlag;
 
             std::call_once(initFlag, []() -> void {
-                const wchar_t* const executableCompleteFilename = GetExecutableCompleteFilename().c_str();
-                const wchar_t* executableBaseName = wcsrchr(executableCompleteFilename, L'\\');
-                if (nullptr == executableBaseName)
-                    executableBaseName = executableCompleteFilename;
-                else
-                    executableBaseName += 1;
+                std::wstring_view executableBaseName = GetExecutableCompleteFilename();
+
+                const size_t lastBackslashPos = executableBaseName.find_last_of(L"\\");
+                if (std::wstring_view::npos != lastBackslashPos)
+                    executableBaseName.remove_prefix(1 + lastBackslashPos);
 
                 initString.assign(executableBaseName);
             });
@@ -121,10 +120,14 @@ namespace Xidi
             static std::once_flag initFlag;
 
             std::call_once(initFlag, []() -> void {
-                const wchar_t* const executableCompleteFilename = GetExecutableCompleteFilename().c_str();
-                const wchar_t* const lastBackslash = wcsrchr(executableCompleteFilename, L'\\');
-                if (nullptr != lastBackslash)
-                    initString.assign(executableCompleteFilename, &lastBackslash[1]);
+                std::wstring_view executableDirectoryName = GetExecutableCompleteFilename();
+
+                const size_t lastBackslashPos = executableDirectoryName.find_last_of(L"\\");
+                if (std::wstring_view::npos != lastBackslashPos)
+                {
+                    executableDirectoryName.remove_suffix(executableDirectoryName.length() - lastBackslashPos - 1);
+                    initString.assign(executableDirectoryName);
+                }
             });
 
             return initString;
