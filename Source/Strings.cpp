@@ -16,6 +16,7 @@
 
 #include <cstdlib>
 #include <intrin.h>
+#include <mutex>
 #include <psapi.h>
 #include <shlobj.h>
 #include <sstream>
@@ -40,190 +41,252 @@ namespace Xidi
 
         /// Generates the value for kStrProductName; see documentation of this run-time constant for more information.
         /// @return Corresponding run-time constant value.
-        static std::wstring GetProductName(void)
+        static const std::wstring& GetProductName(void)
         {
-            TemporaryBuffer<wchar_t> buf;
-            LoadString(Globals::GetInstanceHandle(), IDS_XIDI_PRODUCT_NAME, (wchar_t*)buf, buf.Count());
+            static std::wstring initString;
+            static std::once_flag initFlag;
 
-            return (std::wstring(buf));
+            std::call_once(initFlag, []() -> void {
+                const wchar_t* stringStart = nullptr;
+                const int stringLength = LoadString(Globals::GetInstanceHandle(), IDS_XIDI_PRODUCT_NAME, (wchar_t*)&stringStart, 0);
+
+                if (0 < stringLength)
+                    initString.assign(stringStart, &stringStart[stringLength]);
+            });
+
+            return initString;
         }
 
         /// Generates the value for kStrVersionName; see documentation of this run-time constant for more information.
         /// @return Corresponding run-time constant value.
-        static std::wstring GetVersionName(void)
+        static const std::wstring& GetVersionName(void)
         {
-            TemporaryBuffer<wchar_t> buf;
-            LoadString(Globals::GetInstanceHandle(), IDS_XIDI_VERSION_NAME, (wchar_t*)buf, buf.Count());
+            static std::wstring initString;
+            static std::once_flag initFlag;
 
-            return (std::wstring(buf));
-        }
+            std::call_once(initFlag, []() -> void {
+                const wchar_t* stringStart = nullptr;
+                const int stringLength = LoadString(Globals::GetInstanceHandle(), IDS_XIDI_VERSION_NAME, (wchar_t*)&stringStart, 0);
 
-        /// Generates the value for kStrExecutableBaseName; see documentation of this run-time constant for more information.
-        /// @return Corresponding run-time constant value.
-        static std::wstring GetExecutableBaseName(void)
-        {
-            TemporaryBuffer<wchar_t> buf;
-            GetModuleFileName(nullptr, buf, (DWORD)buf.Count());
+                if (0 != stringLength)
+                    initString.assign(stringStart, &stringStart[stringLength]);
+            });
 
-            wchar_t* executableBaseName = wcsrchr(buf, L'\\');
-            if (nullptr == executableBaseName)
-                executableBaseName = buf;
-            else
-                executableBaseName += 1;
-
-            return (std::wstring(executableBaseName));
-        }
-
-        /// Generates the value for kStrExecutableDirectoryName; see documentation of this run-time constant for more information.
-        /// @return Corresponding run-time constant value.
-        static std::wstring GetExecutableDirectoryName(void)
-        {
-            TemporaryBuffer<wchar_t> buf;
-            GetModuleFileName(nullptr, buf, (DWORD)buf.Count());
-
-            wchar_t* const lastBackslash = wcsrchr(buf, L'\\');
-            if (nullptr == lastBackslash)
-                buf[0] = L'\0';
-            else
-                lastBackslash[1] = L'\0';
-
-            return (std::wstring(buf));
+            return initString;
         }
 
         /// Generates the value for kStrExecutableCompleteFilename; see documentation of this run-time constant for more information.
         /// @return Corresponding run-time constant value.
-        static std::wstring GetExecutableCompleteFilename(void)
+        static const std::wstring& GetExecutableCompleteFilename(void)
         {
-            TemporaryBuffer<wchar_t> buf;
-            GetModuleFileName(nullptr, buf, (DWORD)buf.Count());
+            static std::wstring initString;
+            static std::once_flag initFlag;
 
-            return (std::wstring(buf));
+            std::call_once(initFlag, []() -> void {
+                TemporaryBuffer<wchar_t> buf;
+                GetModuleFileName(nullptr, buf, (DWORD)buf.Count());
+
+                initString.assign(buf);
+            });
+
+            return initString;
+        }
+
+        /// Generates the value for kStrExecutableBaseName; see documentation of this run-time constant for more information.
+        /// @return Corresponding run-time constant value.
+        static const std::wstring& GetExecutableBaseName(void)
+        {
+            static std::wstring initString;
+            static std::once_flag initFlag;
+
+            std::call_once(initFlag, []() -> void {
+                const wchar_t* const executableCompleteFilename = GetExecutableCompleteFilename().c_str();
+                const wchar_t* executableBaseName = wcsrchr(executableCompleteFilename, L'\\');
+                if (nullptr == executableBaseName)
+                    executableBaseName = executableCompleteFilename;
+                else
+                    executableBaseName += 1;
+
+                initString.assign(executableBaseName);
+            });
+
+            return initString;
+        }
+
+        /// Generates the value for kStrExecutableDirectoryName; see documentation of this run-time constant for more information.
+        /// @return Corresponding run-time constant value.
+        static const std::wstring& GetExecutableDirectoryName(void)
+        {
+            static std::wstring initString;
+            static std::once_flag initFlag;
+
+            std::call_once(initFlag, []() -> void {
+                const wchar_t* const executableCompleteFilename = GetExecutableCompleteFilename().c_str();
+                const wchar_t* const lastBackslash = wcsrchr(executableCompleteFilename, L'\\');
+                if (nullptr != lastBackslash)
+                    initString.assign(executableCompleteFilename, &lastBackslash[1]);
+            });
+
+            return initString;
         }
 
         /// Generates the value for kStrSystemDirectoryName; see documentation of this run-time constant for more information.
         /// @return Corresponding run-time constant value.
-        static std::wstring GetSystemDirectoryName(void)
+        static const std::wstring& GetSystemDirectoryName(void)
         {
-            TemporaryBuffer<wchar_t> buf;
-            const UINT numChars = GetSystemDirectory(buf, buf.Count() - 1);
+            static std::wstring initString;
+            static std::once_flag initFlag;
 
-            if (L'\\' != buf[numChars - 1])
-            {
-                buf[numChars] = L'\\';
-                buf[numChars + 1] = L'\0';
-            }
+            std::call_once(initFlag, []() -> void {
+                TemporaryBuffer<wchar_t> buf;
+                const UINT numChars = GetSystemDirectory(buf, buf.Count() - 1);
 
-            return (std::wstring(buf));
+                if (L'\\' != buf[numChars - 1])
+                {
+                    buf[numChars] = L'\\';
+                    buf[numChars + 1] = L'\0';
+                }
+
+                initString.assign(buf);
+            });
+
+            return initString;
         }
 
         /// Generates the value for kStrSystemLibraryFilenameDirectInput; see documentation of this run-time constant for more information.
         /// @return Corresponding run-time constant value.
-        static std::wstring GetSystemLibraryFilenameDirectInput(void)
+        static const std::wstring& GetSystemLibraryFilenameDirectInput(void)
         {
-            std::wstring libraryFilename = GetSystemDirectoryName();
-            libraryFilename += kStrLibraryNameDirectInput;
+            static std::wstring initString;
+            static std::once_flag initFlag;
 
-            return libraryFilename;
+            std::call_once(initFlag, []() -> void {
+                std::wstring_view pieces[] = {GetSystemDirectoryName(), kStrLibraryNameDirectInput};
+
+                int totalLength = 0;
+                for (int i = 0; i < _countof(pieces); ++i)
+                    totalLength += pieces[i].length();
+
+                initString.reserve(1 + totalLength);
+
+                for (int i = 0; i < _countof(pieces); ++i)
+                    initString.append(pieces[i]);
+            });
+
+            return initString;
         }
 
         /// Generates the value for kStrSystemLibraryFilenameDirectInput8; see documentation of this run-time constant for more information.
         /// @return Corresponding run-time constant value.
-        static std::wstring GetSystemLibraryFilenameDirectInput8(void)
+        static const std::wstring& GetSystemLibraryFilenameDirectInput8(void)
         {
-            std::wstring libraryFilename = GetSystemDirectoryName();
-            libraryFilename += kStrLibraryNameDirectInput8;
+            static std::wstring initString;
+            static std::once_flag initFlag;
 
-            return libraryFilename;
+            std::call_once(initFlag, []() -> void {
+                std::wstring_view pieces[] = {GetSystemDirectoryName(), kStrLibraryNameDirectInput8};
+
+                int totalLength = 0;
+                for (int i = 0; i < _countof(pieces); ++i)
+                    totalLength += pieces[i].length();
+
+                initString.reserve(1 + totalLength);
+
+                for (int i = 0; i < _countof(pieces); ++i)
+                    initString.append(pieces[i]);
+            });
+
+            return initString;
         }
 
         /// Generates the value for kStrSystemLibraryFilenameWinMM; see documentation of this run-time constant for more information.
         /// @return Corresponding run-time constant value.
-        static std::wstring GetSystemLibraryFilenameWinMM(void)
+        static const std::wstring& GetSystemLibraryFilenameWinMM(void)
         {
-            std::wstring libraryFilename = GetSystemDirectoryName();
-            libraryFilename += kStrLibraryNameWinMM;
+            static std::wstring initString;
+            static std::once_flag initFlag;
 
-            return libraryFilename;
+            std::call_once(initFlag, []() -> void {
+                std::wstring_view pieces[] = {GetSystemDirectoryName(), kStrLibraryNameWinMM};
+
+                int totalLength = 0;
+                for (int i = 0; i < _countof(pieces); ++i)
+                    totalLength += pieces[i].length();
+
+                initString.reserve(1 + totalLength);
+
+                for (int i = 0; i < _countof(pieces); ++i)
+                    initString.append(pieces[i]);
+            });
+
+            return initString;
         }
 
         /// Generates the value for kStrConfigurationFilename; see documentation of this run-time constant for more information.
         /// @return Corresponding run-time constant value.
         static std::wstring GetConfigurationFilename(void)
         {
-            return GetExecutableDirectoryName() + GetProductName() + kStrConfigurationFileExtension.data();
+            static std::wstring initString;
+            static std::once_flag initFlag;
+
+            std::call_once(initFlag, []() -> void {
+                std::wstring_view pieces[] = {GetExecutableDirectoryName(), GetProductName(), kStrConfigurationFileExtension};
+
+                int totalLength = 0;
+                for (int i = 0; i < _countof(pieces); ++i)
+                    totalLength += pieces[i].length();
+
+                initString.reserve(1 + totalLength);
+
+                for (int i = 0; i < _countof(pieces); ++i)
+                    initString.append(pieces[i]);
+            });
+
+            return initString;
         }
 
         /// Generates the value for kStrLogFilename; see documentation of this run-time constant for more information.
         /// @return Corresponding run-time constant value.
-        static std::wstring GetLogFilename(void)
+        static const std::wstring& GetLogFilename(void)
         {
-            std::wstringstream logFilename;
+            static std::wstring initString;
+            static std::once_flag initFlag;
 
-            PWSTR knownFolderPath;
-            const HRESULT result = SHGetKnownFolderPath(FOLDERID_Desktop, 0, nullptr, &knownFolderPath);
+            std::call_once(initFlag, []() -> void {
+                std::wstringstream logFilename;
 
-            if (S_OK == result)
-            {
-                logFilename << knownFolderPath << L'\\';
-                CoTaskMemFree(knownFolderPath);
-            }
+                PWSTR knownFolderPath;
+                const HRESULT result = SHGetKnownFolderPath(FOLDERID_Desktop, 0, nullptr, &knownFolderPath);
 
-            logFilename << GetProductName() << L'_' << GetVersionName() << L'_' << GetExecutableBaseName() << L'_' << Globals::GetCurrentProcessId() << kStrLogFileExtension;
+                if (S_OK == result)
+                {
+                    logFilename << knownFolderPath << L'\\';
+                    CoTaskMemFree(knownFolderPath);
+                }
 
-            return logFilename.str();
+                logFilename << GetProductName() << L'_' << GetVersionName() << L'_' << GetExecutableBaseName() << L'_' << Globals::GetCurrentProcessId() << kStrLogFileExtension;
+
+                initString.assign(logFilename.str());
+            });
+
+            return initString;
         }
-
-
-        // -------- INTERNAL CONSTANTS ------------------------------------- //
-        // Used to implement run-time constants; see "Strings.h" for documentation.
-
-        static const std::wstring kStrProductNameImpl(GetProductName());
-
-        static const std::wstring kStrVersionNameImpl(GetVersionName());
-
-        static const std::wstring kStrExecutableBaseNameImpl(GetExecutableBaseName());
-
-        static const std::wstring kStrExecutableDirectoryNameImpl(GetExecutableDirectoryName());
-
-        static const std::wstring kStrExecutableCompleteFilenameImpl(GetExecutableCompleteFilename());
-
-        static const std::wstring kStrSystemDirectoryNameImpl(GetSystemDirectoryName());
-
-        static const std::wstring kStrSystemLibraryFilenameDirectInputImpl(GetSystemLibraryFilenameDirectInput());
-
-        static const std::wstring kStrSystemLibraryFilenameDirectInput8Impl(GetSystemLibraryFilenameDirectInput8());
-
-        static const std::wstring kStrSystemLibraryFilenameWinMMImpl(GetSystemLibraryFilenameWinMM());
-
-        static const std::wstring kStrConfigurationFilenameImpl(GetConfigurationFilename());
-
-        static const std::wstring kStrLogFilenameImpl(GetLogFilename());
 
 
         // -------- RUN-TIME CONSTANTS ------------------------------------- //
         // See "Strings.h" for documentation.
 
-        extern const std::wstring_view kStrProductName(kStrProductNameImpl);
-
-        extern const std::wstring_view kStrVersionName(kStrVersionNameImpl);
-
-        extern const std::wstring_view kStrExecutableBaseName(kStrExecutableBaseNameImpl);
-
-        extern const std::wstring_view kStrExecutableDirectoryName(kStrExecutableDirectoryNameImpl);
-
-        extern const std::wstring_view kStrExecutableCompleteFilename(kStrExecutableCompleteFilenameImpl);
-
-        extern const std::wstring_view kStrSystemDirectoryName(kStrSystemDirectoryNameImpl);
-
-        extern const std::wstring_view kStrSystemLibraryFilenameDirectInput(kStrSystemLibraryFilenameDirectInputImpl);
-
-        extern const std::wstring_view kStrSystemLibraryFilenameDirectInput8(kStrSystemLibraryFilenameDirectInput8Impl);
-
-        extern const std::wstring_view kStrSystemLibraryFilenameWinMM(kStrSystemLibraryFilenameWinMMImpl);
-        
-        extern const std::wstring_view kStrConfigurationFilename(kStrConfigurationFilenameImpl);
-
-        extern const std::wstring_view kStrLogFilename(kStrLogFilenameImpl);
+        extern const std::wstring_view kStrProductName(GetProductName());
+        extern const std::wstring_view kStrVersionName(GetVersionName());
+        extern const std::wstring_view kStrExecutableCompleteFilename(GetExecutableCompleteFilename());
+        extern const std::wstring_view kStrExecutableBaseName(GetExecutableBaseName());
+        extern const std::wstring_view kStrExecutableDirectoryName(GetExecutableDirectoryName());
+        extern const std::wstring_view kStrSystemDirectoryName(GetSystemDirectoryName());
+        extern const std::wstring_view kStrSystemLibraryFilenameDirectInput(GetSystemLibraryFilenameDirectInput());
+        extern const std::wstring_view kStrSystemLibraryFilenameDirectInput8(GetSystemLibraryFilenameDirectInput8());
+        extern const std::wstring_view kStrSystemLibraryFilenameWinMM(GetSystemLibraryFilenameWinMM());
+        extern const std::wstring_view kStrConfigurationFilename(GetConfigurationFilename());
+        extern const std::wstring_view kStrLogFilename(GetLogFilename());
 
 
         // -------- FUNCTIONS ---------------------------------------------- //

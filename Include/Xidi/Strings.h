@@ -72,14 +72,14 @@ namespace Xidi
         /// Use this to identify Xidi's version (dinput, dinput8, winmm) in areas of user interaction.
         extern const std::wstring_view kStrVersionName;
 
+        /// Complete path and filename of the currently-running executable.
+        extern const std::wstring_view kStrExecutableCompleteFilename;
+
         /// Base name of the currently-running executable.
         extern const std::wstring_view kStrExecutableBaseName;
 
         /// Directory name of the currently-running executable, including trailing backslash if available.
         extern const std::wstring_view kStrExecutableDirectoryName;
-
-        /// Complete path and filename of the currently-running executable.
-        extern const std::wstring_view kStrExecutableCompleteFilename;
 
         /// Directory name in which system-supplied libraries are found.
         extern const std::wstring_view kStrSystemDirectoryName;
