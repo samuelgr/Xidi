@@ -166,7 +166,7 @@ namespace Xidi
             std::call_once(initFlag, []() -> void {
                 std::wstring_view pieces[] = {GetSystemDirectoryName(), kStrLibraryNameDirectInput};
 
-                int totalLength = 0;
+                size_t totalLength = 0;
                 for (int i = 0; i < _countof(pieces); ++i)
                     totalLength += pieces[i].length();
 
@@ -189,7 +189,7 @@ namespace Xidi
             std::call_once(initFlag, []() -> void {
                 std::wstring_view pieces[] = {GetSystemDirectoryName(), kStrLibraryNameDirectInput8};
 
-                int totalLength = 0;
+                size_t totalLength = 0;
                 for (int i = 0; i < _countof(pieces); ++i)
                     totalLength += pieces[i].length();
 
@@ -212,7 +212,7 @@ namespace Xidi
             std::call_once(initFlag, []() -> void {
                 std::wstring_view pieces[] = {GetSystemDirectoryName(), kStrLibraryNameWinMM};
 
-                int totalLength = 0;
+                size_t totalLength = 0;
                 for (int i = 0; i < _countof(pieces); ++i)
                     totalLength += pieces[i].length();
 
@@ -235,7 +235,7 @@ namespace Xidi
             std::call_once(initFlag, []() -> void {
                 std::wstring_view pieces[] = {GetExecutableDirectoryName(), GetProductName(), kStrConfigurationFileExtension};
 
-                int totalLength = 0;
+                size_t totalLength = 0;
                 for (int i = 0; i < _countof(pieces); ++i)
                     totalLength += pieces[i].length();
 
