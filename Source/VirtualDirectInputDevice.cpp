@@ -22,6 +22,9 @@
 /// Logs a DirectInput interface method invocation.
 #define LOG_INVOCATION(lvl, player, result) Message::OutputFormatted(lvl, L"Invoked %s on XInput player %u, result = 0x%08x.", __FUNCTIONW__ L"()", player, result);
 
+/// Produces and returns a human-readable string from a given DirectInput property GUID.
+#define DI_PROPERTY_STRING(rguid, diprop) if (&diprop == &rguid) return _CRT_WIDE(#diprop);
+
 
 namespace Xidi
 {
@@ -34,44 +37,33 @@ namespace Xidi
     static const wchar_t* StringFromPropertyUniqueIdentifier(REFGUID rguidProp)
     {
 #if DIRECTINPUT_VERSION >= 0x0800
-        if (&DIPROP_APPDATA == &rguidProp)
-            return L"DIPROP_APPDATA";
-        if (&DIPROP_CPOINTS == &rguidProp)
-            return L"DIPROP_CPOINTS";
-        if (&DIPROP_KEYNAME == &rguidProp)
-            return L"DIPROP_KEYNAME";
-        if (&DIPROP_SCANCODE == &rguidProp)
-            return L"DIPROP_SCANCODE";
-        if (&DIPROP_TYPENAME == &rguidProp)
-            return L"DIPROP_TYPENAME";
-        if (&DIPROP_USERNAME == &rguidProp)
-            return L"DIPROP_USERNAME";
-        if (&DIPROP_VIDPID == &rguidProp)
-            return L"DIPROP_VIDPID";
+        DI_PROPERTY_STRING(rguidProp, DIPROP_KEYNAME);
+        DI_PROPERTY_STRING(rguidProp, DIPROP_CPOINTS);
+        DI_PROPERTY_STRING(rguidProp, DIPROP_APPDATA);
+        DI_PROPERTY_STRING(rguidProp, DIPROP_SCANCODE);
+        DI_PROPERTY_STRING(rguidProp, DIPROP_VIDPID);
+        DI_PROPERTY_STRING(rguidProp, DIPROP_USERNAME);
+        DI_PROPERTY_STRING(rguidProp, DIPROP_TYPENAME);
 #endif
 
-        if (&DIPROP_AUTOCENTER == &rguidProp)
-            return L"DIPROP_AUTOCENTER";
-        if (&DIPROP_AXISMODE == &rguidProp)
-            return L"DIPROP_AXISMODE";
-        if (&DIPROP_BUFFERSIZE == &rguidProp)
-            return L"DIPROP_BUFFERSIZE";
-        if (&DIPROP_CALIBRATION == &rguidProp)
-            return L"DIPROP_CALIBRATION";
-        if (&DIPROP_CALIBRATIONMODE == &rguidProp)
-            return L"DIPROP_CALIBRATIONMODE";
-        if (&DIPROP_DEADZONE == &rguidProp)
-            return L"DIPROP_DEADZONE";
-        if (&DIPROP_FFGAIN == &rguidProp)
-            return L"DIPROP_FFGAIN";
-        if (&DIPROP_INSTANCENAME == &rguidProp)
-            return L"DIPROP_INSTANCENAME";
-        if (&DIPROP_PRODUCTNAME == &rguidProp)
-            return L"DIPROP_PRODUCTNAME";
-        if (&DIPROP_RANGE == &rguidProp)
-            return L"DIPROP_RANGE";
-        if (&DIPROP_SATURATION == &rguidProp)
-            return L"DIPROP_SATURATION";
+        DI_PROPERTY_STRING(rguidProp, DIPROP_BUFFERSIZE);
+        DI_PROPERTY_STRING(rguidProp, DIPROP_AXISMODE);
+        DI_PROPERTY_STRING(rguidProp, DIPROP_GRANULARITY);
+        DI_PROPERTY_STRING(rguidProp, DIPROP_RANGE);
+        DI_PROPERTY_STRING(rguidProp, DIPROP_DEADZONE);
+        DI_PROPERTY_STRING(rguidProp, DIPROP_SATURATION);
+        DI_PROPERTY_STRING(rguidProp, DIPROP_FFGAIN);
+        DI_PROPERTY_STRING(rguidProp, DIPROP_FFLOAD);
+        DI_PROPERTY_STRING(rguidProp, DIPROP_AUTOCENTER);
+        DI_PROPERTY_STRING(rguidProp, DIPROP_CALIBRATIONMODE);
+        DI_PROPERTY_STRING(rguidProp, DIPROP_CALIBRATION);
+        DI_PROPERTY_STRING(rguidProp, DIPROP_GUIDANDPATH);
+        DI_PROPERTY_STRING(rguidProp, DIPROP_INSTANCENAME);
+        DI_PROPERTY_STRING(rguidProp, DIPROP_PRODUCTNAME);
+        DI_PROPERTY_STRING(rguidProp, DIPROP_JOYSTICKID);
+        DI_PROPERTY_STRING(rguidProp, DIPROP_GETPORTDISPLAYNAME);
+        DI_PROPERTY_STRING(rguidProp, DIPROP_PHYSICALRANGE);
+        DI_PROPERTY_STRING(rguidProp, DIPROP_LOGICALRANGE);
 
         return L"(unknown)";
     }
