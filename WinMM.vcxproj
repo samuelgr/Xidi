@@ -183,12 +183,8 @@
     <ManifestResourceCompile>
       <ResourceOutputFileName>$(IntDir)$(TargetName)$(TargetExt).embed.manifest.res</ResourceOutputFileName>
     </ManifestResourceCompile>
-    <ResourceCompile>
-      <AdditionalIncludeDirectories>Resources</AdditionalIncludeDirectories>
-    </ResourceCompile>
-    <ResourceCompile>
-      <NullTerminateStrings>true</NullTerminateStrings>
-    </ResourceCompile>
+    <ResourceCompile />
+    <ResourceCompile />
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <ClCompile>
@@ -217,12 +213,8 @@
     <ManifestResourceCompile>
       <ResourceOutputFileName>$(IntDir)$(TargetName)$(TargetExt).embed.manifest.res</ResourceOutputFileName>
     </ManifestResourceCompile>
-    <ResourceCompile>
-      <AdditionalIncludeDirectories>Resources</AdditionalIncludeDirectories>
-    </ResourceCompile>
-    <ResourceCompile>
-      <NullTerminateStrings>true</NullTerminateStrings>
-    </ResourceCompile>
+    <ResourceCompile />
+    <ResourceCompile />
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <ClCompile>
@@ -253,12 +245,8 @@
     <ManifestResourceCompile>
       <ResourceOutputFileName>$(IntDir)$(TargetName)$(TargetExt).embed.manifest.res</ResourceOutputFileName>
     </ManifestResourceCompile>
-    <ResourceCompile>
-      <AdditionalIncludeDirectories>Resources</AdditionalIncludeDirectories>
-    </ResourceCompile>
-    <ResourceCompile>
-      <NullTerminateStrings>true</NullTerminateStrings>
-    </ResourceCompile>
+    <ResourceCompile />
+    <ResourceCompile />
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <ClCompile>
@@ -288,12 +276,8 @@
     <ManifestResourceCompile>
       <ResourceOutputFileName>$(IntDir)$(TargetName)$(TargetExt).embed.manifest.res</ResourceOutputFileName>
     </ManifestResourceCompile>
-    <ResourceCompile>
-      <AdditionalIncludeDirectories>Resources</AdditionalIncludeDirectories>
-    </ResourceCompile>
-    <ResourceCompile>
-      <NullTerminateStrings>true</NullTerminateStrings>
-    </ResourceCompile>
+    <ResourceCompile />
+    <ResourceCompile />
   </ItemDefinitionGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

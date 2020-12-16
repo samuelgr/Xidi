@@ -48,9 +48,12 @@ namespace Xidi
 
             std::call_once(initFlag, []() -> void {
                 const wchar_t* stringStart = nullptr;
-                const int stringLength = LoadString(Globals::GetInstanceHandle(), IDS_XIDI_PRODUCT_NAME, (wchar_t*)&stringStart, 0);
+                int stringLength = LoadString(Globals::GetInstanceHandle(), IDS_XIDI_PRODUCT_NAME, (wchar_t*)&stringStart, 0);
 
-                if (0 < stringLength)
+                while ((stringLength > 0) && (L'\0' == stringStart[stringLength - 1]))
+                    stringLength -= 1;
+
+                if (stringLength > 0)
                     initString.assign(stringStart, &stringStart[stringLength]);
             });
 
@@ -66,9 +69,12 @@ namespace Xidi
 
             std::call_once(initFlag, []() -> void {
                 const wchar_t* stringStart = nullptr;
-                const int stringLength = LoadString(Globals::GetInstanceHandle(), IDS_XIDI_VERSION_NAME, (wchar_t*)&stringStart, 0);
+                int stringLength = LoadString(Globals::GetInstanceHandle(), IDS_XIDI_VERSION_NAME, (wchar_t*)&stringStart, 0);
 
-                if (0 != stringLength)
+                while ((stringLength > 0) && (L'\0' == stringStart[stringLength - 1]))
+                    stringLength -= 1;
+
+                if (stringLength > 0)
                     initString.assign(stringStart, &stringStart[stringLength]);
             });
 
@@ -227,7 +233,7 @@ namespace Xidi
 
         /// Generates the value for kStrConfigurationFilename; see documentation of this run-time constant for more information.
         /// @return Corresponding run-time constant value.
-        static std::wstring GetConfigurationFilename(void)
+        static const std::wstring& GetConfigurationFilename(void)
         {
             static std::wstring initString;
             static std::once_flag initFlag;
@@ -267,7 +273,7 @@ namespace Xidi
                     CoTaskMemFree(knownFolderPath);
                 }
 
-                logFilename << GetProductName() << L'_' << GetVersionName() << L'_' << GetExecutableBaseName() << L'_' << Globals::GetCurrentProcessId() << kStrLogFileExtension;
+                logFilename << GetProductName().c_str() << L'_' << GetVersionName().c_str() << L'_' << GetExecutableBaseName().c_str() << L'_' << Globals::GetCurrentProcessId() << kStrLogFileExtension;
 
                 initString.assign(logFilename.str());
             });
