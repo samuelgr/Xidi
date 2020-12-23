@@ -19,6 +19,16 @@
 #include <dinput.h>
 
 
+// -------- CONSTANTS ------------------------------------------------------ //
+
+/// Missing from `dinput.h`, this constant is used by built-in DirectInput data formats and presumably others.
+/// Its intent is to signify that an element of the data format is optional, so setting the data format should not fail if the structure element remains unused.
+/// In the absence of this flag, if an element of the requested data format does not have a controller object instance associated with it, setting the data format fails due to invalid parameter.
+#ifndef DIDFT_OPTIONAL
+#define DIDFT_OPTIONAL                          0x80000000
+#endif
+
+
 // -------- VERSION-SPECIFIC MAPPINGS -------------------------------------- //
 
 #if DIRECTINPUT_VERSION >= 0x0800
