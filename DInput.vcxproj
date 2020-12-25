@@ -23,6 +23,9 @@
     <ClInclude Include="Include\Xidi\ApiGUID.h" />
     <ClInclude Include="Include\Xidi\ApiWindows.h" />
     <ClInclude Include="Include\Xidi\Configuration.h" />
+    <ClInclude Include="Include\Xidi\ControllerElementMapper.h" />
+    <ClInclude Include="Include\Xidi\ControllerMapper.h" />
+    <ClInclude Include="Include\Xidi\ControllerTypes.h" />
     <ClInclude Include="Include\Xidi\DirectInputClassFactory.h" />
     <ClInclude Include="Include\Xidi\ExportApiDirectInput.h" />
     <ClInclude Include="Include\Xidi\Globals.h" />
@@ -48,6 +51,8 @@
     <ClCompile Include="Source\ApiDirectInput.cpp" />
     <ClCompile Include="Source\ApiGUID.cpp" />
     <ClCompile Include="Source\Configuration.cpp" />
+    <ClCompile Include="Source\ControllerElementMapper.cpp" />
+    <ClCompile Include="Source\ControllerMapper.cpp" />
     <ClCompile Include="Source\DirectInputClassFactory.cpp" />
     <ClCompile Include="Source\Globals.cpp" />
     <ClCompile Include="Source\Mapper.cpp" />
@@ -167,11 +172,12 @@
       <WarningLevel>Level3</WarningLevel>
       <AdditionalIncludeDirectories>Include/$(SolutionName)</AdditionalIncludeDirectories>
       <ForcedIncludeFiles>$(ProjectDir)Resources\$(SolutionName).h;$(ProjectDir)Resources\$(ProjectName).h;%(ForcedIncludeFiles)</ForcedIncludeFiles>
-      <LanguageStandard>stdcpp17</LanguageStandard>
+      <LanguageStandard>stdcpplatest</LanguageStandard>
       <EnableEnhancedInstructionSet>AdvancedVectorExtensions</EnableEnhancedInstructionSet>
       <ConformanceMode>true</ConformanceMode>
       <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
       <SupportJustMyCode>false</SupportJustMyCode>
+      <LanguageStandard_C>stdc17</LanguageStandard_C>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
@@ -197,12 +203,13 @@
       <WarningLevel>Level3</WarningLevel>
       <AdditionalIncludeDirectories>Include/$(SolutionName)</AdditionalIncludeDirectories>
       <ForcedIncludeFiles>$(ProjectDir)Resources\$(SolutionName).h;$(ProjectDir)Resources\$(ProjectName).h;%(ForcedIncludeFiles)</ForcedIncludeFiles>
-      <LanguageStandard>stdcpp17</LanguageStandard>
+      <LanguageStandard>stdcpplatest</LanguageStandard>
       <OmitFramePointers>false</OmitFramePointers>
       <EnableEnhancedInstructionSet>AdvancedVectorExtensions</EnableEnhancedInstructionSet>
       <ConformanceMode>true</ConformanceMode>
       <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
       <SupportJustMyCode>false</SupportJustMyCode>
+      <LanguageStandard_C>stdc17</LanguageStandard_C>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
@@ -229,10 +236,11 @@
       <WarningLevel>Level3</WarningLevel>
       <AdditionalIncludeDirectories>Include/$(SolutionName)</AdditionalIncludeDirectories>
       <ForcedIncludeFiles>$(ProjectDir)Resources\$(SolutionName).h;$(ProjectDir)Resources\$(ProjectName).h;%(ForcedIncludeFiles)</ForcedIncludeFiles>
-      <LanguageStandard>stdcpp17</LanguageStandard>
+      <LanguageStandard>stdcpplatest</LanguageStandard>
       <OmitFramePointers>true</OmitFramePointers>
       <EnableEnhancedInstructionSet>AdvancedVectorExtensions</EnableEnhancedInstructionSet>
       <ConformanceMode>true</ConformanceMode>
+      <LanguageStandard_C>stdc17</LanguageStandard_C>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
@@ -262,10 +270,11 @@
       <WarningLevel>Level3</WarningLevel>
       <AdditionalIncludeDirectories>Include/$(SolutionName)</AdditionalIncludeDirectories>
       <ForcedIncludeFiles>$(ProjectDir)Resources\$(SolutionName).h;$(ProjectDir)Resources\$(ProjectName).h;%(ForcedIncludeFiles)</ForcedIncludeFiles>
-      <LanguageStandard>stdcpp17</LanguageStandard>
+      <LanguageStandard>stdcpplatest</LanguageStandard>
       <OmitFramePointers>true</OmitFramePointers>
       <EnableEnhancedInstructionSet>AdvancedVectorExtensions</EnableEnhancedInstructionSet>
       <ConformanceMode>true</ConformanceMode>
+      <LanguageStandard_C>stdc17</LanguageStandard_C>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>

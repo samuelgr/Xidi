@@ -20,7 +20,7 @@
 
 namespace Xidi
 {
-    namespace ControllerIdentification
+    namespace Controller
     {
         // -------- INTERNAL FUNCTIONS ------------------------------------- //
 

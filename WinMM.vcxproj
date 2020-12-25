@@ -23,6 +23,9 @@
     <ClInclude Include="Include\Xidi\ApiGUID.h" />
     <ClInclude Include="Include\Xidi\ApiWindows.h" />
     <ClInclude Include="Include\Xidi\Configuration.h" />
+    <ClInclude Include="Include\Xidi\ControllerElementMapper.h" />
+    <ClInclude Include="Include\Xidi\ControllerMapper.h" />
+    <ClInclude Include="Include\Xidi\ControllerTypes.h" />
     <ClInclude Include="Include\Xidi\ExportApiWinMM.h" />
     <ClInclude Include="Include\Xidi\Globals.h" />
     <ClInclude Include="Include\Xidi\ImportApiDirectInput.h" />
@@ -47,6 +50,8 @@
     <ClCompile Include="Source\ApiDirectInput.cpp" />
     <ClCompile Include="Source\ApiGUID.cpp" />
     <ClCompile Include="Source\Configuration.cpp" />
+    <ClCompile Include="Source\ControllerElementMapper.cpp" />
+    <ClCompile Include="Source\ControllerMapper.cpp" />
     <ClCompile Include="Source\ExportApiWinMM.cpp" />
     <ClCompile Include="Source\Globals.cpp" />
     <ClCompile Include="Source\ImportApiDirectInput.cpp" />
@@ -166,10 +171,11 @@
       <AdditionalIncludeDirectories>Include/$(SolutionName)</AdditionalIncludeDirectories>
       <ForcedIncludeFiles>$(ProjectDir)Resources\$(SolutionName).h;$(ProjectDir)Resources\$(ProjectName).h;%(ForcedIncludeFiles)</ForcedIncludeFiles>
       <EnableEnhancedInstructionSet>AdvancedVectorExtensions</EnableEnhancedInstructionSet>
-      <LanguageStandard>stdcpp17</LanguageStandard>
+      <LanguageStandard>stdcpplatest</LanguageStandard>
       <ConformanceMode>true</ConformanceMode>
       <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
       <SupportJustMyCode>false</SupportJustMyCode>
+      <LanguageStandard_C>stdc17</LanguageStandard_C>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
@@ -196,10 +202,11 @@
       <ForcedIncludeFiles>$(ProjectDir)Resources\$(SolutionName).h;$(ProjectDir)Resources\$(ProjectName).h;%(ForcedIncludeFiles)</ForcedIncludeFiles>
       <OmitFramePointers>false</OmitFramePointers>
       <EnableEnhancedInstructionSet>AdvancedVectorExtensions</EnableEnhancedInstructionSet>
-      <LanguageStandard>stdcpp17</LanguageStandard>
+      <LanguageStandard>stdcpplatest</LanguageStandard>
       <ConformanceMode>true</ConformanceMode>
       <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
       <SupportJustMyCode>false</SupportJustMyCode>
+      <LanguageStandard_C>stdc17</LanguageStandard_C>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
@@ -227,8 +234,9 @@
       <ForcedIncludeFiles>$(ProjectDir)Resources\$(SolutionName).h;$(ProjectDir)Resources\$(ProjectName).h;%(ForcedIncludeFiles)</ForcedIncludeFiles>
       <OmitFramePointers>true</OmitFramePointers>
       <EnableEnhancedInstructionSet>AdvancedVectorExtensions</EnableEnhancedInstructionSet>
-      <LanguageStandard>stdcpp17</LanguageStandard>
+      <LanguageStandard>stdcpplatest</LanguageStandard>
       <ConformanceMode>true</ConformanceMode>
+      <LanguageStandard_C>stdc17</LanguageStandard_C>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
@@ -259,8 +267,9 @@
       <AdditionalIncludeDirectories>Include/$(SolutionName)</AdditionalIncludeDirectories>
       <ForcedIncludeFiles>$(ProjectDir)Resources\$(SolutionName).h;$(ProjectDir)Resources\$(ProjectName).h;%(ForcedIncludeFiles)</ForcedIncludeFiles>
       <EnableEnhancedInstructionSet>AdvancedVectorExtensions</EnableEnhancedInstructionSet>
-      <LanguageStandard>stdcpp17</LanguageStandard>
+      <LanguageStandard>stdcpplatest</LanguageStandard>
       <ConformanceMode>true</ConformanceMode>
+      <LanguageStandard_C>stdc17</LanguageStandard_C>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
