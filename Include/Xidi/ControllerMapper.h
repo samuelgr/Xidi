@@ -34,26 +34,26 @@ namespace Xidi
             /// For controller elements that are not used, a value of `nullptr` may be used instead.
             struct SElementMap
             {
-                const IElementMapper* stickLeftX;
-                const IElementMapper* stickLeftY;
-                const IElementMapper* stickRightX;
-                const IElementMapper* stickRightY;
-                const IElementMapper* dpadUp;
-                const IElementMapper* dpadDown;
-                const IElementMapper* dpadLeft;
-                const IElementMapper* dpadRight;
-                const IElementMapper* triggerLT;
-                const IElementMapper* triggerRT;
-                const IElementMapper* buttonA;
-                const IElementMapper* buttonB;
-                const IElementMapper* buttonX;
-                const IElementMapper* buttonY;
-                const IElementMapper* buttonLB;
-                const IElementMapper* buttonRB;
-                const IElementMapper* buttonBack;
-                const IElementMapper* buttonStart;
-                const IElementMapper* buttonLS;
-                const IElementMapper* buttonRS;
+                const IElementMapper* stickLeftX = nullptr;
+                const IElementMapper* stickLeftY = nullptr;
+                const IElementMapper* stickRightX = nullptr;
+                const IElementMapper* stickRightY = nullptr;
+                const IElementMapper* dpadUp = nullptr;
+                const IElementMapper* dpadDown = nullptr;
+                const IElementMapper* dpadLeft = nullptr;
+                const IElementMapper* dpadRight = nullptr;
+                const IElementMapper* triggerLT = nullptr;
+                const IElementMapper* triggerRT = nullptr;
+                const IElementMapper* buttonA = nullptr;
+                const IElementMapper* buttonB = nullptr;
+                const IElementMapper* buttonX = nullptr;
+                const IElementMapper* buttonY = nullptr;
+                const IElementMapper* buttonLB = nullptr;
+                const IElementMapper* buttonRB = nullptr;
+                const IElementMapper* buttonBack = nullptr;
+                const IElementMapper* buttonStart = nullptr;
+                const IElementMapper* buttonLS = nullptr;
+                const IElementMapper* buttonRS = nullptr;
             };
 
             /// Dual representation of a controller element map.
@@ -87,6 +87,12 @@ namespace Xidi
             /// Requires that a mapper be specified for each controller element.
             /// For controller elements that are not used, `nullptr` may be passed instead.
             Mapper(const std::wstring_view name, const SElementMap& elements);
+
+            /// Copy constructor. Should never be invoked.
+            Mapper(const Mapper& other) = delete;
+            
+            /// Default destructor.
+            ~Mapper(void);
 
 
             // -------- CLASS METHODS -------------------------------------- //

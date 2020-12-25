@@ -90,40 +90,14 @@ namespace Xidi
         };
 
 
-        // -------- MAPPERS ------------------------------------------------ //
-        // This section defines the mappers known to Xidi.
-
-        static const Mapper kStandardGamepadMapper(L"StandardGamepad", {
-            .stickLeftX = new AxisMapper(EAxis::X),
-            .stickLeftY = new AxisMapper(EAxis::Y),
-            .stickRightX = new AxisMapper(EAxis::Z),
-            .stickRightY =  new AxisMapper(EAxis::RotZ),
-            .dpadUp = new PovMapper(EPov::Up),
-            .dpadDown = new PovMapper(EPov::Down),
-            .dpadLeft = new PovMapper(EPov::Left),
-            .dpadRight = new PovMapper(EPov::Right),
-            .triggerLT = new ButtonMapper(EButton::B7),
-            .triggerRT = new ButtonMapper(EButton::B8),
-            .buttonA = new ButtonMapper(EButton::B1),
-            .buttonB = new ButtonMapper(EButton::B2),
-            .buttonX = new ButtonMapper(EButton::B3),
-            .buttonY = new ButtonMapper(EButton::B4),
-            .buttonLB = new ButtonMapper(EButton::B5),
-            .buttonRB = new ButtonMapper(EButton::B6),
-            .buttonBack = new ButtonMapper(EButton::B9),
-            .buttonStart = new ButtonMapper(EButton::B10),
-            .buttonLS = new ButtonMapper(EButton::B11),
-            .buttonRS = new ButtonMapper(EButton::B12)
-        });
-
-
         // -------- INTERNAL FUNCTIONS ------------------------------------- //
 
         /// Derives the capabilities of the controller that is described by the specified element mappers in aggregate.
         /// Number of axes is determined as the total number of unique axes on the virtual controller to which element mappers contribute.
         /// Number of buttons is determined by looking at the highest button number to which element mappers contribute.
         /// Presence or absence of a POV is determined by whether or not any element mappers contribute to a POV direction, even if not all POV directions have a contribution.
-        /// @param [in] map 
+        /// @param [in] elements Per-element controller map.
+        /// @return Virtual controller capabilities as derived from the per-element map in aggregate.
         static SCapabilities DeriveCapabilitiesFromElementMap(const Mapper::UElementMap& elements)
         {
             SCapabilities capabilities;
@@ -179,6 +153,17 @@ namespace Xidi
             MapperRegistry::GetInstance().RegisterMapper(name, this);
         }
 
+        // --------
+
+        Mapper::~Mapper(void)
+        {
+            for (int i = 0; i < _countof(elements.all); ++i)
+            {
+                if (nullptr != elements.all[i])
+                    delete elements.all[i];
+            }
+        }
+
 
         // -------- CLASS METHODS ------------------------------------------ //
         // See "ControllerMapper.h" for documentation.
@@ -222,5 +207,123 @@ namespace Xidi
             if (nullptr != elements.named.buttonLS) elements.named.buttonLS->ContributeFromButtonValue(controllerState, (0 != (xinputState.wButtons & XINPUT_GAMEPAD_LEFT_THUMB)));
             if (nullptr != elements.named.buttonRS) elements.named.buttonRS->ContributeFromButtonValue(controllerState, (0 != (xinputState.wButtons & XINPUT_GAMEPAD_RIGHT_THUMB)));
         }
+
+
+        // -------- MAPPERS ------------------------------------------------ //
+
+        /// Defines all known mapper types, one element per type.
+        /// The first element is the default mapper.
+        static const Mapper kMappers[] = {
+            Mapper(L"StandardGamepad", {
+                .stickLeftX = new AxisMapper(EAxis::X),
+                .stickLeftY = new AxisMapper(EAxis::Y),
+                .stickRightX = new AxisMapper(EAxis::Z),
+                .stickRightY = new AxisMapper(EAxis::RotZ),
+                .dpadUp = new PovMapper(EPov::Up),
+                .dpadDown = new PovMapper(EPov::Down),
+                .dpadLeft = new PovMapper(EPov::Left),
+                .dpadRight = new PovMapper(EPov::Right),
+                .triggerLT = new ButtonMapper(EButton::B7),
+                .triggerRT = new ButtonMapper(EButton::B8),
+                .buttonA = new ButtonMapper(EButton::B1),
+                .buttonB = new ButtonMapper(EButton::B2),
+                .buttonX = new ButtonMapper(EButton::B3),
+                .buttonY = new ButtonMapper(EButton::B4),
+                .buttonLB = new ButtonMapper(EButton::B5),
+                .buttonRB = new ButtonMapper(EButton::B6),
+                .buttonBack = new ButtonMapper(EButton::B9),
+                .buttonStart = new ButtonMapper(EButton::B10),
+                .buttonLS = new ButtonMapper(EButton::B11),
+                .buttonRS = new ButtonMapper(EButton::B12)
+            }),
+            Mapper(L"DigitalGamepad", {
+                .stickLeftX = new DigitalAxisMapper(EAxis::X),
+                .stickLeftY = new DigitalAxisMapper(EAxis::Y),
+                .stickRightX = new DigitalAxisMapper(EAxis::Z),
+                .stickRightY = new DigitalAxisMapper(EAxis::RotZ),
+                .dpadUp = new DigitalAxisMapper(EAxis::Y, AxisMapper::EDirection::Negative),
+                .dpadDown = new DigitalAxisMapper(EAxis::Y, AxisMapper::EDirection::Positive),
+                .dpadLeft = new DigitalAxisMapper(EAxis::X, AxisMapper::EDirection::Negative),
+                .dpadRight = new DigitalAxisMapper(EAxis::X, AxisMapper::EDirection::Positive),
+                .triggerLT = new ButtonMapper(EButton::B7),
+                .triggerRT = new ButtonMapper(EButton::B8),
+                .buttonA = new ButtonMapper(EButton::B1),
+                .buttonB = new ButtonMapper(EButton::B2),
+                .buttonX = new ButtonMapper(EButton::B3),
+                .buttonY = new ButtonMapper(EButton::B4),
+                .buttonLB = new ButtonMapper(EButton::B5),
+                .buttonRB = new ButtonMapper(EButton::B6),
+                .buttonBack = new ButtonMapper(EButton::B9),
+                .buttonStart = new ButtonMapper(EButton::B10),
+                .buttonLS = new ButtonMapper(EButton::B11),
+                .buttonRS = new ButtonMapper(EButton::B12)
+            }),
+            Mapper(L"ExtendedGamepad", {
+                .stickLeftX = new AxisMapper(EAxis::X),
+                .stickLeftY = new AxisMapper(EAxis::Y),
+                .stickRightX = new AxisMapper(EAxis::Z),
+                .stickRightY = new AxisMapper(EAxis::RotZ),
+                .dpadUp = new PovMapper(EPov::Up),
+                .dpadDown = new PovMapper(EPov::Down),
+                .dpadLeft = new PovMapper(EPov::Left),
+                .dpadRight = new PovMapper(EPov::Right),
+                .triggerLT = new AxisMapper(EAxis::RotX),
+                .triggerRT = new AxisMapper(EAxis::RotY),
+                .buttonA = new ButtonMapper(EButton::B1),
+                .buttonB = new ButtonMapper(EButton::B2),
+                .buttonX = new ButtonMapper(EButton::B3),
+                .buttonY = new ButtonMapper(EButton::B4),
+                .buttonLB = new ButtonMapper(EButton::B5),
+                .buttonRB = new ButtonMapper(EButton::B6),
+                .buttonBack = new ButtonMapper(EButton::B7),
+                .buttonStart = new ButtonMapper(EButton::B8),
+                .buttonLS = new ButtonMapper(EButton::B9),
+                .buttonRS = new ButtonMapper(EButton::B10)
+            }),
+            Mapper(L"XInputNative", {
+                .stickLeftX = new AxisMapper(EAxis::X),
+                .stickLeftY = new AxisMapper(EAxis::Y),
+                .stickRightX = new AxisMapper(EAxis::RotX),
+                .stickRightY = new AxisMapper(EAxis::RotY),
+                .dpadUp = new PovMapper(EPov::Up),
+                .dpadDown = new PovMapper(EPov::Down),
+                .dpadLeft = new PovMapper(EPov::Left),
+                .dpadRight = new PovMapper(EPov::Right),
+                .triggerLT = new AxisMapper(EAxis::Z),
+                .triggerRT = new AxisMapper(EAxis::RotZ),
+                .buttonA = new ButtonMapper(EButton::B1),
+                .buttonB = new ButtonMapper(EButton::B2),
+                .buttonX = new ButtonMapper(EButton::B3),
+                .buttonY = new ButtonMapper(EButton::B4),
+                .buttonLB = new ButtonMapper(EButton::B5),
+                .buttonRB = new ButtonMapper(EButton::B6),
+                .buttonBack = new ButtonMapper(EButton::B7),
+                .buttonStart = new ButtonMapper(EButton::B8),
+                .buttonLS = new ButtonMapper(EButton::B9),
+                .buttonRS = new ButtonMapper(EButton::B10)
+            }),
+            Mapper(L"XInputSharedTriggers", {
+                .stickLeftX = new AxisMapper(EAxis::X),
+                .stickLeftY = new AxisMapper(EAxis::Y),
+                .stickRightX = new AxisMapper(EAxis::RotX),
+                .stickRightY = new AxisMapper(EAxis::RotY),
+                .dpadUp = new PovMapper(EPov::Up),
+                .dpadDown = new PovMapper(EPov::Down),
+                .dpadLeft = new PovMapper(EPov::Left),
+                .dpadRight = new PovMapper(EPov::Right),
+                .triggerLT = new AxisMapper(EAxis::Z, AxisMapper::EDirection::Positive),
+                .triggerRT = new AxisMapper(EAxis::Z, AxisMapper::EDirection::Negative),
+                .buttonA = new ButtonMapper(EButton::B1),
+                .buttonB = new ButtonMapper(EButton::B2),
+                .buttonX = new ButtonMapper(EButton::B3),
+                .buttonY = new ButtonMapper(EButton::B4),
+                .buttonLB = new ButtonMapper(EButton::B5),
+                .buttonRB = new ButtonMapper(EButton::B6),
+                .buttonBack = new ButtonMapper(EButton::B7),
+                .buttonStart = new ButtonMapper(EButton::B8),
+                .buttonLS = new ButtonMapper(EButton::B9),
+                .buttonRS = new ButtonMapper(EButton::B10)
+            })
+        };
     }
 }
