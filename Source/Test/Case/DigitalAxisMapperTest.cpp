@@ -51,7 +51,7 @@ namespace XidiTest
 
         for (int32_t analogValue = kAnalogValueMin; analogValue <= kAnalogValueMax; ++analogValue)
         {
-            const DigitalAxisMapper mapper(kTargetAxis);
+            constexpr DigitalAxisMapper mapper(kTargetAxis);
 
             SState possibleExpectedStates[2];
             ZeroMemory(possibleExpectedStates, sizeof(possibleExpectedStates));
@@ -91,7 +91,7 @@ namespace XidiTest
         // The negative part of the axis should be totally ignored.
         for (int32_t analogValue = kAnalogValueMin; analogValue < kAnalogValueNeutral; ++analogValue)
         {
-            const DigitalAxisMapper mapper(kTargetAxis, AxisMapper::EDirection::Positive);
+            constexpr DigitalAxisMapper mapper(kTargetAxis, AxisMapper::EDirection::Positive);
 
             SState expectedState;
             ZeroMemory(&expectedState, sizeof(expectedState));
@@ -106,12 +106,12 @@ namespace XidiTest
 
         // The positive part of the axis should be converted into either neutral or extreme positive.
         // Logic is the same as the whole-axis case.
-        constexpr int32_t kAllowedValues[] = { kAnalogValueNeutral, kAnalogValueMax, kAnalogValueMax };
+        constexpr int32_t kAllowedValues[] = {kAnalogValueNeutral, kAnalogValueMax, kAnalogValueMax};
         int currentAllowedIndex = 0;
         
         for (int32_t analogValue = kAnalogValueNeutral; analogValue <= kAnalogValueMax; ++analogValue)
         {
-            const DigitalAxisMapper mapper(kTargetAxis, AxisMapper::EDirection::Positive);
+            constexpr DigitalAxisMapper mapper(kTargetAxis, AxisMapper::EDirection::Positive);
 
             SState possibleExpectedStates[2];
             ZeroMemory(possibleExpectedStates, sizeof(possibleExpectedStates));
@@ -151,7 +151,7 @@ namespace XidiTest
         // The positive part of the axis should be totally ignored.
         for (int32_t analogValue = (1 + kAnalogValueNeutral); analogValue <= kAnalogValueMax; ++analogValue)
         {
-            const DigitalAxisMapper mapper(kTargetAxis, AxisMapper::EDirection::Negative);
+            constexpr DigitalAxisMapper mapper(kTargetAxis, AxisMapper::EDirection::Negative);
 
             SState expectedState;
             ZeroMemory(&expectedState, sizeof(expectedState));
@@ -166,12 +166,12 @@ namespace XidiTest
 
         // The positive part of the axis should be converted into either neutral or extreme positive.
         // Logic is the same as the whole-axis case.
-        constexpr int32_t kAllowedValues[] = { kAnalogValueMin, kAnalogValueNeutral, kAnalogValueNeutral };
+        constexpr int32_t kAllowedValues[] = {kAnalogValueMin, kAnalogValueNeutral, kAnalogValueNeutral};
         int currentAllowedIndex = 0;
 
         for (int32_t analogValue = kAnalogValueMin; analogValue <= kAnalogValueNeutral; ++analogValue)
         {
-            const DigitalAxisMapper mapper(kTargetAxis, AxisMapper::EDirection::Negative);
+            constexpr DigitalAxisMapper mapper(kTargetAxis, AxisMapper::EDirection::Negative);
 
             SState possibleExpectedStates[2];
             ZeroMemory(possibleExpectedStates, sizeof(possibleExpectedStates));
@@ -269,7 +269,7 @@ namespace XidiTest
 
         for (bool buttonIsPressed : kButtonStates)
         {
-            const DigitalAxisMapper mapper(kTargetAxis);
+            constexpr DigitalAxisMapper mapper(kTargetAxis);
 
             SState expectedState;
             ZeroMemory(&expectedState, sizeof(expectedState));
@@ -291,7 +291,7 @@ namespace XidiTest
 
         for (bool buttonIsPressed : kButtonStates)
         {
-            const DigitalAxisMapper mapper(kTargetAxis, AxisMapper::EDirection::Positive);
+            constexpr DigitalAxisMapper mapper(kTargetAxis, AxisMapper::EDirection::Positive);
 
             SState expectedState;
             ZeroMemory(&expectedState, sizeof(expectedState));
@@ -309,11 +309,11 @@ namespace XidiTest
     TEST_CASE(DigitalAxisMapper_ContributeFromButtonValue_Nominal_HalfAxisNegative)
     {
         constexpr EAxis kTargetAxis = EAxis::Y;
-        constexpr bool kButtonStates[] = { false, true };
+        constexpr bool kButtonStates[] = {false, true};
 
         for (bool buttonIsPressed : kButtonStates)
         {
-            const DigitalAxisMapper mapper(kTargetAxis, AxisMapper::EDirection::Negative);
+            constexpr DigitalAxisMapper mapper(kTargetAxis, AxisMapper::EDirection::Negative);
 
             SState expectedState;
             ZeroMemory(&expectedState, sizeof(expectedState));
@@ -332,7 +332,7 @@ namespace XidiTest
     TEST_CASE(DigitalAxisMapper_ContributeFromButtonValue_ConstructiveInterference)
     {
         constexpr EAxis kTargetAxis = EAxis::Z;
-        constexpr bool kButtonStates[] = { false, true };
+        constexpr bool kButtonStates[] = {false, true};
 
         for (bool buttonIsPressed : kButtonStates)
         {
@@ -403,7 +403,7 @@ namespace XidiTest
 
         for (int32_t triggerValue = kTriggerValueMin; triggerValue <= kTriggerValueMax; ++triggerValue)
         {
-            const DigitalAxisMapper mapper(kTargetAxis);
+            constexpr DigitalAxisMapper mapper(kTargetAxis);
 
             SState possibleExpectedStates[2];
             ZeroMemory(possibleExpectedStates, sizeof(possibleExpectedStates));
@@ -445,7 +445,7 @@ namespace XidiTest
 
         for (int32_t triggerValue = kTriggerValueMin; triggerValue <= kTriggerValueMax; ++triggerValue)
         {
-            const DigitalAxisMapper mapper(kTargetAxis, AxisMapper::EDirection::Positive);
+            constexpr DigitalAxisMapper mapper(kTargetAxis, AxisMapper::EDirection::Positive);
 
             SState possibleExpectedStates[2];
             ZeroMemory(possibleExpectedStates, sizeof(possibleExpectedStates));
@@ -487,7 +487,7 @@ namespace XidiTest
 
         for (int32_t triggerValue = kTriggerValueMin; triggerValue <= kTriggerValueMax; ++triggerValue)
         {
-            const DigitalAxisMapper mapper(kTargetAxis, AxisMapper::EDirection::Negative);
+            constexpr DigitalAxisMapper mapper(kTargetAxis, AxisMapper::EDirection::Negative);
 
             SState possibleExpectedStates[2];
             ZeroMemory(possibleExpectedStates, sizeof(possibleExpectedStates));
