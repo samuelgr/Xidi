@@ -34,56 +34,111 @@ namespace XidiTest
             TEST_ASSERT(EElementType::Axis == mapper.GetTargetElementType());
             TEST_ASSERT(i == mapper.GetTargetElementIndex());
         }
+    }
 
-        TEST_PASSED;
+    // Verifies the nominal behavior in which an axis mapper is asked to contribute some arbitrary analog value to an axis.
+    // Sweeps the entire range of possible analog values.
+    TEST_CASE(AxisMapper_ContributeFromAnalogValue_Nominal_EntireAxis)
+    {
+        constexpr EAxis kTargetAxis = EAxis::RotX;
+
+        for (int32_t analogValue = kAnalogValueMin; analogValue <= kAnalogValueMax; ++analogValue)
+        {
+            const AxisMapper mapper(kTargetAxis);
+
+            SState expectedState;
+            ZeroMemory(&expectedState, sizeof(expectedState));
+            expectedState.axis[(int)kTargetAxis] = analogValue;
+
+            SState actualState;
+            ZeroMemory(&actualState, sizeof(actualState));
+            mapper.ContributeFromAnalogValue(&actualState, (int16_t)analogValue);
+
+            TEST_ASSERT(actualState == expectedState);
+        }
+    }
+
+    // Same as above, but for a half axis in the positive direction.
+    TEST_CASE(AxisMapper_ContributeFromAnalogValue_Nominal_HalfAxisPositive)
+    {
+        constexpr EAxis kTargetAxis = EAxis::RotY;
+        constexpr double kStepSize = (double)(kAnalogValueMax - kAnalogValueNeutral) / (double)(kAnalogValueMax - kAnalogValueMin);
+
+        for (int32_t analogValue = kAnalogValueMin; analogValue <= kAnalogValueMax; ++analogValue)
+        {
+            const AxisMapper mapper(kTargetAxis, AxisMapper::EDirection::Positive);
+            const double analogValueDisplacement = (double)analogValue - (double)kAnalogValueMin;
+
+            SState expectedState;
+            ZeroMemory(&expectedState, sizeof(expectedState));
+            expectedState.axis[(int)kTargetAxis] = kAnalogValueNeutral + (int32_t)(analogValueDisplacement * kStepSize);
+
+            SState actualState;
+            ZeroMemory(&actualState, sizeof(actualState));
+            mapper.ContributeFromAnalogValue(&actualState, (int16_t)analogValue);
+
+            TEST_ASSERT(actualState == expectedState);
+        }
+    }
+
+    // Same as above, but for a half axis in the negative direction.
+    TEST_CASE(AxisMapper_ContributeFromAnalogValue_Nominal_HalfAxisNegative)
+    {
+        constexpr EAxis kTargetAxis = EAxis::RotZ;
+        constexpr double kStepSize = (double)(kAnalogValueMax - kAnalogValueNeutral) / (double)(kAnalogValueMax - kAnalogValueMin);
+
+        for (int32_t analogValue = kAnalogValueMin; analogValue <= kAnalogValueMax; ++analogValue)
+        {
+            const AxisMapper mapper(kTargetAxis, AxisMapper::EDirection::Negative);
+            const double analogValueDisplacement = (double)analogValue - (double)kAnalogValueMin;
+
+            SState expectedState;
+            ZeroMemory(&expectedState, sizeof(expectedState));
+            expectedState.axis[(int)kTargetAxis] = kAnalogValueMin + (int32_t)(analogValueDisplacement * kStepSize);
+
+            SState actualState;
+            ZeroMemory(&actualState, sizeof(actualState));
+            mapper.ContributeFromAnalogValue(&actualState, (int32_t)analogValue);
+
+            TEST_ASSERT(actualState == expectedState);
+        }
     }
     
-    // Creates one axis mapper for each of several axes.
-    // Verifies that they each contribute the correct value to the expected axis.
-    TEST_CASE(AxisMapper_ContributeFromAnalogValue_Nominal)
-    {
-        constexpr AxisMapper mapperX(EAxis::X);
-        constexpr AxisMapper mapperY(EAxis::Y);
-        constexpr AxisMapper mapperZ(EAxis::Z);
-        constexpr AxisMapper mapperRotX(EAxis::RotX);
-        constexpr AxisMapper mapperRotY(EAxis::RotY);
-        constexpr AxisMapper mapperRotZ(EAxis::RotZ);
-
-        constexpr int16_t kValueX = 110;
-        constexpr int16_t kValueY = 2202;
-        constexpr int16_t kValueZ = 303;
-        constexpr int16_t kValueRotX = -4040;
-        constexpr int16_t kValueRotY = -555;
-        constexpr int16_t kValueRotZ = -6600;
-
-        SState expectedState;
-        ZeroMemory(&expectedState, sizeof(expectedState));
-        expectedState.axis[(int)EAxis::X] = kValueX;
-        expectedState.axis[(int)EAxis::Y] = kValueY;
-        expectedState.axis[(int)EAxis::Z] = kValueZ;
-        expectedState.axis[(int)EAxis::RotX] = kValueRotX;
-        expectedState.axis[(int)EAxis::RotY] = kValueRotY;
-        expectedState.axis[(int)EAxis::RotZ] = kValueRotZ;
-
-        SState actualState;
-        ZeroMemory(&actualState, sizeof(actualState));
-        mapperX.ContributeFromAnalogValue(&actualState, kValueX);
-        mapperY.ContributeFromAnalogValue(&actualState, kValueY);
-        mapperZ.ContributeFromAnalogValue(&actualState, kValueZ);
-        mapperRotX.ContributeFromAnalogValue(&actualState, kValueRotX);
-        mapperRotY.ContributeFromAnalogValue(&actualState, kValueRotY);
-        mapperRotZ.ContributeFromAnalogValue(&actualState, kValueRotZ);
-
-        TEST_PASSED_IF(actualState == expectedState);
-    }
-
     // Verifies correct saturation behavior of an axis mapper when it contributes to an axis.
     // There is a very slight difference in the range of values an XInput controller can report versus what a virtual controller reports.
     // The point of this test is to make sure that axis mappers properly account for that difference.
-    TEST_CASE(AxisMapper_ContributeFromAnalogValue_Saturation)
+    TEST_CASE(AxisMapper_ContributeFromAnalogValue_Saturation_EntireAxis)
     {
-        constexpr AxisMapper mapperExtremePositive(EAxis::X);
-        constexpr AxisMapper mapperExtremeNegative(EAxis::Y);
+        constexpr EAxis kTargetAxisExtremePositive = EAxis::X;
+        constexpr EAxis kTargetAxisExtremeNegative = EAxis::Y;
+        
+        constexpr AxisMapper mapperExtremePositive(kTargetAxisExtremePositive);
+        constexpr AxisMapper mapperExtremeNegative(kTargetAxisExtremeNegative);
+
+        constexpr int16_t kValueExtremePositive = INT16_MAX;
+        constexpr int16_t kValueExtremeNegative = INT16_MIN;
+
+        SState expectedState;
+        ZeroMemory(&expectedState, sizeof(expectedState));
+        expectedState.axis[(int)kTargetAxisExtremePositive] = kAnalogValueMax;
+        expectedState.axis[(int)kTargetAxisExtremeNegative] = kAnalogValueMin;
+
+        SState actualState;
+        ZeroMemory(&actualState, sizeof(actualState));
+        mapperExtremePositive.ContributeFromAnalogValue(&actualState, kValueExtremePositive);
+        mapperExtremeNegative.ContributeFromAnalogValue(&actualState, kValueExtremeNegative);
+
+        TEST_ASSERT(actualState == expectedState);
+    }
+
+    // Same as above, but for a half axis in the positive direction.
+    TEST_CASE(AxisMapper_ContributeFromAnalogValue_Saturation_HalfAxisPositive)
+    {
+        constexpr EAxis kTargetAxisExtremePositive = EAxis::X;
+        constexpr EAxis kTargetAxisExtremeNegative = EAxis::Y;
+        
+        constexpr AxisMapper mapperExtremePositive(kTargetAxisExtremePositive, AxisMapper::EDirection::Positive);
+        constexpr AxisMapper mapperExtremeNegative(kTargetAxisExtremeNegative, AxisMapper::EDirection::Positive);
 
         constexpr int16_t kValueExtremePositive = INT16_MAX;
         constexpr int16_t kValueExtremeNegative = INT16_MIN;
@@ -91,20 +146,44 @@ namespace XidiTest
         SState expectedState;
         ZeroMemory(&expectedState, sizeof(expectedState));
         expectedState.axis[(int)EAxis::X] = kAnalogValueMax;
-        expectedState.axis[(int)EAxis::Y] = kAnalogValueMin;
+        expectedState.axis[(int)kTargetAxisExtremeNegative] = kAnalogValueNeutral;
 
         SState actualState;
         ZeroMemory(&actualState, sizeof(actualState));
         mapperExtremePositive.ContributeFromAnalogValue(&actualState, kValueExtremePositive);
         mapperExtremeNegative.ContributeFromAnalogValue(&actualState, kValueExtremeNegative);
 
-        TEST_PASSED_IF(actualState == expectedState);
+        TEST_ASSERT(actualState == expectedState);
     }
 
-    // Creates multiple axis mappers on the same axis.
-    // Verifies that they together correctly aggregate their contributions to the virtual controller axis.
-    // It is possible that the result of aggregating all contributing axis mappers exceeds the maximum possible analog axis value.
-    // This is acceptable, as it is not the job of the individual axis mapper to ensure overall value consistency on the controller state.
+    // Same as above, but for a half axis in the negative direction.
+    TEST_CASE(AxisMapper_ContributeFromAnalogValue_Saturation_HalfAxisNegative)
+    {
+        constexpr EAxis kTargetAxisExtremePositive = EAxis::X;
+        constexpr EAxis kTargetAxisExtremeNegative = EAxis::Y;
+        
+        constexpr AxisMapper mapperExtremePositive(kTargetAxisExtremePositive, AxisMapper::EDirection::Negative);
+        constexpr AxisMapper mapperExtremeNegative(kTargetAxisExtremeNegative, AxisMapper::EDirection::Negative);
+
+        constexpr int16_t kValueExtremePositive = INT16_MAX;
+        constexpr int16_t kValueExtremeNegative = INT16_MIN;
+
+        SState expectedState;
+        ZeroMemory(&expectedState, sizeof(expectedState));
+        expectedState.axis[(int)kTargetAxisExtremePositive] = kAnalogValueNeutral;
+        expectedState.axis[(int)kTargetAxisExtremeNegative] = kAnalogValueMin;
+
+        SState actualState;
+        ZeroMemory(&actualState, sizeof(actualState));
+        mapperExtremePositive.ContributeFromAnalogValue(&actualState, kValueExtremePositive);
+        mapperExtremeNegative.ContributeFromAnalogValue(&actualState, kValueExtremeNegative);
+
+        TEST_ASSERT(actualState == expectedState);
+    }
+
+    // Verifies correct behavior when multiple axis mappers all contribute to the same virtual axis.
+    // The aggregated contribution should be the sum of the values contributed by each axis mapper.
+    // It is possible and acceptable that the result of aggregating all contributing axis mappers exceeds the maximum possible analog axis value.
     TEST_CASE(AxisMapper_ContributeFromAnalogValue_ConstructiveInterference)
     {
         constexpr int16_t kAnalogValue = 30000;
@@ -123,22 +202,250 @@ namespace XidiTest
         ZeroMemory(&expectedState, sizeof(expectedState));
         expectedState.axis[(int)kTargetAxis] = (int32_t)kAnalogValue * _countof(mappers);
 
-
         SState actualState;
         ZeroMemory(&actualState, sizeof(actualState));
-        for (int i = 0; i < _countof(mappers); ++i)
-            mappers[i].ContributeFromAnalogValue(&actualState, kAnalogValue);
+        for (auto& mapper : mappers)
+            mapper.ContributeFromAnalogValue(&actualState, kAnalogValue);
 
-        TEST_PASSED_IF(actualState == expectedState);
+        TEST_ASSERT(actualState == expectedState);
     }
 
-    // Creates multiple axis mappers on the same axis.
-    // Verifies that they together correctly aggregate their contributions to the virtual controller axis.
-    // In this case, the sum of all contributions is zero.
+    // Verifies correct behavior when multiple axis mappers all contribute to the same virtual axis but the net contribution sums to the neutral position.
     TEST_CASE(AxisMapper_ContributeFromAnalogValue_DestructiveInterference)
     {
         constexpr int16_t kAnalogValue = 10;
         constexpr EAxis kTargetAxis = EAxis::RotY;
+
+        constexpr AxisMapper mappersPositive[] = {
+            AxisMapper(kTargetAxis),
+            AxisMapper(kTargetAxis),
+            AxisMapper(kTargetAxis)
+        };
+
+        constexpr AxisMapper mappersNegative[_countof(mappersPositive)] = {
+            AxisMapper(kTargetAxis),
+            AxisMapper(kTargetAxis),
+            AxisMapper(kTargetAxis)
+        };
+
+        SState expectedState;
+        ZeroMemory(&expectedState, sizeof(expectedState));
+        expectedState.axis[(int)kTargetAxis] = kAnalogValueNeutral;
+
+        SState actualState;
+        ZeroMemory(&actualState, sizeof(actualState));
+        for (auto& mapper : mappersPositive)
+            mapper.ContributeFromAnalogValue(&actualState, kAnalogValue);
+        for (auto& mapper : mappersNegative)
+            mapper.ContributeFromAnalogValue(&actualState, -kAnalogValue);
+
+        TEST_ASSERT(actualState == expectedState);
+    }
+    
+    // Verifies the nominal behavior in which an axis mapper is asked to contribute some arbitrary button press state to an axis.
+    TEST_CASE(AxisMapper_ContributeFromButtonValue_Nominal_EntireAxis)
+    {
+        constexpr EAxis kTargetAxis = EAxis::X;
+        constexpr bool kButtonStates[] = {false, true};
+
+        for (bool buttonIsPressed : kButtonStates)
+        {
+            const AxisMapper mapper(kTargetAxis);
+
+            SState expectedState;
+            ZeroMemory(&expectedState, sizeof(expectedState));
+            expectedState.axis[(int)kTargetAxis] = (true == buttonIsPressed ? kAnalogValueMax : kAnalogValueMin);
+
+            SState actualState;
+            ZeroMemory(&actualState, sizeof(actualState));
+            mapper.ContributeFromButtonValue(&actualState, buttonIsPressed);
+
+            TEST_ASSERT(actualState == expectedState);
+        }
+    }
+
+    // Same as above, but for a half axis in the positive direction.
+    TEST_CASE(AxisMapper_ContributeFromButtonValue_Nominal_HalfAxisPositive)
+    {
+        constexpr EAxis kTargetAxis = EAxis::Y;
+        constexpr bool kButtonStates[] = {false, true};
+
+        for (bool buttonIsPressed : kButtonStates)
+        {
+            const AxisMapper mapper(kTargetAxis, AxisMapper::EDirection::Positive);
+
+            SState expectedState;
+            ZeroMemory(&expectedState, sizeof(expectedState));
+            expectedState.axis[(int)kTargetAxis] = (true == buttonIsPressed ? kAnalogValueMax : kAnalogValueNeutral);
+
+            SState actualState;
+            ZeroMemory(&actualState, sizeof(actualState));
+            mapper.ContributeFromButtonValue(&actualState, buttonIsPressed);
+
+            TEST_ASSERT(actualState == expectedState);
+        }
+    }
+
+    // Same as above, but for a half axis in the negative direction.
+    TEST_CASE(AxisMapper_ContributeFromButtonValue_Nominal_HalfAxisNegative)
+    {
+        constexpr EAxis kTargetAxis = EAxis::Y;
+        constexpr bool kButtonStates[] = { false, true };
+
+        for (bool buttonIsPressed : kButtonStates)
+        {
+            const AxisMapper mapper(kTargetAxis, AxisMapper::EDirection::Negative);
+
+            SState expectedState;
+            ZeroMemory(&expectedState, sizeof(expectedState));
+            expectedState.axis[(int)kTargetAxis] = (true == buttonIsPressed ? kAnalogValueMin : kAnalogValueNeutral);
+
+            SState actualState;
+            ZeroMemory(&actualState, sizeof(actualState));
+            mapper.ContributeFromButtonValue(&actualState, buttonIsPressed);
+
+            TEST_ASSERT(actualState == expectedState);
+        }
+    }
+
+    // Verifies correct behavior when multiple axis mappers all contribute to the same virtual axis but sourced by a button state.
+    // The aggregated contribution should be the sum of the values contributed by each axis mapper, which themselves should be extreme in one direction or another.
+    TEST_CASE(AxisMapper_ContributeFromButtonValue_ConstructiveInterference)
+    {
+        constexpr EAxis kTargetAxis = EAxis::Z;
+        constexpr bool kButtonStates[] = {false, true};
+
+        for (bool buttonIsPressed : kButtonStates)
+        {
+            constexpr AxisMapper mappers[] = {
+                AxisMapper(kTargetAxis),
+                AxisMapper(kTargetAxis),
+                AxisMapper(kTargetAxis),
+                AxisMapper(kTargetAxis),
+                AxisMapper(kTargetAxis),
+                AxisMapper(kTargetAxis)
+            };
+
+            SState expectedState;
+            ZeroMemory(&expectedState, sizeof(expectedState));
+            expectedState.axis[(int)kTargetAxis] = (true == buttonIsPressed ? kAnalogValueMax : kAnalogValueMin) * _countof(mappers);
+
+            SState actualState;
+            ZeroMemory(&actualState, sizeof(actualState));
+            for (auto& mapper : mappers)
+                mapper.ContributeFromButtonValue(&actualState, buttonIsPressed);
+
+            TEST_ASSERT(actualState == expectedState);
+        }
+    }
+
+    // Verifies correct behavior when multiple axis mappers all contribute to the same virtual axis but sourced by a button state.
+    // In this case, the aggregate contribution sums to a net of the neutral position (i.e. there are as many button states "pressed" as "not pressed").
+    TEST_CASE(AxisMapper_ContributeFromButtonValue_DestructiveInterference)
+    {
+        constexpr EAxis kTargetAxis = EAxis::Z;
+
+        constexpr AxisMapper mappersPressed[] = {
+            AxisMapper(kTargetAxis),
+            AxisMapper(kTargetAxis),
+            AxisMapper(kTargetAxis)
+        };
+
+        constexpr AxisMapper mappersNotPressed[_countof(mappersPressed)] = {
+            AxisMapper(kTargetAxis),
+            AxisMapper(kTargetAxis),
+            AxisMapper(kTargetAxis)
+        };
+
+        SState expectedState;
+        ZeroMemory(&expectedState, sizeof(expectedState));
+        expectedState.axis[(int)kTargetAxis] = kAnalogValueNeutral;
+
+        SState actualState;
+        ZeroMemory(&actualState, sizeof(actualState));
+        for (auto& mapper : mappersPressed)
+            mapper.ContributeFromButtonValue(&actualState, true);
+        for (auto& mapper : mappersNotPressed)
+            mapper.ContributeFromButtonValue(&actualState, false);
+
+        TEST_ASSERT(actualState == expectedState);
+    }
+
+    // Verifies the nominal behavior in which an axis mapper is asked to contribute some arbitrary trigger value to an axis.
+    // Sweeps the entire range of possible trigger values.
+    TEST_CASE(AxisMapper_ContributeFromTriggerValue_Nominal_EntireAxis)
+    {
+        constexpr EAxis kTargetAxis = EAxis::RotX;
+        constexpr double kStepSize = (double)(kAnalogValueMax - kAnalogValueMin) / (double)(kTriggerValueMax - kTriggerValueMin);
+
+        for (int32_t triggerValue = kTriggerValueMin; triggerValue <= kTriggerValueMax; ++triggerValue)
+        {
+            const AxisMapper mapper(kTargetAxis);
+            const double triggerValueDisplacement = (double)triggerValue - (double)kTriggerValueMin;
+
+            SState expectedState;
+            ZeroMemory(&expectedState, sizeof(expectedState));
+            expectedState.axis[(int)kTargetAxis] = kAnalogValueMin + (int32_t)(triggerValueDisplacement * kStepSize);
+
+            SState actualState;
+            ZeroMemory(&actualState, sizeof(actualState));
+            mapper.ContributeFromTriggerValue(&actualState, (uint8_t)triggerValue);
+
+            TEST_ASSERT(actualState == expectedState);
+        }
+    }
+
+    // Same as above, but for a half axis in the positive direction.
+    TEST_CASE(AxisMapper_ContributeFromTriggerValue_Nominal_HalfAxisPositive)
+    {
+        constexpr EAxis kTargetAxis = EAxis::RotY;
+        constexpr double kStepSize = (double)(kAnalogValueMax - kAnalogValueNeutral) / (double)(kTriggerValueMax - kTriggerValueMin);
+
+        for (int32_t triggerValue = kTriggerValueMin; triggerValue <= kTriggerValueMax; ++triggerValue)
+        {
+            const AxisMapper mapper(kTargetAxis, AxisMapper::EDirection::Positive);
+            const double triggerValueDisplacement = (double)triggerValue - (double)kTriggerValueMin;
+
+            SState expectedState;
+            ZeroMemory(&expectedState, sizeof(expectedState));
+            expectedState.axis[(int)kTargetAxis] = kAnalogValueNeutral + (int32_t)(triggerValueDisplacement * kStepSize);
+
+            SState actualState;
+            ZeroMemory(&actualState, sizeof(actualState));
+            mapper.ContributeFromTriggerValue(&actualState, (uint8_t)triggerValue);
+
+            TEST_ASSERT(actualState == expectedState);
+        }
+    }
+
+    // Same as above, but for a half axis in the negative direction.
+    TEST_CASE(AxisMapper_ContributeFromTriggerValue_Nominal_HalfAxisNegative)
+    {
+        constexpr EAxis kTargetAxis = EAxis::RotZ;
+        constexpr double kStepSize = (double)(kAnalogValueNeutral - kAnalogValueMin) / (double)(kTriggerValueMax - kTriggerValueMin);
+
+        for (int32_t triggerValue = kTriggerValueMin; triggerValue <= kTriggerValueMax; ++triggerValue)
+        {
+            const AxisMapper mapper(kTargetAxis, AxisMapper::EDirection::Negative);
+            const double triggerValueDisplacement = (double)triggerValue - (double)kTriggerValueMin;
+
+            SState expectedState;
+            ZeroMemory(&expectedState, sizeof(expectedState));
+            expectedState.axis[(int)kTargetAxis] = kAnalogValueNeutral - (int32_t)(triggerValueDisplacement * kStepSize);
+
+            SState actualState;
+            ZeroMemory(&actualState, sizeof(actualState));
+            mapper.ContributeFromTriggerValue(&actualState, (uint8_t)triggerValue);
+
+            TEST_ASSERT(actualState == expectedState);
+        }
+    }
+
+    // Verifies correct behavior when multiple axis mappers all contribute to the same virtual axis but sourced by a trigger value.
+    // The aggregated contribution should be the sum of the values contributed by each axis mapper, which themselves should be extreme positive based on the test parameters.
+    TEST_CASE(AxisMapper_ContributeFromTriggerValue_ConstructiveInterference)
+    {
+        constexpr EAxis kTargetAxis = EAxis::Z;
 
         constexpr AxisMapper mappers[] = {
             AxisMapper(kTargetAxis),
@@ -151,277 +458,45 @@ namespace XidiTest
 
         SState expectedState;
         ZeroMemory(&expectedState, sizeof(expectedState));
+        expectedState.axis[(int)kTargetAxis] = kAnalogValueMax * _countof(mappers);
 
         SState actualState;
         ZeroMemory(&actualState, sizeof(actualState));
-        for (int i = 0; i < _countof(mappers); ++i)
-        {
-            mappers[i].ContributeFromAnalogValue(&actualState, kAnalogValue);
-            mappers[i].ContributeFromAnalogValue(&actualState, -kAnalogValue);
-        }   
+        for (auto& mapper : mappers)
+            mapper.ContributeFromTriggerValue(&actualState, (uint8_t)kTriggerValueMax);
 
-        TEST_PASSED_IF(actualState == expectedState);
+        TEST_ASSERT(actualState == expectedState);
     }
 
-    // Creates multiple axis mappers, one for each of a selection of axes, each configured as a positive half-axis.
-    // Verifies that the analog reading is correctly mapped to the space of a half-axis.
-    TEST_CASE(AxisMapper_ContributeFromAnalogValue_HalfAxisPositive)
-    {
-        constexpr AxisMapper mapperX(EAxis::X, AxisMapper::EDirection::Positive);
-        constexpr AxisMapper mapperY(EAxis::Y, AxisMapper::EDirection::Positive);
-        constexpr AxisMapper mapperZ(EAxis::Z, AxisMapper::EDirection::Positive);
-
-        constexpr int16_t kValueX = kAnalogValueMin;
-        constexpr int16_t kValueY = kAnalogValueNeutral;
-        constexpr int16_t kValueZ = kAnalogValueMax;
-
-        SState expectedState;
-        ZeroMemory(&expectedState, sizeof(expectedState));
-        expectedState.axis[(int)EAxis::X] = kAnalogValueNeutral;
-        expectedState.axis[(int)EAxis::Y] = (kAnalogValueNeutral - kAnalogValueMin) >> 1;
-        expectedState.axis[(int)EAxis::Z] = kAnalogValueMax;
-
-        SState actualState;
-        ZeroMemory(&actualState, sizeof(actualState));
-        mapperX.ContributeFromAnalogValue(&actualState, kValueX);
-        mapperY.ContributeFromAnalogValue(&actualState, kValueY);
-        mapperZ.ContributeFromAnalogValue(&actualState, kValueZ);
-
-        TEST_PASSED_IF(actualState == expectedState);
-    }
-
-    // Creates multiple axis mappers, one for each of a selection of axes, each configured as a negative half-axis.
-    // Verifies that the analog reading is correctly mapped to the space of a half-axis.
-    TEST_CASE(AxisMapper_ContributeFromAnalogValue_HalfAxisNegative)
-    {
-        constexpr AxisMapper mapperX(EAxis::X, AxisMapper::EDirection::Negative);
-        constexpr AxisMapper mapperY(EAxis::Y, AxisMapper::EDirection::Negative);
-        constexpr AxisMapper mapperZ(EAxis::Z, AxisMapper::EDirection::Negative);
-
-        constexpr int16_t kValueX = kAnalogValueMin;
-        constexpr int16_t kValueY = kAnalogValueNeutral;
-        constexpr int16_t kValueZ = kAnalogValueMax;
-
-        SState expectedState;
-        ZeroMemory(&expectedState, sizeof(expectedState));
-        expectedState.axis[(int)EAxis::X] = kAnalogValueMin;
-        expectedState.axis[(int)EAxis::Y] = (kAnalogValueNeutral + kAnalogValueMin) >> 1;
-        expectedState.axis[(int)EAxis::Z] = kAnalogValueNeutral;
-
-        SState actualState;
-        ZeroMemory(&actualState, sizeof(actualState));
-        mapperX.ContributeFromAnalogValue(&actualState, kValueX);
-        mapperY.ContributeFromAnalogValue(&actualState, kValueY);
-        mapperZ.ContributeFromAnalogValue(&actualState, kValueZ);
-
-        TEST_PASSED_IF(actualState == expectedState);
-    }
-
-    // Creates multiple axis mappers, one on each whole axis, and causes values to be contributed from button presses.
-    // Verifies that they contribute either extreme negative (not pressed) or extreme positive (pressed).
-    TEST_CASE(AxisMapper_ContributeFromButtonValue_WholeAxis)
-    {
-        constexpr EAxis kTargetAxisPressed = EAxis::X;
-        constexpr EAxis kTargetAxisNotPressed = EAxis::Y;
-
-        constexpr AxisMapper mapperPressed(kTargetAxisPressed);
-        constexpr AxisMapper mapperNotPressed(kTargetAxisNotPressed);
-        
-        SState expectedState;
-        ZeroMemory(&expectedState, sizeof(expectedState));
-        expectedState.axis[(int)kTargetAxisPressed] = kAnalogValueMax;
-        expectedState.axis[(int)kTargetAxisNotPressed] = kAnalogValueMin;
-
-        SState actualState;
-        ZeroMemory(&actualState, sizeof(actualState));
-        mapperPressed.ContributeFromButtonValue(&actualState, true);
-        mapperNotPressed.ContributeFromButtonValue(&actualState, false);
-
-        TEST_PASSED_IF(actualState == expectedState);
-    }
-
-    // Creates multiple axis mappers, one on each positive half-axis, and causes values to be contributed from button presses.
-    // Verifies that they contribute either neutral (not pressed) or extreme positive (pressed).
-    TEST_CASE(AxisMapper_ContributeFromButtonValue_HalfAxisPositive)
-    {
-        constexpr EAxis kTargetAxisPressed = EAxis::X;
-        constexpr EAxis kTargetAxisNotPressed = EAxis::Y;
-
-        constexpr AxisMapper mapperPressed(kTargetAxisPressed, AxisMapper::EDirection::Positive);
-        constexpr AxisMapper mapperNotPressed(kTargetAxisNotPressed, AxisMapper::EDirection::Positive);
-
-        SState expectedState;
-        ZeroMemory(&expectedState, sizeof(expectedState));
-        expectedState.axis[(int)kTargetAxisPressed] = kAnalogValueMax;
-        expectedState.axis[(int)kTargetAxisNotPressed] = kAnalogValueNeutral;
-
-        SState actualState;
-        ZeroMemory(&actualState, sizeof(actualState));
-        mapperPressed.ContributeFromButtonValue(&actualState, true);
-        mapperNotPressed.ContributeFromButtonValue(&actualState, false);
-
-        TEST_PASSED_IF(actualState == expectedState);
-    }
-
-    // Creates multiple axis mappers, one on each negative half-axis, and causes values to be contributed from button presses.
-    // Verifies that they contribute either neutral (not pressed) or extreme negative (pressed).
-    TEST_CASE(AxisMapper_ContributeFromButtonValue_HalfAxisNegative)
-    {
-        constexpr EAxis kTargetAxisPressed = EAxis::X;
-        constexpr EAxis kTargetAxisNotPressed = EAxis::Y;
-
-        constexpr AxisMapper mapperPressed(kTargetAxisPressed, AxisMapper::EDirection::Negative);
-        constexpr AxisMapper mapperNotPressed(kTargetAxisNotPressed, AxisMapper::EDirection::Negative);
-
-        SState expectedState;
-        ZeroMemory(&expectedState, sizeof(expectedState));
-        expectedState.axis[(int)kTargetAxisPressed] = kAnalogValueMin;
-        expectedState.axis[(int)kTargetAxisNotPressed] = kAnalogValueNeutral;
-
-        SState actualState;
-        ZeroMemory(&actualState, sizeof(actualState));
-        mapperPressed.ContributeFromButtonValue(&actualState, true);
-        mapperNotPressed.ContributeFromButtonValue(&actualState, false);
-
-        TEST_PASSED_IF(actualState == expectedState);
-    }
-
-    // Creates multiple axis mappers, one on each whole axis, and causes values to be contributed from trigger values.
-    // Verifies that they contribute either extreme negative (trigger is not pressed at all) or extreme positive (trigger is fully pressed).
-    TEST_CASE(AxisMapper_ContributeFromTriggerValue_WholeAxis)
-    {
-        constexpr EAxis kTargetAxisPressed = EAxis::X;
-        constexpr EAxis kTargetAxisNotPressed = EAxis::Y;
-
-        constexpr AxisMapper mapperPressed(kTargetAxisPressed);
-        constexpr AxisMapper mapperNotPressed(kTargetAxisNotPressed);
-
-        SState expectedState;
-        ZeroMemory(&expectedState, sizeof(expectedState));
-        expectedState.axis[(int)kTargetAxisPressed] = kAnalogValueMax;
-        expectedState.axis[(int)kTargetAxisNotPressed] = kAnalogValueMin;
-
-        SState actualState;
-        ZeroMemory(&actualState, sizeof(actualState));
-        mapperPressed.ContributeFromTriggerValue(&actualState, kTriggerValueMax);
-        mapperNotPressed.ContributeFromTriggerValue(&actualState, kTriggerValueMin);
-
-        TEST_PASSED_IF(actualState == expectedState);
-    }
-
-    // Creates multiple axis mappers, one on each positive half-axis, and causes values to be contributed from trigger values.
-    // Verifies that they contribute either neutral (trigger is not pressed at all) or extreme positive (trigger is fully pressed).
-    TEST_CASE(AxisMapper_ContributeFromTriggerValue_HalfAxisPositive)
-    {
-        constexpr EAxis kTargetAxisPressed = EAxis::X;
-        constexpr EAxis kTargetAxisNotPressed = EAxis::Y;
-
-        constexpr AxisMapper mapperPressed(kTargetAxisPressed, AxisMapper::EDirection::Positive);
-        constexpr AxisMapper mapperNotPressed(kTargetAxisNotPressed, AxisMapper::EDirection::Positive);
-
-        SState expectedState;
-        ZeroMemory(&expectedState, sizeof(expectedState));
-        expectedState.axis[(int)kTargetAxisPressed] = kAnalogValueMax;
-        expectedState.axis[(int)kTargetAxisNotPressed] = kAnalogValueNeutral;
-
-        SState actualState;
-        ZeroMemory(&actualState, sizeof(actualState));
-        mapperPressed.ContributeFromTriggerValue(&actualState, kTriggerValueMax);
-        mapperNotPressed.ContributeFromTriggerValue(&actualState, kTriggerValueMin);
-
-        TEST_PASSED_IF(actualState == expectedState);
-    }
-
-    // Creates multiple axis mappers, one on each negative half-axis, and causes values to be contributed from trigger values.
-    // Verifies that they contribute either neutral (trigger is not pressed at all) or extreme negative (trigger is fully pressed).
-    TEST_CASE(AxisMapper_ContributeFromTriggerValue_HalfAxisNegative)
-    {
-        constexpr EAxis kTargetAxisPressed = EAxis::X;
-        constexpr EAxis kTargetAxisNotPressed = EAxis::Y;
-
-        constexpr AxisMapper mapperPressed(kTargetAxisPressed, AxisMapper::EDirection::Negative);
-        constexpr AxisMapper mapperNotPressed(kTargetAxisNotPressed, AxisMapper::EDirection::Negative);
-
-        SState expectedState;
-        ZeroMemory(&expectedState, sizeof(expectedState));
-        expectedState.axis[(int)kTargetAxisPressed] = kAnalogValueMin;
-        expectedState.axis[(int)kTargetAxisNotPressed] = kAnalogValueNeutral;
-
-        SState actualState;
-        ZeroMemory(&actualState, sizeof(actualState));
-        mapperPressed.ContributeFromTriggerValue(&actualState, kTriggerValueMax);
-        mapperNotPressed.ContributeFromTriggerValue(&actualState, kTriggerValueMin);
-
-        TEST_PASSED_IF(actualState == expectedState);
-    }
-
-    // Simulates both triggers sharing the Z axis, as is something that occurs in mappers.
-    // Exercises a variety of different situations.
-    TEST_CASE(AxisMapper_ContributeFromTriggerValue_TriggersSharedAxis)
+    // Verifies correct behavior when multiple axis mappers all contribute to the same virtual axis but sourced by a trigger value.
+    // In this case, the aggregate contribution sums to a net of the neutral position.
+    TEST_CASE(AxisMapper_ContributeFromTriggerValue_DestructiveInterference)
     {
         constexpr EAxis kTargetAxis = EAxis::Z;
-        constexpr AxisMapper mapperLeftTrigger(kTargetAxis, AxisMapper::EDirection::Positive);
-        constexpr AxisMapper mapperRightTrigger(kTargetAxis, AxisMapper::EDirection::Negative);
+
+        constexpr AxisMapper mappersPositive[] = {
+            AxisMapper(kTargetAxis),
+            AxisMapper(kTargetAxis),
+            AxisMapper(kTargetAxis)
+        };
+
+        constexpr AxisMapper mappersNegative[_countof(mappersPositive)] = {
+            AxisMapper(kTargetAxis),
+            AxisMapper(kTargetAxis),
+            AxisMapper(kTargetAxis)
+        };
 
         SState expectedState;
+        ZeroMemory(&expectedState, sizeof(expectedState));
+        expectedState.axis[(int)kTargetAxis] = kAnalogValueNeutral;
+
         SState actualState;
-
-
-        // Scenario 1: neither trigger is pressed at all, axis state should be neutral.
-        ZeroMemory(&expectedState, sizeof(expectedState));
-        expectedState.axis[(int)kTargetAxis] = kAnalogValueNeutral;
-
         ZeroMemory(&actualState, sizeof(actualState));
-        mapperLeftTrigger.ContributeFromTriggerValue(&actualState, kTriggerValueMin);
-        mapperRightTrigger.ContributeFromTriggerValue(&actualState, kTriggerValueMin);
+        for (auto& mapper : mappersPositive)
+            mapper.ContributeFromTriggerValue(&actualState, (uint8_t)kTriggerValueMax);
+        for (auto& mapper : mappersNegative)
+            mapper.ContributeFromTriggerValue(&actualState, (uint8_t)kTriggerValueMin);
 
         TEST_ASSERT(actualState == expectedState);
-
-
-        // Scenario 2: both triggers are fully pressed, axis state should be neutral.
-        ZeroMemory(&expectedState, sizeof(expectedState));
-        expectedState.axis[(int)kTargetAxis] = kAnalogValueNeutral;
-
-        ZeroMemory(&actualState, sizeof(actualState));
-        mapperLeftTrigger.ContributeFromTriggerValue(&actualState, kTriggerValueMax);
-        mapperRightTrigger.ContributeFromTriggerValue(&actualState, kTriggerValueMax);
-
-        TEST_ASSERT(actualState == expectedState);
-
-
-        // Scenario 3: LT is fully pressed but RT is not pressed at all, axis state should be extreme positive.
-        ZeroMemory(&expectedState, sizeof(expectedState));
-        expectedState.axis[(int)kTargetAxis] = kAnalogValueMax;
-
-        ZeroMemory(&actualState, sizeof(actualState));
-        mapperLeftTrigger.ContributeFromTriggerValue(&actualState, kTriggerValueMax);
-        mapperRightTrigger.ContributeFromTriggerValue(&actualState, kTriggerValueMin);
-
-        TEST_ASSERT(actualState == expectedState);
-
-
-        // Scenario 4: RT is fully pressed but LT is not pressed at all, axis state should be extreme negative.
-        ZeroMemory(&expectedState, sizeof(expectedState));
-        expectedState.axis[(int)kTargetAxis] = kAnalogValueMin;
-
-        ZeroMemory(&actualState, sizeof(actualState));
-        mapperLeftTrigger.ContributeFromTriggerValue(&actualState, kTriggerValueMin);
-        mapperRightTrigger.ContributeFromTriggerValue(&actualState, kTriggerValueMax);
-
-        TEST_ASSERT(actualState == expectedState);
-
-
-        // Scenario 5: LT and RT are both halfway pressed, axis state should be neutral.
-        ZeroMemory(&expectedState, sizeof(expectedState));
-        expectedState.axis[(int)kTargetAxis] = kAnalogValueNeutral;
-
-        ZeroMemory(&actualState, sizeof(actualState));
-        mapperLeftTrigger.ContributeFromTriggerValue(&actualState, (kTriggerValueMin + kTriggerValueMax) / 2);
-        mapperRightTrigger.ContributeFromTriggerValue(&actualState, (kTriggerValueMin + kTriggerValueMax) / 2);
-
-        TEST_ASSERT(actualState == expectedState);
-
-
-        TEST_PASSED;
     }
 }

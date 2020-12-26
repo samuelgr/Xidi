@@ -133,9 +133,9 @@ namespace Xidi
 
         void AxisMapper::ContributeFromTriggerValue(SState* controllerState, uint8_t triggerValue) const
         {
-            static constexpr double kBidirectionalStepSize = (double)(kAnalogValueMax - kAnalogValueMin) / (double)kTriggerValueMax;
-            static constexpr double kPositiveStepSize = (double)kAnalogValueMax / (double)kTriggerValueMax;
-            static constexpr double kNegativeStepSize = (double)kAnalogValueMin / (double)kTriggerValueMax;
+            constexpr double kBidirectionalStepSize = (double)(kAnalogValueMax - kAnalogValueMin) / (double)(kTriggerValueMax - kTriggerValueMin);
+            constexpr double kPositiveStepSize = (double)kAnalogValueMax / (double)(kTriggerValueMax - kTriggerValueMin);
+            constexpr double kNegativeStepSize = (double)kAnalogValueMin / (double)(kTriggerValueMax - kTriggerValueMin);
 
             int32_t axisValueToContribute = 0;
 

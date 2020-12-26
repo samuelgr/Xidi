@@ -34,8 +34,6 @@ namespace XidiTest
             TEST_ASSERT(EElementType::Button == mapper.GetTargetElementType());
             TEST_ASSERT(i == mapper.GetTargetElementIndex());
         }
-
-        TEST_PASSED;
     }
 
     // Creates a few button mappers and verifies that they contribute correctly to a virtual button press.
@@ -62,6 +60,6 @@ namespace XidiTest
         mapperPressedPositive.ContributeFromAnalogValue(&actualState, kAnalogValueMax);
         mapperPressedNegative.ContributeFromAnalogValue(&actualState, kAnalogValueMin);
 
-        TEST_PASSED_IF(actualState == expectedState);
+        TEST_ASSERT(actualState == expectedState);
     }
 }

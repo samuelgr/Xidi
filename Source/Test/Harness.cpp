@@ -15,6 +15,7 @@
 #include <cstdarg>
 #include <cstdio>
 #include <map>
+#include <set>
 #include <windows.h>
 
 
@@ -96,7 +97,7 @@ namespace XidiTest
 
     int Harness::RunAllTestsInternal(void)
     {
-        int numFailingTests = 0;
+        std::set<const wchar_t*> failingTests;
         int numSkippedTests = 0;
 
         switch(testCases.size())
@@ -126,9 +127,20 @@ namespace XidiTest
             {
                 PrintFormatted(L"[ %-9s ] %s", L"RUN", name.c_str());
 
-                const bool testCasePassed = testCase->Run();
+                bool testCasePassed = false;
+                try
+                {
+                    testCase->Run();
+                    testCasePassed = true;
+                }
+                catch (TestFailedException failure)
+                {
+                    if (nullptr != failure.reason)
+                        PrintFormatted(L"Failure reason: %s", failure.reason);
+                }
+
                 if (true != testCasePassed)
-                    numFailingTests += 1;
+                    failingTests.insert(name.c_str());
 
                 PrintFormatted(L"[ %9s ] %s%s", (true == testCasePassed ? L"PASS" : L"FAIL"), name.c_str(), (lastTestCase ? L"" : L"\n"));
             }
@@ -140,6 +152,8 @@ namespace XidiTest
         }
 
         Print(L"================================================================================");
+
+        const int numFailingTests = (int)failingTests.size();
 
         if (testCases.size() == numSkippedTests)
         {
@@ -160,16 +174,24 @@ namespace XidiTest
                 if (numSkippedTests > 0)
                     PrintFormatted(L"\n1 test failed (%d skipped).\n", numSkippedTests);
                 else
-                    Print(L"\n1 test failed.\n");
+                    Print(L"\n1 test failed:");
                 break;
 
             default:
                 if (numSkippedTests > 0)
-                    PrintFormatted(L"\n%d tests failed (%d skipped).\n", numFailingTests, numSkippedTests);
+                    PrintFormatted(L"\n%d tests failed (%d skipped):", numFailingTests, numSkippedTests);
                 else
-                    PrintFormatted(L"\n%d tests failed.\n", numFailingTests);
+                    PrintFormatted(L"\n%d tests failed:", numFailingTests);
                 break;
             }
+        }
+
+        if (numFailingTests > 0)
+        {
+            for (const wchar_t* failingTestName : failingTests)
+                PrintFormatted(L"    %s", failingTestName);
+
+            Print(L"\n");
         }
 
         return numFailingTests;

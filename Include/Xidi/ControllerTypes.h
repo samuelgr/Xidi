@@ -27,8 +27,9 @@ namespace Xidi
         inline constexpr int32_t kAnalogValueMax = 32767;
 
         /// Minimum possible reading from an XInput controller's analog stick.
-        /// Value taken from XInput documentation and slightly adjusted for easier implementation.
-        inline constexpr int32_t kAnalogValueMin = -32767;
+        /// Value derived from the above to ensure symmetry around 0.
+        /// This is slightly different than the XInput API itself, which allows negative values all the way down to -32768.
+        inline constexpr int32_t kAnalogValueMin = -kAnalogValueMax;
 
         /// Neutral value for an XInput controller's analog stick.
         /// Value computed from extreme value constants above.

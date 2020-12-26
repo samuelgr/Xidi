@@ -47,8 +47,7 @@ namespace XidiTest
 
         /// Runs the test case represented by this object.
         /// Implementations are generated when test cases are created using the #TEST_CASE macro.
-        /// @return Indication of the test result, via the appropriate test result macros.
-        virtual bool Run(void) const = 0;
+        virtual void Run(void) const = 0;
     };
 
     /// Concrete test case object template.
@@ -70,21 +69,28 @@ namespace XidiTest
         // See above for documentation.
 
         bool CanRun(void) const override;
-        bool Run(void) const override;
+        void Run(void) const override;
+    };
+
+    struct TestFailedException
+    {
+        const wchar_t* const reason;
+
+        TestFailedException(const wchar_t* reason = nullptr) : reason(reason)
+        {
+            // Nothing to do here.
+        }
     };
 }
 
-/// Exit from a test case and indicate a passing result.
-#define TEST_PASSED                         return true
+/// Exit from a test case and indicate a failing result without a specific reason.
+#define TEST_FAILED                         throw TestFailedException()
 
-/// Exit from a test case and indicate a failing result.
-#define TEST_FAILED                         return false
+/// Exit from a test case and indicate a failing result with the given reason as a null-terminated string.
+#define TEST_FAILED_BECAUSE(cwstrReason)    throw TestFailedException(cwstrReason)
 
 /// Exit from a test case and indicate a failing result if the expression is false.
-#define TEST_ASSERT(expr)                   do {if (!(expr)) {PrintFormatted(L"%s:%d: Assertion failed: %s", __FILEW__, __LINE__, L#expr); return false;}} while (0)
-
-/// Exit from a test case with a passing result if the expression is true and a failing result if it is false.
-#define TEST_PASSED_IF(expr)                TEST_ASSERT(expr); TEST_PASSED
+#define TEST_ASSERT(expr)                   do {if (!(expr)) {PrintFormatted(L"%s:%d: Assertion failed: %s", __FILEW__, __LINE__, L#expr); TEST_FAILED;}} while (0)
 
 /// Recommended way of creating test cases that execute conditionally.
 /// Requires a test case name and a condition, which evaluates to a value of type bool.
@@ -95,7 +101,7 @@ namespace XidiTest
     inline constexpr wchar_t kTestName__##name[] = L#name; \
     XidiTest::TestCase<kTestName__##name>  testCaseInstance__##name; \
     bool XidiTest::TestCase<kTestName__##name>::CanRun(void) const { return (cond); } \
-    bool XidiTest::TestCase<kTestName__##name>::Run(void) const
+    void XidiTest::TestCase<kTestName__##name>::Run(void) const
 
 /// Recommended way of creating test cases that execute unconditionally.
 /// Just provide the test case name.
