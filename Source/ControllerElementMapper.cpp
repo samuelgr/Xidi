@@ -35,6 +35,19 @@ namespace Xidi
 
         // -------- INTERNAL FUNCTIONS ------------------------------------- //
 
+        /// Filters (by saturation) analog values that might be slightly out of range due to differences between the implemented range and the XInput actual range.
+        /// @param [in] analogValue Raw analog value.
+        /// Filtered analog value, which will most likely be the same as the input.
+        static inline int16_t AnalogValueFilter(int16_t analogValue)
+        {
+            if (analogValue > kAnalogValueMax)
+                return kAnalogValueMax;
+            else if (analogValue < kAnalogValueMin)
+                return kAnalogValueMin;
+            else
+                return analogValue;
+        }
+
         /// Determines if an analog reading is considered "pressed" as a digital button in the negative direction.
         /// @param [in] analogValue Analog reading from the XInput controller.
         /// @return `true` if the virtual button is considered pressed, `false` otherwise.
@@ -73,7 +86,7 @@ namespace Xidi
 
         void AxisMapper::ContributeFromAnalogValue(SState* controllerState, int16_t analogValue) const
         {
-            int32_t axisValueToContribute = (int32_t)analogValue;
+            int32_t axisValueToContribute = (int32_t)AnalogValueFilter(analogValue);
 
             switch (direction)
             {
@@ -81,11 +94,11 @@ namespace Xidi
                 break;
 
             case EDirection::Positive:
-                axisValueToContribute = (axisValueToContribute + kAnalogValueMax) >> 1;
+                axisValueToContribute = (axisValueToContribute - kAnalogValueMin) >> 1;
                 break;
 
             case EDirection::Negative:
-                axisValueToContribute = (axisValueToContribute + kAnalogValueMin) >> 1;
+                axisValueToContribute = (axisValueToContribute - kAnalogValueMax) >> 1;
                 break;
             }
 

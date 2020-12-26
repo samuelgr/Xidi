@@ -94,7 +94,7 @@
       <PreprocessorDefinitions>DIRECTINPUT_VERSION=0x0700;_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
       <LanguageStandard>stdcpplatest</LanguageStandard>
-      <AdditionalIncludeDirectories>Include/$(SolutionName)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>Include\$(SolutionName)</AdditionalIncludeDirectories>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
       <EnableEnhancedInstructionSet>AdvancedVectorExtensions</EnableEnhancedInstructionSet>
       <ForcedIncludeFiles>$(ProjectDir)Resources\$(SolutionName).h</ForcedIncludeFiles>
@@ -113,7 +113,7 @@
       <PreprocessorDefinitions>DIRECTINPUT_VERSION=0x0700;_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
       <LanguageStandard>stdcpplatest</LanguageStandard>
-      <AdditionalIncludeDirectories>Include/$(SolutionName)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>Include\$(SolutionName)</AdditionalIncludeDirectories>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
       <OmitFramePointers>false</OmitFramePointers>
       <EnableEnhancedInstructionSet>AdvancedVectorExtensions</EnableEnhancedInstructionSet>
@@ -134,7 +134,7 @@
       <PreprocessorDefinitions>DIRECTINPUT_VERSION=0x0700;NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
       <LanguageStandard>stdcpplatest</LanguageStandard>
-      <AdditionalIncludeDirectories>Include/$(SolutionName)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>Include\$(SolutionName)</AdditionalIncludeDirectories>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
       <OmitFramePointers>true</OmitFramePointers>
       <EnableEnhancedInstructionSet>AdvancedVectorExtensions</EnableEnhancedInstructionSet>
@@ -155,7 +155,7 @@
       <PreprocessorDefinitions>DIRECTINPUT_VERSION=0x0700;NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
       <LanguageStandard>stdcpplatest</LanguageStandard>
-      <AdditionalIncludeDirectories>Include/$(SolutionName)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>Include\$(SolutionName)</AdditionalIncludeDirectories>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
       <OmitFramePointers>true</OmitFramePointers>
       <EnableEnhancedInstructionSet>AdvancedVectorExtensions</EnableEnhancedInstructionSet>

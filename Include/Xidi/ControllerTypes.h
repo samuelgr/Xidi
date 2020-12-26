@@ -13,6 +13,7 @@
 #pragma once
 
 #include <cstdint>
+#include <cstring>
 
 
 namespace Xidi
@@ -26,8 +27,8 @@ namespace Xidi
         inline constexpr int32_t kAnalogValueMax = 32767;
 
         /// Minimum possible reading from an XInput controller's analog stick.
-        /// Value taken from XInput documentation.
-        inline constexpr int32_t kAnalogValueMin = -32768;
+        /// Value taken from XInput documentation and slightly adjusted for easier implementation.
+        inline constexpr int32_t kAnalogValueMin = -32767;
 
         /// Neutral value for an XInput controller's analog stick.
         /// Value computed from extreme value constants above.
@@ -113,6 +114,11 @@ namespace Xidi
             uint32_t saturation = 10000;                                    ///< Saturation point of the axis, expressed as a percentage of its physical range in both directions. Can be from 0 (entire axis is saturated) to 10000 (do not saturate at all).
             int32_t rangeMin = kAnalogValueMin;                             ///< Minimum reportable value for the axis.
             int32_t rangeMax = kAnalogValueMax;                             ///< Maximum reportable value for the axis.
+
+            inline bool operator==(const SAxisProperties& other) const
+            {
+                return (0 == memcmp(this, &other, sizeof(*this)));
+            }
         };
 
         /// Capabilities of a Xidi virtual controller.
@@ -123,6 +129,11 @@ namespace Xidi
             bool hasPov;                                                    ///< Specifies whether or not the virtual controller has a POV. If it does, then the POV buttons in the controller state are used, otherwise they are ignored.
             int numAxes;                                                    ///< Number of axes in the virtual controller, also the number of elements of the axis type array that are valid.
             int numButtons;                                                 ///< Number of buttons present in the virtual controller.
+
+            inline bool operator==(const SCapabilities& other) const
+            {
+                return (0 == memcmp(this, &other, sizeof(*this)));
+            }
         };
         
         /// Native data format for virtual controllers, used internally to represent controller state.
@@ -133,6 +144,11 @@ namespace Xidi
             int32_t axis[(int)EAxis::Count];
             bool button[(int)EButton::Count];
             bool povDirection[(int)EPov::Count];
+
+            inline bool operator==(const SState& other) const
+            {
+                return (0 == memcmp(this, &other, sizeof(*this)));
+            }
         };
     }
 }
