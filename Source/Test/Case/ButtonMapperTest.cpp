@@ -191,7 +191,7 @@ namespace XidiTest
 
     // Verifies correct behavior when multiple button mapper contributions occur to the same virtual button and all button mappers receive the same input state.
     // As long as one button mapper receives an input of "pressed" then the virtual button should also be pressed.
-    TEST_CASE(AxisMapper_ContributeFromButtonValue_SameButtonSameInput)
+    TEST_CASE(ButtonMapper_ContributeFromButtonValue_SameButtonSameInput)
     {
         constexpr EButton kTargetButton = EButton::B6;
         constexpr bool kButtonStates[] = {false, true};

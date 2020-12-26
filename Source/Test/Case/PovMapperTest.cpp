@@ -192,7 +192,7 @@ namespace XidiTest
 
     // Verifies correct behavior when multiple POV mapper contributions occur to the same virtual POV direction and all POV mappers receive the same input state.
     // As long as one POV mapper receives an input of "pressed" then the virtual POV direction should also be pressed.
-    TEST_CASE(AxisMapper_ContributeFromButtonValue_SamePovSameInput)
+    TEST_CASE(PovMapper_ContributeFromButtonValue_SamePovSameInput)
     {
         constexpr EPov kTargetPov = EPov::Down;
         constexpr bool kButtonStates[] = {false, true};
