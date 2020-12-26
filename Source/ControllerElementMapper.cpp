@@ -267,7 +267,7 @@ namespace Xidi
 
         int PovMapper::GetTargetElementIndex(void) const
         {
-            return 0;
+            return kPovElementIndex;
         }
 
         // --------

@@ -5,9 +5,9 @@
  * Authored by Samuel Grossman
  * Copyright (c) 2016-2020
  *************************************************************************//**
- * @file ButtonMapperTest.cpp
+ * @file PovMapperTest.cpp
  *   Unit tests for controller element mappers that contribute to a virtual
- *   button.
+ *   point-of-view hat.
  *****************************************************************************/
 
 #include "ApiWindows.h"
@@ -26,13 +26,14 @@ namespace XidiTest
     // -------- TEST CASES ------------------------------------------------- //
 
     // Creates one button mapper for each possible virtual button and verifies that each correctly identifies its target virtual controller element.
-    TEST_CASE(ButtonMapper_GetTargetElement)
+    // Because all PovMappers contribute to the same virutal POV object (one direction per mapper), the element index is always the same.
+    TEST_CASE(PovMapper_GetTargetElement)
     {
-        for (int i = 0; i < (int)EButton::Count; ++i)
+        for (int i = 0; i < (int)EPov::Count; ++i)
         {
-            const ButtonMapper mapper((EButton)i);
-            TEST_ASSERT(EElementType::Button == mapper.GetTargetElementType());
-            TEST_ASSERT(i == mapper.GetTargetElementIndex());
+            const PovMapper mapper((EPov)i);
+            TEST_ASSERT(EElementType::Pov == mapper.GetTargetElementType());
+            TEST_ASSERT(PovMapper::kPovElementIndex == mapper.GetTargetElementIndex());
         }
     }
 }

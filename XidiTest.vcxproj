@@ -177,6 +177,8 @@
     <ClCompile Include="Source\ControllerMapper.cpp" />
     <ClCompile Include="Source\Test\Case\AxisMapperTest.cpp" />
     <ClCompile Include="Source\Test\Case\ButtonMapperTest.cpp" />
+    <ClCompile Include="Source\Test\Case\DigitalAxisMapperTest.cpp" />
+    <ClCompile Include="Source\Test\Case\PovMapperTest.cpp" />
     <ClCompile Include="Source\Test\Harness.cpp" />
     <ClCompile Include="Source\Test\TestCase.cpp" />
   </ItemGroup>

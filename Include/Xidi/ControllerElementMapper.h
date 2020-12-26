@@ -141,7 +141,7 @@ namespace Xidi
 
         /// Maps a single XInput controller element such that it contributes to an axis value on a virtual controller, but removes analog functionality. Values contributed are either zero or extreme.
         /// For analog sticks, the value read is mapped to either neutral or an extreme axis value. In whole-axis mode, the possible values are negative extreme, neutral, and positive extreme. In half-axis mode, possible values are neutral and extreme (input in the inactive direction is ignored).
-        /// For triggers, possible values depend on the axis mode. In whole-axis mode, the possible values are negative extreme and positive extreme. In half-axis mode, the possible values are neutral and extreme.
+        /// For triggers, which unlike analog sticks do not have a centered neutral position, possible values depend on the axis mode. In whole-axis mode, the possible values are negative extreme and positive extreme. In half-axis mode, the possible values are neutral and extreme.
         /// For buttons, the behavior is the same as the standard button-to-axis mapping behavior.
         class DigitalAxisMapper : public AxisMapper
         {
@@ -165,6 +165,15 @@ namespace Xidi
         /// Maps a single XInput controller element such that it contributes to a POV direction on a virtual controller.
         class PovMapper : public IElementMapper
         {
+        public:
+            // -------- CONSTANTS ------------------------------------------ //
+
+            /// Element index for all POV mappers.
+            /// Virtual controllers may contain zero or one POV hats, and each POV mapper contributes to one direction on the virtual POV hat.
+            /// Therefore, they all map to the same controller object, whose value is itself computed by aggregating the contributions of each direction.
+            static constexpr int kPovElementIndex = 0;
+
+
         private:
             // -------- INSTANCE VARIABLES --------------------------------- //
 
