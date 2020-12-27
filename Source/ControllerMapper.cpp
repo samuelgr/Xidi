@@ -101,6 +101,7 @@ namespace Xidi
         static SCapabilities DeriveCapabilitiesFromElementMap(const Mapper::UElementMap& elements)
         {
             SCapabilities capabilities;
+            ZeroMemory(&capabilities, sizeof(capabilities));
 
             std::set<EAxis> axesPresent;
             int highestButtonSeen = -1;
@@ -135,7 +136,10 @@ namespace Xidi
 
             int axesWritten = 0;
             for (auto it = axesPresent.cbegin(); it != axesPresent.cend(); ++it)
+            {
                 capabilities.axisType[axesWritten] = *it;
+                axesWritten += 1;
+            }
 
             capabilities.numAxes = (int)axesPresent.size();
             capabilities.numButtons = highestButtonSeen + 1;
@@ -187,6 +191,8 @@ namespace Xidi
 
         void Mapper::MapXInputState(SState* controllerState, const XINPUT_GAMEPAD& xinputState) const
         {
+            ZeroMemory(controllerState, sizeof(*controllerState));
+
             if (nullptr != elements.named.stickLeftX) elements.named.stickLeftX->ContributeFromAnalogValue(controllerState, xinputState.sThumbLX);
             if (nullptr != elements.named.stickLeftY) elements.named.stickLeftY->ContributeFromAnalogValue(controllerState, xinputState.sThumbLY);
 
@@ -214,6 +220,16 @@ namespace Xidi
 
             if (nullptr != elements.named.buttonLS) elements.named.buttonLS->ContributeFromButtonValue(controllerState, (0 != (xinputState.wButtons & XINPUT_GAMEPAD_LEFT_THUMB)));
             if (nullptr != elements.named.buttonRS) elements.named.buttonRS->ContributeFromButtonValue(controllerState, (0 != (xinputState.wButtons & XINPUT_GAMEPAD_RIGHT_THUMB)));
+
+            // Once all contributions have been committed, saturate all axis values at the extreme ends of the allowed range.
+            // Doing this at the end means that intermediate contributions are computed with much more range than the controller is allowed to report, which can increase accuracy when there are multiple interfering mappers to axes.
+            for (auto& axisValue : controllerState->axis)
+            {
+                if (axisValue > kAnalogValueMax)
+                    axisValue = kAnalogValueMax;
+                else if (axisValue < kAnalogValueMin)
+                    axisValue = kAnalogValueMin;
+            }
         }
 
 

@@ -86,7 +86,7 @@ namespace XidiTest
         void ContributeFromAnalogValue(SState* controllerState, int16_t analogValue) const override
         {
             if (EExpectedSource::Analog != expectedSource)
-                TEST_FAILED_BECAUSE(L"MockElementMapper: wrong value source (expected analog).");
+                TEST_FAILED_BECAUSE(L"MockElementMapper: wrong value source (expected enumerator %d, got Analog).", (int)expectedSource);
 
             if (expectedValue.analog != analogValue)
                 TEST_FAILED_BECAUSE(L"MockElementMapper: wrong analog value (expected %d, got %d).", (int)expectedValue.analog, (int)analogValue);
@@ -98,7 +98,7 @@ namespace XidiTest
         void ContributeFromButtonValue(SState* controllerState, bool buttonPressed) const override
         {
             if (EExpectedSource::Button != expectedSource)
-                TEST_FAILED_BECAUSE(L"MockElementMapper: wrong value source (expected button).");
+                TEST_FAILED_BECAUSE(L"MockElementMapper: wrong value source (expected enumerator %d, got Button).", (int)expectedSource);
 
             if (expectedValue.button != buttonPressed)
                 TEST_FAILED_BECAUSE(L"MockElementMapper: wrong button value (expected %s, got %s).", (true == expectedValue.button ? L"'true (pressed)'" : L"'false (not pressed)'"), (true == buttonPressed ? L"'true (pressed)'" : L"'false (not pressed)'"));
@@ -110,7 +110,7 @@ namespace XidiTest
         void ContributeFromTriggerValue(SState* controllerState, uint8_t triggerValue) const override
         {
             if (EExpectedSource::Trigger != expectedSource)
-                TEST_FAILED_BECAUSE(L"MockElementMapper: wrong value source (expected trigger).");
+                TEST_FAILED_BECAUSE(L"MockElementMapper: wrong value source (expected enumerator %d, got Trigger).", (int)expectedSource);
 
             if (expectedValue.trigger != triggerValue)
                 TEST_FAILED_BECAUSE(L"MockElementMapper: wrong trigger value (expected %d, got %d).", (int)expectedValue.trigger, (int)triggerValue);
@@ -139,7 +139,7 @@ namespace XidiTest
     
     // -------- TEST CASES ------------------------------------------------- //
 
-    // The following sequence of tests, all named `Route`, verify that a mapper will correctly route a value from various parts of an XInput controller.
+    // The following sequence of tests, which together comprise the Route suite, verify that a mapper will correctly route a value from various parts of an XInput controller.
     // In this context, "route" means that the correct element mapper is invoked with the correct value source (analog for left and right stick axes, trigger for LT and RT, and buttons for all controller buttons including the d-pad).
 
     // Left stick, horizontal
@@ -380,5 +380,301 @@ namespace XidiTest
         controllerMapper.MapXInputState(&dummyControllerState, {.wButtons = (kTestValue ? XINPUT_GAMEPAD_RIGHT_THUMB : 0)});
 
         TEST_ASSERT(1 == numContributions);
+    }
+
+
+    // The following sequence of tests, which together comprise the Capabilities suite, verify that a mapper correctly produces a virtual controller's capabilities given a set of element mappers.
+    // Each test case presents a different controller configuration. The formula for each test case body is create its expected capabilities, obtain a mapper, obtain the mapper's capabilities, and compare the two capabilities objects.
+    // First are some synthetic capabilities and towards the end are the known and documented mappers.
+
+    // Empty mapper.
+    // Nothing should be present on the virtual controller.
+    TEST_CASE(ControllerMapper_Capabilities_EmptyMapper)
+    {
+        constexpr SCapabilities kExpectedCapabilities({
+            .numAxes = 0,
+            .numButtons = 0,
+            .hasPov = false
+        });
+
+        const Mapper mapper({
+            // Empty.
+        });
+
+        const SCapabilities& kActualCapabilities = mapper.GetCapabilities();
+        TEST_ASSERT(kActualCapabilities == kExpectedCapabilities);
+    }
+
+    // Mapper with only buttons, and they are disjoint.
+    // Virtual controller should have only buttons, and the number present is based on the highest button to which an element mapper writes.
+    TEST_CASE(ControllerMapper_Capabilities_DisjointButtons)
+    {
+        constexpr SCapabilities kExpectedCapabilities({
+            .numAxes = 0,
+            .numButtons = 10,
+            .hasPov = false
+        });
+
+        const Mapper mapper({
+            .stickLeftX = new ButtonMapper(EButton::B2),
+            .dpadUp = new ButtonMapper(EButton::B6),
+            .dpadLeft = new ButtonMapper(EButton::B10),
+            .buttonLB = new ButtonMapper(EButton::B4)
+        });
+
+        const SCapabilities& kActualCapabilities = mapper.GetCapabilities();
+        TEST_ASSERT(kActualCapabilities == kExpectedCapabilities);
+    }
+
+    // Mapper with only buttons, and all mappers write to the same button.
+    // Virtual controller should have only buttons, and the number present is based on the button to which all element mappers write.
+    TEST_CASE(ControllerMapper_Capabilities_SingleButton)
+    {
+        constexpr SCapabilities kExpectedCapabilities({
+            .numAxes = 0,
+            .numButtons = 6,
+            .hasPov = false
+        });
+
+        const Mapper mapper({
+            .stickLeftY = new ButtonMapper(EButton::B6),
+            .dpadDown = new ButtonMapper(EButton::B6),
+            .buttonStart = new ButtonMapper(EButton::B6)
+        });
+
+        const SCapabilities& kActualCapabilities = mapper.GetCapabilities();
+        TEST_ASSERT(kActualCapabilities == kExpectedCapabilities);
+    }
+
+    // Mapper with only axes.
+    // Virtual controller should have only axes based on the axes to which the element mappers write.
+    TEST_CASE(ControllerMapper_Capabilities_MultipleAxes)
+    {
+        constexpr SCapabilities kExpectedCapabilities({
+            .axisType = {EAxis::Y, EAxis::RotX},
+            .numAxes = 2,
+            .numButtons = 0,
+            .hasPov = false
+        });
+
+        const Mapper mapper({
+            .stickRightX = new AxisMapper(EAxis::Y),
+            .dpadDown = new AxisMapper(EAxis::RotX),
+            .buttonStart = new AxisMapper(EAxis::RotX),
+            .buttonRS = new AxisMapper(EAxis::Y)
+        });
+
+        const SCapabilities& kActualCapabilities = mapper.GetCapabilities();
+        TEST_ASSERT(kActualCapabilities == kExpectedCapabilities);
+    }
+
+    // Mapper with only a POV, and only part of it receives values from mappers.
+    // Virtual controller should have only a POV and nothing else.
+    TEST_CASE(ControllerMapper_Capabilities_IncompletePov)
+    {
+        constexpr SCapabilities kExpectedCapabilities({
+            .numAxes = 0,
+            .numButtons = 0,
+            .hasPov = true
+        });
+
+        const Mapper mapper({
+            .stickRightX = new PovMapper(EPov::Left)
+        });
+
+        const SCapabilities& kActualCapabilities = mapper.GetCapabilities();
+        TEST_ASSERT(kActualCapabilities == kExpectedCapabilities);
+    }
+
+    // Mapper with only a complete POV.
+    // Virtual controller should have only a POV and nothing else.
+    TEST_CASE(ControllerMapper_Capabilities_CompletePov)
+    {
+        constexpr SCapabilities kExpectedCapabilities({
+            .numAxes = 0,
+            .numButtons = 0,
+            .hasPov = true
+        });
+
+        const Mapper mapper({
+            .stickLeftY = new PovMapper(EPov::Left),
+            .stickRightX = new PovMapper(EPov::Right),
+            .triggerLT = new PovMapper(EPov::Up),
+            .triggerRT = new PovMapper(EPov::Down),
+            .buttonA = new PovMapper(EPov::Left),
+            .buttonY = new PovMapper(EPov::Left),
+            .buttonLS = new PovMapper(EPov::Up),
+            .buttonRS = new PovMapper(EPov::Down)
+        });
+
+        const SCapabilities& kActualCapabilities = mapper.GetCapabilities();
+        TEST_ASSERT(kActualCapabilities == kExpectedCapabilities);
+    }
+
+    // StandardGamepad, a known and documented mapper.
+    TEST_CASE(ControllerMapper_Capabilities_StandardGamepad)
+    {
+        constexpr SCapabilities kExpectedCapabilities({
+            .axisType = {EAxis::X, EAxis::Y, EAxis::Z, EAxis::RotZ},
+            .numAxes = 4,
+            .numButtons = 12,
+            .hasPov = true
+        });
+
+        const Mapper* const mapper = Mapper::GetByName(L"StandardGamepad");
+        TEST_ASSERT(nullptr != mapper);
+
+        const SCapabilities& kActualCapabilities = mapper->GetCapabilities();
+        TEST_ASSERT(kActualCapabilities == kExpectedCapabilities);
+    }
+
+    // DigitalGamepad, a known and documented mapper.
+    TEST_CASE(ControllerMapper_Capabilities_DigitalGamepad)
+    {
+        constexpr SCapabilities kExpectedCapabilities({
+            .axisType = {EAxis::X, EAxis::Y, EAxis::Z, EAxis::RotZ},
+            .numAxes = 4,
+            .numButtons = 12,
+            .hasPov = false
+        });
+
+        const Mapper* const mapper = Mapper::GetByName(L"DigitalGamepad");
+        TEST_ASSERT(nullptr != mapper);
+
+        const SCapabilities& kActualCapabilities = mapper->GetCapabilities();
+        TEST_ASSERT(kActualCapabilities == kExpectedCapabilities);
+    }
+
+    // ExtendedGamepad, a known and documented mapper.
+    TEST_CASE(ControllerMapper_Capabilities_ExtendedGamepad)
+    {
+        constexpr SCapabilities kExpectedCapabilities({
+            .axisType = {EAxis::X, EAxis::Y, EAxis::Z, EAxis::RotX, EAxis::RotY, EAxis::RotZ},
+            .numAxes = 6,
+            .numButtons = 10,
+            .hasPov = true
+        });
+
+        const Mapper* const mapper = Mapper::GetByName(L"ExtendedGamepad");
+        TEST_ASSERT(nullptr != mapper);
+
+        const SCapabilities& kActualCapabilities = mapper->GetCapabilities();
+        TEST_ASSERT(kActualCapabilities == kExpectedCapabilities);
+    }
+
+    // XInputNative, a known and documented mapper.
+    TEST_CASE(ControllerMapper_Capabilities_XInputNative)
+    {
+        constexpr SCapabilities kExpectedCapabilities({
+            .axisType = {EAxis::X, EAxis::Y, EAxis::Z, EAxis::RotX, EAxis::RotY, EAxis::RotZ},
+            .numAxes = 6,
+            .numButtons = 10,
+            .hasPov = true
+        });
+
+        const Mapper* const mapper = Mapper::GetByName(L"XInputNative");
+        TEST_ASSERT(nullptr != mapper);
+
+        const SCapabilities& kActualCapabilities = mapper->GetCapabilities();
+        TEST_ASSERT(kActualCapabilities == kExpectedCapabilities);
+    }
+
+    // XInputSharedTriggers, a known and documented mapper.
+    TEST_CASE(ControllerMapper_Capabilities_XInputSharedTriggers)
+    {
+        constexpr SCapabilities kExpectedCapabilities({
+            .axisType = {EAxis::X, EAxis::Y, EAxis::Z, EAxis::RotX, EAxis::RotY},
+            .numAxes = 5,
+            .numButtons = 10,
+            .hasPov = true
+        });
+
+        const Mapper* const mapper = Mapper::GetByName(L"XInputSharedTriggers");
+        TEST_ASSERT(nullptr != mapper);
+
+        const SCapabilities& kActualCapabilities = mapper->GetCapabilities();
+        TEST_ASSERT(kActualCapabilities == kExpectedCapabilities);
+    }
+
+
+    // The following sequence of tests, which together comprise the State suite, verify that a mapper correctly handles certain corner cases when writing to controller state.
+    // The formula for each test case body is create an expected controller state, obtain a mapper, ask it to write to a controller state, and finally compare expected and actual states.
+    
+    // An empty mapper is expected to produce all zeroes in its output controller state, irrespective of the XInput controller's state.
+    TEST_CASE(ControllerMapper_State_ZeroOnEmpty)
+    {
+        SState expectedState;
+        ZeroMemory(&expectedState, sizeof(expectedState));
+
+        const Mapper mapper({
+            // Empty
+        });
+
+        SState actualState;
+        FillMemory(&actualState, sizeof(actualState), 0xcd);
+        mapper.MapXInputState(&actualState, {});
+        TEST_ASSERT(actualState == expectedState);
+
+        FillMemory(&actualState, sizeof(actualState), 0xcd);
+        mapper.MapXInputState(&actualState, {
+            .wButtons = 32767,
+            .bLeftTrigger = 128,
+            .bRightTrigger = 128,
+            .sThumbLX = 16383,
+            .sThumbLY = -16383,
+            .sThumbRX = -16383,
+            .sThumbRY = 16383
+        });
+        TEST_ASSERT(actualState == expectedState);
+    }
+
+    // Even though intermediate contributions may result in analog axis values that exceed the allowed range, mappers are expected to saturate at the allowed range.
+    // This test verifies correct saturation in the positive direction.
+    TEST_CASE(ControllerMapper_State_AnalogSaturationPositive)
+    {
+        SState expectedState;
+        ZeroMemory(&expectedState, sizeof(expectedState));
+        expectedState.axis[(int)EAxis::X] = kAnalogValueMax;
+
+        const Mapper mapper({
+            .stickLeftX = new AxisMapper(EAxis::X),
+            .stickLeftY = new AxisMapper(EAxis::X),
+            .stickRightX = new AxisMapper(EAxis::X),
+            .stickRightY = new AxisMapper(EAxis::X)
+        });
+
+        SState actualState;
+        mapper.MapXInputState(&actualState, {
+            .sThumbLX = kAnalogValueMax,
+            .sThumbLY = kAnalogValueMax,
+            .sThumbRX = kAnalogValueMax,
+            .sThumbRY = kAnalogValueMax
+        });
+        TEST_ASSERT(actualState == expectedState);
+    }
+
+    // Even though intermediate contributions may result in analog axis values that exceed the allowed range, mappers are expected to saturate at the allowed range.
+    // This test verifies correct saturation in the negative direction.
+    TEST_CASE(ControllerMapper_State_AnalogSaturationNegative)
+    {
+        SState expectedState;
+        ZeroMemory(&expectedState, sizeof(expectedState));
+        expectedState.axis[(int)EAxis::RotX] = kAnalogValueMin;
+
+        const Mapper mapper({
+            .stickLeftX = new AxisMapper(EAxis::RotX),
+            .stickLeftY = new AxisMapper(EAxis::RotX),
+            .stickRightX = new AxisMapper(EAxis::RotX),
+            .stickRightY = new AxisMapper(EAxis::RotX)
+        });
+
+        SState actualState;
+        mapper.MapXInputState(&actualState, {
+            .sThumbLX = kAnalogValueMin,
+            .sThumbLY = kAnalogValueMin,
+            .sThumbRX = kAnalogValueMin,
+            .sThumbRY = kAnalogValueMin
+        });
+        TEST_ASSERT(actualState == expectedState);
     }
 }

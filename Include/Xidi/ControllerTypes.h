@@ -127,9 +127,9 @@ namespace Xidi
         struct SCapabilities
         {
             EAxis axisType[(int)EAxis::Count];                              ///< Type of each axis present. When the controller is presented to the application, all the axes on it are presented with contiguous indices. This array is used to map from DirectInput axis index to internal axis index.
-            bool hasPov;                                                    ///< Specifies whether or not the virtual controller has a POV. If it does, then the POV buttons in the controller state are used, otherwise they are ignored.
             int numAxes;                                                    ///< Number of axes in the virtual controller, also the number of elements of the axis type array that are valid.
             int numButtons;                                                 ///< Number of buttons present in the virtual controller.
+            bool hasPov;                                                    ///< Specifies whether or not the virtual controller has a POV. If it does, then the POV buttons in the controller state are used, otherwise they are ignored.
 
             inline bool operator==(const SCapabilities& other) const
             {
