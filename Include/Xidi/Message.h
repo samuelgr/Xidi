@@ -11,6 +11,8 @@
 
 #pragma once
 
+#include <sal.h>
+
 
 namespace Xidi
 {

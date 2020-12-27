@@ -13,7 +13,6 @@
 
 #include "TestCase.h"
 
-#include <cstdarg>
 #include <map>
 #include <string>
 
@@ -48,19 +47,6 @@ namespace XidiTest
         static Harness& GetInstance(void);
 
     public:
-        /// Prints the specified message and appends a newline.
-        /// For use inside a test case, but print requests should be through the appropriate ITestCase methods.
-        /// @param [in] testCase Test case object.
-        /// @param [in] str Message string.
-        static void PrintFromTestCase(const ITestCase* const testCase, const wchar_t* const str);
-
-        /// Formats and prints the specified message and appends a newline.
-        /// For use inside a test case, but print requests should be through the appropriate ITestCase methods.
-        /// @param [in] testCase Test case object.
-        /// @param [in] format Message string, possibly with format specifiers.
-        /// @param [in] args Variable argument list.
-        static void PrintVarArgFromTestCase(const ITestCase* const testCase, const wchar_t* const format, va_list args);
-
         /// Registers a test case to be run by the harness.
         /// Typically, registration happens automatically using the #TEST_CASE macro, which is the recommended way of creating test cases.
         /// @param [in] testCase Test case object to register (appropriate instances are created automatically by the #TEST_CASE macro).

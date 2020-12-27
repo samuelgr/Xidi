@@ -73,7 +73,7 @@ namespace XidiTest
             }
             else
             {
-                TEST_FAILED_BECAUSE(L"Out-of-sequence value produced by a POV mapper.");
+                TEST_FAILED_BECAUSE(L"Out-of-sequence value %d produced by a POV mapper with analog input %d.", (int)actualState.povDirection[(int)kTargetPov], analogValue);
             }
         }
 
@@ -287,7 +287,7 @@ namespace XidiTest
             }
             else
             {
-                TEST_FAILED_BECAUSE(L"Out-of-sequence value produced by a POV mapper.");
+                TEST_FAILED_BECAUSE(L"Out-of-sequence value %d produced by a POV mapper with trigger input %d.", (int)actualState.povDirection[(int)kTargetPov], triggerValue);
             }
         }
 

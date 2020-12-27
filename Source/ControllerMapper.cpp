@@ -150,7 +150,15 @@ namespace Xidi
 
         Mapper::Mapper(const std::wstring_view name, const SElementMap& elements) : capabilities(DeriveCapabilitiesFromElementMap(elements)), elements(elements), name(name)
         {
-            MapperRegistry::GetInstance().RegisterMapper(name, this);
+            if (false == name.empty())
+                MapperRegistry::GetInstance().RegisterMapper(name, this);
+        }
+
+        // --------
+
+        Mapper::Mapper(const SElementMap& elements) : Mapper(L"", elements)
+        {
+            // Nothing to do here.
         }
 
         // --------

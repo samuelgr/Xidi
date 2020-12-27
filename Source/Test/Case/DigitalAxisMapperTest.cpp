@@ -73,7 +73,7 @@ namespace XidiTest
             }
             else
             {
-                TEST_FAILED_BECAUSE(L"Unexpected value produced by a digital axis mapper.");
+                TEST_FAILED_BECAUSE(L"Unexpected value %d produced by a digital axis mapper with analog input %d.", (int)actualState.axis[(int)kTargetAxis], analogValue);
             }
         }
 
@@ -133,7 +133,7 @@ namespace XidiTest
             }
             else
             {
-                TEST_FAILED_BECAUSE(L"Unexpected value produced by a digital axis mapper.");
+                TEST_FAILED_BECAUSE(L"Unexpected value %d produced by a digital axis mapper with analog input %d.", (int)actualState.axis[(int)kTargetAxis], analogValue);
             }
         }
 
@@ -193,7 +193,7 @@ namespace XidiTest
             }
             else
             {
-                TEST_FAILED_BECAUSE(L"Unexpected value produced by a digital axis mapper.");
+                TEST_FAILED_BECAUSE(L"Unexpected value %d produced by a digital axis mapper with analog input %d.", (int)actualState.axis[(int)kTargetAxis], analogValue);
             }
         }
 
@@ -425,7 +425,7 @@ namespace XidiTest
             }
             else
             {
-                TEST_FAILED_BECAUSE(L"Unexpected value produced by a digital axis mapper.");
+                TEST_FAILED_BECAUSE(L"Unexpected value %d produced by a digital axis mapper with trigger input %d.", (int)actualState.axis[(int)kTargetAxis], triggerValue);
             }
         }
 
@@ -467,7 +467,7 @@ namespace XidiTest
             }
             else
             {
-                TEST_FAILED_BECAUSE(L"Unexpected value produced by a digital axis mapper.");
+                TEST_FAILED_BECAUSE(L"Unexpected value %d produced by a digital axis mapper with trigger input %d.", (int)actualState.axis[(int)kTargetAxis], triggerValue);
             }
         }
 
@@ -509,7 +509,7 @@ namespace XidiTest
             }
             else
             {
-                TEST_FAILED_BECAUSE(L"Unexpected value produced by a digital axis mapper.");
+                TEST_FAILED_BECAUSE(L"Unexpected value %d produced by a digital axis mapper with trigger input %d.", (int)actualState.axis[(int)kTargetAxis], triggerValue);
             }
         }
 

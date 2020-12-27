@@ -11,55 +11,14 @@
 
 #include "Harness.h"
 #include "TestCase.h"
+#include "Utilities.h"
 
-#include <cstdarg>
-#include <cstdio>
 #include <map>
 #include <set>
-#include <windows.h>
 
 
 namespace XidiTest
 {
-    // -------- INTERNAL FUNCTIONS ----------------------------------------- //
-
-    /// Prints the specified message and appends a newline.
-    /// If a debugger is present, outputs a debug string, otherwise writes to standard output.
-    /// @param [in] str Message string.
-    static void Print(const wchar_t* const str)
-    {
-        if (IsDebuggerPresent())
-        {
-            OutputDebugString(str);
-            OutputDebugString(L"\n");
-        }
-        else
-        {
-            _putws(str);
-        }
-    }
-
-    /// Formats and prints the specified message and appends a newline.
-    /// @param [in] format Message string, possibly with format specifiers.
-    /// @param [in] args Variable argument list.
-    static void PrintVarArg(const wchar_t* const format, va_list args)
-    {
-        wchar_t formattedStringBuffer[1024];
-        vswprintf_s(formattedStringBuffer, _countof(formattedStringBuffer), format, args);
-        Print(formattedStringBuffer);
-    }
-
-    /// Formats and prints the specified message.
-    /// @param [in] format Message string, possibly with format specifiers.
-    static void PrintFormatted(const wchar_t* const format, ...)
-    {
-        va_list args;
-        va_start(args, format);
-        PrintVarArg(format, args);
-        va_end(args);
-    }
-
-
     // -------- CLASS METHODS ---------------------------------------------- //
     // See "Harness.h" for documentation.
 
@@ -67,20 +26,6 @@ namespace XidiTest
     {
         static Harness harness;
         return harness;
-    }
-
-    // --------
-
-    void Harness::PrintFromTestCase(const ITestCase* const testCase, const wchar_t* const str)
-    {
-        Print(str);
-    }
-
-    // --------
-
-    void Harness::PrintVarArgFromTestCase(const ITestCase* const testCase, const wchar_t* const format, va_list args)
-    {
-        PrintVarArg(format, args);
     }
 
 
@@ -133,10 +78,9 @@ namespace XidiTest
                     testCase->Run();
                     testCasePassed = true;
                 }
-                catch (TestFailedException failure)
+                catch (TestFailedException)
                 {
-                    if (nullptr != failure.reason)
-                        PrintFormatted(L"Failure reason: %s", failure.reason);
+                    // Nothing to do here.
                 }
 
                 if (true != testCasePassed)

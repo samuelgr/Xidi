@@ -11,6 +11,11 @@
 
 #pragma once
 
+#include "Utilities.h"
+
+#include <string>
+#include <string_view>
+
 
 namespace XidiTest
 {
@@ -23,19 +28,6 @@ namespace XidiTest
         /// Initialization constructor. Constructs a test case object with an associated test case name, and registers it with the harness.
         /// @param [in] name Test case name.
         ITestCase(const wchar_t* const name);
-
-
-        // -------- INSTANCE METHODS --------------------------------------- //
-
-        /// Prints the specified message and appends a newline.
-        /// Available to be called directly from the body of a test case.
-        /// @param [in] str Message string.
-        void Print(const wchar_t* const str) const;
-
-        /// Formats and prints the specified message and appends a newline.
-        /// Available to be called directly from the body of a test case.
-        /// @param [in] format Message string, possibly with format specifiers.
-        void PrintFormatted(const wchar_t* const format, ...) const;
 
 
         // -------- ABSTRACT INSTANCE METHODS ------------------------------ //
@@ -72,22 +64,18 @@ namespace XidiTest
         void Run(void) const override;
     };
 
+    /// Thrown to signal a test failure. For internal use only.
     struct TestFailedException
     {
-        const wchar_t* const reason;
-
-        TestFailedException(const wchar_t* reason = nullptr) : reason(reason)
-        {
-            // Nothing to do here.
-        }
+        // Empty.
     };
 }
 
-/// Exit from a test case and indicate a failing result without a specific reason.
+/// Exit from a test case and indicate a failing result.
 #define TEST_FAILED                         throw TestFailedException()
 
-/// Exit from a test case and indicate a failing result with the given reason as a null-terminated string.
-#define TEST_FAILED_BECAUSE(cwstrReason)    throw TestFailedException(cwstrReason)
+/// Format and print a message and exit from a test caes, indicating a failing result.
+#define TEST_FAILED_BECAUSE(reasonf, ...)   do {PrintFormatted(reasonf, ##__VA_ARGS__); TEST_FAILED;} while (0)
 
 /// Exit from a test case and indicate a failing result if the expression is false.
 #define TEST_ASSERT(expr)                   do {if (!(expr)) {PrintFormatted(L"%s:%d: Assertion failed: %s", __FILEW__, __LINE__, L#expr); TEST_FAILED;}} while (0)

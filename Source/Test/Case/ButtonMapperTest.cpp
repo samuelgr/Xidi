@@ -72,7 +72,7 @@ namespace XidiTest
             }
             else
             {
-                TEST_FAILED_BECAUSE(L"Out-of-sequence value produced by a button mapper.");
+                TEST_FAILED_BECAUSE(L"Out-of-sequence value %d produced by a button mapper with analog input %d.", (int)actualState.button[(int)kTargetButton], analogValue);
             }
         }
 
@@ -286,7 +286,7 @@ namespace XidiTest
             }
             else
             {
-                TEST_FAILED_BECAUSE(L"Out-of-sequence value produced by a button mapper.");
+                TEST_FAILED_BECAUSE(L"Out-of-sequence value %d produced by a button mapper with trigger input %d.", (int)actualState.button[(int)kTargetButton], triggerValue);
             }
         }
 

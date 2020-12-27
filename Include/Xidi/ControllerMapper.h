@@ -84,9 +84,15 @@ namespace Xidi
             // -------- CONSTRUCTION AND DESTRUCTION ----------------------- //
 
             /// Initialization constructor.
-            /// Requires that a mapper be specified for each controller element.
+            /// Requires a name and, for each controller element, a unique element mapper which becomes owned by this object.
             /// For controller elements that are not used, `nullptr` may be passed instead.
             Mapper(const std::wstring_view name, const SElementMap& elements);
+
+            /// Initialization constructor.
+            /// Does not require or register a name for this mapper. This version is primarily useful for testing.
+            /// Requires that a unique mapper be specified for each controller element, which in turn becomes owned by this object.
+            /// For controller elements that are not used, `nullptr` may be passed instead.
+            Mapper(const SElementMap& elements);
 
             /// Copy constructor. Should never be invoked.
             Mapper(const Mapper& other) = delete;
