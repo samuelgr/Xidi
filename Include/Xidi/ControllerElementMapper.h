@@ -46,14 +46,9 @@ namespace Xidi
             /// @param [in] buttonPressed Button state from the XInput controller, `true` if pressed and `false` otherwise.
             virtual void ContributeFromTriggerValue(SState* controllerState, uint8_t triggerValue) const = 0;
 
-            /// Specifies the index of the virtual controller element within its specific type that is the target of any contribution from this element mapper.
-            /// For example, if the type is a button, then the resulting index is a member of the #EButton enumeration.
-            /// @return Index of the target controller element.
-            virtual int GetTargetElementIndex(void) const = 0;
-            
-            /// Specifies which type of virtual controller element is the target of any contribution from this element mapper.
-            /// @return Type of the target controller element.
-            virtual EElementType GetTargetElementType(void) const = 0;
+            /// Specifies the virtual controller element that is the target of any contributions from this element mapper.
+            /// @return Identifier of the targert virtual controller element.
+            virtual SElementIdentifier GetTargetElement(void) const = 0;
         };
 
         /// Maps a single XInput controller element such that it contributes to an axis value on a virtual controller.
@@ -102,8 +97,7 @@ namespace Xidi
             void ContributeFromAnalogValue(SState* controllerState, int16_t analogValue) const override;
             void ContributeFromButtonValue(SState* controllerState, bool buttonPressed) const override;
             void ContributeFromTriggerValue(SState* controllerState, uint8_t triggerValue) const override;
-            int GetTargetElementIndex(void) const override;
-            EElementType GetTargetElementType(void) const override;
+            SElementIdentifier GetTargetElement(void) const override;
         };
 
         /// Maps a single XInput controller element such that it contributes to a button reading on a virtual controller.
@@ -135,8 +129,7 @@ namespace Xidi
             void ContributeFromAnalogValue(SState* controllerState, int16_t analogValue) const override;
             void ContributeFromButtonValue(SState* controllerState, bool buttonPressed) const override;
             void ContributeFromTriggerValue(SState* controllerState, uint8_t triggerValue) const override;
-            int GetTargetElementIndex(void) const override;
-            EElementType GetTargetElementType(void) const override;
+            SElementIdentifier GetTargetElement(void) const override;
         };
 
         /// Maps a single XInput controller element such that it contributes to an axis value on a virtual controller, but removes analog functionality. Values contributed are either zero or extreme.
@@ -165,20 +158,11 @@ namespace Xidi
         /// Maps a single XInput controller element such that it contributes to a POV direction on a virtual controller.
         class PovMapper : public IElementMapper
         {
-        public:
-            // -------- CONSTANTS ------------------------------------------ //
-
-            /// Element index for all POV mappers.
-            /// Virtual controllers may contain zero or one POV hats, and each POV mapper contributes to one direction on the virtual POV hat.
-            /// Therefore, they all map to the same controller object, whose value is itself computed by aggregating the contributions of each direction.
-            static constexpr int kPovElementIndex = 0;
-
-
         private:
             // -------- INSTANCE VARIABLES --------------------------------- //
 
             /// Identifies the POV direction to which this mapper should contribute in the internal controller state data structure.
-            const EPov povDirection;
+            const EPovDirection povDirection;
 
 
         public:
@@ -186,7 +170,7 @@ namespace Xidi
 
             /// Initialization constructor.
             /// Specifies the button to which all updates are contributed.
-            inline constexpr PovMapper(EPov povDirection) : IElementMapper(), povDirection(povDirection)
+            inline constexpr PovMapper(EPovDirection povDirection) : IElementMapper(), povDirection(povDirection)
             {
                 // Nothing to do here.
             }
@@ -197,8 +181,7 @@ namespace Xidi
             void ContributeFromAnalogValue(SState* controllerState, int16_t analogValue) const override;
             void ContributeFromButtonValue(SState* controllerState, bool buttonPressed) const override;
             void ContributeFromTriggerValue(SState* controllerState, uint8_t triggerValue) const override;
-            int GetTargetElementIndex(void) const override;
-            EElementType GetTargetElementType(void) const override;
+            SElementIdentifier GetTargetElement(void) const override;
         };
     }
 }

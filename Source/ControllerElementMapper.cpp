@@ -159,16 +159,9 @@ namespace Xidi
 
         // --------
 
-        int AxisMapper::GetTargetElementIndex(void) const
+        SElementIdentifier AxisMapper::GetTargetElement(void) const
         {
-            return (int)axis;
-        }
-
-        // --------
-
-        EElementType AxisMapper::GetTargetElementType(void) const
-        {
-            return EElementType::Axis;
+            return {.type = EElementType::Axis, .axis = axis};
         }
         
         // --------
@@ -194,16 +187,9 @@ namespace Xidi
 
         // --------
 
-        int ButtonMapper::GetTargetElementIndex(void) const
+        SElementIdentifier ButtonMapper::GetTargetElement(void) const
         {
-            return (int)button;
-        }
-
-        // --------
-
-        EElementType ButtonMapper::GetTargetElementType(void) const
-        {
-            return EElementType::Button;
+            return {.type = EElementType::Button, .button = button};
         }
 
         // --------
@@ -265,16 +251,9 @@ namespace Xidi
 
         // --------
 
-        int PovMapper::GetTargetElementIndex(void) const
+        SElementIdentifier PovMapper::GetTargetElement(void) const
         {
-            return kPovElementIndex;
-        }
-
-        // --------
-
-        EElementType PovMapper::GetTargetElementType(void) const
-        {
-            return EElementType::Pov;
+            return {.type = EElementType::Pov};
         }
     }
 }

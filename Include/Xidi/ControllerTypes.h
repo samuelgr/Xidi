@@ -50,7 +50,7 @@ namespace Xidi
         /// Enumerates all supported axis types using DirectInput terminology.
         /// It is not necessarily the case that all of these axes are present in a virtual controller. This enumerator just lists all the possible axes.
         /// Semantically, the value of each enumerator maps to an array position in the controller's internal state data structure.
-        enum class EAxis
+        enum class EAxis : uint16_t
         {
             X,                                                              ///< X axis
             Y,                                                              ///< Y axis
@@ -64,7 +64,7 @@ namespace Xidi
         /// Enumerates all supported buttons.
         /// It is not necessarily the case that all of these buttons are present in a virtual controller. This enumerator just lists all the possible buttons.
         /// Semantically, the value of each enumerator maps to an array position in the controller's internal state data structure.
-        enum class EButton
+        enum class EButton : uint16_t
         {
             B1,                                                             ///< Button 1
             B2,                                                             ///< Button 2
@@ -90,7 +90,7 @@ namespace Xidi
         /// If a POV is presented, then these four buttons in the internal state data structure are combined into a POV reading.
         /// If not, then the corresponding part of the internal state data structure is ignored.
         /// Semantically, the value of each enumerator maps to an array position in the controller's internal state data structure.
-        enum class EPov
+        enum class EPovDirection : uint16_t
         {
             Up,                                                             ///< Up direction
             Down,                                                           ///< Down direction
@@ -100,11 +100,25 @@ namespace Xidi
         };
 
         /// Enumerates all types of controller elements present in the internal virtual controller state.
-        enum class EElementType
+        enum class EElementType : uint16_t
         {
             Axis,
             Button,
             Pov
+        };
+
+        /// Identifier for an element of a virtual controller's state.
+        /// Specifies both element type and index. Valid member of the union is based on the indicated type.
+        /// If type indicates POV, then neither union member is valid because virtual controllers can only have at most 1 POV.
+        struct SElementIdentifier
+        {
+            EElementType type;
+            
+            union
+            {
+                EAxis axis;
+                EButton button;
+            };
         };
 
         /// Properties of an individual axis.
@@ -167,7 +181,7 @@ namespace Xidi
 
                 return -1;
             }
-            
+
             /// Checks if this capabilities object specifies that the controller has an axis of the specified type.
             /// @param [in] axis Axis type for which to query.
             /// @return `true` if the axis is present, `false` otherwise.
@@ -176,7 +190,7 @@ namespace Xidi
                 return (-1 != FindAxis(axis));
             }
         };
-        
+
         /// Native data format for virtual controllers, used internally to represent controller state.
         /// Instances of `XINPUT_GAMEPAD` are passed through a mapper to produce objects of this type.
         /// Validity or invalidity of each element depends on the mapper.
@@ -184,7 +198,7 @@ namespace Xidi
         {
             int32_t axis[(int)EAxis::Count];
             bool button[(int)EButton::Count];
-            bool povDirection[(int)EPov::Count];
+            bool povDirection[(int)EPovDirection::Count];
 
             /// Simple check for equality by low-level memory comparison.
             /// Primarily useful during testing.

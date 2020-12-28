@@ -119,14 +119,9 @@ namespace XidiTest
                 *contributionCounter += 1;
         }
 
-        int GetTargetElementIndex(void) const override
+        SElementIdentifier GetTargetElement(void) const override
         {
-            return 0;
-        }
-
-        EElementType GetTargetElementType(void) const override
-        {
-            return EElementType::Axis;
+            return {};
         }
     };
 
@@ -479,7 +474,7 @@ namespace XidiTest
         });
 
         const Mapper mapper({
-            .stickRightX = new PovMapper(EPov::Left)
+            .stickRightX = new PovMapper(EPovDirection::Left)
         });
 
         const SCapabilities& kActualCapabilities = mapper.GetCapabilities();
@@ -497,14 +492,14 @@ namespace XidiTest
         });
 
         const Mapper mapper({
-            .stickLeftY = new PovMapper(EPov::Left),
-            .stickRightX = new PovMapper(EPov::Right),
-            .triggerLT = new PovMapper(EPov::Up),
-            .triggerRT = new PovMapper(EPov::Down),
-            .buttonA = new PovMapper(EPov::Left),
-            .buttonY = new PovMapper(EPov::Left),
-            .buttonLS = new PovMapper(EPov::Up),
-            .buttonRS = new PovMapper(EPov::Down)
+            .stickLeftY = new PovMapper(EPovDirection::Left),
+            .stickRightX = new PovMapper(EPovDirection::Right),
+            .triggerLT = new PovMapper(EPovDirection::Up),
+            .triggerRT = new PovMapper(EPovDirection::Down),
+            .buttonA = new PovMapper(EPovDirection::Left),
+            .buttonY = new PovMapper(EPovDirection::Left),
+            .buttonLS = new PovMapper(EPovDirection::Up),
+            .buttonRS = new PovMapper(EPovDirection::Down)
         });
 
         const SCapabilities& kActualCapabilities = mapper.GetCapabilities();

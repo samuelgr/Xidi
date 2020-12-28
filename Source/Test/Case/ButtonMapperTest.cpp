@@ -31,8 +31,9 @@ namespace XidiTest
         for (int i = 0; i < (int)EButton::Count; ++i)
         {
             const ButtonMapper mapper((EButton)i);
-            TEST_ASSERT(EElementType::Button == mapper.GetTargetElementType());
-            TEST_ASSERT(i == mapper.GetTargetElementIndex());
+            const SElementIdentifier targetElement = mapper.GetTargetElement();
+            TEST_ASSERT(EElementType::Button == targetElement.type);
+            TEST_ASSERT(i == (int)targetElement.button);
         }
     }
 

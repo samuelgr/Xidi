@@ -29,11 +29,11 @@ namespace XidiTest
     // Because all POV mappers contribute to the same virutal POV object (one direction per mapper), the element index is always the same.
     TEST_CASE(PovMapper_GetTargetElement)
     {
-        for (int i = 0; i < (int)EPov::Count; ++i)
+        for (int i = 0; i < (int)EPovDirection::Count; ++i)
         {
-            const PovMapper mapper((EPov)i);
-            TEST_ASSERT(EElementType::Pov == mapper.GetTargetElementType());
-            TEST_ASSERT(PovMapper::kPovElementIndex == mapper.GetTargetElementIndex());
+            const PovMapper mapper((EPovDirection)i);
+            const SElementIdentifier targetElement = mapper.GetTargetElement();
+            TEST_ASSERT(EElementType::Pov == targetElement.type);
         }
     }
 
@@ -42,7 +42,7 @@ namespace XidiTest
     // Sweeps the entire range of possible analog values.
     TEST_CASE(PovMapper_ContributeFromAnalogValue_Nominal)
     {
-        constexpr EPov kTargetPov = EPov::Up;
+        constexpr EPovDirection kTargetPov = EPovDirection::Up;
 
         // Expected sequence, based on an analog value sweep, is pressed, not pressed, and finally pressed.
         // The final two values are the same as a way of simplifying the implementation thus disabling a final transition and triggering a test failure.
@@ -86,7 +86,7 @@ namespace XidiTest
     // The aggregated contribution should always be that the POV direction is not pressed, since no mapper sees any analog value away from neutral.
     TEST_CASE(PovMapper_ContributeFromAnalogValue_AllNeutral)
     {
-        constexpr EPov kTargetPov = EPov::Down;
+        constexpr EPovDirection kTargetPov = EPovDirection::Down;
 
         constexpr PovMapper mappers[] = {
             PovMapper(kTargetPov),
@@ -113,7 +113,7 @@ namespace XidiTest
     // The aggregated contribution should always be that the POV direction is pressed.
     TEST_CASE(PovMapper_ContributeFromAnalogValue_ConstructiveInterference)
     {
-        constexpr EPov kTargetPov = EPov::Left;
+        constexpr EPovDirection kTargetPov = EPovDirection::Left;
 
         constexpr PovMapper mappers[] = {
             PovMapper(kTargetPov),
@@ -140,7 +140,7 @@ namespace XidiTest
     // For POV mappers this does not matter and the expected output is still that the POV direction is pressed.
     TEST_CASE(PovMapper_ContributeFromAnalogValue_DestructiveInterference)
     {
-        constexpr EPov kTargetPov = EPov::Right;
+        constexpr EPovDirection kTargetPov = EPovDirection::Right;
 
         constexpr PovMapper mappersPositive[] = {
             PovMapper(kTargetPov),
@@ -171,7 +171,7 @@ namespace XidiTest
     // Verifies the nominal behavior in which a POV mapper is asked to contribute some arbitrary button press state to a POV hat direction.
     TEST_CASE(PovMapper_ContributeFromButtonValue_Nominal)
     {
-        constexpr EPov kTargetPov = EPov::Up;
+        constexpr EPovDirection kTargetPov = EPovDirection::Up;
         constexpr bool kButtonStates[] = {false, true};
 
         for (bool buttonIsPressed : kButtonStates)
@@ -194,7 +194,7 @@ namespace XidiTest
     // As long as one POV mapper receives an input of "pressed" then the virtual POV direction should also be pressed.
     TEST_CASE(PovMapper_ContributeFromButtonValue_SamePovSameInput)
     {
-        constexpr EPov kTargetPov = EPov::Down;
+        constexpr EPovDirection kTargetPov = EPovDirection::Down;
         constexpr bool kButtonStates[] = {false, true};
 
         for (bool buttonIsPressed : kButtonStates)
@@ -224,7 +224,7 @@ namespace XidiTest
     // As long as one POV mapper receives an input of "pressed" then the virtual POV direction should also be pressed.
     TEST_CASE(PovMapper_ContributeFromAnalogValue_SamePovDifferentInput)
     {
-        constexpr EPov kTargetPov = EPov::Left;
+        constexpr EPovDirection kTargetPov = EPovDirection::Left;
 
         constexpr PovMapper mappersPressed[] = {
             PovMapper(kTargetPov),
@@ -256,7 +256,7 @@ namespace XidiTest
     // Sweeps the entire range of possible trigger values.
     TEST_CASE(PovMapper_ContributeFromTriggerValue_Nominal)
     {
-        constexpr EPov kTargetPov = EPov::Right;
+        constexpr EPovDirection kTargetPov = EPovDirection::Right;
 
         // Expected sequence, based on a trigger value sweep, is not pressed followed by pressed.
         // The final two values are the same as a way of simplifying the implementation thus disabling a final transition and triggering a test failure.
@@ -300,7 +300,7 @@ namespace XidiTest
     // The aggregated contribution should always be that the POV direction is not pressed, since no mapper sees any trigger value that could possibly have exceeded the threshold.
     TEST_CASE(PovMapper_ContributeFromTriggerValue_NonePressed)
     {
-        constexpr EPov kTargetPov = EPov::Up;
+        constexpr EPovDirection kTargetPov = EPovDirection::Up;
 
         constexpr PovMapper mappers[] = {
             PovMapper(kTargetPov),
@@ -327,7 +327,7 @@ namespace XidiTest
     // The aggregated contribution should always be that the POV direction is pressed.
     TEST_CASE(PovMapper_ContributeFromTriggerValue_AllPressed)
     {
-        constexpr EPov kTargetPov = EPov::Down;
+        constexpr EPovDirection kTargetPov = EPovDirection::Down;
 
         constexpr PovMapper mappers[] = {
             PovMapper(kTargetPov),
@@ -353,7 +353,7 @@ namespace XidiTest
     // For POV mappers this does not matter and the expected output is still that the POV direction is pressed.
     TEST_CASE(PovMapper_ContributeFromTriggerValue_SomePressed)
     {
-        constexpr EPov kTargetPov = EPov::Left;
+        constexpr EPovDirection kTargetPov = EPovDirection::Left;
 
         constexpr PovMapper mappersPressed[] = {
             PovMapper(kTargetPov),

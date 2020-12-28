@@ -56,7 +56,7 @@ namespace Xidi
                 const IElementMapper* buttonRS = nullptr;
             };
 
-            /// Dual representation of a controller element map.
+            /// Dual representation of a controller element map. Intended for internal use only.
             /// In one representation the elements all have names for element-specific access.
             /// In the other, all the elements are collapsed into an array for easy iteration.
             union UElementMap

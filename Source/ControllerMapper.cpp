@@ -111,19 +111,19 @@ namespace Xidi
             {
                 if (nullptr != elements.all[i])
                 {
-                    switch (elements.all[i]->GetTargetElementType())
+                    const SElementIdentifier targetElement = elements.all[i]->GetTargetElement();
+                    switch (targetElement.type)
                     {
                     case EElementType::Axis:
-                        if (elements.all[i]->GetTargetElementIndex() < (int)EAxis::Count)
-                            axesPresent.insert((EAxis)elements.all[i]->GetTargetElementIndex());
+                        if ((int)targetElement.axis < (int)EAxis::Count)
+                            axesPresent.insert(targetElement.axis);
                         break;
 
                     case EElementType::Button:
-                        if (elements.all[i]->GetTargetElementIndex() < (int)EButton::Count)
+                        if ((int)targetElement.button < (int)EButton::Count)
                         {
-                            const int button = elements.all[i]->GetTargetElementIndex();
-                            if (button > highestButtonSeen)
-                                highestButtonSeen = button;
+                            if ((int)targetElement.button > highestButtonSeen)
+                                highestButtonSeen = (int)targetElement.button;
                         }
                         break;
 
@@ -238,10 +238,10 @@ namespace Xidi
                 .stickLeftY = new AxisMapper(EAxis::Y),
                 .stickRightX = new AxisMapper(EAxis::Z),
                 .stickRightY = new AxisMapper(EAxis::RotZ),
-                .dpadUp = new PovMapper(EPov::Up),
-                .dpadDown = new PovMapper(EPov::Down),
-                .dpadLeft = new PovMapper(EPov::Left),
-                .dpadRight = new PovMapper(EPov::Right),
+                .dpadUp = new PovMapper(EPovDirection::Up),
+                .dpadDown = new PovMapper(EPovDirection::Down),
+                .dpadLeft = new PovMapper(EPovDirection::Left),
+                .dpadRight = new PovMapper(EPovDirection::Right),
                 .triggerLT = new ButtonMapper(EButton::B7),
                 .triggerRT = new ButtonMapper(EButton::B8),
                 .buttonA = new ButtonMapper(EButton::B1),
@@ -282,10 +282,10 @@ namespace Xidi
                 .stickLeftY = new AxisMapper(EAxis::Y),
                 .stickRightX = new AxisMapper(EAxis::Z),
                 .stickRightY = new AxisMapper(EAxis::RotZ),
-                .dpadUp = new PovMapper(EPov::Up),
-                .dpadDown = new PovMapper(EPov::Down),
-                .dpadLeft = new PovMapper(EPov::Left),
-                .dpadRight = new PovMapper(EPov::Right),
+                .dpadUp = new PovMapper(EPovDirection::Up),
+                .dpadDown = new PovMapper(EPovDirection::Down),
+                .dpadLeft = new PovMapper(EPovDirection::Left),
+                .dpadRight = new PovMapper(EPovDirection::Right),
                 .triggerLT = new AxisMapper(EAxis::RotX),
                 .triggerRT = new AxisMapper(EAxis::RotY),
                 .buttonA = new ButtonMapper(EButton::B1),
@@ -304,10 +304,10 @@ namespace Xidi
                 .stickLeftY = new AxisMapper(EAxis::Y),
                 .stickRightX = new AxisMapper(EAxis::RotX),
                 .stickRightY = new AxisMapper(EAxis::RotY),
-                .dpadUp = new PovMapper(EPov::Up),
-                .dpadDown = new PovMapper(EPov::Down),
-                .dpadLeft = new PovMapper(EPov::Left),
-                .dpadRight = new PovMapper(EPov::Right),
+                .dpadUp = new PovMapper(EPovDirection::Up),
+                .dpadDown = new PovMapper(EPovDirection::Down),
+                .dpadLeft = new PovMapper(EPovDirection::Left),
+                .dpadRight = new PovMapper(EPovDirection::Right),
                 .triggerLT = new AxisMapper(EAxis::Z),
                 .triggerRT = new AxisMapper(EAxis::RotZ),
                 .buttonA = new ButtonMapper(EButton::B1),
@@ -326,10 +326,10 @@ namespace Xidi
                 .stickLeftY = new AxisMapper(EAxis::Y),
                 .stickRightX = new AxisMapper(EAxis::RotX),
                 .stickRightY = new AxisMapper(EAxis::RotY),
-                .dpadUp = new PovMapper(EPov::Up),
-                .dpadDown = new PovMapper(EPov::Down),
-                .dpadLeft = new PovMapper(EPov::Left),
-                .dpadRight = new PovMapper(EPov::Right),
+                .dpadUp = new PovMapper(EPovDirection::Up),
+                .dpadDown = new PovMapper(EPovDirection::Down),
+                .dpadLeft = new PovMapper(EPovDirection::Left),
+                .dpadRight = new PovMapper(EPovDirection::Right),
                 .triggerLT = new AxisMapper(EAxis::Z, AxisMapper::EDirection::Positive),
                 .triggerRT = new AxisMapper(EAxis::Z, AxisMapper::EDirection::Negative),
                 .buttonA = new ButtonMapper(EButton::B1),
