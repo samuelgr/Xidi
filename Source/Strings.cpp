@@ -68,6 +68,7 @@ namespace Xidi
             static std::once_flag initFlag;
 
             std::call_once(initFlag, []() -> void {
+#ifdef IDS_XIDI_VERSION_NAME
                 const wchar_t* stringStart = nullptr;
                 int stringLength = LoadString(Globals::GetInstanceHandle(), IDS_XIDI_VERSION_NAME, (wchar_t*)&stringStart, 0);
 
@@ -76,6 +77,9 @@ namespace Xidi
 
                 if (stringLength > 0)
                     initString.assign(stringStart, &stringStart[stringLength]);
+#else
+                initString.assign(L"");
+#endif
             });
 
             return initString;

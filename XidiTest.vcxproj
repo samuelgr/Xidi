@@ -102,6 +102,7 @@
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
       <Optimization>Disabled</Optimization>
       <EnableEnhancedInstructionSet>AdvancedVectorExtensions</EnableEnhancedInstructionSet>
+      <ForcedIncludeFiles>$(ProjectDir)Resources\$(SolutionName).h;%(ForcedIncludeFiles)</ForcedIncludeFiles>
     </ClCompile>
     <Link />
   </ItemDefinitionGroup>
@@ -119,6 +120,7 @@
       <Optimization>MaxSpeed</Optimization>
       <OmitFramePointers>true</OmitFramePointers>
       <EnableEnhancedInstructionSet>AdvancedVectorExtensions</EnableEnhancedInstructionSet>
+      <ForcedIncludeFiles>$(ProjectDir)Resources\$(SolutionName).h;%(ForcedIncludeFiles)</ForcedIncludeFiles>
     </ClCompile>
     <Link>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
@@ -140,6 +142,7 @@
       <Optimization>Disabled</Optimization>
       <OmitFramePointers>false</OmitFramePointers>
       <EnableEnhancedInstructionSet>AdvancedVectorExtensions</EnableEnhancedInstructionSet>
+      <ForcedIncludeFiles>$(ProjectDir)Resources\$(SolutionName).h;%(ForcedIncludeFiles)</ForcedIncludeFiles>
     </ClCompile>
     <Link />
   </ItemDefinitionGroup>
@@ -157,6 +160,7 @@
       <Optimization>MaxSpeed</Optimization>
       <OmitFramePointers>true</OmitFramePointers>
       <EnableEnhancedInstructionSet>AdvancedVectorExtensions</EnableEnhancedInstructionSet>
+      <ForcedIncludeFiles>$(ProjectDir)Resources\$(SolutionName).h;%(ForcedIncludeFiles)</ForcedIncludeFiles>
     </ClCompile>
     <Link>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
@@ -165,17 +169,32 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClInclude Include="Include\Xidi\ApiWindows.h" />
+    <ClInclude Include="Include\Xidi\Configuration.h" />
     <ClInclude Include="Include\Xidi\ControllerElementMapper.h" />
     <ClInclude Include="Include\Xidi\ControllerMapper.h" />
     <ClInclude Include="Include\Xidi\ControllerTypes.h" />
+    <ClInclude Include="Include\Xidi\DataFormat.h" />
+    <ClInclude Include="Include\Xidi\Globals.h" />
+    <ClInclude Include="Include\Xidi\MapperType.h" />
+    <ClInclude Include="Include\Xidi\Message.h" />
+    <ClInclude Include="Include\Xidi\Strings.h" />
+    <ClInclude Include="Include\Xidi\TemporaryBuffer.h" />
     <ClInclude Include="Include\Xidi\Test\Harness.h" />
     <ClInclude Include="Include\Xidi\Test\TestCase.h" />
     <ClInclude Include="Include\Xidi\Test\Utilities.h" />
+    <ClInclude Include="Include\Xidi\XidiConfigReader.h" />
     <ClInclude Include="Resources\Xidi.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="Source\Configuration.cpp" />
     <ClCompile Include="Source\ControllerElementMapper.cpp" />
     <ClCompile Include="Source\ControllerMapper.cpp" />
+    <ClCompile Include="Source\DataFormat.cpp" />
+    <ClCompile Include="Source\Globals.cpp" />
+    <ClCompile Include="Source\MapperType.cpp" />
+    <ClCompile Include="Source\Message.cpp" />
+    <ClCompile Include="Source\Strings.cpp" />
+    <ClCompile Include="Source\TemporaryBuffer.cpp" />
     <ClCompile Include="Source\Test\Case\AxisMapperTest.cpp" />
     <ClCompile Include="Source\Test\Case\ButtonMapperTest.cpp" />
     <ClCompile Include="Source\Test\Case\DigitalAxisMapperTest.cpp" />
@@ -184,6 +203,7 @@
     <ClCompile Include="Source\Test\Harness.cpp" />
     <ClCompile Include="Source\Test\TestCase.cpp" />
     <ClCompile Include="Source\Test\Utilities.cpp" />
+    <ClCompile Include="Source\XidiConfigReader.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="Resources\Xidi.rc" />

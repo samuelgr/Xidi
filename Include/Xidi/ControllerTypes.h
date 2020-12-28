@@ -119,6 +119,15 @@ namespace Xidi
                 EAxis axis;
                 EButton button;
             };
+
+            /// Simple check for equality by low-level memory comparison.
+            /// Primarily useful during testing.
+            /// @param [in] other Object with which to compare.
+            /// @return `true` if this object is equal to the other object, `false` otherwise.
+            inline bool operator==(const SElementIdentifier& other) const
+            {
+                return (0 == memcmp(this, &other, sizeof(*this)));
+            }
         };
 
         /// Properties of an individual axis.

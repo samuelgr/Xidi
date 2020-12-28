@@ -18,6 +18,7 @@
 #include <cstdarg>
 #include <cstdio>
 #include <psapi.h>
+#include <sal.h>
 #include <shlobj.h>
 #include <sstream>
 #include <string>

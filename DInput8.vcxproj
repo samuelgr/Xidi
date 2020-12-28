@@ -26,6 +26,7 @@
     <ClInclude Include="Include\Xidi\ControllerElementMapper.h" />
     <ClInclude Include="Include\Xidi\ControllerMapper.h" />
     <ClInclude Include="Include\Xidi\ControllerTypes.h" />
+    <ClInclude Include="Include\Xidi\DataFormat.h" />
     <ClInclude Include="Include\Xidi\DirectInputClassFactory.h" />
     <ClInclude Include="Include\Xidi\ExportApiDirectInput.h" />
     <ClInclude Include="Include\Xidi\Globals.h" />
@@ -53,6 +54,7 @@
     <ClCompile Include="Source\Configuration.cpp" />
     <ClCompile Include="Source\ControllerElementMapper.cpp" />
     <ClCompile Include="Source\ControllerMapper.cpp" />
+    <ClCompile Include="Source\DataFormat.cpp" />
     <ClCompile Include="Source\DirectInputClassFactory.cpp" />
     <ClCompile Include="Source\Globals.cpp" />
     <ClCompile Include="Source\Mapper.cpp" />
@@ -64,12 +66,6 @@
     <ClCompile Include="Source\Message.cpp" />
     <ClCompile Include="Source\Strings.cpp" />
     <ClCompile Include="Source\TemporaryBuffer.cpp" />
-    <ClCompile Include="Source\TestAppDirectInput.cpp">
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</ExcludedFromBuild>
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
-    </ClCompile>
     <ClCompile Include="Source\ControllerIdentification.cpp" />
     <ClCompile Include="Source\ImportApiDirectInput.cpp" />
     <ClCompile Include="Source\WrapperIDirectInput.cpp" />

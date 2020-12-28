@@ -1,0 +1,146 @@
+/*****************************************************************************
+ * Xidi
+ *   DirectInput interface for XInput controllers.
+ *****************************************************************************
+ * Authored by Samuel Grossman
+ * Copyright (c) 2016-2020
+ *************************************************************************//**
+ * @file DataFormat.h
+ *   Declaration of all functionality related to parsing and formatting
+ *   controller data using the format specified by a DirectInput application.
+ *****************************************************************************/
+
+#pragma once
+
+#include "ApiDirectInput.h"
+#include "ControllerTypes.h"
+
+#include <limits>
+#include <map>
+#include <optional>
+#include <vector>
+
+
+namespace Xidi
+{
+    namespace Controller
+    {
+        /// Encapsulates all functionality for writing and interpreting data formatted using an application-defined DirectInput data format for game controller data.
+        /// Each instance of this class is linked to one specific controller and data format. Data format objects can be queried or used to write application data packets, but the format itself cannot be updated once the object is created.
+        /// To change to a different data format, it is necessary to create a new instance.
+        /// See DirectInput documentation for more information on how applications define their data format.
+        class DataFormat
+        {
+        public:
+            // -------- TYPE DEFINITIONS ----------------------------------- //
+
+            /// Integer type used by DirectInput to represent offsets within an application's data format.
+            typedef DWORD TOffset;
+
+            /// Holds everything needed to reason about an application's data format.
+            /// Generally intended for internal use, but examining the contents can be useful for testing.
+            struct SDataFormatSpec
+            {
+                TOffset packetSizeBytes;                                            ///< Size of the application data packet, in bytes. An application is required to provide this along with its data format specification.
+                std::vector<TOffset> povOffsetsUnused;                              ///< All offsets in the application's data format that correspond to POVs not present in the virtual controller. These POV areas need to be initialized to "POV neutral" when writing an application data packet.
+                TOffset axisOffset[(int)Controller::EAxis::Count];                  ///< Offsets into the application's data format for axis data. One slot exists for each possible axis, indexed by axis type enumerator.
+                TOffset buttonOffset[(int)Controller::EButton::Count];              ///< Offsets into the application's data format for button data. One slot exists for each possible button, indexed by button number enumerator.
+                TOffset povOffset;                                                  ///< Offset into the application's data format for POV data. Only one slot exists because a virtual controller can only have one POV.
+                std::map<TOffset, SElementIdentifier> offsetElementMap;             ///< Reverse map from application data format offset to virtual controller element. Applications are allowed to identify controller elements by data format offset, so this map enables that functionality.
+
+                /// Simple member-by-member equality check.
+                /// Primarily useful during testing.
+                /// @param [in] other Object with which to compare.
+                /// @return `true` if this object is equal to the other object, `false` otherwise.
+                inline bool operator==(const SDataFormatSpec& other) const
+                {
+                    return ((packetSizeBytes == other.packetSizeBytes)
+                        && (povOffsetsUnused == other.povOffsetsUnused)
+                        && (0 == memcmp(axisOffset, other.axisOffset, sizeof(axisOffset)))
+                        && (0 == memcmp(buttonOffset, other.buttonOffset, sizeof(axisOffset)))
+                        && (povOffset == other.povOffset)
+                        && (offsetElementMap == other.offsetElementMap));
+                }
+            };
+
+
+            // -------- CONSTANTS ------------------------------------------ //
+
+            /// Value used in place of a real offset to signal to an application that no valid offset exists.
+            static constexpr TOffset kInvalidOffsetValue = std::numeric_limits<TOffset>::max();
+
+
+        private:
+            // -------- INSTANCE VARIABLES --------------------------------- //
+
+            /// Controller capabilities. Often consulted when identifying controller objects.
+            const SCapabilities controllerCapabilities;
+            
+            /// Complete description of the application's data format.
+            const SDataFormatSpec dataFormatSpec;
+
+
+            // -------- CONSTRUCTION AND DESTRUCTION ----------------------- //
+
+            /// Initialization constructor. Objects cannot be constructed externally.
+            /// Requires a complete data format specification, which will be move-assigned to this object's instance variable, and a controller capabilities object which is not owned by (and must outlive) this object.
+            inline DataFormat(const SCapabilities& controllerCapabilities, SDataFormatSpec&& dataFormatSpec) : controllerCapabilities(controllerCapabilities), dataFormatSpec(std::move(dataFormatSpec))
+            {
+                // Nothing to do here.
+            }
+
+
+        public:
+            // -------- CLASS METHODS -------------------------------------- //
+
+            /// Attempts to create a data format representation from an application's DirectInput data format specification.
+            /// If successful, a newly-allocated instance is returned. The pointer is owned by the caller and must be approprately freed later.
+            /// Failure indicates an issue with the application format specification, which is indicated to the DirectInput application by returning `DIERR_INVALIDPARAM`.
+            /// @param [in] appFormatSpec Application-provided DirectInput data format specification.
+            /// @return Pointer to new data format representation, or `nullptr` if there is an issue with the application format specification.
+            static const DataFormat* CreateFromApplicationFormatSpec(const DIDATAFORMAT& appFormatSpec);
+
+
+            // -------- INSTANCE METHODS ----------------------------------- //
+
+            /// Maps from application data format offset to virtual controller element.
+            /// @param [in] offset Application data format offset for which an associated virtual controller element is desired.
+            /// @return Associated virtual controller element if an offset is defined for it.
+            std::optional<SElementIdentifier> GetElementForOffset(TOffset offset);
+            
+            /// Maps from virtual controller element to an offset within the application's data format.
+            /// @param [in] element Virtual controller element for which an offset is desired.
+            /// @return Associated offset if it is defined in the application's data format.
+            std::optional<TOffset> GetOffsetForElement(SElementIdentifier element);
+
+            /// Checks if the application's data format associates any virtual controller element with the specified offset.
+            /// @param [in] offset Offset to check.
+            /// @return `true` if the offset has a virtual controller element associated with it, `false` otherwise.
+            inline bool HasOffset(TOffset offset)
+            {
+                return (GetElementForOffset(offset).has_value());
+            }
+
+            /// Checks if the application's data format associates any offset with the specified virtual controller element.
+            /// @param [in] element Virtual controller element to check.
+            /// @return `true` if the virtual controller element has an offset associated with it, `false` otherwise.
+            inline bool HasElement(SElementIdentifier element)
+            {
+                return (GetOffsetForElement(element).has_value());
+            }
+
+            /// Identifies a controller element, given a DirectInput-style element identifier.
+            /// Parameters are named after common DirectInput field and method parameters that are used for this purpose.
+            /// @param [in] dwObj Object identifier, whose semantics depends on identification method. See DirectInput documentation for more information.
+            /// @param [in] dwHow Identification method. See DirectInput documentation for more information.
+            /// @return Virtual controller element identifier that matches the DirectInput-style element identifier, if such a match exists.
+            std::optional<SElementIdentifier> IdentifyElement(DWORD dwObj, DWORD dwHow);
+
+            /// Formats the specified virtual controller state as an application data packet and writes it to the specified buffer.
+            /// Useful for providing the application with an instantaneous snapshot of the state of a virtual controller.
+            /// Failure indicates an issue with the arguments passed, which is indicated to the DirectInput application by returning `DIERR_INVALIDPARAM`.
+            /// @return `true` on success, `false` on failure due to invalid arguments.
+            bool WriteDataPacket(void* packetBuffer, TOffset packetBufferSizeBytes, const SState& controllerState);
+        };
+    }
+}
