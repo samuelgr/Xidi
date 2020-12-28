@@ -134,14 +134,9 @@ namespace Xidi
                 }
             }
 
-            int axesWritten = 0;
             for (auto it = axesPresent.cbegin(); it != axesPresent.cend(); ++it)
-            {
-                capabilities.axisType[axesWritten] = *it;
-                axesWritten += 1;
-            }
+                capabilities.AppendAxis(*it);
 
-            capabilities.numAxes = (int)axesPresent.size();
             capabilities.numButtons = highestButtonSeen + 1;
             capabilities.hasPov = povPresent;
 

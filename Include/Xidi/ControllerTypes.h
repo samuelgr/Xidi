@@ -13,6 +13,7 @@
 #pragma once
 
 #include <cstdint>
+#include <cstdlib>
 #include <cstring>
 
 
@@ -116,6 +117,10 @@ namespace Xidi
             int32_t rangeMin = kAnalogValueMin;                             ///< Minimum reportable value for the axis.
             int32_t rangeMax = kAnalogValueMax;                             ///< Maximum reportable value for the axis.
 
+            /// Simple check for equality by low-level memory comparison.
+            /// Primarily useful during testing.
+            /// @param [in] other Object with which to compare.
+            /// @return `true` if this object is equal to the other object, `false` otherwise.
             inline bool operator==(const SAxisProperties& other) const
             {
                 return (0 == memcmp(this, &other, sizeof(*this)));
@@ -131,9 +136,44 @@ namespace Xidi
             int numButtons;                                                 ///< Number of buttons present in the virtual controller.
             bool hasPov;                                                    ///< Specifies whether or not the virtual controller has a POV. If it does, then the POV buttons in the controller state are used, otherwise they are ignored.
 
+            /// Simple check for equality by low-level memory comparison.
+            /// Primarily useful during testing.
+            /// @param [in] other Object with which to compare.
+            /// @return `true` if this object is equal to the other object, `false` otherwise.
             inline bool operator==(const SCapabilities& other) const
             {
                 return (0 == memcmp(this, &other, sizeof(*this)));
+            }
+
+            /// Appends an axis to the list of axis types in this capabilities object.
+            /// Performs no bounds-checking or uniqueness-checking, so this is left to the caller to ensure.
+            /// @param [in] axis Axis to append to the list of present axes.
+            inline void AppendAxis(EAxis axis)
+            {
+                axisType[numAxes] = axis;
+                numAxes += 1;
+            }
+
+            /// Determines the index of the specified axis type within this capabilities object, if it exists.
+            /// @param [in] axis Axis type for which to query.
+            /// @return Index of the specified axis if it is present, or -1 if it is not.
+            inline int FindAxis(EAxis axis)
+            {
+                for (int i = 0; i < numAxes; ++i)
+                {
+                    if (axisType[i] == axis)
+                        return i;
+                }
+
+                return -1;
+            }
+            
+            /// Checks if this capabilities object specifies that the controller has an axis of the specified type.
+            /// @param [in] axis Axis type for which to query.
+            /// @return `true` if the axis is present, `false` otherwise.
+            inline bool HasAxis(EAxis axis)
+            {
+                return (-1 != FindAxis(axis));
             }
         };
         
@@ -146,6 +186,10 @@ namespace Xidi
             bool button[(int)EButton::Count];
             bool povDirection[(int)EPov::Count];
 
+            /// Simple check for equality by low-level memory comparison.
+            /// Primarily useful during testing.
+            /// @param [in] other Object with which to compare.
+            /// @return `true` if this object is equal to the other object, `false` otherwise.
             inline bool operator==(const SState& other) const
             {
                 return (0 == memcmp(this, &other, sizeof(*this)));
