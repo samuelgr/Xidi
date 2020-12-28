@@ -100,16 +100,17 @@ namespace Xidi
         };
 
         /// Enumerates all types of controller elements present in the internal virtual controller state.
+        /// The special whole controller value indicates that a reference is being made to the entire virtual controller rather than any specific element.
         enum class EElementType : uint16_t
         {
             Axis,
             Button,
-            Pov
+            Pov,
+            WholeController
         };
 
         /// Identifier for an element of a virtual controller's state.
         /// Specifies both element type and index. Valid member of the union is based on the indicated type.
-        /// If type indicates POV, then neither union member is valid because virtual controllers can only have at most 1 POV.
         struct SElementIdentifier
         {
             EElementType type;

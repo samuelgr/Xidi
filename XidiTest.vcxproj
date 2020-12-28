@@ -197,6 +197,7 @@
     <ClCompile Include="Source\TemporaryBuffer.cpp" />
     <ClCompile Include="Source\Test\Case\AxisMapperTest.cpp" />
     <ClCompile Include="Source\Test\Case\ButtonMapperTest.cpp" />
+    <ClCompile Include="Source\Test\Case\DataFormatTest.cpp" />
     <ClCompile Include="Source\Test\Case\DigitalAxisMapperTest.cpp" />
     <ClCompile Include="Source\Test\Case\ControllerMapperTest.cpp" />
     <ClCompile Include="Source\Test\Case\PovMapperTest.cpp" />

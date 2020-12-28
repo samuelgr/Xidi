@@ -24,26 +24,26 @@ using namespace Xidi;
 /// @param [in] minVersion Minimum allowed version.
 /// @param [in] maxVersion Maximum allowed version.
 /// @param [in] receivedVersion Actual version received.
-inline static void LogVersionOutOfRange(DWORD minVersion, DWORD maxVersion, DWORD receivedVersion)
+static inline void LogVersionOutOfRange(DWORD minVersion, DWORD maxVersion, DWORD receivedVersion)
 {
     Message::OutputFormatted(Message::ESeverity::Error, L"Failed to create a DirectInput interface object because the version is out of range (expected 0x%04x to 0x%04x, got 0x%04x).", minVersion, maxVersion, receivedVersion);
 }
 
 /// Logs an error event indicating that an instance of IDirectInput(8) could not be created due to an invalid interface parameter.
-inline static void LogInvalidInterfaceParam(void)
+static inline void LogInvalidInterfaceParam(void)
 {
     Message::Output(Message::ESeverity::Error, L"Failed to create a DirectInput interface object because the requested IID is invalid.");
 }
 
 /// Logs an error event indicating that an instance of IDirectInput(8) could not be created due to an error having been returned by the system.
 /// @param [in] errorCode Error code returned by the system.
-inline static void LogSystemCreateError(HRESULT errorCode)
+static inline void LogSystemCreateError(HRESULT errorCode)
 {
     Message::OutputFormatted(Message::ESeverity::Error, L"Failed to create a DirectInput interface object because the imported function returned code 0x%08x.", errorCode);
 }
 
 /// Logs an informational event indicating that an instance of IDirectInput(8) was created successfully.
-inline static void LogSystemCreateSuccess(void)
+static inline void LogSystemCreateSuccess(void)
 {
     Message::Output(Message::ESeverity::Info, L"Successfully created a DirectInput interface object.");
 }
