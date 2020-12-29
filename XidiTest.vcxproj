@@ -186,6 +186,7 @@
     <ClInclude Include="Resources\Xidi.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="Source\ApiDirectInput.cpp" />
     <ClCompile Include="Source\Configuration.cpp" />
     <ClCompile Include="Source\ControllerElementMapper.cpp" />
     <ClCompile Include="Source\ControllerMapper.cpp" />

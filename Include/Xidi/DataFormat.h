@@ -18,7 +18,7 @@
 #include <limits>
 #include <map>
 #include <optional>
-#include <vector>
+#include <set>
 
 
 namespace Xidi
@@ -63,7 +63,7 @@ namespace Xidi
         struct SDataFormatSpec
         {
             TOffset packetSizeBytes;                                            ///< Size of the application data packet, in bytes. An application is required to provide this along with its data format specification.
-            std::vector<TOffset> povOffsetsUnused;                              ///< All offsets in the application's data format that correspond to POVs not present in the virtual controller. These POV areas need to be initialized to "POV neutral" when writing an application data packet.
+            std::set<TOffset> povOffsetsUnused;                                 ///< All offsets in the application's data format that correspond to POVs not present in the virtual controller. These POV areas need to be initialized to "POV neutral" when writing an application data packet.
             TOffset axisOffset[(int)Controller::EAxis::Count];                  ///< Offsets into the application's data format for axis data. One slot exists for each possible axis, indexed by axis type enumerator.
             TOffset buttonOffset[(int)Controller::EButton::Count];              ///< Offsets into the application's data format for button data. One slot exists for each possible button, indexed by button number enumerator.
             TOffset povOffset;                                                  ///< Offset into the application's data format for POV data. Only one slot exists because a virtual controller can only have one POV.
@@ -71,14 +71,14 @@ namespace Xidi
 
             /// Default constructor.
             /// Initializes relevent offsets to indicate that they are invalid.
-            inline SDataFormatSpec(void) : packetSizeBytes(), povOffsetsUnused(), axisOffset(), buttonOffset(), povOffset(kInvalidOffsetValue), offsetElementMap()
+            inline SDataFormatSpec(TOffset packetSizeBytes) : packetSizeBytes(packetSizeBytes), povOffsetsUnused(), axisOffset(), buttonOffset(), povOffset(kInvalidOffsetValue), offsetElementMap()
             {
                 for (auto& offsetValue : axisOffset)
                     offsetValue = kInvalidOffsetValue;
                 for (auto& offsetValue : buttonOffset)
                     offsetValue = kInvalidOffsetValue;
             }
-                                                                                
+
             /// Simple member-by-member equality check.
             /// Primarily useful during testing.
             /// @param [in] other Object with which to compare.
@@ -92,6 +92,37 @@ namespace Xidi
                     && (povOffset == other.povOffset)
                     && (offsetElementMap == other.offsetElementMap));
             }
+
+            /// Associates the specified element with the specified offset into the application's data format.
+            /// Does not perform any bounds-checking or error-checking. This is the responsibility of the caller.
+            /// @param [in] element Element with which the offset is being associated.
+            /// @param [in] offset Offset with which the element is being associated.
+            inline void SetOffsetForElement(Controller::SElementIdentifier element, TOffset offset)
+            {
+                switch (element.type)
+                {
+                case Controller::EElementType::Axis:
+                    axisOffset[(int)element.axis] = offset;
+                    break;
+
+                case Controller::EElementType::Button:
+                    buttonOffset[(int)element.button] = offset;
+                    break;
+
+                case Controller::EElementType::Pov:
+                    povOffset = offset;
+                    break;
+                }
+
+                offsetElementMap[offset] = element;
+            }
+
+            /// Adds a new unused POV offset to the tracked set of unused POV offsets.
+            /// @param [in] offset Offset to add.
+            inline void SubmitUnusedPovOffset(TOffset offset)
+            {
+                povOffsetsUnused.insert(offset);
+            }
         };
 
 
@@ -99,6 +130,10 @@ namespace Xidi
 
         /// Value used in place of a real offset to indicate that no valid offset exists.
         static constexpr TOffset kInvalidOffsetValue = std::numeric_limits<TOffset>::max();
+
+        /// Specifies the maximum size of an application data packet, in bytes.
+        /// Value is equal to 1MB.
+        static constexpr TOffset kMaxDataPacketSizeBytes = (1024 * 1024);
 
         /// Value used to indicate to the application that a button is pressed.
         static constexpr TButtonValue kButtonValuePressed = 0x80;
@@ -111,7 +146,7 @@ namespace Xidi
         // -------- INSTANCE VARIABLES ------------------------------------- //
 
         /// Controller capabilities. Often consulted when identifying controller objects.
-        const Controller::SCapabilities controllerCapabilities;
+        const Controller::SCapabilities& controllerCapabilities;
         
         /// Complete description of the application's data format.
         const SDataFormatSpec dataFormatSpec;
@@ -134,8 +169,9 @@ namespace Xidi
         /// If successful, a newly-allocated instance is returned. The pointer is owned by the caller and must be approprately freed later.
         /// Failure indicates an issue with the application format specification, which is indicated to the DirectInput application by returning `DIERR_INVALIDPARAM`.
         /// @param [in] appFormatSpec Application-provided DirectInput data format specification.
+        /// @param [in] controllerCapabilities Capabilities of the virtual controller for which the data format is being specified.
         /// @return Pointer to new data format representation, or `nullptr` if there is an issue with the application format specification.
-        static const DataFormat* CreateFromApplicationFormatSpec(const DIDATAFORMAT& appFormatSpec);
+        static const DataFormat* CreateFromApplicationFormatSpec(const DIDATAFORMAT& appFormatSpec, const Controller::SCapabilities& controllerCapabilities);
 
         /// Extracts POV direction components from a controller state objects and converts them in aggregate to a single DirectInput POV direction value.
         /// @param [in] controllerState Controller state from which to extract POV direction components.
@@ -148,17 +184,25 @@ namespace Xidi
         /// Maps from application data format offset to virtual controller element.
         /// @param [in] offset Application data format offset for which an associated virtual controller element is desired.
         /// @return Associated virtual controller element if an offset is defined for it.
-        std::optional<Controller::SElementIdentifier> GetElementForOffset(TOffset offset);
-        
+        std::optional<Controller::SElementIdentifier> GetElementForOffset(TOffset offset) const;
+
         /// Maps from virtual controller element to an offset within the application's data format.
         /// @param [in] element Virtual controller element for which an offset is desired.
         /// @return Associated offset if it is defined in the application's data format.
-        std::optional<TOffset> GetOffsetForElement(Controller::SElementIdentifier element);
+        std::optional<TOffset> GetOffsetForElement(Controller::SElementIdentifier element) const;
+
+        /// Retrieves the underlying data format specification for read-only access.
+        /// Primarily intended for testing.
+        /// @return Read-only reference to the underlying data format specification.
+        const SDataFormatSpec& GetSpec(void)
+        {
+            return dataFormatSpec;
+        }
 
         /// Checks if the application's data format associates any virtual controller element with the specified offset.
         /// @param [in] offset Offset to check.
         /// @return `true` if the offset has a virtual controller element associated with it, `false` otherwise.
-        inline bool HasOffset(TOffset offset)
+        inline bool HasOffset(TOffset offset) const
         {
             return (GetElementForOffset(offset).has_value());
         }
@@ -166,7 +210,7 @@ namespace Xidi
         /// Checks if the application's data format associates any offset with the specified virtual controller element.
         /// @param [in] element Virtual controller element to check.
         /// @return `true` if the virtual controller element has an offset associated with it, `false` otherwise.
-        inline bool HasElement(Controller::SElementIdentifier element)
+        inline bool HasElement(Controller::SElementIdentifier element) const
         {
             return (GetOffsetForElement(element).has_value());
         }
@@ -176,12 +220,12 @@ namespace Xidi
         /// @param [in] dwObj Object identifier, whose semantics depends on identification method. See DirectInput documentation for more information.
         /// @param [in] dwHow Identification method. See DirectInput documentation for more information.
         /// @return Virtual controller element identifier that matches the DirectInput-style element identifier, if such a match exists.
-        std::optional<Controller::SElementIdentifier> IdentifyElement(DWORD dwObj, DWORD dwHow);
+        std::optional<Controller::SElementIdentifier> IdentifyElement(DWORD dwObj, DWORD dwHow) const;
 
         /// Formats the specified virtual controller state as an application data packet and writes it to the specified buffer.
         /// Useful for providing the application with an instantaneous snapshot of the state of a virtual controller.
         /// Failure indicates an issue with the arguments passed, which is indicated to the DirectInput application by returning `DIERR_INVALIDPARAM`.
         /// @return `true` on success, `false` on failure due to invalid arguments.
-        bool WriteDataPacket(void* packetBuffer, TOffset packetBufferSizeBytes, const Controller::SState& controllerState);
+        bool WriteDataPacket(void* packetBuffer, TOffset packetBufferSizeBytes, const Controller::SState& controllerState) const;
     };
 }
