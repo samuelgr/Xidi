@@ -64,6 +64,8 @@ namespace Xidi
                 SElementMap named;
                 const IElementMapper* all[sizeof(SElementMap) / sizeof(const IElementMapper*)];
 
+                static_assert(sizeof(named) == sizeof(all), "Element map field mismatch.");
+
                 inline UElementMap(const SElementMap& named) : named(named) {}
             };
 
