@@ -16,6 +16,7 @@
 #include "Message.h"
 
 #include <map>
+#include <memory>
 #include <optional>
 #include <set>
 #include <vector>
@@ -341,7 +342,7 @@ namespace Xidi
     // -------- CLASS METHODS ---------------------------------------------- //
     // See "DataFormat.h" for documentation.
 
-    const DataFormat* DataFormat::CreateFromApplicationFormatSpec(const DIDATAFORMAT& appFormatSpec, const Controller::SCapabilities& controllerCapabilities)
+    std::unique_ptr<DataFormat> DataFormat::CreateFromApplicationFormatSpec(const DIDATAFORMAT& appFormatSpec, const Controller::SCapabilities& controllerCapabilities)
     {
         // Sanity check: is data packet size is a multiple of 4, as required by DirectInput?
         if (0 != (appFormatSpec.dwDataSize % 4))
@@ -486,7 +487,7 @@ namespace Xidi
         }
 
         Message::OutputFormatted(Message::ESeverity::Info, L"Accepted and successfully set application data format. Total data packet size is %u byte(s).", appFormatSpec.dwDataSize);
-        return new DataFormat(controllerCapabilities, std::move(dataFormatSpec));
+        return std::unique_ptr<DataFormat>(new DataFormat(controllerCapabilities, std::move(dataFormatSpec)));
     }
 
     // --------

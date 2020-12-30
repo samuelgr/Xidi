@@ -17,6 +17,8 @@
 #include "DataFormat.h"
 #include "TestCase.h"
 
+#include <memory>
+
 
 namespace XidiTest
 {
@@ -33,11 +35,11 @@ namespace XidiTest
 
 
 
-    // -------- CONSTANTS -------------------------------------------------- //
+    // -------- INTERNAL CONSTANTS ----------------------------------------- //
 
     // Test mapper that contains a POV.
     // Contains 4 axes (RotX and RotY are skipped), 12 buttons, and a POV.
-    const Mapper kTestMapperWithPov = Mapper({
+    static const Mapper kTestMapperWithPov = Mapper({
         .stickLeftX = new AxisMapper(EAxis::X),
         .stickLeftY = new AxisMapper(EAxis::Y),
         .stickRightX = new AxisMapper(EAxis::Z),
@@ -62,7 +64,7 @@ namespace XidiTest
 
     // Test mapper that does not contain a POV.
     // Contains 4 axes (RotX and RotY are deliberately skipped), and 16 buttons.
-    const Mapper kTestMapperWithoutPov = Mapper({
+    static const Mapper kTestMapperWithoutPov = Mapper({
         .stickLeftX = new AxisMapper(EAxis::X),
         .stickLeftY = new AxisMapper(EAxis::Y),
         .stickRightX = new AxisMapper(EAxis::Z),
@@ -84,6 +86,24 @@ namespace XidiTest
         .buttonLS = new ButtonMapper(EButton::B11),
         .buttonRS = new ButtonMapper(EButton::B12)
     });
+
+
+    // -------- INTERNAL FUNCTIONS ----------------------------------------- //
+
+    /// Main checks that are part of the CreateSuccess suite of test cases.
+    /// Given the information needed to construct a data format object and the data format specification that is expected to result, constructs the data format object, ensures success, and ensures expectation matches actual result.
+    /// Causes the test case to fail if any of the checks or operations are unsuccessful.
+    /// @param [in] appFormatSpec Test data in the form of an application data format specification.
+    /// @param [in] controllerCapabilities Test data in the form of a description of a controller's capabilities. Likely obtained from one of the mappers defined above.
+    /// @param [in] expectedDataFormatSpec Test data in the form of a data format spec that is expected to be the result of creating a data format object using the provided controller capabilities.
+    static void TestDataFormatCreateSuccess(const DIDATAFORMAT& appFormatSpec, const Controller::SCapabilities& controllerCapabilities, const DataFormat::SDataFormatSpec& expectedDataFormatSpec)
+    {
+        std::unique_ptr<DataFormat> dataFormat = DataFormat::CreateFromApplicationFormatSpec(appFormatSpec, controllerCapabilities);
+        TEST_ASSERT(nullptr != dataFormat);
+
+        const DataFormat::SDataFormatSpec& actualDataFormatSpec = dataFormat->GetSpec();
+        TEST_ASSERT(actualDataFormatSpec == expectedDataFormatSpec);
+    }
 
 
     // -------- TEST CASES ------------------------------------------------- //
@@ -151,7 +171,7 @@ namespace XidiTest
             .rgodf = testObjectFormatSpec
         };
 
-        
+
         DataFormat::SDataFormatSpec expectedDataFormatSpecWithPov(sizeof(DIJOYSTATE));
         expectedDataFormatSpecWithPov.SetOffsetForElement({.type = EElementType::Axis, .axis = EAxis::X}, offsetof(DIJOYSTATE, lX));
         expectedDataFormatSpecWithPov.SetOffsetForElement({.type = EElementType::Axis, .axis = EAxis::Y}, offsetof(DIJOYSTATE, lY));
@@ -163,13 +183,7 @@ namespace XidiTest
         for (int i = 1; i < _countof(DIJOYSTATE::rgdwPOV); ++i)
             expectedDataFormatSpecWithPov.SubmitUnusedPovOffset(offsetof(DIJOYSTATE, rgdwPOV[i]));
 
-        const DataFormat* const dataFormatWithPov = DataFormat::CreateFromApplicationFormatSpec(kTestFormatSpec, kTestMapperWithPov.GetCapabilities());
-        TEST_ASSERT(nullptr != dataFormatWithPov);
-
-        const DataFormat::SDataFormatSpec& actualDataFormatSpecWithPov = dataFormatWithPov->GetSpec();
-        TEST_ASSERT(actualDataFormatSpecWithPov == expectedDataFormatSpecWithPov);
-
-        delete dataFormatWithPov;
+        TestDataFormatCreateSuccess(kTestFormatSpec, kTestMapperWithPov.GetCapabilities(), expectedDataFormatSpecWithPov);
 
 
         DataFormat::SDataFormatSpec expectedDataFormatSpecWithoutPov(sizeof(DIJOYSTATE));
@@ -182,13 +196,7 @@ namespace XidiTest
         for (int i = 0; i < _countof(DIJOYSTATE::rgdwPOV); ++i)
             expectedDataFormatSpecWithoutPov.SubmitUnusedPovOffset(offsetof(DIJOYSTATE, rgdwPOV[i]));
 
-        const DataFormat* const dataFormatWithoutPov = DataFormat::CreateFromApplicationFormatSpec(kTestFormatSpec, kTestMapperWithoutPov.GetCapabilities());
-        TEST_ASSERT(nullptr != dataFormatWithoutPov);
-
-        const DataFormat::SDataFormatSpec& actualDataFormatSpecWithoutPov = dataFormatWithoutPov->GetSpec();
-        TEST_ASSERT(actualDataFormatSpecWithoutPov == expectedDataFormatSpecWithoutPov);
-
-        delete dataFormatWithoutPov;
+        TestDataFormatCreateSuccess(kTestFormatSpec, kTestMapperWithoutPov.GetCapabilities(), expectedDataFormatSpecWithoutPov);
     }
 
     // DirectInput's built-in DIJOYSTATE2 data format, specified by constant c_dfDIJoystick2
@@ -382,13 +390,7 @@ namespace XidiTest
         for (int i = 1; i < _countof(DIJOYSTATE2::rgdwPOV); ++i)
             expectedDataFormatSpecWithPov.SubmitUnusedPovOffset(offsetof(DIJOYSTATE2, rgdwPOV[i]));
 
-        const DataFormat* const dataFormatWithPov = DataFormat::CreateFromApplicationFormatSpec(kTestFormatSpec, kTestMapperWithPov.GetCapabilities());
-        TEST_ASSERT(nullptr != dataFormatWithPov);
-
-        const DataFormat::SDataFormatSpec& actualDataFormatSpecWithPov = dataFormatWithPov->GetSpec();
-        TEST_ASSERT(actualDataFormatSpecWithPov == expectedDataFormatSpecWithPov);
-
-        delete dataFormatWithPov;
+        TestDataFormatCreateSuccess(kTestFormatSpec, kTestMapperWithPov.GetCapabilities(), expectedDataFormatSpecWithPov);
 
 
         DataFormat::SDataFormatSpec expectedDataFormatSpecWithoutPov(sizeof(DIJOYSTATE2));
@@ -401,13 +403,7 @@ namespace XidiTest
         for (int i = 0; i < _countof(DIJOYSTATE2::rgdwPOV); ++i)
             expectedDataFormatSpecWithoutPov.SubmitUnusedPovOffset(offsetof(DIJOYSTATE2, rgdwPOV[i]));
 
-        const DataFormat* const dataFormatWithoutPov = DataFormat::CreateFromApplicationFormatSpec(kTestFormatSpec, kTestMapperWithoutPov.GetCapabilities());
-        TEST_ASSERT(nullptr != dataFormatWithoutPov);
-
-        const DataFormat::SDataFormatSpec& actualDataFormatSpecWithoutPov = dataFormatWithoutPov->GetSpec();
-        TEST_ASSERT(actualDataFormatSpecWithoutPov == expectedDataFormatSpecWithoutPov);
-
-        delete dataFormatWithoutPov;
+        TestDataFormatCreateSuccess(kTestFormatSpec, kTestMapperWithoutPov.GetCapabilities(), expectedDataFormatSpecWithoutPov);
     }
 
 

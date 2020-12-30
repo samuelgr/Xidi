@@ -17,6 +17,7 @@
 
 #include <limits>
 #include <map>
+#include <memory>
 #include <optional>
 #include <set>
 
@@ -171,7 +172,7 @@ namespace Xidi
         /// @param [in] appFormatSpec Application-provided DirectInput data format specification.
         /// @param [in] controllerCapabilities Capabilities of the virtual controller for which the data format is being specified.
         /// @return Pointer to new data format representation, or `nullptr` if there is an issue with the application format specification.
-        static const DataFormat* CreateFromApplicationFormatSpec(const DIDATAFORMAT& appFormatSpec, const Controller::SCapabilities& controllerCapabilities);
+        static std::unique_ptr<DataFormat> CreateFromApplicationFormatSpec(const DIDATAFORMAT& appFormatSpec, const Controller::SCapabilities& controllerCapabilities);
 
         /// Extracts POV direction components from a controller state objects and converts them in aggregate to a single DirectInput POV direction value.
         /// @param [in] controllerState Controller state from which to extract POV direction components.
