@@ -107,14 +107,67 @@ namespace XidiTest
 
 
     // -------- TEST CASES ------------------------------------------------- //
-    
+
+    // Verifies that POV direction values are correctly produced from controller states.
+    // Tests all possible combinations of individual POV direction states.
+    TEST_CASE(DataFormat_PovDirectionFromControllerState)
+    {
+        constexpr struct
+        {
+            bool povUp;
+            bool povDown;
+            bool povLeft;
+            bool povRight;
+            EPovValue expectedPovValue;
+        } kPovTestData[] = {
+            {.povUp = false, .povDown = false, .povLeft = false, .povRight = false, .expectedPovValue = EPovValue::Center},
+            {.povUp = false, .povDown = false, .povLeft = false, .povRight = true,  .expectedPovValue = EPovValue::E},
+            {.povUp = false, .povDown = false, .povLeft = true,  .povRight = false, .expectedPovValue = EPovValue::W},
+            {.povUp = false, .povDown = false, .povLeft = true,  .povRight = true,  .expectedPovValue = EPovValue::Center},
+            {.povUp = false, .povDown = true,  .povLeft = false, .povRight = false, .expectedPovValue = EPovValue::S},
+            {.povUp = false, .povDown = true,  .povLeft = false, .povRight = true,  .expectedPovValue = EPovValue::SE},
+            {.povUp = false, .povDown = true,  .povLeft = true,  .povRight = false, .expectedPovValue = EPovValue::SW},
+            {.povUp = false, .povDown = true,  .povLeft = true,  .povRight = true,  .expectedPovValue = EPovValue::S},
+            {.povUp = true,  .povDown = false, .povLeft = false, .povRight = false, .expectedPovValue = EPovValue::N},
+            {.povUp = true,  .povDown = false, .povLeft = false, .povRight = true,  .expectedPovValue = EPovValue::NE},
+            {.povUp = true,  .povDown = false, .povLeft = true,  .povRight = false, .expectedPovValue = EPovValue::NW},
+            {.povUp = true,  .povDown = false, .povLeft = true,  .povRight = true,  .expectedPovValue = EPovValue::N},
+            {.povUp = true,  .povDown = true,  .povLeft = false, .povRight = false, .expectedPovValue = EPovValue::Center},
+            {.povUp = true,  .povDown = true,  .povLeft = false, .povRight = true,  .expectedPovValue = EPovValue::E},
+            {.povUp = true,  .povDown = true,  .povLeft = true,  .povRight = false, .expectedPovValue = EPovValue::W},
+            {.povUp = true,  .povDown = true,  .povLeft = true,  .povRight = true,  .expectedPovValue = EPovValue::Center},
+        };
+
+        int numFailingInputs = 0;
+        for (const auto& povTestData : kPovTestData)
+        {
+            Controller::SState controllerState;
+            controllerState.povDirection[(int)Controller::EPovDirection::Up] = povTestData.povUp;
+            controllerState.povDirection[(int)Controller::EPovDirection::Down] = povTestData.povDown;
+            controllerState.povDirection[(int)Controller::EPovDirection::Left] = povTestData.povLeft;
+            controllerState.povDirection[(int)Controller::EPovDirection::Right] = povTestData.povRight;
+
+            const EPovValue kExpectedPovValue = povTestData.expectedPovValue;
+            const EPovValue kActualPovValue = DataFormat::PovDirectionFromControllerState(controllerState);
+
+            if (kActualPovValue != kExpectedPovValue)
+            {
+                PrintFormatted(L"Wrong POV direction for states up=%s down=%s left=%s right=%s (expected %d, got %d).", ((true == povTestData.povUp) ? L"true" : L"false"), ((true == povTestData.povDown) ? L"true" : L"false"), ((true == povTestData.povLeft) ? L"true" : L"false"), ((true == povTestData.povRight) ? L"true" : L"false"), (int)kExpectedPovValue, (int)kActualPovValue);
+                numFailingInputs += 1;
+            }
+        }
+
+        TEST_ASSERT(0 == numFailingInputs);
+    }
+
+
     // The following sequence of tests, which together comprise the CreateSuccess suite, verify that a data format can successfully be created given a valid specification.
     // Each test case follows the basic steps of declaring test data, manually creating the expected data format specification, generating the actual data format specification, and comparing the two, repeating the last few steps for both of the mapper types above.
     // Since each data format spec is manually created based on the known capabilities of the mappers defined above, any changes to the mapper definitions will need to be reflected in updates to the test cases.
 
     // Tests a simple data packet with two axis values and allows them to be any type of axis.
     // Axis objects are declared in the object specification in increasing offset order, and axes are expected to be selected in the order they appear in the object format specification array.
-    TEST_CASE(DataFormat_CreateSuccess_AnyAxisAscending)
+    TEST_CASE(DataFormat_CreateSuccess_AxisAnyAscending)
     {
         struct STestDataPacket
         {
@@ -124,9 +177,11 @@ namespace XidiTest
             TAxisValue padding2[2];
         };
 
+        static_assert(0 == (sizeof(STestDataPacket) % 4), L"Test data packet size must be divisible by 4.");
+
         DIOBJECTDATAFORMAT testObjectFormatSpec[] = {
             {.pguid = nullptr, .dwOfs = offsetof(STestDataPacket, axisValue1), .dwType = DIDFT_AXIS | DIDFT_ANYINSTANCE, .dwFlags = 0},
-            {.pguid = nullptr, .dwOfs = offsetof(STestDataPacket, axisValue2), .dwType = DIDFT_AXIS | DIDFT_ANYINSTANCE, .dwFlags = 0}
+            {.pguid = nullptr, .dwOfs = offsetof(STestDataPacket, axisValue2), .dwType = DIDFT_AXIS | DIDFT_ANYINSTANCE, .dwFlags = DIDOI_ASPECTPOSITION}
         };
 
         const DIDATAFORMAT kTestFormatSpec = {
@@ -150,7 +205,7 @@ namespace XidiTest
 
     // Tests a simple data packet with two axis values and allows them to be any type of axis.
     // Axis objects are declared in the object specification in decreasing offset order, so the assignment of axis to offset is inverted compared to the ascending version of this test.
-    TEST_CASE(DataFormat_CreateSuccess_AnyAxisDescending)
+    TEST_CASE(DataFormat_CreateSuccess_AxisAnyDescending)
     {
         struct STestDataPacket
         {
@@ -160,9 +215,11 @@ namespace XidiTest
             TAxisValue padding2[2];
         };
 
+        static_assert(0 == (sizeof(STestDataPacket) % 4), L"Test data packet size must be divisible by 4.");
+
         DIOBJECTDATAFORMAT testObjectFormatSpec[] = {
             {.pguid = nullptr, .dwOfs = offsetof(STestDataPacket, axisValue2), .dwType = DIDFT_AXIS | DIDFT_ANYINSTANCE, .dwFlags = 0},
-            {.pguid = nullptr, .dwOfs = offsetof(STestDataPacket, axisValue1), .dwType = DIDFT_AXIS | DIDFT_ANYINSTANCE, .dwFlags = 0}
+            {.pguid = nullptr, .dwOfs = offsetof(STestDataPacket, axisValue1), .dwType = DIDFT_AXIS | DIDFT_ANYINSTANCE, .dwFlags = DIDOI_ASPECTPOSITION}
         };
 
         const DIDATAFORMAT kTestFormatSpec = {
@@ -186,8 +243,8 @@ namespace XidiTest
 
     // Tests a simple data packet with two axis values, where the specific axis types are specified by GUID.
     // Axis objects are declared in the object specification in increasing offset order.
-    // However, because specific axis types are specified by GUID, there is no impact on the assignment of axes to offsets.
-    TEST_CASE(DataFormat_CreateSuccess_SpecificAxisAscending)
+    // However, because specific axis types are specified, there is no impact on the assignment of axes to offsets.
+    TEST_CASE(DataFormat_CreateSuccess_AxisSpecificByGuidAscending)
     {
         struct STestDataPacket
         {
@@ -197,9 +254,11 @@ namespace XidiTest
             TAxisValue padding2[2];
         };
 
+        static_assert(0 == (sizeof(STestDataPacket) % 4), L"Test data packet size must be divisible by 4.");
+
         DIOBJECTDATAFORMAT testObjectFormatSpec[] = {
             {.pguid = &GUID_RzAxis, .dwOfs = offsetof(STestDataPacket, axisValue1), .dwType = DIDFT_AXIS | DIDFT_ANYINSTANCE, .dwFlags = 0},
-            {.pguid = &GUID_XAxis,  .dwOfs = offsetof(STestDataPacket, axisValue2), .dwType = DIDFT_AXIS | DIDFT_ANYINSTANCE, .dwFlags = 0}
+            {.pguid = &GUID_XAxis,  .dwOfs = offsetof(STestDataPacket, axisValue2), .dwType = DIDFT_AXIS | DIDFT_ANYINSTANCE, .dwFlags = DIDOI_ASPECTPOSITION}
         };
 
         const DIDATAFORMAT kTestFormatSpec = {
@@ -223,8 +282,8 @@ namespace XidiTest
     
     // Tests a simple data packet with two axis values, where the specific axis types are specified by GUID.
     // Axis objects are declared in the object specification in decreasing offset order.
-    // However, because specific axis types are specified by GUID, there is no impact on the assignment of axes to offsets.
-    TEST_CASE(DataFormat_CreateSuccess_SpecificAxisDescending)
+    // However, because specific axis types are specified, there is no impact on the assignment of axes to offsets.
+    TEST_CASE(DataFormat_CreateSuccess_AxisBySpecificGuidDescending)
     {
         struct STestDataPacket
         {
@@ -234,9 +293,11 @@ namespace XidiTest
             TAxisValue padding2[2];
         };
 
+        static_assert(0 == (sizeof(STestDataPacket) % 4), L"Test data packet size must be divisible by 4.");
+
         DIOBJECTDATAFORMAT testObjectFormatSpec[] = {
             {.pguid = &GUID_XAxis,  .dwOfs = offsetof(STestDataPacket, axisValue2), .dwType = DIDFT_AXIS | DIDFT_ANYINSTANCE, .dwFlags = 0},
-            {.pguid = &GUID_RzAxis, .dwOfs = offsetof(STestDataPacket, axisValue1), .dwType = DIDFT_AXIS | DIDFT_ANYINSTANCE, .dwFlags = 0}
+            {.pguid = &GUID_RzAxis, .dwOfs = offsetof(STestDataPacket, axisValue1), .dwType = DIDFT_AXIS | DIDFT_ANYINSTANCE, .dwFlags = DIDOI_ASPECTPOSITION}
         };
 
         const DIDATAFORMAT kTestFormatSpec = {
@@ -253,6 +314,303 @@ namespace XidiTest
         DataFormat::SDataFormatSpec expectedDataFormatSpec(sizeof(STestDataPacket));
         expectedDataFormatSpec.SetOffsetForElement({.type = EElementType::Axis, .axis = EAxis::RotZ}, offsetof(STestDataPacket, axisValue1));
         expectedDataFormatSpec.SetOffsetForElement({.type = EElementType::Axis, .axis = EAxis::X}, offsetof(STestDataPacket, axisValue2));
+
+        TestDataFormatCreateSuccess(kTestFormatSpec, kTestMapperWithPov.GetCapabilities(), expectedDataFormatSpec);
+        TestDataFormatCreateSuccess(kTestFormatSpec, kTestMapperWithoutPov.GetCapabilities(), expectedDataFormatSpec);
+    }
+
+    // Tests a simple data packet with two axis values, where the specific axis types are specified by index into the controller capabilities.
+    // Axis objects are declared in the object specification in increasing offset order.
+    // However, because specific axis types are specified, there is no impact on the assignment of axes to offsets.
+    TEST_CASE(DataFormat_CreateSuccess_AxisSpecificByIndexAscending)
+    {
+        struct STestDataPacket
+        {
+            TAxisValue padding1[13];
+            TAxisValue axisValue1;
+            TAxisValue axisValue2;
+            TAxisValue padding2[2];
+        };
+
+        static_assert(0 == (sizeof(STestDataPacket) % 4), L"Test data packet size must be divisible by 4.");
+
+        DIOBJECTDATAFORMAT testObjectFormatSpec[] = {
+            {.pguid = nullptr, .dwOfs = offsetof(STestDataPacket, axisValue1), .dwType = DIDFT_AXIS | DIDFT_MAKEINSTANCE(3), .dwFlags = 0},
+            {.pguid = nullptr, .dwOfs = offsetof(STestDataPacket, axisValue2), .dwType = DIDFT_AXIS | DIDFT_MAKEINSTANCE(0), .dwFlags = DIDOI_ASPECTPOSITION}
+        };
+
+        const DIDATAFORMAT kTestFormatSpec = {
+            .dwSize = sizeof(DIDATAFORMAT),
+            .dwObjSize = sizeof(DIOBJECTDATAFORMAT),
+            .dwFlags = DIDF_ABSAXIS,
+            .dwDataSize = sizeof(STestDataPacket),
+            .dwNumObjs = _countof(testObjectFormatSpec),
+            .rgodf = testObjectFormatSpec
+        };
+
+        // axisValue1: RotZ
+        // axisValue2: X
+        DataFormat::SDataFormatSpec expectedDataFormatSpec(sizeof(STestDataPacket));
+        expectedDataFormatSpec.SetOffsetForElement({.type = EElementType::Axis, .axis = EAxis::RotZ}, offsetof(STestDataPacket, axisValue1));
+        expectedDataFormatSpec.SetOffsetForElement({.type = EElementType::Axis, .axis = EAxis::X}, offsetof(STestDataPacket, axisValue2));
+
+        TestDataFormatCreateSuccess(kTestFormatSpec, kTestMapperWithPov.GetCapabilities(), expectedDataFormatSpec);
+        TestDataFormatCreateSuccess(kTestFormatSpec, kTestMapperWithoutPov.GetCapabilities(), expectedDataFormatSpec);
+    }
+
+    // Tests a simple data packet with two axis values, where the specific axis types are specified by index into the controller capabilities.
+    // Axis objects are declared in the object specification in decreasing offset order.
+    // However, because specific axis types are specified, there is no impact on the assignment of axes to offsets.
+    TEST_CASE(DataFormat_CreateSuccess_AxisSpecificByIndexDescending)
+    {
+        struct STestDataPacket
+        {
+            TAxisValue padding1[13];
+            TAxisValue axisValue1;
+            TAxisValue axisValue2;
+            TAxisValue padding2[2];
+        };
+
+        static_assert(0 == (sizeof(STestDataPacket) % 4), L"Test data packet size must be divisible by 4.");
+
+        DIOBJECTDATAFORMAT testObjectFormatSpec[] = {
+            {.pguid = nullptr, .dwOfs = offsetof(STestDataPacket, axisValue2), .dwType = DIDFT_AXIS | DIDFT_MAKEINSTANCE(0), .dwFlags = 0},
+            {.pguid = nullptr, .dwOfs = offsetof(STestDataPacket, axisValue1), .dwType = DIDFT_AXIS | DIDFT_MAKEINSTANCE(3), .dwFlags = DIDOI_ASPECTPOSITION}
+        };
+
+        const DIDATAFORMAT kTestFormatSpec = {
+            .dwSize = sizeof(DIDATAFORMAT),
+            .dwObjSize = sizeof(DIOBJECTDATAFORMAT),
+            .dwFlags = DIDF_ABSAXIS,
+            .dwDataSize = sizeof(STestDataPacket),
+            .dwNumObjs = _countof(testObjectFormatSpec),
+            .rgodf = testObjectFormatSpec
+        };
+
+        // axisValue1: RotZ
+        // axisValue2: X
+        DataFormat::SDataFormatSpec expectedDataFormatSpec(sizeof(STestDataPacket));
+        expectedDataFormatSpec.SetOffsetForElement({.type = EElementType::Axis, .axis = EAxis::RotZ}, offsetof(STestDataPacket, axisValue1));
+        expectedDataFormatSpec.SetOffsetForElement({.type = EElementType::Axis, .axis = EAxis::X}, offsetof(STestDataPacket, axisValue2));
+
+        TestDataFormatCreateSuccess(kTestFormatSpec, kTestMapperWithPov.GetCapabilities(), expectedDataFormatSpec);
+        TestDataFormatCreateSuccess(kTestFormatSpec, kTestMapperWithoutPov.GetCapabilities(), expectedDataFormatSpec);
+    }
+
+    // Tests a simple data packet with two axis values, where the specific axis types are specified by GUID and have an index number, which based on implementation assumptions described in "DataFormat.cpp" must be 0.
+    // Axis objects are declared in the object specification in increasing offset order.
+    // However, because specific axis types are specified, there is no impact on the assignment of axes to offsets.
+    TEST_CASE(DataFormat_CreateSuccess_AxisSpecificByGuidAndIndexAscending)
+    {
+        struct STestDataPacket
+        {
+            TAxisValue padding1[13];
+            TAxisValue axisValue1;
+            TAxisValue axisValue2;
+            TAxisValue padding2[2];
+        };
+
+        static_assert(0 == (sizeof(STestDataPacket) % 4), L"Test data packet size must be divisible by 4.");
+
+        DIOBJECTDATAFORMAT testObjectFormatSpec[] = {
+            {.pguid = &GUID_RzAxis, .dwOfs = offsetof(STestDataPacket, axisValue1), .dwType = DIDFT_AXIS | DIDFT_MAKEINSTANCE(0), .dwFlags = DIDOI_ASPECTPOSITION},
+            {.pguid = &GUID_XAxis,  .dwOfs = offsetof(STestDataPacket, axisValue2), .dwType = DIDFT_AXIS | DIDFT_MAKEINSTANCE(0), .dwFlags = 0}
+        };
+
+        const DIDATAFORMAT kTestFormatSpec = {
+            .dwSize = sizeof(DIDATAFORMAT),
+            .dwObjSize = sizeof(DIOBJECTDATAFORMAT),
+            .dwFlags = DIDF_ABSAXIS,
+            .dwDataSize = sizeof(STestDataPacket),
+            .dwNumObjs = _countof(testObjectFormatSpec),
+            .rgodf = testObjectFormatSpec
+        };
+
+        // axisValue1: RotZ
+        // axisValue2: X
+        DataFormat::SDataFormatSpec expectedDataFormatSpec(sizeof(STestDataPacket));
+        expectedDataFormatSpec.SetOffsetForElement({.type = EElementType::Axis, .axis = EAxis::RotZ}, offsetof(STestDataPacket, axisValue1));
+        expectedDataFormatSpec.SetOffsetForElement({.type = EElementType::Axis, .axis = EAxis::X}, offsetof(STestDataPacket, axisValue2));
+
+        TestDataFormatCreateSuccess(kTestFormatSpec, kTestMapperWithPov.GetCapabilities(), expectedDataFormatSpec);
+        TestDataFormatCreateSuccess(kTestFormatSpec, kTestMapperWithoutPov.GetCapabilities(), expectedDataFormatSpec);
+    }
+
+    // Tests a simple data packet with two axis values, where the specific axis types are specified by GUID and have an index number, which based on implementation assumptions described in "DataFormat.cpp" must be 0.
+    // Axis objects are declared in the object specification in decreasing offset order.
+    // However, because specific axis types are specified, there is no impact on the assignment of axes to offsets.
+    TEST_CASE(DataFormat_CreateSuccess_AxisSpecificByGuidAndIndexDescending)
+    {
+        struct STestDataPacket
+        {
+            TAxisValue padding1[13];
+            TAxisValue axisValue1;
+            TAxisValue axisValue2;
+            TAxisValue padding2[2];
+        };
+
+        static_assert(0 == (sizeof(STestDataPacket) % 4), L"Test data packet size must be divisible by 4.");
+
+        DIOBJECTDATAFORMAT testObjectFormatSpec[] = {
+            {.pguid = &GUID_XAxis,  .dwOfs = offsetof(STestDataPacket, axisValue2), .dwType = DIDFT_AXIS | DIDFT_MAKEINSTANCE(0), .dwFlags = DIDOI_ASPECTPOSITION},
+            {.pguid = &GUID_RzAxis, .dwOfs = offsetof(STestDataPacket, axisValue1), .dwType = DIDFT_AXIS | DIDFT_MAKEINSTANCE(0), .dwFlags = 0}
+        };
+
+        const DIDATAFORMAT kTestFormatSpec = {
+            .dwSize = sizeof(DIDATAFORMAT),
+            .dwObjSize = sizeof(DIOBJECTDATAFORMAT),
+            .dwFlags = DIDF_ABSAXIS,
+            .dwDataSize = sizeof(STestDataPacket),
+            .dwNumObjs = _countof(testObjectFormatSpec),
+            .rgodf = testObjectFormatSpec
+        };
+
+        // axisValue1: RotZ
+        // axisValue2: X
+        DataFormat::SDataFormatSpec expectedDataFormatSpec(sizeof(STestDataPacket));
+        expectedDataFormatSpec.SetOffsetForElement({.type = EElementType::Axis, .axis = EAxis::RotZ}, offsetof(STestDataPacket, axisValue1));
+        expectedDataFormatSpec.SetOffsetForElement({.type = EElementType::Axis, .axis = EAxis::X}, offsetof(STestDataPacket, axisValue2));
+
+        TestDataFormatCreateSuccess(kTestFormatSpec, kTestMapperWithPov.GetCapabilities(), expectedDataFormatSpec);
+        TestDataFormatCreateSuccess(kTestFormatSpec, kTestMapperWithoutPov.GetCapabilities(), expectedDataFormatSpec);
+    }
+
+    // Tests a simple data packet with three axis values, where each axis is specified such that no controller element matches and so the resulting data format specification is empty.
+    // Axis objects are declared in the object specification in decreasing offset order, but the order is immaterial.
+    TEST_CASE(DataFormat_CreateSuccess_AxisNoMatch)
+    {
+        struct STestDataPacket
+        {
+            TAxisValue padding1[13];
+            TAxisValue axisValue1;
+            TAxisValue axisValue2;
+            TAxisValue padding2[8];
+            TAxisValue axisValue3;
+            TAxisValue padding3[2];
+        };
+
+        static_assert(0 == (sizeof(STestDataPacket) % 4), L"Test data packet size must be divisible by 4.");
+
+        DIOBJECTDATAFORMAT testObjectFormatSpec[] = {
+            {.pguid = &GUID_RxAxis, .dwOfs = offsetof(STestDataPacket, axisValue2), .dwType = DIDFT_OPTIONAL | DIDFT_AXIS | DIDFT_ANYINSTANCE,     .dwFlags = 0},  // GUID requests an axis type not present in the virtual controller
+            {.pguid = &GUID_YAxis,  .dwOfs = offsetof(STestDataPacket, axisValue3), .dwType = DIDFT_OPTIONAL | DIDFT_AXIS | DIDFT_MAKEINSTANCE(1), .dwFlags = 0},  // GUID requests an axis type that is present, but instance index is out of bounds
+            {.pguid = nullptr,      .dwOfs = offsetof(STestDataPacket, axisValue1), .dwType = DIDFT_OPTIONAL | DIDFT_AXIS | DIDFT_MAKEINSTANCE(8), .dwFlags = 0}   // No GUID type filter, and instance index is out of bounds
+        };
+
+        const DIDATAFORMAT kTestFormatSpec = {
+            .dwSize = sizeof(DIDATAFORMAT),
+            .dwObjSize = sizeof(DIOBJECTDATAFORMAT),
+            .dwFlags = DIDF_ABSAXIS,
+            .dwDataSize = sizeof(STestDataPacket),
+            .dwNumObjs = _countof(testObjectFormatSpec),
+            .rgodf = testObjectFormatSpec
+        };
+
+        // Expected to be empty because no elements were able to be selected for any object format specifications.
+        DataFormat::SDataFormatSpec expectedDataFormatSpec(sizeof(STestDataPacket));
+
+        TestDataFormatCreateSuccess(kTestFormatSpec, kTestMapperWithPov.GetCapabilities(), expectedDataFormatSpec);
+        TestDataFormatCreateSuccess(kTestFormatSpec, kTestMapperWithoutPov.GetCapabilities(), expectedDataFormatSpec);
+    }
+
+    // Tests a data packet with several button locations, each specified in a different way.
+    // Button value fields are deliberately numbered out of order so that the object format specification remains readable but the offsets themselves are out of order.
+    // See test case body for a description of inputs and expected outputs.
+    TEST_CASE(DataFormat_CreateSuccess_ButtonVarying)
+    {
+        struct STestDataPacket
+        {
+            TButtonValue padding1[11];
+            TButtonValue buttonValue4;
+            TButtonValue padding2[22];
+            TButtonValue buttonValue6;
+            TButtonValue padding3[33];
+            TButtonValue buttonValue5;
+            TButtonValue padding4[44];
+            TButtonValue buttonValue1;
+            TButtonValue padding5[55];
+            TButtonValue buttonValue3;
+            TButtonValue padding6[66];
+            TButtonValue buttonValue7;
+            TButtonValue padding7[77];
+            TButtonValue buttonValue2;
+            TButtonValue padding8[88];
+            TButtonValue buttonValue8;
+            TButtonValue padding9[100];
+        };
+
+        static_assert(0 == (sizeof(STestDataPacket) % 4), L"Test data packet size must be divisible by 4.");
+
+        DIOBJECTDATAFORMAT testObjectFormatSpec[] = {
+            {.pguid = &GUID_Button, .dwOfs = offsetof(STestDataPacket, buttonValue1), .dwType = DIDFT_OPTIONAL | DIDFT_BUTTON | DIDFT_MAKEINSTANCE(1),  .dwFlags = 0},                      // Matches button 2 by specifically identifying it
+            {.pguid = &GUID_Button, .dwOfs = offsetof(STestDataPacket, buttonValue2), .dwType = DIDFT_OPTIONAL | DIDFT_BUTTON | DIDFT_ANYINSTANCE,      .dwFlags = DIDOI_ASPECTPOSITION},   // Matches button 1 because it is the next available
+            {.pguid = &GUID_Button, .dwOfs = offsetof(STestDataPacket, buttonValue3), .dwType = DIDFT_OPTIONAL | DIDFT_BUTTON | DIDFT_ANYINSTANCE,      .dwFlags = 0},                      // Matches button 3 because it is the next available, since button 2 was already matched
+            {.pguid = &GUID_Button, .dwOfs = offsetof(STestDataPacket, buttonValue4), .dwType = DIDFT_OPTIONAL | DIDFT_BUTTON | DIDFT_MAKEINSTANCE(2),  .dwFlags = DIDOI_ASPECTPOSITION},   // No match because button 3 is specified but it was already matched
+            {.pguid = nullptr,      .dwOfs = offsetof(STestDataPacket, buttonValue5), .dwType = DIDFT_OPTIONAL | DIDFT_BUTTON | DIDFT_MAKEINSTANCE(15), .dwFlags = 0},                      // Matches button 16 only in the without-POV case, otherwise the button index is out of bounds
+            {.pguid = nullptr,      .dwOfs = offsetof(STestDataPacket, buttonValue6), .dwType = DIDFT_OPTIONAL | DIDFT_BUTTON | DIDFT_MAKEINSTANCE(11), .dwFlags = DIDOI_ASPECTFORCE},      // No match because the flags are not supported
+            {.pguid = nullptr,      .dwOfs = offsetof(STestDataPacket, buttonValue7), .dwType = DIDFT_OPTIONAL | DIDFT_BUTTON | DIDFT_ANYINSTANCE,      .dwFlags = 0},                      // Matches button 4 because it is the next available
+            {.pguid = &GUID_Slider, .dwOfs = offsetof(STestDataPacket, buttonValue8), .dwType = DIDFT_OPTIONAL | DIDFT_BUTTON | DIDFT_ANYINSTANCE,      .dwFlags = DIDOI_ASPECTPOSITION}    // No match because the GUID type does not specify a button
+        };
+
+        const DIDATAFORMAT kTestFormatSpec = {
+            .dwSize = sizeof(DIDATAFORMAT),
+            .dwObjSize = sizeof(DIOBJECTDATAFORMAT),
+            .dwFlags = DIDF_ABSAXIS,
+            .dwDataSize = sizeof(STestDataPacket),
+            .dwNumObjs = _countof(testObjectFormatSpec),
+            .rgodf = testObjectFormatSpec
+        };
+
+        // Several, but not all, buttons are expected to match controller elements, based on the specification above.
+        DataFormat::SDataFormatSpec expectedDataFormatSpec(sizeof(STestDataPacket));
+        expectedDataFormatSpec.SetOffsetForElement({.type = EElementType::Button, .button = EButton::B2}, offsetof(STestDataPacket, buttonValue1));
+        expectedDataFormatSpec.SetOffsetForElement({.type = EElementType::Button, .button = EButton::B1}, offsetof(STestDataPacket, buttonValue2));
+        expectedDataFormatSpec.SetOffsetForElement({.type = EElementType::Button, .button = EButton::B3}, offsetof(STestDataPacket, buttonValue3));
+        expectedDataFormatSpec.SetOffsetForElement({.type = EElementType::Button, .button = EButton::B4}, offsetof(STestDataPacket, buttonValue7));
+
+        TestDataFormatCreateSuccess(kTestFormatSpec, kTestMapperWithPov.GetCapabilities(), expectedDataFormatSpec);
+
+
+        // Based on the specification above, there are additional situations that match when using the without-POV test data that could not match when using the with-POV test data.
+        expectedDataFormatSpec.SetOffsetForElement({.type = EElementType::Button, .button = EButton::B16}, offsetof(STestDataPacket, buttonValue5));
+
+        TestDataFormatCreateSuccess(kTestFormatSpec, kTestMapperWithoutPov.GetCapabilities(), expectedDataFormatSpec);
+    }
+
+    // Tests a data packet with several POV locations, each specified in a different way.
+    // None of them are able to match with the POV for various reasons.
+    // See test case body for a description of inputs and reasons why they do not match the POV.
+    TEST_CASE(DataFormat_CreateSuccess_PovNoMatch)
+    {
+        struct STestDataPacket
+        {
+            EPovValue povValue2;
+            EPovValue povValue1;
+            EPovValue povValue3;
+        };
+
+        static_assert(0 == (sizeof(STestDataPacket) % 4), L"Test data packet size must be divisible by 4.");
+
+        DIOBJECTDATAFORMAT testObjectFormatSpec[] = {
+            {.pguid = &GUID_POV,    .dwOfs = offsetof(STestDataPacket, povValue1), .dwType = DIDFT_OPTIONAL | DIDFT_POV | DIDFT_MAKEINSTANCE(1),  .dwFlags = 0},                    // No match because the index is out of bounds
+            {.pguid = &GUID_Slider, .dwOfs = offsetof(STestDataPacket, povValue2), .dwType = DIDFT_OPTIONAL | DIDFT_POV | DIDFT_ANYINSTANCE,      .dwFlags = DIDOI_ASPECTPOSITION}, // No match because the GUID type does not specify a POV
+            {.pguid = &GUID_POV,    .dwOfs = offsetof(STestDataPacket, povValue3), .dwType = DIDFT_OPTIONAL | DIDFT_POV | DIDFT_ANYINSTANCE,      .dwFlags = DIDOI_ASPECTACCEL}     // No match because the flags are not supported
+        };
+
+        const DIDATAFORMAT kTestFormatSpec = {
+            .dwSize = sizeof(DIDATAFORMAT),
+            .dwObjSize = sizeof(DIOBJECTDATAFORMAT),
+            .dwFlags = DIDF_ABSAXIS,
+            .dwDataSize = sizeof(STestDataPacket),
+            .dwNumObjs = _countof(testObjectFormatSpec),
+            .rgodf = testObjectFormatSpec
+        };
+
+        // Expected to be empty because no elements were able to be selected for any object format specifications.
+        // However, because POVs are present in the format specification, they are unused and thus tracked by the data format object.
+        // It is assumed that only object specifications recognized as POV specifications (i.e. consistent GUID and type, supported flag value, and so on) need to be tracked as unused POVs.
+        DataFormat::SDataFormatSpec expectedDataFormatSpec(sizeof(STestDataPacket));
+        expectedDataFormatSpec.SubmitUnusedPovOffset(offsetof(STestDataPacket, povValue1));
 
         TestDataFormatCreateSuccess(kTestFormatSpec, kTestMapperWithPov.GetCapabilities(), expectedDataFormatSpec);
         TestDataFormatCreateSuccess(kTestFormatSpec, kTestMapperWithoutPov.GetCapabilities(), expectedDataFormatSpec);
@@ -552,58 +910,5 @@ namespace XidiTest
             expectedDataFormatSpecWithoutPov.SubmitUnusedPovOffset(offsetof(DIJOYSTATE2, rgdwPOV[i]));
 
         TestDataFormatCreateSuccess(kTestFormatSpec, kTestMapperWithoutPov.GetCapabilities(), expectedDataFormatSpecWithoutPov);
-    }
-
-
-    // Verifies that POV direction values are correctly produced from controller states.
-    // Tests all possible combinations of individual POV direction states.
-    TEST_CASE(DataFormat_PovDirectionFromControllerState)
-    {
-        constexpr struct
-        {
-            bool povUp;
-            bool povDown;
-            bool povLeft;
-            bool povRight;
-            EPovValue expectedPovValue;
-        } kPovTestData[] = {
-            {.povUp = false, .povDown = false, .povLeft = false, .povRight = false, .expectedPovValue = EPovValue::Center},
-            {.povUp = false, .povDown = false, .povLeft = false, .povRight = true,  .expectedPovValue = EPovValue::E},
-            {.povUp = false, .povDown = false, .povLeft = true,  .povRight = false, .expectedPovValue = EPovValue::W},
-            {.povUp = false, .povDown = false, .povLeft = true,  .povRight = true,  .expectedPovValue = EPovValue::Center},
-            {.povUp = false, .povDown = true,  .povLeft = false, .povRight = false, .expectedPovValue = EPovValue::S},
-            {.povUp = false, .povDown = true,  .povLeft = false, .povRight = true,  .expectedPovValue = EPovValue::SE},
-            {.povUp = false, .povDown = true,  .povLeft = true,  .povRight = false, .expectedPovValue = EPovValue::SW},
-            {.povUp = false, .povDown = true,  .povLeft = true,  .povRight = true,  .expectedPovValue = EPovValue::S},
-            {.povUp = true,  .povDown = false, .povLeft = false, .povRight = false, .expectedPovValue = EPovValue::N},
-            {.povUp = true,  .povDown = false, .povLeft = false, .povRight = true,  .expectedPovValue = EPovValue::NE},
-            {.povUp = true,  .povDown = false, .povLeft = true,  .povRight = false, .expectedPovValue = EPovValue::NW},
-            {.povUp = true,  .povDown = false, .povLeft = true,  .povRight = true,  .expectedPovValue = EPovValue::N},
-            {.povUp = true,  .povDown = true,  .povLeft = false, .povRight = false, .expectedPovValue = EPovValue::Center},
-            {.povUp = true,  .povDown = true,  .povLeft = false, .povRight = true,  .expectedPovValue = EPovValue::E},
-            {.povUp = true,  .povDown = true,  .povLeft = true,  .povRight = false, .expectedPovValue = EPovValue::W},
-            {.povUp = true,  .povDown = true,  .povLeft = true,  .povRight = true,  .expectedPovValue = EPovValue::Center},
-        };
-
-        int numFailingInputs = 0;
-        for (const auto& povTestData : kPovTestData)
-        {
-            Controller::SState controllerState;
-            controllerState.povDirection[(int)Controller::EPovDirection::Up] = povTestData.povUp;
-            controllerState.povDirection[(int)Controller::EPovDirection::Down] = povTestData.povDown;
-            controllerState.povDirection[(int)Controller::EPovDirection::Left] = povTestData.povLeft;
-            controllerState.povDirection[(int)Controller::EPovDirection::Right] = povTestData.povRight;
-
-            const EPovValue kExpectedPovValue = povTestData.expectedPovValue;
-            const EPovValue kActualPovValue = DataFormat::PovDirectionFromControllerState(controllerState);
-
-            if (kActualPovValue != kExpectedPovValue)
-            {
-                PrintFormatted(L"Wrong POV direction for states up=%s down=%s left=%s right=%s (expected %d, got %d).", ((true == povTestData.povUp) ? L"true" : L"false"), ((true == povTestData.povDown) ? L"true" : L"false"), ((true == povTestData.povLeft) ? L"true" : L"false"), ((true == povTestData.povRight) ? L"true" : L"false"), (int)kExpectedPovValue, (int)kActualPovValue);
-                numFailingInputs += 1;
-            }
-        }
-
-        TEST_ASSERT(0 == numFailingInputs);
     }
 }

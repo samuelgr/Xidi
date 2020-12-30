@@ -368,14 +368,20 @@ namespace Xidi
     {
         // Only position information can be reported by virtual controller objects.
         // It is assumed that button and POV state values are considered position information.
-        if ((0 == objectFormatSpec.dwFlags) || (0 != (objectFormatSpec.dwFlags & DIDOI_ASPECTPOSITION)))
+        switch (objectFormatSpec.dwFlags)
         {
+        case 0:
+        case DIDOI_ASPECTPOSITION:
             if (0 != (DIDFT_GETTYPE(objectFormatSpec.dwType) & DIDFT_ABSAXIS))
                 return ElementTypeIfGuidMatches(objectFormatSpec.pguid, Controller::EElementType::Axis);
             else if (0 != (DIDFT_GETTYPE(objectFormatSpec.dwType) & DIDFT_PSHBUTTON))
                 return ElementTypeIfGuidMatches(objectFormatSpec.pguid, Controller::EElementType::Button);
             else if (0 != (DIDFT_GETTYPE(objectFormatSpec.dwType) & DIDFT_POV))
                 return ElementTypeIfGuidMatches(objectFormatSpec.pguid, Controller::EElementType::Pov);
+            break;
+
+        default:
+            break;
         }
 
         return std::nullopt;
@@ -430,6 +436,7 @@ namespace Xidi
 
         DataFormatBuildHelper buildHelper(controllerCapabilities, appFormatSpec.dwDataSize);
         SDataFormatSpec dataFormatSpec(appFormatSpec.dwDataSize);
+        int numElementsSelected = 0;
 
         for (DWORD i = 0; i < appFormatSpec.dwNumObjs; ++i)
         {
@@ -441,7 +448,7 @@ namespace Xidi
             const std::optional<Controller::EElementType> maybeElementType = ElementTypeFromObjectFormatSpec(objectFormatSpec);
             if (false == maybeElementType.has_value())
             {
-                DATAFORMAT_HANDLE_INVALID_OBJECT_SPEC(objectFormatSpec, i, L"Inconsistent or unrecognized type 0x%x and GUID %s.", (unsigned int)DIDFT_GETTYPE(objectFormatSpec.dwType), GuidTypeString(objectFormatSpec.pguid));
+                DATAFORMAT_HANDLE_INVALID_OBJECT_SPEC(objectFormatSpec, i, L"Inconsistent or unrecognized type 0x%x, GUID %s, and flags 0x%08x.", (unsigned int)DIDFT_GETTYPE(objectFormatSpec.dwType), GuidTypeString(objectFormatSpec.pguid), objectFormatSpec.dwFlags);
             }
 
             // Step 2
@@ -477,7 +484,11 @@ namespace Xidi
                     }
                     else
                     {
-                        maybeSelectedElement = buildHelper.GetNextAvailableOfType(Controller::EElementType::Axis);
+                        const int kRequestedInstanceIndex = DIDFT_GETINSTANCE(objectFormatSpec.dwType);
+                        if (kWildcardInstanceIndex == kRequestedInstanceIndex)
+                            maybeSelectedElement = buildHelper.GetNextAvailableOfType(Controller::EElementType::Axis);
+                        else if ((kRequestedInstanceIndex >= 0) && (kRequestedInstanceIndex < _countof(controllerCapabilities.axisType)))
+                            maybeSelectedElement = buildHelper.GetSpecificElement({.type = Controller::EElementType::Axis, .axis = controllerCapabilities.axisType[kRequestedInstanceIndex]});
                     }
                 } while (false);
 
@@ -501,7 +512,7 @@ namespace Xidi
                     if (kWildcardInstanceIndex == kRequestedInstanceIndex)
                         maybeSelectedElement = buildHelper.GetNextAvailableOfType(Controller::EElementType::Button);
                     else
-                        maybeSelectedElement = buildHelper.GetSpecificElement({.type = Controller::EElementType::Button, .button = (Controller::EButton)kRequestedInstanceIndex });
+                        maybeSelectedElement = buildHelper.GetSpecificElement({.type = Controller::EElementType::Button, .button = (Controller::EButton)kRequestedInstanceIndex});
                 } while (false);
 
                 // For debugging.
@@ -547,6 +558,7 @@ namespace Xidi
             if (true == maybeSelectedElement.has_value())
             {
                 dataFormatSpec.SetOffsetForElement(maybeSelectedElement.value(), objectFormatSpec.dwOfs);
+                numElementsSelected += 1;
             }
             else
             {
@@ -554,7 +566,7 @@ namespace Xidi
             }
         }
 
-        Message::OutputFormatted(Message::ESeverity::Info, L"Accepted and successfully set application data format. Total data packet size is %u byte(s).", appFormatSpec.dwDataSize);
+        Message::OutputFormatted(Message::ESeverity::Info, L"Accepted and successfully set application data format. Total data packet size is %u byte(s), and %d virtual controller element(s) were selected.", appFormatSpec.dwDataSize, numElementsSelected);
         return std::unique_ptr<DataFormat>(new DataFormat(controllerCapabilities, std::move(dataFormatSpec)));
     }
 
