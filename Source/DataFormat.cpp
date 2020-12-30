@@ -104,6 +104,10 @@ namespace Xidi
         /// @return `true` if the allocation was successful, `false` otherwise.
         template <typename ValueType> bool AllocateAtOffset(TOffset offset)
         {
+            // Sanity check: is the requested offset properly aligned to the size of the value, as required by DirectInput documentation?
+            if (0 != (offset % sizeof(ValueType)))
+                return false;
+
             // Sanity check: does the requested allocation fit within the application's data packet?
             if ((offset + sizeof(ValueType)) > usedByteOffsets.size())
                 return false;
@@ -362,12 +366,17 @@ namespace Xidi
     /// @return Requested element type, if it is recognized and consistently specified by the object format specification.
     static std::optional<Controller::EElementType> ElementTypeFromObjectFormatSpec(const DIOBJECTDATAFORMAT& objectFormatSpec)
     {
-        if (0 != (DIDFT_GETTYPE(objectFormatSpec.dwType) & DIDFT_ABSAXIS))
-            return ElementTypeIfGuidMatches(objectFormatSpec.pguid, Controller::EElementType::Axis);
-        else if (0 != (DIDFT_GETTYPE(objectFormatSpec.dwType) & DIDFT_PSHBUTTON))
-            return ElementTypeIfGuidMatches(objectFormatSpec.pguid, Controller::EElementType::Button);
-        else if (0 != (DIDFT_GETTYPE(objectFormatSpec.dwType) & DIDFT_POV))
-            return ElementTypeIfGuidMatches(objectFormatSpec.pguid, Controller::EElementType::Pov);
+        // Only position information can be reported by virtual controller objects.
+        // It is assumed that button and POV state values are considered position information.
+        if ((0 == objectFormatSpec.dwFlags) || (0 != (objectFormatSpec.dwFlags & DIDOI_ASPECTPOSITION)))
+        {
+            if (0 != (DIDFT_GETTYPE(objectFormatSpec.dwType) & DIDFT_ABSAXIS))
+                return ElementTypeIfGuidMatches(objectFormatSpec.pguid, Controller::EElementType::Axis);
+            else if (0 != (DIDFT_GETTYPE(objectFormatSpec.dwType) & DIDFT_PSHBUTTON))
+                return ElementTypeIfGuidMatches(objectFormatSpec.pguid, Controller::EElementType::Button);
+            else if (0 != (DIDFT_GETTYPE(objectFormatSpec.dwType) & DIDFT_POV))
+                return ElementTypeIfGuidMatches(objectFormatSpec.pguid, Controller::EElementType::Pov);
+        }
 
         return std::nullopt;
     }
@@ -390,7 +399,7 @@ namespace Xidi
         // Sanity check: is the data packet size within bounds?
         if (kMaxDataPacketSizeBytes < appFormatSpec.dwDataSize)
         {
-            Message::OutputFormatted(Message::ESeverity::Warning, L"Rejecting application data format because the data packet size is too large (%u bytes versus maximum %u bytes).", (unsigned int)appFormatSpec.dwDataSize, (unsigned int)kMaxDataPacketSizeBytes);
+            Message::OutputFormatted(Message::ESeverity::Warning, L"Rejecting application data format because the data packet size is too large (%u bytes versus maximum %u bytes).", appFormatSpec.dwDataSize, kMaxDataPacketSizeBytes);
             return nullptr;
         }
 
@@ -405,6 +414,19 @@ namespace Xidi
             Message::Output(Message::ESeverity::Warning, L"Rejecting application data format because it does not contain any object format specifications.");
             return nullptr;
         }
+
+        // Sanity check: are the requested flags supported?
+        // Per DirectInput documentation flags are used to specify the axis mode, and only absolute mode is supported by virtual controllers.
+        switch (appFormatSpec.dwFlags)
+        {
+        case 0:
+        case DIDF_ABSAXIS:
+            break;
+        default:
+            Message::OutputFormatted(Message::ESeverity::Warning, L"Rejecting application data format because its flags are unsupported (0x%08x).", appFormatSpec.dwFlags);
+            return nullptr;
+        }
+
 
         DataFormatBuildHelper buildHelper(controllerCapabilities, appFormatSpec.dwDataSize);
         SDataFormatSpec dataFormatSpec(appFormatSpec.dwDataSize);
