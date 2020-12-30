@@ -24,6 +24,32 @@
 
 namespace Xidi
 {
+    /// Type used in an application data format to represent an axis value.
+    typedef LONG TAxisValue;
+
+    /// Type used in an application data format to represent a button value.
+    typedef BYTE TButtonValue;
+
+    /// Integer type used by DirectInput to represent offsets within an application's data format.
+    typedef DWORD TOffset;
+
+    /// Enumerates possible POV direction values that could be supplied to the application.
+    /// Underlying type matches the type used in an application data format to represent a POV value.
+    /// Centered is the special case that the POV is not pressed in any direction, and all other enumerators are named after compass directions.
+    /// Per DirectInput documentation, POV value is measured as hundredths of degrees clockwise from north, where "north" semantically means pressing "up" on a d-pad.
+    enum class EPovValue : DWORD
+    {
+        Center = (DWORD)-1,
+        N = 0,
+        NE = 4500,
+        E = 9000,
+        SE = 13500,
+        S = 18000,
+        SW = 22500,
+        W = 27000,
+        NW = 31500
+    };
+    
     /// Encapsulates all functionality for writing and interpreting data formatted using an application-defined DirectInput data format for game controller data.
     /// Each instance of this class is linked to one specific controller and data format. Data format objects can be queried or used to write application data packets, but the format itself cannot be updated once the object is created.
     /// To change to a different data format, it is necessary to create a new instance.
@@ -32,32 +58,6 @@ namespace Xidi
     {
     public:
         // -------- TYPE DEFINITIONS --------------------------------------- //
-
-        /// Integer type used by DirectInput to represent offsets within an application's data format.
-        typedef DWORD TOffset;
-        
-        /// Type used in an application data format to represent an axis value.
-        typedef LONG TAxisValue;
-
-        /// Type used in an application data format to represent a button value.
-        typedef BYTE TButtonValue;
-
-        /// Enumerates possible POV direction values that could be supplied to the application.
-        /// Underlying type matches the type used in an application data format to represent a POV value.
-        /// Centered is the special case that the POV is not pressed in any direction, and all other enumerators are named after compass directions.
-        /// Per DirectInput documentation, POV value is measured as hundredths of degrees clockwise from north, where "north" semantically means pressing "up" on a d-pad.
-        enum class EPovValue : DWORD
-        {
-            Center = (DWORD)-1,
-            N = 0,
-            NE = 4500,
-            E = 9000,
-            SE = 13500,
-            S = 18000,
-            SW = 22500,
-            W = 27000,
-            NW = 31500
-        };
 
         /// Holds everything needed to reason about an application's data format.
         /// Generally intended for internal use, but examining the contents can be useful for testing.
