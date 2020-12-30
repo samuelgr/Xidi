@@ -284,7 +284,7 @@ namespace Xidi
             Message::Output(kDumpSeverity, L"  Objects:");
             for (DWORD i = 0; i < appFormatSpec.dwNumObjs; ++i)
             {
-                Message::OutputFormatted(kDumpSeverity, L"    rgodf[%3d]: { pguid = %s, dwOfs = %d, dwType = 0x%x, dwFlags = 0x%x }", i, GuidTypeString(appFormatSpec.rgodf[i].pguid), appFormatSpec.rgodf[i].dwOfs, appFormatSpec.rgodf[i].dwType, appFormatSpec.rgodf[i].dwFlags);
+                Message::OutputFormatted(kDumpSeverity, L"    rgodf[%5d]: { pguid = %s, dwOfs = %d, dwType = 0x%x, dwFlags = 0x%x }", i, GuidTypeString(appFormatSpec.rgodf[i].pguid), appFormatSpec.rgodf[i].dwOfs, appFormatSpec.rgodf[i].dwType, appFormatSpec.rgodf[i].dwFlags);
             }
 
             Message::Output(kDumpSeverity, L"End dump of data format specification.");

@@ -133,8 +133,7 @@ namespace Xidi
         static constexpr TOffset kInvalidOffsetValue = std::numeric_limits<TOffset>::max();
 
         /// Specifies the maximum size of an application data packet, in bytes.
-        /// Value is equal to 1MB.
-        static constexpr TOffset kMaxDataPacketSizeBytes = (1024 * 1024);
+        static constexpr TOffset kMaxDataPacketSizeBytes = 4096;
 
         /// Value used to indicate to the application that a button is pressed.
         static constexpr TButtonValue kButtonValuePressed = 0x80;
