@@ -39,52 +39,52 @@ namespace XidiTest
 
     // Test mapper that contains a POV.
     // Contains 4 axes (RotX and RotY are skipped), 12 buttons, and a POV.
-    static const Mapper kTestMapperWithPov = Mapper({
-        .stickLeftX = new AxisMapper(EAxis::X),
-        .stickLeftY = new AxisMapper(EAxis::Y),
-        .stickRightX = new AxisMapper(EAxis::Z),
-        .stickRightY = new AxisMapper(EAxis::RotZ),
-        .dpadUp = new PovMapper(EPovDirection::Up),
-        .dpadDown = new PovMapper(EPovDirection::Down),
-        .dpadLeft = new PovMapper(EPovDirection::Left),
-        .dpadRight = new PovMapper(EPovDirection::Right),
-        .triggerLT = new ButtonMapper(EButton::B7),
-        .triggerRT = new ButtonMapper(EButton::B8),
-        .buttonA = new ButtonMapper(EButton::B1),
-        .buttonB = new ButtonMapper(EButton::B2),
-        .buttonX = new ButtonMapper(EButton::B3),
-        .buttonY = new ButtonMapper(EButton::B4),
-        .buttonLB = new ButtonMapper(EButton::B5),
-        .buttonRB = new ButtonMapper(EButton::B6),
-        .buttonBack = new ButtonMapper(EButton::B9),
-        .buttonStart = new ButtonMapper(EButton::B10),
-        .buttonLS = new ButtonMapper(EButton::B11),
-        .buttonRS = new ButtonMapper(EButton::B12)
+    static const Mapper kTestMapperWithPov({
+        .stickLeftX = std::make_unique<AxisMapper>(EAxis::X),
+        .stickLeftY = std::make_unique<AxisMapper>(EAxis::Y),
+        .stickRightX = std::make_unique<AxisMapper>(EAxis::Z),
+        .stickRightY = std::make_unique<AxisMapper>(EAxis::RotZ),
+        .dpadUp = std::make_unique<PovMapper>(EPovDirection::Up),
+        .dpadDown = std::make_unique<PovMapper>(EPovDirection::Down),
+        .dpadLeft = std::make_unique<PovMapper>(EPovDirection::Left),
+        .dpadRight = std::make_unique<PovMapper>(EPovDirection::Right),
+        .triggerLT = std::make_unique<ButtonMapper>(EButton::B7),
+        .triggerRT = std::make_unique<ButtonMapper>(EButton::B8),
+        .buttonA = std::make_unique<ButtonMapper>(EButton::B1),
+        .buttonB = std::make_unique<ButtonMapper>(EButton::B2),
+        .buttonX = std::make_unique<ButtonMapper>(EButton::B3),
+        .buttonY = std::make_unique<ButtonMapper>(EButton::B4),
+        .buttonLB = std::make_unique<ButtonMapper>(EButton::B5),
+        .buttonRB = std::make_unique<ButtonMapper>(EButton::B6),
+        .buttonBack = std::make_unique<ButtonMapper>(EButton::B9),
+        .buttonStart = std::make_unique<ButtonMapper>(EButton::B10),
+        .buttonLS = std::make_unique<ButtonMapper>(EButton::B11),
+        .buttonRS = std::make_unique<ButtonMapper>(EButton::B12)
     });
 
     // Test mapper that does not contain a POV.
     // Contains 4 axes (RotX and RotY are deliberately skipped), and 16 buttons.
-    static const Mapper kTestMapperWithoutPov = Mapper({
-        .stickLeftX = new AxisMapper(EAxis::X),
-        .stickLeftY = new AxisMapper(EAxis::Y),
-        .stickRightX = new AxisMapper(EAxis::Z),
-        .stickRightY = new AxisMapper(EAxis::RotZ),
-        .dpadUp = new ButtonMapper(EButton::B13),
-        .dpadDown = new ButtonMapper(EButton::B14),
-        .dpadLeft = new ButtonMapper(EButton::B15),
-        .dpadRight = new ButtonMapper(EButton::B16),
-        .triggerLT = new ButtonMapper(EButton::B7),
-        .triggerRT = new ButtonMapper(EButton::B8),
-        .buttonA = new ButtonMapper(EButton::B1),
-        .buttonB = new ButtonMapper(EButton::B2),
-        .buttonX = new ButtonMapper(EButton::B3),
-        .buttonY = new ButtonMapper(EButton::B4),
-        .buttonLB = new ButtonMapper(EButton::B5),
-        .buttonRB = new ButtonMapper(EButton::B6),
-        .buttonBack = new ButtonMapper(EButton::B9),
-        .buttonStart = new ButtonMapper(EButton::B10),
-        .buttonLS = new ButtonMapper(EButton::B11),
-        .buttonRS = new ButtonMapper(EButton::B12)
+    static const Mapper kTestMapperWithoutPov({
+        .stickLeftX = std::make_unique<AxisMapper>(EAxis::X),
+        .stickLeftY = std::make_unique<AxisMapper>(EAxis::Y),
+        .stickRightX = std::make_unique<AxisMapper>(EAxis::Z),
+        .stickRightY = std::make_unique<AxisMapper>(EAxis::RotZ),
+        .dpadUp = std::make_unique<ButtonMapper>(EButton::B13),
+        .dpadDown = std::make_unique<ButtonMapper>(EButton::B14),
+        .dpadLeft = std::make_unique<ButtonMapper>(EButton::B15),
+        .dpadRight = std::make_unique<ButtonMapper>(EButton::B16),
+        .triggerLT = std::make_unique<ButtonMapper>(EButton::B7),
+        .triggerRT = std::make_unique<ButtonMapper>(EButton::B8),
+        .buttonA = std::make_unique<ButtonMapper>(EButton::B1),
+        .buttonB = std::make_unique<ButtonMapper>(EButton::B2),
+        .buttonX = std::make_unique<ButtonMapper>(EButton::B3),
+        .buttonY = std::make_unique<ButtonMapper>(EButton::B4),
+        .buttonLB = std::make_unique<ButtonMapper>(EButton::B5),
+        .buttonRB = std::make_unique<ButtonMapper>(EButton::B6),
+        .buttonBack = std::make_unique<ButtonMapper>(EButton::B9),
+        .buttonStart = std::make_unique<ButtonMapper>(EButton::B10),
+        .buttonLS = std::make_unique<ButtonMapper>(EButton::B11),
+        .buttonRS = std::make_unique<ButtonMapper>(EButton::B12)
     });
 
 

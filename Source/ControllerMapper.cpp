@@ -147,7 +147,7 @@ namespace Xidi
         // -------- CONSTRUCTION AND DESTRUCTION --------------------------- //
         // See "ControllerMapper.h" for documentation.
 
-        Mapper::Mapper(const std::wstring_view name, const SElementMap& elements) : capabilities(DeriveCapabilitiesFromElementMap(elements)), elements(elements), name(name)
+        Mapper::Mapper(const std::wstring_view name, SElementMap&& elements) : elements(std::move(elements)), capabilities(DeriveCapabilitiesFromElementMap(this->elements)), name(name)
         {
             if (false == name.empty())
                 MapperRegistry::GetInstance().RegisterMapper(name, this);
@@ -155,20 +155,9 @@ namespace Xidi
 
         // --------
 
-        Mapper::Mapper(const SElementMap& elements) : Mapper(L"", elements)
+        Mapper::Mapper(SElementMap&& elements) : Mapper(L"", std::move(elements))
         {
             // Nothing to do here.
-        }
-
-        // --------
-
-        Mapper::~Mapper(void)
-        {
-            for (int i = 0; i < _countof(elements.all); ++i)
-            {
-                if (nullptr != elements.all[i])
-                    delete elements.all[i];
-            }
         }
 
 
@@ -234,114 +223,114 @@ namespace Xidi
         /// The first element is the default mapper.
         static const Mapper kMappers[] = {
             Mapper(L"StandardGamepad", {
-                .stickLeftX = new AxisMapper(EAxis::X),
-                .stickLeftY = new AxisMapper(EAxis::Y),
-                .stickRightX = new AxisMapper(EAxis::Z),
-                .stickRightY = new AxisMapper(EAxis::RotZ),
-                .dpadUp = new PovMapper(EPovDirection::Up),
-                .dpadDown = new PovMapper(EPovDirection::Down),
-                .dpadLeft = new PovMapper(EPovDirection::Left),
-                .dpadRight = new PovMapper(EPovDirection::Right),
-                .triggerLT = new ButtonMapper(EButton::B7),
-                .triggerRT = new ButtonMapper(EButton::B8),
-                .buttonA = new ButtonMapper(EButton::B1),
-                .buttonB = new ButtonMapper(EButton::B2),
-                .buttonX = new ButtonMapper(EButton::B3),
-                .buttonY = new ButtonMapper(EButton::B4),
-                .buttonLB = new ButtonMapper(EButton::B5),
-                .buttonRB = new ButtonMapper(EButton::B6),
-                .buttonBack = new ButtonMapper(EButton::B9),
-                .buttonStart = new ButtonMapper(EButton::B10),
-                .buttonLS = new ButtonMapper(EButton::B11),
-                .buttonRS = new ButtonMapper(EButton::B12)
+                .stickLeftX = std::make_unique<AxisMapper>(EAxis::X),
+                .stickLeftY = std::make_unique<AxisMapper>(EAxis::Y),
+                .stickRightX = std::make_unique<AxisMapper>(EAxis::Z),
+                .stickRightY = std::make_unique<AxisMapper>(EAxis::RotZ),
+                .dpadUp = std::make_unique<PovMapper>(EPovDirection::Up),
+                .dpadDown = std::make_unique<PovMapper>(EPovDirection::Down),
+                .dpadLeft = std::make_unique<PovMapper>(EPovDirection::Left),
+                .dpadRight = std::make_unique<PovMapper>(EPovDirection::Right),
+                .triggerLT = std::make_unique<ButtonMapper>(EButton::B7),
+                .triggerRT = std::make_unique<ButtonMapper>(EButton::B8),
+                .buttonA = std::make_unique<ButtonMapper>(EButton::B1),
+                .buttonB = std::make_unique<ButtonMapper>(EButton::B2),
+                .buttonX = std::make_unique<ButtonMapper>(EButton::B3),
+                .buttonY = std::make_unique<ButtonMapper>(EButton::B4),
+                .buttonLB = std::make_unique<ButtonMapper>(EButton::B5),
+                .buttonRB = std::make_unique<ButtonMapper>(EButton::B6),
+                .buttonBack = std::make_unique<ButtonMapper>(EButton::B9),
+                .buttonStart = std::make_unique<ButtonMapper>(EButton::B10),
+                .buttonLS = std::make_unique<ButtonMapper>(EButton::B11),
+                .buttonRS = std::make_unique<ButtonMapper>(EButton::B12)
             }),
             Mapper(L"DigitalGamepad", {
-                .stickLeftX = new DigitalAxisMapper(EAxis::X),
-                .stickLeftY = new DigitalAxisMapper(EAxis::Y),
-                .stickRightX = new DigitalAxisMapper(EAxis::Z),
-                .stickRightY = new DigitalAxisMapper(EAxis::RotZ),
-                .dpadUp = new DigitalAxisMapper(EAxis::Y, AxisMapper::EDirection::Negative),
-                .dpadDown = new DigitalAxisMapper(EAxis::Y, AxisMapper::EDirection::Positive),
-                .dpadLeft = new DigitalAxisMapper(EAxis::X, AxisMapper::EDirection::Negative),
-                .dpadRight = new DigitalAxisMapper(EAxis::X, AxisMapper::EDirection::Positive),
-                .triggerLT = new ButtonMapper(EButton::B7),
-                .triggerRT = new ButtonMapper(EButton::B8),
-                .buttonA = new ButtonMapper(EButton::B1),
-                .buttonB = new ButtonMapper(EButton::B2),
-                .buttonX = new ButtonMapper(EButton::B3),
-                .buttonY = new ButtonMapper(EButton::B4),
-                .buttonLB = new ButtonMapper(EButton::B5),
-                .buttonRB = new ButtonMapper(EButton::B6),
-                .buttonBack = new ButtonMapper(EButton::B9),
-                .buttonStart = new ButtonMapper(EButton::B10),
-                .buttonLS = new ButtonMapper(EButton::B11),
-                .buttonRS = new ButtonMapper(EButton::B12)
+                .stickLeftX = std::make_unique<DigitalAxisMapper>(EAxis::X),
+                .stickLeftY = std::make_unique<DigitalAxisMapper>(EAxis::Y),
+                .stickRightX = std::make_unique<DigitalAxisMapper>(EAxis::Z),
+                .stickRightY = std::make_unique<DigitalAxisMapper>(EAxis::RotZ),
+                .dpadUp = std::make_unique<DigitalAxisMapper>(EAxis::Y, AxisMapper::EDirection::Negative),
+                .dpadDown = std::make_unique<DigitalAxisMapper>(EAxis::Y, AxisMapper::EDirection::Positive),
+                .dpadLeft = std::make_unique<DigitalAxisMapper>(EAxis::X, AxisMapper::EDirection::Negative),
+                .dpadRight = std::make_unique<DigitalAxisMapper>(EAxis::X, AxisMapper::EDirection::Positive),
+                .triggerLT = std::make_unique<ButtonMapper>(EButton::B7),
+                .triggerRT = std::make_unique<ButtonMapper>(EButton::B8),
+                .buttonA = std::make_unique<ButtonMapper>(EButton::B1),
+                .buttonB = std::make_unique<ButtonMapper>(EButton::B2),
+                .buttonX = std::make_unique<ButtonMapper>(EButton::B3),
+                .buttonY = std::make_unique<ButtonMapper>(EButton::B4),
+                .buttonLB = std::make_unique<ButtonMapper>(EButton::B5),
+                .buttonRB = std::make_unique<ButtonMapper>(EButton::B6),
+                .buttonBack = std::make_unique<ButtonMapper>(EButton::B9),
+                .buttonStart = std::make_unique<ButtonMapper>(EButton::B10),
+                .buttonLS = std::make_unique<ButtonMapper>(EButton::B11),
+                .buttonRS = std::make_unique<ButtonMapper>(EButton::B12)
             }),
             Mapper(L"ExtendedGamepad", {
-                .stickLeftX = new AxisMapper(EAxis::X),
-                .stickLeftY = new AxisMapper(EAxis::Y),
-                .stickRightX = new AxisMapper(EAxis::Z),
-                .stickRightY = new AxisMapper(EAxis::RotZ),
-                .dpadUp = new PovMapper(EPovDirection::Up),
-                .dpadDown = new PovMapper(EPovDirection::Down),
-                .dpadLeft = new PovMapper(EPovDirection::Left),
-                .dpadRight = new PovMapper(EPovDirection::Right),
-                .triggerLT = new AxisMapper(EAxis::RotX),
-                .triggerRT = new AxisMapper(EAxis::RotY),
-                .buttonA = new ButtonMapper(EButton::B1),
-                .buttonB = new ButtonMapper(EButton::B2),
-                .buttonX = new ButtonMapper(EButton::B3),
-                .buttonY = new ButtonMapper(EButton::B4),
-                .buttonLB = new ButtonMapper(EButton::B5),
-                .buttonRB = new ButtonMapper(EButton::B6),
-                .buttonBack = new ButtonMapper(EButton::B7),
-                .buttonStart = new ButtonMapper(EButton::B8),
-                .buttonLS = new ButtonMapper(EButton::B9),
-                .buttonRS = new ButtonMapper(EButton::B10)
+                .stickLeftX = std::make_unique<AxisMapper>(EAxis::X),
+                .stickLeftY = std::make_unique<AxisMapper>(EAxis::Y),
+                .stickRightX = std::make_unique<AxisMapper>(EAxis::Z),
+                .stickRightY = std::make_unique<AxisMapper>(EAxis::RotZ),
+                .dpadUp = std::make_unique<PovMapper>(EPovDirection::Up),
+                .dpadDown = std::make_unique<PovMapper>(EPovDirection::Down),
+                .dpadLeft = std::make_unique<PovMapper>(EPovDirection::Left),
+                .dpadRight = std::make_unique<PovMapper>(EPovDirection::Right),
+                .triggerLT = std::make_unique<AxisMapper>(EAxis::RotX),
+                .triggerRT = std::make_unique<AxisMapper>(EAxis::RotY),
+                .buttonA = std::make_unique<ButtonMapper>(EButton::B1),
+                .buttonB = std::make_unique<ButtonMapper>(EButton::B2),
+                .buttonX = std::make_unique<ButtonMapper>(EButton::B3),
+                .buttonY = std::make_unique<ButtonMapper>(EButton::B4),
+                .buttonLB = std::make_unique<ButtonMapper>(EButton::B5),
+                .buttonRB = std::make_unique<ButtonMapper>(EButton::B6),
+                .buttonBack = std::make_unique<ButtonMapper>(EButton::B7),
+                .buttonStart = std::make_unique<ButtonMapper>(EButton::B8),
+                .buttonLS = std::make_unique<ButtonMapper>(EButton::B9),
+                .buttonRS = std::make_unique<ButtonMapper>(EButton::B10)
             }),
             Mapper(L"XInputNative", {
-                .stickLeftX = new AxisMapper(EAxis::X),
-                .stickLeftY = new AxisMapper(EAxis::Y),
-                .stickRightX = new AxisMapper(EAxis::RotX),
-                .stickRightY = new AxisMapper(EAxis::RotY),
-                .dpadUp = new PovMapper(EPovDirection::Up),
-                .dpadDown = new PovMapper(EPovDirection::Down),
-                .dpadLeft = new PovMapper(EPovDirection::Left),
-                .dpadRight = new PovMapper(EPovDirection::Right),
-                .triggerLT = new AxisMapper(EAxis::Z),
-                .triggerRT = new AxisMapper(EAxis::RotZ),
-                .buttonA = new ButtonMapper(EButton::B1),
-                .buttonB = new ButtonMapper(EButton::B2),
-                .buttonX = new ButtonMapper(EButton::B3),
-                .buttonY = new ButtonMapper(EButton::B4),
-                .buttonLB = new ButtonMapper(EButton::B5),
-                .buttonRB = new ButtonMapper(EButton::B6),
-                .buttonBack = new ButtonMapper(EButton::B7),
-                .buttonStart = new ButtonMapper(EButton::B8),
-                .buttonLS = new ButtonMapper(EButton::B9),
-                .buttonRS = new ButtonMapper(EButton::B10)
+                .stickLeftX = std::make_unique<AxisMapper>(EAxis::X),
+                .stickLeftY = std::make_unique<AxisMapper>(EAxis::Y),
+                .stickRightX = std::make_unique<AxisMapper>(EAxis::RotX),
+                .stickRightY = std::make_unique<AxisMapper>(EAxis::RotY),
+                .dpadUp = std::make_unique<PovMapper>(EPovDirection::Up),
+                .dpadDown = std::make_unique<PovMapper>(EPovDirection::Down),
+                .dpadLeft = std::make_unique<PovMapper>(EPovDirection::Left),
+                .dpadRight = std::make_unique<PovMapper>(EPovDirection::Right),
+                .triggerLT = std::make_unique<AxisMapper>(EAxis::Z),
+                .triggerRT = std::make_unique<AxisMapper>(EAxis::RotZ),
+                .buttonA = std::make_unique<ButtonMapper>(EButton::B1),
+                .buttonB = std::make_unique<ButtonMapper>(EButton::B2),
+                .buttonX = std::make_unique<ButtonMapper>(EButton::B3),
+                .buttonY = std::make_unique<ButtonMapper>(EButton::B4),
+                .buttonLB = std::make_unique<ButtonMapper>(EButton::B5),
+                .buttonRB = std::make_unique<ButtonMapper>(EButton::B6),
+                .buttonBack = std::make_unique<ButtonMapper>(EButton::B7),
+                .buttonStart = std::make_unique<ButtonMapper>(EButton::B8),
+                .buttonLS = std::make_unique<ButtonMapper>(EButton::B9),
+                .buttonRS = std::make_unique<ButtonMapper>(EButton::B10)
             }),
             Mapper(L"XInputSharedTriggers", {
-                .stickLeftX = new AxisMapper(EAxis::X),
-                .stickLeftY = new AxisMapper(EAxis::Y),
-                .stickRightX = new AxisMapper(EAxis::RotX),
-                .stickRightY = new AxisMapper(EAxis::RotY),
-                .dpadUp = new PovMapper(EPovDirection::Up),
-                .dpadDown = new PovMapper(EPovDirection::Down),
-                .dpadLeft = new PovMapper(EPovDirection::Left),
-                .dpadRight = new PovMapper(EPovDirection::Right),
-                .triggerLT = new AxisMapper(EAxis::Z, AxisMapper::EDirection::Positive),
-                .triggerRT = new AxisMapper(EAxis::Z, AxisMapper::EDirection::Negative),
-                .buttonA = new ButtonMapper(EButton::B1),
-                .buttonB = new ButtonMapper(EButton::B2),
-                .buttonX = new ButtonMapper(EButton::B3),
-                .buttonY = new ButtonMapper(EButton::B4),
-                .buttonLB = new ButtonMapper(EButton::B5),
-                .buttonRB = new ButtonMapper(EButton::B6),
-                .buttonBack = new ButtonMapper(EButton::B7),
-                .buttonStart = new ButtonMapper(EButton::B8),
-                .buttonLS = new ButtonMapper(EButton::B9),
-                .buttonRS = new ButtonMapper(EButton::B10)
+                .stickLeftX = std::make_unique<AxisMapper>(EAxis::X),
+                .stickLeftY = std::make_unique<AxisMapper>(EAxis::Y),
+                .stickRightX = std::make_unique<AxisMapper>(EAxis::RotX),
+                .stickRightY = std::make_unique<AxisMapper>(EAxis::RotY),
+                .dpadUp = std::make_unique<PovMapper>(EPovDirection::Up),
+                .dpadDown = std::make_unique<PovMapper>(EPovDirection::Down),
+                .dpadLeft = std::make_unique<PovMapper>(EPovDirection::Left),
+                .dpadRight = std::make_unique<PovMapper>(EPovDirection::Right),
+                .triggerLT = std::make_unique<AxisMapper>(EAxis::Z, AxisMapper::EDirection::Positive),
+                .triggerRT = std::make_unique<AxisMapper>(EAxis::Z, AxisMapper::EDirection::Negative),
+                .buttonA = std::make_unique<ButtonMapper>(EButton::B1),
+                .buttonB = std::make_unique<ButtonMapper>(EButton::B2),
+                .buttonX = std::make_unique<ButtonMapper>(EButton::B3),
+                .buttonY = std::make_unique<ButtonMapper>(EButton::B4),
+                .buttonLB = std::make_unique<ButtonMapper>(EButton::B5),
+                .buttonRB = std::make_unique<ButtonMapper>(EButton::B6),
+                .buttonBack = std::make_unique<ButtonMapper>(EButton::B7),
+                .buttonStart = std::make_unique<ButtonMapper>(EButton::B8),
+                .buttonLS = std::make_unique<ButtonMapper>(EButton::B9),
+                .buttonRS = std::make_unique<ButtonMapper>(EButton::B10)
             })
         };
     }
