@@ -14,7 +14,6 @@
 #include "ControllerTypes.h"
 #include "DataFormat.h"
 #include "Message.h"
-#include "TemporaryBuffer.h"
 
 #include <map>
 #include <optional>
@@ -105,7 +104,7 @@ namespace Xidi
         template <typename ValueType> bool AllocateAtOffset(DataFormat::TOffset offset)
         {
             // Sanity check: does the requested allocation fit within the application's data packet?
-            if ((offset + sizeof(ValueType)) >= usedByteOffsets.size())
+            if ((offset + sizeof(ValueType)) > usedByteOffsets.size())
                 return false;
 
             // Allocate the value one byte at a time, breaking if another allocation overlaps.
@@ -390,7 +389,7 @@ namespace Xidi
                 {
                     if (false == buildHelper.AllocateAtOffset<TAxisValue>(objectFormatSpec.dwOfs))
                     {
-                        Message::OutputFormatted(Message::ESeverity::Warning, L"Rejecting application data format due to failed axis allocation of object at index %d at offset %u.", (int)i, objectFormatSpec.dwOfs);
+                        Message::OutputFormatted(Message::ESeverity::Warning, L"Rejecting application data format due to failed axis allocation at offset %u of object at index %d.", objectFormatSpec.dwOfs, (int)i);
                         return nullptr;
                     }
 
@@ -424,7 +423,7 @@ namespace Xidi
                 {
                     if (false == buildHelper.AllocateAtOffset<TButtonValue>(objectFormatSpec.dwOfs))
                     {
-                        Message::OutputFormatted(Message::ESeverity::Warning, L"Rejecting application data format due to failed button allocation of object at index %d at offset %u.", (int)i, objectFormatSpec.dwOfs);
+                        Message::OutputFormatted(Message::ESeverity::Warning, L"Rejecting application data format due to failed button allocation at offset %u of object at index %d.", objectFormatSpec.dwOfs, (int)i);
                         return nullptr;
                     }
 
@@ -438,7 +437,7 @@ namespace Xidi
 
                 // For debugging.
                 if (true == maybeSelectedElement.has_value())
-                    Message::OutputFormatted(Message::ESeverity::Debug, L"Object at index %d: Selected button %d for offset %u.", (int)i, (int)maybeSelectedElement.value().button, objectFormatSpec.dwOfs);
+                    Message::OutputFormatted(Message::ESeverity::Debug, L"Object at index %d: Selected button %d for offset %u.", (int)i, (1 + (int)maybeSelectedElement.value().button), objectFormatSpec.dwOfs);
 
                 break;
 
@@ -447,7 +446,7 @@ namespace Xidi
                 {
                     if (false == buildHelper.AllocateAtOffset<EPovValue>(objectFormatSpec.dwOfs))
                     {
-                        Message::OutputFormatted(Message::ESeverity::Warning, L"Rejecting application data format due to failed POV allocation of object at index %d at offset %u.", (int)i, objectFormatSpec.dwOfs);
+                        Message::OutputFormatted(Message::ESeverity::Warning, L"Rejecting application data format due to failed POV allocation at offset %u of object at index %d.", objectFormatSpec.dwOfs, (int)i);
                         return nullptr;
                     }
 
@@ -460,7 +459,10 @@ namespace Xidi
 
                     // Unselected POV offsets are tracked separately because they need to be initialized to a non-zero value when writing a data packet.
                     if (false == maybeSelectedElement.has_value())
+                    {
+                        Message::OutputFormatted(Message::ESeverity::Debug, L"Object at index %d: Tracking unused POV at offset %u.", (int)i, objectFormatSpec.dwOfs);
                         dataFormatSpec.SubmitUnusedPovOffset(objectFormatSpec.dwOfs);
+                    }
                 } while (false);
 
                 // For debugging.

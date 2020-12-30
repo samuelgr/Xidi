@@ -194,7 +194,7 @@ namespace Xidi
         /// Retrieves the underlying data format specification for read-only access.
         /// Primarily intended for testing.
         /// @return Read-only reference to the underlying data format specification.
-        const SDataFormatSpec& GetSpec(void)
+        const SDataFormatSpec& GetSpec(void) const
         {
             return dataFormatSpec;
         }
