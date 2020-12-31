@@ -183,6 +183,7 @@
     <ClInclude Include="Include\Xidi\Test\TestCase.h" />
     <ClInclude Include="Include\Xidi\Test\Utilities.h" />
     <ClInclude Include="Include\Xidi\XidiConfigReader.h" />
+    <ClInclude Include="Include\Xidi\XInputInterface.h" />
     <ClInclude Include="Resources\Xidi.h" />
   </ItemGroup>
   <ItemGroup>

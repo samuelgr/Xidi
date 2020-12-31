@@ -45,6 +45,7 @@
     <ClInclude Include="Include\Xidi\VirtualDirectInputDevice.h" />
     <ClInclude Include="Include\Xidi\XidiConfigReader.h" />
     <ClInclude Include="Include\Xidi\XInputController.h" />
+    <ClInclude Include="Include\Xidi\XInputInterface.h" />
     <ClInclude Include="Resources\DInput.h" />
     <ClInclude Include="Resources\Xidi.h" />
   </ItemGroup>
@@ -74,6 +75,7 @@
     <ClCompile Include="Source\DllMain.cpp" />
     <ClCompile Include="Source\XidiConfigReader.cpp" />
     <ClCompile Include="Source\XInputController.cpp" />
+    <ClCompile Include="Source\XInputInterface.cpp" />
   </ItemGroup>
   <ItemGroup>
     <None Include="dinput.def" />
