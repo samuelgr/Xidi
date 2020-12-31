@@ -1248,4 +1248,239 @@ namespace XidiTest
 
         TestDataFormatCreateFailure(kTestFormatSpec, kTestMapperWithPov.GetCapabilities());
     }
+
+    // Non-optional object without a matching controller element due to an unsupported type filter value.
+    TEST_CASE(DataFormat_CreateFailure_NonOptionalNoMatchByType)
+    {
+        struct STestDataPacket
+        {
+            TButtonValue buttonValue[4];
+            TAxisValue axisValue;
+        };
+
+        static_assert(0 == (sizeof(STestDataPacket) % 4), L"Test data packet size must be divisible by 4.");
+
+        DIOBJECTDATAFORMAT testObjectFormatSpec[] = {
+            {.pguid = nullptr, .dwOfs = offsetof(STestDataPacket, buttonValue[0]), .dwType = DIDFT_OPTIONAL | DIDFT_BUTTON  | DIDFT_ANYINSTANCE, .dwFlags = 0},
+            {.pguid = nullptr, .dwOfs = offsetof(STestDataPacket, buttonValue[1]), .dwType = DIDFT_OPTIONAL | DIDFT_BUTTON  | DIDFT_ANYINSTANCE, .dwFlags = 0},
+            {.pguid = nullptr, .dwOfs = offsetof(STestDataPacket, buttonValue[2]), .dwType = DIDFT_OPTIONAL | DIDFT_BUTTON  | DIDFT_ANYINSTANCE, .dwFlags = 0},
+            {.pguid = nullptr, .dwOfs = offsetof(STestDataPacket, buttonValue[3]), .dwType = DIDFT_OPTIONAL | DIDFT_BUTTON  | DIDFT_ANYINSTANCE, .dwFlags = 0},
+            {.pguid = nullptr, .dwOfs = offsetof(STestDataPacket, axisValue),      .dwType =                  DIDFT_RELAXIS | DIDFT_ANYINSTANCE, .dwFlags = 0}          // Reason for rejection: not optional and no match based on the type filter.
+        };
+
+        const DIDATAFORMAT kTestFormatSpec = {
+            .dwSize = sizeof(DIDATAFORMAT),
+            .dwObjSize = sizeof(DIOBJECTDATAFORMAT),
+            .dwFlags = DIDF_ABSAXIS,
+            .dwDataSize = sizeof(STestDataPacket),
+            .dwNumObjs = _countof(testObjectFormatSpec),
+            .rgodf = testObjectFormatSpec
+        };
+
+        TestDataFormatCreateFailure(kTestFormatSpec, kTestMapperWithPov.GetCapabilities());
+    }
+
+    // Non-optional object without a matching controller element due to a GUID filter that does not match any virtual controller elements.
+    TEST_CASE(DataFormat_CreateFailure_NonOptionalNoMatchByGuid)
+    {
+        struct STestDataPacket
+        {
+            TButtonValue buttonValue[4];
+            TAxisValue axisValue;
+        };
+
+        static_assert(0 == (sizeof(STestDataPacket) % 4), L"Test data packet size must be divisible by 4.");
+
+        DIOBJECTDATAFORMAT testObjectFormatSpec[] = {
+            {.pguid = nullptr,      .dwOfs = offsetof(STestDataPacket, buttonValue[0]), .dwType = DIDFT_OPTIONAL | DIDFT_BUTTON | DIDFT_ANYINSTANCE, .dwFlags = 0},
+            {.pguid = nullptr,      .dwOfs = offsetof(STestDataPacket, buttonValue[1]), .dwType = DIDFT_OPTIONAL | DIDFT_BUTTON | DIDFT_ANYINSTANCE, .dwFlags = 0},
+            {.pguid = nullptr,      .dwOfs = offsetof(STestDataPacket, buttonValue[2]), .dwType = DIDFT_OPTIONAL | DIDFT_BUTTON | DIDFT_ANYINSTANCE, .dwFlags = 0},
+            {.pguid = nullptr,      .dwOfs = offsetof(STestDataPacket, buttonValue[3]), .dwType = DIDFT_OPTIONAL | DIDFT_BUTTON | DIDFT_ANYINSTANCE, .dwFlags = 0},
+            {.pguid = &GUID_Slider, .dwOfs = offsetof(STestDataPacket, axisValue),      .dwType =                  DIDFT_AXIS   | DIDFT_ANYINSTANCE, .dwFlags = 0}      // Reason for rejection: not optional and no match based on GUID.
+        };
+
+        const DIDATAFORMAT kTestFormatSpec = {
+            .dwSize = sizeof(DIDATAFORMAT),
+            .dwObjSize = sizeof(DIOBJECTDATAFORMAT),
+            .dwFlags = DIDF_ABSAXIS,
+            .dwDataSize = sizeof(STestDataPacket),
+            .dwNumObjs = _countof(testObjectFormatSpec),
+            .rgodf = testObjectFormatSpec
+        };
+
+        TestDataFormatCreateFailure(kTestFormatSpec, kTestMapperWithPov.GetCapabilities());
+    }
+    
+    // Non-optional object without a matching controller element due to an out-of-bounds instance index value.
+    TEST_CASE(DataFormat_CreateFailure_NonOptionalNoMatchByIndex)
+    {
+        struct STestDataPacket
+        {
+            TButtonValue buttonValue[4];
+            TAxisValue axisValue;
+        };
+
+        static_assert(0 == (sizeof(STestDataPacket) % 4), L"Test data packet size must be divisible by 4.");
+
+        DIOBJECTDATAFORMAT testObjectFormatSpec[] = {
+            {.pguid = nullptr, .dwOfs = offsetof(STestDataPacket, buttonValue[0]), .dwType = DIDFT_OPTIONAL | DIDFT_BUTTON | DIDFT_ANYINSTANCE,     .dwFlags = 0},
+            {.pguid = nullptr, .dwOfs = offsetof(STestDataPacket, buttonValue[1]), .dwType = DIDFT_OPTIONAL | DIDFT_BUTTON | DIDFT_ANYINSTANCE,     .dwFlags = 0},
+            {.pguid = nullptr, .dwOfs = offsetof(STestDataPacket, buttonValue[2]), .dwType = DIDFT_OPTIONAL | DIDFT_BUTTON | DIDFT_ANYINSTANCE,     .dwFlags = 0},
+            {.pguid = nullptr, .dwOfs = offsetof(STestDataPacket, buttonValue[3]), .dwType = DIDFT_OPTIONAL | DIDFT_BUTTON | DIDFT_ANYINSTANCE,     .dwFlags = 0},
+            {.pguid = nullptr, .dwOfs = offsetof(STestDataPacket, axisValue),      .dwType =                  DIDFT_AXIS   | DIDFT_MAKEINSTANCE(8), .dwFlags = 0}       // Reason for rejection: not optional and no match based on instance index.
+        };
+
+        const DIDATAFORMAT kTestFormatSpec = {
+            .dwSize = sizeof(DIDATAFORMAT),
+            .dwObjSize = sizeof(DIOBJECTDATAFORMAT),
+            .dwFlags = DIDF_ABSAXIS,
+            .dwDataSize = sizeof(STestDataPacket),
+            .dwNumObjs = _countof(testObjectFormatSpec),
+            .rgodf = testObjectFormatSpec
+        };
+
+        TestDataFormatCreateFailure(kTestFormatSpec, kTestMapperWithPov.GetCapabilities());
+    }
+
+    // Specified axis offset is beyond the total size of the data packet.
+    TEST_CASE(DataFormat_CreateFailure_OffsetOutOfBoundsAxis)
+    {
+        struct STestDataPacket
+        {
+            TAxisValue axisValue[4];
+        };
+
+        static_assert(0 == (sizeof(STestDataPacket) % 4), L"Test data packet size must be divisible by 4.");
+
+        DIOBJECTDATAFORMAT testObjectFormatSpec[] = {
+            {.pguid = nullptr, .dwOfs = offsetof(STestDataPacket, axisValue[0]), .dwType = DIDFT_OPTIONAL | DIDFT_AXIS | DIDFT_ANYINSTANCE, .dwFlags = 0},
+            {.pguid = nullptr, .dwOfs = offsetof(STestDataPacket, axisValue[1]), .dwType = DIDFT_OPTIONAL | DIDFT_AXIS | DIDFT_ANYINSTANCE, .dwFlags = 0},
+            {.pguid = nullptr, .dwOfs = sizeof(STestDataPacket),                 .dwType = DIDFT_OPTIONAL | DIDFT_AXIS | DIDFT_ANYINSTANCE, .dwFlags = 0},              // Reason for rejection: offset exceeds the size of the data packet.
+            {.pguid = nullptr, .dwOfs = offsetof(STestDataPacket, axisValue[3]), .dwType = DIDFT_OPTIONAL | DIDFT_AXIS | DIDFT_ANYINSTANCE, .dwFlags = 0}
+        };
+
+        const DIDATAFORMAT kTestFormatSpec = {
+            .dwSize = sizeof(DIDATAFORMAT),
+            .dwObjSize = sizeof(DIOBJECTDATAFORMAT),
+            .dwFlags = DIDF_ABSAXIS,
+            .dwDataSize = sizeof(STestDataPacket),
+            .dwNumObjs = _countof(testObjectFormatSpec),
+            .rgodf = testObjectFormatSpec
+        };
+
+        TestDataFormatCreateFailure(kTestFormatSpec, kTestMapperWithPov.GetCapabilities());
+    }
+
+    // Specified button offset is beyond the total size of the data packet.
+    TEST_CASE(DataFormat_CreateFailure_OffsetOutOfBoundsButton)
+    {
+        struct STestDataPacket
+        {
+            TButtonValue buttonValue[4];
+        };
+
+        static_assert(0 == (sizeof(STestDataPacket) % 4), L"Test data packet size must be divisible by 4.");
+
+        DIOBJECTDATAFORMAT testObjectFormatSpec[] = {
+            {.pguid = nullptr, .dwOfs = offsetof(STestDataPacket, buttonValue[0]), .dwType = DIDFT_OPTIONAL | DIDFT_BUTTON | DIDFT_ANYINSTANCE, .dwFlags = 0},
+            {.pguid = nullptr, .dwOfs = offsetof(STestDataPacket, buttonValue[1]), .dwType = DIDFT_OPTIONAL | DIDFT_BUTTON | DIDFT_ANYINSTANCE, .dwFlags = 0},
+            {.pguid = nullptr, .dwOfs = sizeof(STestDataPacket),                   .dwType = DIDFT_OPTIONAL | DIDFT_BUTTON | DIDFT_ANYINSTANCE, .dwFlags = 0},          // Reason for rejection: offset exceeds the size of the data packet.
+            {.pguid = nullptr, .dwOfs = offsetof(STestDataPacket, buttonValue[3]), .dwType = DIDFT_OPTIONAL | DIDFT_BUTTON | DIDFT_ANYINSTANCE, .dwFlags = 0}
+        };
+
+        const DIDATAFORMAT kTestFormatSpec = {
+            .dwSize = sizeof(DIDATAFORMAT),
+            .dwObjSize = sizeof(DIOBJECTDATAFORMAT),
+            .dwFlags = DIDF_ABSAXIS,
+            .dwDataSize = sizeof(STestDataPacket),
+            .dwNumObjs = _countof(testObjectFormatSpec),
+            .rgodf = testObjectFormatSpec
+        };
+
+        TestDataFormatCreateFailure(kTestFormatSpec, kTestMapperWithPov.GetCapabilities());
+    }
+
+    // Specified POV offset is beyond the total size of the data packet.
+    TEST_CASE(DataFormat_CreateFailure_OffsetOutOfBoundsPov)
+    {
+        struct STestDataPacket
+        {
+            EPovValue povValue[4];
+        };
+
+        static_assert(0 == (sizeof(STestDataPacket) % 4), L"Test data packet size must be divisible by 4.");
+
+        DIOBJECTDATAFORMAT testObjectFormatSpec[] = {
+            {.pguid = nullptr, .dwOfs = offsetof(STestDataPacket, povValue[0]), .dwType = DIDFT_OPTIONAL | DIDFT_POV | DIDFT_ANYINSTANCE, .dwFlags = 0},
+            {.pguid = nullptr, .dwOfs = offsetof(STestDataPacket, povValue[1]), .dwType = DIDFT_OPTIONAL | DIDFT_POV | DIDFT_ANYINSTANCE, .dwFlags = 0},
+            {.pguid = nullptr, .dwOfs = sizeof(STestDataPacket),                .dwType = DIDFT_OPTIONAL | DIDFT_POV | DIDFT_ANYINSTANCE, .dwFlags = 0},                // Reason for rejection: offset exceeds the size of the data packet.
+            {.pguid = nullptr, .dwOfs = offsetof(STestDataPacket, povValue[3]), .dwType = DIDFT_OPTIONAL | DIDFT_POV | DIDFT_ANYINSTANCE, .dwFlags = 0}
+        };
+
+        const DIDATAFORMAT kTestFormatSpec = {
+            .dwSize = sizeof(DIDATAFORMAT),
+            .dwObjSize = sizeof(DIOBJECTDATAFORMAT),
+            .dwFlags = DIDF_ABSAXIS,
+            .dwDataSize = sizeof(STestDataPacket),
+            .dwNumObjs = _countof(testObjectFormatSpec),
+            .rgodf = testObjectFormatSpec
+        };
+
+        TestDataFormatCreateFailure(kTestFormatSpec, kTestMapperWithPov.GetCapabilities());
+    }
+
+    // Specified axis offset overlaps with a previous object specification. This is enforced by using a union instead of a struct for the test data packet.
+    // Each scenario exercises a different combination of controller elements.
+    TEST_CASE(DataFormat_CreateFailure_OffsetOverlap)
+    {
+        union UTestDataPacket
+        {
+            TAxisValue axisValue;
+            TButtonValue buttonValue;
+            EPovValue povValue;
+        };
+
+        static_assert(0 == (sizeof(UTestDataPacket) % 4), L"Test data packet size must be divisible by 4.");
+
+        DIOBJECTDATAFORMAT testObjectFormatSpecs[][2] = {
+            {
+                {.pguid = nullptr, .dwOfs = offsetof(UTestDataPacket, axisValue),   .dwType = DIDFT_OPTIONAL | DIDFT_AXIS   | DIDFT_ANYINSTANCE, .dwFlags = 0},
+                {.pguid = nullptr, .dwOfs = offsetof(UTestDataPacket, buttonValue), .dwType = DIDFT_OPTIONAL | DIDFT_BUTTON | DIDFT_ANYINSTANCE, .dwFlags = 0}          // Reason for rejection: button offset conflicts with axis offset.
+            },
+            {
+                {.pguid = nullptr, .dwOfs = offsetof(UTestDataPacket, axisValue),   .dwType = DIDFT_OPTIONAL | DIDFT_AXIS   | DIDFT_ANYINSTANCE, .dwFlags = 0},
+                {.pguid = nullptr, .dwOfs = offsetof(UTestDataPacket, povValue),    .dwType = DIDFT_OPTIONAL | DIDFT_POV    | DIDFT_ANYINSTANCE, .dwFlags = 0}          // Reason for rejection: POV offset conflicts with axis offset.
+            },
+            {
+                {.pguid = nullptr, .dwOfs = offsetof(UTestDataPacket, buttonValue), .dwType = DIDFT_OPTIONAL | DIDFT_BUTTON | DIDFT_ANYINSTANCE, .dwFlags = 0},
+                {.pguid = nullptr, .dwOfs = offsetof(UTestDataPacket, axisValue),   .dwType = DIDFT_OPTIONAL | DIDFT_AXIS   | DIDFT_ANYINSTANCE, .dwFlags = 0}          // Reason for rejection: axis offset conflicts with button offset.
+            },
+            {
+                {.pguid = nullptr, .dwOfs = offsetof(UTestDataPacket, buttonValue), .dwType = DIDFT_OPTIONAL | DIDFT_BUTTON | DIDFT_ANYINSTANCE, .dwFlags = 0},
+                {.pguid = nullptr, .dwOfs = offsetof(UTestDataPacket, povValue),    .dwType = DIDFT_OPTIONAL | DIDFT_POV    | DIDFT_ANYINSTANCE, .dwFlags = 0}          // Reason for rejection: POV offset conflicts with button offset.
+            },
+            {
+                {.pguid = nullptr, .dwOfs = offsetof(UTestDataPacket, povValue),    .dwType = DIDFT_OPTIONAL | DIDFT_POV    | DIDFT_ANYINSTANCE, .dwFlags = 0},
+                {.pguid = nullptr, .dwOfs = offsetof(UTestDataPacket, axisValue),   .dwType = DIDFT_OPTIONAL | DIDFT_AXIS   | DIDFT_ANYINSTANCE, .dwFlags = 0}          // Reason for rejection: axis offset conflicts with POV offset.
+            },
+            {
+                {.pguid = nullptr, .dwOfs = offsetof(UTestDataPacket, povValue),    .dwType = DIDFT_OPTIONAL | DIDFT_POV    | DIDFT_ANYINSTANCE, .dwFlags = 0},
+                {.pguid = nullptr, .dwOfs = offsetof(UTestDataPacket, buttonValue), .dwType = DIDFT_OPTIONAL | DIDFT_BUTTON | DIDFT_ANYINSTANCE, .dwFlags = 0}          // Reason for rejection: button offset conflicts with POV offset.
+            }
+        };
+
+        for (auto& testObjectFormatSpec : testObjectFormatSpecs)
+        {
+            const DIDATAFORMAT kTestFormatSpec = {
+                .dwSize = sizeof(DIDATAFORMAT),
+                .dwObjSize = sizeof(DIOBJECTDATAFORMAT),
+                .dwFlags = DIDF_ABSAXIS,
+                .dwDataSize = sizeof(UTestDataPacket),
+                .dwNumObjs = _countof(testObjectFormatSpec),
+                .rgodf = testObjectFormatSpec
+            };
+
+            TestDataFormatCreateFailure(kTestFormatSpec, kTestMapperWithPov.GetCapabilities());
+        }
+    }
 }

@@ -465,7 +465,7 @@ namespace Xidi
                 {
                     if (false == buildHelper.AllocateAtOffset<TAxisValue>(objectFormatSpec.dwOfs))
                     {
-                        Message::OutputFormatted(Message::ESeverity::Warning, L"Rejecting application data format due to failed axis allocation at offset %u of object at index %d.", objectFormatSpec.dwOfs, (int)i);
+                        Message::OutputFormatted(Message::ESeverity::Warning, L"Rejecting application data format due object at index %d: Failed to allocate %d byte(s) for an axis at offset %u.", (int)i, (int)sizeof(TAxisValue), objectFormatSpec.dwOfs);
                         return nullptr;
                     }
 
@@ -503,7 +503,7 @@ namespace Xidi
                 {
                     if (false == buildHelper.AllocateAtOffset<TButtonValue>(objectFormatSpec.dwOfs))
                     {
-                        Message::OutputFormatted(Message::ESeverity::Warning, L"Rejecting application data format due to failed button allocation at offset %u of object at index %d.", objectFormatSpec.dwOfs, (int)i);
+                        Message::OutputFormatted(Message::ESeverity::Warning, L"Rejecting application data format due object at index %d: Failed to allocate %d byte(s) for a button at offset %u.", (int)i, (int)sizeof(TButtonValue), objectFormatSpec.dwOfs);
                         return nullptr;
                     }
 
@@ -526,7 +526,7 @@ namespace Xidi
                 {
                     if (false == buildHelper.AllocateAtOffset<EPovValue>(objectFormatSpec.dwOfs))
                     {
-                        Message::OutputFormatted(Message::ESeverity::Warning, L"Rejecting application data format due to failed POV allocation at offset %u of object at index %d.", objectFormatSpec.dwOfs, (int)i);
+                        Message::OutputFormatted(Message::ESeverity::Warning, L"Rejecting application data format due object at index %d: Failed to allocate %d byte(s) for a POV at offset %u.", (int)i, (int)sizeof(EPovValue), objectFormatSpec.dwOfs);
                         return nullptr;
                     }
 
