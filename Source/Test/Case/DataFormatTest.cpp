@@ -34,11 +34,10 @@ namespace XidiTest
     using ::Xidi::Controller::SElementIdentifier;
 
 
-
     // -------- INTERNAL CONSTANTS ----------------------------------------- //
 
-    // Test mapper that contains a POV.
-    // Contains 4 axes (RotX and RotY are skipped), 12 buttons, and a POV.
+    /// Test mapper that contains a POV.
+    /// Contains 4 axes (RotX and RotY are skipped), 12 buttons, and a POV.
     static const Mapper kTestMapperWithPov({
         .stickLeftX = std::make_unique<AxisMapper>(EAxis::X),
         .stickLeftY = std::make_unique<AxisMapper>(EAxis::Y),
@@ -62,8 +61,8 @@ namespace XidiTest
         .buttonRS = std::make_unique<ButtonMapper>(EButton::B12)
     });
 
-    // Test mapper that does not contain a POV.
-    // Contains 4 axes (RotX and RotY are deliberately skipped), and 16 buttons.
+    /// Test mapper that does not contain a POV.
+    /// Contains 4 axes (RotX and RotY are deliberately skipped), and 16 buttons.
     static const Mapper kTestMapperWithoutPov({
         .stickLeftX = std::make_unique<AxisMapper>(EAxis::X),
         .stickLeftY = std::make_unique<AxisMapper>(EAxis::Y),
@@ -103,6 +102,16 @@ namespace XidiTest
 
         const DataFormat::SDataFormatSpec& actualDataFormatSpec = dataFormat->GetSpec();
         TEST_ASSERT(actualDataFormatSpec == expectedDataFormatSpec);
+    }
+
+    /// Main checks that are part of the CreateFailure suite of test cases.
+    /// Given the information needed to construct a data format object, attempts to construct the data format object and asserts that the operation fails.
+    /// @param [in] appFormatSpec Test data in the form of an application data format specification.
+    /// @param [in] controllerCapabilities Test data in the form of a description of a controller's capabilities. Likely obtained from one of the mappers defined above.
+    static void TestDataFormatCreateFailure(const DIDATAFORMAT& appFormatSpec, const Controller::SCapabilities& controllerCapabilities)
+    {
+        std::unique_ptr<DataFormat> dataFormat = DataFormat::CreateFromApplicationFormatSpec(appFormatSpec, controllerCapabilities);
+        TEST_ASSERT(nullptr == dataFormat);
     }
 
 
@@ -516,7 +525,7 @@ namespace XidiTest
     // Tests a data packet with several button locations, each specified in a different way.
     // Button value fields are deliberately numbered out of order so that the object format specification remains readable but the offsets themselves are out of order.
     // See test case body for a description of inputs and expected outputs.
-    TEST_CASE(DataFormat_CreateSuccess_ButtonVarying)
+    TEST_CASE(DataFormat_CreateSuccess_Button)
     {
         struct STestDataPacket
         {
@@ -575,6 +584,201 @@ namespace XidiTest
         expectedDataFormatSpec.SetOffsetForElement({.type = EElementType::Button, .button = EButton::B16}, offsetof(STestDataPacket, buttonValue5));
 
         TestDataFormatCreateSuccess(kTestFormatSpec, kTestMapperWithoutPov.GetCapabilities(), expectedDataFormatSpec);
+    }
+
+    // Tests a simple data packet with one POV value whose specification selects it by a type filter value only (i.e. no GUID, and no instance index).
+    // A match is expected with the virtual controller that does have a POV, whereas no match is expected with the virtual controller that does not have a POV.
+    TEST_CASE(DataFormat_CreateSuccess_PovAny)
+    {
+        struct STestDataPacket
+        {
+            EPovValue povValue;            
+        };
+
+        static_assert(0 == (sizeof(STestDataPacket) % 4), L"Test data packet size must be divisible by 4.");
+
+        DIOBJECTDATAFORMAT testObjectFormatSpec[] = {
+            {.pguid = nullptr, .dwOfs = offsetof(STestDataPacket, povValue), .dwType = DIDFT_OPTIONAL | DIDFT_POV | DIDFT_ANYINSTANCE, .dwFlags = 0},
+        };
+
+        const DIDATAFORMAT kTestFormatSpec = {
+            .dwSize = sizeof(DIDATAFORMAT),
+            .dwObjSize = sizeof(DIOBJECTDATAFORMAT),
+            .dwFlags = DIDF_ABSAXIS,
+            .dwDataSize = sizeof(STestDataPacket),
+            .dwNumObjs = _countof(testObjectFormatSpec),
+            .rgodf = testObjectFormatSpec
+        };
+
+
+        // POV should be selected for a virtual controller that has a POV.
+        DataFormat::SDataFormatSpec expectedDataFormatSpecWithPov(sizeof(STestDataPacket));
+        expectedDataFormatSpecWithPov.SetOffsetForElement({.type = EElementType::Pov}, offsetof(STestDataPacket, povValue));
+
+        TestDataFormatCreateSuccess(kTestFormatSpec, kTestMapperWithPov.GetCapabilities(), expectedDataFormatSpecWithPov);
+
+
+        // A single unused POV is expected for a virtual controller that does not have a POV.
+        DataFormat::SDataFormatSpec expectedDataFormatSpecWithoutPov(sizeof(STestDataPacket));
+        expectedDataFormatSpecWithoutPov.SubmitUnusedPovOffset(offsetof(STestDataPacket, povValue));
+
+        TestDataFormatCreateSuccess(kTestFormatSpec, kTestMapperWithoutPov.GetCapabilities(), expectedDataFormatSpecWithoutPov);
+    }
+
+    // Tests a simple data packet with one POV value whose specification selects it by a type filter value and GUID but no instance index.
+    // A match is expected with the virtual controller that does have a POV, whereas no match is expected with the virtual controller that does not have a POV.
+    TEST_CASE(DataFormat_CreateSuccess_PovSpecificByGuid)
+    {
+        struct STestDataPacket
+        {
+            EPovValue povValue;            
+        };
+
+        static_assert(0 == (sizeof(STestDataPacket) % 4), L"Test data packet size must be divisible by 4.");
+
+        DIOBJECTDATAFORMAT testObjectFormatSpec[] = {
+            {.pguid = &GUID_POV, .dwOfs = offsetof(STestDataPacket, povValue), .dwType = DIDFT_OPTIONAL | DIDFT_POV | DIDFT_ANYINSTANCE, .dwFlags = 0},
+        };
+
+        const DIDATAFORMAT kTestFormatSpec = {
+            .dwSize = sizeof(DIDATAFORMAT),
+            .dwObjSize = sizeof(DIOBJECTDATAFORMAT),
+            .dwFlags = DIDF_ABSAXIS,
+            .dwDataSize = sizeof(STestDataPacket),
+            .dwNumObjs = _countof(testObjectFormatSpec),
+            .rgodf = testObjectFormatSpec
+        };
+
+
+        // POV should be selected for a virtual controller that has a POV.
+        DataFormat::SDataFormatSpec expectedDataFormatSpecWithPov(sizeof(STestDataPacket));
+        expectedDataFormatSpecWithPov.SetOffsetForElement({.type = EElementType::Pov}, offsetof(STestDataPacket, povValue));
+
+        TestDataFormatCreateSuccess(kTestFormatSpec, kTestMapperWithPov.GetCapabilities(), expectedDataFormatSpecWithPov);
+
+
+        // A single unused POV is expected for a virtual controller that does not have a POV.
+        DataFormat::SDataFormatSpec expectedDataFormatSpecWithoutPov(sizeof(STestDataPacket));
+        expectedDataFormatSpecWithoutPov.SubmitUnusedPovOffset(offsetof(STestDataPacket, povValue));
+
+        TestDataFormatCreateSuccess(kTestFormatSpec, kTestMapperWithoutPov.GetCapabilities(), expectedDataFormatSpecWithoutPov);
+    }
+
+    // Tests a simple data packet with one POV value whose specification selects it by a type filter value and instance index but no GUID.
+    // A match is expected with the virtual controller that does have a POV, whereas no match is expected with the virtual controller that does not have a POV.
+    TEST_CASE(DataFormat_CreateSuccess_PovSpecificByIndex)
+    {
+        struct STestDataPacket
+        {
+            EPovValue povValue;            
+        };
+
+        static_assert(0 == (sizeof(STestDataPacket) % 4), L"Test data packet size must be divisible by 4.");
+
+        DIOBJECTDATAFORMAT testObjectFormatSpec[] = {
+            {.pguid = nullptr, .dwOfs = offsetof(STestDataPacket, povValue), .dwType = DIDFT_OPTIONAL | DIDFT_POV | DIDFT_MAKEINSTANCE(0), .dwFlags = 0},
+        };
+
+        const DIDATAFORMAT kTestFormatSpec = {
+            .dwSize = sizeof(DIDATAFORMAT),
+            .dwObjSize = sizeof(DIOBJECTDATAFORMAT),
+            .dwFlags = DIDF_ABSAXIS,
+            .dwDataSize = sizeof(STestDataPacket),
+            .dwNumObjs = _countof(testObjectFormatSpec),
+            .rgodf = testObjectFormatSpec
+        };
+
+
+        // POV should be selected for a virtual controller that has a POV.
+        DataFormat::SDataFormatSpec expectedDataFormatSpecWithPov(sizeof(STestDataPacket));
+        expectedDataFormatSpecWithPov.SetOffsetForElement({.type = EElementType::Pov}, offsetof(STestDataPacket, povValue));
+
+        TestDataFormatCreateSuccess(kTestFormatSpec, kTestMapperWithPov.GetCapabilities(), expectedDataFormatSpecWithPov);
+
+
+        // A single unused POV is expected for a virtual controller that does not have a POV.
+        DataFormat::SDataFormatSpec expectedDataFormatSpecWithoutPov(sizeof(STestDataPacket));
+        expectedDataFormatSpecWithoutPov.SubmitUnusedPovOffset(offsetof(STestDataPacket, povValue));
+
+        TestDataFormatCreateSuccess(kTestFormatSpec, kTestMapperWithoutPov.GetCapabilities(), expectedDataFormatSpecWithoutPov);
+    }
+
+    // Tests a simple data packet with one POV value whose specification selects it by a type filter value, GUID, and instance index.
+    // A match is expected with the virtual controller that does have a POV, whereas no match is expected with the virtual controller that does not have a POV.
+    TEST_CASE(DataFormat_CreateSuccess_PovSpecificByGuidAndIndex)
+    {
+        struct STestDataPacket
+        {
+            EPovValue povValue;            
+        };
+
+        static_assert(0 == (sizeof(STestDataPacket) % 4), L"Test data packet size must be divisible by 4.");
+
+        DIOBJECTDATAFORMAT testObjectFormatSpec[] = {
+            {.pguid = &GUID_POV, .dwOfs = offsetof(STestDataPacket, povValue), .dwType = DIDFT_OPTIONAL | DIDFT_POV | DIDFT_MAKEINSTANCE(0), .dwFlags = 0},
+        };
+
+        const DIDATAFORMAT kTestFormatSpec = {
+            .dwSize = sizeof(DIDATAFORMAT),
+            .dwObjSize = sizeof(DIOBJECTDATAFORMAT),
+            .dwFlags = DIDF_ABSAXIS,
+            .dwDataSize = sizeof(STestDataPacket),
+            .dwNumObjs = _countof(testObjectFormatSpec),
+            .rgodf = testObjectFormatSpec
+        };
+
+
+        // POV should be selected for a virtual controller that has a POV.
+        DataFormat::SDataFormatSpec expectedDataFormatSpecWithPov(sizeof(STestDataPacket));
+        expectedDataFormatSpecWithPov.SetOffsetForElement({.type = EElementType::Pov}, offsetof(STestDataPacket, povValue));
+
+        TestDataFormatCreateSuccess(kTestFormatSpec, kTestMapperWithPov.GetCapabilities(), expectedDataFormatSpecWithPov);
+
+
+        // A single unused POV is expected for a virtual controller that does not have a POV.
+        DataFormat::SDataFormatSpec expectedDataFormatSpecWithoutPov(sizeof(STestDataPacket));
+        expectedDataFormatSpecWithoutPov.SubmitUnusedPovOffset(offsetof(STestDataPacket, povValue));
+
+        TestDataFormatCreateSuccess(kTestFormatSpec, kTestMapperWithoutPov.GetCapabilities(), expectedDataFormatSpecWithoutPov);
+    }
+
+    // Tests a simple data packet with one POV value whose specification selects it by a type filter value, GUID, and instance index. An aspect flag is also added.
+    // A match is expected with the virtual controller that does have a POV, whereas no match is expected with the virtual controller that does not have a POV.
+    TEST_CASE(DataFormat_CreateSuccess_PovSpecificByGuidAndIndexPlusAspect)
+    {
+        struct STestDataPacket
+        {
+            EPovValue povValue;            
+        };
+
+        static_assert(0 == (sizeof(STestDataPacket) % 4), L"Test data packet size must be divisible by 4.");
+
+        DIOBJECTDATAFORMAT testObjectFormatSpec[] = {
+            {.pguid = &GUID_POV, .dwOfs = offsetof(STestDataPacket, povValue), .dwType = DIDFT_OPTIONAL | DIDFT_POV | DIDFT_MAKEINSTANCE(0), .dwFlags = DIDOI_ASPECTPOSITION},
+        };
+
+        const DIDATAFORMAT kTestFormatSpec = {
+            .dwSize = sizeof(DIDATAFORMAT),
+            .dwObjSize = sizeof(DIOBJECTDATAFORMAT),
+            .dwFlags = DIDF_ABSAXIS,
+            .dwDataSize = sizeof(STestDataPacket),
+            .dwNumObjs = _countof(testObjectFormatSpec),
+            .rgodf = testObjectFormatSpec
+        };
+
+
+        // POV should be selected for a virtual controller that has a POV.
+        DataFormat::SDataFormatSpec expectedDataFormatSpecWithPov(sizeof(STestDataPacket));
+        expectedDataFormatSpecWithPov.SetOffsetForElement({.type = EElementType::Pov}, offsetof(STestDataPacket, povValue));
+
+        TestDataFormatCreateSuccess(kTestFormatSpec, kTestMapperWithPov.GetCapabilities(), expectedDataFormatSpecWithPov);
+
+
+        // A single unused POV is expected for a virtual controller that does not have a POV.
+        DataFormat::SDataFormatSpec expectedDataFormatSpecWithoutPov(sizeof(STestDataPacket));
+        expectedDataFormatSpecWithoutPov.SubmitUnusedPovOffset(offsetof(STestDataPacket, povValue));
+
+        TestDataFormatCreateSuccess(kTestFormatSpec, kTestMapperWithoutPov.GetCapabilities(), expectedDataFormatSpecWithoutPov);
     }
 
     // Tests a data packet with several POV locations, each specified in a different way.
@@ -910,5 +1114,138 @@ namespace XidiTest
             expectedDataFormatSpecWithoutPov.SubmitUnusedPovOffset(offsetof(DIJOYSTATE2, rgdwPOV[i]));
 
         TestDataFormatCreateSuccess(kTestFormatSpec, kTestMapperWithoutPov.GetCapabilities(), expectedDataFormatSpecWithoutPov);
+    }
+
+
+    // The following sequence of tests, which together comprise the CreateFailure suite, verify that data format creation fails if the specification is invalid.
+    // Each test case follows the basic steps of declaring test data, attempting to create a data format object, and verifying that the operation fails.
+    
+    // Data packet size is improperly aligned.
+    TEST_CASE(DataFormat_CreateFailure_DataPacketSizeMisaligned)
+    {
+        struct STestDataPacket
+        {
+            TButtonValue buttonValue;
+        };
+
+        static_assert(0 != (sizeof(STestDataPacket) % 4), L"Test data packet size must not be divisible by 4 for this test.");
+
+        DIOBJECTDATAFORMAT testObjectFormatSpec[] = {
+            {.pguid = nullptr, .dwOfs = offsetof(STestDataPacket, buttonValue), .dwType = DIDFT_OPTIONAL | DIDFT_BUTTON | DIDFT_ANYINSTANCE, .dwFlags = 0},
+        };
+
+        const DIDATAFORMAT kTestFormatSpec = {
+            .dwSize = sizeof(DIDATAFORMAT),
+            .dwObjSize = sizeof(DIOBJECTDATAFORMAT),
+            .dwFlags = DIDF_ABSAXIS,
+            .dwDataSize = sizeof(STestDataPacket),          // Reason for rejection: data packet size is not divisible by 4.
+            .dwNumObjs = _countof(testObjectFormatSpec),
+            .rgodf = testObjectFormatSpec
+        };
+
+        TestDataFormatCreateFailure(kTestFormatSpec, kTestMapperWithPov.GetCapabilities());
+    }
+
+    // Data packet size is too large.
+    TEST_CASE(DataFormat_CreateFailure_DataPacketSizeTooLarge)
+    {
+        struct STestDataPacket
+        {
+            TButtonValue buttonValue[4 * DataFormat::kMaxDataPacketSizeBytes];
+        };
+
+        static_assert(0 == (sizeof(STestDataPacket) % 4), L"Test data packet size must be divisible by 4.");
+
+        DIOBJECTDATAFORMAT testObjectFormatSpec[] = {
+            {.pguid = nullptr, .dwOfs = offsetof(STestDataPacket, buttonValue[0]), .dwType = DIDFT_OPTIONAL | DIDFT_BUTTON | DIDFT_ANYINSTANCE, .dwFlags = 0},
+        };
+
+        const DIDATAFORMAT kTestFormatSpec = {
+            .dwSize = sizeof(DIDATAFORMAT),
+            .dwObjSize = sizeof(DIOBJECTDATAFORMAT),
+            .dwFlags = DIDF_ABSAXIS,
+            .dwDataSize = sizeof(STestDataPacket),          // Reason for rejection: data packet size is too large.
+            .dwNumObjs = _countof(testObjectFormatSpec),
+            .rgodf = testObjectFormatSpec
+        };
+
+        TestDataFormatCreateFailure(kTestFormatSpec, kTestMapperWithPov.GetCapabilities());
+    }
+
+    // No objects are defined.
+    TEST_CASE(DataFormat_CreateFailure_NoObjectsDefined)
+    {
+        struct STestDataPacket
+        {
+            TButtonValue buttonValue[4];
+        };
+
+        static_assert(0 == (sizeof(STestDataPacket) % 4), L"Test data packet size must be divisible by 4.");
+
+        DIOBJECTDATAFORMAT testObjectFormatSpec[] = {
+            {.pguid = nullptr, .dwOfs = offsetof(STestDataPacket, buttonValue[0]), .dwType = DIDFT_OPTIONAL | DIDFT_BUTTON | DIDFT_ANYINSTANCE, .dwFlags = 0},
+            {.pguid = nullptr, .dwOfs = offsetof(STestDataPacket, buttonValue[1]), .dwType = DIDFT_OPTIONAL | DIDFT_BUTTON | DIDFT_ANYINSTANCE, .dwFlags = 0},
+            {.pguid = nullptr, .dwOfs = offsetof(STestDataPacket, buttonValue[2]), .dwType = DIDFT_OPTIONAL | DIDFT_BUTTON | DIDFT_ANYINSTANCE, .dwFlags = 0},
+            {.pguid = nullptr, .dwOfs = offsetof(STestDataPacket, buttonValue[3]), .dwType = DIDFT_OPTIONAL | DIDFT_BUTTON | DIDFT_ANYINSTANCE, .dwFlags = 0}
+        };
+
+        const DIDATAFORMAT kTestFormatSpecs[] = {
+            {
+                .dwSize = sizeof(DIDATAFORMAT),
+                .dwObjSize = sizeof(DIOBJECTDATAFORMAT),
+                .dwFlags = DIDF_ABSAXIS,
+                .dwDataSize = sizeof(STestDataPacket),
+                .dwNumObjs = 0,                             // Reason for rejection: number of objects is 0.
+                .rgodf = testObjectFormatSpec
+            },
+            {
+                .dwSize = sizeof(DIDATAFORMAT),
+                .dwObjSize = sizeof(DIOBJECTDATAFORMAT),
+                .dwFlags = DIDF_ABSAXIS,
+                .dwDataSize = sizeof(STestDataPacket),
+                .dwNumObjs = _countof(testObjectFormatSpec),
+                .rgodf = nullptr                            // Reason for rejection: object format specification array pointer is null.
+            },
+            {
+                .dwSize = sizeof(DIDATAFORMAT),
+                .dwObjSize = sizeof(DIOBJECTDATAFORMAT),
+                .dwFlags = DIDF_ABSAXIS,
+                .dwDataSize = sizeof(STestDataPacket),
+                .dwNumObjs = 0,                             // Reason for rejection 1: number of objects is 0.
+                .rgodf = nullptr                            // Reason for rejection 2: object format specification array pointer is null.
+            }
+        };
+
+        for (const auto& kTestFormatSpec : kTestFormatSpecs)
+            TestDataFormatCreateFailure(kTestFormatSpec, kTestMapperWithPov.GetCapabilities());
+    }
+
+    // Flags are unsupported.
+    TEST_CASE(DataFormat_CreateFailure_UnsupportedFlags)
+    {
+        struct STestDataPacket
+        {
+            TButtonValue buttonValue[4];
+        };
+
+        static_assert(0 == (sizeof(STestDataPacket) % 4), L"Test data packet size must be divisible by 4.");
+
+        DIOBJECTDATAFORMAT testObjectFormatSpec[] = {
+            {.pguid = nullptr, .dwOfs = offsetof(STestDataPacket, buttonValue[0]), .dwType = DIDFT_OPTIONAL | DIDFT_BUTTON | DIDFT_ANYINSTANCE, .dwFlags = 0},
+            {.pguid = nullptr, .dwOfs = offsetof(STestDataPacket, buttonValue[1]), .dwType = DIDFT_OPTIONAL | DIDFT_BUTTON | DIDFT_ANYINSTANCE, .dwFlags = 0},
+            {.pguid = nullptr, .dwOfs = offsetof(STestDataPacket, buttonValue[2]), .dwType = DIDFT_OPTIONAL | DIDFT_BUTTON | DIDFT_ANYINSTANCE, .dwFlags = 0},
+            {.pguid = nullptr, .dwOfs = offsetof(STestDataPacket, buttonValue[3]), .dwType = DIDFT_OPTIONAL | DIDFT_BUTTON | DIDFT_ANYINSTANCE, .dwFlags = 0}
+        };
+
+        const DIDATAFORMAT kTestFormatSpec = {
+            .dwSize = sizeof(DIDATAFORMAT),
+            .dwObjSize = sizeof(DIOBJECTDATAFORMAT),
+            .dwFlags = DIDF_RELAXIS,                        // Reason for rejection: flag value is unsupported.
+            .dwDataSize = sizeof(STestDataPacket),
+            .dwNumObjs = _countof(testObjectFormatSpec),
+            .rgodf = testObjectFormatSpec
+        };
+
+        TestDataFormatCreateFailure(kTestFormatSpec, kTestMapperWithPov.GetCapabilities());
     }
 }
