@@ -18,13 +18,14 @@
 #include <cstdint>
 #include <memory>
 #include <mutex>
+#include <utility>
 
 
 namespace Xidi
 {
     /// Encapsulates all objects and provides all functionality needed by a complete virtual controller.
     /// Obtains state input from XInput, maps XInput data to virtual controller data, and applies transforms based on application-specified properties.
-    /// Supports both instantaneous state and buffered state change events. All methods are concurrency-safe.
+    /// Supports both instantaneous state and buffered state change events. All methods are concurrency-safe unless otherwise specified.
     class VirtualController
     {
     public:
@@ -51,7 +52,7 @@ namespace Xidi
 
         // -------- TYPE DEFINITIONS --------------------------------------- //
 
-        /// Integer type used to identify a controller to the underlying interface.
+        /// Integer type used to identify a controller to the underlying XInput interface.
         typedef DWORD TControllerIdentifier;
 
         /// Properties of an individual axis.
@@ -152,7 +153,7 @@ namespace Xidi
 
         /// Holds all the information that encompasses a single controller state change event.
         /// Each element in an event buffer is an element of this type.
-        struct SEvent
+        struct SStateChangeEvent
         {
             Controller::SElementIdentifier element;                         ///< Virtual controller element to which the event refers.
             
@@ -220,18 +221,13 @@ namespace Xidi
         VirtualController(const VirtualController& other) = delete;
 
 
-        // -------- CLASS METHODS ------------------------------------------ //
-
-        /// Transforms a raw axis value using the supplied axis properties.
-        /// Primarily intended for internal use but exposed for testing purposes.
-        /// @param [in] axisValueRaw Raw axis value as obtained from a mapper.
-        /// @param [in] axisProperties Axis properties to apply.
-        /// @return Axis value that results from applying the transformation.
-        static int32_t ApplyAxisPropertyTransform(int32_t axisValueRaw, const VirtualController::SAxisProperties& axisProperties);
-
-
         // -------- INSTANCE METHODS --------------------------------------- //
 
+        /// Modifies the contents of the specified controller state object by applying this virtual controller's properties.
+        /// Primarily intended for internal use but exposed for testing purposes. Implementation is not concurrency-safe.
+        /// @param [in,out] controllerState Controller state object to transform.
+        void ApplyProperties(Controller::SState* controllerState) const;
+        
         /// Retrieves and returns the capabilities of this virtual controller.
         /// Controller capabilities act as metadata that are used internally and can be presented to applications.
         /// @return Read-only capabilities data structure reference.
@@ -240,6 +236,30 @@ namespace Xidi
             return mapper.GetCapabilities();
         }
 
+        /// Retrieves and returns the deadzone property of the specified axis.
+        /// @param [in] axis Target axis.
+        /// @return Deadzone value associated with the target axis.
+        inline uint32_t GetAxisDeadzone(Controller::EAxis axis) const
+        {
+            return properties.axis[(int)axis].deadzone;
+        }
+
+        /// Retrieves and returns the range property of the specified axis.
+        /// @param [in] axis Target axis.
+        /// @return Pair of range values associated with the target axis. First is the minimum, and second is the maximum.
+        inline std::pair<int32_t, int32_t> GetAxisRange(Controller::EAxis axis) const
+        {
+            return std::make_pair(properties.axis[(int)axis].rangeMin, properties.axis[(int)axis].rangeMax);
+        }
+
+        /// Retrieves and returns the saturation property of the specified axis.
+        /// @param [in] axis Target axis.
+        /// @return Saturation value associated with the target axis.
+        inline uint32_t GetAxisSaturation(Controller::EAxis axis) const
+        {
+            return properties.axis[(int)axis].saturation;
+        }
+        
         /// Fills the specified virtual controller state buffer with the latest view of the state of this virtual controller.
         /// @param [out] controllerState Buffer to be filled with the current state of this virtual controller.
         void GetState(Controller::SState* controllerState);
@@ -252,89 +272,35 @@ namespace Xidi
         /// @param [in] axis Target axis.
         /// @param [in] deadzone Desired deadzone value.
         /// @return `true` if the new deadzone value was successfully validated and set, `false` otherwise.
-        inline bool SetAxisDeadzone(Controller::EAxis axis, uint32_t deadzone)
-        {
-            if (((unsigned int)axis < _countof(properties.axis)) && (deadzone >= kAxisDeadzoneMin) && (deadzone <= kAxisDeadzoneMax))
-            {
-                properties.axis[(unsigned int)axis].SetDeadzone(deadzone);
-                return true;
-            }
-
-            return false;
-        }
+        bool SetAxisDeadzone(Controller::EAxis axis, uint32_t deadzone);
 
         /// Sets the range property for a single axis.
         /// @param [in] axis Target axis.
         /// @param [in] rangeMin Desired minimum range value.
         /// @param [in] rangeMax Desired maximum range value.
         /// @return `true` if the new range was successfully validated and set, `false` otherwise.
-        inline bool SetAxisRange(Controller::EAxis axis, int32_t rangeMin, int32_t rangeMax)
-        {
-            if (((unsigned int)axis < _countof(properties.axis)) && (rangeMax > rangeMin))
-            {
-                properties.axis[(unsigned int)axis].SetRange(rangeMin, rangeMax);
-                return true;
-            }
-
-            return false;
-        }
+        bool SetAxisRange(Controller::EAxis axis, int32_t rangeMin, int32_t rangeMax);
 
         /// Sets the saturation property for a single axis.
         /// @param [in] axis Target axis.
         /// @param [in] saturation Desired saturation value.
         /// @return `true` if the new saturation value was successfully validated and set, `false` otherwise.
-        inline bool SetAxisSaturation(Controller::EAxis axis, uint32_t saturation)
-        {
-            if (((unsigned int)axis < _countof(properties.axis)) && (saturation >= kAxisSaturationMin) && (saturation <= kAxisSaturationMax))
-            {
-                properties.axis[(unsigned int)axis].SetSaturation(saturation);
-                return true;
-            }
-
-            return false;
-        }
+        bool SetAxisSaturation(Controller::EAxis axis, uint32_t saturation);
 
         /// Sets the deadzone property for all axes.
         /// @param [in] deadzone Desired deadzone value.
         /// @return `true` if the new deadzone value was successfully validated and set, `false` otherwise.
-        inline bool SetAllAxisDeadzone(uint32_t deadzone)
-        {
-            for (int i = 0; i < _countof(properties.axis); ++i)
-            {
-                if (false == SetAxisDeadzone((Controller::EAxis)i, deadzone))
-                    return false;
-            }
-
-            return true;
-        }
+        bool SetAllAxisDeadzone(uint32_t deadzone);
 
         /// Sets the range property for all axes.
         /// @param [in] rangeMin Desired minimum range value.
         /// @param [in] rangeMax Desired maximum range value.
         /// @return `true` if the new range was successfully validated and set, `false` otherwise.
-        inline bool SetAllAxisRange(int32_t rangeMin, int32_t rangeMax)
-        {
-            for (int i = 0; i < _countof(properties.axis); ++i)
-            {
-                if (false == SetAxisRange((Controller::EAxis)i, rangeMin, rangeMax))
-                    return false;
-            }
-
-            return true;
-        }
+        bool SetAllAxisRange(int32_t rangeMin, int32_t rangeMax);
 
         /// Sets the saturation property for all axes.
         /// @param [in] saturation Desired saturation value.
         /// @return `true` if the new saturation value was successfully validated and set, `false` otherwise.
-        inline bool SetAllAxisSaturation(uint32_t saturation)
-        {
-            for (int i = 0; i < _countof(properties.axis); ++i)
-            {
-                if (false == SetAxisSaturation((Controller::EAxis)i, saturation))
-                    return false;
-            }
-
-            return true;
-        }
+        bool SetAllAxisSaturation(uint32_t saturation);
     };
 }

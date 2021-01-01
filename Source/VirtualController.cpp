@@ -38,26 +38,12 @@ namespace Xidi
     {
         return newRangeOrigin + (((oldRangeValue - oldRangeOrigin) * (newRangeDispMax - newRangeOrigin)) / (oldRangeDispMax - oldRangeOrigin));
     }
-    
-    /// Transforms the contents of the specified controller state object by applying the specified set of properties.
-    /// Currently only axis properties are supported.
-    /// @param [in,out] controllerState Controller state object to transform.
-    /// @param [in] controllerCapabilities Capabilities that correspond with the controller whose state is being transformed.
-    /// @param [in] properties Properties to be applied.
-    static void ApplyPropertiesToControllerState(Controller::SState* controllerState, const Controller::SCapabilities& controllerCapabilities, const VirtualController::SProperties& properties)
-    {
-        for (int i = 0; i < controllerCapabilities.numAxes; ++i)
-        {
-            const Controller::EAxis axis = controllerCapabilities.axisType[i];
-            controllerState->axis[(int)axis] = VirtualController::ApplyAxisPropertyTransform(controllerState->axis[(int)axis], properties.axis[(int)axis]);
-        }
-    }
 
-
-    // -------- CLASS METHODS ---------------------------------------------- //
-    // See "VirtualController.h" for documentation.
-
-    int32_t VirtualController::ApplyAxisPropertyTransform(int32_t axisValueRaw, const VirtualController::SAxisProperties& axisProperties)
+    /// Transforms a raw axis value using the supplied axis properties.
+    /// @param [in] axisValueRaw Raw axis value as obtained from a mapper.
+    /// @param [in] axisProperties Axis properties to apply.
+    /// @return Axis value that results from applying the transformation.
+    static int32_t TransformAxisValue(int32_t axisValueRaw, const VirtualController::SAxisProperties& axisProperties)
     {
         if (axisValueRaw > Controller::kAnalogValueNeutral)
         {
@@ -83,9 +69,22 @@ namespace Xidi
     // -------- INSTANCE METHODS ------------------------------------------- //
     // See "VirtualController.h" for documentation.
 
+    void VirtualController::ApplyProperties(Controller::SState* controllerState) const
+    {
+        const Controller::SCapabilities& controllerCapabilities = mapper.GetCapabilities();
+
+        for (int i = 0; i < controllerCapabilities.numAxes; ++i)
+        {
+            const Controller::EAxis axis = controllerCapabilities.axisType[i];
+            controllerState->axis[(int)axis] = TransformAxisValue(controllerState->axis[(int)axis], properties.axis[(int)axis]);
+        }
+    }
+
+    // --------
+
     void VirtualController::GetState(Controller::SState* controllerState)
     {
-        std::lock_guard lock(controllerMutex);
+        std::scoped_lock lock(controllerMutex);
 
         if (true == stateRefreshNeeded)
             RefreshState();
@@ -101,11 +100,11 @@ namespace Xidi
         XINPUT_STATE xinputState;
         SStateIdentifier newStateIdentifier = {.packetNumber = 0, .errorCode = xinput->GetState(kControllerIdentifier, &xinputState)};
 
-        std::lock_guard lock(controllerMutex);
+        std::scoped_lock lock(controllerMutex);
         stateRefreshNeeded = false;
 
-        // Most of the logic in this block is for debugging by outputting messages based on the outcome of attempting to obtain XInput controller state.
-        // On success, the packet number is updated to a potentially nonzero value, otherwise it is left at 0.
+        // Most of the logic in this block is for debugging by outputting messages. The actual functionality is very simple.
+        // On success, the packet number is updated to the value received from XInput, otherwise it is left at 0.
         // On failure, the XInput state is zeroed out so that the controller appears to be in a completely neutral state.
         switch (newStateIdentifier.errorCode)
         {
@@ -148,7 +147,7 @@ namespace Xidi
         
         Controller::SState newState;
         mapper.MapXInputState(&newState, xinputState.Gamepad);
-        ApplyPropertiesToControllerState(&newState, mapper.GetCapabilities(), properties);
+        ApplyProperties(&newState);
 
         // Based on the mapper and the applied properties, a change in XInput controller state might not necessarily mean a change in virtual controller state.
         // For example, deadzone might result in filtering out changes in analog stick position, or if a particular XInput controller element is ignored by the mapper then a change in that element does not influence the virtual controller state.
@@ -157,5 +156,92 @@ namespace Xidi
         state = newState;
 
         return true;
+    }
+
+    // --------
+
+    bool VirtualController::SetAxisDeadzone(Controller::EAxis axis, uint32_t deadzone)
+    {
+        if ((deadzone >= kAxisDeadzoneMin) && (deadzone <= kAxisDeadzoneMax))
+        {
+            std::scoped_lock lock(controllerMutex);
+            properties.axis[(int)axis].SetDeadzone(deadzone);
+            return true;
+        }
+
+        return false;
+    }
+
+    // --------
+
+    bool VirtualController::SetAxisRange(Controller::EAxis axis, int32_t rangeMin, int32_t rangeMax)
+    {
+        if (rangeMax > rangeMin)
+        {
+            std::scoped_lock lock(controllerMutex);
+            properties.axis[(int)axis].SetRange(rangeMin, rangeMax);
+            return true;
+        }
+
+        return false;
+    }
+
+    // --------
+
+    bool VirtualController::SetAxisSaturation(Controller::EAxis axis, uint32_t saturation)
+    {
+        if ((saturation >= kAxisSaturationMin) && (saturation <= kAxisSaturationMax))
+        {
+            std::scoped_lock lock(controllerMutex);
+            properties.axis[(int)axis].SetSaturation(saturation);
+            return true;
+        }
+
+        return false;
+    }
+
+    // --------
+
+    bool VirtualController::SetAllAxisDeadzone(uint32_t deadzone)
+    {
+        if ((deadzone >= kAxisDeadzoneMin) && (deadzone <= kAxisDeadzoneMax))
+        {
+            std::scoped_lock lock(controllerMutex);
+            for (int i = 0; i < _countof(properties.axis); ++i)
+                properties.axis[(int)i].SetDeadzone(deadzone);
+            return true;
+        }
+
+        return false;
+    }
+
+    // --------
+
+    bool VirtualController::SetAllAxisRange(int32_t rangeMin, int32_t rangeMax)
+    {
+        if (rangeMax > rangeMin)
+        {
+            std::scoped_lock lock(controllerMutex);
+            for (int i = 0; i < _countof(properties.axis); ++i)
+                properties.axis[(int)i].SetRange(rangeMin, rangeMax);
+            return true;
+        }
+
+        return false;
+    }
+
+    // --------
+
+    bool VirtualController::SetAllAxisSaturation(uint32_t saturation)
+    {
+        if ((saturation >= kAxisSaturationMin) && (saturation <= kAxisSaturationMax))
+        {
+            std::scoped_lock lock(controllerMutex);
+            for (int i = 0; i < _countof(properties.axis); ++i)
+                properties.axis[(int)i].SetSaturation(saturation);
+            return true;
+        }
+
+        return false;
     }
 }
