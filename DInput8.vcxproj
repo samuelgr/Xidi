@@ -41,6 +41,7 @@
     <ClInclude Include="Include\Xidi\Message.h" />
     <ClInclude Include="Include\Xidi\Strings.h" />
     <ClInclude Include="Include\Xidi\TemporaryBuffer.h" />
+    <ClInclude Include="Include\Xidi\VirtualController.h" />
     <ClInclude Include="Include\Xidi\VirtualDirectInputDevice.h" />
     <ClInclude Include="Include\Xidi\WrapperIDirectInput.h" />
     <ClInclude Include="Include\Xidi\XidiConfigReader.h" />
@@ -69,6 +70,7 @@
     <ClCompile Include="Source\TemporaryBuffer.cpp" />
     <ClCompile Include="Source\ControllerIdentification.cpp" />
     <ClCompile Include="Source\ImportApiDirectInput.cpp" />
+    <ClCompile Include="Source\VirtualController.cpp" />
     <ClCompile Include="Source\WrapperIDirectInput.cpp" />
     <ClCompile Include="Source\ExportApiDirectInput.cpp" />
     <ClCompile Include="Source\DllMain.cpp" />

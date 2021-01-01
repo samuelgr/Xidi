@@ -41,6 +41,7 @@
     <ClInclude Include="Include\Xidi\Message.h" />
     <ClInclude Include="Include\Xidi\Strings.h" />
     <ClInclude Include="Include\Xidi\TemporaryBuffer.h" />
+    <ClInclude Include="Include\Xidi\VirtualController.h" />
     <ClInclude Include="Include\Xidi\WrapperJoyWinMM.h" />
     <ClInclude Include="Include\Xidi\XidiConfigReader.h" />
     <ClInclude Include="Include\Xidi\XInputController.h" />
@@ -70,6 +71,7 @@
     <ClCompile Include="Source\Strings.cpp" />
     <ClCompile Include="Source\TemporaryBuffer.cpp" />
     <ClCompile Include="Source\DllMain.cpp" />
+    <ClCompile Include="Source\VirtualController.cpp" />
     <ClCompile Include="Source\WrapperJoyWinMM.cpp" />
     <ClCompile Include="Source\XidiConfigReader.cpp" />
     <ClCompile Include="Source\XInputController.cpp" />

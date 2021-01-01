@@ -131,26 +131,6 @@ namespace Xidi
             }
         };
 
-        /// Properties of an individual axis.
-        /// Default values are roughly taken from DirectInput and XInput documentation.
-        /// See DirectInput documentation for the meaning of each individual field.
-        struct SAxisProperties
-        {
-            uint32_t deadzone = 1000;                                       ///< Deadzone of the axis, expressed as a percentage of the physical range around its center point. Can be from 0 (no deadzone) to 10000 (100% of the physical range is dead).
-            uint32_t saturation = 10000;                                    ///< Saturation point of the axis, expressed as a percentage of its physical range in both directions. Can be from 0 (entire axis is saturated) to 10000 (do not saturate at all).
-            int32_t rangeMin = kAnalogValueMin;                             ///< Minimum reportable value for the axis.
-            int32_t rangeMax = kAnalogValueMax;                             ///< Maximum reportable value for the axis.
-
-            /// Simple check for equality by low-level memory comparison.
-            /// Primarily useful during testing.
-            /// @param [in] other Object with which to compare.
-            /// @return `true` if this object is equal to the other object, `false` otherwise.
-            inline bool operator==(const SAxisProperties& other) const
-            {
-                return (0 == memcmp(this, &other, sizeof(*this)));
-            }
-        };
-
         /// Capabilities of a Xidi virtual controller.
         /// Filled in by looking at a mapper and used during operations like EnumObjects to tell the application about the virtual controller's components.
         struct SCapabilities

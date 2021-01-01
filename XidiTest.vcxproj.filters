@@ -66,6 +66,9 @@
     <ClInclude Include="Include\Xidi\XInputInterface.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="Include\Xidi\VirtualController.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Source\Test\Harness.cpp">
@@ -126,6 +129,9 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="Source\ApiDirectInput.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\VirtualController.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
