@@ -321,7 +321,7 @@ namespace XidiTest
                 break;
 
             case EElementType::Button:
-                *((TButtonValue*)(((size_t)&expectedDataPacket) + (size_t)testObjectFormatSpec[i].dwOfs)) = ((true == kTestControllerState.button[(int)kTestElement.button]) ? 0x80 : 0x00);
+                *((TButtonValue*)(((size_t)&expectedDataPacket) + (size_t)testObjectFormatSpec[i].dwOfs)) = ((true == kTestControllerState.button[(int)kTestElement.button]) ? DataFormat::kButtonValuePressed : DataFormat::kButtonValueNotPressed);
                 break;
 
             case EElementType::Pov:
@@ -364,14 +364,14 @@ namespace XidiTest
                 .axisZ = kTestControllerState.axis[(int)EAxis::Z],
                 .pov = DataFormat::PovDirectionFromControllerState(kTestControllerState),
                 .button = {
-                    ((true == kTestControllerState.button[0]) ? 0x80 : 0x00),
-                    ((true == kTestControllerState.button[1]) ? 0x80 : 0x00),
-                    ((true == kTestControllerState.button[2]) ? 0x80 : 0x00),
-                    ((true == kTestControllerState.button[3]) ? 0x80 : 0x00),
-                    ((true == kTestControllerState.button[4]) ? 0x80 : 0x00),
-                    ((true == kTestControllerState.button[5]) ? 0x80 : 0x00),
-                    ((true == kTestControllerState.button[6]) ? 0x80 : 0x00),
-                    ((true == kTestControllerState.button[7]) ? 0x80 : 0x00)
+                    ((true == kTestControllerState.button[0]) ? DataFormat::kButtonValuePressed : DataFormat::kButtonValueNotPressed),
+                    ((true == kTestControllerState.button[1]) ? DataFormat::kButtonValuePressed : DataFormat::kButtonValueNotPressed),
+                    ((true == kTestControllerState.button[2]) ? DataFormat::kButtonValuePressed : DataFormat::kButtonValueNotPressed),
+                    ((true == kTestControllerState.button[3]) ? DataFormat::kButtonValuePressed : DataFormat::kButtonValueNotPressed),
+                    ((true == kTestControllerState.button[4]) ? DataFormat::kButtonValuePressed : DataFormat::kButtonValueNotPressed),
+                    ((true == kTestControllerState.button[5]) ? DataFormat::kButtonValuePressed : DataFormat::kButtonValueNotPressed),
+                    ((true == kTestControllerState.button[6]) ? DataFormat::kButtonValuePressed : DataFormat::kButtonValueNotPressed),
+                    ((true == kTestControllerState.button[7]) ? DataFormat::kButtonValuePressed : DataFormat::kButtonValueNotPressed)
                 }
             };
 
