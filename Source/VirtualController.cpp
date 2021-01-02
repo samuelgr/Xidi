@@ -36,7 +36,11 @@ namespace Xidi
     /// @return Result of mapping the input value from the old range to the new range.
     static inline int32_t MapValueInRangeToRange(int32_t oldRangeValue, int32_t oldRangeOrigin, int32_t oldRangeDispMax, int32_t newRangeOrigin, int32_t newRangeDispMax)
     {
-        return newRangeOrigin + (((oldRangeValue - oldRangeOrigin) * (newRangeDispMax - newRangeOrigin)) / (oldRangeDispMax - oldRangeOrigin));
+        const int64_t oldRangeValueDisp = (int64_t)oldRangeValue - (int64_t)oldRangeOrigin;
+        const int64_t newRangeMagnitudeMax = (int64_t)newRangeDispMax - (int64_t)newRangeOrigin;
+        const int64_t oldRangeMagnitudeMax = (int64_t)oldRangeDispMax - (int64_t)oldRangeOrigin;
+
+        return newRangeOrigin + (int32_t)((oldRangeValueDisp * newRangeMagnitudeMax) / oldRangeMagnitudeMax);
     }
 
     /// Transforms a raw axis value using the supplied axis properties.
