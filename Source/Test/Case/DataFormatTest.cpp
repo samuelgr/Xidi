@@ -18,6 +18,7 @@
 #include "TestCase.h"
 
 #include <memory>
+#include <optional>
 
 
 namespace XidiTest
@@ -91,17 +92,98 @@ namespace XidiTest
 
     /// Main checks that are part of the CreateSuccess suite of test cases.
     /// Given the information needed to construct a data format object and the data format specification that is expected to result, constructs the data format object, ensures success, and ensures expectation matches actual result.
+    /// Once the object has been created, iterates through the specification and verifies that the data format object correctly translates between elements and offsets.
     /// Causes the test case to fail if any of the checks or operations are unsuccessful.
     /// @param [in] appFormatSpec Test data in the form of an application data format specification.
     /// @param [in] controllerCapabilities Test data in the form of a description of a controller's capabilities. Likely obtained from one of the mappers defined above.
     /// @param [in] expectedDataFormatSpec Test data in the form of a data format spec that is expected to be the result of creating a data format object using the provided controller capabilities.
     static void TestDataFormatCreateSuccess(const DIDATAFORMAT& appFormatSpec, const Controller::SCapabilities& controllerCapabilities, const DataFormat::SDataFormatSpec& expectedDataFormatSpec)
     {
+        // Create the data format object and assert success, then compare the resulting specification object with the expected specification object.
         std::unique_ptr<DataFormat> dataFormat = DataFormat::CreateFromApplicationFormatSpec(appFormatSpec, controllerCapabilities);
         TEST_ASSERT(nullptr != dataFormat);
 
         const DataFormat::SDataFormatSpec& actualDataFormatSpec = dataFormat->GetSpec();
         TEST_ASSERT(actualDataFormatSpec == expectedDataFormatSpec);
+
+        // Iterate through the entire expected specification object and verify that all elements are correctly mapped to and from offsets.
+        // This exercises all of the element-mapping methods of the data format object in both directions: element to offset and offset to element.
+        // First axes, then buttons, and finally the POV.
+        for (int i = 0; i < _countof(expectedDataFormatSpec.axisOffset); ++i)
+        {
+            const SElementIdentifier expectedAxisIdentifier = {.type = EElementType::Axis, .axis = (EAxis)i};
+            const TOffset expectedAxisOffset = expectedDataFormatSpec.axisOffset[i];
+
+            if (DataFormat::kInvalidOffsetValue == expectedAxisOffset)
+            {
+                TEST_ASSERT(false == dataFormat->HasElement(expectedAxisIdentifier));
+                TEST_ASSERT(false == dataFormat->GetOffsetForElement(expectedAxisIdentifier).has_value());
+            }
+            else
+            {
+                const std::optional<SElementIdentifier> maybeActualAxisIdentifier = dataFormat->GetElementForOffset(expectedAxisOffset);
+                const std::optional<TOffset> maybeActualAxisOffset = dataFormat->GetOffsetForElement(expectedAxisIdentifier);
+                TEST_ASSERT(true == maybeActualAxisIdentifier.has_value());
+                TEST_ASSERT(true == maybeActualAxisOffset.has_value());
+
+                const SElementIdentifier actualAxisIdentifier = maybeActualAxisIdentifier.value();
+                const TOffset actualAxisOffset = maybeActualAxisOffset.value();
+                TEST_ASSERT(true == dataFormat->HasElement(expectedAxisIdentifier));
+                TEST_ASSERT(actualAxisIdentifier == expectedAxisIdentifier);
+                TEST_ASSERT(actualAxisOffset == expectedAxisOffset);
+                
+            }
+        }
+
+        for (int i = 0; i < _countof(expectedDataFormatSpec.buttonOffset); ++i)
+        {
+            const SElementIdentifier expectedButtonIdentifier = {.type = EElementType::Button, .button = (EButton)i};
+            const TOffset expectedButtonOffset = expectedDataFormatSpec.buttonOffset[i];
+
+            if (DataFormat::kInvalidOffsetValue == expectedButtonOffset)
+            {
+                TEST_ASSERT(false == dataFormat->HasElement(expectedButtonIdentifier));
+                TEST_ASSERT(false == dataFormat->GetOffsetForElement(expectedButtonIdentifier).has_value());
+            }
+            else
+            {
+                const std::optional<SElementIdentifier> maybeActualButtonIdentifier = dataFormat->GetElementForOffset(expectedButtonOffset);
+                const std::optional<TOffset> maybeActualButtonOffset = dataFormat->GetOffsetForElement(expectedButtonIdentifier);
+                TEST_ASSERT(true == maybeActualButtonIdentifier.has_value());
+                TEST_ASSERT(true == maybeActualButtonOffset.has_value());
+
+                const SElementIdentifier actualButtonIdentifier = maybeActualButtonIdentifier.value();
+                const TOffset actualButtonOffset = maybeActualButtonOffset.value();
+                TEST_ASSERT(true == dataFormat->HasElement(expectedButtonIdentifier));
+                TEST_ASSERT(actualButtonIdentifier == expectedButtonIdentifier);
+                TEST_ASSERT(actualButtonOffset == expectedButtonOffset);
+            }
+        }
+
+        do
+        {
+            const SElementIdentifier expectedPovIdentifier = {.type = EElementType::Pov};
+            const TOffset expectedPovOffset = expectedDataFormatSpec.povOffset;
+
+            if (DataFormat::kInvalidOffsetValue == expectedPovOffset)
+            {
+                TEST_ASSERT(false == dataFormat->HasElement(expectedPovIdentifier));
+                TEST_ASSERT(false == dataFormat->GetOffsetForElement(expectedPovIdentifier).has_value());
+            }
+            else
+            {
+                const std::optional<SElementIdentifier> maybeActualPovIdentifier = dataFormat->GetElementForOffset(expectedPovOffset);
+                const std::optional<TOffset> maybeActualPovOffset = dataFormat->GetOffsetForElement(expectedPovIdentifier);
+                TEST_ASSERT(true == maybeActualPovIdentifier.has_value());
+                TEST_ASSERT(true == maybeActualPovOffset.has_value());
+
+                const SElementIdentifier actualPovIdentifier = maybeActualPovIdentifier.value();
+                const TOffset actualPovOffset = maybeActualPovOffset.value();
+                TEST_ASSERT(true == dataFormat->HasElement(expectedPovIdentifier));
+                TEST_ASSERT(actualPovIdentifier == expectedPovIdentifier);
+                TEST_ASSERT(actualPovOffset == expectedPovOffset);
+            }
+        } while (false);
     }
 
     /// Main checks that are part of the CreateFailure suite of test cases.
@@ -167,6 +249,137 @@ namespace XidiTest
         }
 
         TEST_ASSERT(0 == numFailingInputs);
+    }
+
+    // Verifies that application data packets are correctly written given both a specification and a controller state.
+    // First is a single-element test, in which most of the data packet is zero except for one element from the controller state.
+    // Second is an all-element test, in which the entire set of object format specifications is provided and the data format object is expected to write a complete packet.
+    TEST_CASE(DataFormat_WriteDataPacket)
+    {
+        struct STestDataPacket
+        {
+            TAxisValue axisX;
+            TAxisValue axisY;
+            TAxisValue axisZ;
+            EPovValue pov;
+            TButtonValue button[8];
+        };
+
+        static_assert(0 == (sizeof(STestDataPacket) % 4), L"Test data packet size must be divisible by 4.");
+
+        // Controller state that will be used throughout this test.
+        constexpr Controller::SState kTestControllerState = {
+            .axis = {1111, 2222, 3333, 4444, 5555, 6666},
+            .button = {true, true, false, false, true, true, false, false, true, true, false, false, true, true, false, false},
+            .povDirection = {true, false, false, true}
+        };
+
+        DIOBJECTDATAFORMAT testObjectFormatSpec[] = {
+            {.pguid = &GUID_XAxis, .dwOfs = offsetof(STestDataPacket, axisX),     .dwType = DIDFT_AXIS   | DIDFT_ANYINSTANCE, .dwFlags = 0},
+            {.pguid = &GUID_YAxis, .dwOfs = offsetof(STestDataPacket, axisY),     .dwType = DIDFT_AXIS   | DIDFT_ANYINSTANCE, .dwFlags = 0},
+            {.pguid = &GUID_ZAxis, .dwOfs = offsetof(STestDataPacket, axisZ),     .dwType = DIDFT_AXIS   | DIDFT_ANYINSTANCE, .dwFlags = 0},
+            {.pguid = nullptr,     .dwOfs = offsetof(STestDataPacket, pov),       .dwType = DIDFT_POV    | DIDFT_ANYINSTANCE, .dwFlags = 0},
+            {.pguid = nullptr,     .dwOfs = offsetof(STestDataPacket, button[0]), .dwType = DIDFT_BUTTON | DIDFT_ANYINSTANCE, .dwFlags = 0},
+            {.pguid = nullptr,     .dwOfs = offsetof(STestDataPacket, button[1]), .dwType = DIDFT_BUTTON | DIDFT_ANYINSTANCE, .dwFlags = 0},
+            {.pguid = nullptr,     .dwOfs = offsetof(STestDataPacket, button[2]), .dwType = DIDFT_BUTTON | DIDFT_ANYINSTANCE, .dwFlags = 0},
+            {.pguid = nullptr,     .dwOfs = offsetof(STestDataPacket, button[3]), .dwType = DIDFT_BUTTON | DIDFT_ANYINSTANCE, .dwFlags = 0},
+            {.pguid = nullptr,     .dwOfs = offsetof(STestDataPacket, button[4]), .dwType = DIDFT_BUTTON | DIDFT_ANYINSTANCE, .dwFlags = 0},
+            {.pguid = nullptr,     .dwOfs = offsetof(STestDataPacket, button[5]), .dwType = DIDFT_BUTTON | DIDFT_ANYINSTANCE, .dwFlags = 0},
+            {.pguid = nullptr,     .dwOfs = offsetof(STestDataPacket, button[6]), .dwType = DIDFT_BUTTON | DIDFT_ANYINSTANCE, .dwFlags = 0},
+            {.pguid = nullptr,     .dwOfs = offsetof(STestDataPacket, button[7]), .dwType = DIDFT_BUTTON | DIDFT_ANYINSTANCE, .dwFlags = 0}
+        };
+        
+        // Single element tests, one object format specification at a time.
+        for (int i = 0; i < _countof(testObjectFormatSpec); ++i)
+        {
+            // Data format specification consists of exactly one controller element.
+            const DIDATAFORMAT kTestFormatSpec = {
+                .dwSize = sizeof(DIDATAFORMAT),
+                .dwObjSize = sizeof(DIOBJECTDATAFORMAT),
+                .dwFlags = DIDF_ABSAXIS,
+                .dwDataSize = sizeof(STestDataPacket),
+                .dwNumObjs = 1,
+                .rgodf = &testObjectFormatSpec[i]
+            };
+
+            std::unique_ptr<DataFormat> dataFormat = DataFormat::CreateFromApplicationFormatSpec(kTestFormatSpec, kTestMapperWithPov.GetCapabilities());
+            TEST_ASSERT(nullptr != dataFormat);
+
+            // Generate the expected data packet.
+            // Other tests verify element mapping and POV direction value generation, so we can rely on the data format object to perform these tasks in this test.
+            // Once the target element is known, extract the correct value from the test controller state object and place it at the right offset within the expected data packet.
+            STestDataPacket expectedDataPacket;
+            ZeroMemory(&expectedDataPacket, sizeof(expectedDataPacket));
+
+            TEST_ASSERT(true == dataFormat->GetElementForOffset(testObjectFormatSpec[i].dwOfs).has_value());
+            const SElementIdentifier kTestElement = dataFormat->GetElementForOffset(testObjectFormatSpec[i].dwOfs).value();
+
+            switch (kTestElement.type)
+            {
+            case EElementType::Axis:
+                *((TAxisValue*)(((size_t)&expectedDataPacket) + (size_t)testObjectFormatSpec[i].dwOfs)) = kTestControllerState.axis[(int)kTestElement.axis];
+                break;
+
+            case EElementType::Button:
+                *((TButtonValue*)(((size_t)&expectedDataPacket) + (size_t)testObjectFormatSpec[i].dwOfs)) = ((true == kTestControllerState.button[(int)kTestElement.button]) ? 0x80 : 0x00);
+                break;
+
+            case EElementType::Pov:
+                *((EPovValue*)(((size_t)&expectedDataPacket) + (size_t)testObjectFormatSpec[i].dwOfs)) = DataFormat::PovDirectionFromControllerState(kTestControllerState);
+                break;
+
+            default:
+                TEST_FAILED_BECAUSE(L"Expected axis, button, or POV.");
+            }
+
+            // Generate the actual data packet.
+            // Poison-initialize the entire data packet, and then pass the test controller state to the mapper.
+            STestDataPacket actualDataPacket;
+            FillMemory(&actualDataPacket, sizeof(actualDataPacket), 0xcd);
+            TEST_ASSERT(true == dataFormat->WriteDataPacket(&actualDataPacket, sizeof(actualDataPacket), kTestControllerState));
+
+            // Finally, check if the data format object correctly wrote the data packet.
+            TEST_ASSERT(0 == memcmp(&actualDataPacket, &expectedDataPacket, sizeof(expectedDataPacket)));
+        }
+
+        // One final test with the entire data specification all at once.
+        // Logic is the same as the single-element case, except here the expected output is much simpler to generate.
+        do
+        {
+            const DIDATAFORMAT kTestFormatSpec = {
+                .dwSize = sizeof(DIDATAFORMAT),
+                .dwObjSize = sizeof(DIOBJECTDATAFORMAT),
+                .dwFlags = DIDF_ABSAXIS,
+                .dwDataSize = sizeof(STestDataPacket),
+                .dwNumObjs = _countof(testObjectFormatSpec),
+                .rgodf = testObjectFormatSpec
+            };
+
+            std::unique_ptr<DataFormat> dataFormat = DataFormat::CreateFromApplicationFormatSpec(kTestFormatSpec, kTestMapperWithPov.GetCapabilities());
+            TEST_ASSERT(nullptr != dataFormat);
+
+            const STestDataPacket expectedDataPacket = {
+                .axisX = kTestControllerState.axis[(int)EAxis::X],
+                .axisY = kTestControllerState.axis[(int)EAxis::Y],
+                .axisZ = kTestControllerState.axis[(int)EAxis::Z],
+                .pov = DataFormat::PovDirectionFromControllerState(kTestControllerState),
+                .button = {
+                    ((true == kTestControllerState.button[0]) ? 0x80 : 0x00),
+                    ((true == kTestControllerState.button[1]) ? 0x80 : 0x00),
+                    ((true == kTestControllerState.button[2]) ? 0x80 : 0x00),
+                    ((true == kTestControllerState.button[3]) ? 0x80 : 0x00),
+                    ((true == kTestControllerState.button[4]) ? 0x80 : 0x00),
+                    ((true == kTestControllerState.button[5]) ? 0x80 : 0x00),
+                    ((true == kTestControllerState.button[6]) ? 0x80 : 0x00),
+                    ((true == kTestControllerState.button[7]) ? 0x80 : 0x00)
+                }
+            };
+
+            STestDataPacket actualDataPacket;
+            FillMemory(&actualDataPacket, sizeof(actualDataPacket), 0xcd);
+            TEST_ASSERT(true == dataFormat->WriteDataPacket(&actualDataPacket, sizeof(actualDataPacket), kTestControllerState));
+            TEST_ASSERT(0 == memcmp(&actualDataPacket, &expectedDataPacket, sizeof(expectedDataPacket)));
+        } while (false);
     }
 
 

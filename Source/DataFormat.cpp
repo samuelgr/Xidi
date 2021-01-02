@@ -708,7 +708,7 @@ namespace Xidi
         {
             if (kInvalidOffsetValue != dataFormatSpec.buttonOffset[i])
             {
-                TButtonValue* const valueLocation = (TButtonValue*)(&packetByteBuffer[dataFormatSpec.axisOffset[i]]);
+                TButtonValue* const valueLocation = (TButtonValue*)(&packetByteBuffer[dataFormatSpec.buttonOffset[i]]);
                 *valueLocation = ((true == controllerState.button[i]) ? kButtonValuePressed : kButtonValueNotPressed);
             }
         }
