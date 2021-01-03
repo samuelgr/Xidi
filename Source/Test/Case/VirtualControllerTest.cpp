@@ -28,8 +28,12 @@ namespace XidiTest
 {
     using namespace ::Xidi;
     using ::Xidi::Controller::AxisMapper;
+    using ::Xidi::Controller::ButtonMapper;
     using ::Xidi::Controller::EAxis;
+    using ::Xidi::Controller::EButton;
+    using ::Xidi::Controller::EPovDirection;
     using ::Xidi::Controller::Mapper;
+    using ::Xidi::Controller::PovMapper;
 
 
     // -------- INTERNAL CONSTANTS ----------------------------------------- //
@@ -40,6 +44,24 @@ namespace XidiTest
     /// Test mapper for axis property tests. Contains a single axis.
     static const Mapper kTestSingleAxisMapper({
         .stickLeftX = std::make_unique<AxisMapper>(kTestSingleAxis)
+    });
+
+    /// Test mapper used for larger controller state tests.
+    /// Describes a virtual controller with 4 axes, 4 buttons, and a POV.
+    /// Contains only a subset of the XInput controller elements.
+    static const Mapper kTestMapper({
+        .stickLeftX = std::make_unique<AxisMapper>(EAxis::X),
+        .stickLeftY = std::make_unique<AxisMapper>(EAxis::Y),
+        .stickRightX = std::make_unique<AxisMapper>(EAxis::RotX),
+        .stickRightY = std::make_unique<AxisMapper>(EAxis::RotY),
+        .dpadUp = std::make_unique<PovMapper>(EPovDirection::Up),
+        .dpadDown = std::make_unique<PovMapper>(EPovDirection::Down),
+        .dpadLeft = std::make_unique<PovMapper>(EPovDirection::Left),
+        .dpadRight = std::make_unique<PovMapper>(EPovDirection::Right),
+        .buttonA = std::make_unique<ButtonMapper>(EButton::B1),
+        .buttonB = std::make_unique<ButtonMapper>(EButton::B2),
+        .buttonX = std::make_unique<ButtonMapper>(EButton::B3),
+        .buttonY = std::make_unique<ButtonMapper>(EButton::B4)
     });
 
 
@@ -67,9 +89,6 @@ namespace XidiTest
         /// Expected user index. All calls will fail if they do not match.
         const DWORD kUserIndex;
 
-        /// Expected behavior for calls to #GetCapabilities.
-        std::deque<SMethodCallSpec<XINPUT_CAPABILITIES>> callsGetCapabilities;
-
         /// Expected behavior for calls to #GetState.
         std::deque<SMethodCallSpec<XINPUT_STATE>> callsGetState;
 
@@ -79,7 +98,7 @@ namespace XidiTest
 
         /// Initialization constructor.
         /// Requires an XInput user index.
-        MockXInput(DWORD kUserIndex) : kUserIndex(kUserIndex), callsGetCapabilities(), callsGetState()
+        MockXInput(DWORD kUserIndex) : kUserIndex(kUserIndex), callsGetState()
         {
             // Nothing to do here.
         }
@@ -120,13 +139,6 @@ namespace XidiTest
     public:
         // -------- INSTANCE METHODS --------------------------------------- //
 
-        /// Submits an expected call for the #GetCapabilities method.
-        /// @param [in] callSpec Specifications that describe the desired behavior of the call.
-        inline void ExpectCallGetCapabilities(const SMethodCallSpec<XINPUT_CAPABILITIES>& callSpec)
-        {
-            callsGetCapabilities.push_back(callSpec);
-        }
-
         /// Submits an expected call for the #GetState method.
         /// @param [in] callSpec Specifications that describe the desired behavior of the call.
         inline void ExpectCallGetState(const SMethodCallSpec<XINPUT_STATE>& callSpec)
@@ -136,26 +148,6 @@ namespace XidiTest
 
 
         // -------- CONCRETE INSTANCE METHODS ------------------------------ //
-
-        DWORD GetCapabilities(DWORD dwUserIndex, DWORD dwFlags, XINPUT_CAPABILITIES* pCapabilities) override
-        {
-            if (kUserIndex != dwUserIndex)
-                TEST_FAILED_BECAUSE(L"XInputGetCapabilities: user index mismatch (expected %u, got %u).", kUserIndex, dwUserIndex);
-            else if (dwUserIndex >= XUSER_MAX_COUNT)
-                TEST_FAILED_BECAUSE(L"XInputGetCapabilities: user index too large (%u versus maximum %u).", dwUserIndex, XUSER_MAX_COUNT);
-            
-            switch (dwFlags)
-            {
-            case 0:
-            case XINPUT_FLAG_GAMEPAD:
-                break;
-                
-            default:
-                TEST_FAILED_BECAUSE(L"XInputGetCapabilities: unsupported flags (0x%08x).", dwFlags);
-            }
-
-            return DoMockMethodCall(L"XInputGetCapabilities", callsGetCapabilities, pCapabilities);
-        }
 
         DWORD GetState(DWORD dwUserIndex, XINPUT_STATE* pState) override
         {
@@ -224,12 +216,16 @@ namespace XidiTest
         const int32_t kRawDeadzoneCutoffPositive = Controller::kAnalogValueNeutral + ((int32_t)((double)(Controller::kAnalogValueMax - Controller::kAnalogValueNeutral) * ((double)deadzone / (double)VirtualController::kAxisDeadzoneMax)));
         const int32_t kRawSaturationCutoffPositive = Controller::kAnalogValueNeutral + ((int32_t)((double)(Controller::kAnalogValueMax - Controller::kAnalogValueNeutral) * ((double)saturation / (double)VirtualController::kAxisSaturationMax)));
 
+        // Output monotonicity check variable.
+        int32_t lastOutputAxisValue = rangeMin;
+
         VirtualController controller(0, kTestSingleAxisMapper, nullptr);
         TEST_ASSERT(true == controller.SetAxisDeadzone(kTestSingleAxis, deadzone));
         TEST_ASSERT(true == controller.SetAxisRange(kTestSingleAxis, rangeMin, rangeMax));
         TEST_ASSERT(true == controller.SetAxisSaturation(kTestSingleAxis, saturation));
-
-        int32_t lastOutputAxisValue = INT32_MIN;
+        TEST_ASSERT(controller.GetAxisDeadzone(kTestSingleAxis) == deadzone);
+        TEST_ASSERT(controller.GetAxisRange(kTestSingleAxis) == std::make_pair(rangeMin, rangeMax));
+        TEST_ASSERT(controller.GetAxisSaturation(kTestSingleAxis) == saturation);
         
         // Region 1
         for (int32_t inputAxisValue = Controller::kAnalogValueMin; inputAxisValue < kRawSaturationCutoffNegative; ++inputAxisValue)
@@ -288,6 +284,19 @@ namespace XidiTest
 
 
     // -------- TEST CASES ------------------------------------------------- //
+
+    // Verifies that virtual controllers correctly retrieve and return their associated capabilities.
+    TEST_CASE(VirtualController_GetCapabilities)
+    {
+        const Mapper* mappers[] = {&kTestSingleAxisMapper, &kTestMapper};
+
+        for (auto mapper : mappers)
+        {
+            VirtualController controller(0, *mapper, nullptr);
+            TEST_ASSERT(mapper->GetCapabilities() == controller.GetCapabilities());
+        }
+    }
+
 
     // The following sequence of tests, which together comprise the ApplyAxisProperties suite, verify that properties can be correctly applied to an axis value.
     // Each test case follows the basic steps of declaring test data, sweeping through raw axis values, and verifying that the output curve matches expectation.

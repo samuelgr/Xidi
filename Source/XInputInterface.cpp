@@ -21,13 +21,6 @@ namespace Xidi
     // -------- CONCRETE INSTANCE METHODS ---------------------------------- //
     // See "XInputInterface.h" for documentation.
 
-    DWORD XInput::GetCapabilities(DWORD dwUserIndex, DWORD dwFlags, XINPUT_CAPABILITIES* pCapabilities)
-    {
-        return XInputGetCapabilities(dwUserIndex, dwFlags, pCapabilities);
-    }
-
-    // --------
-
     DWORD XInput::GetState(DWORD dwUserIndex, XINPUT_STATE* pState)
     {
         return XInputGetState(dwUserIndex, pState);

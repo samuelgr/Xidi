@@ -29,7 +29,6 @@ namespace Xidi
     public:
         // -------- ABSTRACT INSTANCE METHODS ------------------------------ //
 
-        virtual DWORD GetCapabilities(DWORD dwUserIndex, DWORD dwFlags, XINPUT_CAPABILITIES* pCapabilities) = 0;
         virtual DWORD GetState(DWORD dwUserIndex, XINPUT_STATE* pState) = 0;
     };
 
@@ -40,7 +39,6 @@ namespace Xidi
     public:
         // -------- CONCRETE INSTANCE METHODS ------------------------------ //
 
-        DWORD GetCapabilities(DWORD dwUserIndex, DWORD dwFlags, XINPUT_CAPABILITIES* pCapabilities) override;
         DWORD GetState(DWORD dwUserIndex, XINPUT_STATE* pState) override;
     };
 }
