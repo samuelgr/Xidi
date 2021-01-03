@@ -212,7 +212,7 @@ namespace Xidi
 
         /// Initialization constructor.
         /// Requires a complete set of metadata for describing the virtual controller to be created.
-        inline VirtualController(TControllerIdentifier controllerId, const Controller::Mapper& mapper, std::unique_ptr<IXInput>&& xinput) : kControllerIdentifier(controllerId), controllerMutex(), mapper(mapper), properties(), state(), stateIdentifier(), stateRefreshNeeded(true), xinput(std::move(xinput))
+        inline VirtualController(TControllerIdentifier controllerId, const Controller::Mapper& mapper, std::unique_ptr<IXInput>&& xinput = std::make_unique<XInput>()) : kControllerIdentifier(controllerId), controllerMutex(), mapper(mapper), properties(), state(), stateIdentifier(), stateRefreshNeeded(true), xinput(std::move(xinput))
         {
             // Nothing to do here.
         }

@@ -124,7 +124,7 @@ namespace Xidi
                 break;
 
             default:
-                Message::OutputFormatted(Message::ESeverity::Warning, L"Virtual controller %u: previous error condition with code 0x%08x is now cleared.", kControllerIdentifier, stateIdentifier.errorCode);
+                Message::OutputFormatted(Message::ESeverity::Warning, L"Virtual controller %u: cleared previous error condition with code 0x%08x.", kControllerIdentifier, stateIdentifier.errorCode);
                 break;
             }
             break;
@@ -138,14 +138,16 @@ namespace Xidi
         default:
             ZeroMemory(&xinputState, sizeof(xinputState));
             if (newStateIdentifier.errorCode != stateIdentifier.errorCode)
-                Message::OutputFormatted(Message::ESeverity::Warning, L"Virtual controller %u: encountered error code 0x%08x during state refresh.", kControllerIdentifier, newStateIdentifier.errorCode);
+                Message::OutputFormatted(Message::ESeverity::Warning, L"Virtual controller %u: encountered error condition with code 0x%08x.", kControllerIdentifier, newStateIdentifier.errorCode);
             break;
         }
 
         // If the state identifier is effectively the same then there is nothing further to do.
-        // Different packet numbers always mean different states.
-        // However, a change in error code without without a transition to or from ERROR_SUCCESS does not indicate a change in state.
-        if ((newStateIdentifier.packetNumber == stateIdentifier.packetNumber) || ((ERROR_SUCCESS == newStateIdentifier.errorCode) && (ERROR_SUCCESS != stateIdentifier.errorCode)) || ((ERROR_SUCCESS != newStateIdentifier.errorCode) && (ERROR_SUCCESS == stateIdentifier.errorCode)))
+        // If the packet numbers are the same and both previous and current attempt were successful, then there is no change.
+        // Regardless of packet number, if an error condition is persisting then there is also no change.
+        if ((newStateIdentifier.packetNumber == stateIdentifier.packetNumber) && (ERROR_SUCCESS == newStateIdentifier.errorCode) && (ERROR_SUCCESS == stateIdentifier.errorCode))
+            return false;
+        if ((ERROR_SUCCESS != newStateIdentifier.errorCode) && (ERROR_SUCCESS != stateIdentifier.errorCode))
             return false;
         stateIdentifier = newStateIdentifier;
         

@@ -19,6 +19,7 @@
 #include <cmath>
 #include <cstdint>
 #include <deque>
+#include <initializer_list>
 #include <memory>
 #include <optional>
 #include <xinput.h>
@@ -146,6 +147,14 @@ namespace XidiTest
             callsGetState.push_back(callSpec);
         }
 
+        /// Submits multiple expected calls for the #GetState method.
+        /// @param [in] callSpec Specifications that describe the desired behavior of the call.
+        inline void ExpectCallGetState(std::initializer_list<const SMethodCallSpec<XINPUT_STATE>> callSpecs)
+        {
+            for (auto& callSpec : callSpecs)
+                ExpectCallGetState(callSpec);
+        }
+
 
         // -------- CONCRETE INSTANCE METHODS ------------------------------ //
 
@@ -219,7 +228,7 @@ namespace XidiTest
         // Output monotonicity check variable.
         int32_t lastOutputAxisValue = rangeMin;
 
-        VirtualController controller(0, kTestSingleAxisMapper, nullptr);
+        VirtualController controller(0, kTestSingleAxisMapper, std::make_unique<MockXInput>(0));
         TEST_ASSERT(true == controller.SetAxisDeadzone(kTestSingleAxis, deadzone));
         TEST_ASSERT(true == controller.SetAxisRange(kTestSingleAxis, rangeMin, rangeMax));
         TEST_ASSERT(true == controller.SetAxisSaturation(kTestSingleAxis, saturation));
@@ -292,8 +301,119 @@ namespace XidiTest
 
         for (auto mapper : mappers)
         {
-            VirtualController controller(0, *mapper, nullptr);
+            VirtualController controller(0, *mapper, std::make_unique<MockXInput>(0));
             TEST_ASSERT(mapper->GetCapabilities() == controller.GetCapabilities());
+        }
+    }
+    
+    // Verifies that virtual controllers correctly fill in controller state structures based on data received from XInput controllers.
+    // Each time the virtual controller queries XInput it gets a new data packet.
+    TEST_CASE(VirtualController_GetState_Nominal)
+    {
+        constexpr int kTotalXInputCalls = 4;
+        constexpr VirtualController::TControllerIdentifier kControllerIndex = 2;
+
+        std::unique_ptr<MockXInput> mockXInput = std::make_unique<MockXInput>(kControllerIndex);
+        mockXInput->ExpectCallGetState({
+            {.returnCode = ERROR_SUCCESS, .maybeOutputObject = XINPUT_STATE({.dwPacketNumber = 1, .Gamepad = {.wButtons = XINPUT_GAMEPAD_A}})},
+            {.returnCode = ERROR_SUCCESS, .maybeOutputObject = XINPUT_STATE({.dwPacketNumber = 2, .Gamepad = {.wButtons = XINPUT_GAMEPAD_B}})},
+            {.returnCode = ERROR_SUCCESS, .maybeOutputObject = XINPUT_STATE({.dwPacketNumber = 3, .Gamepad = {.wButtons = XINPUT_GAMEPAD_X}})},
+            {.returnCode = ERROR_SUCCESS, .maybeOutputObject = XINPUT_STATE({.dwPacketNumber = 4, .Gamepad = {.wButtons = XINPUT_GAMEPAD_Y}})}
+        });
+
+        // Button assignments are based on the mapper defined at the top of this file.
+        constexpr Controller::SState kExpectedStates[] = {
+            {.button = {true, false, false, false}},    // A
+            {.button = {false, true, false, false}},    // B
+            {.button = {false, false, true, false}},    // X
+            {.button = {false, false, false, true}},    // Y
+        };
+
+        static_assert(_countof(kExpectedStates) == kTotalXInputCalls, L"Wrong number of expected controller states versus calls to XInput.");
+
+        VirtualController controller(kControllerIndex, kTestMapper, std::move(mockXInput));
+        for (const auto& expectedState : kExpectedStates)
+        {
+            Controller::SState actualState;
+            controller.GetState(&actualState);
+            TEST_ASSERT(actualState == expectedState);
+        }
+    }
+
+    // Verifies that virtual controllers correctly fill in controller state structures based on data received from XInput controllers.
+    // Each time the virtual controller queries XInput it gets the same data packet.
+    TEST_CASE(VirtualController_GetState_SameState)
+    {
+        constexpr int kTotalXInputCalls = 4;
+        constexpr VirtualController::TControllerIdentifier kControllerIndex = 3;
+
+        std::unique_ptr<MockXInput> mockXInput = std::make_unique<MockXInput>(kControllerIndex);
+        mockXInput->ExpectCallGetState(
+            {.returnCode = ERROR_SUCCESS, .maybeOutputObject = XINPUT_STATE({.dwPacketNumber = 1, .Gamepad = {.wButtons = XINPUT_GAMEPAD_A | XINPUT_GAMEPAD_X}}), .repeatTimes = (kTotalXInputCalls - 1)}
+        );
+
+        // Button assignments are based on the mapper defined at the top of this file.
+        constexpr Controller::SState kExpectedStates[] = {
+            {.button = {true, false, true, false}},     // A, X
+            {.button = {true, false, true, false}},     // A, X
+            {.button = {true, false, true, false}},     // A, X
+            {.button = {true, false, true, false}}      // A, X
+        };
+
+        static_assert(_countof(kExpectedStates) == kTotalXInputCalls, L"Wrong number of expected controller states versus calls to XInput.");
+
+        VirtualController controller(kControllerIndex, kTestMapper, std::move(mockXInput));
+        for (const auto& expectedState : kExpectedStates)
+        {
+            Controller::SState actualState;
+            controller.GetState(&actualState);
+            TEST_ASSERT(actualState == expectedState);
+        }
+    }
+
+    // Verifies that virtual controllers are correctly reported as being completely neutral when an XInput error occurs.
+    TEST_CASE(VirtualController_GetState_XInputErrorMeansNeutral)
+    {
+        constexpr int kTotalXInputCalls = 9;
+        constexpr VirtualController::TControllerIdentifier kControllerIndex = 1;
+
+        // It is not obvious from documentation how packet numbers are supposed to behave across error conditions.
+        // Nominal case is packet number increases, and the other two possibilities are packet number stays the same or decreases. All three are tested below in that order.
+        std::unique_ptr<MockXInput> mockXInput = std::make_unique<MockXInput>(kControllerIndex);
+        mockXInput->ExpectCallGetState({
+            {.returnCode = ERROR_SUCCESS,               .maybeOutputObject = XINPUT_STATE({.dwPacketNumber = 1, .Gamepad = {.wButtons = XINPUT_GAMEPAD_A | XINPUT_GAMEPAD_Y}})},
+            {.returnCode = ERROR_DEVICE_NOT_CONNECTED},
+            {.returnCode = ERROR_SUCCESS,               .maybeOutputObject = XINPUT_STATE({.dwPacketNumber = 2, .Gamepad = {.wButtons = XINPUT_GAMEPAD_A | XINPUT_GAMEPAD_Y}})},
+            {.returnCode = ERROR_SUCCESS,               .maybeOutputObject = XINPUT_STATE({.dwPacketNumber = 3, .Gamepad = {.wButtons = XINPUT_GAMEPAD_B | XINPUT_GAMEPAD_Y}})},
+            {.returnCode = ERROR_INVALID_ACCESS},
+            {.returnCode = ERROR_SUCCESS,               .maybeOutputObject = XINPUT_STATE({.dwPacketNumber = 3, .Gamepad = {.wButtons = XINPUT_GAMEPAD_B | XINPUT_GAMEPAD_Y}})},
+            {.returnCode = ERROR_SUCCESS,               .maybeOutputObject = XINPUT_STATE({.dwPacketNumber = 4, .Gamepad = {.wButtons = XINPUT_GAMEPAD_X | XINPUT_GAMEPAD_Y}})},
+            {.returnCode = ERROR_NOT_SUPPORTED},
+            {.returnCode = ERROR_SUCCESS,               .maybeOutputObject = XINPUT_STATE({.dwPacketNumber = 1, .Gamepad = {.wButtons = XINPUT_GAMEPAD_X | XINPUT_GAMEPAD_Y}})}
+        });
+
+        // When XInput calls fail, the controller state should be completely neutral.
+        // Button assignments are based on the mapper defined at the top of this file.
+        constexpr Controller::SState kExpectedStates[] = {
+            {.button = {true, false, false, true}},     // A, Y
+            {},
+            {.button = {true, false, false, true}},     // A, Y
+            {.button = {false, true, false, true}},     // B, Y
+            {},
+            {.button = {false, true, false, true}},     // B, Y
+            {.button = {false, false, true, true}},     // X, Y
+            {},
+            {.button = {false, false, true, true}}      // X, Y
+        };
+
+        static_assert(_countof(kExpectedStates) == kTotalXInputCalls, L"Wrong number of expected controller states versus calls to XInput.");
+
+        VirtualController controller(kControllerIndex, kTestMapper, std::move(mockXInput));
+        for (const auto& expectedState : kExpectedStates)
+        {
+            Controller::SState actualState;
+            controller.GetState(&actualState);
+            TEST_ASSERT(actualState == expectedState);
         }
     }
 
