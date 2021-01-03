@@ -120,11 +120,11 @@ namespace Xidi
                 break;
 
             case ERROR_DEVICE_NOT_CONNECTED:
-                Message::OutputFormatted(Message::ESeverity::Info, L"Virtual controller %u: connected.", kControllerIdentifier);
+                Message::OutputFormatted(Message::ESeverity::Info, L"Virtual controller %u: Hardware connected.", kControllerIdentifier);
                 break;
 
             default:
-                Message::OutputFormatted(Message::ESeverity::Warning, L"Virtual controller %u: cleared previous error condition with code 0x%08x.", kControllerIdentifier, stateIdentifier.errorCode);
+                Message::OutputFormatted(Message::ESeverity::Warning, L"Virtual controller %u: Cleared previous error condition with code 0x%08x.", kControllerIdentifier, stateIdentifier.errorCode);
                 break;
             }
             break;
@@ -132,13 +132,13 @@ namespace Xidi
         case ERROR_DEVICE_NOT_CONNECTED:
             ZeroMemory(&xinputState, sizeof(xinputState));
             if (newStateIdentifier.errorCode != stateIdentifier.errorCode)
-                Message::OutputFormatted(Message::ESeverity::Info, L"Virtual controller %u: disconnected.", kControllerIdentifier);
+                Message::OutputFormatted(Message::ESeverity::Info, L"Virtual controller %u: Hardware disconnected.", kControllerIdentifier);
             break;
 
         default:
             ZeroMemory(&xinputState, sizeof(xinputState));
             if (newStateIdentifier.errorCode != stateIdentifier.errorCode)
-                Message::OutputFormatted(Message::ESeverity::Warning, L"Virtual controller %u: encountered error condition with code 0x%08x.", kControllerIdentifier, newStateIdentifier.errorCode);
+                Message::OutputFormatted(Message::ESeverity::Warning, L"Virtual controller %u: Encountered error condition with code 0x%08x.", kControllerIdentifier, newStateIdentifier.errorCode);
             break;
         }
 

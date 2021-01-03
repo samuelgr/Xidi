@@ -310,7 +310,6 @@ namespace XidiTest
     // Each time the virtual controller queries XInput it gets a new data packet.
     TEST_CASE(VirtualController_GetState_Nominal)
     {
-        constexpr int kTotalXInputCalls = 4;
         constexpr VirtualController::TControllerIdentifier kControllerIndex = 2;
 
         std::unique_ptr<MockXInput> mockXInput = std::make_unique<MockXInput>(kControllerIndex);
@@ -329,8 +328,6 @@ namespace XidiTest
             {.button = {false, false, false, true}},    // Y
         };
 
-        static_assert(_countof(kExpectedStates) == kTotalXInputCalls, L"Wrong number of expected controller states versus calls to XInput.");
-
         VirtualController controller(kControllerIndex, kTestMapper, std::move(mockXInput));
         for (const auto& expectedState : kExpectedStates)
         {
@@ -344,12 +341,11 @@ namespace XidiTest
     // Each time the virtual controller queries XInput it gets the same data packet.
     TEST_CASE(VirtualController_GetState_SameState)
     {
-        constexpr int kTotalXInputCalls = 4;
         constexpr VirtualController::TControllerIdentifier kControllerIndex = 3;
 
         std::unique_ptr<MockXInput> mockXInput = std::make_unique<MockXInput>(kControllerIndex);
         mockXInput->ExpectCallGetState(
-            {.returnCode = ERROR_SUCCESS, .maybeOutputObject = XINPUT_STATE({.dwPacketNumber = 1, .Gamepad = {.wButtons = XINPUT_GAMEPAD_A | XINPUT_GAMEPAD_X}}), .repeatTimes = (kTotalXInputCalls - 1)}
+            {.returnCode = ERROR_SUCCESS, .maybeOutputObject = XINPUT_STATE({.dwPacketNumber = 1, .Gamepad = {.wButtons = XINPUT_GAMEPAD_A | XINPUT_GAMEPAD_X}}), .repeatTimes = 3}
         );
 
         // Button assignments are based on the mapper defined at the top of this file.
@@ -359,8 +355,6 @@ namespace XidiTest
             {.button = {true, false, true, false}},     // A, X
             {.button = {true, false, true, false}}      // A, X
         };
-
-        static_assert(_countof(kExpectedStates) == kTotalXInputCalls, L"Wrong number of expected controller states versus calls to XInput.");
 
         VirtualController controller(kControllerIndex, kTestMapper, std::move(mockXInput));
         for (const auto& expectedState : kExpectedStates)
@@ -374,7 +368,6 @@ namespace XidiTest
     // Verifies that virtual controllers are correctly reported as being completely neutral when an XInput error occurs.
     TEST_CASE(VirtualController_GetState_XInputErrorMeansNeutral)
     {
-        constexpr int kTotalXInputCalls = 9;
         constexpr VirtualController::TControllerIdentifier kControllerIndex = 1;
 
         // It is not obvious from documentation how packet numbers are supposed to behave across error conditions.
@@ -405,8 +398,6 @@ namespace XidiTest
             {},
             {.button = {false, false, true, true}}      // X, Y
         };
-
-        static_assert(_countof(kExpectedStates) == kTotalXInputCalls, L"Wrong number of expected controller states versus calls to XInput.");
 
         VirtualController controller(kControllerIndex, kTestMapper, std::move(mockXInput));
         for (const auto& expectedState : kExpectedStates)
@@ -491,5 +482,132 @@ namespace XidiTest
         TestVirtualControllerApplyAxisProperties(-100, 0);
         TestVirtualControllerApplyAxisProperties(-100, 0, DeadzoneValueByPercentage(10), SaturationValueByPercentage(90));
         TestVirtualControllerApplyAxisProperties(-10000000, 0, DeadzoneValueByPercentage(25), SaturationValueByPercentage(75));
+    }
+
+
+    // The following sequence of tests, which together comprise the SetProperty suite, verify that properties are correctly set if valid and rejected if invalid.
+    // Each test case follows the basic steps of declaring test data, attempting to set properties, and verifying that the outcome matches expectation.
+
+    // Valid deadzone value set on a single axis and then on all axes.
+    TEST_CASE(VirtualController_SetProperty_DeadzoneValid)
+    {
+        constexpr uint32_t kTestDeadzoneValue = VirtualController::kAxisDeadzoneDefault / 2;
+        constexpr EAxis kTestDeadzoneAxis = EAxis::RotX;
+
+        VirtualController controller(0, kTestMapper, std::make_unique<MockXInput>(0));
+        TEST_ASSERT(true == controller.SetAxisDeadzone(kTestDeadzoneAxis, kTestDeadzoneValue));
+        
+        for (int i = 0; i < (int)EAxis::Count; ++i)
+        {
+            if ((int)kTestDeadzoneAxis == i)
+                TEST_ASSERT(kTestDeadzoneValue == controller.GetAxisDeadzone((EAxis)i));
+            else
+                TEST_ASSERT(VirtualController::kAxisDeadzoneDefault == controller.GetAxisDeadzone((EAxis)i));
+        }
+
+        TEST_ASSERT(true == controller.SetAllAxisDeadzone(kTestDeadzoneValue));
+
+        for (int i = 0; i < (int)EAxis::Count; ++i)
+            TEST_ASSERT(kTestDeadzoneValue == controller.GetAxisDeadzone((EAxis)i));
+    }
+
+    // Invalid deadzone value set on a single axis and then on all axes.
+    TEST_CASE(VirtualController_SetProperty_DeadzoneInvalid)
+    {
+        constexpr uint32_t kTestDeadzoneValue = VirtualController::kAxisDeadzoneMax + 1;
+        constexpr EAxis kTestDeadzoneAxis = EAxis::RotX;
+
+        VirtualController controller(0, kTestMapper, std::make_unique<MockXInput>(0));
+        TEST_ASSERT(false == controller.SetAxisDeadzone(kTestDeadzoneAxis, kTestDeadzoneValue));
+
+        for (int i = 0; i < (int)EAxis::Count; ++i)
+            TEST_ASSERT(VirtualController::kAxisDeadzoneDefault == controller.GetAxisDeadzone((EAxis)i));
+
+        TEST_ASSERT(false == controller.SetAllAxisDeadzone(kTestDeadzoneValue));
+
+        for (int i = 0; i < (int)EAxis::Count; ++i)
+            TEST_ASSERT(VirtualController::kAxisDeadzoneDefault == controller.GetAxisDeadzone((EAxis)i));
+    }
+
+    // Valid range values set on a single axis and then on all axes.
+    TEST_CASE(VirtualController_SetProperty_RangeValid)
+    {
+        constexpr std::pair<int32_t, int32_t> kTestRangeValue = std::make_pair(-100, 50000);
+        constexpr EAxis kTestRangeAxis = EAxis::Y;
+
+        VirtualController controller(0, kTestMapper, std::make_unique<MockXInput>(0));
+        TEST_ASSERT(true == controller.SetAxisRange(kTestRangeAxis, kTestRangeValue.first, kTestRangeValue.second));
+
+        for (int i = 0; i < (int)EAxis::Count; ++i)
+        {
+            if ((int)kTestRangeAxis == i)
+                TEST_ASSERT(kTestRangeValue == controller.GetAxisRange((EAxis)i));
+            else
+                TEST_ASSERT(std::make_pair(Controller::kAnalogValueMin, Controller::kAnalogValueMax) == controller.GetAxisRange((EAxis)i));
+        }
+
+        TEST_ASSERT(true == controller.SetAllAxisRange(kTestRangeValue.first, kTestRangeValue.second));
+
+        for (int i = 0; i < (int)EAxis::Count; ++i)
+            TEST_ASSERT(kTestRangeValue == controller.GetAxisRange((EAxis)i));
+    }
+
+    // Invalid range values set on a single axis and then on all axes.
+    TEST_CASE(VirtualController_SetProperty_RangeInvalid)
+    {
+        constexpr std::pair<int32_t, int32_t> kTestRangeValue = std::make_pair(50000, 50000);
+        constexpr EAxis kTestRangeAxis = EAxis::Y;
+
+        VirtualController controller(0, kTestMapper, std::make_unique<MockXInput>(0));
+        TEST_ASSERT(false == controller.SetAxisRange(kTestRangeAxis, kTestRangeValue.first, kTestRangeValue.second));
+
+        for (int i = 0; i < (int)EAxis::Count; ++i)
+            TEST_ASSERT(std::make_pair(Controller::kAnalogValueMin, Controller::kAnalogValueMax) == controller.GetAxisRange((EAxis)i));
+
+        TEST_ASSERT(false == controller.SetAllAxisRange(kTestRangeValue.first, kTestRangeValue.second));
+
+        for (int i = 0; i < (int)EAxis::Count; ++i)
+            TEST_ASSERT(std::make_pair(Controller::kAnalogValueMin, Controller::kAnalogValueMax) == controller.GetAxisRange((EAxis)i));
+    }
+
+    // Valid saturation value set on a single axis and then on all axes.
+    TEST_CASE(VirtualController_SetProperty_SaturationValid)
+    {
+        constexpr uint32_t kTestSaturationValue = VirtualController::kAxisSaturationDefault / 2;
+        constexpr EAxis kTestSaturationAxis = EAxis::RotY;
+
+        VirtualController controller(0, kTestMapper, std::make_unique<MockXInput>(0));
+        TEST_ASSERT(true == controller.SetAxisSaturation(kTestSaturationAxis, kTestSaturationValue));
+
+        for (int i = 0; i < (int)EAxis::Count; ++i)
+        {
+            if ((int)kTestSaturationAxis == i)
+                TEST_ASSERT(kTestSaturationValue == controller.GetAxisSaturation((EAxis)i));
+            else
+                TEST_ASSERT(VirtualController::kAxisSaturationDefault == controller.GetAxisSaturation((EAxis)i));
+        }
+
+        TEST_ASSERT(true == controller.SetAllAxisSaturation(kTestSaturationValue));
+
+        for (int i = 0; i < (int)EAxis::Count; ++i)
+            TEST_ASSERT(kTestSaturationValue == controller.GetAxisSaturation((EAxis)i));
+    }
+
+    // Invalid saturation value set on a single axis and then on all axes.
+    TEST_CASE(VirtualController_SetProperty_SaturationInvalid)
+    {
+        constexpr uint32_t kTestSaturationValue = VirtualController::kAxisSaturationMax + 1;
+        constexpr EAxis kTestSaturationAxis = EAxis::RotY;
+
+        VirtualController controller(0, kTestMapper, std::make_unique<MockXInput>(0));
+        TEST_ASSERT(false == controller.SetAxisSaturation(kTestSaturationAxis, kTestSaturationValue));
+
+        for (int i = 0; i < (int)EAxis::Count; ++i)
+            TEST_ASSERT(VirtualController::kAxisSaturationDefault == controller.GetAxisSaturation((EAxis)i));
+
+        TEST_ASSERT(false == controller.SetAllAxisSaturation(kTestSaturationValue));
+
+        for (int i = 0; i < (int)EAxis::Count; ++i)
+            TEST_ASSERT(VirtualController::kAxisSaturationDefault == controller.GetAxisSaturation((EAxis)i));
     }
 }
