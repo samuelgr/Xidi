@@ -263,6 +263,7 @@ namespace XidiTest
             TAxisValue axisZ;
             EPovValue pov;
             TButtonValue button[8];
+            EPovValue extraPov[4];
         };
 
         static_assert(0 == (sizeof(STestDataPacket) % 4), L"Test data packet size must be divisible by 4.");
@@ -275,18 +276,22 @@ namespace XidiTest
         };
 
         DIOBJECTDATAFORMAT testObjectFormatSpec[] = {
-            {.pguid = &GUID_XAxis, .dwOfs = offsetof(STestDataPacket, axisX),     .dwType = DIDFT_AXIS   | DIDFT_ANYINSTANCE, .dwFlags = 0},
-            {.pguid = &GUID_YAxis, .dwOfs = offsetof(STestDataPacket, axisY),     .dwType = DIDFT_AXIS   | DIDFT_ANYINSTANCE, .dwFlags = 0},
-            {.pguid = &GUID_ZAxis, .dwOfs = offsetof(STestDataPacket, axisZ),     .dwType = DIDFT_AXIS   | DIDFT_ANYINSTANCE, .dwFlags = 0},
-            {.pguid = nullptr,     .dwOfs = offsetof(STestDataPacket, pov),       .dwType = DIDFT_POV    | DIDFT_ANYINSTANCE, .dwFlags = 0},
-            {.pguid = nullptr,     .dwOfs = offsetof(STestDataPacket, button[0]), .dwType = DIDFT_BUTTON | DIDFT_ANYINSTANCE, .dwFlags = 0},
-            {.pguid = nullptr,     .dwOfs = offsetof(STestDataPacket, button[1]), .dwType = DIDFT_BUTTON | DIDFT_ANYINSTANCE, .dwFlags = 0},
-            {.pguid = nullptr,     .dwOfs = offsetof(STestDataPacket, button[2]), .dwType = DIDFT_BUTTON | DIDFT_ANYINSTANCE, .dwFlags = 0},
-            {.pguid = nullptr,     .dwOfs = offsetof(STestDataPacket, button[3]), .dwType = DIDFT_BUTTON | DIDFT_ANYINSTANCE, .dwFlags = 0},
-            {.pguid = nullptr,     .dwOfs = offsetof(STestDataPacket, button[4]), .dwType = DIDFT_BUTTON | DIDFT_ANYINSTANCE, .dwFlags = 0},
-            {.pguid = nullptr,     .dwOfs = offsetof(STestDataPacket, button[5]), .dwType = DIDFT_BUTTON | DIDFT_ANYINSTANCE, .dwFlags = 0},
-            {.pguid = nullptr,     .dwOfs = offsetof(STestDataPacket, button[6]), .dwType = DIDFT_BUTTON | DIDFT_ANYINSTANCE, .dwFlags = 0},
-            {.pguid = nullptr,     .dwOfs = offsetof(STestDataPacket, button[7]), .dwType = DIDFT_BUTTON | DIDFT_ANYINSTANCE, .dwFlags = 0}
+            {.pguid = &GUID_XAxis, .dwOfs = offsetof(STestDataPacket, axisX),       .dwType =                  DIDFT_AXIS   | DIDFT_ANYINSTANCE, .dwFlags = 0},
+            {.pguid = &GUID_YAxis, .dwOfs = offsetof(STestDataPacket, axisY),       .dwType =                  DIDFT_AXIS   | DIDFT_ANYINSTANCE, .dwFlags = 0},
+            {.pguid = &GUID_ZAxis, .dwOfs = offsetof(STestDataPacket, axisZ),       .dwType =                  DIDFT_AXIS   | DIDFT_ANYINSTANCE, .dwFlags = 0},
+            {.pguid = nullptr,     .dwOfs = offsetof(STestDataPacket, pov),         .dwType =                  DIDFT_POV    | DIDFT_ANYINSTANCE, .dwFlags = 0},
+            {.pguid = nullptr,     .dwOfs = offsetof(STestDataPacket, button[0]),   .dwType =                  DIDFT_BUTTON | DIDFT_ANYINSTANCE, .dwFlags = 0},
+            {.pguid = nullptr,     .dwOfs = offsetof(STestDataPacket, button[1]),   .dwType =                  DIDFT_BUTTON | DIDFT_ANYINSTANCE, .dwFlags = 0},
+            {.pguid = nullptr,     .dwOfs = offsetof(STestDataPacket, button[2]),   .dwType =                  DIDFT_BUTTON | DIDFT_ANYINSTANCE, .dwFlags = 0},
+            {.pguid = nullptr,     .dwOfs = offsetof(STestDataPacket, button[3]),   .dwType =                  DIDFT_BUTTON | DIDFT_ANYINSTANCE, .dwFlags = 0},
+            {.pguid = nullptr,     .dwOfs = offsetof(STestDataPacket, button[4]),   .dwType =                  DIDFT_BUTTON | DIDFT_ANYINSTANCE, .dwFlags = 0},
+            {.pguid = nullptr,     .dwOfs = offsetof(STestDataPacket, button[5]),   .dwType =                  DIDFT_BUTTON | DIDFT_ANYINSTANCE, .dwFlags = 0},
+            {.pguid = nullptr,     .dwOfs = offsetof(STestDataPacket, button[6]),   .dwType =                  DIDFT_BUTTON | DIDFT_ANYINSTANCE, .dwFlags = 0},
+            {.pguid = nullptr,     .dwOfs = offsetof(STestDataPacket, button[7]),   .dwType =                  DIDFT_BUTTON | DIDFT_ANYINSTANCE, .dwFlags = 0},
+            {.pguid = nullptr,     .dwOfs = offsetof(STestDataPacket, extraPov[0]), .dwType = DIDFT_OPTIONAL | DIDFT_POV    | DIDFT_ANYINSTANCE, .dwFlags = 0},
+            {.pguid = nullptr,     .dwOfs = offsetof(STestDataPacket, extraPov[1]), .dwType = DIDFT_OPTIONAL | DIDFT_POV    | DIDFT_ANYINSTANCE, .dwFlags = 0},
+            {.pguid = nullptr,     .dwOfs = offsetof(STestDataPacket, extraPov[2]), .dwType = DIDFT_OPTIONAL | DIDFT_POV    | DIDFT_ANYINSTANCE, .dwFlags = 0},
+            {.pguid = nullptr,     .dwOfs = offsetof(STestDataPacket, extraPov[3]), .dwType = DIDFT_OPTIONAL | DIDFT_POV    | DIDFT_ANYINSTANCE, .dwFlags = 0}
         };
         
         // Single element tests, one object format specification at a time.
@@ -344,6 +349,7 @@ namespace XidiTest
 
         // One final test with the entire data specification all at once.
         // Logic is the same as the single-element case, except here the expected output is much simpler to generate.
+        // Furthermore, unlike the single-element tests, here the extraPov array consists of unused POVs, so it is expected that all elements will be filled with a center position value.
         do
         {
             const DIDATAFORMAT kTestFormatSpec = {
@@ -372,6 +378,12 @@ namespace XidiTest
                     ((true == kTestControllerState.button[5]) ? DataFormat::kButtonValuePressed : DataFormat::kButtonValueNotPressed),
                     ((true == kTestControllerState.button[6]) ? DataFormat::kButtonValuePressed : DataFormat::kButtonValueNotPressed),
                     ((true == kTestControllerState.button[7]) ? DataFormat::kButtonValuePressed : DataFormat::kButtonValueNotPressed)
+                },
+                .extraPov = {
+                    EPovValue::Center,
+                    EPovValue::Center,
+                    EPovValue::Center,
+                    EPovValue::Center
                 }
             };
 
