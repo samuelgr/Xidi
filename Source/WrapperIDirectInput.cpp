@@ -138,7 +138,7 @@ namespace Xidi
     template <bool useUnicode> HRESULT STDMETHODCALLTYPE WrapperIDirectInput<useUnicode>::CreateDevice(REFGUID rguid, DirectInputHelper<useUnicode>::EarliestIDirectInputDeviceType** lplpDirectInputDevice, LPUNKNOWN pUnkOuter)
     {
         // Check if the specified instance GUID is an XInput GUID.
-        LONG xinputIndex = Controller::XInputControllerIndexForInstanceGUID(rguid);
+        LONG xinputIndex = ControllerIdentification::XInputControllerIndexForInstanceGUID(rguid);
 
         if (-1 == xinputIndex)
         {
@@ -197,7 +197,7 @@ namespace Xidi
             {
                 Message::Output(Message::ESeverity::Debug, L"Enumerate: System has XInput devices, so Xidi virtual XInput devices are being presented to the application before other controllers.");
 
-                callbackInfo.callbackReturnCode = Controller::EnumerateXInputControllers(lpCallback, pvRef);
+                callbackInfo.callbackReturnCode = ControllerIdentification::EnumerateXInputControllers(lpCallback, pvRef);
 
                 if (DIENUM_CONTINUE != callbackInfo.callbackReturnCode)
                 {
@@ -223,7 +223,7 @@ namespace Xidi
             {
                 Message::Output(Message::ESeverity::Debug, L"Enumerate: System has no XInput devices, so Xidi virtual XInput devices are being presented to the application after other controllers.");
 
-                callbackInfo.callbackReturnCode = Controller::EnumerateXInputControllers(lpCallback, pvRef);
+                callbackInfo.callbackReturnCode = ControllerIdentification::EnumerateXInputControllers(lpCallback, pvRef);
 
                 if (DIENUM_CONTINUE != callbackInfo.callbackReturnCode)
                 {
@@ -260,7 +260,7 @@ namespace Xidi
     template <bool useUnicode> HRESULT STDMETHODCALLTYPE WrapperIDirectInput<useUnicode>::GetDeviceStatus(REFGUID rguidInstance)
     {
         // Check if the specified instance GUID is an XInput GUID.
-        LONG xinputIndex = Controller::XInputControllerIndexForInstanceGUID(rguidInstance);
+        LONG xinputIndex = ControllerIdentification::XInputControllerIndexForInstanceGUID(rguidInstance);
 
         if (-1 == xinputIndex)
         {
@@ -297,7 +297,7 @@ namespace Xidi
         SEnumDevicesCallbackInfo<useUnicode>* callbackInfo = (SEnumDevicesCallbackInfo<useUnicode>*)pvRef;
 
         // If the present controller supports XInput, indicate such by adding it to the set of instance identifiers of interest.
-        if (Controller::DoesDirectInputControllerSupportXInput<DirectInputHelper<useUnicode>::EarliestIDirectInputType, DirectInputHelper<useUnicode>::EarliestIDirectInputDeviceType>(callbackInfo->instance->underlyingDIObject, lpddi->guidInstance))
+        if (ControllerIdentification::DoesDirectInputControllerSupportXInput<DirectInputHelper<useUnicode>::EarliestIDirectInputType, DirectInputHelper<useUnicode>::EarliestIDirectInputDeviceType>(callbackInfo->instance->underlyingDIObject, lpddi->guidInstance))
         {
             callbackInfo->seenInstanceIdentifiers.insert(lpddi->guidInstance);
             EnumDevicesOutputProductName<useUnicode>(Message::ESeverity::Debug, L"Enumerate: DirectInput device \"%s\" supports XInput and will not be presented to the application.", lpddi);

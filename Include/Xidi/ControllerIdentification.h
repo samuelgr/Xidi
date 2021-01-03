@@ -20,7 +20,7 @@
 
 namespace Xidi
 {
-    namespace Controller
+    namespace ControllerIdentification
     {
         // -------- CONSTANTS ---------------------------------------------- //
 

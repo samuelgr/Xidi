@@ -202,7 +202,7 @@ LPCWSTR DirectInputAxisTypeToString(REFGUID axisTypeGUID)
 BOOL STDMETHODCALLTYPE EnumDevicesTestCallback(LPCDIDEVICEINSTANCE lpddi, LPVOID pvRef)
 {
     DWORD* testValuePtr = (DWORD*)pvRef;
-    GUID xProductGUID = Controller::kXInputProductGUID;
+    GUID xProductGUID = ControllerIdentification::kXInputProductGUID;
 
     wcout << L"    ";
 
