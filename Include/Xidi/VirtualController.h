@@ -151,23 +151,6 @@ namespace Xidi
             }
         };
 
-        /// Holds all the information that encompasses a single controller state change event.
-        /// Each element in an event buffer is an element of this type.
-        struct SStateChangeEvent
-        {
-            Controller::SElementIdentifier element;                         ///< Virtual controller element to which the event refers.
-            
-            union
-            {
-                int32_t axis;                                               ///< Updated axis value, if the controller element type is an axis.
-                bool button;                                                ///< Updated button state, if the controller element type is a button.
-                bool povDirection[(int)Controller::EPovDirection::Count];   ///< Updated POV direction state, if the controller element type is a POV.
-            } data;
-
-            uint32_t timestamp;                                             ///< System time in milliseconds when the event was generated.
-            uint32_t sequence;                                              ///< Chronological sequence number of this event. Supposed to be globally monotonic with respect to all other input events, but in practice it is locally monotonic with respect to all virtual controller events.
-        };
-
         /// Identifier for a state data packet.
         struct SStateIdentifier
         {

@@ -24,7 +24,7 @@ set files_release_build=dinput.dll dinput8.dll winmm.dll
 set files_release_build_Win32=Xidi.HookModule.32.dll
 set files_release_build_x64=Xidi.HookModule.64.dll
 
-set third_party_license=Hookshot
+set third_party_license=Hookshot Boost
 
 rem ---------------------------------------------------------------------------
 
