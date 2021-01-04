@@ -16,7 +16,6 @@
 
 #include <boost/circular_buffer.hpp>
 #include <cstdint>
-#include <initializer_list>
 #include <optional>
 
 
@@ -27,7 +26,7 @@ namespace Xidi
         /// Implements a state change event buffer for a virtual controller.
         /// Used for providing buffered event functionality.
         /// Methods are not concurrency-safe, so some form of external concurrency control is required.
-        /// Behavior is modelled after DirectInput buffered event documentation.
+        /// Behavior is modelled after DirectInput buffered event documentation. For example, number of events stored is artificially limited to one less than declared capacity.
         class StateChangeEventBuffer
         {
         public:
@@ -71,10 +70,6 @@ namespace Xidi
             /// Computed to allow a maximum of 1MB for event storage.
             static constexpr uint32_t kEventBufferCapacityMax = (1024 * 1024) / sizeof(SEvent);
 
-            /// Default event buffer capacity, measured in number of events.
-            /// Event buffering is disabled by default but can be enabled on request.
-            static constexpr uint32_t kEventBufferCapacityDefault = 0;
-
 
         private:
             // -------- INSTANCE VARIABLES --------------------------------- //
@@ -92,7 +87,8 @@ namespace Xidi
             // -------- CONSTRUCTION AND DESTRUCTION ----------------------- //
 
             /// Default constructor.
-            inline StateChangeEventBuffer(void) : eventBuffer(kEventBufferCapacityDefault), eventBufferOverflowed()
+            /// Constructs an empty event buffer with capacity of 0, which means this event buffer is disabled until it is enabled by request.
+            inline StateChangeEventBuffer(void) : eventBuffer(), eventBufferOverflowed()
             {
                 // Nothing to do here.
             }
@@ -117,17 +113,7 @@ namespace Xidi
             /// @param [in] timestamp Timestamp to apply to the appended event, automatically determined if absent.
             void AppendEvent(const SEventData& eventData, std::optional<uint32_t> maybeTimestamp = std::nullopt);
 
-            /// Convenience wrapper for appending multiple events to the event buffer using an initializer list.
-            /// Primarily intended for testing.
-            /// @param [in] eventDataMultiple Initializer list containing events to append.
-            /// @param [in] timestamp Timestamp to apply to the appended event, automatically determined if absent.
-            inline void AppendEvents(std::initializer_list<const SEventData> eventDataMultiple, std::optional<uint32_t> maybeTimestamp = std::nullopt)
-            {
-                for (auto& eventData : eventDataMultiple)
-                    AppendEvent(eventData, maybeTimestamp);
-            }
-
-            /// Retrieves and returns the capacity of this event buffer.
+           /// Retrieves and returns the capacity of this event buffer.
             /// @return Event buffer capacity.
             inline uint32_t GetCapacity(void) const
             {
@@ -141,13 +127,6 @@ namespace Xidi
                 return (uint32_t)eventBuffer.size();
             }
 
-            /// Computes the number of free spaces left in this buffer for new events.
-            /// @return Number of free spaces left for new events.
-            inline uint32_t GetRemainingCapacity(void) const
-            {
-                return GetCapacity() - GetCount();
-            }
-            
             /// Checks if this event buffer is enabled.
             /// @return `true` if the event buffer is enabled, `false` otherwise.
             inline bool IsEnabled(void) const
@@ -171,6 +150,7 @@ namespace Xidi
             /// Disables this event buffer if the specified capacity is equal to 0.
             /// Sets the capacity to #kEventBufferCapacityMax if the specified capacity is greater than this value.
             /// If the specified capacity is less than the number of events currently in the event buffer, an overflow condition is triggered and the oldest excess events are discarded.
+            /// Buffer always maintains one free space, so the actual number of events stored is one less than capacity. This is to be consistent with documentation for IDirectInputDevice8::GetDeviceData.
             /// @param [in] capacity Desired event buffer capacity.
             void SetCapacity(uint32_t capacity);
         };

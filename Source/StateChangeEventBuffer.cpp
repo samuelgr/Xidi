@@ -44,8 +44,8 @@ namespace Xidi
             // Per DirectInput documentation, we always need one free space in the buffer.
             // This is how we ensure the number of events stored is always one less than capacity.
             // See IDirectInput8::GetDeviceData documentation for more information.
-            
-            const bool eventBufferWasFull = eventBuffer.full();
+
+            const bool eventBufferWasFull = ((0 != eventBuffer.size()) && (true == eventBuffer.full()));
 
             if (true == eventBufferWasFull)
                 eventBuffer.pop_front();
@@ -78,19 +78,27 @@ namespace Xidi
 
         void StateChangeEventBuffer::PopOldestEvents(uint32_t numEventsToPop)
         {
-            for (uint32_t i = 0; (i < numEventsToPop) && (false == eventBuffer.empty()); ++i)
-                eventBuffer.pop_front();
+            // Popping 0 events is a no-op.
+            if (numEventsToPop > 0)
+            {
+                for (uint32_t i = 0; (i < numEventsToPop) && (false == eventBuffer.empty()); ++i)
+                    eventBuffer.pop_front();
 
-            eventBufferOverflowed = false;
+                eventBufferOverflowed = false;
+            }
         }
 
         // --------
 
         void StateChangeEventBuffer::SetCapacity(uint32_t capacity)
         {
-            const uint32_t newCapacity = ((capacity > kEventBufferCapacityMax) ? kEventBufferCapacityMax : capacity);
-            eventBuffer.rset_capacity(newCapacity);
-            eventBufferOverflowed = HandlePossibleOverflow(eventBuffer);
+            // Setting the capacity to the same as the current capacity is a no-op.
+            if (GetCapacity() != capacity)
+            {
+                const uint32_t newCapacity = ((capacity > kEventBufferCapacityMax) ? kEventBufferCapacityMax : capacity);
+                eventBuffer.rset_capacity(newCapacity);
+                eventBufferOverflowed = HandlePossibleOverflow(eventBuffer);
+            }
         }
     }
 }
