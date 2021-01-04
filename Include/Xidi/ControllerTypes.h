@@ -12,6 +12,7 @@
 
 #pragma once
 
+#include <bitset>
 #include <cstdint>
 #include <cstdlib>
 #include <cstring>
@@ -50,7 +51,7 @@ namespace Xidi
         /// Enumerates all supported axis types using DirectInput terminology.
         /// It is not necessarily the case that all of these axes are present in a virtual controller. This enumerator just lists all the possible axes.
         /// Semantically, the value of each enumerator maps to an array position in the controller's internal state data structure.
-        enum class EAxis : uint16_t
+        enum class EAxis : uint8_t
         {
             X,                                                              ///< X axis
             Y,                                                              ///< Y axis
@@ -64,7 +65,7 @@ namespace Xidi
         /// Enumerates all supported buttons.
         /// It is not necessarily the case that all of these buttons are present in a virtual controller. This enumerator just lists all the possible buttons.
         /// Semantically, the value of each enumerator maps to an array position in the controller's internal state data structure.
-        enum class EButton : uint16_t
+        enum class EButton : uint8_t
         {
             B1,                                                             ///< Button 1
             B2,                                                             ///< Button 2
@@ -90,7 +91,7 @@ namespace Xidi
         /// If a POV is presented, then these four buttons in the internal state data structure are combined into a POV reading.
         /// If not, then the corresponding part of the internal state data structure is ignored.
         /// Semantically, the value of each enumerator maps to an array position in the controller's internal state data structure.
-        enum class EPovDirection : uint16_t
+        enum class EPovDirection : uint8_t
         {
             Up,                                                             ///< Up direction
             Down,                                                           ///< Down direction
@@ -101,7 +102,7 @@ namespace Xidi
 
         /// Enumerates all types of controller elements present in the internal virtual controller state.
         /// The special whole controller value indicates that a reference is being made to the entire virtual controller rather than any specific element.
-        enum class EElementType : uint16_t
+        enum class EElementType : uint8_t
         {
             Axis,
             Button,
@@ -130,14 +131,18 @@ namespace Xidi
                 return (0 == memcmp(this, &other, sizeof(*this)));
             }
         };
+        static_assert(sizeof(SElementIdentifier) <= 4, L"Data structure size constraint violation.");
 
         /// Capabilities of a Xidi virtual controller.
         /// Filled in by looking at a mapper and used during operations like EnumObjects to tell the application about the virtual controller's components.
         struct SCapabilities
         {
             EAxis axisType[(int)EAxis::Count];                              ///< Type of each axis present. When the controller is presented to the application, all the axes on it are presented with contiguous indices. This array is used to map from DirectInput axis index to internal axis index.
-            int numAxes;                                                    ///< Number of axes in the virtual controller, also the number of elements of the axis type array that are valid.
-            int numButtons;                                                 ///< Number of buttons present in the virtual controller.
+            struct
+            {
+                uint8_t numAxes : 3;                                        ///< Number of axes in the virtual controller, also the number of elements of the axis type array that are valid.
+                uint8_t numButtons : 5;                                     ///< Number of buttons present in the virtual controller.
+            };
             bool hasPov;                                                    ///< Specifies whether or not the virtual controller has a POV. If it does, then the POV buttons in the controller state are used, otherwise they are ignored.
 
             /// Simple check for equality by low-level memory comparison.
@@ -180,15 +185,18 @@ namespace Xidi
                 return (-1 != FindAxis(axis));
             }
         };
+        static_assert(sizeof(SCapabilities) <= 8, L"Data structure size constraint violation.");
+        static_assert((uint8_t)EAxis::Count <= 0b111, L"Number of axes does not fit into 3 bits.");
+        static_assert((uint8_t)EButton::Count <= 0b11111, L"Number of buttons does not fit into 5 bits.");
 
         /// Native data format for virtual controllers, used internally to represent controller state.
         /// Instances of `XINPUT_GAMEPAD` are passed through a mapper to produce objects of this type.
         /// Validity or invalidity of each element depends on the mapper.
         struct SState
         {
-            int32_t axis[(int)EAxis::Count];
-            bool button[(int)EButton::Count];
-            bool povDirection[(int)EPovDirection::Count];
+            int32_t axis[(int)EAxis::Count];                                ///< Values for all axes, one element per axis.
+            std::bitset<(int)EButton::Count> button;                        ///< Pressed (`true`) or unpressed (`false`) state for each button, one bit per button. Bitset is used as a size optimization, given the number of buttons.
+            bool povDirection[(int)EPovDirection::Count];                   ///< Pressed (`true`) or unpressed (`false`) state for each POV direction separately, one element per button. Bitset versus boolean produces no size difference, given the number of POV directions.
 
             /// Simple check for equality by low-level memory comparison.
             /// Primarily useful during testing.
@@ -199,5 +207,6 @@ namespace Xidi
                 return (0 == memcmp(this, &other, sizeof(*this)));
             }
         };
+        static_assert(sizeof(SState) <= 32, L"Data structure size constraint violation.");
     }
 }

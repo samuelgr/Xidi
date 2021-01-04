@@ -271,7 +271,7 @@ namespace XidiTest
         // Controller state that will be used throughout this test.
         constexpr Controller::SState kTestControllerState = {
             .axis = {1111, 2222, 3333, 4444, 5555, 6666},
-            .button = {true, true, false, false, true, true, false, false, true, true, false, false, true, true, false, false},
+            .button = 0b1100110011001100,
             .povDirection = {true, false, false, true}
         };
 

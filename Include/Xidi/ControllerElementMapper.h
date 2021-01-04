@@ -62,7 +62,7 @@ namespace Xidi
             /// Enumerates the possible directions to which the contributions of this element should be mapped.
             /// Typically an analog stick axis would contribute to the whole axis (i.e. both directions).
             /// Triggers might be made to share an axis by having one be positive and one be negative.
-            enum class EDirection
+            enum class EDirection : uint8_t
             {
                 Both,                                                       ///< Specifies that the contribution is to the whole axis, mapping evenly to both directions.
                 Positive,                                                   ///< Specifies that the contribution is only to the positive part of the axis.

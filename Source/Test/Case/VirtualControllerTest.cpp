@@ -322,10 +322,10 @@ namespace XidiTest
 
         // Button assignments are based on the mapper defined at the top of this file.
         constexpr Controller::SState kExpectedStates[] = {
-            {.button = {true, false, false, false}},    // A
-            {.button = {false, true, false, false}},    // B
-            {.button = {false, false, true, false}},    // X
-            {.button = {false, false, false, true}},    // Y
+            {.button = 0b0001},    // A
+            {.button = 0b0010},    // B
+            {.button = 0b0100},    // X
+            {.button = 0b1000},    // Y
         };
 
         VirtualController controller(kControllerIndex, kTestMapper, std::move(mockXInput));
@@ -350,10 +350,10 @@ namespace XidiTest
 
         // Button assignments are based on the mapper defined at the top of this file.
         constexpr Controller::SState kExpectedStates[] = {
-            {.button = {true, false, true, false}},     // A, X
-            {.button = {true, false, true, false}},     // A, X
-            {.button = {true, false, true, false}},     // A, X
-            {.button = {true, false, true, false}}      // A, X
+            {.button = 0b0101},     // A, X
+            {.button = 0b0101},     // A, X
+            {.button = 0b0101},     // A, X
+            {.button = 0b0101}      // A, X
         };
 
         VirtualController controller(kControllerIndex, kTestMapper, std::move(mockXInput));
@@ -388,15 +388,15 @@ namespace XidiTest
         // When XInput calls fail, the controller state should be completely neutral.
         // Button assignments are based on the mapper defined at the top of this file.
         constexpr Controller::SState kExpectedStates[] = {
-            {.button = {true, false, false, true}},     // A, Y
+            {.button = 0b1001},     // A, Y
             {},
-            {.button = {true, false, false, true}},     // A, Y
-            {.button = {false, true, false, true}},     // B, Y
+            {.button = 0b1001},     // A, Y
+            {.button = 0b1010},     // B, Y
             {},
-            {.button = {false, true, false, true}},     // B, Y
-            {.button = {false, false, true, true}},     // X, Y
+            {.button = 0b1010},     // B, Y
+            {.button = 0b1100},     // X, Y
             {},
-            {.button = {false, false, true, true}}      // X, Y
+            {.button = 0b1100}      // X, Y
         };
 
         VirtualController controller(kControllerIndex, kTestMapper, std::move(mockXInput));
