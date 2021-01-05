@@ -12,6 +12,7 @@
 #include "ApiWindows.h"
 #include "ControllerElementMapper.h"
 #include "ControllerTypes.h"
+#include "StateChangeEventBuffer.h"
 #include "TestCase.h"
 #include "VirtualController.h"
 #include "XInputInterface.h"
@@ -32,9 +33,11 @@ namespace XidiTest
     using ::Xidi::Controller::ButtonMapper;
     using ::Xidi::Controller::EAxis;
     using ::Xidi::Controller::EButton;
+    using ::Xidi::Controller::EElementType;
     using ::Xidi::Controller::EPovDirection;
     using ::Xidi::Controller::Mapper;
     using ::Xidi::Controller::PovMapper;
+    using ::Xidi::Controller::StateChangeEventBuffer;
 
 
     // -------- INTERNAL CONSTANTS ----------------------------------------- //
@@ -117,7 +120,7 @@ namespace XidiTest
         template <typename OutputObjectType> static DWORD DoMockMethodCall(const wchar_t* methodName, std::deque<SMethodCallSpec<OutputObjectType>>& callSpecs, OutputObjectType* outputBuf)
         {
             if (callSpecs.empty())
-                TEST_FAILED_BECAUSE(L"%s: unexpected method call.", methodName);
+                TEST_FAILED_BECAUSE(L"%s: Unexpected method call.", methodName);
             
             SMethodCallSpec<OutputObjectType>& callSpec = callSpecs.front();
             const DWORD returnCode = callSpec.returnCode;
@@ -161,9 +164,9 @@ namespace XidiTest
         DWORD GetState(DWORD dwUserIndex, XINPUT_STATE* pState) override
         {
             if (kUserIndex != dwUserIndex)
-                TEST_FAILED_BECAUSE(L"XInputGetState: user index mismatch (expected %u, got %u).", kUserIndex, dwUserIndex);
+                TEST_FAILED_BECAUSE(L"XInputGetState: User index mismatch (expected %u, got %u).", kUserIndex, dwUserIndex);
             else if (dwUserIndex >= XUSER_MAX_COUNT)
-                TEST_FAILED_BECAUSE(L"XInputGetState: user index too large (%u versus maximum %u).", dwUserIndex, XUSER_MAX_COUNT);
+                TEST_FAILED_BECAUSE(L"XInputGetState: User index too large (%u versus maximum %u).", dwUserIndex, XUSER_MAX_COUNT);
 
             return DoMockMethodCall(L"XInputGetState", callsGetState, pState);
         }
@@ -172,6 +175,27 @@ namespace XidiTest
 
     // -------- INTERNAL FUNCTIONS ----------------------------------------- //
 
+    /// Modifies a controller state object by applying to it an updated value contained within a state change event.
+    /// @param [in] eventData State change event data.
+    /// @param [in,out] controllerState Controller state object to be modified.
+    static void ApplyUpdateToControllerState(const StateChangeEventBuffer::SEventData& eventData, Controller::SState& controllerState)
+    {
+        switch (eventData.element.type)
+        {
+        case EElementType::Axis:
+            controllerState.axis[(int)eventData.element.axis] = eventData.value.axis;
+            break;
+
+        case EElementType::Button:
+            controllerState.button[(int)eventData.element.button] = eventData.value.button;
+            break;
+
+        case EElementType::Pov:
+            controllerState.povDirection = eventData.value.povDirection;
+            break;
+        }
+    }
+    
     /// Computes and returns the deadzone value that corresponds to the specified percentage of an axis' physical range of motion.
     /// @param [in] pct Desired percentage.
     /// @return Corresponding deadzone value.
@@ -408,6 +432,14 @@ namespace XidiTest
         }
     }
 
+    // Verifies that attempting to obtain a controller lock results in an object that does, in fact, own the mutex with which it is associated.
+    TEST_CASE(VirtualController_Lock)
+    {
+        VirtualController controller(0, kTestSingleAxisMapper, std::make_unique<MockXInput>(0));
+        auto lock = controller.Lock();
+        TEST_ASSERT(true == lock.owns_lock());
+    }
+
 
     // The following sequence of tests, which together comprise the ApplyAxisProperties suite, verify that properties can be correctly applied to an axis value.
     // Each test case follows the basic steps of declaring test data, sweeping through raw axis values, and verifying that the output curve matches expectation.
@@ -415,7 +447,7 @@ namespace XidiTest
     // Nominal case. Default property values.
     TEST_CASE(VirtualController_ApplyAxisProperties_Nominal)
     {
-        TestVirtualControllerApplyAxisProperties(Controller::kAnalogValueMin, Controller::kAnalogValueMax, VirtualController::kAxisDeadzoneDefault, VirtualController::kAxisSaturationDefault);
+        TestVirtualControllerApplyAxisProperties(Controller::kAnalogValueMin, Controller::kAnalogValueMax, VirtualController::kAxisDeadzoneMin, VirtualController::kAxisSaturationMax);
     }
 
     // Deadzone sweep in increments of 5%, no saturation.
@@ -609,5 +641,168 @@ namespace XidiTest
 
         for (int i = 0; i < (int)EAxis::Count; ++i)
             TEST_ASSERT(VirtualController::kAxisSaturationDefault == controller.GetAxisSaturation((EAxis)i));
+    }
+
+
+    // The following sequence of tests, which together comprise the EventBuffer suite, verify that buffered events function correctly.
+    // Each test case follows the basic steps of declaring test data, providing a controller with one or more updated controller state snapshots, and verifying that the resulting controller state is consistent with the input updates.
+
+    // Verifies that by default buffered events are disabled.
+    TEST_CASE(VirtualController_EventBuffer_DefaultDisabled)
+    {
+        VirtualController controller(0, kTestMapper, std::make_unique<MockXInput>(0));
+        TEST_ASSERT(0 == controller.GetEventBufferCapacity());
+    }
+
+    // Verifies that buffered events can be enabled.
+    TEST_CASE(VirtualController_EventBuffer_CanEnable)
+    {
+        constexpr uint32_t kEventBufferCapacity = 64;
+
+        VirtualController controller(0, kTestMapper, std::make_unique<MockXInput>(0));
+        controller.SetEventBufferCapacity(kEventBufferCapacity);
+        TEST_ASSERT(kEventBufferCapacity == controller.GetEventBufferCapacity());
+    }
+
+    // Applies some neutral state updates to the virtual controller and verifies that no events are generated.
+    TEST_CASE(VirtualController_EventBuffer_Neutral)
+    {
+        constexpr VirtualController::TControllerIdentifier kControllerIndex = 0;
+        constexpr uint32_t kEventBufferCapacity = 64;
+
+        constexpr XINPUT_STATE kXInputStates[] = {
+            {.dwPacketNumber = 1},
+            {.dwPacketNumber = 3},
+            {.dwPacketNumber = 5}
+        };
+
+        std::unique_ptr<MockXInput> mockXInput = std::make_unique<MockXInput>(kControllerIndex);
+        for (const auto& kXInputState : kXInputStates)
+            mockXInput->ExpectCallGetState({.returnCode = ERROR_SUCCESS, .maybeOutputObject = kXInputState});
+
+        VirtualController controller(kControllerIndex, kTestMapper, std::move(mockXInput));
+        controller.SetEventBufferCapacity(kEventBufferCapacity);
+
+        for (int i = 0; i < _countof(kXInputStates); ++i)
+            controller.RefreshState();
+
+        TEST_ASSERT(0 == controller.GetEventBufferCount());
+    }
+
+    // Applies some actual state updates to the virtual controller and verifies that events are correctly generated.
+    // The final view of controller state should be the same regardless of whether it is obtained via snapshot or via buffered events.
+    TEST_CASE(VirtualController_EventBuffer_MultipleUpdates)
+    {
+        constexpr VirtualController::TControllerIdentifier kControllerIndex = 0;
+        constexpr uint32_t kEventBufferCapacity = 64;
+
+        constexpr XINPUT_STATE kXInputStates[] = {
+            {.dwPacketNumber = 1, .Gamepad = {.wButtons = XINPUT_GAMEPAD_A, .sThumbLX = 1111, .sThumbLY = 2222}},
+            {.dwPacketNumber = 2, .Gamepad = {.wButtons = XINPUT_GAMEPAD_A, .sThumbLX = 3333, .sThumbLY = 4444}},
+            {.dwPacketNumber = 3, .Gamepad = {.wButtons = XINPUT_GAMEPAD_A | XINPUT_GAMEPAD_Y | XINPUT_GAMEPAD_DPAD_UP, .sThumbLX = -5555, .sThumbLY = -6666}},
+            {.dwPacketNumber = 4, .Gamepad = {.wButtons = XINPUT_GAMEPAD_DPAD_LEFT}}
+        };
+
+        // Values come from the mapper at the top of this file.
+        constexpr Controller::SState kExpectedControllerStates[] = {
+            {.axis = {1111, 2222, 0, 0, 0, 0},   .button = 0b0001},
+            {.axis = {3333, 4444, 0, 0, 0, 0},   .button = 0b0001},
+            {.axis = {-5555, -6666, 0, 0, 0, 0}, .button = 0b1001, .povDirection = {.components = {true, false, false, false}}},
+            {.axis = {0, 0, 0, 0, 0, 0},         .button = 0b0000, .povDirection = {.components = {false, false, true, false}}}
+        };
+
+        static_assert(_countof(kXInputStates) == _countof(kExpectedControllerStates), L"Mismatch between number of XInput states and number of controller states.");
+
+        // Each iteration of the loop adds one more event to the test.
+        // First iteration tests only a single state change, second iteration tests two state changes, and so on.
+        for (unsigned int i = 1; i <= _countof(kXInputStates); ++i)
+        {
+            std::unique_ptr<MockXInput> mockXInput = std::make_unique<MockXInput>(kControllerIndex);
+            for (unsigned int j = 0; j < i; ++j)
+                mockXInput->ExpectCallGetState({.returnCode = ERROR_SUCCESS, .maybeOutputObject = kXInputStates[j]});
+
+            VirtualController controller(kControllerIndex, kTestMapper, std::move(mockXInput));
+            controller.SetEventBufferCapacity(kEventBufferCapacity);
+
+            uint32_t lastEventCount = controller.GetEventBufferCount();
+            TEST_ASSERT(0 == lastEventCount);
+            for (unsigned int j = 0; j < i; ++j)
+            {
+                controller.RefreshState();
+                
+                TEST_ASSERT(controller.GetEventBufferCount() > lastEventCount);
+                lastEventCount = controller.GetEventBufferCount();
+            }
+
+            Controller::SState actualStateFromSnapshot;
+            controller.GetState(&actualStateFromSnapshot);
+
+            Controller::SState actualStateFromBufferedEvents;
+            ZeroMemory(&actualStateFromBufferedEvents, sizeof(actualStateFromBufferedEvents));
+
+            for (unsigned int j = 0; j < controller.GetEventBufferCount(); ++j)
+                ApplyUpdateToControllerState(controller.GetEventBufferEvent(j).data, actualStateFromBufferedEvents);
+
+            TEST_ASSERT(actualStateFromSnapshot == kExpectedControllerStates[i - 1]);
+            TEST_ASSERT(actualStateFromBufferedEvents == kExpectedControllerStates[i - 1]);
+        }
+    }
+
+    // Applies some actual state updates to the virtual controller and verifies that events are correctly generated, with certain controller elements filtered out.
+    // Similar to above, but the expected states are different because of the event filters.
+    TEST_CASE(VirtualController_EventBuffer_UpdatesWithFilter)
+    {
+        constexpr VirtualController::TControllerIdentifier kControllerIndex = 0;
+        constexpr uint32_t kEventBufferCapacity = 64;
+
+        constexpr XINPUT_STATE kXInputStates[] = {
+            {.dwPacketNumber = 1, .Gamepad = {.wButtons = XINPUT_GAMEPAD_A, .sThumbLX = 1111, .sThumbLY = 2222}},
+            {.dwPacketNumber = 2, .Gamepad = {.wButtons = XINPUT_GAMEPAD_A, .sThumbLX = 3333, .sThumbLY = 4444}},
+            {.dwPacketNumber = 3, .Gamepad = {.wButtons = XINPUT_GAMEPAD_A | XINPUT_GAMEPAD_Y | XINPUT_GAMEPAD_DPAD_UP, .sThumbLX = -5555, .sThumbLY = -6666}},
+            {.dwPacketNumber = 4, .Gamepad = {.wButtons = XINPUT_GAMEPAD_DPAD_LEFT}}
+        };
+
+        // Values come from the mapper at the top of this file.
+        // Because the axes are filtered out using an event filter, their values are expected to be 0 irrespective of the values retrieved from XInput.
+        constexpr Controller::SState kExpectedControllerStates[] = {
+            {.button = 0b0001},
+            {.button = 0b0001},
+            {.button = 0b1001, .povDirection = {.components = {true, false, false, false}}},
+            {.button = 0b0000, .povDirection = {.components = {false, false, true, false}}}
+        };
+
+        static_assert(_countof(kXInputStates) == _countof(kExpectedControllerStates), L"Mismatch between number of XInput states and number of controller states.");
+
+        // Each iteration of the loop adds one more event to the test.
+        // First iteration tests only a single state change, second iteration tests two state changes, and so on.
+        for (unsigned int i = 1; i <= _countof(kXInputStates); ++i)
+        {
+            std::unique_ptr<MockXInput> mockXInput = std::make_unique<MockXInput>(kControllerIndex);
+            for (unsigned int j = 0; j < i; ++j)
+                mockXInput->ExpectCallGetState({ .returnCode = ERROR_SUCCESS, .maybeOutputObject = kXInputStates[j] });
+
+            VirtualController controller(kControllerIndex, kTestMapper, std::move(mockXInput));
+            controller.SetEventBufferCapacity(kEventBufferCapacity);
+            controller.EventFilterRemoveElement({.type = EElementType::Axis, .axis = EAxis::X});
+            controller.EventFilterRemoveElement({.type = EElementType::Axis, .axis = EAxis::Y});
+
+            uint32_t lastEventCount = controller.GetEventBufferCount();
+            TEST_ASSERT(0 == lastEventCount);
+            for (unsigned int j = 0; j < i; ++j)
+            {
+                controller.RefreshState();
+
+                TEST_ASSERT(controller.GetEventBufferCount() >= lastEventCount);
+                lastEventCount = controller.GetEventBufferCount();
+            }
+
+            Controller::SState actualStateFromBufferedEvents;
+            ZeroMemory(&actualStateFromBufferedEvents, sizeof(actualStateFromBufferedEvents));
+
+            for (unsigned int j = 0; j < controller.GetEventBufferCount(); ++j)
+                ApplyUpdateToControllerState(controller.GetEventBufferEvent(j).data, actualStateFromBufferedEvents);
+
+            TEST_ASSERT(actualStateFromBufferedEvents == kExpectedControllerStates[i - 1]);
+        }
     }
 }

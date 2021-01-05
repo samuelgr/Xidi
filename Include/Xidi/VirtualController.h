@@ -42,8 +42,8 @@ namespace Xidi
         /// Maximum allowed value for an axis deadzone property, per DirectInput documentation.
         static constexpr uint32_t kAxisDeadzoneMax = 10000;
 
-        /// Default value for an axis deadzone property.
-        static constexpr uint32_t kAxisDeadzoneDefault = 1000;
+        /// Default value for an axis deadzone property. No deadzone region is defined by default.
+        static constexpr uint32_t kAxisDeadzoneDefault = kAxisDeadzoneMin;
 
         /// Minimum allowed value for an axis saturation property, per DirectInput documentation.
         static constexpr uint32_t kAxisSaturationMin = 0;
@@ -51,8 +51,8 @@ namespace Xidi
         /// Maximum allowed value for an axis saturation property, per DirectInput documentation.
         static constexpr uint32_t kAxisSaturationMax = 10000;
 
-        /// Default value for an axis saturation property.
-        static constexpr uint32_t kAxisSaturationDefault = 10000;
+        /// Default value for an axis saturation property. No saturation region is defined by default.
+        static constexpr uint32_t kAxisSaturationDefault = kAxisSaturationMax;
 
 
         // -------- TYPE DEFINITIONS --------------------------------------- //
@@ -105,6 +105,16 @@ namespace Xidi
 
 
         public:
+            // -------- CONSTRUCTION AND DESTRUCTION ----------------------- //
+
+            /// Default constructor.
+            /// Adds all controller elements to the filter.
+            inline EventFilter(void) : filter(ULLONG_MAX)
+            {
+                // Nothing to do here.
+            }
+
+
             // -------- INSTANCE METHODS ----------------------------------- //
 
             /// Adds the specified virtual controller element to the filter so that events are generated for it.
@@ -136,7 +146,7 @@ namespace Xidi
             }
 
             /// Removes all virtual controller elements from the filter, resulting in no events being generated whatsoever.
-            inline void Reset(void)
+            inline void RemoveAll(void)
             {
                 filter.reset();
             }
@@ -259,6 +269,7 @@ namespace Xidi
         Controller::StateChangeEventBuffer eventBuffer;
 
         /// Filter to be used for deciding which controller elements are allowed to generate buffered events.
+        /// Default state is all controller elements are included in the filter.
         EventFilter eventFilter;
         
         /// Mapper to use for filling a virtual controller state object based on an XInput controller state.
@@ -324,10 +335,10 @@ namespace Xidi
             eventFilter.Remove(element);
         }
 
-        /// Resets this virtual controller's event filter to its default state of containing no virtual controller elements.
-        inline void EventFilterReset(void)
+        /// Removes all virtual controller elements from this virtual controller's event filter, resulting in no events being generated whatsoever.
+        inline void EventFilterRemoveAllElements(void)
         {
-            eventFilter.Reset();
+            eventFilter.RemoveAll();
         }
         
         /// Retrieves and returns the capabilities of this virtual controller.
