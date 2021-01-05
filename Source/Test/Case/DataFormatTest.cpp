@@ -233,10 +233,10 @@ namespace XidiTest
         for (const auto& povTestData : kPovTestData)
         {
             Controller::SState controllerState;
-            controllerState.povDirection[(int)Controller::EPovDirection::Up] = povTestData.povUp;
-            controllerState.povDirection[(int)Controller::EPovDirection::Down] = povTestData.povDown;
-            controllerState.povDirection[(int)Controller::EPovDirection::Left] = povTestData.povLeft;
-            controllerState.povDirection[(int)Controller::EPovDirection::Right] = povTestData.povRight;
+            controllerState.povDirection.components[(int)Controller::EPovDirection::Up] = povTestData.povUp;
+            controllerState.povDirection.components[(int)Controller::EPovDirection::Down] = povTestData.povDown;
+            controllerState.povDirection.components[(int)Controller::EPovDirection::Left] = povTestData.povLeft;
+            controllerState.povDirection.components[(int)Controller::EPovDirection::Right] = povTestData.povRight;
 
             const EPovValue kExpectedPovValue = povTestData.expectedPovValue;
             const EPovValue kActualPovValue = DataFormat::PovDirectionFromControllerState(controllerState);
@@ -272,7 +272,7 @@ namespace XidiTest
         constexpr Controller::SState kTestControllerState = {
             .axis = {1111, 2222, 3333, 4444, 5555, 6666},
             .button = 0b1100110011001100,
-            .povDirection = {true, false, false, true}
+            .povDirection = {.components = {true, false, false, true}}
         };
 
         DIOBJECTDATAFORMAT testObjectFormatSpec[] = {

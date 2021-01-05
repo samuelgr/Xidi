@@ -18,7 +18,6 @@
 
 #include <cstdint>
 #include <memory>
-#include <mutex>
 
 
 namespace Xidi
@@ -43,6 +42,51 @@ namespace Xidi
         return newRangeOrigin + (int32_t)((oldRangeValueDisp * newRangeMagnitudeMax) / oldRangeMagnitudeMax);
     }
 
+    /// Looks for differences between two virtual controller state objects and submits them as events to the specified event buffer.
+    /// Events are only submitted if the associated virtual controller element is included in the event filter.
+    /// @param [in] oldState Old controller state, the baseline.
+    /// @param [in] newState New controller state, which is compared with the old controller state. If different, controller element values submitted to the event buffer come from this object.
+    /// @param [in] eventFilter Filter which specifies which virtual controller elements are allowed to generate events.
+    /// @param [in,out] eventBuffer Event buffer object to which events are submitted.
+    static inline void SubmitStateChangeEvents(const Controller::SState& oldState, const Controller::SState& newState, const VirtualController::EventFilter& eventFilter, Controller::StateChangeEventBuffer& eventBuffer)
+    {
+        if (true == eventBuffer.IsEnabled())
+        {
+            // DirectInput event buffer timestamps are allowed to overflow every ~50 days.
+            const uint32_t kTimestamp = GetTickCount();
+            
+            for (unsigned int i = 0; i < _countof(oldState.axis); ++i)
+            {
+                if (oldState.axis[i] != newState.axis[i])
+                {
+                    const Controller::SElementIdentifier kAxisElement = {.type = Controller::EElementType::Axis, .axis = (Controller::EAxis)i};
+
+                    if (eventFilter.Contains(kAxisElement))
+                        eventBuffer.AppendEvent({.element = kAxisElement, .value = {.axis = newState.axis[i]}}, kTimestamp);
+                }
+            }
+
+            for (unsigned int i = 0; i < oldState.button.size(); ++i)
+            {
+                if (oldState.button[i] != newState.button[i])
+                {
+                    const Controller::SElementIdentifier kButtonElement = {.type = Controller::EElementType::Button, .button = (Controller::EButton)i};
+
+                    if (eventFilter.Contains(kButtonElement))
+                        eventBuffer.AppendEvent({.element = kButtonElement, .value = {.button = newState.button[i]}}, kTimestamp);
+                }
+            }
+
+            if (oldState.povDirection.all != newState.povDirection.all)
+            {
+                const Controller::SElementIdentifier kPovElement = {.type = Controller::EElementType::Pov};
+
+                if (eventFilter.Contains(kPovElement))
+                    eventBuffer.AppendEvent({.element = kPovElement, .value = {.povDirection = {.all = newState.povDirection.all}}}, kTimestamp);
+            }
+        }
+    }
+    
     /// Transforms a raw axis value using the supplied axis properties.
     /// @param [in] axisValueRaw Raw axis value as obtained from a mapper.
     /// @param [in] axisProperties Axis properties to apply.
@@ -88,7 +132,7 @@ namespace Xidi
 
     void VirtualController::GetState(Controller::SState* controllerState)
     {
-        std::scoped_lock lock(controllerMutex);
+        auto lock = Lock();
 
         if (true == stateRefreshNeeded)
             RefreshState();
@@ -99,12 +143,20 @@ namespace Xidi
 
     // --------
 
+    void VirtualController::PopEventBufferOldestEvents(uint32_t numEventsToPop)
+    {
+        auto lock = Lock();
+        eventBuffer.PopOldestEvents(numEventsToPop);
+    }
+
+    // --------
+
     bool VirtualController::RefreshState(void)
     {
         XINPUT_STATE xinputState;
         SStateIdentifier newStateIdentifier = {.packetNumber = 0, .errorCode = xinput->GetState(kControllerIdentifier, &xinputState)};
 
-        std::scoped_lock lock(controllerMutex);
+        auto lock = Lock();
         stateRefreshNeeded = false;
 
         // Most of the logic in this block is for debugging by outputting messages. The actual functionality is very simple.
@@ -147,8 +199,9 @@ namespace Xidi
         // Regardless of packet number, if an error condition is persisting then there is also no change.
         if ((newStateIdentifier.packetNumber == stateIdentifier.packetNumber) && (ERROR_SUCCESS == newStateIdentifier.errorCode) && (ERROR_SUCCESS == stateIdentifier.errorCode))
             return false;
-        if ((ERROR_SUCCESS != newStateIdentifier.errorCode) && (ERROR_SUCCESS != stateIdentifier.errorCode))
+        else if ((ERROR_SUCCESS != newStateIdentifier.errorCode) && (ERROR_SUCCESS != stateIdentifier.errorCode))
             return false;
+
         stateIdentifier = newStateIdentifier;
         
         Controller::SState newState;
@@ -159,8 +212,9 @@ namespace Xidi
         // For example, deadzone might result in filtering out changes in analog stick position, or if a particular XInput controller element is ignored by the mapper then a change in that element does not influence the virtual controller state.
         if (newState == state)
             return false;
-        state = newState;
 
+        SubmitStateChangeEvents(state, newState, eventFilter, eventBuffer);
+        state = newState;
         return true;
     }
 
@@ -170,7 +224,7 @@ namespace Xidi
     {
         if ((deadzone >= kAxisDeadzoneMin) && (deadzone <= kAxisDeadzoneMax))
         {
-            std::scoped_lock lock(controllerMutex);
+            auto lock = Lock();
             properties.axis[(int)axis].SetDeadzone(deadzone);
             return true;
         }
@@ -184,7 +238,7 @@ namespace Xidi
     {
         if (rangeMax > rangeMin)
         {
-            std::scoped_lock lock(controllerMutex);
+            auto lock = Lock();
             properties.axis[(int)axis].SetRange(rangeMin, rangeMax);
             return true;
         }
@@ -198,7 +252,7 @@ namespace Xidi
     {
         if ((saturation >= kAxisSaturationMin) && (saturation <= kAxisSaturationMax))
         {
-            std::scoped_lock lock(controllerMutex);
+            auto lock = Lock();
             properties.axis[(int)axis].SetSaturation(saturation);
             return true;
         }
@@ -212,7 +266,7 @@ namespace Xidi
     {
         if ((deadzone >= kAxisDeadzoneMin) && (deadzone <= kAxisDeadzoneMax))
         {
-            std::scoped_lock lock(controllerMutex);
+            auto lock = Lock();
             for (int i = 0; i < _countof(properties.axis); ++i)
                 properties.axis[(int)i].SetDeadzone(deadzone);
             return true;
@@ -227,7 +281,7 @@ namespace Xidi
     {
         if (rangeMax > rangeMin)
         {
-            std::scoped_lock lock(controllerMutex);
+            auto lock = Lock();
             for (int i = 0; i < _countof(properties.axis); ++i)
                 properties.axis[(int)i].SetRange(rangeMin, rangeMax);
             return true;
@@ -242,12 +296,25 @@ namespace Xidi
     {
         if ((saturation >= kAxisSaturationMin) && (saturation <= kAxisSaturationMax))
         {
-            std::scoped_lock lock(controllerMutex);
+            auto lock = Lock();
             for (int i = 0; i < _countof(properties.axis); ++i)
                 properties.axis[(int)i].SetSaturation(saturation);
             return true;
         }
 
         return false;
+    }
+
+    // --------
+
+    bool VirtualController::SetEventBufferCapacity(uint32_t capacity)
+    {
+        if (capacity != eventBuffer.GetCapacity())
+        {
+            auto lock = Lock();
+            eventBuffer.SetCapacity(capacity);
+        }
+
+        return true;
     }
 }

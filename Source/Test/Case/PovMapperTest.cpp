@@ -55,8 +55,8 @@ namespace XidiTest
 
             SState possibleExpectedStates[2];
             ZeroMemory(possibleExpectedStates, sizeof(possibleExpectedStates));
-            possibleExpectedStates[0].povDirection[(int)kTargetPov] = kExpectedPovSequence[currentSequenceIndex];
-            possibleExpectedStates[1].povDirection[(int)kTargetPov] = kExpectedPovSequence[currentSequenceIndex + 1];
+            possibleExpectedStates[0].povDirection.components[(int)kTargetPov] = kExpectedPovSequence[currentSequenceIndex];
+            possibleExpectedStates[1].povDirection.components[(int)kTargetPov] = kExpectedPovSequence[currentSequenceIndex + 1];
 
             SState actualState;
             ZeroMemory(&actualState, sizeof(actualState));
@@ -73,7 +73,7 @@ namespace XidiTest
             }
             else
             {
-                TEST_FAILED_BECAUSE(L"Out-of-sequence value %d produced by a POV mapper with analog input %d.", (int)actualState.povDirection[(int)kTargetPov], analogValue);
+                TEST_FAILED_BECAUSE(L"Out-of-sequence value %d produced by a POV mapper with analog input %d.", (int)actualState.povDirection.components[(int)kTargetPov], analogValue);
             }
         }
 
@@ -99,7 +99,7 @@ namespace XidiTest
 
         SState expectedState;
         ZeroMemory(&expectedState, sizeof(expectedState));
-        expectedState.povDirection[(int)kTargetPov] = false;
+        expectedState.povDirection.components[(int)kTargetPov] = false;
 
         SState actualState;
         ZeroMemory(&actualState, sizeof(actualState));
@@ -126,7 +126,7 @@ namespace XidiTest
 
         SState expectedState;
         ZeroMemory(&expectedState, sizeof(expectedState));
-        expectedState.povDirection[(int)kTargetPov] = true;
+        expectedState.povDirection.components[(int)kTargetPov] = true;
 
         SState actualState;
         ZeroMemory(&actualState, sizeof(actualState));
@@ -156,7 +156,7 @@ namespace XidiTest
 
         SState expectedState;
         ZeroMemory(&expectedState, sizeof(expectedState));
-        expectedState.povDirection[(int)kTargetPov] = true;
+        expectedState.povDirection.components[(int)kTargetPov] = true;
 
         SState actualState;
         ZeroMemory(&actualState, sizeof(actualState));
@@ -180,7 +180,7 @@ namespace XidiTest
 
             SState expectedState;
             ZeroMemory(&expectedState, sizeof(expectedState));
-            expectedState.povDirection[(int)kTargetPov] = buttonIsPressed;
+            expectedState.povDirection.components[(int)kTargetPov] = buttonIsPressed;
 
             SState actualState;
             ZeroMemory(&actualState, sizeof(actualState));
@@ -209,7 +209,7 @@ namespace XidiTest
 
             SState expectedState;
             ZeroMemory(&expectedState, sizeof(expectedState));
-            expectedState.povDirection[(int)kTargetPov] = buttonIsPressed;
+            expectedState.povDirection.components[(int)kTargetPov] = buttonIsPressed;
 
             SState actualState;
             ZeroMemory(&actualState, sizeof(actualState));
@@ -239,7 +239,7 @@ namespace XidiTest
 
         SState expectedState;
         ZeroMemory(&expectedState, sizeof(expectedState));
-        expectedState.povDirection[(int)kTargetPov] = true;
+        expectedState.povDirection.components[(int)kTargetPov] = true;
 
         SState actualState;
         ZeroMemory(&actualState, sizeof(actualState));
@@ -269,8 +269,8 @@ namespace XidiTest
 
             SState possibleExpectedStates[2];
             ZeroMemory(possibleExpectedStates, sizeof(possibleExpectedStates));
-            possibleExpectedStates[0].povDirection[(int)kTargetPov] = kExpectedPovSequence[currentSequenceIndex];
-            possibleExpectedStates[1].povDirection[(int)kTargetPov] = kExpectedPovSequence[currentSequenceIndex + 1];
+            possibleExpectedStates[0].povDirection.components[(int)kTargetPov] = kExpectedPovSequence[currentSequenceIndex];
+            possibleExpectedStates[1].povDirection.components[(int)kTargetPov] = kExpectedPovSequence[currentSequenceIndex + 1];
 
             SState actualState;
             ZeroMemory(&actualState, sizeof(actualState));
@@ -287,7 +287,7 @@ namespace XidiTest
             }
             else
             {
-                TEST_FAILED_BECAUSE(L"Out-of-sequence value %d produced by a POV mapper with trigger input %d.", (int)actualState.povDirection[(int)kTargetPov], triggerValue);
+                TEST_FAILED_BECAUSE(L"Out-of-sequence value %d produced by a POV mapper with trigger input %d.", (int)actualState.povDirection.components[(int)kTargetPov], triggerValue);
             }
         }
 
@@ -313,7 +313,7 @@ namespace XidiTest
 
         SState expectedState;
         ZeroMemory(&expectedState, sizeof(expectedState));
-        expectedState.povDirection[(int)kTargetPov] = false;
+        expectedState.povDirection.components[(int)kTargetPov] = false;
 
         SState actualState;
         ZeroMemory(&actualState, sizeof(actualState));
@@ -339,7 +339,7 @@ namespace XidiTest
 
         SState expectedState;
         ZeroMemory(&expectedState, sizeof(expectedState));
-        expectedState.povDirection[(int)kTargetPov] = true;
+        expectedState.povDirection.components[(int)kTargetPov] = true;
 
         SState actualState;
         ZeroMemory(&actualState, sizeof(actualState));
@@ -368,7 +368,7 @@ namespace XidiTest
 
         SState expectedState;
         ZeroMemory(&expectedState, sizeof(expectedState));
-        expectedState.povDirection[(int)kTargetPov] = true;
+        expectedState.povDirection.components[(int)kTargetPov] = true;
 
         SState actualState;
         ZeroMemory(&actualState, sizeof(actualState));

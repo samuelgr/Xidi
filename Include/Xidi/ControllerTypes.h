@@ -189,6 +189,14 @@ namespace Xidi
         static_assert((uint8_t)EAxis::Count <= 0b111, L"Number of axes does not fit into 3 bits.");
         static_assert((uint8_t)EButton::Count <= 0b11111, L"Number of buttons does not fit into 5 bits.");
 
+        /// Holds POV direction, which is presented both as an array of separate components and as a single aggregated integer view.
+        union UPovDirection
+        {
+            bool components[(int)EPovDirection::Count];                     ///< Pressed (`true`) or unpressed (`false`) state for each POV direction separately, one element per button. Bitset versus boolean produces no size difference, given the number of POV directions.
+            uint32_t all;                                                   ///< Aggregate state of all POV directions, available as a single quantity for easy comparison and assignment.
+        };
+        static_assert(sizeof(UPovDirection::components) == sizeof(UPovDirection::all), L"Mismatch in POV view sizes.");
+        
         /// Native data format for virtual controllers, used internally to represent controller state.
         /// Instances of `XINPUT_GAMEPAD` are passed through a mapper to produce objects of this type.
         /// Validity or invalidity of each element depends on the mapper.
@@ -196,7 +204,7 @@ namespace Xidi
         {
             int32_t axis[(int)EAxis::Count];                                ///< Values for all axes, one element per axis.
             std::bitset<(int)EButton::Count> button;                        ///< Pressed (`true`) or unpressed (`false`) state for each button, one bit per button. Bitset is used as a size optimization, given the number of buttons.
-            bool povDirection[(int)EPovDirection::Count];                   ///< Pressed (`true`) or unpressed (`false`) state for each POV direction separately, one element per button. Bitset versus boolean produces no size difference, given the number of POV directions.
+            UPovDirection povDirection;                                     ///< POV direction, presented simultaneously as individual components and as an aggregate quantity.
 
             /// Simple check for equality by low-level memory comparison.
             /// Primarily useful during testing.

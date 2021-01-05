@@ -17,7 +17,6 @@
 #include <atomic>
 #include <boost/circular_buffer.hpp>
 #include <cstdint>
-#include <optional>
 
 
 namespace Xidi
@@ -57,18 +56,15 @@ namespace Xidi
         // -------- INSTANCE METHODS ----------------------------------- //
         // See "StateChangeEventBuffer.h" for documentation.
 
-        void StateChangeEventBuffer::AppendEvent(const SEventData& eventData, std::optional<uint32_t> maybeTimestamp)
+        void StateChangeEventBuffer::AppendEvent(const SEventData& eventData, uint32_t timestamp)
         {
             // Sequence number is globally ordered with respect to all controller events, even those from other event buffers.
             static std::atomic<uint32_t> nextSequence = 0;
 
-            const uint32_t timestamp = ((true == maybeTimestamp.has_value()) ? maybeTimestamp.value() : GetTimestamp());
-            const uint32_t sequence = nextSequence++;
-
             eventBuffer.push_back({
                 .data = eventData,
                 .timestamp = timestamp,
-                .sequence = sequence
+                .sequence = nextSequence++
             });
 
             eventBufferOverflowed = HandlePossibleOverflow(eventBuffer);

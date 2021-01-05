@@ -580,8 +580,8 @@ namespace Xidi
             {EPovValue::SW, EPovValue::S,       EPovValue::SE}
         };
 
-        const int xCoord = ((true == controllerState.povDirection[(int)Controller::EPovDirection::Right]) ? 1 : 0) - ((true == controllerState.povDirection[(int)Controller::EPovDirection::Left]) ? 1 : 0);
-        const int yCoord = ((true == controllerState.povDirection[(int)Controller::EPovDirection::Down]) ? 1 : 0) - ((true == controllerState.povDirection[(int)Controller::EPovDirection::Up]) ? 1 : 0);
+        const int xCoord = ((true == controllerState.povDirection.components[(int)Controller::EPovDirection::Right]) ? 1 : 0) - ((true == controllerState.povDirection.components[(int)Controller::EPovDirection::Left]) ? 1 : 0);
+        const int yCoord = ((true == controllerState.povDirection.components[(int)Controller::EPovDirection::Down]) ? 1 : 0) - ((true == controllerState.povDirection.components[(int)Controller::EPovDirection::Up]) ? 1 : 0);
 
         return kPovDirectionValues[1 + yCoord][1 + xCoord];
     }

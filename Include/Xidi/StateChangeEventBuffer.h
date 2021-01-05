@@ -16,7 +16,6 @@
 
 #include <boost/circular_buffer.hpp>
 #include <cstdint>
-#include <optional>
 
 
 namespace Xidi
@@ -40,7 +39,7 @@ namespace Xidi
                 {
                     int32_t axis;                                           ///< Updated axis value, if the controller element type is an axis.
                     bool button;                                            ///< Updated button state, if the controller element type is a button.
-                    bool povDirection[(int)EPovDirection::Count];           ///< Updated POV direction state, if the controller element type is a POV.
+                    UPovDirection povDirection;                             ///< Updated POV direction state, if the controller element type is a POV.
                 } value;
 
                 /// Simple check for equality by low-level memory comparison.
@@ -112,8 +111,8 @@ namespace Xidi
 
             /// Appends a single event to the event buffer, given its data.
             /// @param [in] eventData Event data to append.
-            /// @param [in] timestamp Timestamp to apply to the appended event, automatically determined if absent.
-            void AppendEvent(const SEventData& eventData, std::optional<uint32_t> maybeTimestamp = std::nullopt);
+            /// @param [in] timestamp Timestamp to apply to the appended event.
+            void AppendEvent(const SEventData& eventData, uint32_t timestamp);
 
            /// Retrieves and returns the capacity of this event buffer.
             /// @return Event buffer capacity.

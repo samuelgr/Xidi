@@ -232,21 +232,21 @@ namespace Xidi
 
         void PovMapper::ContributeFromAnalogValue(SState* controllerState, int16_t analogValue) const
         {
-            controllerState->povDirection[(int)povDirection] = (controllerState->povDirection[(int)povDirection] || IsAnalogPressed(analogValue));
+            controllerState->povDirection.components[(int)povDirection] = (controllerState->povDirection.components[(int)povDirection] || IsAnalogPressed(analogValue));
         }
 
         // --------
 
         void PovMapper::ContributeFromButtonValue(SState* controllerState, bool buttonPressed) const
         {
-            controllerState->povDirection[(int)povDirection] = (controllerState->povDirection[(int)povDirection] || buttonPressed);
+            controllerState->povDirection.components[(int)povDirection] = (controllerState->povDirection.components[(int)povDirection] || buttonPressed);
         }
 
         // --------
 
         void PovMapper::ContributeFromTriggerValue(SState* controllerState, uint8_t triggerValue) const
         {
-            controllerState->povDirection[(int)povDirection] = (controllerState->povDirection[(int)povDirection] || IsTriggerPressed(triggerValue));
+            controllerState->povDirection.components[(int)povDirection] = (controllerState->povDirection.components[(int)povDirection] || IsTriggerPressed(triggerValue));
         }
 
         // --------
