@@ -630,7 +630,7 @@ namespace XidiTest
     // This test verifies correct saturation in the positive direction.
     TEST_CASE(ControllerMapper_State_AnalogSaturationPositive)
     {
-        constexpr int32_t kInvertedInputValue = -kAnalogValueMax;
+        constexpr int32_t kInvertedInputValue = kAnalogValueMin;
         constexpr int32_t kNonInvertedInputValue = kAnalogValueMax;
         constexpr int32_t kExpectedOutputValue = kAnalogValueMax;
         
@@ -659,7 +659,7 @@ namespace XidiTest
     // This test verifies correct saturation in the negative direction.
     TEST_CASE(ControllerMapper_State_AnalogSaturationNegative)
     {
-        constexpr int32_t kInvertedInputValue = -kAnalogValueMin;
+        constexpr int32_t kInvertedInputValue = kAnalogValueMax;
         constexpr int32_t kNonInvertedInputValue = kAnalogValueMin;
         constexpr int32_t kExpectedOutputValue = kAnalogValueMin;
         
@@ -680,6 +680,39 @@ namespace XidiTest
             .sThumbLY = kInvertedInputValue,
             .sThumbRX = kNonInvertedInputValue,
             .sThumbRY = kInvertedInputValue
+        });
+        TEST_ASSERT(actualState == expectedState);
+    }
+
+    // Incoming controller data uses a range slightly different from virtual controller range.
+    // Furthermore, the vertical axes on analog sticks use opposite polarity from what virtual controllers expect and present.
+    // Mappers are expected to ensure values are correctly filtered and inverted to compensate.
+    TEST_CASE(ControllerMapper_State_AnalogFilterAndInvert)
+    {
+        constexpr int32_t kExtremeNegativeInputValue = (int32_t)INT16_MIN;
+        constexpr int32_t kNonInvertedExpectedOutputValue = kAnalogValueMin;
+        constexpr int32_t kInvertedExpectedOutputValue = kAnalogValueMax;
+
+        SState expectedState;
+        ZeroMemory(&expectedState, sizeof(expectedState));
+        expectedState.axis[(int)EAxis::X] = kNonInvertedExpectedOutputValue;
+        expectedState.axis[(int)EAxis::Y] = kInvertedExpectedOutputValue;
+        expectedState.axis[(int)EAxis::RotX] = kNonInvertedExpectedOutputValue;
+        expectedState.axis[(int)EAxis::RotY] = kInvertedExpectedOutputValue;
+
+        const Mapper mapper({
+            .stickLeftX = std::make_unique<AxisMapper>(EAxis::X),
+            .stickLeftY = std::make_unique<AxisMapper>(EAxis::Y),
+            .stickRightX = std::make_unique<AxisMapper>(EAxis::RotX),
+            .stickRightY = std::make_unique<AxisMapper>(EAxis::RotY)
+        });
+
+        SState actualState;
+        mapper.MapXInputState(&actualState, {
+            .sThumbLX = kExtremeNegativeInputValue,
+            .sThumbLY = kExtremeNegativeInputValue,
+            .sThumbRX = kExtremeNegativeInputValue,
+            .sThumbRY = kExtremeNegativeInputValue
         });
         TEST_ASSERT(actualState == expectedState);
     }
