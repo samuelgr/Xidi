@@ -184,6 +184,7 @@
     <ClInclude Include="Include\Xidi\Test\TestCase.h" />
     <ClInclude Include="Include\Xidi\Test\Utilities.h" />
     <ClInclude Include="Include\Xidi\VirtualController.h" />
+    <ClInclude Include="Include\Xidi\VirtualDirectInputDevice.h" />
     <ClInclude Include="Include\Xidi\XidiConfigReader.h" />
     <ClInclude Include="Include\Xidi\XInputInterface.h" />
     <ClInclude Include="Resources\Xidi.h" />
@@ -212,6 +213,7 @@
     <ClCompile Include="Source\Test\TestCase.cpp" />
     <ClCompile Include="Source\Test\Utilities.cpp" />
     <ClCompile Include="Source\VirtualController.cpp" />
+    <ClCompile Include="Source\VirtualDirectInputDevice.cpp" />
     <ClCompile Include="Source\XidiConfigReader.cpp" />
   </ItemGroup>
   <ItemGroup>

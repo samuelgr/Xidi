@@ -117,12 +117,33 @@ namespace Xidi
 
             // -------- CLASS METHODS -------------------------------------- //
 
+            /// Dumps information about all registered mappers.
+            static void DumpRegisteredMappers(void);
+
             /// Retrieves and returns a pointer to the mapper object whose type is specified.
             /// Mapper objects are created and managed internally, so this operation does not dynamically allocate or deallocate memory, nor should the caller attempt to free the returned pointer.
-            /// If the default empty string value is used, then the mapper type that is retrieved is of default type.
             /// @param [in] mapperName Name of the desired mapper type. Supported values are defined in "ControllerMapper.cpp" as mapper instances.
             /// @return Pointer to the mapper of specified type, or `nullptr` if said type is unavailable.
-            static const Mapper* GetByName(std::wstring_view mapperName = L"");
+            static const Mapper* GetByName(std::wstring_view mapperName);
+
+            /// Retrieves and returns a pointer to the mapper object whose type is read from the configuration file.
+            /// If no mapper specified there, then the default mapper type is used instead.
+            static const Mapper* GetConfigured(void);
+
+            /// Retrieves and returns a pointer to the default mapper object.
+            /// @return Pointer to the default mapper object, or `nullptr` if there is no default.
+            static inline const Mapper* GetDefault(void)
+            {
+                return GetByName(L"");
+            }
+
+            /// Checks if a mapper of the specified name is known and registered.
+            /// @param [in] mapperName Name of the mapper to check.
+            /// @return `true` if it is registered, `false` otherwise.
+            static inline bool IsMapperNameKnown(std::wstring_view mapperName)
+            {
+                return (nullptr != GetByName(mapperName));
+            }
 
 
             // -------- INSTANCE METHODS ----------------------------------- //

@@ -13,11 +13,11 @@
 #include "ApiDirectInput.h"
 #include "ApiGUID.h"
 #include "ControllerIdentification.h"
-#include "Mapper.h"
+#include "ControllerMapper.h"
 #include "Message.h"
+#include "VirtualController.h"
 #include "VirtualDirectInputDevice.h"
 #include "WrapperIDirectInput.h"
-#include "XInputController.h"
 
 #include <cstdlib>
 #include <unordered_set>
@@ -32,9 +32,9 @@ namespace Xidi
     /// @param [in] severity Desired message severity.
     /// @param [in] baseMessage Base message text, should contain a format specifier for the product name.
     /// @param [in] deviceInstance Device instance whose product name should be printed.
-    template <bool useUnicode> static void EnumDevicesOutputProductName(Message::ESeverity severity, const wchar_t* baseMessage, typename const DirectInputHelper<useUnicode>::DeviceInstanceType* deviceInstance) {}
+    template <bool useUnicode> static void EnumDevicesOutputProductName(Message::ESeverity severity, const wchar_t* baseMessage, const typename DirectInputType<useUnicode>::DeviceInstanceType* deviceInstance) {}
 
-    template <> static void EnumDevicesOutputProductName<false>(Message::ESeverity severity, const wchar_t* baseMessage, typename const DirectInputHelper<false>::DeviceInstanceType* deviceInstance)
+    template <> static void EnumDevicesOutputProductName<false>(Message::ESeverity severity, const wchar_t* baseMessage, typename const DirectInputType<false>::DeviceInstanceType* deviceInstance)
     {
         WCHAR productName[_countof(deviceInstance->tszProductName) + 1];
         ZeroMemory(productName, sizeof(productName));
@@ -42,7 +42,7 @@ namespace Xidi
         Message::OutputFormatted(severity, baseMessage, productName);
     }
 
-    template <> static void EnumDevicesOutputProductName<true>(Message::ESeverity severity, const wchar_t* baseMessage, typename const DirectInputHelper<true>::DeviceInstanceType* deviceInstance)
+    template <> static void EnumDevicesOutputProductName<true>(Message::ESeverity severity, const wchar_t* baseMessage, const typename DirectInputType<true>::DeviceInstanceType* deviceInstance)
     {
         LPCWSTR productName = deviceInstance->tszProductName;
         Message::OutputFormatted(severity, baseMessage, productName);
@@ -55,7 +55,7 @@ namespace Xidi
     template <bool useUnicode> struct SEnumDevicesCallbackInfo
     {
         WrapperIDirectInput<useUnicode>* instance;                                      ///< #WrapperIDirectInput instance that invoked the enumeration.
-        typename DirectInputHelper<useUnicode>::EnumDevicesCallbackType lpCallback;     ///< Application-specified callback that should be invoked.
+        typename DirectInputType<useUnicode>::EnumDevicesCallbackType lpCallback;     ///< Application-specified callback that should be invoked.
         LPVOID pvRef;                                                                   ///< Application-specified argument to be provided to the application-specified callback.
         BOOL callbackReturnCode;                                                        ///< Indicates if the application requested that enumeration continue or stop.
         std::unordered_set<GUID> seenInstanceIdentifiers;                               ///< Holds device identifiers seen during device enumeration.
@@ -65,7 +65,7 @@ namespace Xidi
     // -------- CONSTRUCTION AND DESTRUCTION ------------------------------- //
     // See "WrapperIDirectInput.h" for documentation.
 
-    template <bool useUnicode> WrapperIDirectInput<useUnicode>::WrapperIDirectInput(DirectInputHelper<useUnicode>::LatestIDirectInputType* underlyingDIObject) : underlyingDIObject(underlyingDIObject) {}
+    template <bool useUnicode> WrapperIDirectInput<useUnicode>::WrapperIDirectInput(DirectInputType<useUnicode>::LatestIDirectInputType* underlyingDIObject) : underlyingDIObject(underlyingDIObject) {}
 
 
     // -------- METHODS: IUnknown ------------------------------------------ //
@@ -135,7 +135,7 @@ namespace Xidi
     // -------- METHODS: IDirectInput COMMON ------------------------------- //
     // See DirectInput documentation for more information.
 
-    template <bool useUnicode> HRESULT STDMETHODCALLTYPE WrapperIDirectInput<useUnicode>::CreateDevice(REFGUID rguid, DirectInputHelper<useUnicode>::EarliestIDirectInputDeviceType** lplpDirectInputDevice, LPUNKNOWN pUnkOuter)
+    template <bool useUnicode> HRESULT STDMETHODCALLTYPE WrapperIDirectInput<useUnicode>::CreateDevice(REFGUID rguid, DirectInputType<useUnicode>::EarliestIDirectInputDeviceType** lplpDirectInputDevice, LPUNKNOWN pUnkOuter)
     {
         // Check if the specified instance GUID is an XInput GUID.
         LONG xinputIndex = ControllerIdentification::XInputControllerIndexForInstanceGUID(rguid);
@@ -149,20 +149,27 @@ namespace Xidi
         }
         else
         {
-            // Is an XInput GUID, so create a fake device that will communicate with the XInput controller of the specified index.
-            Message::OutputFormatted(Message::ESeverity::Info, L"Binding to Xidi virtual XInput device for player %u.", (xinputIndex + 1));
+            // Is an XInput GUID, so create a virtual controller wrapped with a DirectInput interface..
+            Message::OutputFormatted(Message::ESeverity::Info, L"Binding to Xidi virtual controller %u.", (xinputIndex + 1));
 
             if (nullptr != pUnkOuter)
                 Message::Output(Message::ESeverity::Warning, L"Application requested COM aggregation, which is not implemented, while binding to a Xidi virtual device.");
 
-            *lplpDirectInputDevice = new VirtualDirectInputDevice<useUnicode>(new XInputController(xinputIndex), Mapper::Create());
+            const Controller::Mapper* mapper = Controller::Mapper::GetConfigured();
+            if (nullptr == mapper)
+            {
+                Message::Output(Message::ESeverity::Error, L"Failed to create a Xidi virtual controller because no mapper could be located.");
+                return DIERR_NOINTERFACE;
+            }
+            
+            *lplpDirectInputDevice = new VirtualDirectInputDevice<useUnicode>(std::make_unique<VirtualController>(xinputIndex, *mapper));
             return DI_OK;
         }
     }
 
     // ---------
 
-    template <bool useUnicode> HRESULT STDMETHODCALLTYPE WrapperIDirectInput<useUnicode>::EnumDevices(DWORD dwDevType, DirectInputHelper<useUnicode>::EnumDevicesCallbackType lpCallback, LPVOID pvRef, DWORD dwFlags)
+    template <bool useUnicode> HRESULT STDMETHODCALLTYPE WrapperIDirectInput<useUnicode>::EnumDevices(DWORD dwDevType, DirectInputType<useUnicode>::EnumDevicesCallbackType lpCallback, LPVOID pvRef, DWORD dwFlags)
     {
 #if DIRECTINPUT_VERSION >= 0x0800
         const BOOL gameControllersRequested = (DI8DEVCLASS_ALL == dwDevType || DI8DEVCLASS_GAMECTRL == dwDevType);
@@ -250,7 +257,7 @@ namespace Xidi
 
     // ---------
 
-    template <bool useUnicode> HRESULT STDMETHODCALLTYPE WrapperIDirectInput<useUnicode>::FindDevice(REFGUID rguidClass, DirectInputHelper<useUnicode>::ConstStringType ptszName, LPGUID pguidInstance)
+    template <bool useUnicode> HRESULT STDMETHODCALLTYPE WrapperIDirectInput<useUnicode>::FindDevice(REFGUID rguidClass, DirectInputType<useUnicode>::ConstStringType ptszName, LPGUID pguidInstance)
     {
         return underlyingDIObject->FindDevice(rguidClass, ptszName, pguidInstance);
     }
@@ -292,12 +299,12 @@ namespace Xidi
     // -------- CALLBACKS: IDirectInput COMMON ----------------------------- //
     // See "WrapperIDirectInput.h" for documentation.
 
-    template <bool useUnicode> BOOL STDMETHODCALLTYPE WrapperIDirectInput<useUnicode>::CallbackEnumGameControllersXInputScan(const DirectInputHelper<useUnicode>::DeviceInstanceType* lpddi, LPVOID pvRef)
+    template <bool useUnicode> BOOL STDMETHODCALLTYPE WrapperIDirectInput<useUnicode>::CallbackEnumGameControllersXInputScan(const DirectInputType<useUnicode>::DeviceInstanceType* lpddi, LPVOID pvRef)
     {
         SEnumDevicesCallbackInfo<useUnicode>* callbackInfo = (SEnumDevicesCallbackInfo<useUnicode>*)pvRef;
 
         // If the present controller supports XInput, indicate such by adding it to the set of instance identifiers of interest.
-        if (ControllerIdentification::DoesDirectInputControllerSupportXInput<DirectInputHelper<useUnicode>::EarliestIDirectInputType, DirectInputHelper<useUnicode>::EarliestIDirectInputDeviceType>(callbackInfo->instance->underlyingDIObject, lpddi->guidInstance))
+        if (ControllerIdentification::DoesDirectInputControllerSupportXInput<DirectInputType<useUnicode>::EarliestIDirectInputType, DirectInputType<useUnicode>::EarliestIDirectInputDeviceType>(callbackInfo->instance->underlyingDIObject, lpddi->guidInstance))
         {
             callbackInfo->seenInstanceIdentifiers.insert(lpddi->guidInstance);
             EnumDevicesOutputProductName<useUnicode>(Message::ESeverity::Debug, L"Enumerate: DirectInput device \"%s\" supports XInput and will not be presented to the application.", lpddi);
@@ -308,7 +315,7 @@ namespace Xidi
 
     // --------
 
-    template <bool useUnicode> BOOL STDMETHODCALLTYPE WrapperIDirectInput<useUnicode>::CallbackEnumDevicesFiltered(const DirectInputHelper<useUnicode>::DeviceInstanceType* lpddi, LPVOID pvRef)
+    template <bool useUnicode> BOOL STDMETHODCALLTYPE WrapperIDirectInput<useUnicode>::CallbackEnumDevicesFiltered(const DirectInputType<useUnicode>::DeviceInstanceType* lpddi, LPVOID pvRef)
     {
         SEnumDevicesCallbackInfo<useUnicode>* callbackInfo = (SEnumDevicesCallbackInfo<useUnicode>*)pvRef;
 
@@ -316,7 +323,7 @@ namespace Xidi
         {
             // If the device has not been seen already, add it to the set and present it to the application.
             callbackInfo->seenInstanceIdentifiers.insert(lpddi->guidInstance);
-            callbackInfo->callbackReturnCode = ((BOOL(FAR PASCAL *)(const DirectInputHelper<useUnicode>::DeviceInstanceType*,LPVOID))(callbackInfo->lpCallback))(lpddi, callbackInfo->pvRef);
+            callbackInfo->callbackReturnCode = ((BOOL(FAR PASCAL *)(const DirectInputType<useUnicode>::DeviceInstanceType*,LPVOID))(callbackInfo->lpCallback))(lpddi, callbackInfo->pvRef);
             EnumDevicesOutputProductName<useUnicode>(Message::ESeverity::Debug, L"Enumerate: DirectInput device \"%s\" is being presented to the application.", lpddi);
             return callbackInfo->callbackReturnCode;
         }
@@ -332,14 +339,14 @@ namespace Xidi
     // -------- METHODS: IDirectInput8 ONLY -------------------------------- //
     // See DirectInput documentation for more information.
 
-    template <bool useUnicode> HRESULT STDMETHODCALLTYPE WrapperIDirectInput<useUnicode>::ConfigureDevices(LPDICONFIGUREDEVICESCALLBACK lpdiCallback, DirectInputHelper<useUnicode>::ConfigureDevicesParamsType lpdiCDParams, DWORD dwFlags, LPVOID pvRefData)
+    template <bool useUnicode> HRESULT STDMETHODCALLTYPE WrapperIDirectInput<useUnicode>::ConfigureDevices(LPDICONFIGUREDEVICESCALLBACK lpdiCallback, DirectInputType<useUnicode>::ConfigureDevicesParamsType lpdiCDParams, DWORD dwFlags, LPVOID pvRefData)
     {
         return underlyingDIObject->ConfigureDevices(lpdiCallback, lpdiCDParams, dwFlags, pvRefData);
     }
 
     // ---------
 
-    template <bool useUnicode> HRESULT STDMETHODCALLTYPE WrapperIDirectInput<useUnicode>::EnumDevicesBySemantics(DirectInputHelper<useUnicode>::ConstStringType ptszUserName, DirectInputHelper<useUnicode>::ActionFormatType lpdiActionFormat, DirectInputHelper<useUnicode>::EnumDevicesBySemanticsCallbackType lpCallback, LPVOID pvRef, DWORD dwFlags)
+    template <bool useUnicode> HRESULT STDMETHODCALLTYPE WrapperIDirectInput<useUnicode>::EnumDevicesBySemantics(DirectInputType<useUnicode>::ConstStringType ptszUserName, DirectInputType<useUnicode>::ActionFormatType lpdiActionFormat, DirectInputType<useUnicode>::EnumDevicesBySemanticsCallbackType lpCallback, LPVOID pvRef, DWORD dwFlags)
     {
         // Operation not supported.
         return DIERR_UNSUPPORTED;
@@ -369,7 +376,7 @@ namespace Xidi
         }
 
         // Create a device the normal way.
-        return CreateDevice(rguid, (typename DirectInputHelper<useUnicode>::EarliestIDirectInputDeviceType**)lplpDirectInputDevice, pUnkOuter);
+        return CreateDevice(rguid, (typename DirectInputType<useUnicode>::EarliestIDirectInputDeviceType**)lplpDirectInputDevice, pUnkOuter);
 
     }
 #endif

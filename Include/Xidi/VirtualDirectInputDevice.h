@@ -6,98 +6,112 @@
  * Copyright (c) 2016-2020
  *************************************************************************//**
  * @file VirtualDirectInputDevice.h
- *   Declaration of a virtual device that supports IDirectInputDevice but
- *   communicates with an XInput-based controller.
+ *   Declaration of an IDirectInputDevice interface wrapper around virtual
+ *   controllers.
  *****************************************************************************/
 
 #pragma once
 
 #include "ApiDirectInput.h"
-#include "Mapper.h"
-#include "XInputController.h"
+#include "DataFormat.h"
+#include "VirtualController.h"
+
+#include <atomic>
+#include <memory>
+#include <optional>
 
 
 namespace Xidi
 {
     /// Helper types for differentiating between Unicode and ASCII interface versions.
-    template <bool useUnicode> struct DirectInputDeviceHelper
+    template <bool useUnicode> struct DirectInputDeviceType
     {
         typedef LPCTSTR ConstStringType;
-        typedef LPDIDEVICEINSTANCE DeviceInstanceType;
-        typedef LPDIDEVICEOBJECTINSTANCE DeviceObjectInstanceType;
-        typedef LPDIEFFECTINFO EffectInfoType;
+        typedef DIDEVICEINSTANCE DeviceInstanceType;
+        typedef DIDEVICEOBJECTINSTANCE DeviceObjectInstanceType;
+        typedef DIEFFECTINFO EffectInfoType;
         typedef LPDIENUMEFFECTSCALLBACK EnumEffectsCallbackType;
         typedef LPDIENUMDEVICEOBJECTSCALLBACK EnumObjectsCallbackType;
 #if DIRECTINPUT_VERSION >= 0x0800
-        typedef LPDIACTIONFORMAT ActionFormatType;
-        typedef LPDIDEVICEIMAGEINFOHEADER DeviceImageInfoHeaderType;
+        typedef DIACTIONFORMAT ActionFormatType;
+        typedef DIDEVICEIMAGEINFOHEADER DeviceImageInfoHeaderType;
 #endif
     };
 
-    template <> struct DirectInputDeviceHelper<false> : public LatestIDirectInputDeviceA
+    template <> struct DirectInputDeviceType<false> : public LatestIDirectInputDeviceA
     {
         typedef LPCSTR ConstStringType;
-        typedef LPDIDEVICEINSTANCEA DeviceInstanceType;
-        typedef LPDIDEVICEOBJECTINSTANCEA DeviceObjectInstanceType;
-        typedef LPDIEFFECTINFOA EffectInfoType;
+        typedef DIDEVICEINSTANCEA DeviceInstanceType;
+        typedef DIDEVICEOBJECTINSTANCEA DeviceObjectInstanceType;
+        typedef DIEFFECTINFOA EffectInfoType;
         typedef LPDIENUMEFFECTSCALLBACKA EnumEffectsCallbackType;
         typedef LPDIENUMDEVICEOBJECTSCALLBACKA EnumObjectsCallbackType;
 #if DIRECTINPUT_VERSION >= 0x0800
-        typedef LPDIACTIONFORMATA ActionFormatType;
-        typedef LPDIDEVICEIMAGEINFOHEADERA DeviceImageInfoHeaderType;
+        typedef DIACTIONFORMATA ActionFormatType;
+        typedef DIDEVICEIMAGEINFOHEADERA DeviceImageInfoHeaderType;
 #endif
     };
 
-    template <> struct DirectInputDeviceHelper<true> : public LatestIDirectInputDeviceW
+    template <> struct DirectInputDeviceType<true> : public LatestIDirectInputDeviceW
     {
         typedef LPCWSTR ConstStringType;
-        typedef LPDIDEVICEINSTANCEW DeviceInstanceType;
-        typedef LPDIDEVICEOBJECTINSTANCEW DeviceObjectInstanceType;
-        typedef LPDIEFFECTINFOW EffectInfoType;
+        typedef DIDEVICEINSTANCEW DeviceInstanceType;
+        typedef DIDEVICEOBJECTINSTANCEW DeviceObjectInstanceType;
+        typedef DIEFFECTINFOW EffectInfoType;
         typedef LPDIENUMEFFECTSCALLBACKW EnumEffectsCallbackType;
         typedef LPDIENUMDEVICEOBJECTSCALLBACKW EnumObjectsCallbackType;
 #if DIRECTINPUT_VERSION >= 0x0800
-        typedef LPDIACTIONFORMATW ActionFormatType;
-        typedef LPDIDEVICEIMAGEINFOHEADERW DeviceImageInfoHeaderType;
+        typedef DIACTIONFORMATW ActionFormatType;
+        typedef DIDEVICEIMAGEINFOHEADERW DeviceImageInfoHeaderType;
 #endif
     };
 
     /// Inherits from whatever IDirectInputDevice version is appropriate.
     /// @tparam useUnicode Specifies whether to use underlying Unicode interfaces (i.e. the "A" versions of interfaces and types).
-    template <bool useUnicode> class VirtualDirectInputDevice : public DirectInputDeviceHelper<useUnicode>
+    template <bool useUnicode> class VirtualDirectInputDevice : public DirectInputDeviceType<useUnicode>
     {
     private:
         // -------- INSTANCE VARIABLES --------------------------------------------- //
 
-        /// Controller with which to interface.
-        XInputController* controller;
+        /// Virtual controller with which to interface.
+        std::unique_ptr<VirtualController> controller;
 
-        /// Mapping scheme to be applied to the wrapped DirectInput device.
-        Mapper* mapper;
-
-        /// Specifies whether or not the device was polled since the last time its state was obtained.
-        BOOL polledSinceLastGetDeviceState;
+        /// Data format specification for communicating with the DirectInput application.
+        std::unique_ptr<DataFormat> dataFormat;
 
         /// Reference count.
-        ULONG refcount;
+        std::atomic<unsigned long> refCount;
 
+        /// State change event notification handle, optionally provided by applications.
+        /// The underlying event object is owned by the application, not by this object.
+        HANDLE stateChangeEventHandle;
 
     public:
         // -------- CONSTRUCTION AND DESTRUCTION ----------------------------------- //
 
-        /// Default constructor. Should never be invoked.
-        VirtualDirectInputDevice(void) = delete;
-
-        /// Constructs a WrapperIDirectInput object, given a mapper and a controller.
-        /// @param [in] controller XInput controller object to associate with this object.
-        /// @param [in] mapper Mapper object to associate with this object.
-        VirtualDirectInputDevice(XInputController* controller, Mapper* mapper);
-
-        /// Default destructor.
-        virtual ~VirtualDirectInputDevice(void);
+        /// Initialization constructor.
+        /// @param [in] controller Virtual controller object to associate with this object.
+        VirtualDirectInputDevice(std::unique_ptr<VirtualController>&& controller);
 
 
     public:
+        // -------- INSTANCE METHODS ----------------------------------------------- //
+
+        /// Identifies a controller element, given a DirectInput-style element identifier.
+        /// Parameters are named after common DirectInput field and method parameters that are used for this purpose.
+        /// @param [in] dwObj Object identifier, whose semantics depends on identification method. See DirectInput documentation for more information.
+        /// @param [in] dwHow Identification method. See DirectInput documentation for more information.
+        /// @return Virtual controller element identifier that matches the DirectInput-style element identifier, if such a match exists.
+        std::optional<Controller::SElementIdentifier> IdentifyElement(DWORD dwObj, DWORD dwHow) const;
+
+        /// Specifies if the application's data format is set.
+        /// @return `true` if the application's data format has been successfully set, `false` otherwise.
+        inline bool IsApplicationDataFormatSet(void) const
+        {
+            return (nullptr != dataFormat);
+        }
+
+
         // -------- METHODS: IUnknown ---------------------------------------------- //
         HRESULT STDMETHODCALLTYPE QueryInterface(REFIID riid, LPVOID* ppvObj) override;
         ULONG STDMETHODCALLTYPE AddRef(void) override;
@@ -108,17 +122,17 @@ namespace Xidi
         HRESULT STDMETHODCALLTYPE Acquire(void) override;
         HRESULT STDMETHODCALLTYPE CreateEffect(REFGUID rguid, LPCDIEFFECT lpeff, LPDIRECTINPUTEFFECT* ppdeff, LPUNKNOWN punkOuter) override;
         HRESULT STDMETHODCALLTYPE EnumCreatedEffectObjects(LPDIENUMCREATEDEFFECTOBJECTSCALLBACK lpCallback, LPVOID pvRef, DWORD fl) override;
-        HRESULT STDMETHODCALLTYPE EnumEffects(DirectInputDeviceHelper<useUnicode>::EnumEffectsCallbackType lpCallback, LPVOID pvRef, DWORD dwEffType) override;
-        HRESULT STDMETHODCALLTYPE EnumEffectsInFile(DirectInputDeviceHelper<useUnicode>::ConstStringType lptszFileName, LPDIENUMEFFECTSINFILECALLBACK pec, LPVOID pvRef, DWORD dwFlags) override;
-        HRESULT STDMETHODCALLTYPE EnumObjects(DirectInputDeviceHelper<useUnicode>::EnumObjectsCallbackType lpCallback, LPVOID pvRef, DWORD dwFlags) override;
+        HRESULT STDMETHODCALLTYPE EnumEffects(DirectInputDeviceType<useUnicode>::EnumEffectsCallbackType lpCallback, LPVOID pvRef, DWORD dwEffType) override;
+        HRESULT STDMETHODCALLTYPE EnumEffectsInFile(DirectInputDeviceType<useUnicode>::ConstStringType lptszFileName, LPDIENUMEFFECTSINFILECALLBACK pec, LPVOID pvRef, DWORD dwFlags) override;
+        HRESULT STDMETHODCALLTYPE EnumObjects(DirectInputDeviceType<useUnicode>::EnumObjectsCallbackType lpCallback, LPVOID pvRef, DWORD dwFlags) override;
         HRESULT STDMETHODCALLTYPE Escape(LPDIEFFESCAPE pesc) override;
         HRESULT STDMETHODCALLTYPE GetCapabilities(LPDIDEVCAPS lpDIDevCaps) override;
         HRESULT STDMETHODCALLTYPE GetDeviceData(DWORD cbObjectData, LPDIDEVICEOBJECTDATA rgdod, LPDWORD pdwInOut, DWORD dwFlags) override;
-        HRESULT STDMETHODCALLTYPE GetDeviceInfo(DirectInputDeviceHelper<useUnicode>::DeviceInstanceType pdidi) override;
+        HRESULT STDMETHODCALLTYPE GetDeviceInfo(DirectInputDeviceType<useUnicode>::DeviceInstanceType* pdidi) override;
         HRESULT STDMETHODCALLTYPE GetDeviceState(DWORD cbData, LPVOID lpvData) override;
-        HRESULT STDMETHODCALLTYPE GetEffectInfo(DirectInputDeviceHelper<useUnicode>::EffectInfoType pdei, REFGUID rguid) override;
+        HRESULT STDMETHODCALLTYPE GetEffectInfo(DirectInputDeviceType<useUnicode>::EffectInfoType* pdei, REFGUID rguid) override;
         HRESULT STDMETHODCALLTYPE GetForceFeedbackState(LPDWORD pdwOut) override;
-        HRESULT STDMETHODCALLTYPE GetObjectInfo(DirectInputDeviceHelper<useUnicode>::DeviceObjectInstanceType pdidoi, DWORD dwObj, DWORD dwHow) override;
+        HRESULT STDMETHODCALLTYPE GetObjectInfo(DirectInputDeviceType<useUnicode>::DeviceObjectInstanceType* pdidoi, DWORD dwObj, DWORD dwHow) override;
         HRESULT STDMETHODCALLTYPE GetProperty(REFGUID rguidProp, LPDIPROPHEADER pdiph) override;
         HRESULT STDMETHODCALLTYPE Initialize(HINSTANCE hinst, DWORD dwVersion, REFGUID rguid) override;
         HRESULT STDMETHODCALLTYPE Poll(void) override;
@@ -130,13 +144,13 @@ namespace Xidi
         HRESULT STDMETHODCALLTYPE SetEventNotification(HANDLE hEvent) override;
         HRESULT STDMETHODCALLTYPE SetProperty(REFGUID rguidProp, LPCDIPROPHEADER pdiph) override;
         HRESULT STDMETHODCALLTYPE Unacquire(void) override;
-        HRESULT STDMETHODCALLTYPE WriteEffectToFile(DirectInputDeviceHelper<useUnicode>::ConstStringType lptszFileName, DWORD dwEntries, LPDIFILEEFFECT rgDiFileEft, DWORD dwFlags) override;
+        HRESULT STDMETHODCALLTYPE WriteEffectToFile(DirectInputDeviceType<useUnicode>::ConstStringType lptszFileName, DWORD dwEntries, LPDIFILEEFFECT rgDiFileEft, DWORD dwFlags) override;
 
 #if DIRECTINPUT_VERSION >= 0x0800
         // -------- METHODS: IDirectInputDevice8 ONLY ------------------------------ //
-        HRESULT STDMETHODCALLTYPE BuildActionMap(DirectInputDeviceHelper<useUnicode>::ActionFormatType lpdiaf, DirectInputDeviceHelper<useUnicode>::ConstStringType lpszUserName, DWORD dwFlags) override;
-        HRESULT STDMETHODCALLTYPE GetImageInfo(DirectInputDeviceHelper<useUnicode>::DeviceImageInfoHeaderType lpdiDevImageInfoHeader) override;
-        HRESULT STDMETHODCALLTYPE SetActionMap(DirectInputDeviceHelper<useUnicode>::ActionFormatType lpdiActionFormat, DirectInputDeviceHelper<useUnicode>::ConstStringType lptszUserName, DWORD dwFlags) override;
+        HRESULT STDMETHODCALLTYPE BuildActionMap(DirectInputDeviceType<useUnicode>::ActionFormatType* lpdiaf, DirectInputDeviceType<useUnicode>::ConstStringType lpszUserName, DWORD dwFlags) override;
+        HRESULT STDMETHODCALLTYPE GetImageInfo(DirectInputDeviceType<useUnicode>::DeviceImageInfoHeaderType* lpdiDevImageInfoHeader) override;
+        HRESULT STDMETHODCALLTYPE SetActionMap(DirectInputDeviceType<useUnicode>::ActionFormatType* lpdiActionFormat, DirectInputDeviceType<useUnicode>::ConstStringType lptszUserName, DWORD dwFlags) override;
 #endif
     };
 }

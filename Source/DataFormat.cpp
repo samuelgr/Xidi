@@ -14,6 +14,7 @@
 #include "ControllerTypes.h"
 #include "DataFormat.h"
 #include "Message.h"
+#include "Strings.h"
 
 #include <map>
 #include <memory>
@@ -21,19 +22,6 @@
 #include <set>
 #include <vector>
 
-
-// -------- MACROS --------------------------------------------------------- //
-
-// Strings that need to be available in multiple formats.
-#define XIDI_AXIS_NAME_X                    "X Axis"
-#define XIDI_AXIS_NAME_Y                    "Y Axis"
-#define XIDI_AXIS_NAME_Z                    "Z Axis"
-#define XIDI_AXIS_NAME_RX                   "RotX Axis"
-#define XIDI_AXIS_NAME_RY                   "RotY Axis"
-#define XIDI_AXIS_NAME_RZ                   "RotZ Axis"
-#define XIDI_AXIS_NAME_UNKNOWN              "Unknown Axis"
-#define XIDI_BUTTON_NAME_FORMAT             "Button %u"
-#define XIDI_POV_NAME_FORMAT                "POV %u"
 
 // Handler for invalid or unselectable object data format specifications.
 // If the object specification marks the object as optional, it is skipped. Otherwise, the entire application data format is rejected.
@@ -255,7 +243,25 @@ namespace Xidi
 
         return L"(unrecognized axis)";
     }
-    
+
+    /// Returns a string representing the specified data format flags value.
+    /// @param [in] dwFlags Flags from the data format specification structure.
+    /// @return String representation of the flag value.
+    static const wchar_t* DataFormatFlagsString(DWORD dwFlags)
+    {
+        switch (dwFlags)
+        {
+        case 0:
+            return L"None";
+        case DIDF_ABSAXIS:
+            return L"DIDF_ABSAXIS";
+        case DIDF_RELAXIS:
+            return L"DIDF_RELAXIS";
+        }
+
+        return L"(unrecognized value)";
+    }
+
     /// Compares the specified GUID with the known list of object unique identifiers.
     /// Returns a string that represents the specified GUID.
     /// @param [in] pguid Pointer to the GUID to check.
@@ -287,7 +293,7 @@ namespace Xidi
         else if (GUID_Unknown == *pguid)
             return L"Unknown";
         else
-            return L"(unrecognized GUID)";
+            return L"(unrecognized)";
     }
     
     /// Dumps a data format specification. Intended as a debugging aid.
@@ -302,9 +308,9 @@ namespace Xidi
 
             // First, dump the top-level structure members along with some preliminary validity checks.
             Message::Output(kDumpSeverity, L"  Metadata:");
-            Message::OutputFormatted(kDumpSeverity, L"    dwSize = %u (%s; expected %u)", appFormatSpec.dwSize, (sizeof(DIDATAFORMAT) == appFormatSpec.dwSize ? L"OK" : L"INCORRECT"), sizeof(DIDATAFORMAT));
-            Message::OutputFormatted(kDumpSeverity, L"    dwObjSize = %u (%s; expected %u)", appFormatSpec.dwObjSize, (sizeof(DIOBJECTDATAFORMAT) == appFormatSpec.dwObjSize ? L"OK" : L"INCORRECT"), sizeof(DIOBJECTDATAFORMAT));
-            Message::OutputFormatted(kDumpSeverity, L"    dwFlags = 0x%x (%s)", appFormatSpec.dwFlags, (DIDF_ABSAXIS == appFormatSpec.dwFlags ? L"DIDF_ABSAXIS" : (DIDF_RELAXIS == appFormatSpec.dwFlags ? L"DIDF_RELAXIS" : L"UNKNOWN VALUE")));
+            Message::OutputFormatted(kDumpSeverity, L"    dwSize = %u (%s; expected %u)", appFormatSpec.dwSize, (sizeof(DIDATAFORMAT) == appFormatSpec.dwSize ? L"OK" : L"INCORRECT"), (unsigned int)sizeof(DIDATAFORMAT));
+            Message::OutputFormatted(kDumpSeverity, L"    dwObjSize = %u (%s; expected %u)", appFormatSpec.dwObjSize, (sizeof(DIOBJECTDATAFORMAT) == appFormatSpec.dwObjSize ? L"OK" : L"INCORRECT"), (unsigned int)sizeof(DIOBJECTDATAFORMAT));
+            Message::OutputFormatted(kDumpSeverity, L"    dwFlags = 0x%x (%s)", appFormatSpec.dwFlags, DataFormatFlagsString(appFormatSpec.dwFlags));
             Message::OutputFormatted(kDumpSeverity, L"    dwDataSize = %u (%s)", appFormatSpec.dwDataSize, (0 == appFormatSpec.dwDataSize % 4 ? L"POSSIBLY OK; is a multiple of 4" : L"INCORRECT; must be a multiple of 4"));
             Message::OutputFormatted(kDumpSeverity, L"    dwNumObjs = %u", appFormatSpec.dwNumObjs);
 
@@ -322,7 +328,7 @@ namespace Xidi
             else
             {
                 for (DWORD i = 0; i < appFormatSpec.dwNumObjs; ++i)
-                    Message::OutputFormatted(kDumpSeverity, L"    rgodf[%4u]: { pguid = %s, dwOfs = %u, dwType = 0x%08x, dwFlags = 0x%08x }", i, GuidTypeString(appFormatSpec.rgodf[i].pguid), appFormatSpec.rgodf[i].dwOfs, appFormatSpec.rgodf[i].dwType, appFormatSpec.rgodf[i].dwFlags);
+                    Message::OutputFormatted(kDumpSeverity, L"    rgodf[%4u]    { pguid = %s, dwOfs = %u, dwType = 0x%08x, dwFlags = 0x%08x }", i, GuidTypeString(appFormatSpec.rgodf[i].pguid), appFormatSpec.rgodf[i].dwOfs, appFormatSpec.rgodf[i].dwType, appFormatSpec.rgodf[i].dwFlags);
             }
 
             Message::Output(kDumpSeverity, L"End dump of data format specification.");
@@ -572,7 +578,7 @@ namespace Xidi
 
     // --------
 
-    EPovValue DataFormat::PovDirectionFromControllerState(const Controller::SState& controllerState)
+    EPovValue DataFormat::DirectInputPovValue(Controller::UPovDirection pov)
     {
         static constexpr EPovValue kPovDirectionValues[3][3] = {
             {EPovValue::NW, EPovValue::N,       EPovValue::NE},
@@ -580,8 +586,8 @@ namespace Xidi
             {EPovValue::SW, EPovValue::S,       EPovValue::SE}
         };
 
-        const int xCoord = ((true == controllerState.povDirection.components[(int)Controller::EPovDirection::Right]) ? 1 : 0) - ((true == controllerState.povDirection.components[(int)Controller::EPovDirection::Left]) ? 1 : 0);
-        const int yCoord = ((true == controllerState.povDirection.components[(int)Controller::EPovDirection::Down]) ? 1 : 0) - ((true == controllerState.povDirection.components[(int)Controller::EPovDirection::Up]) ? 1 : 0);
+        const int xCoord = ((true == pov.components[(int)Controller::EPovDirection::Right]) ? 1 : 0) - ((true == pov.components[(int)Controller::EPovDirection::Left]) ? 1 : 0);
+        const int yCoord = ((true == pov.components[(int)Controller::EPovDirection::Down]) ? 1 : 0) - ((true == pov.components[(int)Controller::EPovDirection::Up]) ? 1 : 0);
 
         return kPovDirectionValues[1 + yCoord][1 + xCoord];
     }
@@ -626,56 +632,6 @@ namespace Xidi
 
     // --------
 
-    std::optional<Controller::SElementIdentifier> DataFormat::IdentifyElement(DWORD dwObj, DWORD dwHow) const
-    {
-        switch (dwHow)
-        {
-        case DIPH_DEVICE:
-            // Whole device is referenced.
-            // Per DirectInput documentation, the object identifier must be 0.
-            if (0 == dwObj)
-                return Controller::SElementIdentifier({.type = Controller::EElementType::WholeController});
-            break;
-
-        case DIPH_BYOFFSET:
-            // Controller element is being identified by offset.
-            // Object identifier is an offset into the application's data format.
-            return GetElementForOffset(dwObj);
-
-        case DIPH_BYID:
-            // Controller element is being identified by instance identifier.
-            // Object identifier contains type and index, and the latter refers to the controller's reported capabilities.
-            if ((int)DIDFT_GETINSTANCE(dwObj) >= 0)
-            {
-                const int kType = (int)DIDFT_GETTYPE(dwObj);
-                const int kIndex = (int)DIDFT_GETINSTANCE(dwObj);
-
-                switch (kType)
-                {
-                case DIDFT_ABSAXIS:
-                    if ((kIndex < (int)Controller::EAxis::Count) && (kIndex < controllerCapabilities.numAxes))
-                        return Controller::SElementIdentifier({.type = Controller::EElementType::Axis, .axis = controllerCapabilities.axisType[kIndex]});
-                    break;
-
-                case DIDFT_PSHBUTTON:
-                    if ((kIndex < (int)Controller::EButton::Count) && (kIndex < controllerCapabilities.numButtons))
-                        return Controller::SElementIdentifier({.type = Controller::EElementType::Button, .button = (Controller::EButton)kIndex});
-                    break;
-
-                case DIDFT_POV:
-                    if (kIndex == 0)
-                        return Controller::SElementIdentifier({.type = Controller::EElementType::Pov});
-                    break;
-                }
-            }
-            break;
-        }
-        
-        return std::nullopt;
-    }
-
-    // --------
-
     bool DataFormat::WriteDataPacket(void* packetBuffer, TOffset packetBufferSizeBytes, const Controller::SState& controllerState) const
     {
         // Sanity check: did the application allocate sufficient buffer space?
@@ -699,7 +655,7 @@ namespace Xidi
             if (kInvalidOffsetValue != dataFormatSpec.axisOffset[i])
             {
                 TAxisValue* const valueLocation = (TAxisValue*)(&packetByteBuffer[dataFormatSpec.axisOffset[i]]);
-                *valueLocation = (TAxisValue)controllerState.axis[i];
+                *valueLocation = DirectInputAxisValue(controllerState.axis[i]);
             }
         }
 
@@ -709,7 +665,7 @@ namespace Xidi
             if (kInvalidOffsetValue != dataFormatSpec.buttonOffset[i])
             {
                 TButtonValue* const valueLocation = (TButtonValue*)(&packetByteBuffer[dataFormatSpec.buttonOffset[i]]);
-                *valueLocation = ((true == controllerState.button[i]) ? kButtonValuePressed : kButtonValueNotPressed);
+                *valueLocation = DirectInputButtonValue(controllerState.button[i]);
             }
         }
 
@@ -717,7 +673,7 @@ namespace Xidi
         if (kInvalidOffsetValue != dataFormatSpec.povOffset)
         {
             EPovValue* const valueLocation = (EPovValue*)(&packetByteBuffer[dataFormatSpec.povOffset]);
-            *valueLocation = PovDirectionFromControllerState(controllerState);
+            *valueLocation = DirectInputPovValue(controllerState.povDirection);
         }
         
         return true;

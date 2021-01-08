@@ -355,8 +355,7 @@ namespace XidiTest
         VirtualController controller(kControllerIndex, kTestMapper, std::move(mockXInput));
         for (const auto& expectedState : kExpectedStates)
         {
-            Controller::SState actualState;
-            controller.GetState(&actualState);
+            const Controller::SState actualState = controller.GetState();
             TEST_ASSERT(actualState == expectedState);
         }
     }
@@ -383,8 +382,7 @@ namespace XidiTest
         VirtualController controller(kControllerIndex, kTestMapper, std::move(mockXInput));
         for (const auto& expectedState : kExpectedStates)
         {
-            Controller::SState actualState;
-            controller.GetState(&actualState);
+            const Controller::SState actualState = controller.GetState();
             TEST_ASSERT(actualState == expectedState);
         }
     }
@@ -426,8 +424,7 @@ namespace XidiTest
         VirtualController controller(kControllerIndex, kTestMapper, std::move(mockXInput));
         for (const auto& expectedState : kExpectedStates)
         {
-            Controller::SState actualState;
-            controller.GetState(&actualState);
+            const Controller::SState actualState = controller.GetState();
             TEST_ASSERT(actualState == expectedState);
         }
     }
@@ -696,18 +693,19 @@ namespace XidiTest
         constexpr VirtualController::TControllerIdentifier kControllerIndex = 0;
         constexpr uint32_t kEventBufferCapacity = 64;
 
+        // Avoid using vertical components of the analog sticks to avoid having to worry about axis inversion.
         constexpr XINPUT_STATE kXInputStates[] = {
-            {.dwPacketNumber = 1, .Gamepad = {.wButtons = XINPUT_GAMEPAD_A, .sThumbLX = 1111, .sThumbLY = 2222}},
-            {.dwPacketNumber = 2, .Gamepad = {.wButtons = XINPUT_GAMEPAD_A, .sThumbLX = 3333, .sThumbLY = 4444}},
-            {.dwPacketNumber = 3, .Gamepad = {.wButtons = XINPUT_GAMEPAD_A | XINPUT_GAMEPAD_Y | XINPUT_GAMEPAD_DPAD_UP, .sThumbLX = -5555, .sThumbLY = -6666}},
+            {.dwPacketNumber = 1, .Gamepad = {.wButtons = XINPUT_GAMEPAD_A, .sThumbLX = 1111, .sThumbRX = 2222}},
+            {.dwPacketNumber = 2, .Gamepad = {.wButtons = XINPUT_GAMEPAD_A, .sThumbLX = 3333, .sThumbRX = 4444}},
+            {.dwPacketNumber = 3, .Gamepad = {.wButtons = XINPUT_GAMEPAD_A | XINPUT_GAMEPAD_Y | XINPUT_GAMEPAD_DPAD_UP, .sThumbLX = -5555, .sThumbRX = -6666}},
             {.dwPacketNumber = 4, .Gamepad = {.wButtons = XINPUT_GAMEPAD_DPAD_LEFT}}
         };
 
         // Values come from the mapper at the top of this file.
         constexpr Controller::SState kExpectedControllerStates[] = {
-            {.axis = {1111, 2222, 0, 0, 0, 0},   .button = 0b0001},
-            {.axis = {3333, 4444, 0, 0, 0, 0},   .button = 0b0001},
-            {.axis = {-5555, -6666, 0, 0, 0, 0}, .button = 0b1001, .povDirection = {.components = {true, false, false, false}}},
+            {.axis = {1111, 0, 0, 2222, 0, 0},   .button = 0b0001},
+            {.axis = {3333, 0, 0, 4444, 0, 0},   .button = 0b0001},
+            {.axis = {-5555, 0, 0, -6666, 0, 0}, .button = 0b1001, .povDirection = {.components = {true, false, false, false}}},
             {.axis = {0, 0, 0, 0, 0, 0},         .button = 0b0000, .povDirection = {.components = {false, false, true, false}}}
         };
 
@@ -734,9 +732,7 @@ namespace XidiTest
                 lastEventCount = controller.GetEventBufferCount();
             }
 
-            Controller::SState actualStateFromSnapshot;
-            controller.GetState(&actualStateFromSnapshot);
-
+            Controller::SState actualStateFromSnapshot = controller.GetState();
             Controller::SState actualStateFromBufferedEvents;
             ZeroMemory(&actualStateFromBufferedEvents, sizeof(actualStateFromBufferedEvents));
 

@@ -31,12 +31,6 @@
     <ClInclude Include="Include\Xidi\Globals.h" />
     <ClInclude Include="Include\Xidi\ImportApiDirectInput.h" />
     <ClInclude Include="Include\Xidi\ImportApiWinMM.h" />
-    <ClInclude Include="Include\Xidi\Mapper.h" />
-    <ClInclude Include="Include\Xidi\MapperType.h" />
-    <ClInclude Include="Include\Xidi\Mapper\ExtendedGamepad.h" />
-    <ClInclude Include="Include\Xidi\Mapper\XInputNative.h" />
-    <ClInclude Include="Include\Xidi\Mapper\XInputSharedTriggers.h" />
-    <ClInclude Include="Include\Xidi\Mapper\StandardGamepad.h" />
     <ClInclude Include="Include\Xidi\ControllerIdentification.h" />
     <ClInclude Include="Include\Xidi\Message.h" />
     <ClInclude Include="Include\Xidi\StateChangeEventBuffer.h" />
@@ -45,7 +39,6 @@
     <ClInclude Include="Include\Xidi\VirtualController.h" />
     <ClInclude Include="Include\Xidi\WrapperJoyWinMM.h" />
     <ClInclude Include="Include\Xidi\XidiConfigReader.h" />
-    <ClInclude Include="Include\Xidi\XInputController.h" />
     <ClInclude Include="Include\Xidi\XInputInterface.h" />
     <ClInclude Include="Resources\WinMM.h" />
     <ClInclude Include="Resources\Xidi.h" />
@@ -61,12 +54,6 @@
     <ClCompile Include="Source\Globals.cpp" />
     <ClCompile Include="Source\ImportApiDirectInput.cpp" />
     <ClCompile Include="Source\ImportApiWinMM.cpp" />
-    <ClCompile Include="Source\Mapper.cpp" />
-    <ClCompile Include="Source\MapperType.cpp" />
-    <ClCompile Include="Source\Mapper\ExtendedGamepad.cpp" />
-    <ClCompile Include="Source\Mapper\XInputNative.cpp" />
-    <ClCompile Include="Source\Mapper\XInputSharedTriggers.cpp" />
-    <ClCompile Include="Source\Mapper\StandardGamepad.cpp" />
     <ClCompile Include="Source\ControllerIdentification.cpp" />
     <ClCompile Include="Source\Message.cpp" />
     <ClCompile Include="Source\StateChangeEventBuffer.cpp" />
@@ -76,7 +63,6 @@
     <ClCompile Include="Source\VirtualController.cpp" />
     <ClCompile Include="Source\WrapperJoyWinMM.cpp" />
     <ClCompile Include="Source\XidiConfigReader.cpp" />
-    <ClCompile Include="Source\XInputController.cpp" />
     <ClCompile Include="Source\XInputInterface.cpp" />
   </ItemGroup>
   <ItemGroup>

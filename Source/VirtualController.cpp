@@ -130,15 +130,15 @@ namespace Xidi
 
     // --------
 
-    void VirtualController::GetState(Controller::SState* controllerState)
+    Controller::SState VirtualController::GetState(void)
     {
         auto lock = Lock();
 
         if (true == stateRefreshNeeded)
             RefreshState();
 
-        memcpy(controllerState, &state, sizeof(state));
         stateRefreshNeeded = true;
+        return state;
     }
 
     // --------

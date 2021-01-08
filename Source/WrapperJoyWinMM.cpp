@@ -12,13 +12,14 @@
 #include "ApiWindows.h"
 #include "ApiDirectInput.h"
 #include "ControllerIdentification.h"
+#include "ControllerTypes.h"
+#include "DataFormat.h"
 #include "Globals.h"
 #include "ImportApiDirectInput.h"
 #include "ImportApiWinMM.h"
-#include "Mapper.h"
 #include "Message.h"
+#include "VirtualController.h"
 #include "WrapperJoyWinMM.h"
-#include "XInputController.h"
 
 #include <climits>
 #include <RegStr.h>
@@ -73,55 +74,9 @@ namespace Xidi
     // -------- CLASS VARIABLES -------------------------------------------- //
     // See "WrapperJoyWinMM.h" for documentation.
 
-    XInputController* WrapperJoyWinMM::controllers[XInputController::kMaxNumXInputControllers];
-
-    Mapper* WrapperJoyWinMM::mapper = nullptr;
+    VirtualController* WrapperJoyWinMM::controllers[4];
 
     BOOL WrapperJoyWinMM::isInitialized = FALSE;
-
-    DIOBJECTDATAFORMAT WrapperJoyWinMM::joyStateObjectDataFormat[] = {
-        { &GUID_XAxis,      offsetof(SJoyStateData, axisX),         DIDFT_AXIS | DIDFT_ANYINSTANCE,   0 },
-        { &GUID_YAxis,      offsetof(SJoyStateData, axisY),         DIDFT_AXIS | DIDFT_ANYINSTANCE,   0 },
-        { &GUID_ZAxis,      offsetof(SJoyStateData, axisZ),         DIDFT_AXIS | DIDFT_ANYINSTANCE,   0 },
-        { &GUID_RxAxis,     offsetof(SJoyStateData, axisRx),        DIDFT_AXIS | DIDFT_ANYINSTANCE,   0 },
-        { &GUID_RyAxis,     offsetof(SJoyStateData, axisRy),        DIDFT_AXIS | DIDFT_ANYINSTANCE,   0 },
-        { &GUID_RzAxis,     offsetof(SJoyStateData, axisRz),        DIDFT_AXIS | DIDFT_ANYINSTANCE,   0 },
-        { &GUID_POV,        offsetof(SJoyStateData, pov),           DIDFT_POV | DIDFT_ANYINSTANCE,   0 },
-        { &GUID_Button,     offsetof(SJoyStateData, buttons) + 0,   DIDFT_BUTTON | DIDFT_ANYINSTANCE,   0 },
-        { &GUID_Button,     offsetof(SJoyStateData, buttons) + 1,   DIDFT_BUTTON | DIDFT_ANYINSTANCE,   0 },
-        { &GUID_Button,     offsetof(SJoyStateData, buttons) + 2,   DIDFT_BUTTON | DIDFT_ANYINSTANCE,   0 },
-        { &GUID_Button,     offsetof(SJoyStateData, buttons) + 3,   DIDFT_BUTTON | DIDFT_ANYINSTANCE,   0 },
-        { &GUID_Button,     offsetof(SJoyStateData, buttons) + 4,   DIDFT_BUTTON | DIDFT_ANYINSTANCE,   0 },
-        { &GUID_Button,     offsetof(SJoyStateData, buttons) + 5,   DIDFT_BUTTON | DIDFT_ANYINSTANCE,   0 },
-        { &GUID_Button,     offsetof(SJoyStateData, buttons) + 6,   DIDFT_BUTTON | DIDFT_ANYINSTANCE,   0 },
-        { &GUID_Button,     offsetof(SJoyStateData, buttons) + 7,   DIDFT_BUTTON | DIDFT_ANYINSTANCE,   0 },
-        { &GUID_Button,     offsetof(SJoyStateData, buttons) + 8,   DIDFT_BUTTON | DIDFT_ANYINSTANCE,   0 },
-        { &GUID_Button,     offsetof(SJoyStateData, buttons) + 9,   DIDFT_BUTTON | DIDFT_ANYINSTANCE,   0 },
-        { &GUID_Button,     offsetof(SJoyStateData, buttons) + 10,  DIDFT_BUTTON | DIDFT_ANYINSTANCE,   0 },
-        { &GUID_Button,     offsetof(SJoyStateData, buttons) + 11,  DIDFT_BUTTON | DIDFT_ANYINSTANCE,   0 },
-        { &GUID_Button,     offsetof(SJoyStateData, buttons) + 12,  DIDFT_BUTTON | DIDFT_ANYINSTANCE,   0 },
-        { &GUID_Button,     offsetof(SJoyStateData, buttons) + 13,  DIDFT_BUTTON | DIDFT_ANYINSTANCE,   0 },
-        { &GUID_Button,     offsetof(SJoyStateData, buttons) + 14,  DIDFT_BUTTON | DIDFT_ANYINSTANCE,   0 },
-        { &GUID_Button,     offsetof(SJoyStateData, buttons) + 15,  DIDFT_BUTTON | DIDFT_ANYINSTANCE,   0 },
-        { &GUID_Button,     offsetof(SJoyStateData, buttons) + 16,  DIDFT_BUTTON | DIDFT_ANYINSTANCE,   0 },
-        { &GUID_Button,     offsetof(SJoyStateData, buttons) + 17,  DIDFT_BUTTON | DIDFT_ANYINSTANCE,   0 },
-        { &GUID_Button,     offsetof(SJoyStateData, buttons) + 18,  DIDFT_BUTTON | DIDFT_ANYINSTANCE,   0 },
-        { &GUID_Button,     offsetof(SJoyStateData, buttons) + 19,  DIDFT_BUTTON | DIDFT_ANYINSTANCE,   0 },
-        { &GUID_Button,     offsetof(SJoyStateData, buttons) + 20,  DIDFT_BUTTON | DIDFT_ANYINSTANCE,   0 },
-        { &GUID_Button,     offsetof(SJoyStateData, buttons) + 21,  DIDFT_BUTTON | DIDFT_ANYINSTANCE,   0 },
-        { &GUID_Button,     offsetof(SJoyStateData, buttons) + 22,  DIDFT_BUTTON | DIDFT_ANYINSTANCE,   0 },
-        { &GUID_Button,     offsetof(SJoyStateData, buttons) + 23,  DIDFT_BUTTON | DIDFT_ANYINSTANCE,   0 },
-        { &GUID_Button,     offsetof(SJoyStateData, buttons) + 24,  DIDFT_BUTTON | DIDFT_ANYINSTANCE,   0 },
-        { &GUID_Button,     offsetof(SJoyStateData, buttons) + 25,  DIDFT_BUTTON | DIDFT_ANYINSTANCE,   0 },
-        { &GUID_Button,     offsetof(SJoyStateData, buttons) + 26,  DIDFT_BUTTON | DIDFT_ANYINSTANCE,   0 },
-        { &GUID_Button,     offsetof(SJoyStateData, buttons) + 27,  DIDFT_BUTTON | DIDFT_ANYINSTANCE,   0 },
-        { &GUID_Button,     offsetof(SJoyStateData, buttons) + 28,  DIDFT_BUTTON | DIDFT_ANYINSTANCE,   0 },
-        { &GUID_Button,     offsetof(SJoyStateData, buttons) + 29,  DIDFT_BUTTON | DIDFT_ANYINSTANCE,   0 },
-        { &GUID_Button,     offsetof(SJoyStateData, buttons) + 30,  DIDFT_BUTTON | DIDFT_ANYINSTANCE,   0 },
-        { &GUID_Button,     offsetof(SJoyStateData, buttons) + 31,  DIDFT_BUTTON | DIDFT_ANYINSTANCE,   0 },
-    };
-
-    const DIDATAFORMAT WrapperJoyWinMM::joyStateDataFormat = { sizeof(DIDATAFORMAT), sizeof(DIOBJECTDATAFORMAT), 0, sizeof(SJoyStateData), _countof(joyStateObjectDataFormat), joyStateObjectDataFormat };
 
     std::vector<int> WrapperJoyWinMM::joyIndexMap;
 
@@ -135,14 +90,21 @@ namespace Xidi
     {
         if (FALSE == isInitialized)
         {
-            // Create a mapper and set its data format.
-            mapper = Mapper::Create();
-            if (DI_OK != mapper->SetApplicationDataFormat(&joyStateDataFormat))
-                Message::Output(Message::ESeverity::Error, L"Failed to set device state data format. XInput controllers will not function.");
+            const Controller::Mapper* mapper = Controller::Mapper::GetConfigured();
+            if (nullptr == mapper)
+            {
+                Message::Output(Message::ESeverity::Error, L"Failed to locate a mapper. Xidi virtual controllers will not function.");
+                return;
+            }
 
-            // Create controllers, one for each XInput position.
-            for (DWORD i = 0; i < _countof(controllers); ++i)
-                controllers[i] = new XInputController(i);
+            for (int i = 0; i < _countof(controllers); ++i)
+            {
+                controllers[i] = new VirtualController(i, *mapper);
+                
+                //controllers[i]->SetAllAxisDeadzone(1000);
+                //controllers[i]->SetAllAxisSaturation(9000);
+                controllers[i]->SetAllAxisRange(0, 65535);
+            }
 
             // Enumerate all devices exposed by WinMM.
             CreateSystemDeviceInfo();
@@ -346,28 +308,6 @@ namespace Xidi
 
     // --------
 
-    MMRESULT WrapperJoyWinMM::FillDeviceState(UINT joyID, SJoyStateData* joyStateData)
-    {
-        // Acquire the controller.
-        controllers[joyID]->AcquireController();
-
-        // Get the current state from the controller.
-        XINPUT_STATE currentControllerState;
-
-        HRESULT result = controllers[joyID]->RefreshControllerState();
-        if (DI_OK != result)
-            return JOYERR_NOCANDO;
-
-        result = controllers[joyID]->GetCurrentDeviceState(&currentControllerState);
-        if (DI_OK != result)
-            return JOYERR_NOCANDO;
-
-        // Get mapped controller state from the mapper.
-        return mapper->WriteApplicationControllerState(currentControllerState.Gamepad, (LPVOID)joyStateData, sizeof(*joyStateData));
-    }
-
-    // ---------
-
     template <> int WrapperJoyWinMM::FillRegistryKeyString<LPSTR>(LPSTR buf, const size_t bufcount)
     {
         return LoadStringA(Globals::GetInstanceHandle(), IDS_XIDI_PRODUCT_NAME, buf, (int)bufcount);
@@ -497,7 +437,6 @@ namespace Xidi
             // Querying an XInput controller.
             const DWORD xJoyID = (DWORD)((-realJoyID) - 1);
 
-            // Check for the correct structure size.
             if (sizeof(*pjc) != cbjc)
             {
                 const MMRESULT result = JOYERR_PARMS;
@@ -506,42 +445,39 @@ namespace Xidi
                 return result;
             }
 
-            // Get information from the mapper on the mapped device's capabilities.
-            DIDEVCAPS mappedDeviceCaps;
-            mapper->FillDeviceCapabilities(&mappedDeviceCaps);
+            const Controller::SCapabilities& controllerCapabilities = controllers[xJoyID]->GetCapabilities();
 
-            // Fill in the provided structure.
             ZeroMemory(pjc, sizeof(*pjc));
-            pjc->wMaxAxes = 6;
-            pjc->wMaxButtons = _countof(SJoyStateData::buttons);
-            pjc->wNumAxes = (WORD)mappedDeviceCaps.dwAxes;
-            pjc->wNumButtons = (WORD)mappedDeviceCaps.dwButtons;
-            pjc->wXmin = (WORD)Mapper::kDefaultAxisRangeMin;
-            pjc->wXmax = (WORD)Mapper::kDefaultAxisRangeMax;
-            pjc->wYmin = (WORD)Mapper::kDefaultAxisRangeMin;
-            pjc->wYmax = (WORD)Mapper::kDefaultAxisRangeMax;
-            pjc->wZmin = (WORD)Mapper::kDefaultAxisRangeMin;
-            pjc->wZmax = (WORD)Mapper::kDefaultAxisRangeMax;
-            pjc->wRmin = (WORD)Mapper::kDefaultAxisRangeMin;
-            pjc->wRmax = (WORD)Mapper::kDefaultAxisRangeMax;
-            pjc->wUmin = (WORD)Mapper::kDefaultAxisRangeMin;
-            pjc->wUmax = (WORD)Mapper::kDefaultAxisRangeMax;
-            pjc->wVmin = (WORD)Mapper::kDefaultAxisRangeMin;
-            pjc->wVmax = (WORD)Mapper::kDefaultAxisRangeMax;
+            pjc->wMaxAxes = (WORD)controllerCapabilities.numAxes;
+            pjc->wMaxButtons = (WORD)controllerCapabilities.numButtons;
+            pjc->wNumAxes = (WORD)controllerCapabilities.numAxes;
+            pjc->wNumButtons = (WORD)controllerCapabilities.numButtons;
+            pjc->wXmin = 0;
+            pjc->wXmax = 65535;
+            pjc->wYmin = 0;
+            pjc->wYmax = 65535;
+            pjc->wZmin = 0;
+            pjc->wZmax = 65535;
+            pjc->wRmin = 0;
+            pjc->wRmax = 65535;
+            pjc->wUmin = 0;
+            pjc->wUmax = 65535;
+            pjc->wVmin = 0;
+            pjc->wVmax = 65535;
 
-            if (mappedDeviceCaps.dwPOVs > 0)
-                pjc->wCaps = JOYCAPS_HASPOV | JOYCAPS_POV4DIR;
+            if (true == controllerCapabilities.hasPov)
+                pjc->wCaps = JOYCAPS_HASPOV | JOYCAPS_POVCTS;
 
-            if (mapper->AxisTypeCount(GUID_ZAxis) > 0)
+            if (true == controllerCapabilities.HasAxis(Controller::EAxis::Z))
                 pjc->wCaps |= JOYCAPS_HASZ;
 
-            if (mapper->AxisTypeCount(GUID_RzAxis) > 0)
+            if (true == controllerCapabilities.HasAxis(Controller::EAxis::RotZ))
                 pjc->wCaps |= JOYCAPS_HASR;
 
-            if (mapper->AxisTypeCount(GUID_RyAxis) > 0)
+            if (true == controllerCapabilities.HasAxis(Controller::EAxis::RotY))
                 pjc->wCaps |= JOYCAPS_HASU;
 
-            if (mapper->AxisTypeCount(GUID_RxAxis) > 0)
+            if (true == controllerCapabilities.HasAxis(Controller::EAxis::RotX))
                 pjc->wCaps |= JOYCAPS_HASV;
 
             FillRegistryKeyString(pjc->szRegKey, _countof(pjc->szRegKey));
@@ -592,30 +528,22 @@ namespace Xidi
             // Querying an XInput controller.
             const DWORD xJoyID = (DWORD)((-realJoyID) - 1);
 
-            SJoyStateData joyStateData;
-            MMRESULT result = FillDeviceState((UINT)xJoyID, &joyStateData);
-            if (JOYERR_NOERROR != result)
-            {
-                LOG_INVOCATION((unsigned int)uJoyID, result);
-                return result;
-            }
+            const Controller::SState kJoyStateData = controllers[xJoyID]->GetState();
 
-            // Fill in the provided structure.
-            pji->wXpos = (WORD)joyStateData.axisX;
-            pji->wYpos = (WORD)joyStateData.axisY;
-            pji->wZpos = (WORD)joyStateData.axisZ;
+            pji->wXpos = (WORD)kJoyStateData.axis[(int)Controller::EAxis::X];
+            pji->wYpos = (WORD)kJoyStateData.axis[(int)Controller::EAxis::Y];
+            pji->wZpos = (WORD)kJoyStateData.axis[(int)Controller::EAxis::Z];
             pji->wButtons = 0;
-            if (joyStateData.buttons[0])
+            if (true == kJoyStateData.button[0])
                 pji->wButtons |= JOY_BUTTON1;
-            if (joyStateData.buttons[1])
+            if (true == kJoyStateData.button[1])
                 pji->wButtons |= JOY_BUTTON2;
-            if (joyStateData.buttons[2])
+            if (true == kJoyStateData.button[2])
                 pji->wButtons |= JOY_BUTTON3;
-            if (joyStateData.buttons[3])
+            if (true == kJoyStateData.button[3])
                 pji->wButtons |= JOY_BUTTON4;
 
-            // Operation complete.
-            result = JOYERR_NOERROR;
+            const MMRESULT result = JOYERR_NOERROR;
             LOG_INVOCATION((unsigned int)uJoyID, result);
             return result;
         }
@@ -640,7 +568,6 @@ namespace Xidi
             // Querying an XInput controller.
             const DWORD xJoyID = (DWORD)((-realJoyID) - 1);
 
-            // Check for the correct structure size.
             if (sizeof(*pji) != pji->dwSize)
             {
                 MMRESULT result = JOYERR_PARMS;
@@ -649,32 +576,26 @@ namespace Xidi
                 return result;
             }
 
-            SJoyStateData joyStateData;
-            MMRESULT result = FillDeviceState((UINT)xJoyID, &joyStateData);
-            if (JOYERR_NOERROR != result)
-            {
-                LOG_INVOCATION((unsigned int)uJoyID, result);
-                return result;
-            }
+            const Controller::SState kJoyStateData = controllers[xJoyID]->GetState();
+            const EPovValue kJoyStateDataPovValue = DataFormat::DirectInputPovValue(kJoyStateData.povDirection);
 
             // Fill in the provided structure.
             // WinMM uses only 16 bits to indicate that the dpad is centered, whereas it is safe to use all 32 in DirectInput, hence the conversion (forgetting this can introduce bugs into games).
-            pji->dwPOV = ((DWORD)-1 == joyStateData.pov ? (DWORD)(JOY_POVCENTERED) : joyStateData.pov);
-            pji->dwXpos = joyStateData.axisX;
-            pji->dwYpos = joyStateData.axisY;
-            pji->dwZpos = joyStateData.axisZ;
-            pji->dwRpos = joyStateData.axisRz;
-            pji->dwUpos = joyStateData.axisRy;
-            pji->dwVpos = joyStateData.axisRx;
+            pji->dwPOV = (EPovValue::Center == kJoyStateDataPovValue ? (DWORD)(JOY_POVCENTERED) : (DWORD)kJoyStateDataPovValue);
+            pji->dwXpos = kJoyStateData.axis[(int)Controller::EAxis::X];
+            pji->dwYpos = kJoyStateData.axis[(int)Controller::EAxis::Y];
+            pji->dwZpos = kJoyStateData.axis[(int)Controller::EAxis::Z];
+            pji->dwRpos = kJoyStateData.axis[(int)Controller::EAxis::RotZ];
+            pji->dwUpos = kJoyStateData.axis[(int)Controller::EAxis::RotY];
+            pji->dwVpos = kJoyStateData.axis[(int)Controller::EAxis::RotX];
             pji->dwButtons = 0;
-            for (DWORD i = 0; i < _countof(SJoyStateData::buttons); ++i)
+            for (DWORD i = 0; i < kJoyStateData.button.size(); ++i)
             {
-                if (joyStateData.buttons[i])
+                if (true == kJoyStateData.button[i])
                     pji->dwButtons |= (1 << i);
             }
 
-            // Operation complete.
-            result = JOYERR_NOERROR;
+            const MMRESULT result = JOYERR_NOERROR;
             LOG_INVOCATION((unsigned int)uJoyID, result);
             return result;
         }

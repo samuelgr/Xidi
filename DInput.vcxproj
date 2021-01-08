@@ -30,12 +30,6 @@
     <ClInclude Include="Include\Xidi\DirectInputClassFactory.h" />
     <ClInclude Include="Include\Xidi\ExportApiDirectInput.h" />
     <ClInclude Include="Include\Xidi\Globals.h" />
-    <ClInclude Include="Include\Xidi\Mapper.h" />
-    <ClInclude Include="Include\Xidi\MapperType.h" />
-    <ClInclude Include="Include\Xidi\Mapper\ExtendedGamepad.h" />
-    <ClInclude Include="Include\Xidi\Mapper\XInputNative.h" />
-    <ClInclude Include="Include\Xidi\Mapper\XInputSharedTriggers.h" />
-    <ClInclude Include="Include\Xidi\Mapper\StandardGamepad.h" />
     <ClInclude Include="Include\Xidi\ControllerIdentification.h" />
     <ClInclude Include="Include\Xidi\ImportApiDirectInput.h" />
     <ClInclude Include="Include\Xidi\Message.h" />
@@ -46,7 +40,6 @@
     <ClInclude Include="Include\Xidi\WrapperIDirectInput.h" />
     <ClInclude Include="Include\Xidi\VirtualDirectInputDevice.h" />
     <ClInclude Include="Include\Xidi\XidiConfigReader.h" />
-    <ClInclude Include="Include\Xidi\XInputController.h" />
     <ClInclude Include="Include\Xidi\XInputInterface.h" />
     <ClInclude Include="Resources\DInput.h" />
     <ClInclude Include="Resources\Xidi.h" />
@@ -60,12 +53,6 @@
     <ClCompile Include="Source\DataFormat.cpp" />
     <ClCompile Include="Source\DirectInputClassFactory.cpp" />
     <ClCompile Include="Source\Globals.cpp" />
-    <ClCompile Include="Source\Mapper.cpp" />
-    <ClCompile Include="Source\MapperType.cpp" />
-    <ClCompile Include="Source\Mapper\ExtendedGamepad.cpp" />
-    <ClCompile Include="Source\Mapper\XInputNative.cpp" />
-    <ClCompile Include="Source\Mapper\XInputSharedTriggers.cpp" />
-    <ClCompile Include="Source\Mapper\StandardGamepad.cpp" />
     <ClCompile Include="Source\Message.cpp" />
     <ClCompile Include="Source\StateChangeEventBuffer.cpp" />
     <ClCompile Include="Source\Strings.cpp" />
@@ -78,7 +65,6 @@
     <ClCompile Include="Source\ExportApiDirectInput.cpp" />
     <ClCompile Include="Source\DllMain.cpp" />
     <ClCompile Include="Source\XidiConfigReader.cpp" />
-    <ClCompile Include="Source\XInputController.cpp" />
     <ClCompile Include="Source\XInputInterface.cpp" />
   </ItemGroup>
   <ItemGroup>

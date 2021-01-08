@@ -154,9 +154,10 @@ namespace XidiTest
     TEST_CASE(ControllerMapper_Route_StickLeftY)
     {
         constexpr int16_t kTestValue = 2233;
+        constexpr int16_t kInvertedTestValue = -kTestValue;
         int numContributions = 0;
 
-        const Mapper controllerMapper({.stickLeftY = std::make_unique<MockElementMapper>(MockElementMapper::EExpectedSource::Analog, kTestValue, &numContributions)});
+        const Mapper controllerMapper({.stickLeftY = std::make_unique<MockElementMapper>(MockElementMapper::EExpectedSource::Analog, kInvertedTestValue, &numContributions)});
         controllerMapper.MapXInputState(&dummyControllerState, {.sThumbLY = kTestValue});
 
         TEST_ASSERT(1 == numContributions);
@@ -178,9 +179,10 @@ namespace XidiTest
     TEST_CASE(ControllerMapper_Route_StickRightY)
     {
         constexpr int16_t kTestValue = 6789;
+        constexpr int16_t kInvertedTestValue = -kTestValue;
         int numContributions = 0;
 
-        const Mapper controllerMapper({.stickRightY = std::make_unique<MockElementMapper>(MockElementMapper::EExpectedSource::Analog, kTestValue, &numContributions)});
+        const Mapper controllerMapper({.stickRightY = std::make_unique<MockElementMapper>(MockElementMapper::EExpectedSource::Analog, kInvertedTestValue, &numContributions)});
         controllerMapper.MapXInputState(&dummyControllerState, {.sThumbRY = kTestValue});
 
         TEST_ASSERT(1 == numContributions);
@@ -628,9 +630,13 @@ namespace XidiTest
     // This test verifies correct saturation in the positive direction.
     TEST_CASE(ControllerMapper_State_AnalogSaturationPositive)
     {
+        constexpr int32_t kInvertedInputValue = -kAnalogValueMax;
+        constexpr int32_t kNonInvertedInputValue = kAnalogValueMax;
+        constexpr int32_t kExpectedOutputValue = kAnalogValueMax;
+        
         SState expectedState;
         ZeroMemory(&expectedState, sizeof(expectedState));
-        expectedState.axis[(int)EAxis::X] = kAnalogValueMax;
+        expectedState.axis[(int)EAxis::X] = kExpectedOutputValue;
 
         const Mapper mapper({
             .stickLeftX = std::make_unique<AxisMapper>(EAxis::X),
@@ -641,10 +647,10 @@ namespace XidiTest
 
         SState actualState;
         mapper.MapXInputState(&actualState, {
-            .sThumbLX = kAnalogValueMax,
-            .sThumbLY = kAnalogValueMax,
-            .sThumbRX = kAnalogValueMax,
-            .sThumbRY = kAnalogValueMax
+            .sThumbLX = kNonInvertedInputValue,
+            .sThumbLY = kInvertedInputValue,
+            .sThumbRX = kNonInvertedInputValue,
+            .sThumbRY = kInvertedInputValue
         });
         TEST_ASSERT(actualState == expectedState);
     }
@@ -653,9 +659,13 @@ namespace XidiTest
     // This test verifies correct saturation in the negative direction.
     TEST_CASE(ControllerMapper_State_AnalogSaturationNegative)
     {
+        constexpr int32_t kInvertedInputValue = -kAnalogValueMin;
+        constexpr int32_t kNonInvertedInputValue = kAnalogValueMin;
+        constexpr int32_t kExpectedOutputValue = kAnalogValueMin;
+        
         SState expectedState;
         ZeroMemory(&expectedState, sizeof(expectedState));
-        expectedState.axis[(int)EAxis::RotX] = kAnalogValueMin;
+        expectedState.axis[(int)EAxis::RotX] = kExpectedOutputValue;
 
         const Mapper mapper({
             .stickLeftX = std::make_unique<AxisMapper>(EAxis::RotX),
@@ -666,10 +676,10 @@ namespace XidiTest
 
         SState actualState;
         mapper.MapXInputState(&actualState, {
-            .sThumbLX = kAnalogValueMin,
-            .sThumbLY = kAnalogValueMin,
-            .sThumbRX = kAnalogValueMin,
-            .sThumbRY = kAnalogValueMin
+            .sThumbLX = kNonInvertedInputValue,
+            .sThumbLY = kInvertedInputValue,
+            .sThumbRX = kNonInvertedInputValue,
+            .sThumbRY = kInvertedInputValue
         });
         TEST_ASSERT(actualState == expectedState);
     }

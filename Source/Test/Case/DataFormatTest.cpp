@@ -201,7 +201,7 @@ namespace XidiTest
 
     // Verifies that POV direction values are correctly produced from controller states.
     // Tests all possible combinations of individual POV direction states.
-    TEST_CASE(DataFormat_PovDirectionFromControllerState)
+    TEST_CASE(DataFormat_PovDirectionValue)
     {
         constexpr struct
         {
@@ -239,7 +239,7 @@ namespace XidiTest
             controllerState.povDirection.components[(int)Controller::EPovDirection::Right] = povTestData.povRight;
 
             const EPovValue kExpectedPovValue = povTestData.expectedPovValue;
-            const EPovValue kActualPovValue = DataFormat::PovDirectionFromControllerState(controllerState);
+            const EPovValue kActualPovValue = DataFormat::DirectInputPovValue(controllerState.povDirection);
 
             if (kActualPovValue != kExpectedPovValue)
             {
@@ -330,7 +330,7 @@ namespace XidiTest
                 break;
 
             case EElementType::Pov:
-                *((EPovValue*)(((size_t)&expectedDataPacket) + (size_t)testObjectFormatSpec[i].dwOfs)) = DataFormat::PovDirectionFromControllerState(kTestControllerState);
+                *((EPovValue*)(((size_t)&expectedDataPacket) + (size_t)testObjectFormatSpec[i].dwOfs)) = DataFormat::DirectInputPovValue(kTestControllerState.povDirection);
                 break;
 
             default:
@@ -368,7 +368,7 @@ namespace XidiTest
                 .axisX = kTestControllerState.axis[(int)EAxis::X],
                 .axisY = kTestControllerState.axis[(int)EAxis::Y],
                 .axisZ = kTestControllerState.axis[(int)EAxis::Z],
-                .pov = DataFormat::PovDirectionFromControllerState(kTestControllerState),
+                .pov = DataFormat::DirectInputPovValue(kTestControllerState.povDirection),
                 .button = {
                     ((true == kTestControllerState.button[0]) ? DataFormat::kButtonValuePressed : DataFormat::kButtonValueNotPressed),
                     ((true == kTestControllerState.button[1]) ? DataFormat::kButtonValuePressed : DataFormat::kButtonValueNotPressed),

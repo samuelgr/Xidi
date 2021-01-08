@@ -27,18 +27,6 @@
     <ClInclude Include="Include\Xidi\ControllerIdentification.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="Include\Xidi\XInputController.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="Include\Xidi\Mapper\StandardGamepad.h">
-      <Filter>Header Files\Mapper</Filter>
-    </ClInclude>
-    <ClInclude Include="Include\Xidi\Mapper\XInputNative.h">
-      <Filter>Header Files\Mapper</Filter>
-    </ClInclude>
-    <ClInclude Include="Include\Xidi\Mapper\XInputSharedTriggers.h">
-      <Filter>Header Files\Mapper</Filter>
-    </ClInclude>
     <ClInclude Include="Include\Xidi\ApiDirectInput.h">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -51,9 +39,6 @@
     <ClInclude Include="Include\Xidi\WrapperJoyWinMM.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="Include\Xidi\Mapper.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="Include\Xidi\Globals.h">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -64,9 +49,6 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="Resources\WinMM.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="Include\Xidi\Mapper\ExtendedGamepad.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="Include\Xidi\ApiGUID.h">
@@ -85,9 +67,6 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="Include\Xidi\Message.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="Include\Xidi\MapperType.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="Include\Xidi\ControllerTypes.h">
@@ -116,18 +95,6 @@
     <ClCompile Include="Source\ControllerIdentification.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="Source\XInputController.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="Source\Mapper\StandardGamepad.cpp">
-      <Filter>Source Files\Mapper</Filter>
-    </ClCompile>
-    <ClCompile Include="Source\Mapper\XInputNative.cpp">
-      <Filter>Source Files\Mapper</Filter>
-    </ClCompile>
-    <ClCompile Include="Source\Mapper\XInputSharedTriggers.cpp">
-      <Filter>Source Files\Mapper</Filter>
-    </ClCompile>
     <ClCompile Include="Source\DllMain.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -140,9 +107,6 @@
     <ClCompile Include="Source\WrapperJoyWinMM.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="Source\Mapper.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="Source\Globals.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -150,9 +114,6 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="Source\ApiDirectInput.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="Source\Mapper\ExtendedGamepad.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="Source\ApiGUID.cpp">
@@ -171,9 +132,6 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="Source\Message.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="Source\MapperType.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="Source\ControllerElementMapper.cpp">

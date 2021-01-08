@@ -396,10 +396,24 @@ namespace Xidi
         {
             return eventBuffer[index];
         }
-        
-        /// Fills the specified virtual controller state buffer with the latest view of the state of this virtual controller.
-        /// @param [out] controllerState Buffer to be filled with the current state of this virtual controller.
-        void GetState(Controller::SState* controllerState);
+
+        /// Retrieves and returns this controller's identifier.
+        /// @return This controller's identifier.
+        inline TControllerIdentifier GetIdentifier(void) const
+        {
+            return kControllerIdentifier;
+        }
+
+        /// Retrieves and returns the latest view of the state of this virtual controller.
+        /// @return Current state of this virtual controller.
+        Controller::SState GetState(void);
+
+        /// Checks if the event buffering is enabled.
+        /// @return `true` if event buffering is enabled, `false` otherwise.
+        inline bool IsEventBufferEnabled(void) const
+        {
+            return eventBuffer.IsEnabled();
+        }
 
         /// Checks if an overflow condition has occurred on this virtual controller's event buffer.
         /// @return `true` if an overflow condition is present, `false` otherwise.

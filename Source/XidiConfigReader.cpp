@@ -9,8 +9,9 @@
  *   Implementation of Xidi-specific configuration reading functionality.
  *****************************************************************************/
 
+#include "ApiWindows.h"
 #include "Configuration.h"
-#include "MapperType.h"
+#include "ControllerMapper.h"
 #include "Strings.h"
 #include "TemporaryBuffer.h"
 #include "XidiConfigReader.h"
@@ -71,7 +72,7 @@ namespace Xidi
     bool XidiConfigReader::CheckValue(std::wstring_view section, std::wstring_view name, const Configuration::TStringValue& value)
     {
         if ((Strings::kStrConfigurationSectionMapper == section) && (Strings::kStrConfigurationSettingMapperType == name))
-            return (EMapperType::Invalid != MapperTypeFromString(value));
+            return (Controller::Mapper::IsMapperNameKnown(value));
 
         return true;
     }

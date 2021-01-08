@@ -12,6 +12,7 @@
 
 #include "ApiWindows.h"
 #include "Configuration.h"
+#include "ControllerMapper.h"
 #include "Globals.h"
 #include "Message.h"
 #include "Strings.h"
@@ -159,6 +160,7 @@ namespace Xidi
         void Initialize(void)
         {
             EnableLogIfConfigured();
+            Controller::Mapper::DumpRegisteredMappers();
         }
     }
 }

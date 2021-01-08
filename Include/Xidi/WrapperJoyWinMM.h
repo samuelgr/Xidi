@@ -13,8 +13,7 @@
 
 #include "ApiDirectInput.h"
 #include "ApiWindows.h"
-#include "Mapper.h"
-#include "XInputController.h"
+#include "VirtualController.h"
 
 #include <string>
 #include <utility>
@@ -28,38 +27,13 @@ namespace Xidi
     class WrapperJoyWinMM
     {
     private:
-        // -------- TYPE DEFINITIONS ----------------------------------------------- //
-
-        /// Holds controller state information retrieved from the mapper.
-        struct SJoyStateData
-        {
-            LONG axisX;                                                     ///< X axis value.
-            LONG axisY;                                                     ///< Y axis value.
-            LONG axisZ;                                                     ///< Z axis value.
-            LONG axisRx;                                                    ///< Rot-X axis value.
-            LONG axisRy;                                                    ///< Rot-Y axis value.
-            LONG axisRz;                                                    ///< Rot-Z axis value.
-            LONG pov;                                                       ///< POV (D-pad) value.
-            BYTE buttons[32];                                               ///< Values for up to 32 buttons.
-        };
-
-
         // -------- CLASS VARIABLES ------------------------------------------------ //
 
-        /// Fixed set of four XInput controllers.
-        static XInputController* controllers[XInputController::kMaxNumXInputControllers];
-
-        /// Mapping scheme to be applied to all controllers.
-        static Mapper* mapper;
+        /// Fixed set of four virtual controllers.
+        static VirtualController* controllers[4];
 
         /// Specifies if the class is initialized.
         static BOOL isInitialized;
-
-        /// Specifies the format of each field in SJoyStateData in DirectInput-compatible format.
-        static DIOBJECTDATAFORMAT joyStateObjectDataFormat[];
-
-        /// Specifies the overall data format of SJoyStateData in DirectInput-compatible format.
-        static const DIDATAFORMAT joyStateDataFormat;
 
         /// Maps from application-specified joystick index to the actual indices to present to WinMM or use internally.
         /// Negative values indicate XInput controllers, others indicate values to be passed to WinMM as is.
@@ -96,12 +70,6 @@ namespace Xidi
         /// Callback during DirectInput device enumeration.
         /// Used internally to detect which WinMM devices support XInput.
         static BOOL STDMETHODCALLTYPE CreateSystemDeviceInfoEnumCallback(LPCDIDEVICEINSTANCE lpddi, LPVOID pvRef);
-
-        /// Communicates with the relevant controller and the mapper to fill the provided structure with device state information.
-        /// @param [in] joyID WinMM joystick ID.
-        /// @param [out] joyStateData Structure to fill with device state information.
-        /// @return `JOYERR_NOERROR` on success, `JOYERR_NOCANDO` if the requested operation cannot be performed.
-        static MMRESULT FillDeviceState(UINT joyID, SJoyStateData* joyStateData);
 
         /// Fills in the specified buffer with the name of the registry key to use for referencing controller names.
         /// @tparam StringType Either LPSTR or LPWSTR depending on whether ASCII or Unicode is desired.

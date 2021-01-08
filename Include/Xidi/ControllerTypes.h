@@ -166,7 +166,7 @@ namespace Xidi
             /// Determines the index of the specified axis type within this capabilities object, if it exists.
             /// @param [in] axis Axis type for which to query.
             /// @return Index of the specified axis if it is present, or -1 if it is not.
-            inline int FindAxis(EAxis axis)
+            inline int FindAxis(EAxis axis) const
             {
                 for (int i = 0; i < numAxes; ++i)
                 {
@@ -180,7 +180,7 @@ namespace Xidi
             /// Checks if this capabilities object specifies that the controller has an axis of the specified type.
             /// @param [in] axis Axis type for which to query.
             /// @return `true` if the axis is present, `false` otherwise.
-            inline bool HasAxis(EAxis axis)
+            inline bool HasAxis(EAxis axis) const
             {
                 return (-1 != FindAxis(axis));
             }

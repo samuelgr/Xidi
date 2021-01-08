@@ -173,10 +173,28 @@ namespace Xidi
         /// @return Pointer to new data format representation, or `nullptr` if there is an issue with the application format specification.
         static std::unique_ptr<DataFormat> CreateFromApplicationFormatSpec(const DIDATAFORMAT& appFormatSpec, const Controller::SCapabilities& controllerCapabilities);
 
-        /// Extracts POV direction components from a controller state objects and converts them in aggregate to a single DirectInput POV direction value.
-        /// @param [in] controllerState Controller state from which to extract POV direction components.
-        /// @return Corresponding DirectInput POV direction value.
-        static EPovValue PovDirectionFromControllerState(const Controller::SState& controllerState);
+        /// Generates a DirectInput axis value from a virtual controller axis value.
+        /// @param [in] axis Virtual controller axis value.
+        /// @return Corresponding DirectInput value.
+        static inline TAxisValue DirectInputAxisValue(int32_t axis)
+        {
+            return (TAxisValue)axis;
+        }
+        
+        /// Generates a DirectInput button value from a virtual controller button state.
+        /// @param [in] button Virtual controller button state.
+        /// @return Corresponding DirectInput value.
+        static inline TButtonValue DirectInputButtonValue(bool button)
+        {
+            return ((true == button) ? kButtonValuePressed : kButtonValueNotPressed);
+        }
+        
+        /// Generates a DirectInput POV value from a virtual controller POV state.
+        /// @param [in] pov Virtual controller POV state.
+        /// @return Corresponding DirectInput value.
+        static EPovValue DirectInputPovValue(Controller::UPovDirection pov);
+
+        
 
 
         // -------- INSTANCE METHODS --------------------------------------- //
@@ -214,13 +232,6 @@ namespace Xidi
         {
             return (GetOffsetForElement(element).has_value());
         }
-
-        /// Identifies a controller element, given a DirectInput-style element identifier.
-        /// Parameters are named after common DirectInput field and method parameters that are used for this purpose.
-        /// @param [in] dwObj Object identifier, whose semantics depends on identification method. See DirectInput documentation for more information.
-        /// @param [in] dwHow Identification method. See DirectInput documentation for more information.
-        /// @return Virtual controller element identifier that matches the DirectInput-style element identifier, if such a match exists.
-        std::optional<Controller::SElementIdentifier> IdentifyElement(DWORD dwObj, DWORD dwHow) const;
 
         /// Formats the specified virtual controller state as an application data packet and writes it to the specified buffer.
         /// Useful for providing the application with an instantaneous snapshot of the state of a virtual controller.

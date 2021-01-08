@@ -14,7 +14,6 @@
 #include <dinput.h>
 
 #include "ControllerIdentification.h"
-#include "Mapper.h"
 
 #include <iostream>
 
@@ -70,32 +69,32 @@ static BOOL flagCallbackExpected = FALSE;
 
 // Object format definition for interactive test mode.
 static DIOBJECTDATAFORMAT objectFormats[] = {
-    { &GUID_XAxis, offsetof(SInteractiveTestData, axisX), DIDFT_AXIS | DIDFT_ANYINSTANCE, 0 },
-    { &GUID_YAxis, offsetof(SInteractiveTestData, axisY), DIDFT_AXIS | DIDFT_ANYINSTANCE, 0 },
-    { &GUID_ZAxis, offsetof(SInteractiveTestData, axisZ), DIDFT_AXIS | DIDFT_ANYINSTANCE, 0 },
-    { &GUID_RxAxis, offsetof(SInteractiveTestData, axisRx), DIDFT_AXIS | DIDFT_ANYINSTANCE, 0 },
-    { &GUID_RyAxis, offsetof(SInteractiveTestData, axisRy), DIDFT_AXIS | DIDFT_ANYINSTANCE, 0 },
-    { &GUID_RzAxis, offsetof(SInteractiveTestData, axisRz), DIDFT_AXIS | DIDFT_ANYINSTANCE, 0 },
-    { &GUID_POV, offsetof(SInteractiveTestData, povs) + (0 * sizeof(SInteractiveTestData::povs[0])), DIDFT_POV | DIDFT_ANYINSTANCE, 0 },
-    { &GUID_POV, offsetof(SInteractiveTestData, povs) + (1 * sizeof(SInteractiveTestData::povs[0])), DIDFT_POV | DIDFT_ANYINSTANCE, 0 },
-    { &GUID_POV, offsetof(SInteractiveTestData, povs) + (2 * sizeof(SInteractiveTestData::povs[0])), DIDFT_POV | DIDFT_ANYINSTANCE, 0 },
-    { &GUID_POV, offsetof(SInteractiveTestData, povs) + (3 * sizeof(SInteractiveTestData::povs[0])), DIDFT_POV | DIDFT_ANYINSTANCE, 0 },
-    { &GUID_Button, offsetof(SInteractiveTestData, buttons) + (0 * sizeof(SInteractiveTestData::buttons[0])), DIDFT_BUTTON | DIDFT_ANYINSTANCE, 0 },
-    { &GUID_Button, offsetof(SInteractiveTestData, buttons) + (1 * sizeof(SInteractiveTestData::buttons[0])), DIDFT_BUTTON | DIDFT_ANYINSTANCE, 0 },
-    { &GUID_Button, offsetof(SInteractiveTestData, buttons) + (2 * sizeof(SInteractiveTestData::buttons[0])), DIDFT_BUTTON | DIDFT_ANYINSTANCE, 0 },
-    { &GUID_Button, offsetof(SInteractiveTestData, buttons) + (3 * sizeof(SInteractiveTestData::buttons[0])), DIDFT_BUTTON | DIDFT_ANYINSTANCE, 0 },
-    { &GUID_Button, offsetof(SInteractiveTestData, buttons) + (4 * sizeof(SInteractiveTestData::buttons[0])), DIDFT_BUTTON | DIDFT_ANYINSTANCE, 0 },
-    { &GUID_Button, offsetof(SInteractiveTestData, buttons) + (5 * sizeof(SInteractiveTestData::buttons[0])), DIDFT_BUTTON | DIDFT_ANYINSTANCE, 0 },
-    { &GUID_Button, offsetof(SInteractiveTestData, buttons) + (6 * sizeof(SInteractiveTestData::buttons[0])), DIDFT_BUTTON | DIDFT_ANYINSTANCE, 0 },
-    { &GUID_Button, offsetof(SInteractiveTestData, buttons) + (7 * sizeof(SInteractiveTestData::buttons[0])), DIDFT_BUTTON | DIDFT_ANYINSTANCE, 0 },
-    { &GUID_Button, offsetof(SInteractiveTestData, buttons) + (8 * sizeof(SInteractiveTestData::buttons[0])), DIDFT_BUTTON | DIDFT_ANYINSTANCE, 0 },
-    { &GUID_Button, offsetof(SInteractiveTestData, buttons) + (9 * sizeof(SInteractiveTestData::buttons[0])), DIDFT_BUTTON | DIDFT_ANYINSTANCE, 0 },
-    { &GUID_Button, offsetof(SInteractiveTestData, buttons) + (10 * sizeof(SInteractiveTestData::buttons[0])), DIDFT_BUTTON | DIDFT_ANYINSTANCE, 0 },
-    { &GUID_Button, offsetof(SInteractiveTestData, buttons) + (11 * sizeof(SInteractiveTestData::buttons[0])), DIDFT_BUTTON | DIDFT_ANYINSTANCE, 0 },
-    { &GUID_Button, offsetof(SInteractiveTestData, buttons) + (12 * sizeof(SInteractiveTestData::buttons[0])), DIDFT_BUTTON | DIDFT_ANYINSTANCE, 0 },
-    { &GUID_Button, offsetof(SInteractiveTestData, buttons) + (13 * sizeof(SInteractiveTestData::buttons[0])), DIDFT_BUTTON | DIDFT_ANYINSTANCE, 0 },
-    { &GUID_Button, offsetof(SInteractiveTestData, buttons) + (14 * sizeof(SInteractiveTestData::buttons[0])), DIDFT_BUTTON | DIDFT_ANYINSTANCE, 0 },
-    { &GUID_Button, offsetof(SInteractiveTestData, buttons) + (15 * sizeof(SInteractiveTestData::buttons[0])), DIDFT_BUTTON | DIDFT_ANYINSTANCE, 0 },
+    { &GUID_XAxis, offsetof(SInteractiveTestData, axisX), DIDFT_OPTIONAL | DIDFT_AXIS | DIDFT_ANYINSTANCE, 0 },
+    { &GUID_YAxis, offsetof(SInteractiveTestData, axisY), DIDFT_OPTIONAL | DIDFT_AXIS | DIDFT_ANYINSTANCE, 0 },
+    { &GUID_ZAxis, offsetof(SInteractiveTestData, axisZ), DIDFT_OPTIONAL | DIDFT_AXIS | DIDFT_ANYINSTANCE, 0 },
+    { &GUID_RxAxis, offsetof(SInteractiveTestData, axisRx), DIDFT_OPTIONAL | DIDFT_AXIS | DIDFT_ANYINSTANCE, 0 },
+    { &GUID_RyAxis, offsetof(SInteractiveTestData, axisRy), DIDFT_OPTIONAL | DIDFT_AXIS | DIDFT_ANYINSTANCE, 0 },
+    { &GUID_RzAxis, offsetof(SInteractiveTestData, axisRz), DIDFT_OPTIONAL | DIDFT_AXIS | DIDFT_ANYINSTANCE, 0 },
+    { &GUID_POV, offsetof(SInteractiveTestData, povs) + (0 * sizeof(SInteractiveTestData::povs[0])), DIDFT_OPTIONAL | DIDFT_POV | DIDFT_ANYINSTANCE, 0 },
+    { &GUID_POV, offsetof(SInteractiveTestData, povs) + (1 * sizeof(SInteractiveTestData::povs[0])), DIDFT_OPTIONAL | DIDFT_POV | DIDFT_ANYINSTANCE, 0 },
+    { &GUID_POV, offsetof(SInteractiveTestData, povs) + (2 * sizeof(SInteractiveTestData::povs[0])), DIDFT_OPTIONAL | DIDFT_POV | DIDFT_ANYINSTANCE, 0 },
+    { &GUID_POV, offsetof(SInteractiveTestData, povs) + (3 * sizeof(SInteractiveTestData::povs[0])), DIDFT_OPTIONAL | DIDFT_POV | DIDFT_ANYINSTANCE, 0 },
+    { &GUID_Button, offsetof(SInteractiveTestData, buttons) + (0 * sizeof(SInteractiveTestData::buttons[0])), DIDFT_OPTIONAL | DIDFT_BUTTON | DIDFT_ANYINSTANCE, 0 },
+    { &GUID_Button, offsetof(SInteractiveTestData, buttons) + (1 * sizeof(SInteractiveTestData::buttons[0])), DIDFT_OPTIONAL | DIDFT_BUTTON | DIDFT_ANYINSTANCE, 0 },
+    { &GUID_Button, offsetof(SInteractiveTestData, buttons) + (2 * sizeof(SInteractiveTestData::buttons[0])), DIDFT_OPTIONAL | DIDFT_BUTTON | DIDFT_ANYINSTANCE, 0 },
+    { &GUID_Button, offsetof(SInteractiveTestData, buttons) + (3 * sizeof(SInteractiveTestData::buttons[0])), DIDFT_OPTIONAL | DIDFT_BUTTON | DIDFT_ANYINSTANCE, 0 },
+    { &GUID_Button, offsetof(SInteractiveTestData, buttons) + (4 * sizeof(SInteractiveTestData::buttons[0])), DIDFT_OPTIONAL | DIDFT_BUTTON | DIDFT_ANYINSTANCE, 0 },
+    { &GUID_Button, offsetof(SInteractiveTestData, buttons) + (5 * sizeof(SInteractiveTestData::buttons[0])), DIDFT_OPTIONAL | DIDFT_BUTTON | DIDFT_ANYINSTANCE, 0 },
+    { &GUID_Button, offsetof(SInteractiveTestData, buttons) + (6 * sizeof(SInteractiveTestData::buttons[0])), DIDFT_OPTIONAL | DIDFT_BUTTON | DIDFT_ANYINSTANCE, 0 },
+    { &GUID_Button, offsetof(SInteractiveTestData, buttons) + (7 * sizeof(SInteractiveTestData::buttons[0])), DIDFT_OPTIONAL | DIDFT_BUTTON | DIDFT_ANYINSTANCE, 0 },
+    { &GUID_Button, offsetof(SInteractiveTestData, buttons) + (8 * sizeof(SInteractiveTestData::buttons[0])), DIDFT_OPTIONAL | DIDFT_BUTTON | DIDFT_ANYINSTANCE, 0 },
+    { &GUID_Button, offsetof(SInteractiveTestData, buttons) + (9 * sizeof(SInteractiveTestData::buttons[0])), DIDFT_OPTIONAL | DIDFT_BUTTON | DIDFT_ANYINSTANCE, 0 },
+    { &GUID_Button, offsetof(SInteractiveTestData, buttons) + (10 * sizeof(SInteractiveTestData::buttons[0])), DIDFT_OPTIONAL | DIDFT_BUTTON | DIDFT_ANYINSTANCE, 0 },
+    { &GUID_Button, offsetof(SInteractiveTestData, buttons) + (11 * sizeof(SInteractiveTestData::buttons[0])), DIDFT_OPTIONAL | DIDFT_BUTTON | DIDFT_ANYINSTANCE, 0 },
+    { &GUID_Button, offsetof(SInteractiveTestData, buttons) + (12 * sizeof(SInteractiveTestData::buttons[0])), DIDFT_OPTIONAL | DIDFT_BUTTON | DIDFT_ANYINSTANCE, 0 },
+    { &GUID_Button, offsetof(SInteractiveTestData, buttons) + (13 * sizeof(SInteractiveTestData::buttons[0])), DIDFT_OPTIONAL | DIDFT_BUTTON | DIDFT_ANYINSTANCE, 0 },
+    { &GUID_Button, offsetof(SInteractiveTestData, buttons) + (14 * sizeof(SInteractiveTestData::buttons[0])), DIDFT_OPTIONAL | DIDFT_BUTTON | DIDFT_ANYINSTANCE, 0 },
+    { &GUID_Button, offsetof(SInteractiveTestData, buttons) + (15 * sizeof(SInteractiveTestData::buttons[0])), DIDFT_OPTIONAL | DIDFT_BUTTON | DIDFT_ANYINSTANCE, 0 },
 };
 
 // Overall format definition for interactive test mode.
@@ -589,7 +588,7 @@ int RunTestApp(int argc, char* argv[])
     rangeTest.diph.dwObj = DIDFT_ABSAXIS | DIDFT_MAKEINSTANCE(0);
     rangeTest.diph.dwSize = sizeof(rangeTest);
     result = directInputDeviceIface->GetProperty(DIPROP_RANGE, &rangeTest.diph);
-    if (DIERR_INVALIDPARAM != result || Mapper::kDefaultAxisRangeMax == rangeTest.lMax)
+    if (DIERR_INVALIDPARAM != result)
         wcout << L"FAIL: Invalid header size test." << endl;
     else
         wcout << L"PASS: Invalid header size test." << endl;
@@ -598,20 +597,13 @@ int RunTestApp(int argc, char* argv[])
     rangeTest.diph.dwSize = 0;
     rangeTest.diph.dwHeaderSize = sizeof(rangeTest.diph);
     result = directInputDeviceIface->GetProperty(DIPROP_RANGE, &rangeTest.diph);
-    if (DIERR_INVALIDPARAM != result || Mapper::kDefaultAxisRangeMax == rangeTest.lMax)
+    if (DIERR_INVALIDPARAM != result)
         wcout << L"FAIL: Invalid structure size test." << endl;
     else
         wcout << L"PASS: Invalid structure size test." << endl;
 
-    // Set sizes and expect to get default values back.
-    rangeTest.diph.dwSize = sizeof(rangeTest);
-    result = directInputDeviceIface->GetProperty(DIPROP_RANGE, &rangeTest.diph);
-    if (DI_OK != result || Mapper::kDefaultAxisRangeMax != rangeTest.lMax || Mapper::kDefaultAxisRangeMin != rangeTest.lMin)
-        wcout << L"FAIL: Default range test." << endl;
-    else
-        wcout << L"PASS: Default range test." << endl;
-
     // Set an invalid range and expect it to be rejected.
+    rangeTest.diph.dwSize = sizeof(rangeTest);
     rangeTest.lMax = -1000;
     rangeTest.lMin = 1000;
     result = directInputDeviceIface->SetProperty(DIPROP_RANGE, &rangeTest.diph);
@@ -654,7 +646,7 @@ int RunTestApp(int argc, char* argv[])
     deadzoneTest.diph.dwHeaderSize = sizeof(deadzoneTest.diph);
     deadzoneTest.dwData = 1000;
     result = directInputDeviceIface->GetProperty(DIPROP_DEADZONE, &deadzoneTest.diph);
-    if (DIERR_UNSUPPORTED != result || 1000 != deadzoneTest.dwData)
+    if (DIERR_INVALIDPARAM != result || 1000 != deadzoneTest.dwData)
         wcout << L"FAIL: Bad deadzone target test." << endl;
     else
         wcout << L"PASS: Bad deadzone target test." << endl;
@@ -690,7 +682,7 @@ int RunTestApp(int argc, char* argv[])
         wcout << L"PASS: Single axis valid deadzone test." << endl;
 
     // Write a deadzone out of range.
-    deadzoneTest.dwData = Mapper::kMaxAxisDeadzoneSaturation * 2;
+    deadzoneTest.dwData = 25000;
     result = directInputDeviceIface->SetProperty(DIPROP_DEADZONE, &deadzoneTest.diph);
     if (DIERR_INVALIDPARAM != result)
         wcout << L"FAIL: Set out-of-range deadzone test." << endl;

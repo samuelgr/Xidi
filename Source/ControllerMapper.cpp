@@ -11,13 +11,18 @@
  *****************************************************************************/
 
 #include "ApiWindows.h"
+#include "Configuration.h"
 #include "ControllerElementMapper.h"
 #include "ControllerMapper.h"
 #include "ControllerTypes.h"
+#include "Globals.h"
+#include "Message.h"
+#include "Strings.h"
 
+#include <map>
+#include <mutex>
 #include <set>
 #include <string_view>
-#include <unordered_map>
 #include <xinput.h>
 
 
@@ -35,7 +40,7 @@ namespace Xidi
             // -------- INSTANCE VARIABLES --------------------------------- //
 
             /// Implements the registry of known mappers.
-            std::unordered_map<std::wstring_view, const Mapper*> knownMappers;
+            std::map<std::wstring_view, const Mapper*> knownMappers;
 
             /// Holds the map key that corresponds to the default mapper.
             /// The first type of mapper that is registered becomes the default.
@@ -62,6 +67,31 @@ namespace Xidi
 
             // -------- INSTANCE METHODS ----------------------------------- //
 
+            /// Dumps all mappers in this registry.
+            void DumpRegisteredMappers(void)
+            {
+                constexpr Message::ESeverity kDumpSeverity = Message::ESeverity::Info;
+
+                if (Message::WillOutputMessageOfSeverity(kDumpSeverity))
+                {
+                    Message::Output(kDumpSeverity, L"Begin dump of all known mappers.");
+
+                    Message::Output(kDumpSeverity, L"  Default:");
+                    Message::OutputFormatted(kDumpSeverity, L"    %s", defaultMapper);
+
+                    Message::Output(kDumpSeverity, L"  All:");
+                    
+                    for (const auto& knownMapper : knownMappers)
+                    {
+                        const std::wstring_view kKnownMapperName = knownMapper.first;
+                        const SCapabilities& kKnownMapperCapabilities = knownMapper.second->GetCapabilities();
+                        Message::OutputFormatted(kDumpSeverity, L"    %-24s { numAxes = %u, numButtons = %u, hasPov = %s }", kKnownMapperName.data(), (unsigned int)kKnownMapperCapabilities.numAxes, (unsigned int)kKnownMapperCapabilities.numButtons, ((true == kKnownMapperCapabilities.hasPov) ? L"true" : L"false"));
+                    }
+
+                    Message::Output(kDumpSeverity, L"End dump of all known mappers.");
+                }
+            }
+            
             /// Registers a mapper object with this registry.
             /// @param [in] name Name to associate with the mapper.
             /// @param [in] object Corresponding mapper object.
@@ -144,6 +174,29 @@ namespace Xidi
         }
 
 
+        /// Filters (by saturation) analog stick values that might be slightly out of range due to differences between the implemented range and the XInput actual range.
+        /// @param [in] analogValue Raw analog value.
+        /// @return Filtered analog value, which will most likely be the same as the input.
+        static inline int16_t FilterAnalogStickValue(int16_t analogValue)
+        {
+            if (analogValue > Controller::kAnalogValueMax)
+                return Controller::kAnalogValueMax;
+            else if (analogValue < Controller::kAnalogValueMin)
+                return Controller::kAnalogValueMin;
+            else
+                return analogValue;
+        }
+
+        /// Filters and inverts analog stick values based on presentation differences between XInput and virtual controller needs.
+        /// Useful for XInput axes that have opposite polarity as compared to virtual controller axes.
+        /// @param [in] analogValue Raw analog value.
+        /// @return Filtered and inverted analog value.
+        static inline int16_t FilterAndInvertAnalogStickValue(int16_t analogValue)
+        {
+            return -FilterAnalogStickValue(analogValue);
+        }
+
+
         // -------- CONSTRUCTION AND DESTRUCTION --------------------------- //
         // See "ControllerMapper.h" for documentation.
 
@@ -164,9 +217,47 @@ namespace Xidi
         // -------- CLASS METHODS ------------------------------------------ //
         // See "ControllerMapper.h" for documentation.
 
+        void Mapper::DumpRegisteredMappers(void)
+        {
+            MapperRegistry::GetInstance().DumpRegisteredMappers();
+        }
+
+        // --------
+
         const Mapper* Mapper::GetByName(std::wstring_view mapperName)
         {
             return MapperRegistry::GetInstance().GetMapper(mapperName);
+        }
+
+        // --------
+
+        const Mapper* Mapper::GetConfigured(void)
+        {
+            static const Mapper* configuredMapper = nullptr;
+            static std::once_flag configuredMapperFlag;
+
+            std::call_once(configuredMapperFlag, []() -> void {
+                const Configuration::Configuration& config = Globals::GetConfiguration();
+
+                if ((true == config.IsDataValid()) && (true == config.GetData().SectionNamePairExists(Strings::kStrConfigurationSectionMapper, Strings::kStrConfigurationSettingMapperType)))
+                {
+                    const std::wstring_view kConfiguredMapperName = config.GetData()[Strings::kStrConfigurationSectionMapper][Strings::kStrConfigurationSettingMapperType].FirstValue().GetStringValue();
+
+                    Message::OutputFormatted(Message::ESeverity::Info, L"Attempting to locate mapper '%s' specified in the configuration file.", kConfiguredMapperName.data());
+                    configuredMapper = GetByName(kConfiguredMapperName);
+                }
+                
+                if (nullptr == configuredMapper)
+                {
+                    Message::Output(Message::ESeverity::Info, L"Could not locate mapper specified in the configuration file, or no mapper was specified. Using default mapper instead.");
+                    configuredMapper = GetDefault();
+                }
+
+                if (nullptr == configuredMapper)
+                    Message::Output(Message::ESeverity::Error, L"No mappers could be located. Xidi virtual controllers are unable to function.");
+            });
+
+            return configuredMapper;
         }
 
 
@@ -177,11 +268,15 @@ namespace Xidi
         {
             ZeroMemory(controllerState, sizeof(*controllerState));
 
-            if (nullptr != elements.named.stickLeftX) elements.named.stickLeftX->ContributeFromAnalogValue(controllerState, xinputState.sThumbLX);
-            if (nullptr != elements.named.stickLeftY) elements.named.stickLeftY->ContributeFromAnalogValue(controllerState, xinputState.sThumbLY);
+            // Left and right stick values need to be saturated at the virtual controller range due to a very slight difference between XInput range and virtual controller range.
+            // This difference (-32768 extreme negative for XInput vs -32767 extreme negative for Xidi) does not affect functionality when filtered by saturation.
+            // Vertical analog axes additionally need to be inverted because XInput presents up as positive and down as negative whereas Xidi needs to do the opposite.
+            
+            if (nullptr != elements.named.stickLeftX) elements.named.stickLeftX->ContributeFromAnalogValue(controllerState, FilterAnalogStickValue(xinputState.sThumbLX));
+            if (nullptr != elements.named.stickLeftY) elements.named.stickLeftY->ContributeFromAnalogValue(controllerState, FilterAndInvertAnalogStickValue(xinputState.sThumbLY));
 
-            if (nullptr != elements.named.stickRightX) elements.named.stickRightX->ContributeFromAnalogValue(controllerState, xinputState.sThumbRX);
-            if (nullptr != elements.named.stickRightY) elements.named.stickRightY->ContributeFromAnalogValue(controllerState, xinputState.sThumbRY);
+            if (nullptr != elements.named.stickRightX) elements.named.stickRightX->ContributeFromAnalogValue(controllerState, FilterAnalogStickValue(xinputState.sThumbRX));
+            if (nullptr != elements.named.stickRightY) elements.named.stickRightY->ContributeFromAnalogValue(controllerState, FilterAndInvertAnalogStickValue(xinputState.sThumbRY));
 
             if (nullptr != elements.named.dpadUp) elements.named.dpadUp->ContributeFromButtonValue(controllerState, (0 != (xinputState.wButtons & XINPUT_GAMEPAD_DPAD_UP)));
             if (nullptr != elements.named.dpadDown) elements.named.dpadDown->ContributeFromButtonValue(controllerState, (0 != (xinputState.wButtons & XINPUT_GAMEPAD_DPAD_DOWN)));

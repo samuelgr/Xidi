@@ -17,6 +17,21 @@
 #include <string_view>
 
 
+// -------- MACROS --------------------------------------------------------- //
+
+// Strings that need to be available in multiple formats (ASCII and Unicode).
+#define XIDI_AXIS_NAME_X                    "X Axis"
+#define XIDI_AXIS_NAME_Y                    "Y Axis"
+#define XIDI_AXIS_NAME_Z                    "Z Axis"
+#define XIDI_AXIS_NAME_RX                   "RotX Axis"
+#define XIDI_AXIS_NAME_RY                   "RotY Axis"
+#define XIDI_AXIS_NAME_RZ                   "RotZ Axis"
+#define XIDI_AXIS_NAME_UNKNOWN              "Unknown Axis"
+#define XIDI_BUTTON_NAME_FORMAT             "Button %u"
+#define XIDI_POV_NAME                       "POV"
+#define XIDI_WHOLE_CONTROLLER_NAME          "Whole Controller"
+
+
 namespace Xidi
 {
     namespace Strings
