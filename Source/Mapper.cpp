@@ -5,17 +5,17 @@
  * Authored by Samuel Grossman
  * Copyright (c) 2016-2020
  *************************************************************************//**
- * @file ControllerMapper.cpp
+ * @file Mapper.cpp
  *   Implementation of functionality used to implement mappings of an entire
  *   XInput controller layout to a virtual controller layout.
  *****************************************************************************/
 
 #include "ApiWindows.h"
 #include "Configuration.h"
-#include "ControllerElementMapper.h"
-#include "ControllerMapper.h"
 #include "ControllerTypes.h"
+#include "ElementMapper.h"
 #include "Globals.h"
+#include "Mapper.h"
 #include "Message.h"
 #include "Strings.h"
 

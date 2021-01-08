@@ -5,14 +5,14 @@
  * Authored by Samuel Grossman
  * Copyright (c) 2016-2020
  *************************************************************************//**
- * @file ControllerMapperTest.cpp
+ * @file MapperTest.cpp
  *   Unit tests for entire controller layout mapper objects.
  *****************************************************************************/
 
 #include "ApiWindows.h"
-#include "ControllerElementMapper.h"
-#include "ControllerMapper.h"
 #include "ControllerTypes.h"
+#include "ElementMapper.h"
+#include "Mapper.h"
 #include "TestCase.h"
 
 #include <cstdint>

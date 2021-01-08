@@ -11,7 +11,7 @@
 
 #include "ApiWindows.h"
 #include "Configuration.h"
-#include "ControllerMapper.h"
+#include "Mapper.h"
 #include "Strings.h"
 #include "TemporaryBuffer.h"
 #include "XidiConfigReader.h"

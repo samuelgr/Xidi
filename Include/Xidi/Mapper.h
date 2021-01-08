@@ -5,15 +5,15 @@
  * Authored by Samuel Grossman
  * Copyright (c) 2016-2020
  *************************************************************************//**
- * @file ControllerMapper.h
+ * @file Mapper.h
  *   Declaration of functionality used to implement mappings of an entire
  *   XInput controller layout to a virtual controller layout.
  *****************************************************************************/
 
 #pragma once
 
-#include "ControllerElementMapper.h"
 #include "ControllerTypes.h"
+#include "ElementMapper.h"
 
 #include <memory>
 #include <string_view>

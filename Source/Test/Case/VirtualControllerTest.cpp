@@ -10,8 +10,8 @@
  *****************************************************************************/
 
 #include "ApiWindows.h"
-#include "ControllerElementMapper.h"
 #include "ControllerTypes.h"
+#include "ElementMapper.h"
 #include "StateChangeEventBuffer.h"
 #include "TestCase.h"
 #include "VirtualController.h"
@@ -38,6 +38,7 @@ namespace XidiTest
     using ::Xidi::Controller::Mapper;
     using ::Xidi::Controller::PovMapper;
     using ::Xidi::Controller::StateChangeEventBuffer;
+    using ::Xidi::Controller::VirtualController;
 
 
     // -------- INTERNAL CONSTANTS ----------------------------------------- //

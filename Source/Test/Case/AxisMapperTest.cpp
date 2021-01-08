@@ -11,8 +11,8 @@
  *****************************************************************************/
 
 #include "ApiWindows.h"
-#include "ControllerElementMapper.h"
 #include "ControllerTypes.h"
+#include "ElementMapper.h"
 #include "TestCase.h"
 
 #include <cstdint>

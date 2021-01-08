@@ -5,14 +5,14 @@
  * Authored by Samuel Grossman
  * Copyright (c) 2016-2020
  *************************************************************************//**
- * @file ControllerElementMapper.cpp
+ * @file ElementMapper.cpp
  *   Implementation of functionality used to implement mappings from
  *   individual XInput controller elements to virtual DirectInput controller
  *   elements.
  *****************************************************************************/
 
-#include "ControllerElementMapper.h"
 #include "ControllerTypes.h"
+#include "ElementMapper.h"
 
 #include <cstdint>
 

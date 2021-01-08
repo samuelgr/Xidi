@@ -11,10 +11,10 @@
  *****************************************************************************/
 
 #include "ApiDirectInput.h"
-#include "ControllerElementMapper.h"
-#include "ControllerMapper.h"
 #include "ControllerTypes.h"
 #include "DataFormat.h"
+#include "ElementMapper.h"
+#include "Mapper.h"
 #include "TestCase.h"
 
 #include <memory>

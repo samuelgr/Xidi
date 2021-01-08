@@ -74,7 +74,7 @@ namespace Xidi
     // -------- CLASS VARIABLES -------------------------------------------- //
     // See "WrapperJoyWinMM.h" for documentation.
 
-    VirtualController* WrapperJoyWinMM::controllers[4];
+    Controller::VirtualController* WrapperJoyWinMM::controllers[4];
 
     BOOL WrapperJoyWinMM::isInitialized = FALSE;
 
@@ -99,7 +99,7 @@ namespace Xidi
 
             for (int i = 0; i < _countof(controllers); ++i)
             {
-                controllers[i] = new VirtualController(i, *mapper);
+                controllers[i] = new Controller::VirtualController(i, *mapper);
                 
                 //controllers[i]->SetAllAxisDeadzone(1000);
                 //controllers[i]->SetAllAxisSaturation(9000);

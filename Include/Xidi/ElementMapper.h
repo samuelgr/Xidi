@@ -5,7 +5,7 @@
  * Authored by Samuel Grossman
  * Copyright (c) 2016-2020
  *************************************************************************//**
- * @file ControllerElementMapper.h
+ * @file ElementMapper.h
  *   Declaration of functionality used to implement mappings from individual
  *   XInput controller elements to virtual DirectInput controller elements.
  *****************************************************************************/

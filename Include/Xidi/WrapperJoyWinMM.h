@@ -30,7 +30,7 @@ namespace Xidi
         // -------- CLASS VARIABLES ------------------------------------------------ //
 
         /// Fixed set of four virtual controllers.
-        static VirtualController* controllers[4];
+        static Controller::VirtualController* controllers[4];
 
         /// Specifies if the class is initialized.
         static BOOL isInitialized;

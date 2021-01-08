@@ -74,7 +74,7 @@ namespace Xidi
         // -------- INSTANCE VARIABLES --------------------------------------------- //
 
         /// Virtual controller with which to interface.
-        std::unique_ptr<VirtualController> controller;
+        std::unique_ptr<Controller::VirtualController> controller;
 
         /// Data format specification for communicating with the DirectInput application.
         std::unique_ptr<DataFormat> dataFormat;
@@ -91,7 +91,7 @@ namespace Xidi
 
         /// Initialization constructor.
         /// @param [in] controller Virtual controller object to associate with this object.
-        VirtualDirectInputDevice(std::unique_ptr<VirtualController>&& controller);
+        VirtualDirectInputDevice(std::unique_ptr<Controller::VirtualController>&& controller);
 
 
     public:

@@ -13,7 +13,7 @@
 #include "ApiDirectInput.h"
 #include "ApiGUID.h"
 #include "ControllerIdentification.h"
-#include "ControllerMapper.h"
+#include "Mapper.h"
 #include "Message.h"
 #include "VirtualController.h"
 #include "VirtualDirectInputDevice.h"
@@ -162,7 +162,7 @@ namespace Xidi
                 return DIERR_NOINTERFACE;
             }
             
-            *lplpDirectInputDevice = new VirtualDirectInputDevice<useUnicode>(std::make_unique<VirtualController>(xinputIndex, *mapper));
+            *lplpDirectInputDevice = new VirtualDirectInputDevice<useUnicode>(std::make_unique<Controller::VirtualController>(xinputIndex, *mapper));
             return DI_OK;
         }
     }

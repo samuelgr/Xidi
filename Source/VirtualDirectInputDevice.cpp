@@ -433,7 +433,7 @@ namespace Xidi
     // -------- CONSTRUCTION AND DESTRUCTION ------------------------------- //
     // See "VirtualDirectInputDevice.h" for documentation.
 
-    template <bool useUnicode> VirtualDirectInputDevice<useUnicode>::VirtualDirectInputDevice(std::unique_ptr<VirtualController>&& controller) : controller(std::move(controller)), dataFormat(), refCount(1), stateChangeEventHandle(NULL)
+    template <bool useUnicode> VirtualDirectInputDevice<useUnicode>::VirtualDirectInputDevice(std::unique_ptr<Controller::VirtualController>&& controller) : controller(std::move(controller)), dataFormat(), refCount(1), stateChangeEventHandle(NULL)
     {
         // Nothing to do here.
     }

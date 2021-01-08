@@ -12,8 +12,8 @@
 
 #include "ApiWindows.h"
 #include "Configuration.h"
-#include "ControllerMapper.h"
 #include "Globals.h"
+#include "Mapper.h"
 #include "Message.h"
 #include "Strings.h"
 #include "XidiConfigReader.h"
