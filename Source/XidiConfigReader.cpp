@@ -71,8 +71,10 @@ namespace Xidi
 
     bool XidiConfigReader::CheckValue(std::wstring_view section, std::wstring_view name, const Configuration::TStringValue& value)
     {
+#ifndef XIDI_SKIP_MAPPERS
         if ((Strings::kStrConfigurationSectionMapper == section) && (Strings::kStrConfigurationSettingMapperType == name))
             return (Controller::Mapper::IsMapperNameKnown(value));
+#endif
 
         return true;
     }

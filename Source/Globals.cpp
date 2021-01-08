@@ -160,7 +160,10 @@ namespace Xidi
         void Initialize(void)
         {
             EnableLogIfConfigured();
+
+#ifndef XIDI_SKIP_MAPPERS
             Controller::Mapper::DumpRegisteredMappers();
+#endif
         }
     }
 }

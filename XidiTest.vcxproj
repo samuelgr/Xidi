@@ -175,7 +175,6 @@
     <ClInclude Include="Include\Xidi\ControllerTypes.h" />
     <ClInclude Include="Include\Xidi\DataFormat.h" />
     <ClInclude Include="Include\Xidi\Globals.h" />
-    <ClInclude Include="Include\Xidi\MapperType.h" />
     <ClInclude Include="Include\Xidi\Message.h" />
     <ClInclude Include="Include\Xidi\StateChangeEventBuffer.h" />
     <ClInclude Include="Include\Xidi\Strings.h" />
@@ -196,7 +195,6 @@
     <ClCompile Include="Source\ControllerMapper.cpp" />
     <ClCompile Include="Source\DataFormat.cpp" />
     <ClCompile Include="Source\Globals.cpp" />
-    <ClCompile Include="Source\MapperType.cpp" />
     <ClCompile Include="Source\Message.cpp" />
     <ClCompile Include="Source\StateChangeEventBuffer.cpp" />
     <ClCompile Include="Source\Strings.cpp" />

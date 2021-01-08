@@ -13,9 +13,8 @@
 #include "ApiDirectInput.h"
 #include "ControllerIdentification.h"
 #include "Globals.h"
-#include "XInputController.h"
 
-#include <Xinput.h>
+#include <xinput.h>
 
 
 namespace Xidi
@@ -90,7 +89,7 @@ namespace Xidi
 
         template <typename DeviceInstanceType> BOOL EnumerateXInputControllers(BOOL(FAR PASCAL* lpCallback)(const DeviceInstanceType*, LPVOID), LPVOID pvRef)
         {
-            for (WORD idx = 0; idx < XInputController::kMaxNumXInputControllers; ++idx)
+            for (WORD idx = 0; idx < XUSER_MAX_COUNT; ++idx)
             {
                 // Create a DirectInput device structure
                 DeviceInstanceType* instanceInfo = new DeviceInstanceType;
@@ -160,7 +159,7 @@ namespace Xidi
             LONG resultIndex = -1;
             WORD xindex = ExtractInstanceFromXInputInstanceGUID(instanceGUID);
 
-            if (xindex < XInputController::kMaxNumXInputControllers)
+            if (xindex < XUSER_MAX_COUNT)
             {
                 GUID realXInputGUID;
                 MakeInstanceGUID(realXInputGUID, xindex);

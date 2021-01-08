@@ -247,7 +247,7 @@ namespace Xidi
             {
                 Message::OutputFormatted(kDumpSeverity, L"    dwSize = %u", pdiph->dwSize);
                 Message::OutputFormatted(kDumpSeverity, L"    dwHeaderSize = %u", pdiph->dwHeaderSize);
-                Message::OutputFormatted(kDumpSeverity, L"    dwObj = %u", pdiph->dwObj);
+                Message::OutputFormatted(kDumpSeverity, L"    dwObj = %u (0x%08x)", pdiph->dwObj, pdiph->dwObj);
                 Message::OutputFormatted(kDumpSeverity, L"    dwHow = %u (%s)", pdiph->dwHow, IdentificationMethodString(pdiph->dwHow));
             }
 
@@ -388,10 +388,11 @@ namespace Xidi
     }
 
     /// Fills the specified object instance information structure with information about the specified controller element.
+    /// @param [in] controllerCapabilities Capabilities that describe the layout of the virtual controller.
     /// @param [in] controllerElement Virtual controller element about which to fill information.
     /// @param [in] offset Offset to place into the object instance information structure.
     /// @param objectInfo [out] Structure to be filled with instance information.
-    template <bool useUnicode> static void FillObjectInstanceInfo(Controller::SElementIdentifier controllerElement, TOffset offset, typename DirectInputDeviceType<useUnicode>::DeviceObjectInstanceType* objectInfo)
+    template <bool useUnicode> static void FillObjectInstanceInfo(const Controller::SCapabilities& controllerCapabilities, Controller::SElementIdentifier controllerElement, TOffset offset, typename DirectInputDeviceType<useUnicode>::DeviceObjectInstanceType* objectInfo)
     {
         ZeroMemory(objectInfo, sizeof(*objectInfo));
         objectInfo->dwSize = sizeof(*objectInfo);
@@ -402,7 +403,7 @@ namespace Xidi
         {
         case Controller::EElementType::Axis:
             objectInfo->guidType = AxisTypeGuid(controllerElement.axis);
-            objectInfo->dwType = DIDFT_ABSAXIS | DIDFT_MAKEINSTANCE((int)controllerElement.axis);
+            objectInfo->dwType = DIDFT_ABSAXIS | DIDFT_MAKEINSTANCE((int)controllerCapabilities.FindAxis(controllerElement.axis));
             objectInfo->dwFlags = DIDOI_POLLED | DIDOI_ASPECTPOSITION;
             break;
 
@@ -619,7 +620,7 @@ namespace Xidi
                     const Controller::SElementIdentifier kAxisIdentifier = {.type = Controller::EElementType::Axis, .axis = kAxis};
                     const TOffset kAxisOffset = ((true == IsApplicationDataFormatSet()) ? dataFormat->GetOffsetForElement(kAxisIdentifier).value_or(DataFormat::kInvalidOffsetValue) : NativeOffsetForElement(kAxisIdentifier));
 
-                    FillObjectInstanceInfo<useUnicode>(kAxisIdentifier, kAxisOffset, objectDescriptor.get());
+                    FillObjectInstanceInfo<useUnicode>(controllerCapabilities, kAxisIdentifier, kAxisOffset, objectDescriptor.get());
                     switch (lpCallback(objectDescriptor.get(), pvRef))
                     {
                     case DIENUM_CONTINUE:
@@ -640,7 +641,7 @@ namespace Xidi
                     const Controller::SElementIdentifier kButtonIdentifier = {.type = Controller::EElementType::Button, .button = kButton};
                     const TOffset kButtonOffset = ((true == IsApplicationDataFormatSet()) ? dataFormat->GetOffsetForElement(kButtonIdentifier).value_or(DataFormat::kInvalidOffsetValue) : NativeOffsetForElement(kButtonIdentifier));
 
-                    FillObjectInstanceInfo<useUnicode>(kButtonIdentifier, kButtonOffset, objectDescriptor.get());
+                    FillObjectInstanceInfo<useUnicode>(controllerCapabilities, kButtonIdentifier, kButtonOffset, objectDescriptor.get());
                     switch (lpCallback(objectDescriptor.get(), pvRef))
                     {
                     case DIENUM_CONTINUE:
@@ -660,7 +661,7 @@ namespace Xidi
                     const Controller::SElementIdentifier kPovIdentifier = {.type = Controller::EElementType::Pov};
                     const TOffset kPovOffset = ((true == IsApplicationDataFormatSet()) ? dataFormat->GetOffsetForElement(kPovIdentifier).value_or(DataFormat::kInvalidOffsetValue) : NativeOffsetForElement(kPovIdentifier));
                     
-                    FillObjectInstanceInfo<useUnicode>(kPovIdentifier, kPovOffset, objectDescriptor.get());
+                    FillObjectInstanceInfo<useUnicode>(controllerCapabilities, kPovIdentifier, kPovOffset, objectDescriptor.get());
                     switch (lpCallback(objectDescriptor.get(), pvRef))
                     {
                     case DIENUM_CONTINUE:
@@ -844,7 +845,7 @@ namespace Xidi
             LOG_INVOCATION_AND_RETURN(DIERR_OBJECTNOTFOUND, kMethodSeverity);
 
         const Controller::SElementIdentifier element = maybeElement.value();
-        FillObjectInstanceInfo<useUnicode>(element, ((true == IsApplicationDataFormatSet()) ? dataFormat->GetOffsetForElement(element).value_or(DataFormat::kInvalidOffsetValue) : NativeOffsetForElement(element)), pdidoi);
+        FillObjectInstanceInfo<useUnicode>(controller->GetCapabilities(), element, ((true == IsApplicationDataFormatSet()) ? dataFormat->GetOffsetForElement(element).value_or(DataFormat::kInvalidOffsetValue) : NativeOffsetForElement(element)), pdidoi);
         LOG_INVOCATION_AND_RETURN(DI_OK, kMethodSeverity);
     }
 

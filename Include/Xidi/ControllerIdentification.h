@@ -13,7 +13,6 @@
 #pragma once
 
 #include "ApiDirectInput.h"
-#include "XInputController.h"
 
 #include <string>
 
