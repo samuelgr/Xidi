@@ -56,7 +56,7 @@ namespace Xidi
         // -------- INSTANCE METHODS ----------------------------------- //
         // See "StateChangeEventBuffer.h" for documentation.
 
-        void StateChangeEventBuffer::AppendEvent(const SEventData& eventData, uint32_t timestamp)
+        void StateChangeEventBuffer::AppendEvent(SEventData eventData, uint32_t timestamp)
         {
             // Sequence number is globally ordered with respect to all controller events, even those from other event buffers.
             static std::atomic<uint32_t> nextSequence = 0;

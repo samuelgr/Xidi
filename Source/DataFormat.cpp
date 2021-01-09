@@ -70,7 +70,7 @@ namespace Xidi
         /// Uses the provided information to initialize the sets of available controller elements and determine the number of byte allocations to track.
         /// @param [in] controllerCapabilities Capabilities of the controller for which the data format is being constructed.
         /// @param [in] dataPacketSize Size, in bytes, of the application's data packet.
-        DataFormatBuildHelper(const Controller::SCapabilities& controllerCapabilities, TOffset dataPacketSize) : availableAxes(), availableButtons(), availablePov(), usedByteOffsets(dataPacketSize)
+        DataFormatBuildHelper(const Controller::SCapabilities controllerCapabilities, TOffset dataPacketSize) : availableAxes(), availableButtons(), availablePov(), usedByteOffsets(dataPacketSize)
         {
             for (int i = 0; i < controllerCapabilities.numAxes; ++i)
                 availableAxes.insert(controllerCapabilities.axisType[i]);
@@ -397,7 +397,7 @@ namespace Xidi
     // -------- CLASS METHODS ---------------------------------------------- //
     // See "DataFormat.h" for documentation.
 
-    std::unique_ptr<DataFormat> DataFormat::CreateFromApplicationFormatSpec(const DIDATAFORMAT& appFormatSpec, const Controller::SCapabilities& controllerCapabilities)
+    std::unique_ptr<DataFormat> DataFormat::CreateFromApplicationFormatSpec(const DIDATAFORMAT& appFormatSpec, const Controller::SCapabilities controllerCapabilities)
     {
         DumpDataFormatSpecification(appFormatSpec);
         
@@ -438,7 +438,6 @@ namespace Xidi
             Message::OutputFormatted(Message::ESeverity::Warning, L"Rejecting application data format because its flags are unsupported (0x%08x).", appFormatSpec.dwFlags);
             return nullptr;
         }
-
 
         DataFormatBuildHelper buildHelper(controllerCapabilities, appFormatSpec.dwDataSize);
         SDataFormatSpec dataFormatSpec(appFormatSpec.dwDataSize);

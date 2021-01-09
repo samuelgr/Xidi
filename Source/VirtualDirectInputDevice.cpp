@@ -392,7 +392,7 @@ namespace Xidi
     /// @param [in] controllerElement Virtual controller element about which to fill information.
     /// @param [in] offset Offset to place into the object instance information structure.
     /// @param objectInfo [out] Structure to be filled with instance information.
-    template <bool useUnicode> static void FillObjectInstanceInfo(const Controller::SCapabilities& controllerCapabilities, Controller::SElementIdentifier controllerElement, TOffset offset, typename DirectInputDeviceType<useUnicode>::DeviceObjectInstanceType* objectInfo)
+    template <ECharMode charMode> static void FillObjectInstanceInfo(const Controller::SCapabilities controllerCapabilities, Controller::SElementIdentifier controllerElement, TOffset offset, typename DirectInputDeviceType<charMode>::DeviceObjectInstanceType* objectInfo)
     {
         ZeroMemory(objectInfo, sizeof(*objectInfo));
         objectInfo->dwSize = sizeof(*objectInfo);
@@ -433,7 +433,7 @@ namespace Xidi
     // -------- CONSTRUCTION AND DESTRUCTION ------------------------------- //
     // See "VirtualDirectInputDevice.h" for documentation.
 
-    template <bool useUnicode> VirtualDirectInputDevice<useUnicode>::VirtualDirectInputDevice(std::unique_ptr<Controller::VirtualController>&& controller) : controller(std::move(controller)), dataFormat(), refCount(1), stateChangeEventHandle(NULL)
+    template <ECharMode charMode> VirtualDirectInputDevice<charMode>::VirtualDirectInputDevice(std::unique_ptr<Controller::VirtualController>&& controller) : controller(std::move(controller)), dataFormat(), refCount(1), stateChangeEventHandle(NULL)
     {
         // Nothing to do here.
     }
@@ -441,7 +441,7 @@ namespace Xidi
     // -------- INSTANCE METHODS ------------------------------------------- //
     // See "VirtualDirectInputDevice.h" for documentation.
 
-    template <bool useUnicode> std::optional<Controller::SElementIdentifier> VirtualDirectInputDevice<useUnicode>::IdentifyElement(DWORD dwObj, DWORD dwHow) const
+    template <ECharMode charMode> std::optional<Controller::SElementIdentifier> VirtualDirectInputDevice<charMode>::IdentifyElement(DWORD dwObj, DWORD dwHow) const
     {
         switch (dwHow)
         {
@@ -494,14 +494,14 @@ namespace Xidi
     // -------- METHODS: IUnknown ------------------------------------------ //
     // See IUnknown documentation for more information.
 
-    template <bool useUnicode> HRESULT VirtualDirectInputDevice<useUnicode>::QueryInterface(REFIID riid, LPVOID* ppvObj)
+    template <ECharMode charMode> HRESULT VirtualDirectInputDevice<charMode>::QueryInterface(REFIID riid, LPVOID* ppvObj)
     {
         if (nullptr == ppvObj)
             return E_POINTER;
 
         bool validInterfaceRequested = false;
 
-        if (true == useUnicode)
+        if (ECharMode::W == charMode)
         {
 #if DIRECTINPUT_VERSION >= 0x0800
             if (IsEqualIID(riid, IID_IUnknown) || IsEqualIID(riid, IID_IDirectInputDevice8W))
@@ -532,14 +532,14 @@ namespace Xidi
 
     // ---------
 
-    template <bool useUnicode> ULONG VirtualDirectInputDevice<useUnicode>::AddRef(void)
+    template <ECharMode charMode> ULONG VirtualDirectInputDevice<charMode>::AddRef(void)
     {
         return ++refCount;
     }
 
     // ---------
 
-    template <bool useUnicode> ULONG VirtualDirectInputDevice<useUnicode>::Release(void)
+    template <ECharMode charMode> ULONG VirtualDirectInputDevice<charMode>::Release(void)
     {
         const unsigned long numRemainingRefs = --refCount;
 
@@ -553,7 +553,7 @@ namespace Xidi
     // -------- METHODS: IDirectInputDevice COMMON ------------------------- //
     // See DirectInput documentation for more information.
 
-    template <bool useUnicode> HRESULT VirtualDirectInputDevice<useUnicode>::Acquire(void)
+    template <ECharMode charMode> HRESULT VirtualDirectInputDevice<charMode>::Acquire(void)
     {
         static constexpr Message::ESeverity kMethodSeverity = Message::ESeverity::Info;
         
@@ -567,7 +567,7 @@ namespace Xidi
 
     // ---------
 
-    template <bool useUnicode> HRESULT VirtualDirectInputDevice<useUnicode>::CreateEffect(REFGUID rguid, LPCDIEFFECT lpeff, LPDIRECTINPUTEFFECT* ppdeff, LPUNKNOWN punkOuter)
+    template <ECharMode charMode> HRESULT VirtualDirectInputDevice<charMode>::CreateEffect(REFGUID rguid, LPCDIEFFECT lpeff, LPDIRECTINPUTEFFECT* ppdeff, LPUNKNOWN punkOuter)
     {
         static constexpr Message::ESeverity kMethodSeverity = Message::ESeverity::Info;
         LOG_INVOCATION_AND_RETURN(DIERR_UNSUPPORTED, kMethodSeverity);
@@ -575,7 +575,7 @@ namespace Xidi
 
     // ---------
 
-    template <bool useUnicode> HRESULT VirtualDirectInputDevice<useUnicode>::EnumCreatedEffectObjects(LPDIENUMCREATEDEFFECTOBJECTSCALLBACK lpCallback, LPVOID pvRef, DWORD fl)
+    template <ECharMode charMode> HRESULT VirtualDirectInputDevice<charMode>::EnumCreatedEffectObjects(LPDIENUMCREATEDEFFECTOBJECTSCALLBACK lpCallback, LPVOID pvRef, DWORD fl)
     {
         static constexpr Message::ESeverity kMethodSeverity = Message::ESeverity::Info;
         LOG_INVOCATION_AND_RETURN(DIERR_UNSUPPORTED, kMethodSeverity);
@@ -583,7 +583,7 @@ namespace Xidi
 
     // ---------
 
-    template <bool useUnicode> HRESULT VirtualDirectInputDevice<useUnicode>::EnumEffects(DirectInputDeviceType<useUnicode>::EnumEffectsCallbackType lpCallback, LPVOID pvRef, DWORD dwEffType)
+    template <ECharMode charMode> HRESULT VirtualDirectInputDevice<charMode>::EnumEffects(DirectInputDeviceType<charMode>::EnumEffectsCallbackType lpCallback, LPVOID pvRef, DWORD dwEffType)
     {
         static constexpr Message::ESeverity kMethodSeverity = Message::ESeverity::Info;
         LOG_INVOCATION_AND_RETURN(DIERR_UNSUPPORTED, kMethodSeverity);
@@ -591,7 +591,7 @@ namespace Xidi
 
     // ---------
 
-    template <bool useUnicode> HRESULT VirtualDirectInputDevice<useUnicode>::EnumEffectsInFile(DirectInputDeviceType<useUnicode>::ConstStringType lptszFileName, LPDIENUMEFFECTSINFILECALLBACK pec, LPVOID pvRef, DWORD dwFlags)
+    template <ECharMode charMode> HRESULT VirtualDirectInputDevice<charMode>::EnumEffectsInFile(DirectInputDeviceType<charMode>::ConstStringType lptszFileName, LPDIENUMEFFECTSINFILECALLBACK pec, LPVOID pvRef, DWORD dwFlags)
     {
         static constexpr Message::ESeverity kMethodSeverity = Message::ESeverity::Info;
         LOG_INVOCATION_AND_RETURN(DIERR_UNSUPPORTED, kMethodSeverity);
@@ -599,7 +599,7 @@ namespace Xidi
 
     // ---------
 
-    template <bool useUnicode> HRESULT VirtualDirectInputDevice<useUnicode>::EnumObjects(DirectInputDeviceType<useUnicode>::EnumObjectsCallbackType lpCallback, LPVOID pvRef, DWORD dwFlags)
+    template <ECharMode charMode> HRESULT VirtualDirectInputDevice<charMode>::EnumObjects(DirectInputDeviceType<charMode>::EnumObjectsCallbackType lpCallback, LPVOID pvRef, DWORD dwFlags)
     {
         static constexpr Message::ESeverity kMethodSeverity = Message::ESeverity::Info;
 
@@ -609,8 +609,8 @@ namespace Xidi
 
         if ((true == willEnumerateAxes) || (true == willEnumerateButtons) || (true == willEnumeratePov))
         {
-            std::unique_ptr<DirectInputDeviceType<useUnicode>::DeviceObjectInstanceType> objectDescriptor = std::make_unique<DirectInputDeviceType<useUnicode>::DeviceObjectInstanceType>();
-            const Controller::SCapabilities& controllerCapabilities = controller->GetCapabilities();
+            std::unique_ptr<DirectInputDeviceType<charMode>::DeviceObjectInstanceType> objectDescriptor = std::make_unique<DirectInputDeviceType<charMode>::DeviceObjectInstanceType>();
+            const Controller::SCapabilities controllerCapabilities = controller->GetCapabilities();
 
             if (true == willEnumerateAxes)
             {
@@ -620,7 +620,7 @@ namespace Xidi
                     const Controller::SElementIdentifier kAxisIdentifier = {.type = Controller::EElementType::Axis, .axis = kAxis};
                     const TOffset kAxisOffset = ((true == IsApplicationDataFormatSet()) ? dataFormat->GetOffsetForElement(kAxisIdentifier).value_or(DataFormat::kInvalidOffsetValue) : NativeOffsetForElement(kAxisIdentifier));
 
-                    FillObjectInstanceInfo<useUnicode>(controllerCapabilities, kAxisIdentifier, kAxisOffset, objectDescriptor.get());
+                    FillObjectInstanceInfo<charMode>(controllerCapabilities, kAxisIdentifier, kAxisOffset, objectDescriptor.get());
                     switch (lpCallback(objectDescriptor.get(), pvRef))
                     {
                     case DIENUM_CONTINUE:
@@ -641,7 +641,7 @@ namespace Xidi
                     const Controller::SElementIdentifier kButtonIdentifier = {.type = Controller::EElementType::Button, .button = kButton};
                     const TOffset kButtonOffset = ((true == IsApplicationDataFormatSet()) ? dataFormat->GetOffsetForElement(kButtonIdentifier).value_or(DataFormat::kInvalidOffsetValue) : NativeOffsetForElement(kButtonIdentifier));
 
-                    FillObjectInstanceInfo<useUnicode>(controllerCapabilities, kButtonIdentifier, kButtonOffset, objectDescriptor.get());
+                    FillObjectInstanceInfo<charMode>(controllerCapabilities, kButtonIdentifier, kButtonOffset, objectDescriptor.get());
                     switch (lpCallback(objectDescriptor.get(), pvRef))
                     {
                     case DIENUM_CONTINUE:
@@ -661,7 +661,7 @@ namespace Xidi
                     const Controller::SElementIdentifier kPovIdentifier = {.type = Controller::EElementType::Pov};
                     const TOffset kPovOffset = ((true == IsApplicationDataFormatSet()) ? dataFormat->GetOffsetForElement(kPovIdentifier).value_or(DataFormat::kInvalidOffsetValue) : NativeOffsetForElement(kPovIdentifier));
                     
-                    FillObjectInstanceInfo<useUnicode>(controllerCapabilities, kPovIdentifier, kPovOffset, objectDescriptor.get());
+                    FillObjectInstanceInfo<charMode>(controllerCapabilities, kPovIdentifier, kPovOffset, objectDescriptor.get());
                     switch (lpCallback(objectDescriptor.get(), pvRef))
                     {
                     case DIENUM_CONTINUE:
@@ -680,7 +680,7 @@ namespace Xidi
 
     // ---------
 
-    template <bool useUnicode> HRESULT VirtualDirectInputDevice<useUnicode>::Escape(LPDIEFFESCAPE pesc)
+    template <ECharMode charMode> HRESULT VirtualDirectInputDevice<charMode>::Escape(LPDIEFFESCAPE pesc)
     {
         static constexpr Message::ESeverity kMethodSeverity = Message::ESeverity::Info;
         LOG_INVOCATION_AND_RETURN(DIERR_UNSUPPORTED, kMethodSeverity);
@@ -688,7 +688,7 @@ namespace Xidi
 
     // ---------
 
-    template <bool useUnicode> HRESULT VirtualDirectInputDevice<useUnicode>::GetCapabilities(LPDIDEVCAPS lpDIDevCaps)
+    template <ECharMode charMode> HRESULT VirtualDirectInputDevice<charMode>::GetCapabilities(LPDIDEVCAPS lpDIDevCaps)
     {
         static constexpr Message::ESeverity kMethodSeverity = Message::ESeverity::Info;
 
@@ -725,7 +725,7 @@ namespace Xidi
 
     // ---------
 
-    template <bool useUnicode> HRESULT VirtualDirectInputDevice<useUnicode>::GetDeviceData(DWORD cbObjectData, LPDIDEVICEOBJECTDATA rgdod, LPDWORD pdwInOut, DWORD dwFlags)
+    template <ECharMode charMode> HRESULT VirtualDirectInputDevice<charMode>::GetDeviceData(DWORD cbObjectData, LPDIDEVICEOBJECTDATA rgdod, LPDWORD pdwInOut, DWORD dwFlags)
     {
         static constexpr Message::ESeverity kMethodSeverity = Message::ESeverity::SuperDebug;
         static constexpr Message::ESeverity kMethodSeverityForError = Message::ESeverity::Info;
@@ -791,7 +791,7 @@ namespace Xidi
 
     // ---------
 
-    template <bool useUnicode> HRESULT VirtualDirectInputDevice<useUnicode>::GetDeviceInfo(DirectInputDeviceType<useUnicode>::DeviceInstanceType* pdidi)
+    template <ECharMode charMode> HRESULT VirtualDirectInputDevice<charMode>::GetDeviceInfo(DirectInputDeviceType<charMode>::DeviceInstanceType* pdidi)
     {
         static constexpr Message::ESeverity kMethodSeverity = Message::ESeverity::Info;
 
@@ -802,7 +802,7 @@ namespace Xidi
 
     // ---------
 
-    template <bool useUnicode> HRESULT VirtualDirectInputDevice<useUnicode>::GetDeviceState(DWORD cbData, LPVOID lpvData)
+    template <ECharMode charMode> HRESULT VirtualDirectInputDevice<charMode>::GetDeviceState(DWORD cbData, LPVOID lpvData)
     {
         static constexpr Message::ESeverity kMethodSeverity = Message::ESeverity::SuperDebug;
         static constexpr Message::ESeverity kMethodSeverityForError = Message::ESeverity::Info;
@@ -810,14 +810,18 @@ namespace Xidi
         if (false == IsApplicationDataFormatSet())
             LOG_INVOCATION_AND_RETURN(DIERR_INVALIDPARAM, kMethodSeverityForError);
 
-        const Controller::SState kControllerState = controller->GetState();
-        const bool kWriteDataPacketResult = dataFormat->WriteDataPacket(lpvData, cbData, kControllerState);
-        LOG_INVOCATION_AND_RETURN(((true == kWriteDataPacketResult) ? DI_OK : DIERR_INVALIDPARAM), kMethodSeverity);
+        bool writeDataPacketResult = false;
+        do
+        {
+            auto lock = controller->Lock();
+            writeDataPacketResult = dataFormat->WriteDataPacket(lpvData, cbData, controller->GetStateRef());
+        } while (false);
+        LOG_INVOCATION_AND_RETURN(((true == writeDataPacketResult) ? DI_OK : DIERR_INVALIDPARAM), kMethodSeverity);
     }
 
     // ---------
 
-    template <bool useUnicode> HRESULT VirtualDirectInputDevice<useUnicode>::GetEffectInfo(DirectInputDeviceType<useUnicode>::EffectInfoType* pdei, REFGUID rguid)
+    template <ECharMode charMode> HRESULT VirtualDirectInputDevice<charMode>::GetEffectInfo(DirectInputDeviceType<charMode>::EffectInfoType* pdei, REFGUID rguid)
     {
         static constexpr Message::ESeverity kMethodSeverity = Message::ESeverity::Info;
         LOG_INVOCATION_AND_RETURN(DIERR_UNSUPPORTED, kMethodSeverity);
@@ -825,7 +829,7 @@ namespace Xidi
 
     // ---------
 
-    template <bool useUnicode> HRESULT VirtualDirectInputDevice<useUnicode>::GetForceFeedbackState(LPDWORD pdwOut)
+    template <ECharMode charMode> HRESULT VirtualDirectInputDevice<charMode>::GetForceFeedbackState(LPDWORD pdwOut)
     {
         static constexpr Message::ESeverity kMethodSeverity = Message::ESeverity::Info;
         LOG_INVOCATION_AND_RETURN(DIERR_UNSUPPORTED, kMethodSeverity);
@@ -833,11 +837,11 @@ namespace Xidi
 
     // ---------
 
-    template <bool useUnicode> HRESULT VirtualDirectInputDevice<useUnicode>::GetObjectInfo(DirectInputDeviceType<useUnicode>::DeviceObjectInstanceType* pdidoi, DWORD dwObj, DWORD dwHow)
+    template <ECharMode charMode> HRESULT VirtualDirectInputDevice<charMode>::GetObjectInfo(DirectInputDeviceType<charMode>::DeviceObjectInstanceType* pdidoi, DWORD dwObj, DWORD dwHow)
     {
         static constexpr Message::ESeverity kMethodSeverity = Message::ESeverity::Info;
         
-        if ((nullptr == pdidoi) || (sizeof(DirectInputDeviceType<useUnicode>::DeviceObjectInstanceType) != pdidoi->dwSize))
+        if ((nullptr == pdidoi) || (sizeof(DirectInputDeviceType<charMode>::DeviceObjectInstanceType) != pdidoi->dwSize))
             LOG_INVOCATION_AND_RETURN(DIERR_INVALIDPARAM, kMethodSeverity);
 
         const std::optional<Controller::SElementIdentifier> maybeElement = IdentifyElement(dwObj, dwHow);
@@ -845,13 +849,13 @@ namespace Xidi
             LOG_INVOCATION_AND_RETURN(DIERR_OBJECTNOTFOUND, kMethodSeverity);
 
         const Controller::SElementIdentifier element = maybeElement.value();
-        FillObjectInstanceInfo<useUnicode>(controller->GetCapabilities(), element, ((true == IsApplicationDataFormatSet()) ? dataFormat->GetOffsetForElement(element).value_or(DataFormat::kInvalidOffsetValue) : NativeOffsetForElement(element)), pdidoi);
+        FillObjectInstanceInfo<charMode>(controller->GetCapabilities(), element, ((true == IsApplicationDataFormatSet()) ? dataFormat->GetOffsetForElement(element).value_or(DataFormat::kInvalidOffsetValue) : NativeOffsetForElement(element)), pdidoi);
         LOG_INVOCATION_AND_RETURN(DI_OK, kMethodSeverity);
     }
 
     // ---------
 
-    template <bool useUnicode> HRESULT VirtualDirectInputDevice<useUnicode>::GetProperty(REFGUID rguidProp, LPDIPROPHEADER pdiph)
+    template <ECharMode charMode> HRESULT VirtualDirectInputDevice<charMode>::GetProperty(REFGUID rguidProp, LPDIPROPHEADER pdiph)
     {
         static constexpr Message::ESeverity kMethodSeverity = Message::ESeverity::Info;
 
@@ -909,7 +913,7 @@ namespace Xidi
 
     // ---------
 
-    template <bool useUnicode> HRESULT VirtualDirectInputDevice<useUnicode>::Initialize(HINSTANCE hinst, DWORD dwVersion, REFGUID rguid)
+    template <ECharMode charMode> HRESULT VirtualDirectInputDevice<charMode>::Initialize(HINSTANCE hinst, DWORD dwVersion, REFGUID rguid)
     {
         // Not required for Xidi virtual controllers as they are implemented now.
         // However, this method is needed for creating IDirectInputDevice objects via COM.
@@ -920,7 +924,7 @@ namespace Xidi
 
     // ---------
 
-    template <bool useUnicode> HRESULT VirtualDirectInputDevice<useUnicode>::Poll(void)
+    template <ECharMode charMode> HRESULT VirtualDirectInputDevice<charMode>::Poll(void)
     {
         static constexpr Message::ESeverity kMethodSeverity = Message::ESeverity::SuperDebug;
 
@@ -936,7 +940,7 @@ namespace Xidi
 
     // ---------
 
-    template <bool useUnicode> HRESULT VirtualDirectInputDevice<useUnicode>::RunControlPanel(HWND hwndOwner, DWORD dwFlags)
+    template <ECharMode charMode> HRESULT VirtualDirectInputDevice<charMode>::RunControlPanel(HWND hwndOwner, DWORD dwFlags)
     {
         static constexpr Message::ESeverity kMethodSeverity = Message::ESeverity::Info;
         LOG_INVOCATION_AND_RETURN(DIERR_UNSUPPORTED, kMethodSeverity);
@@ -944,7 +948,7 @@ namespace Xidi
 
     // ---------
 
-    template <bool useUnicode> HRESULT VirtualDirectInputDevice<useUnicode>::SendDeviceData(DWORD cbObjectData, LPCDIDEVICEOBJECTDATA rgdod, LPDWORD pdwInOut, DWORD fl)
+    template <ECharMode charMode> HRESULT VirtualDirectInputDevice<charMode>::SendDeviceData(DWORD cbObjectData, LPCDIDEVICEOBJECTDATA rgdod, LPDWORD pdwInOut, DWORD fl)
     {
         static constexpr Message::ESeverity kMethodSeverity = Message::ESeverity::Info;
         LOG_INVOCATION_AND_RETURN(DIERR_UNSUPPORTED, kMethodSeverity);
@@ -952,7 +956,7 @@ namespace Xidi
 
     // ---------
 
-    template <bool useUnicode> HRESULT VirtualDirectInputDevice<useUnicode>::SendForceFeedbackCommand(DWORD dwFlags)
+    template <ECharMode charMode> HRESULT VirtualDirectInputDevice<charMode>::SendForceFeedbackCommand(DWORD dwFlags)
     {
         static constexpr Message::ESeverity kMethodSeverity = Message::ESeverity::Info;
         LOG_INVOCATION_AND_RETURN(DIERR_UNSUPPORTED, kMethodSeverity);
@@ -960,7 +964,7 @@ namespace Xidi
 
     // ---------
 
-    template <bool useUnicode> HRESULT VirtualDirectInputDevice<useUnicode>::SetCooperativeLevel(HWND hwnd, DWORD dwFlags)
+    template <ECharMode charMode> HRESULT VirtualDirectInputDevice<charMode>::SetCooperativeLevel(HWND hwnd, DWORD dwFlags)
     {
         // Presently this is a no-op.
         static constexpr Message::ESeverity kMethodSeverity = Message::ESeverity::Info;
@@ -969,7 +973,7 @@ namespace Xidi
 
     // ---------
 
-    template <bool useUnicode> HRESULT VirtualDirectInputDevice<useUnicode>::SetDataFormat(LPCDIDATAFORMAT lpdf)
+    template <ECharMode charMode> HRESULT VirtualDirectInputDevice<charMode>::SetDataFormat(LPCDIDATAFORMAT lpdf)
     {
         static constexpr Message::ESeverity kMethodSeverity = Message::ESeverity::Info;
 
@@ -1012,7 +1016,7 @@ namespace Xidi
 
     // ---------
 
-    template <bool useUnicode> HRESULT VirtualDirectInputDevice<useUnicode>::SetEventNotification(HANDLE hEvent)
+    template <ECharMode charMode> HRESULT VirtualDirectInputDevice<charMode>::SetEventNotification(HANDLE hEvent)
     {
         static constexpr Message::ESeverity kMethodSeverity = Message::ESeverity::Info;
 
@@ -1022,7 +1026,7 @@ namespace Xidi
 
     // ---------
 
-    template <bool useUnicode> HRESULT VirtualDirectInputDevice<useUnicode>::SetProperty(REFGUID rguidProp, LPCDIPROPHEADER pdiph)
+    template <ECharMode charMode> HRESULT VirtualDirectInputDevice<charMode>::SetProperty(REFGUID rguidProp, LPCDIPROPHEADER pdiph)
     {
         static constexpr Message::ESeverity kMethodSeverity = Message::ESeverity::Info;
 
@@ -1088,7 +1092,7 @@ namespace Xidi
 
     // ---------
 
-    template <bool useUnicode> HRESULT VirtualDirectInputDevice<useUnicode>::Unacquire(void)
+    template <ECharMode charMode> HRESULT VirtualDirectInputDevice<charMode>::Unacquire(void)
     {
         // Controller acquisition is a no-op for Xidi virtual controllers.
         static constexpr Message::ESeverity kMethodSeverity = Message::ESeverity::Info;
@@ -1097,7 +1101,7 @@ namespace Xidi
 
     // ---------
 
-    template <bool useUnicode> HRESULT VirtualDirectInputDevice<useUnicode>::WriteEffectToFile(DirectInputDeviceType<useUnicode>::ConstStringType lptszFileName, DWORD dwEntries, LPDIFILEEFFECT rgDiFileEft, DWORD dwFlags)
+    template <ECharMode charMode> HRESULT VirtualDirectInputDevice<charMode>::WriteEffectToFile(DirectInputDeviceType<charMode>::ConstStringType lptszFileName, DWORD dwEntries, LPDIFILEEFFECT rgDiFileEft, DWORD dwFlags)
     {
         static constexpr Message::ESeverity kMethodSeverity = Message::ESeverity::Info;
         LOG_INVOCATION_AND_RETURN(DIERR_UNSUPPORTED, kMethodSeverity);
@@ -1108,7 +1112,7 @@ namespace Xidi
     // -------- METHODS: IDirectInputDevice8 ONLY ------------------------------ //
     // See DirectInput documentation for more information.
 
-    template <bool useUnicode> HRESULT VirtualDirectInputDevice<useUnicode>::BuildActionMap(DirectInputDeviceType<useUnicode>::ActionFormatType* lpdiaf, DirectInputDeviceType<useUnicode>::ConstStringType lpszUserName, DWORD dwFlags)
+    template <ECharMode charMode> HRESULT VirtualDirectInputDevice<charMode>::BuildActionMap(DirectInputDeviceType<charMode>::ActionFormatType* lpdiaf, DirectInputDeviceType<charMode>::ConstStringType lpszUserName, DWORD dwFlags)
     {
         static constexpr Message::ESeverity kMethodSeverity = Message::ESeverity::Info;
         LOG_INVOCATION_AND_RETURN(DIERR_UNSUPPORTED, kMethodSeverity);
@@ -1116,7 +1120,7 @@ namespace Xidi
 
     // ---------
 
-    template <bool useUnicode> HRESULT VirtualDirectInputDevice<useUnicode>::GetImageInfo(DirectInputDeviceType<useUnicode>::DeviceImageInfoHeaderType* lpdiDevImageInfoHeader)
+    template <ECharMode charMode> HRESULT VirtualDirectInputDevice<charMode>::GetImageInfo(DirectInputDeviceType<charMode>::DeviceImageInfoHeaderType* lpdiDevImageInfoHeader)
     {
         static constexpr Message::ESeverity kMethodSeverity = Message::ESeverity::Info;
         LOG_INVOCATION_AND_RETURN(DIERR_UNSUPPORTED, kMethodSeverity);
@@ -1124,7 +1128,7 @@ namespace Xidi
 
     // ---------
 
-    template <bool useUnicode> HRESULT VirtualDirectInputDevice<useUnicode>::SetActionMap(DirectInputDeviceType<useUnicode>::ActionFormatType* lpdiActionFormat, DirectInputDeviceType<useUnicode>::ConstStringType lptszUserName, DWORD dwFlags)
+    template <ECharMode charMode> HRESULT VirtualDirectInputDevice<charMode>::SetActionMap(DirectInputDeviceType<charMode>::ActionFormatType* lpdiActionFormat, DirectInputDeviceType<charMode>::ConstStringType lptszUserName, DWORD dwFlags)
     {
         static constexpr Message::ESeverity kMethodSeverity = Message::ESeverity::Info;
         LOG_INVOCATION_AND_RETURN(DIERR_UNSUPPORTED, kMethodSeverity);
@@ -1135,6 +1139,6 @@ namespace Xidi
     // -------- EXPLICIT TEMPLATE INSTANTIATION ---------------------------- //
     // Instantiates both the ASCII and Unicode versions of this class.
 
-    template class VirtualDirectInputDevice<false>;
-    template class VirtualDirectInputDevice<true>;
+    template class VirtualDirectInputDevice<ECharMode::A>;
+    template class VirtualDirectInputDevice<ECharMode::W>;
 }

@@ -119,14 +119,14 @@ namespace Xidi
         // -------- INSTANCE METHODS --------------------------------------- //
         // See "VirtualController.h" for documentation.
 
-        void VirtualController::ApplyProperties(SState* controllerState) const
+        void VirtualController::ApplyProperties(SState& controllerState) const
         {
-            const SCapabilities& controllerCapabilities = mapper.GetCapabilities();
+            const SCapabilities controllerCapabilities = mapper.GetCapabilities();
 
             for (int i = 0; i < controllerCapabilities.numAxes; ++i)
             {
                 const EAxis axis = controllerCapabilities.axisType[i];
-                controllerState->axis[(int)axis] = TransformAxisValue(controllerState->axis[(int)axis], properties.axis[(int)axis]);
+                controllerState.axis[(int)axis] = TransformAxisValue(controllerState.axis[(int)axis], properties.axis[(int)axis]);
             }
         }
 
@@ -135,7 +135,13 @@ namespace Xidi
         SState VirtualController::GetState(void)
         {
             auto lock = Lock();
+            return GetStateRef();
+        }
 
+        // --------
+
+        const SState& VirtualController::GetStateRef(void)
+        {
             if (true == stateRefreshNeeded)
                 RefreshState();
 
@@ -207,8 +213,8 @@ namespace Xidi
             stateIdentifier = newStateIdentifier;
 
             SState newState;
-            mapper.MapXInputState(&newState, xinputState.Gamepad);
-            ApplyProperties(&newState);
+            mapper.MapXInputState(newState, xinputState.Gamepad);
+            ApplyProperties(newState);
 
             // Based on the mapper and the applied properties, a change in XInput controller state might not necessarily mean a change in virtual controller state.
             // For example, deadzone might result in filtering out changes in analog stick position, or if a particular XInput controller element is ignored by the mapper then a change in that element does not influence the virtual controller state.

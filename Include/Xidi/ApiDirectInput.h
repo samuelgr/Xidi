@@ -29,6 +29,16 @@
 #endif
 
 
+// -------- TYPE DEFINITIONS ----------------------------------------------- //
+
+/// Enumerates supported character type modes for DirectInput interfaces.
+enum class ECharMode
+{
+    A,                                                                      ///< ASCII mode, denoted with an "A" suffix in Microsoft documentation.
+    W                                                                       ///< Wide-character (Unicode) mode, denoted with a "W" suffix in Microsoft documentation.
+};
+
+
 // -------- VERSION-SPECIFIC MAPPINGS -------------------------------------- //
 
 #if DIRECTINPUT_VERSION >= 0x0800

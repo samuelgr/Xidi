@@ -111,9 +111,6 @@ namespace Xidi
             /// For controller elements that are not used, `nullptr` may be set instead.
             Mapper(SElementMap&& elements);
 
-            /// Copy constructor. Should never be invoked.
-            Mapper(const Mapper& other) = delete;
-
 
             // -------- CLASS METHODS -------------------------------------- //
 
@@ -150,8 +147,8 @@ namespace Xidi
 
             /// Retrieves and returns the capabilities of the virtual controller layout implemented by the mapper.
             /// Controller capabilities act as metadata that are used internally and can be presented to applications.
-            /// @return Read-only capabilities data structure reference.
-            inline const SCapabilities& GetCapabilities(void) const
+            /// @return Capabilities of the virtual controller.
+            inline const SCapabilities GetCapabilities(void) const
             {
                 return capabilities;
             }
@@ -167,7 +164,7 @@ namespace Xidi
             /// Does not apply any properties configured by the application, such as deadzone and range. All values produced use standard XInput settings.
             /// @param [out] controllerState Controller state object to be filled.
             /// @param [in] xinputState XInput controller state from which to read.
-            void MapXInputState(SState* controllerState, const XINPUT_GAMEPAD& xinputState) const;
+            void MapXInputState(SState& controllerState, XINPUT_GAMEPAD xinputState) const;
         };
     }
 }

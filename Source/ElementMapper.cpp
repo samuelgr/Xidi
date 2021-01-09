@@ -71,7 +71,7 @@ namespace Xidi
         // -------- CONCRETE INSTANCE METHODS -------------------------- //
         // See "ControllerElementMapper.h" for documentation.
 
-        void AxisMapper::ContributeFromAnalogValue(SState* controllerState, int16_t analogValue) const
+        void AxisMapper::ContributeFromAnalogValue(SState& controllerState, int16_t analogValue) const
         {
             int32_t axisValueToContribute = (int32_t)analogValue;
 
@@ -89,12 +89,12 @@ namespace Xidi
                 break;
             }
 
-            controllerState->axis[(int)axis] += axisValueToContribute;
+            controllerState.axis[(int)axis] += axisValueToContribute;
         }
 
         // --------
 
-        void AxisMapper::ContributeFromButtonValue(SState* controllerState, bool buttonPressed) const
+        void AxisMapper::ContributeFromButtonValue(SState& controllerState, bool buttonPressed) const
         {
             int32_t axisValueToContribute = 0;
             
@@ -113,12 +113,12 @@ namespace Xidi
                 break;
             }
 
-            controllerState->axis[(int)axis] += axisValueToContribute;
+            controllerState.axis[(int)axis] += axisValueToContribute;
         }
 
         // --------
 
-        void AxisMapper::ContributeFromTriggerValue(SState* controllerState, uint8_t triggerValue) const
+        void AxisMapper::ContributeFromTriggerValue(SState& controllerState, uint8_t triggerValue) const
         {
             constexpr double kBidirectionalStepSize = (double)(kAnalogValueMax - kAnalogValueMin) / (double)(kTriggerValueMax - kTriggerValueMin);
             constexpr double kPositiveStepSize = (double)kAnalogValueMax / (double)(kTriggerValueMax - kTriggerValueMin);
@@ -141,7 +141,7 @@ namespace Xidi
                 break;
             }
 
-            controllerState->axis[(int)axis] += axisValueToContribute;
+            controllerState.axis[(int)axis] += axisValueToContribute;
         }
 
         // --------
@@ -153,23 +153,23 @@ namespace Xidi
         
         // --------
 
-        void ButtonMapper::ContributeFromAnalogValue(SState* controllerState, int16_t analogValue) const
+        void ButtonMapper::ContributeFromAnalogValue(SState& controllerState, int16_t analogValue) const
         {
-            controllerState->button[(int)button] = (controllerState->button[(int)button] || IsAnalogPressed(analogValue));
+            controllerState.button[(int)button] = (controllerState.button[(int)button] || IsAnalogPressed(analogValue));
         }
 
         // --------
 
-        void ButtonMapper::ContributeFromButtonValue(SState* controllerState, bool buttonPressed) const
+        void ButtonMapper::ContributeFromButtonValue(SState& controllerState, bool buttonPressed) const
         {
-            controllerState->button[(int)button] = (controllerState->button[(int)button] || buttonPressed);
+            controllerState.button[(int)button] = (controllerState.button[(int)button] || buttonPressed);
         }
 
         // --------
 
-        void ButtonMapper::ContributeFromTriggerValue(SState* controllerState, uint8_t triggerValue) const
+        void ButtonMapper::ContributeFromTriggerValue(SState& controllerState, uint8_t triggerValue) const
         {
-            controllerState->button[(int)button] = (controllerState->button[(int)button] || IsTriggerPressed(triggerValue));
+            controllerState.button[(int)button] = (controllerState.button[(int)button] || IsTriggerPressed(triggerValue));
         }
 
         // --------
@@ -181,7 +181,7 @@ namespace Xidi
 
         // --------
 
-        void DigitalAxisMapper::ContributeFromAnalogValue(SState* controllerState, int16_t analogValue) const
+        void DigitalAxisMapper::ContributeFromAnalogValue(SState& controllerState, int16_t analogValue) const
         {
             int32_t axisValueToContribute = 0;
 
@@ -205,35 +205,35 @@ namespace Xidi
                 break;
             }
 
-            controllerState->axis[(int)axis] += axisValueToContribute;
+            controllerState.axis[(int)axis] += axisValueToContribute;
         }
 
         // --------
 
-        void DigitalAxisMapper::ContributeFromTriggerValue(SState* controllerState, uint8_t triggerValue) const
+        void DigitalAxisMapper::ContributeFromTriggerValue(SState& controllerState, uint8_t triggerValue) const
         {
             ContributeFromButtonValue(controllerState, IsTriggerPressed(triggerValue));
         }
 
         // --------
 
-        void PovMapper::ContributeFromAnalogValue(SState* controllerState, int16_t analogValue) const
+        void PovMapper::ContributeFromAnalogValue(SState& controllerState, int16_t analogValue) const
         {
-            controllerState->povDirection.components[(int)povDirection] = (controllerState->povDirection.components[(int)povDirection] || IsAnalogPressed(analogValue));
+            controllerState.povDirection.components[(int)povDirection] = (controllerState.povDirection.components[(int)povDirection] || IsAnalogPressed(analogValue));
         }
 
         // --------
 
-        void PovMapper::ContributeFromButtonValue(SState* controllerState, bool buttonPressed) const
+        void PovMapper::ContributeFromButtonValue(SState& controllerState, bool buttonPressed) const
         {
-            controllerState->povDirection.components[(int)povDirection] = (controllerState->povDirection.components[(int)povDirection] || buttonPressed);
+            controllerState.povDirection.components[(int)povDirection] = (controllerState.povDirection.components[(int)povDirection] || buttonPressed);
         }
 
         // --------
 
-        void PovMapper::ContributeFromTriggerValue(SState* controllerState, uint8_t triggerValue) const
+        void PovMapper::ContributeFromTriggerValue(SState& controllerState, uint8_t triggerValue) const
         {
-            controllerState->povDirection.components[(int)povDirection] = (controllerState->povDirection.components[(int)povDirection] || IsTriggerPressed(triggerValue));
+            controllerState.povDirection.components[(int)povDirection] = (controllerState.povDirection.components[(int)povDirection] || IsTriggerPressed(triggerValue));
         }
 
         // --------

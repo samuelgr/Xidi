@@ -223,7 +223,7 @@ namespace XidiTest
         ZeroMemory(&controllerState, sizeof(controllerState));
         controllerState.axis[(int)EAxis::X] = inputAxisValue;
 
-        controller.ApplyProperties(&controllerState);
+        controller.ApplyProperties(controllerState);
         return controllerState.axis[(int)kTestSingleAxis];
     }
 

@@ -112,7 +112,7 @@ namespace Xidi
             /// Appends a single event to the event buffer, given its data.
             /// @param [in] eventData Event data to append.
             /// @param [in] timestamp Timestamp to apply to the appended event.
-            void AppendEvent(const SEventData& eventData, uint32_t timestamp);
+            void AppendEvent(SEventData eventData, uint32_t timestamp);
 
            /// Retrieves and returns the capacity of this event buffer.
             /// @return Event buffer capacity.

@@ -146,7 +146,7 @@ namespace Xidi
         // -------- INSTANCE VARIABLES ------------------------------------- //
 
         /// Controller capabilities. Often consulted when identifying controller objects.
-        const Controller::SCapabilities& controllerCapabilities;
+        const Controller::SCapabilities controllerCapabilities;
         
         /// Complete description of the application's data format.
         const SDataFormatSpec dataFormatSpec;
@@ -156,7 +156,7 @@ namespace Xidi
 
         /// Initialization constructor. Objects cannot be constructed externally.
         /// Requires a complete data format specification, which will be move-assigned to this object's instance variable, and a controller capabilities object which is not owned by (and must outlive) this object.
-        inline DataFormat(const Controller::SCapabilities& controllerCapabilities, SDataFormatSpec&& dataFormatSpec) : controllerCapabilities(controllerCapabilities), dataFormatSpec(std::move(dataFormatSpec))
+        inline DataFormat(const Controller::SCapabilities controllerCapabilities, SDataFormatSpec&& dataFormatSpec) : controllerCapabilities(controllerCapabilities), dataFormatSpec(std::move(dataFormatSpec))
         {
             // Nothing to do here.
         }
@@ -171,7 +171,7 @@ namespace Xidi
         /// @param [in] appFormatSpec Application-provided DirectInput data format specification.
         /// @param [in] controllerCapabilities Capabilities of the virtual controller for which the data format is being specified.
         /// @return Pointer to new data format representation, or `nullptr` if there is an issue with the application format specification.
-        static std::unique_ptr<DataFormat> CreateFromApplicationFormatSpec(const DIDATAFORMAT& appFormatSpec, const Controller::SCapabilities& controllerCapabilities);
+        static std::unique_ptr<DataFormat> CreateFromApplicationFormatSpec(const DIDATAFORMAT& appFormatSpec, const Controller::SCapabilities controllerCapabilities);
 
         /// Generates a DirectInput axis value from a virtual controller axis value.
         /// @param [in] axis Virtual controller axis value.
@@ -193,8 +193,6 @@ namespace Xidi
         /// @param [in] pov Virtual controller POV state.
         /// @return Corresponding DirectInput value.
         static EPovValue DirectInputPovValue(Controller::UPovDirection pov);
-
-        
 
 
         // -------- INSTANCE METHODS --------------------------------------- //

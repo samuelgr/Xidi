@@ -97,7 +97,7 @@ namespace XidiTest
     /// @param [in] appFormatSpec Test data in the form of an application data format specification.
     /// @param [in] controllerCapabilities Test data in the form of a description of a controller's capabilities. Likely obtained from one of the mappers defined above.
     /// @param [in] expectedDataFormatSpec Test data in the form of a data format spec that is expected to be the result of creating a data format object using the provided controller capabilities.
-    static void TestDataFormatCreateSuccess(const DIDATAFORMAT& appFormatSpec, const Controller::SCapabilities& controllerCapabilities, const DataFormat::SDataFormatSpec& expectedDataFormatSpec)
+    static void TestDataFormatCreateSuccess(const DIDATAFORMAT& appFormatSpec, const Controller::SCapabilities controllerCapabilities, const DataFormat::SDataFormatSpec& expectedDataFormatSpec)
     {
         // Create the data format object and assert success, then compare the resulting specification object with the expected specification object.
         std::unique_ptr<DataFormat> dataFormat = DataFormat::CreateFromApplicationFormatSpec(appFormatSpec, controllerCapabilities);
@@ -190,7 +190,7 @@ namespace XidiTest
     /// Given the information needed to construct a data format object, attempts to construct the data format object and asserts that the operation fails.
     /// @param [in] appFormatSpec Test data in the form of an application data format specification.
     /// @param [in] controllerCapabilities Test data in the form of a description of a controller's capabilities. Likely obtained from one of the mappers defined above.
-    static void TestDataFormatCreateFailure(const DIDATAFORMAT& appFormatSpec, const Controller::SCapabilities& controllerCapabilities)
+    static void TestDataFormatCreateFailure(const DIDATAFORMAT& appFormatSpec, const Controller::SCapabilities controllerCapabilities)
     {
         std::unique_ptr<DataFormat> dataFormat = DataFormat::CreateFromApplicationFormatSpec(appFormatSpec, controllerCapabilities);
         TEST_ASSERT(nullptr == dataFormat);

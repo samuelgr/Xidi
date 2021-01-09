@@ -32,19 +32,19 @@ namespace Xidi
             /// Contribution is aggregated with anything that already exists in the controller state.
             /// @param [in,out] controllerState Controller state data structure to be updated.
             /// @param [in] analogStickValue Raw analog stick value from the XInput controller.
-            virtual void ContributeFromAnalogValue(SState* controllerState, int16_t analogValue) const = 0;
+            virtual void ContributeFromAnalogValue(SState& controllerState, int16_t analogValue) const = 0;
 
             /// Calculates the contribution to controller state from a given button pressed status reading.
             /// Contribution is aggregated with anything that already exists in the controller state.
             /// @param [in,out] controllerState Controller state data structure to be updated.
             /// @param [in] buttonPressed Button state from the XInput controller, `true` if pressed and `false` otherwise.
-            virtual void ContributeFromButtonValue(SState* controllerState, bool buttonPressed) const = 0;
+            virtual void ContributeFromButtonValue(SState& controllerState, bool buttonPressed) const = 0;
 
             /// Calculates the contribution to controller state from a given trigger reading in the standard XInput trigger range 0 to 255.
             /// Contribution is aggregated with anything that already exists in the controller state.
             /// @param [in,out] controllerState Controller state data structure to be updated.
             /// @param [in] buttonPressed Button state from the XInput controller, `true` if pressed and `false` otherwise.
-            virtual void ContributeFromTriggerValue(SState* controllerState, uint8_t triggerValue) const = 0;
+            virtual void ContributeFromTriggerValue(SState& controllerState, uint8_t triggerValue) const = 0;
 
             /// Specifies the virtual controller element that is the target of any contributions from this element mapper.
             /// @return Identifier of the targert virtual controller element.
@@ -94,9 +94,9 @@ namespace Xidi
 
             // -------- CONCRETE INSTANCE METHODS -------------------------- //
 
-            void ContributeFromAnalogValue(SState* controllerState, int16_t analogValue) const override;
-            void ContributeFromButtonValue(SState* controllerState, bool buttonPressed) const override;
-            void ContributeFromTriggerValue(SState* controllerState, uint8_t triggerValue) const override;
+            void ContributeFromAnalogValue(SState& controllerState, int16_t analogValue) const override;
+            void ContributeFromButtonValue(SState& controllerState, bool buttonPressed) const override;
+            void ContributeFromTriggerValue(SState& controllerState, uint8_t triggerValue) const override;
             SElementIdentifier GetTargetElement(void) const override;
         };
 
@@ -126,9 +126,9 @@ namespace Xidi
 
             // -------- CONCRETE INSTANCE METHODS -------------------------- //
 
-            void ContributeFromAnalogValue(SState* controllerState, int16_t analogValue) const override;
-            void ContributeFromButtonValue(SState* controllerState, bool buttonPressed) const override;
-            void ContributeFromTriggerValue(SState* controllerState, uint8_t triggerValue) const override;
+            void ContributeFromAnalogValue(SState& controllerState, int16_t analogValue) const override;
+            void ContributeFromButtonValue(SState& controllerState, bool buttonPressed) const override;
+            void ContributeFromTriggerValue(SState& controllerState, uint8_t triggerValue) const override;
             SElementIdentifier GetTargetElement(void) const override;
         };
 
@@ -151,8 +151,8 @@ namespace Xidi
 
             // -------- CONCRETE INSTANCE METHODS -------------------------- //
 
-            void ContributeFromAnalogValue(SState* controllerState, int16_t analogValue) const override;
-            void ContributeFromTriggerValue(SState* controllerState, uint8_t triggerValue) const override;
+            void ContributeFromAnalogValue(SState& controllerState, int16_t analogValue) const override;
+            void ContributeFromTriggerValue(SState& controllerState, uint8_t triggerValue) const override;
         };
 
         /// Maps a single XInput controller element such that it contributes to a POV direction on a virtual controller.
@@ -178,9 +178,9 @@ namespace Xidi
 
             // -------- CONCRETE INSTANCE METHODS -------------------------- //
 
-            void ContributeFromAnalogValue(SState* controllerState, int16_t analogValue) const override;
-            void ContributeFromButtonValue(SState* controllerState, bool buttonPressed) const override;
-            void ContributeFromTriggerValue(SState* controllerState, uint8_t triggerValue) const override;
+            void ContributeFromAnalogValue(SState& controllerState, int16_t analogValue) const override;
+            void ContributeFromButtonValue(SState& controllerState, bool buttonPressed) const override;
+            void ContributeFromTriggerValue(SState& controllerState, uint8_t triggerValue) const override;
             SElementIdentifier GetTargetElement(void) const override;
         };
     }

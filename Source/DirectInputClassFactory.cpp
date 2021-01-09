@@ -115,9 +115,9 @@ namespace Xidi
                 if (S_OK == underlyingDIObjectCreateResult)
                 {
                     if (true == useUnicode)
-                        *ppvObject = new WrapperIDirectInput<true>((LatestIDirectInputW*)underlyingDIObject);
+                        *ppvObject = new WrapperIDirectInput<ECharMode::W>((LatestIDirectInputW*)underlyingDIObject);
                     else
-                        *ppvObject = new WrapperIDirectInput<false>((LatestIDirectInputA*)underlyingDIObject);
+                        *ppvObject = new WrapperIDirectInput<ECharMode::A>((LatestIDirectInputA*)underlyingDIObject);
                     
                     return S_OK;
                 }

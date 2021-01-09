@@ -84,7 +84,7 @@ namespace Xidi
                     for (const auto& knownMapper : knownMappers)
                     {
                         const std::wstring_view kKnownMapperName = knownMapper.first;
-                        const SCapabilities& kKnownMapperCapabilities = knownMapper.second->GetCapabilities();
+                        const SCapabilities kKnownMapperCapabilities = knownMapper.second->GetCapabilities();
                         Message::OutputFormatted(kDumpSeverity, L"    %-24s { numAxes = %u, numButtons = %u, hasPov = %s }", kKnownMapperName.data(), (unsigned int)kKnownMapperCapabilities.numAxes, (unsigned int)kKnownMapperCapabilities.numButtons, ((true == kKnownMapperCapabilities.hasPov) ? L"true" : L"false"));
                     }
 
@@ -255,6 +255,8 @@ namespace Xidi
 
                 if (nullptr == configuredMapper)
                     Message::Output(Message::ESeverity::Error, L"No mappers could be located. Xidi virtual controllers are unable to function.");
+                else
+                    Message::OutputFormatted(Message::ESeverity::Info, L"Using mapper '%s' as the configured mapper type.", configuredMapper->GetName());
             });
 
             return configuredMapper;
@@ -264,9 +266,9 @@ namespace Xidi
         // -------- INSTANCE METHODS --------------------------------------- //
         // See "ControllerMapper.h" for documentation.
 
-        void Mapper::MapXInputState(SState* controllerState, const XINPUT_GAMEPAD& xinputState) const
+        void Mapper::MapXInputState(SState& controllerState, XINPUT_GAMEPAD xinputState) const
         {
-            ZeroMemory(controllerState, sizeof(*controllerState));
+            ZeroMemory(&controllerState, sizeof(controllerState));
 
             // Left and right stick values need to be saturated at the virtual controller range due to a very slight difference between XInput range and virtual controller range.
             // This difference (-32768 extreme negative for XInput vs -32767 extreme negative for Xidi) does not affect functionality when filtered by saturation.
@@ -302,7 +304,7 @@ namespace Xidi
 
             // Once all contributions have been committed, saturate all axis values at the extreme ends of the allowed range.
             // Doing this at the end means that intermediate contributions are computed with much more range than the controller is allowed to report, which can increase accuracy when there are multiple interfering mappers to axes.
-            for (auto& axisValue : controllerState->axis)
+            for (auto& axisValue : controllerState.axis)
             {
                 if (axisValue > kAnalogValueMax)
                     axisValue = kAnalogValueMax;

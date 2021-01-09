@@ -17,7 +17,7 @@
 namespace Xidi
 {
     /// Helper types for differentiating between Unicode and ASCII interface versions.
-    template <bool useUnicode> struct DirectInputType
+    template <ECharMode charMode> struct DirectInputType
     {
         typedef LPCTSTR ConstStringType;
         typedef DIDEVICEINSTANCE DeviceInstanceType;
@@ -32,7 +32,7 @@ namespace Xidi
 #endif
     };
 
-    template <> struct DirectInputType<false> : public LatestIDirectInputA
+    template <> struct DirectInputType<ECharMode::A> : public LatestIDirectInputA
     {
         typedef LPCSTR ConstStringType;
         typedef DIDEVICEINSTANCEA DeviceInstanceType;
@@ -47,7 +47,7 @@ namespace Xidi
 #endif
     };
 
-    template <> struct DirectInputType<true> : public LatestIDirectInputW
+    template <> struct DirectInputType<ECharMode::W> : public LatestIDirectInputW
     {
         typedef LPCWSTR ConstStringType;
         typedef DIDEVICEINSTANCEW DeviceInstanceType;
@@ -64,14 +64,14 @@ namespace Xidi
 
     /// Wraps the IDirectInput8 interface to hook into all calls to it.
     /// Holds an underlying instance of an IDirectInput object but wraps all method invocations.
-    /// @tparam useUnicode Specifies whether to use underlying Unicode interfaces (i.e. the "A" versions of interfaces and types).
-    template <bool useUnicode> class WrapperIDirectInput : public DirectInputType<useUnicode>
+    /// @tparam charMode Selects between ASCII ("A" suffix) and Unicode ("W") suffix versions of types and interfaces.
+    template <ECharMode charMode> class WrapperIDirectInput : public DirectInputType<charMode>
     {
     private:
         // -------- INSTANCE VARIABLES --------------------------------------------- //
 
         /// The underlying IDirectInput8 object that this instance wraps.
-        DirectInputType<useUnicode>::LatestIDirectInputType* underlyingDIObject;
+        DirectInputType<charMode>::LatestIDirectInputType* underlyingDIObject;
 
 
     public:
@@ -81,7 +81,7 @@ namespace Xidi
         WrapperIDirectInput(void) = delete;
 
         /// Constructs an WrapperIDirectInput object, given an underlying IDirectInput8 object to wrap.
-        WrapperIDirectInput(DirectInputType<useUnicode>::LatestIDirectInputType* underlyingDIObject);
+        WrapperIDirectInput(DirectInputType<charMode>::LatestIDirectInputType* underlyingDIObject);
 
 
         // -------- METHODS: IUnknown ---------------------------------------------- //
@@ -91,9 +91,9 @@ namespace Xidi
 
 
         // -------- METHODS: IDirectInput COMMON ----------------------------------- //
-        HRESULT STDMETHODCALLTYPE CreateDevice(REFGUID rguid, DirectInputType<useUnicode>::EarliestIDirectInputDeviceType** lplpDirectInputDevice, LPUNKNOWN pUnkOuter) override;
-        HRESULT STDMETHODCALLTYPE EnumDevices(DWORD dwDevType, DirectInputType<useUnicode>::EnumDevicesCallbackType lpCallback, LPVOID pvRef, DWORD dwFlags) override;
-        HRESULT STDMETHODCALLTYPE FindDevice(REFGUID rguidClass, DirectInputType<useUnicode>::ConstStringType ptszName, LPGUID pguidInstance) override;
+        HRESULT STDMETHODCALLTYPE CreateDevice(REFGUID rguid, DirectInputType<charMode>::EarliestIDirectInputDeviceType** lplpDirectInputDevice, LPUNKNOWN pUnkOuter) override;
+        HRESULT STDMETHODCALLTYPE EnumDevices(DWORD dwDevType, DirectInputType<charMode>::EnumDevicesCallbackType lpCallback, LPVOID pvRef, DWORD dwFlags) override;
+        HRESULT STDMETHODCALLTYPE FindDevice(REFGUID rguidClass, DirectInputType<charMode>::ConstStringType ptszName, LPGUID pguidInstance) override;
         HRESULT STDMETHODCALLTYPE GetDeviceStatus(REFGUID rguidInstance) override;
         HRESULT STDMETHODCALLTYPE Initialize(HINSTANCE hinst, DWORD dwVersion) override;
         HRESULT STDMETHODCALLTYPE RunControlPanel(HWND hwndOwner, DWORD dwFlags) override;
@@ -102,15 +102,15 @@ namespace Xidi
         // -------- CALLBACKS: IDirectInput COMMON --------------------------------- //
 
         // Callback used to scan for any XInput-compatible game controllers.
-        static BOOL STDMETHODCALLTYPE CallbackEnumGameControllersXInputScan(const DirectInputType<useUnicode>::DeviceInstanceType* lpddi, LPVOID pvRef);
+        static BOOL STDMETHODCALLTYPE CallbackEnumGameControllersXInputScan(const DirectInputType<charMode>::DeviceInstanceType* lpddi, LPVOID pvRef);
 
         // Callback used to enumerate all devices to the application, filtering out those already seen.
-        static BOOL STDMETHODCALLTYPE CallbackEnumDevicesFiltered(const DirectInputType<useUnicode>::DeviceInstanceType* lpddi, LPVOID pvRef);
+        static BOOL STDMETHODCALLTYPE CallbackEnumDevicesFiltered(const DirectInputType<charMode>::DeviceInstanceType* lpddi, LPVOID pvRef);
 
 #if DIRECTINPUT_VERSION >= 0x0800
         // -------- METHODS: IDirectInput8 ONLY ------------------------------------ //
-        HRESULT STDMETHODCALLTYPE ConfigureDevices(LPDICONFIGUREDEVICESCALLBACK lpdiCallback, DirectInputType<useUnicode>::ConfigureDevicesParamsType lpdiCDParams, DWORD dwFlags, LPVOID pvRefData) override;
-        HRESULT STDMETHODCALLTYPE EnumDevicesBySemantics(DirectInputType<useUnicode>::ConstStringType ptszUserName, DirectInputType<useUnicode>::ActionFormatType lpdiActionFormat, DirectInputType<useUnicode>::EnumDevicesBySemanticsCallbackType lpCallback, LPVOID pvRef, DWORD dwFlags) override;
+        HRESULT STDMETHODCALLTYPE ConfigureDevices(LPDICONFIGUREDEVICESCALLBACK lpdiCallback, DirectInputType<charMode>::ConfigureDevicesParamsType lpdiCDParams, DWORD dwFlags, LPVOID pvRefData) override;
+        HRESULT STDMETHODCALLTYPE EnumDevicesBySemantics(DirectInputType<charMode>::ConstStringType ptszUserName, DirectInputType<charMode>::ActionFormatType lpdiActionFormat, DirectInputType<charMode>::EnumDevicesBySemanticsCallbackType lpCallback, LPVOID pvRef, DWORD dwFlags) override;
 #else
         // -------- METHODS: IDirectInput LEGACY ----------------------------------- //
         HRESULT STDMETHODCALLTYPE CreateDeviceEx(REFGUID rguid, REFIID riid, LPVOID* lplpDirectInputDevice, LPUNKNOWN pUnkOuter) override;

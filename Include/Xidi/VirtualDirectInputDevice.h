@@ -24,7 +24,7 @@
 namespace Xidi
 {
     /// Helper types for differentiating between Unicode and ASCII interface versions.
-    template <bool useUnicode> struct DirectInputDeviceType
+    template <ECharMode charMode> struct DirectInputDeviceType
     {
         typedef LPCTSTR ConstStringType;
         typedef DIDEVICEINSTANCE DeviceInstanceType;
@@ -38,7 +38,7 @@ namespace Xidi
 #endif
     };
 
-    template <> struct DirectInputDeviceType<false> : public LatestIDirectInputDeviceA
+    template <> struct DirectInputDeviceType<ECharMode::A> : public LatestIDirectInputDeviceA
     {
         typedef LPCSTR ConstStringType;
         typedef DIDEVICEINSTANCEA DeviceInstanceType;
@@ -52,7 +52,7 @@ namespace Xidi
 #endif
     };
 
-    template <> struct DirectInputDeviceType<true> : public LatestIDirectInputDeviceW
+    template <> struct DirectInputDeviceType<ECharMode::W> : public LatestIDirectInputDeviceW
     {
         typedef LPCWSTR ConstStringType;
         typedef DIDEVICEINSTANCEW DeviceInstanceType;
@@ -67,8 +67,8 @@ namespace Xidi
     };
 
     /// Inherits from whatever IDirectInputDevice version is appropriate.
-    /// @tparam useUnicode Specifies whether to use underlying Unicode interfaces (i.e. the "A" versions of interfaces and types).
-    template <bool useUnicode> class VirtualDirectInputDevice : public DirectInputDeviceType<useUnicode>
+    /// @tparam charMode Selects between ASCII ("A" suffix) and Unicode ("W") suffix versions of types and interfaces.
+    template <ECharMode charMode> class VirtualDirectInputDevice : public DirectInputDeviceType<charMode>
     {
     private:
         // -------- INSTANCE VARIABLES --------------------------------------------- //
@@ -122,17 +122,17 @@ namespace Xidi
         HRESULT STDMETHODCALLTYPE Acquire(void) override;
         HRESULT STDMETHODCALLTYPE CreateEffect(REFGUID rguid, LPCDIEFFECT lpeff, LPDIRECTINPUTEFFECT* ppdeff, LPUNKNOWN punkOuter) override;
         HRESULT STDMETHODCALLTYPE EnumCreatedEffectObjects(LPDIENUMCREATEDEFFECTOBJECTSCALLBACK lpCallback, LPVOID pvRef, DWORD fl) override;
-        HRESULT STDMETHODCALLTYPE EnumEffects(DirectInputDeviceType<useUnicode>::EnumEffectsCallbackType lpCallback, LPVOID pvRef, DWORD dwEffType) override;
-        HRESULT STDMETHODCALLTYPE EnumEffectsInFile(DirectInputDeviceType<useUnicode>::ConstStringType lptszFileName, LPDIENUMEFFECTSINFILECALLBACK pec, LPVOID pvRef, DWORD dwFlags) override;
-        HRESULT STDMETHODCALLTYPE EnumObjects(DirectInputDeviceType<useUnicode>::EnumObjectsCallbackType lpCallback, LPVOID pvRef, DWORD dwFlags) override;
+        HRESULT STDMETHODCALLTYPE EnumEffects(DirectInputDeviceType<charMode>::EnumEffectsCallbackType lpCallback, LPVOID pvRef, DWORD dwEffType) override;
+        HRESULT STDMETHODCALLTYPE EnumEffectsInFile(DirectInputDeviceType<charMode>::ConstStringType lptszFileName, LPDIENUMEFFECTSINFILECALLBACK pec, LPVOID pvRef, DWORD dwFlags) override;
+        HRESULT STDMETHODCALLTYPE EnumObjects(DirectInputDeviceType<charMode>::EnumObjectsCallbackType lpCallback, LPVOID pvRef, DWORD dwFlags) override;
         HRESULT STDMETHODCALLTYPE Escape(LPDIEFFESCAPE pesc) override;
         HRESULT STDMETHODCALLTYPE GetCapabilities(LPDIDEVCAPS lpDIDevCaps) override;
         HRESULT STDMETHODCALLTYPE GetDeviceData(DWORD cbObjectData, LPDIDEVICEOBJECTDATA rgdod, LPDWORD pdwInOut, DWORD dwFlags) override;
-        HRESULT STDMETHODCALLTYPE GetDeviceInfo(DirectInputDeviceType<useUnicode>::DeviceInstanceType* pdidi) override;
+        HRESULT STDMETHODCALLTYPE GetDeviceInfo(DirectInputDeviceType<charMode>::DeviceInstanceType* pdidi) override;
         HRESULT STDMETHODCALLTYPE GetDeviceState(DWORD cbData, LPVOID lpvData) override;
-        HRESULT STDMETHODCALLTYPE GetEffectInfo(DirectInputDeviceType<useUnicode>::EffectInfoType* pdei, REFGUID rguid) override;
+        HRESULT STDMETHODCALLTYPE GetEffectInfo(DirectInputDeviceType<charMode>::EffectInfoType* pdei, REFGUID rguid) override;
         HRESULT STDMETHODCALLTYPE GetForceFeedbackState(LPDWORD pdwOut) override;
-        HRESULT STDMETHODCALLTYPE GetObjectInfo(DirectInputDeviceType<useUnicode>::DeviceObjectInstanceType* pdidoi, DWORD dwObj, DWORD dwHow) override;
+        HRESULT STDMETHODCALLTYPE GetObjectInfo(DirectInputDeviceType<charMode>::DeviceObjectInstanceType* pdidoi, DWORD dwObj, DWORD dwHow) override;
         HRESULT STDMETHODCALLTYPE GetProperty(REFGUID rguidProp, LPDIPROPHEADER pdiph) override;
         HRESULT STDMETHODCALLTYPE Initialize(HINSTANCE hinst, DWORD dwVersion, REFGUID rguid) override;
         HRESULT STDMETHODCALLTYPE Poll(void) override;
@@ -144,13 +144,13 @@ namespace Xidi
         HRESULT STDMETHODCALLTYPE SetEventNotification(HANDLE hEvent) override;
         HRESULT STDMETHODCALLTYPE SetProperty(REFGUID rguidProp, LPCDIPROPHEADER pdiph) override;
         HRESULT STDMETHODCALLTYPE Unacquire(void) override;
-        HRESULT STDMETHODCALLTYPE WriteEffectToFile(DirectInputDeviceType<useUnicode>::ConstStringType lptszFileName, DWORD dwEntries, LPDIFILEEFFECT rgDiFileEft, DWORD dwFlags) override;
+        HRESULT STDMETHODCALLTYPE WriteEffectToFile(DirectInputDeviceType<charMode>::ConstStringType lptszFileName, DWORD dwEntries, LPDIFILEEFFECT rgDiFileEft, DWORD dwFlags) override;
 
 #if DIRECTINPUT_VERSION >= 0x0800
         // -------- METHODS: IDirectInputDevice8 ONLY ------------------------------ //
-        HRESULT STDMETHODCALLTYPE BuildActionMap(DirectInputDeviceType<useUnicode>::ActionFormatType* lpdiaf, DirectInputDeviceType<useUnicode>::ConstStringType lpszUserName, DWORD dwFlags) override;
-        HRESULT STDMETHODCALLTYPE GetImageInfo(DirectInputDeviceType<useUnicode>::DeviceImageInfoHeaderType* lpdiDevImageInfoHeader) override;
-        HRESULT STDMETHODCALLTYPE SetActionMap(DirectInputDeviceType<useUnicode>::ActionFormatType* lpdiActionFormat, DirectInputDeviceType<useUnicode>::ConstStringType lptszUserName, DWORD dwFlags) override;
+        HRESULT STDMETHODCALLTYPE BuildActionMap(DirectInputDeviceType<charMode>::ActionFormatType* lpdiaf, DirectInputDeviceType<charMode>::ConstStringType lpszUserName, DWORD dwFlags) override;
+        HRESULT STDMETHODCALLTYPE GetImageInfo(DirectInputDeviceType<charMode>::DeviceImageInfoHeaderType* lpdiDevImageInfoHeader) override;
+        HRESULT STDMETHODCALLTYPE SetActionMap(DirectInputDeviceType<charMode>::ActionFormatType* lpdiActionFormat, DirectInputDeviceType<charMode>::ConstStringType lptszUserName, DWORD dwFlags) override;
 #endif
     };
 }

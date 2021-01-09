@@ -306,16 +306,13 @@ namespace Xidi
                 // Nothing to do here.
             }
 
-            /// Copy constructor. Should never be invoked.
-            VirtualController(const VirtualController& other) = delete;
-
 
             // -------- INSTANCE METHODS ----------------------------------- //
 
             /// Modifies the contents of the specified controller state object by applying this virtual controller's properties.
             /// Primarily intended for internal use but exposed for testing purposes. Implementation is not concurrency-safe.
             /// @param [in,out] controllerState Controller state object to transform.
-            void ApplyProperties(SState* controllerState) const;
+            void ApplyProperties(SState& controllerState) const;
 
             /// Adds the specified virtual controller element to this virtual controller's event filter so that events are generated for it.
             /// @param [in] element Desired virtual controller element.
@@ -346,7 +343,7 @@ namespace Xidi
             /// Retrieves and returns the capabilities of this virtual controller.
             /// Controller capabilities act as metadata that are used internally and can be presented to applications.
             /// @return Read-only capabilities data structure reference.
-            inline const SCapabilities& GetCapabilities(void) const
+            inline const SCapabilities GetCapabilities(void) const
             {
                 return mapper.GetCapabilities();
             }
@@ -405,10 +402,15 @@ namespace Xidi
             {
                 return kControllerIdentifier;
             }
-
+            
             /// Retrieves and returns the latest view of the state of this virtual controller.
             /// @return Current state of this virtual controller.
             SState GetState(void);
+
+            /// Provides a direct read-only view of the state of this virtual controller.
+            /// Caller must obtain the controller lock and hold it for as long as the view is expected to remain valid, which is ideally a very short time.
+            /// @return Read-only view of the state of this virtual controller.
+            const SState& GetStateRef(void);
 
             /// Checks if the event buffering is enabled.
             /// @return `true` if event buffering is enabled, `false` otherwise.

@@ -10,6 +10,7 @@
  *   library.
  *****************************************************************************/
 
+#include "ApiDirectInput.h"
 #include "DirectInputClassFactory.h"
 #include "ImportApiDirectInput.h"
 #include "Message.h"
@@ -79,9 +80,9 @@ extern "C"
         }
 
         if (IID_IDirectInput8W == riidltf)
-            diObject = new WrapperIDirectInput<true>((IDirectInput8W*)diObject);
+            diObject = new WrapperIDirectInput<ECharMode::W>((IDirectInput8W*)diObject);
         else
-            diObject = new WrapperIDirectInput<false>((IDirectInput8A*)diObject);
+            diObject = new WrapperIDirectInput<ECharMode::A>((IDirectInput8A*)diObject);
 
         *ppvOut = (LPVOID)diObject;
 
@@ -106,7 +107,7 @@ extern "C"
             return result;
         }
 
-        diObject = new WrapperIDirectInput<false>((LatestIDirectInputA*)diObject);
+        diObject = new WrapperIDirectInput<ECharMode::A>((LatestIDirectInputA*)diObject);
         *ppDI = (LPDIRECTINPUTA)diObject;
 
         LogSystemCreateSuccess();
@@ -132,7 +133,7 @@ extern "C"
             return result;
         }
 
-        diObject = new WrapperIDirectInput<true>((LatestIDirectInputW*)diObject);
+        diObject = new WrapperIDirectInput<ECharMode::W>((LatestIDirectInputW*)diObject);
         *ppDI = (LPDIRECTINPUTW)diObject;
 
         LogSystemCreateSuccess();
@@ -177,9 +178,9 @@ extern "C"
         }
 
         if (TRUE == useUnicode)
-            diObject = new WrapperIDirectInput<true>((LatestIDirectInputW*)diObject);
+            diObject = new WrapperIDirectInput<ECharMode::W>((LatestIDirectInputW*)diObject);
         else
-            diObject = new WrapperIDirectInput<false>((LatestIDirectInputA*)diObject);
+            diObject = new WrapperIDirectInput<ECharMode::A>((LatestIDirectInputA*)diObject);
 
         *ppvOut = diObject;
 

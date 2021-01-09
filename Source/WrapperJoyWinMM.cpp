@@ -445,7 +445,7 @@ namespace Xidi
                 return result;
             }
 
-            const Controller::SCapabilities& controllerCapabilities = controllers[xJoyID]->GetCapabilities();
+            const Controller::SCapabilities controllerCapabilities = controllers[xJoyID]->GetCapabilities();
 
             ZeroMemory(pjc, sizeof(*pjc));
             pjc->wMaxAxes = (WORD)controllerCapabilities.numAxes;
