@@ -282,7 +282,7 @@ namespace Xidi
         void Initialize(void)
         {
             static std::once_flag initializeFlag;
-            std::call_once(initializeFlag, []() {
+            std::call_once(initializeFlag, []() -> void {
                 // Initialize the import table.
                 ZeroMemory(&importTable, sizeof(importTable));
 
