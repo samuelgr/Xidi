@@ -3,7 +3,7 @@
  *   General-purpose library for injecting DLLs and hooking function calls.
  ******************************************************************************
  * Authored by Samuel Grossman
- * Copyright (c) 2019-2020
+ * Copyright (c) 2019-2021
  **************************************************************************//**
  * @file DynamicHook.h
  *   Convenience wrapper types and definitions for creating dynamic hooks. A
