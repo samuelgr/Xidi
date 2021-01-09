@@ -3,7 +3,7 @@
  *   DirectInput interface for XInput controllers.
  *****************************************************************************
  * Authored by Samuel Grossman
- * Copyright (c) 2016-2020
+ * Copyright (c) 2016-2021
  *************************************************************************//**
  * @file ImportApiWinMM.h
  *   Declarations of functions for accessing the WinMM API imported from the

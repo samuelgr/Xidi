@@ -6,7 +6,7 @@ rem | Xidi
 rem |   DirectInput interface for XInput controllers.
 rem +--------------------------------------------------------------------------
 rem | Authored by Samuel Grossman
-rem | Copyright (c) 2016-2020
+rem | Copyright (c) 2016-2021
 rem +--------------------------------------------------------------------------
 rem | PackageRelease.bat
 rem |   Script for packaging up a release. To be executed manually after

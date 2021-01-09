@@ -3,7 +3,7 @@
  *   DirectInput interface for XInput controllers.
  *****************************************************************************
  * Authored by Samuel Grossman
- * Copyright (c) 2016-2020
+ * Copyright (c) 2016-2021
  *************************************************************************//**
  * @file VirtualDirectInputDevice.h
  *   Declaration of an IDirectInputDevice interface wrapper around virtual

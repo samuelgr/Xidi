@@ -3,7 +3,7 @@
  *   DirectInput interface for XInput controllers.
  *****************************************************************************
  * Authored by Samuel Grossman
- * Copyright (c) 2016-2020
+ * Copyright (c) 2016-2021
  *************************************************************************//**
  * @file ControllerIdentification.cpp
  *   Implementation of functions for identifying and enumerating XInput-based
