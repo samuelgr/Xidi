@@ -32,9 +32,30 @@
 #define LOG_INVOCATION_AND_RETURN(result, severity) \
     do \
     { \
-        Message::OutputFormatted(severity, L"Invoked %s on Xidi virtual controller %u, result = 0x%08x.", __FUNCTIONW__ L"()", controller->GetIdentifier(), result); \
-        return result; \
+        const HRESULT kResult = (result); \
+        Message::OutputFormatted(severity, L"Invoked %s on Xidi virtual controller %u, result = 0x%08x.", __FUNCTIONW__ L"()", (1 + controller->GetIdentifier()), kResult); \
+        return kResult; \
     } while (false)
+
+/// Logs a DirectInput property-related method invocation and returns.
+#define LOG_PROPERTY_INVOCATION_AND_RETURN(result, severity, rguidprop, propvalfmt, ...) \
+    do \
+    { \
+        const HRESULT kResult = (result); \
+        Message::OutputFormatted(severity, L"Invoked function %s on Xidi virtual controller %u, result = 0x%08x, property = %s" propvalfmt L".", __FUNCTIONW__ L"()", (1 + controller->GetIdentifier()), kResult, PropertyGuidString(rguidprop), ##__VA_ARGS__); \
+        return kResult; \
+    } while (false)
+
+/// Logs a DirectInput property-related method without a value and returns.
+#define LOG_PROPERTY_INVOCATION_NO_VALUE_AND_RETURN(result, severity, rguidprop)                LOG_PROPERTY_INVOCATION_AND_RETURN(result, severity, rguidprop, L"")
+
+/// Logs a DirectInput property-related method where the value is provided in a DIPROPDWORD structure and returns.
+#define LOG_PROPERTY_INVOCATION_DIPROPDWORD_AND_RETURN(result, severity, rguidprop, ppropval)   LOG_PROPERTY_INVOCATION_AND_RETURN(result, severity, rguidprop, L", value = { dwData = %u }", ((LPDIPROPDWORD)ppropval)->dwData)
+
+/// Logs a DirectInput property-related method where the value is provided in a DIPROPRANGE structure and returns.
+#define LOG_PROPERTY_INVOCATION_DIPROPRANGE_AND_RETURN(result, severity, rguidprop, ppropval)   LOG_PROPERTY_INVOCATION_AND_RETURN(result, severity, rguidprop, L", value = { lMin = %ld, lMax = %ld }", ((LPDIPROPRANGE)ppropval)->lMin, ((LPDIPROPRANGE)ppropval)->lMax)
+
+
 
 /// Produces and returns a human-readable string from a given DirectInput property GUID.
 #define DI_PROPERTY_STRING(rguid, diprop) if (&diprop == &rguid) return _CRT_WIDE(#diprop);
@@ -457,6 +478,7 @@ namespace Xidi
             // Object identifier is an offset into the application's data format.
             if (true == IsApplicationDataFormatSet())
                 return dataFormat->GetElementForOffset(dwObj);
+            break;
 
         case DIPH_BYID:
             // Controller element is being identified by instance identifier.
@@ -862,11 +884,11 @@ namespace Xidi
         DumpPropertyRequest(rguidProp, pdiph, false);
 
         if (false == IsPropertyHeaderValid(rguidProp, pdiph))
-            LOG_INVOCATION_AND_RETURN(DIERR_INVALIDPARAM, kMethodSeverity);
+            LOG_PROPERTY_INVOCATION_NO_VALUE_AND_RETURN(DIERR_INVALIDPARAM, kMethodSeverity, rguidProp);
 
         const std::optional<Controller::SElementIdentifier> maybeElement = IdentifyElement(pdiph->dwObj, pdiph->dwHow);
         if (false == maybeElement.has_value())
-            LOG_INVOCATION_AND_RETURN(DIERR_OBJECTNOTFOUND, kMethodSeverity);
+            LOG_PROPERTY_INVOCATION_NO_VALUE_AND_RETURN(DIERR_OBJECTNOTFOUND, kMethodSeverity, rguidProp);
 
         const Controller::SElementIdentifier element = maybeElement.value();
 
@@ -874,41 +896,39 @@ namespace Xidi
         {
         case ((size_t)&DIPROP_AXISMODE):
             ((LPDIPROPDWORD)pdiph)->dwData = DIPROPAXISMODE_ABS;
-            break;
+            LOG_PROPERTY_INVOCATION_DIPROPDWORD_AND_RETURN(DI_OK, kMethodSeverity, rguidProp, pdiph);
 
         case ((size_t)&DIPROP_BUFFERSIZE):
             ((LPDIPROPDWORD)pdiph)->dwData = controller->GetEventBufferCapacity();
-            break;
+            LOG_PROPERTY_INVOCATION_DIPROPDWORD_AND_RETURN(DI_OK, kMethodSeverity, rguidProp, pdiph);
 
         case ((size_t)&DIPROP_DEADZONE):
             if (Controller::EElementType::Axis != element.type)
-                LOG_INVOCATION_AND_RETURN(DIERR_INVALIDPARAM, kMethodSeverity);
+                LOG_PROPERTY_INVOCATION_NO_VALUE_AND_RETURN(DIERR_INVALIDPARAM, kMethodSeverity, rguidProp);
             ((LPDIPROPDWORD)pdiph)->dwData = controller->GetAxisDeadzone(element.axis);
-            break;
+            LOG_PROPERTY_INVOCATION_DIPROPDWORD_AND_RETURN(DI_OK, kMethodSeverity, rguidProp, pdiph);
 
         case ((size_t)&DIPROP_RANGE):
             do
             {
                 if (Controller::EElementType::Axis != element.type)
-                    LOG_INVOCATION_AND_RETURN(DIERR_INVALIDPARAM, kMethodSeverity);
+                    LOG_PROPERTY_INVOCATION_NO_VALUE_AND_RETURN(DIERR_INVALIDPARAM, kMethodSeverity, rguidProp);
 
                 const std::pair kRange = controller->GetAxisRange(element.axis);
                 ((LPDIPROPRANGE)pdiph)->lMin = kRange.first;
                 ((LPDIPROPRANGE)pdiph)->lMax = kRange.second;
             } while (false);
-            break;
+            LOG_PROPERTY_INVOCATION_DIPROPRANGE_AND_RETURN(DI_OK, kMethodSeverity, rguidProp, pdiph);
         
         case ((size_t)&DIPROP_SATURATION):
             if (Controller::EElementType::Axis != element.type)
-                LOG_INVOCATION_AND_RETURN(DIERR_INVALIDPARAM, kMethodSeverity);
+                LOG_PROPERTY_INVOCATION_NO_VALUE_AND_RETURN(DIERR_INVALIDPARAM, kMethodSeverity, rguidProp);
             ((LPDIPROPDWORD)pdiph)->dwData = controller->GetAxisSaturation(element.axis);
-            break;
+            LOG_PROPERTY_INVOCATION_DIPROPDWORD_AND_RETURN(DI_OK, kMethodSeverity, rguidProp, pdiph);
 
         default:
-            LOG_INVOCATION_AND_RETURN(DIERR_UNSUPPORTED, kMethodSeverity);
+            LOG_PROPERTY_INVOCATION_NO_VALUE_AND_RETURN(DIERR_UNSUPPORTED, kMethodSeverity, rguidProp);
         }
-
-        LOG_INVOCATION_AND_RETURN(DI_OK, kMethodSeverity);
     }
 
     // ---------
@@ -1033,11 +1053,11 @@ namespace Xidi
         DumpPropertyRequest(rguidProp, pdiph, true);
         
         if (false == IsPropertyHeaderValid(rguidProp, pdiph))
-            LOG_INVOCATION_AND_RETURN(DIERR_INVALIDPARAM, kMethodSeverity);
+            LOG_PROPERTY_INVOCATION_NO_VALUE_AND_RETURN(DIERR_INVALIDPARAM, kMethodSeverity, rguidProp);
 
         const std::optional<Controller::SElementIdentifier> maybeElement = IdentifyElement(pdiph->dwObj, pdiph->dwHow);
         if (false == maybeElement.has_value())
-            LOG_INVOCATION_AND_RETURN(DIERR_OBJECTNOTFOUND, kMethodSeverity);
+            LOG_PROPERTY_INVOCATION_NO_VALUE_AND_RETURN(DIERR_OBJECTNOTFOUND, kMethodSeverity, rguidProp);
 
         const Controller::SElementIdentifier element = maybeElement.value();
 
@@ -1045,48 +1065,48 @@ namespace Xidi
         {
         case ((size_t)&DIPROP_AXISMODE):
             if (DIPROPAXISMODE_ABS == ((LPDIPROPDWORD)pdiph)->dwData)
-                LOG_INVOCATION_AND_RETURN(DI_PROPNOEFFECT, kMethodSeverity);
+                LOG_PROPERTY_INVOCATION_DIPROPDWORD_AND_RETURN(DI_PROPNOEFFECT, kMethodSeverity, rguidProp, pdiph);
             else
-                LOG_INVOCATION_AND_RETURN(DIERR_UNSUPPORTED, kMethodSeverity);
+                LOG_PROPERTY_INVOCATION_DIPROPDWORD_AND_RETURN(DIERR_UNSUPPORTED, kMethodSeverity, rguidProp, pdiph);
 
         case ((size_t)&DIPROP_BUFFERSIZE):
-            LOG_INVOCATION_AND_RETURN(((true == controller->SetEventBufferCapacity(((LPDIPROPDWORD)pdiph)->dwData)) ? DI_OK : DIERR_INVALIDPARAM), kMethodSeverity);
+            LOG_PROPERTY_INVOCATION_DIPROPDWORD_AND_RETURN(((true == controller->SetEventBufferCapacity(((LPDIPROPDWORD)pdiph)->dwData)) ? DI_OK : DIERR_INVALIDPARAM), kMethodSeverity, rguidProp, pdiph);
 
         case ((size_t)&DIPROP_DEADZONE):
             switch (element.type)
             {
             case Controller::EElementType::Axis:
-                LOG_INVOCATION_AND_RETURN(((true == controller->SetAxisDeadzone(element.axis, ((LPDIPROPDWORD)pdiph)->dwData)) ? DI_OK : DIERR_INVALIDPARAM), kMethodSeverity);
+                LOG_PROPERTY_INVOCATION_DIPROPDWORD_AND_RETURN(((true == controller->SetAxisDeadzone(element.axis, ((LPDIPROPDWORD)pdiph)->dwData)) ? DI_OK : DIERR_INVALIDPARAM), kMethodSeverity, rguidProp, pdiph);
             case Controller::EElementType::WholeController:
-                LOG_INVOCATION_AND_RETURN(((true == controller->SetAllAxisDeadzone(((LPDIPROPDWORD)pdiph)->dwData)) ? DI_OK : DIERR_INVALIDPARAM), kMethodSeverity);
+                LOG_PROPERTY_INVOCATION_DIPROPDWORD_AND_RETURN(((true == controller->SetAllAxisDeadzone(((LPDIPROPDWORD)pdiph)->dwData)) ? DI_OK : DIERR_INVALIDPARAM), kMethodSeverity, rguidProp, pdiph);
             default:
-                LOG_INVOCATION_AND_RETURN(DIERR_INVALIDPARAM, kMethodSeverity);
+                LOG_PROPERTY_INVOCATION_DIPROPDWORD_AND_RETURN(DIERR_INVALIDPARAM, kMethodSeverity, rguidProp, pdiph);
             }
 
         case ((size_t)&DIPROP_RANGE):
             switch (element.type)
             {
             case Controller::EElementType::Axis:
-                LOG_INVOCATION_AND_RETURN(((true == controller->SetAxisRange(element.axis, ((LPDIPROPRANGE)pdiph)->lMin, ((LPDIPROPRANGE)pdiph)->lMax)) ? DI_OK : DIERR_INVALIDPARAM), kMethodSeverity);
+                LOG_PROPERTY_INVOCATION_DIPROPRANGE_AND_RETURN(((true == controller->SetAxisRange(element.axis, ((LPDIPROPRANGE)pdiph)->lMin, ((LPDIPROPRANGE)pdiph)->lMax)) ? DI_OK : DIERR_INVALIDPARAM), kMethodSeverity, rguidProp, pdiph);
             case Controller::EElementType::WholeController:
-                LOG_INVOCATION_AND_RETURN(((true == controller->SetAllAxisRange(((LPDIPROPRANGE)pdiph)->lMin, ((LPDIPROPRANGE)pdiph)->lMax)) ? DI_OK : DIERR_INVALIDPARAM), kMethodSeverity);
+                LOG_PROPERTY_INVOCATION_DIPROPRANGE_AND_RETURN(((true == controller->SetAllAxisRange(((LPDIPROPRANGE)pdiph)->lMin, ((LPDIPROPRANGE)pdiph)->lMax)) ? DI_OK : DIERR_INVALIDPARAM), kMethodSeverity, rguidProp, pdiph);
             default:
-                LOG_INVOCATION_AND_RETURN(DIERR_INVALIDPARAM, kMethodSeverity);
+                LOG_PROPERTY_INVOCATION_DIPROPRANGE_AND_RETURN(DIERR_INVALIDPARAM, kMethodSeverity, rguidProp, pdiph);
             }
 
         case ((size_t)&DIPROP_SATURATION):
             switch (element.type)
             {
             case Controller::EElementType::Axis:
-                LOG_INVOCATION_AND_RETURN(((true == controller->SetAxisSaturation(element.axis, ((LPDIPROPDWORD)pdiph)->dwData)) ? DI_OK : DIERR_INVALIDPARAM), kMethodSeverity);
+                LOG_PROPERTY_INVOCATION_DIPROPDWORD_AND_RETURN(((true == controller->SetAxisSaturation(element.axis, ((LPDIPROPDWORD)pdiph)->dwData)) ? DI_OK : DIERR_INVALIDPARAM), kMethodSeverity, rguidProp, pdiph);
             case Controller::EElementType::WholeController:
-                LOG_INVOCATION_AND_RETURN(((true == controller->SetAllAxisSaturation(((LPDIPROPDWORD)pdiph)->dwData)) ? DI_OK : DIERR_INVALIDPARAM), kMethodSeverity);
+                LOG_PROPERTY_INVOCATION_DIPROPDWORD_AND_RETURN(((true == controller->SetAllAxisSaturation(((LPDIPROPDWORD)pdiph)->dwData)) ? DI_OK : DIERR_INVALIDPARAM), kMethodSeverity, rguidProp, pdiph);
             default:
-                LOG_INVOCATION_AND_RETURN(DIERR_INVALIDPARAM, kMethodSeverity);
+                LOG_PROPERTY_INVOCATION_DIPROPDWORD_AND_RETURN(DIERR_INVALIDPARAM, kMethodSeverity, rguidProp, pdiph);
             }
 
         default:
-            LOG_INVOCATION_AND_RETURN(DIERR_UNSUPPORTED, kMethodSeverity);
+            LOG_PROPERTY_INVOCATION_NO_VALUE_AND_RETURN(DIERR_UNSUPPORTED, kMethodSeverity, rguidProp);
         }
     }
 
