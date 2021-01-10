@@ -24,13 +24,13 @@ namespace Xidi
         // -------- INTERNAL CONSTANTS ------------------------------------- //
 
         /// Threshold value used to determine if a trigger is considered "pressed" or not as a digital button.
-        static constexpr uint8_t kTriggerPressedThreshold = 32;
+        static constexpr uint8_t kTriggerPressedThreshold = 40;
 
         /// Threshold negative direction value used to determine if an analog stick is considered "pressed" or not as a digital button.
-        static constexpr int16_t kAnalogPressedThresholdNegative = -8192;
+        static constexpr int16_t kAnalogPressedThresholdNegative = -14750;
 
         /// Threshold positive direction value used to determine if an analog stick is considered "pressed" or not as a digital button.
-        static constexpr int16_t kAnalogPressedThresholdPositive = 8192;
+        static constexpr int16_t kAnalogPressedThresholdPositive = 14750;
 
 
         // -------- INTERNAL FUNCTIONS ------------------------------------- //
