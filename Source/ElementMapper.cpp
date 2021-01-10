@@ -219,21 +219,30 @@ namespace Xidi
 
         void PovMapper::ContributeFromAnalogValue(SState& controllerState, int16_t analogValue) const
         {
-            controllerState.povDirection.components[(int)povDirection] = (controllerState.povDirection.components[(int)povDirection] || IsAnalogPressed(analogValue));
+            if (true == IsAnalogPressedPositive(analogValue))
+                controllerState.povDirection.components[(int)povDirectionPositive] = true;
+            else if ((maybePovDirectionNegative.has_value()) && (true == IsAnalogPressedNegative(analogValue)))
+                controllerState.povDirection.components[(int)maybePovDirectionNegative.value()] = true;
         }
 
         // --------
 
         void PovMapper::ContributeFromButtonValue(SState& controllerState, bool buttonPressed) const
         {
-            controllerState.povDirection.components[(int)povDirection] = (controllerState.povDirection.components[(int)povDirection] || buttonPressed);
+            if (true == buttonPressed)
+                controllerState.povDirection.components[(int)povDirectionPositive] = true;
+            else if (maybePovDirectionNegative.has_value())
+                controllerState.povDirection.components[(int)maybePovDirectionNegative.value()] = true;
         }
 
         // --------
 
         void PovMapper::ContributeFromTriggerValue(SState& controllerState, uint8_t triggerValue) const
         {
-            controllerState.povDirection.components[(int)povDirection] = (controllerState.povDirection.components[(int)povDirection] || IsTriggerPressed(triggerValue));
+            if (true == IsTriggerPressed(triggerValue))
+                controllerState.povDirection.components[(int)povDirectionPositive] = true;
+            else if (maybePovDirectionNegative.has_value())
+                controllerState.povDirection.components[(int)maybePovDirectionNegative.value()] = true;
         }
 
         // --------

@@ -15,6 +15,7 @@
 #include "ControllerTypes.h"
 
 #include <cstdint>
+#include <optional>
 
 
 namespace Xidi
@@ -155,22 +156,35 @@ namespace Xidi
             void ContributeFromTriggerValue(SState& controllerState, uint8_t triggerValue) const override;
         };
 
-        /// Maps a single XInput controller element such that it contributes to a POV direction on a virtual controller.
+        /// Maps a single XInput controller element such that it contributes to a POV on a virtual controller.
         class PovMapper : public IElementMapper
         {
         private:
             // -------- INSTANCE VARIABLES --------------------------------- //
 
-            /// Identifies the POV direction to which this mapper should contribute in the internal controller state data structure.
-            const EPovDirection povDirection;
+            /// Identifies the POV direction to which this mapper should nominally contribute in the internal controller state data structure.
+            /// This direction is used for positive "pressed" analog values, "pressed" button states, and "pressed" trigger states.
+            const EPovDirection povDirectionPositive;
+
+            /// Identifies an optional second POV direction to which this mapper should contribute in the internal controller state data structure.
+            /// If present, this direction is used for negative "pressed" analog values, "not pressed" button states, and "not pressed" trigger states.
+            /// If absent, no contribution is made at all for negative "pressed" analog values, "not pressed" button states, and "not pressed" trigger states.
+            const std::optional<EPovDirection> maybePovDirectionNegative;
 
 
         public:
             // -------- CONSTRUCTION AND DESTRUCTION ----------------------- //
 
             /// Initialization constructor.
-            /// Specifies the button to which all updates are contributed.
-            inline constexpr PovMapper(EPovDirection povDirection) : IElementMapper(), povDirection(povDirection)
+            /// Specifies the single POV direction to which all updates are contributed (axis on the positive side or button/trigger pressed).
+            inline constexpr PovMapper(EPovDirection povDirection) : IElementMapper(), povDirectionPositive(povDirection), maybePovDirectionNegative(std::nullopt)
+            {
+                // Nothing to do here.
+            }
+
+            /// Initialization constructor.
+            /// Specifies two POV directions, one for positive direction updates (axis on the positive side or button/trigger pressed) and one for negative direction updates (axis on the negative side or button/trigger not pressed).
+            inline constexpr PovMapper(EPovDirection povDirectionPositive, EPovDirection povDirectionNegative) : IElementMapper(), povDirectionPositive(povDirectionPositive), maybePovDirectionNegative(povDirectionNegative)
             {
                 // Nothing to do here.
             }

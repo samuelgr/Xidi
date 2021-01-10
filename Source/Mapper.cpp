@@ -303,7 +303,7 @@ namespace Xidi
             if (nullptr != elements.named.buttonRS) elements.named.buttonRS->ContributeFromButtonValue(controllerState, (0 != (xinputState.wButtons & XINPUT_GAMEPAD_RIGHT_THUMB)));
 
             // Once all contributions have been committed, saturate all axis values at the extreme ends of the allowed range.
-            // Doing this at the end means that intermediate contributions are computed with much more range than the controller is allowed to report, which can increase accuracy when there are multiple interfering mappers to axes.
+            // Doing this at the end means that intermediate contributions are computed with much more range than the controller is allowed to report, which can increase accuracy when there are multiple interfering mappers contributing to axes.
             for (auto& axisValue : controllerState.axis)
             {
                 if (axisValue > kAnalogValueMax)
