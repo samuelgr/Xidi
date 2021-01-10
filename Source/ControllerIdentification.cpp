@@ -13,7 +13,9 @@
 #include "ApiDirectInput.h"
 #include "ControllerIdentification.h"
 #include "Globals.h"
+#include "TemporaryBuffer.h"
 
+#include <memory>
 #include <xinput.h>
 
 
@@ -89,28 +91,14 @@ namespace Xidi
 
         template <typename DeviceInstanceType> BOOL EnumerateXInputControllers(BOOL(FAR PASCAL* lpCallback)(const DeviceInstanceType*, LPVOID), LPVOID pvRef)
         {
+            std::unique_ptr<DeviceInstanceType> instanceInfo = std::make_unique<DeviceInstanceType>();
+
             for (WORD idx = 0; idx < XUSER_MAX_COUNT; ++idx)
             {
-                // Create a DirectInput device structure
-                DeviceInstanceType* instanceInfo = new DeviceInstanceType;
-                ZeroMemory(instanceInfo, sizeof(*instanceInfo));
-                instanceInfo->dwSize = sizeof(*instanceInfo);
-                MakeInstanceGUID(instanceInfo->guidInstance, idx);
-                instanceInfo->guidProduct = kXInputProductGUID;
-                instanceInfo->dwDevType = DINPUT_DEVTYPE_XINPUT_GAMEPAD;
-                FillXInputControllerName(instanceInfo->tszInstanceName, _countof(instanceInfo->tszInstanceName), idx);
-                FillXInputControllerName(instanceInfo->tszProductName, _countof(instanceInfo->tszProductName), idx);
+                FillXInputControllerInfo(*instanceInfo, idx);
 
-                // Submit the device to the application.
-                HRESULT appResult = lpCallback(instanceInfo, pvRef);
-
-                // Clean up.
-                delete instanceInfo;
-
-                // See if the application wants to enumerate more devices.
-                if (DIENUM_CONTINUE != appResult)
+                if (DIENUM_CONTINUE != lpCallback(instanceInfo.get(), pvRef))
                     return DIENUM_STOP;
-
             }
 
             return DIENUM_CONTINUE;
@@ -121,20 +109,36 @@ namespace Xidi
 
         // ---------
 
-        template <> int FillXInputControllerName<LPSTR>(LPSTR buf, const size_t bufcount, const DWORD controllerIndex)
+        template <typename DeviceInstanceType> void FillXInputControllerInfo(DeviceInstanceType& instanceInfo, WORD controllerIndex)
         {
-            CHAR xidiControllerNameFormatString[128];
-            LoadStringA(Globals::GetInstanceHandle(), IDS_XIDI_CONTROLLERIDENTIFICATION_CONTROLLER_NAME_FORMAT, xidiControllerNameFormatString, _countof(xidiControllerNameFormatString));
-
-            return sprintf_s(buf, bufcount, xidiControllerNameFormatString, (controllerIndex + 1));
+            ZeroMemory(&instanceInfo, sizeof(instanceInfo));
+            instanceInfo.dwSize = sizeof(instanceInfo);
+            MakeInstanceGUID(instanceInfo.guidInstance, controllerIndex);
+            instanceInfo.guidProduct = kXInputProductGUID;
+            instanceInfo.dwDevType = DINPUT_DEVTYPE_XINPUT_GAMEPAD;
+            FillXInputControllerName(instanceInfo.tszInstanceName, _countof(instanceInfo.tszInstanceName), controllerIndex);
+            FillXInputControllerName(instanceInfo.tszProductName, _countof(instanceInfo.tszProductName), controllerIndex);
         }
 
-        template <> int FillXInputControllerName<LPWSTR>(LPWSTR buf, const size_t bufcount, const DWORD controllerIndex)
-        {
-            WCHAR xidiControllerNameFormatString[128];
-            LoadStringW(Globals::GetInstanceHandle(), IDS_XIDI_CONTROLLERIDENTIFICATION_CONTROLLER_NAME_FORMAT, xidiControllerNameFormatString, _countof(xidiControllerNameFormatString));
+        template void FillXInputControllerInfo(DIDEVICEINSTANCEA&, WORD);
+        template void FillXInputControllerInfo(DIDEVICEINSTANCEW&, WORD);
 
-            return swprintf_s(buf, bufcount, xidiControllerNameFormatString, (controllerIndex + 1));
+        // ---------
+
+        template <> int FillXInputControllerName<LPSTR>(LPSTR buf, const size_t bufcount, const WORD controllerIndex)
+        {
+            TemporaryBuffer<CHAR> xidiControllerNameFormatString;
+            LoadStringA(Globals::GetInstanceHandle(), IDS_XIDI_CONTROLLERIDENTIFICATION_CONTROLLER_NAME_FORMAT, xidiControllerNameFormatString, xidiControllerNameFormatString.Count());
+
+            return sprintf_s(buf, bufcount, (LPCSTR)xidiControllerNameFormatString, (controllerIndex + 1));
+        }
+
+        template <> int FillXInputControllerName<LPWSTR>(LPWSTR buf, const size_t bufcount, const WORD controllerIndex)
+        {
+            TemporaryBuffer<WCHAR> xidiControllerNameFormatString;
+            LoadStringW(Globals::GetInstanceHandle(), IDS_XIDI_CONTROLLERIDENTIFICATION_CONTROLLER_NAME_FORMAT, xidiControllerNameFormatString, xidiControllerNameFormatString.Count());
+
+            return swprintf_s(buf, bufcount, (LPCWSTR)xidiControllerNameFormatString, (controllerIndex + 1));
         }
 
         // ---------

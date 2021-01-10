@@ -170,6 +170,7 @@
   <ItemGroup>
     <ClInclude Include="Include\Xidi\ApiWindows.h" />
     <ClInclude Include="Include\Xidi\Configuration.h" />
+    <ClInclude Include="Include\Xidi\ControllerIdentification.h" />
     <ClInclude Include="Include\Xidi\ControllerTypes.h" />
     <ClInclude Include="Include\Xidi\DataFormat.h" />
     <ClInclude Include="Include\Xidi\ElementMapper.h" />
@@ -191,6 +192,7 @@
   <ItemGroup>
     <ClCompile Include="Source\ApiDirectInput.cpp" />
     <ClCompile Include="Source\Configuration.cpp" />
+    <ClCompile Include="Source\ControllerIdentification.cpp" />
     <ClCompile Include="Source\DataFormat.cpp" />
     <ClCompile Include="Source\ElementMapper.cpp" />
     <ClCompile Include="Source\Globals.cpp" />

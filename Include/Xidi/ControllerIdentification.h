@@ -24,10 +24,10 @@ namespace Xidi
         // -------- CONSTANTS ---------------------------------------------- //
 
         /// Dummy product GUID for XInput controllers.
-        inline constexpr GUID kXInputProductGUID = { 0xffffffff, 0x0000, 0x0000, { 0x00, 0x00, 'X', 'I', 'N', 'P', 'U', 'T' } };
+        inline constexpr GUID kXInputProductGUID = { 0xffffffff, 0x0000, 0x0000, { 0x00, 0x00, 0x00, 0x00, 'X', 'I', 'D', 'I' } };
 
         /// Dummy instance base GUID for XInput controllers, from which instance GUIDs per controller may be derived.
-        inline constexpr GUID kXInputBaseInstGUID = { 0xffffffff, 0x0000, 0x0000, { 'X', 'I', 'N', 'P', 'U', 'T', 0x00, 0x00 } };
+        inline constexpr GUID kXInputBaseInstGUID = { 0xffffffff, 0x0000, 0x0000, { 'X', 'I', 'D', 'I', 'V', 'C', 0x00, 0x00 } };
 
 
         // -------- FUNCTIONS ---------------------------------------------- //
@@ -52,13 +52,18 @@ namespace Xidi
         /// @return `DIENUM_CONTINUE` or `DIENUM_STOP` depending on what the application's callback returned.
         template <typename DeviceInstanceType> BOOL EnumerateXInputControllers(BOOL(FAR PASCAL* lpCallback)(const DeviceInstanceType*, LPVOID), LPVOID pvRef);
 
+        /// Fills a DirectInput device information structure with information about the controller at the specified index.
+        /// @param [out] deviceInstanceInfo Structure to be filled with information.
+        /// @param [in] controllerIndex Index of the controller for which information is to be filled in.
+        template <typename DeviceInstanceType> void FillXInputControllerInfo(DeviceInstanceType& instanceInfo, WORD controllerIndex);
+        
         /// Generates and places a string representing the XInput controller's product name for the controller at the specified index.
         /// @tparam StringType Either LPSTR or LPWSTR depending on whether ASCII or Unicode is desired.
         /// @param [out] buf Buffer to fill.
         /// @param [in] bufcount Buffer size, expressed in terms of number of characters.
         /// @param [in] controllerIndex XInput controller index, which is used to determine the actual text to produce.
         /// @return Number of characters written, or negative in the event of an error.
-        template <typename StringType> int FillXInputControllerName(StringType buf, const size_t bufcount, const DWORD controllerIndex);
+        template <typename StringType> int FillXInputControllerName(StringType buf, const size_t bufcount, const WORD controllerIndex);
 
         /// Generates an instance GUID for an XInput controller of the specified index and places it into the supplied GUID.
         /// @param [out] xguid GUID to fill.

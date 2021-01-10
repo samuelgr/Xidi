@@ -338,7 +338,7 @@ namespace Xidi
             for (DWORD i = 0; i < _countof(controllers); ++i)
             {
                 wchar_t valueData[64];
-                const int valueDataCount = ControllerIdentification::FillXInputControllerName(valueData, _countof(valueData), i);
+                const int valueDataCount = ControllerIdentification::FillXInputControllerName(valueData, _countof(valueData), (WORD)i);
 
                 swprintf_s(registryPath, _countof(registryPath), REGSTR_PATH_JOYOEM L"\\%s%u", registryKeyName, i + 1);
                 result = RegCreateKeyEx(HKEY_CURRENT_USER, registryPath, 0, nullptr, REG_OPTION_VOLATILE, KEY_SET_VALUE, nullptr, &registryKey, nullptr);
@@ -521,7 +521,7 @@ namespace Xidi
                     pjc->wCaps |= JOYCAPS_HASV;
 
                 FillRegistryKeyString(pjc->szRegKey, _countof(pjc->szRegKey));
-                ControllerIdentification::FillXInputControllerName(pjc->szPname, _countof(pjc->szPname), xJoyID);
+                ControllerIdentification::FillXInputControllerName(pjc->szPname, _countof(pjc->szPname), (WORD)xJoyID);
 
                 const MMRESULT result = JOYERR_NOERROR;
                 LOG_INVOCATION((unsigned int)uJoyID, result);

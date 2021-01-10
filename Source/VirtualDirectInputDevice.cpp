@@ -12,6 +12,7 @@
 
 #include "ApiDirectInput.h"
 #include "ApiGUID.h"
+#include "ControllerIdentification.h"
 #include "ControllerTypes.h"
 #include "DataFormat.h"
 #include "Message.h"
@@ -817,9 +818,13 @@ namespace Xidi
     {
         static constexpr Message::ESeverity kMethodSeverity = Message::ESeverity::Info;
 
-        // TODO: Implement this method.
+        if (nullptr == pdidi)
+            LOG_INVOCATION_AND_RETURN(E_POINTER, kMethodSeverity);
+        else if (sizeof(*pdidi) != pdidi->dwSize)
+            LOG_INVOCATION_AND_RETURN(DIERR_INVALIDPARAM, kMethodSeverity);
 
-        LOG_INVOCATION_AND_RETURN(DIERR_UNSUPPORTED, kMethodSeverity);
+        ControllerIdentification::FillXInputControllerInfo(*pdidi, (WORD)controller->GetIdentifier());
+        LOG_INVOCATION_AND_RETURN(DI_OK, kMethodSeverity);
     }
 
     // ---------
@@ -863,7 +868,9 @@ namespace Xidi
     {
         static constexpr Message::ESeverity kMethodSeverity = Message::ESeverity::Info;
         
-        if ((nullptr == pdidoi) || (sizeof(DirectInputDeviceType<charMode>::DeviceObjectInstanceType) != pdidoi->dwSize))
+        if (nullptr == pdidoi)
+            LOG_INVOCATION_AND_RETURN(E_POINTER, kMethodSeverity);
+        else if (sizeof(*pdidoi) != pdidoi->dwSize)
             LOG_INVOCATION_AND_RETURN(DIERR_INVALIDPARAM, kMethodSeverity);
 
         const std::optional<Controller::SElementIdentifier> maybeElement = IdentifyElement(dwObj, dwHow);
