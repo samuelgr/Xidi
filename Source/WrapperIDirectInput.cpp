@@ -20,6 +20,7 @@
 #include "WrapperIDirectInput.h"
 
 #include <cstdlib>
+#include <optional>
 #include <unordered_set>
 
 
@@ -137,23 +138,25 @@ namespace Xidi
 
     template <ECharMode charMode> HRESULT STDMETHODCALLTYPE WrapperIDirectInput<charMode>::CreateDevice(REFGUID rguid, DirectInputType<charMode>::EarliestIDirectInputDeviceType** lplpDirectInputDevice, LPUNKNOWN pUnkOuter)
     {
-        // Check if the specified instance GUID is an XInput GUID.
-        LONG xinputIndex = ControllerIdentification::XInputControllerIndexForInstanceGUID(rguid);
+        // Check if the specified instance GUID is an Xidi virtual controller GUID.
+        const std::optional<DWORD> maybeVirtualControllerId = VirtualControllerIdFromInstanceGuid(rguid);
 
-        if (-1 == xinputIndex)
+        if (false == maybeVirtualControllerId.has_value())
         {
-            // Not an XInput GUID, so just create the device as requested by the application.
+            // Not a virtual controller GUID, so just create the device as requested by the application.
             Message::Output(Message::ESeverity::Info, L"Binding to a non-XInput device. Xidi will not handle communication with it.");
 
             return underlyingDIObject->CreateDevice(rguid, lplpDirectInputDevice, pUnkOuter);
         }
         else
         {
-            // Is an XInput GUID, so create a virtual controller wrapped with a DirectInput interface..
-            Message::OutputFormatted(Message::ESeverity::Info, L"Binding to Xidi virtual controller %u.", (xinputIndex + 1));
+            const DWORD kVirtualControllerId = maybeVirtualControllerId.value();
+
+            // Is a virtual controller GUID, so create a virtual controller wrapped with a DirectInput interface.
+            Message::OutputFormatted(Message::ESeverity::Info, L"Binding to Xidi virtual controller %u.", (kVirtualControllerId + 1));
 
             if (nullptr != pUnkOuter)
-                Message::Output(Message::ESeverity::Warning, L"Application requested COM aggregation, which is not implemented, while binding to a Xidi virtual device.");
+                Message::Output(Message::ESeverity::Warning, L"Application requested COM aggregation, which is not implemented, while binding to a Xidi virtual controller.");
 
             const Controller::Mapper* mapper = Controller::Mapper::GetConfigured();
             if (nullptr == mapper)
@@ -162,7 +165,7 @@ namespace Xidi
                 return DIERR_NOINTERFACE;
             }
             
-            *lplpDirectInputDevice = new VirtualDirectInputDevice<charMode>(std::make_unique<Controller::VirtualController>(xinputIndex, *mapper));
+            *lplpDirectInputDevice = new VirtualDirectInputDevice<charMode>(std::make_unique<Controller::VirtualController>(kVirtualControllerId, *mapper));
             return DI_OK;
         }
     }
@@ -202,9 +205,9 @@ namespace Xidi
 
             if (systemHasXInputDevices)
             {
-                Message::Output(Message::ESeverity::Debug, L"Enumerate: System has XInput devices, so Xidi virtual XInput devices are being presented to the application before other controllers.");
+                Message::Output(Message::ESeverity::Debug, L"Enumerate: System has XInput devices, so Xidi virtual controllers are being presented to the application before other controllers.");
 
-                callbackInfo.callbackReturnCode = ControllerIdentification::EnumerateXInputControllers(lpCallback, pvRef);
+                callbackInfo.callbackReturnCode = EnumerateVirtualControllers(lpCallback, pvRef);
 
                 if (DIENUM_CONTINUE != callbackInfo.callbackReturnCode)
                 {
@@ -228,9 +231,9 @@ namespace Xidi
             // These will be the last controllers seen by the application.
             if (!systemHasXInputDevices)
             {
-                Message::Output(Message::ESeverity::Debug, L"Enumerate: System has no XInput devices, so Xidi virtual XInput devices are being presented to the application after other controllers.");
+                Message::Output(Message::ESeverity::Debug, L"Enumerate: System has no XInput devices, so Xidi virtual controllers are being presented to the application after other controllers.");
 
-                callbackInfo.callbackReturnCode = ControllerIdentification::EnumerateXInputControllers(lpCallback, pvRef);
+                callbackInfo.callbackReturnCode = EnumerateVirtualControllers(lpCallback, pvRef);
 
                 if (DIENUM_CONTINUE != callbackInfo.callbackReturnCode)
                 {
@@ -267,9 +270,9 @@ namespace Xidi
     template <ECharMode charMode> HRESULT STDMETHODCALLTYPE WrapperIDirectInput<charMode>::GetDeviceStatus(REFGUID rguidInstance)
     {
         // Check if the specified instance GUID is an XInput GUID.
-        LONG xinputIndex = ControllerIdentification::XInputControllerIndexForInstanceGUID(rguidInstance);
+        const std::optional<DWORD> maybeVirtualControllerId = VirtualControllerIdFromInstanceGuid(rguidInstance);
 
-        if (-1 == xinputIndex)
+        if (false == maybeVirtualControllerId.has_value())
         {
             // Not an XInput GUID, so ask the underlying implementation for status.
             return underlyingDIObject->GetDeviceStatus(rguidInstance);
@@ -304,7 +307,7 @@ namespace Xidi
         SEnumDevicesCallbackInfo<charMode>* callbackInfo = (SEnumDevicesCallbackInfo<charMode>*)pvRef;
 
         // If the present controller supports XInput, indicate such by adding it to the set of instance identifiers of interest.
-        if (ControllerIdentification::DoesDirectInputControllerSupportXInput<DirectInputType<charMode>::EarliestIDirectInputType, DirectInputType<charMode>::EarliestIDirectInputDeviceType>(callbackInfo->instance->underlyingDIObject, lpddi->guidInstance))
+        if (DoesDirectInputControllerSupportXInput<DirectInputType<charMode>::EarliestIDirectInputType, DirectInputType<charMode>::EarliestIDirectInputDeviceType>(callbackInfo->instance->underlyingDIObject, lpddi->guidInstance))
         {
             callbackInfo->seenInstanceIdentifiers.insert(lpddi->guidInstance);
             EnumDevicesOutputProductName<charMode>(Message::ESeverity::Debug, L"Enumerate: DirectInput device \"%s\" supports XInput and will not be presented to the application.", lpddi);

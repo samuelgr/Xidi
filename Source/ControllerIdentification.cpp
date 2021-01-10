@@ -6,8 +6,8 @@
  * Copyright (c) 2016-2021
  *************************************************************************//**
  * @file ControllerIdentification.cpp
- *   Implementation of functions for identifying and enumerating XInput-based
- *   game controllers.
+ *   Implementation of functions for identifying and enumerating Xidi virtual
+ *   controllers in the context of DirectInput.
  *****************************************************************************/
 
 #include "ApiDirectInput.h"
@@ -16,163 +16,160 @@
 #include "TemporaryBuffer.h"
 
 #include <memory>
+#include <optional>
 #include <xinput.h>
 
 
 namespace Xidi
 {
-    namespace ControllerIdentification
+    // -------- INTERNAL FUNCTIONS ----------------------------------------- //
+
+    /// Extracts and returns the instance index from a Xidi virtual controller's GUID.
+    /// Does not verify that the supplied GUID actually represents an XInput instance GUID.
+    /// @param [in] xguid Xidi virtual controller's instance GUID.
+    /// @return Instance index (a.k.a. XInput player number).
+    static inline DWORD ExtractVirtualControllerInstanceFromGuid(REFGUID xguid)
     {
-        // -------- INTERNAL FUNCTIONS ------------------------------------- //
+        return (*((DWORD*)(&xguid.Data4[4])));
+    }
 
-        /// Extracts and returns the instance index from an XInput controller's GUID.
-        /// Does not verify that the supplied GUID actually represents an XInput instance GUID.
-        /// @param [in] xguid XInput controller's instance GUID.
-        /// @return Instance index (a.k.a. XInput player number).
-        static WORD ExtractInstanceFromXInputInstanceGUID(REFGUID xguid)
+    /// Turns the provided base instance GUID for a Xidi virtual controller into an instance GUID for a controller of the specified index.
+    /// Does not verify that the supplied GUID actually represents a Xidi virtual controller instance GUID.
+    /// @param [in,out] xguid GUID whose XInput instance field should be set.
+    /// @param [in] xindex Instance index (a.k.a. XInput player number).
+    static inline void SetVirtualControllerInstanceInGuid(GUID& xguid, DWORD xindex)
+    {
+        *((DWORD*)(&xguid.Data4[4])) = xindex;
+    }
+
+
+    // -------- FUNCTIONS -------------------------------------------------- //
+    // See "ControllerIdentification.h" for documentation.
+
+    template <typename EarliestIDirectInputType, typename EarliestIDirectInputDeviceType> bool DoesDirectInputControllerSupportXInput(EarliestIDirectInputType* dicontext, REFGUID instanceGUID, std::wstring* devicePath)
+    {
+        bool deviceSupportsXInput = false;
+
+        EarliestIDirectInputDeviceType* didevice = nullptr;
+        HRESULT result = dicontext->CreateDevice(instanceGUID, &didevice, nullptr);
+
+        if (DI_OK == result)
         {
-            return (*((WORD*)(&xguid.Data4[6])));
-        }
+            // Get the GUID and device path of the DirectInput device.
+            DIPROPGUIDANDPATH devinfo;
+            ZeroMemory(&devinfo, sizeof(devinfo));
 
-        /// Turns the provided base instance GUID for an XInput controller into an instance GUID for a controller of the specified index.
-        /// Does not verify that the supplied GUID actually represents an XInput instance GUID.
-        /// @param [in,out] xguid GUID whose XInput instance field should be set.
-        /// @param [in] xindex Instance index (a.k.a. XInput player number).
-        void SetInstanceInXInputInstanceGUID(GUID& xguid, const WORD xindex)
-        {
-            *((WORD*)(&xguid.Data4[6])) = xindex;
-        }
+            devinfo.diph.dwHeaderSize = sizeof(devinfo.diph);
+            devinfo.diph.dwSize = sizeof(devinfo);
+            devinfo.diph.dwHow = DIPH_DEVICE;
 
-
-        // -------- FUNCTIONS ---------------------------------------------- //
-        // See "ControllerIdentification.h" for documentation.
-
-        template <typename EarliestIDirectInputType, typename EarliestIDirectInputDeviceType> BOOL DoesDirectInputControllerSupportXInput(EarliestIDirectInputType* dicontext, REFGUID instanceGUID, std::wstring* devicePath)
-        {
-            BOOL deviceSupportsXInput = FALSE;
-
-            EarliestIDirectInputDeviceType* didevice = nullptr;
-            HRESULT result = dicontext->CreateDevice(instanceGUID, &didevice, nullptr);
+            result = didevice->GetProperty(DIPROP_GUIDANDPATH, &devinfo.diph);
 
             if (DI_OK == result)
             {
-                // Get the GUID and device path of the DirectInput device.
-                DIPROPGUIDANDPATH devinfo;
-                ZeroMemory(&devinfo, sizeof(devinfo));
-
-                devinfo.diph.dwHeaderSize = sizeof(devinfo.diph);
-                devinfo.diph.dwSize = sizeof(devinfo);
-                devinfo.diph.dwHow = DIPH_DEVICE;
-
-                result = didevice->GetProperty(DIPROP_GUIDANDPATH, &devinfo.diph);
-
-                if (DI_OK == result)
+                // The documented "best" way of determining if a device supports XInput is to look for "&IG_" in the device path string.
+                if (nullptr != wcsstr(devinfo.wszPath, L"&IG_") || nullptr != wcsstr(devinfo.wszPath, L"&ig_"))
                 {
-                    // The documented "best" way of determining if a device supports XInput is to look for "&IG_" in the device path string.
-                    if (nullptr != wcsstr(devinfo.wszPath, L"&IG_") || nullptr != wcsstr(devinfo.wszPath, L"&ig_"))
-                    {
-                        deviceSupportsXInput = TRUE;
+                    deviceSupportsXInput = true;
 
-                        if (nullptr != devicePath)
-                            *devicePath = devinfo.wszPath;
-                    }
+                    if (nullptr != devicePath)
+                        *devicePath = devinfo.wszPath;
                 }
-
-                didevice->Release();
             }
 
-            return deviceSupportsXInput;
+            didevice->Release();
         }
 
-        template BOOL DoesDirectInputControllerSupportXInput<typename EarliestIDirectInputA, typename EarliestIDirectInputDeviceA>(EarliestIDirectInputA*, REFGUID, std::wstring*);
-        template BOOL DoesDirectInputControllerSupportXInput<typename EarliestIDirectInputW, typename EarliestIDirectInputDeviceW>(EarliestIDirectInputW*, REFGUID, std::wstring*);
+        return deviceSupportsXInput;
+    }
 
-        // ---------
+    template bool DoesDirectInputControllerSupportXInput<typename EarliestIDirectInputA, typename EarliestIDirectInputDeviceA>(EarliestIDirectInputA*, REFGUID, std::wstring*);
+    template bool DoesDirectInputControllerSupportXInput<typename EarliestIDirectInputW, typename EarliestIDirectInputDeviceW>(EarliestIDirectInputW*, REFGUID, std::wstring*);
 
-        template <typename DeviceInstanceType> BOOL EnumerateXInputControllers(BOOL(FAR PASCAL* lpCallback)(const DeviceInstanceType*, LPVOID), LPVOID pvRef)
+    // ---------
+
+    template <typename DeviceInstanceType> BOOL EnumerateVirtualControllers(BOOL(FAR PASCAL* lpCallback)(const DeviceInstanceType*, LPVOID), LPVOID pvRef)
+    {
+        std::unique_ptr<DeviceInstanceType> instanceInfo = std::make_unique<DeviceInstanceType>();
+
+        for (DWORD idx = 0; idx < XUSER_MAX_COUNT; ++idx)
         {
-            std::unique_ptr<DeviceInstanceType> instanceInfo = std::make_unique<DeviceInstanceType>();
+            FillVirtualControllerInfo(*instanceInfo, idx);
 
-            for (WORD idx = 0; idx < XUSER_MAX_COUNT; ++idx)
-            {
-                FillXInputControllerInfo(*instanceInfo, idx);
-
-                if (DIENUM_CONTINUE != lpCallback(instanceInfo.get(), pvRef))
-                    return DIENUM_STOP;
-            }
-
-            return DIENUM_CONTINUE;
+            if (DIENUM_CONTINUE != lpCallback(instanceInfo.get(), pvRef))
+                return DIENUM_STOP;
         }
 
-        template BOOL EnumerateXInputControllers(LPDIENUMDEVICESCALLBACKA, LPVOID);
-        template BOOL EnumerateXInputControllers(LPDIENUMDEVICESCALLBACKW, LPVOID);
+        return DIENUM_CONTINUE;
+    }
 
-        // ---------
+    template BOOL EnumerateVirtualControllers(LPDIENUMDEVICESCALLBACKA, LPVOID);
+    template BOOL EnumerateVirtualControllers(LPDIENUMDEVICESCALLBACKW, LPVOID);
 
-        template <typename DeviceInstanceType> void FillXInputControllerInfo(DeviceInstanceType& instanceInfo, WORD controllerIndex)
+    // ---------
+
+    template <typename DeviceInstanceType> void FillVirtualControllerInfo(DeviceInstanceType& instanceInfo, DWORD controllerId)
+    {
+        ZeroMemory(&instanceInfo, sizeof(instanceInfo));
+        instanceInfo.dwSize = sizeof(instanceInfo);
+        MakeVirtualControllerInstanceGuid(instanceInfo.guidInstance, controllerId);
+        instanceInfo.guidProduct = kVirtualControllerProductGuid;
+        instanceInfo.dwDevType = DINPUT_DEVTYPE_XINPUT_GAMEPAD;
+        FillVirtualControllerName(instanceInfo.tszInstanceName, _countof(instanceInfo.tszInstanceName), controllerId);
+        FillVirtualControllerName(instanceInfo.tszProductName, _countof(instanceInfo.tszProductName), controllerId);
+    }
+
+    template void FillVirtualControllerInfo(DIDEVICEINSTANCEA&, DWORD);
+    template void FillVirtualControllerInfo(DIDEVICEINSTANCEW&, DWORD);
+
+    // ---------
+
+    template <> int FillVirtualControllerName<LPSTR>(LPSTR buf, size_t bufcount, DWORD controllerIndex)
+    {
+        TemporaryBuffer<CHAR> xidiControllerNameFormatString;
+        LoadStringA(Globals::GetInstanceHandle(), IDS_XIDI_CONTROLLERIDENTIFICATION_CONTROLLER_NAME_FORMAT, xidiControllerNameFormatString, xidiControllerNameFormatString.Count());
+
+        return sprintf_s(buf, bufcount, (LPCSTR)xidiControllerNameFormatString, (controllerIndex + 1));
+    }
+
+    template <> int FillVirtualControllerName<LPWSTR>(LPWSTR buf, size_t bufcount, DWORD controllerIndex)
+    {
+        TemporaryBuffer<WCHAR> xidiControllerNameFormatString;
+        LoadStringW(Globals::GetInstanceHandle(), IDS_XIDI_CONTROLLERIDENTIFICATION_CONTROLLER_NAME_FORMAT, xidiControllerNameFormatString, xidiControllerNameFormatString.Count());
+
+        return swprintf_s(buf, bufcount, (LPCWSTR)xidiControllerNameFormatString, (controllerIndex + 1));
+    }
+
+    // ---------
+
+    void GetProductGuid(GUID& xguid)
+    {
+        xguid = kVirtualControllerProductGuid;
+    }
+
+    // ---------
+
+    void MakeVirtualControllerInstanceGuid(GUID& xguid, DWORD controllerId)
+    {
+        xguid = kVirtualControllerInstanceBaseGuid;
+        SetVirtualControllerInstanceInGuid(xguid, controllerId);
+    }
+
+    // ---------
+
+    std::optional<DWORD> VirtualControllerIdFromInstanceGuid(REFGUID instanceGUID)
+    {
+        DWORD xindex = ExtractVirtualControllerInstanceFromGuid(instanceGUID);
+
+        if (xindex < XUSER_MAX_COUNT)
         {
-            ZeroMemory(&instanceInfo, sizeof(instanceInfo));
-            instanceInfo.dwSize = sizeof(instanceInfo);
-            MakeInstanceGUID(instanceInfo.guidInstance, controllerIndex);
-            instanceInfo.guidProduct = kXInputProductGUID;
-            instanceInfo.dwDevType = DINPUT_DEVTYPE_XINPUT_GAMEPAD;
-            FillXInputControllerName(instanceInfo.tszInstanceName, _countof(instanceInfo.tszInstanceName), controllerIndex);
-            FillXInputControllerName(instanceInfo.tszProductName, _countof(instanceInfo.tszProductName), controllerIndex);
+            GUID realXInputGUID;
+            MakeVirtualControllerInstanceGuid(realXInputGUID, xindex);
+
+            if (realXInputGUID == instanceGUID)
+                return xindex;
         }
 
-        template void FillXInputControllerInfo(DIDEVICEINSTANCEA&, WORD);
-        template void FillXInputControllerInfo(DIDEVICEINSTANCEW&, WORD);
-
-        // ---------
-
-        template <> int FillXInputControllerName<LPSTR>(LPSTR buf, const size_t bufcount, const WORD controllerIndex)
-        {
-            TemporaryBuffer<CHAR> xidiControllerNameFormatString;
-            LoadStringA(Globals::GetInstanceHandle(), IDS_XIDI_CONTROLLERIDENTIFICATION_CONTROLLER_NAME_FORMAT, xidiControllerNameFormatString, xidiControllerNameFormatString.Count());
-
-            return sprintf_s(buf, bufcount, (LPCSTR)xidiControllerNameFormatString, (controllerIndex + 1));
-        }
-
-        template <> int FillXInputControllerName<LPWSTR>(LPWSTR buf, const size_t bufcount, const WORD controllerIndex)
-        {
-            TemporaryBuffer<WCHAR> xidiControllerNameFormatString;
-            LoadStringW(Globals::GetInstanceHandle(), IDS_XIDI_CONTROLLERIDENTIFICATION_CONTROLLER_NAME_FORMAT, xidiControllerNameFormatString, xidiControllerNameFormatString.Count());
-
-            return swprintf_s(buf, bufcount, (LPCWSTR)xidiControllerNameFormatString, (controllerIndex + 1));
-        }
-
-        // ---------
-
-        void GetProductGUID(GUID& xguid)
-        {
-            xguid = kXInputProductGUID;
-        }
-
-        // ---------
-
-        void MakeInstanceGUID(GUID& xguid, const WORD xindex)
-        {
-            xguid = kXInputBaseInstGUID;
-            SetInstanceInXInputInstanceGUID(xguid, xindex);
-        }
-
-        // ---------
-
-        LONG XInputControllerIndexForInstanceGUID(REFGUID instanceGUID)
-        {
-            LONG resultIndex = -1;
-            WORD xindex = ExtractInstanceFromXInputInstanceGUID(instanceGUID);
-
-            if (xindex < XUSER_MAX_COUNT)
-            {
-                GUID realXInputGUID;
-                MakeInstanceGUID(realXInputGUID, xindex);
-
-                if (realXInputGUID == instanceGUID)
-                    resultIndex = (LONG)xindex;
-            }
-
-            return resultIndex;
-        }
+        return std::nullopt;
     }
 }

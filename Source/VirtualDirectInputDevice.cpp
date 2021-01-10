@@ -823,7 +823,7 @@ namespace Xidi
         else if (sizeof(*pdidi) != pdidi->dwSize)
             LOG_INVOCATION_AND_RETURN(DIERR_INVALIDPARAM, kMethodSeverity);
 
-        ControllerIdentification::FillXInputControllerInfo(*pdidi, (WORD)controller->GetIdentifier());
+        FillVirtualControllerInfo(*pdidi, controller->GetIdentifier());
         LOG_INVOCATION_AND_RETURN(DI_OK, kMethodSeverity);
     }
 

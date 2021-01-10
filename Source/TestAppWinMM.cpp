@@ -113,7 +113,7 @@ int RunTestApp(int argc, char* argv[])
             {
                 wcout << L"    Joystick \"" << joystickName << L"\" detected at " << i;
 
-                if ((i < devIdx) && (nullptr != wcsstr(joystickName, L"Xidi: ")))
+                if ((i < devIdx) && (nullptr != wcsstr(joystickName, L"Xidi Virtual Controller ")))
                 {
                     devIdx = i;
                     wcout << L", selected";
