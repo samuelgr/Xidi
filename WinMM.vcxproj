@@ -55,6 +55,7 @@
     <ClCompile Include="Source\ImportApiWinMM.cpp" />
     <ClCompile Include="Source\ControllerIdentification.cpp" />
     <ClCompile Include="Source\Mapper.cpp" />
+    <ClCompile Include="Source\MapperDefinitions.cpp" />
     <ClCompile Include="Source\Message.cpp" />
     <ClCompile Include="Source\StateChangeEventBuffer.cpp" />
     <ClCompile Include="Source\Strings.cpp" />

@@ -12,6 +12,7 @@
 
 #pragma once
 
+#include "ApiWindows.h"
 #include "ControllerTypes.h"
 #include "ElementMapper.h"
 
@@ -119,7 +120,7 @@ namespace Xidi
 
             /// Retrieves and returns a pointer to the mapper object whose type is specified.
             /// Mapper objects are created and managed internally, so this operation does not dynamically allocate or deallocate memory, nor should the caller attempt to free the returned pointer.
-            /// @param [in] mapperName Name of the desired mapper type. Supported values are defined in "ControllerMapper.cpp" as mapper instances.
+            /// @param [in] mapperName Name of the desired mapper type. Supported values are defined in "Mapper.cpp" as mapper instances.
             /// @return Pointer to the mapper of specified type, or `nullptr` if said type is unavailable.
             static const Mapper* GetByName(std::wstring_view mapperName);
 

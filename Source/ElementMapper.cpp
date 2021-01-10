@@ -69,7 +69,7 @@ namespace Xidi
 
 
         // -------- CONCRETE INSTANCE METHODS -------------------------- //
-        // See "ControllerElementMapper.h" for documentation.
+        // See "ElementMapper.h" for documentation.
 
         void AxisMapper::ContributeFromAnalogValue(SState& controllerState, int16_t analogValue) const
         {

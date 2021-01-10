@@ -139,7 +139,7 @@ namespace XidiTest
     // In this context, "route" means that the correct element mapper is invoked with the correct value source (analog for left and right stick axes, trigger for LT and RT, and buttons for all controller buttons including the d-pad).
 
     // Left stick, horizontal
-    TEST_CASE(ControllerMapper_Route_StickLeftX)
+    TEST_CASE(Mapper_Route_StickLeftX)
     {
         constexpr int16_t kTestValue = 1111;
         int numContributions = 0;
@@ -151,7 +151,7 @@ namespace XidiTest
     }
 
     // Left stick, vertical
-    TEST_CASE(ControllerMapper_Route_StickLeftY)
+    TEST_CASE(Mapper_Route_StickLeftY)
     {
         constexpr int16_t kTestValue = 2233;
         constexpr int16_t kInvertedTestValue = -kTestValue;
@@ -164,7 +164,7 @@ namespace XidiTest
     }
 
     // Right stick, horizontal
-    TEST_CASE(ControllerMapper_Route_StickRightX)
+    TEST_CASE(Mapper_Route_StickRightX)
     {
         constexpr int16_t kTestValue = 4556;
         int numContributions = 0;
@@ -176,7 +176,7 @@ namespace XidiTest
     }
 
     // Right stick, vertical
-    TEST_CASE(ControllerMapper_Route_StickRightY)
+    TEST_CASE(Mapper_Route_StickRightY)
     {
         constexpr int16_t kTestValue = 6789;
         constexpr int16_t kInvertedTestValue = -kTestValue;
@@ -189,7 +189,7 @@ namespace XidiTest
     }
 
     // D-pad up
-    TEST_CASE(ControllerMapper_Route_DpadUp)
+    TEST_CASE(Mapper_Route_DpadUp)
     {
         constexpr bool kTestValue = true;
         int numContributions = 0;
@@ -201,7 +201,7 @@ namespace XidiTest
     }
 
     // D-pad down
-    TEST_CASE(ControllerMapper_Route_DpadDown)
+    TEST_CASE(Mapper_Route_DpadDown)
     {
         constexpr bool kTestValue = true;
         int numContributions = 0;
@@ -213,7 +213,7 @@ namespace XidiTest
     }
 
     // D-pad left
-    TEST_CASE(ControllerMapper_Route_DpadLeft)
+    TEST_CASE(Mapper_Route_DpadLeft)
     {
         constexpr bool kTestValue = true;
         int numContributions = 0;
@@ -225,7 +225,7 @@ namespace XidiTest
     }
 
     // D-pad right
-    TEST_CASE(ControllerMapper_Route_DpadRight)
+    TEST_CASE(Mapper_Route_DpadRight)
     {
         constexpr bool kTestValue = true;
         int numContributions = 0;
@@ -237,7 +237,7 @@ namespace XidiTest
     }
 
     // Left trigger (LT)
-    TEST_CASE(ControllerMapper_Route_TriggerLT)
+    TEST_CASE(Mapper_Route_TriggerLT)
     {
         constexpr uint8_t kTestValue = 45;
         int numContributions = 0;
@@ -249,7 +249,7 @@ namespace XidiTest
     }
 
     // Right trigger (RT)
-    TEST_CASE(ControllerMapper_Route_TriggerRT)
+    TEST_CASE(Mapper_Route_TriggerRT)
     {
         constexpr uint8_t kTestValue = 167;
         int numContributions = 0;
@@ -261,7 +261,7 @@ namespace XidiTest
     }
 
     // A button
-    TEST_CASE(ControllerMapper_Route_ButtonA)
+    TEST_CASE(Mapper_Route_ButtonA)
     {
         constexpr bool kTestValue = true;
         int numContributions = 0;
@@ -273,7 +273,7 @@ namespace XidiTest
     }
 
     // B button
-    TEST_CASE(ControllerMapper_Route_ButtonB)
+    TEST_CASE(Mapper_Route_ButtonB)
     {
         constexpr bool kTestValue = true;
         int numContributions = 0;
@@ -285,7 +285,7 @@ namespace XidiTest
     }
 
     // X button
-    TEST_CASE(ControllerMapper_Route_ButtonX)
+    TEST_CASE(Mapper_Route_ButtonX)
     {
         constexpr bool kTestValue = true;
         int numContributions = 0;
@@ -297,7 +297,7 @@ namespace XidiTest
     }
 
     // Y button
-    TEST_CASE(ControllerMapper_Route_ButtonY)
+    TEST_CASE(Mapper_Route_ButtonY)
     {
         constexpr bool kTestValue = true;
         int numContributions = 0;
@@ -309,7 +309,7 @@ namespace XidiTest
     }
 
     // LB button
-    TEST_CASE(ControllerMapper_Route_ButtonLB)
+    TEST_CASE(Mapper_Route_ButtonLB)
     {
         constexpr bool kTestValue = true;
         int numContributions = 0;
@@ -321,7 +321,7 @@ namespace XidiTest
     }
 
     // RB button
-    TEST_CASE(ControllerMapper_Route_ButtonRB)
+    TEST_CASE(Mapper_Route_ButtonRB)
     {
         constexpr bool kTestValue = true;
         int numContributions = 0;
@@ -333,7 +333,7 @@ namespace XidiTest
     }
 
     // Back button
-    TEST_CASE(ControllerMapper_Route_ButtonBack)
+    TEST_CASE(Mapper_Route_ButtonBack)
     {
         constexpr bool kTestValue = true;
         int numContributions = 0;
@@ -345,7 +345,7 @@ namespace XidiTest
     }
 
     // Start button
-    TEST_CASE(ControllerMapper_Route_ButtonStart)
+    TEST_CASE(Mapper_Route_ButtonStart)
     {
         constexpr bool kTestValue = true;
         int numContributions = 0;
@@ -357,7 +357,7 @@ namespace XidiTest
     }
 
     // LS button
-    TEST_CASE(ControllerMapper_Route_ButtonLS)
+    TEST_CASE(Mapper_Route_ButtonLS)
     {
         constexpr bool kTestValue = true;
         int numContributions = 0;
@@ -369,7 +369,7 @@ namespace XidiTest
     }
 
     // RS button
-    TEST_CASE(ControllerMapper_Route_ButtonRS)
+    TEST_CASE(Mapper_Route_ButtonRS)
     {
         constexpr bool kTestValue = true;
         int numContributions = 0;
@@ -387,7 +387,7 @@ namespace XidiTest
 
     // Empty mapper.
     // Nothing should be present on the virtual controller.
-    TEST_CASE(ControllerMapper_Capabilities_EmptyMapper)
+    TEST_CASE(Mapper_Capabilities_EmptyMapper)
     {
         constexpr SCapabilities kExpectedCapabilities({
             .numAxes = 0,
@@ -405,7 +405,7 @@ namespace XidiTest
 
     // Mapper with only buttons, and they are disjoint.
     // Virtual controller should have only buttons, and the number present is based on the highest button to which an element mapper writes.
-    TEST_CASE(ControllerMapper_Capabilities_DisjointButtons)
+    TEST_CASE(Mapper_Capabilities_DisjointButtons)
     {
         constexpr SCapabilities kExpectedCapabilities({
             .numAxes = 0,
@@ -426,7 +426,7 @@ namespace XidiTest
 
     // Mapper with only buttons, and all mappers write to the same button.
     // Virtual controller should have only buttons, and the number present is based on the button to which all element mappers write.
-    TEST_CASE(ControllerMapper_Capabilities_SingleButton)
+    TEST_CASE(Mapper_Capabilities_SingleButton)
     {
         constexpr SCapabilities kExpectedCapabilities({
             .numAxes = 0,
@@ -446,7 +446,7 @@ namespace XidiTest
 
     // Mapper with only axes.
     // Virtual controller should have only axes based on the axes to which the element mappers write.
-    TEST_CASE(ControllerMapper_Capabilities_MultipleAxes)
+    TEST_CASE(Mapper_Capabilities_MultipleAxes)
     {
         constexpr SCapabilities kExpectedCapabilities({
             .axisType = {EAxis::Y, EAxis::RotX},
@@ -468,7 +468,7 @@ namespace XidiTest
 
     // Mapper with only a POV, and only part of it receives values from mappers.
     // Virtual controller should have only a POV and nothing else.
-    TEST_CASE(ControllerMapper_Capabilities_IncompletePov)
+    TEST_CASE(Mapper_Capabilities_IncompletePov)
     {
         constexpr SCapabilities kExpectedCapabilities({
             .numAxes = 0,
@@ -486,7 +486,7 @@ namespace XidiTest
 
     // Mapper with only a complete POV.
     // Virtual controller should have only a POV and nothing else.
-    TEST_CASE(ControllerMapper_Capabilities_CompletePov)
+    TEST_CASE(Mapper_Capabilities_CompletePov)
     {
         constexpr SCapabilities kExpectedCapabilities({
             .numAxes = 0,
@@ -510,7 +510,7 @@ namespace XidiTest
     }
 
     // StandardGamepad, a known and documented mapper.
-    TEST_CASE(ControllerMapper_Capabilities_StandardGamepad)
+    TEST_CASE(Mapper_Capabilities_StandardGamepad)
     {
         constexpr SCapabilities kExpectedCapabilities({
             .axisType = {EAxis::X, EAxis::Y, EAxis::Z, EAxis::RotZ},
@@ -527,7 +527,7 @@ namespace XidiTest
     }
 
     // DigitalGamepad, a known and documented mapper.
-    TEST_CASE(ControllerMapper_Capabilities_DigitalGamepad)
+    TEST_CASE(Mapper_Capabilities_DigitalGamepad)
     {
         constexpr SCapabilities kExpectedCapabilities({
             .axisType = {EAxis::X, EAxis::Y, EAxis::Z, EAxis::RotZ},
@@ -544,7 +544,7 @@ namespace XidiTest
     }
 
     // ExtendedGamepad, a known and documented mapper.
-    TEST_CASE(ControllerMapper_Capabilities_ExtendedGamepad)
+    TEST_CASE(Mapper_Capabilities_ExtendedGamepad)
     {
         constexpr SCapabilities kExpectedCapabilities({
             .axisType = {EAxis::X, EAxis::Y, EAxis::Z, EAxis::RotX, EAxis::RotY, EAxis::RotZ},
@@ -561,7 +561,7 @@ namespace XidiTest
     }
 
     // XInputNative, a known and documented mapper.
-    TEST_CASE(ControllerMapper_Capabilities_XInputNative)
+    TEST_CASE(Mapper_Capabilities_XInputNative)
     {
         constexpr SCapabilities kExpectedCapabilities({
             .axisType = {EAxis::X, EAxis::Y, EAxis::Z, EAxis::RotX, EAxis::RotY, EAxis::RotZ},
@@ -578,7 +578,7 @@ namespace XidiTest
     }
 
     // XInputSharedTriggers, a known and documented mapper.
-    TEST_CASE(ControllerMapper_Capabilities_XInputSharedTriggers)
+    TEST_CASE(Mapper_Capabilities_XInputSharedTriggers)
     {
         constexpr SCapabilities kExpectedCapabilities({
             .axisType = {EAxis::X, EAxis::Y, EAxis::Z, EAxis::RotX, EAxis::RotY},
@@ -599,7 +599,7 @@ namespace XidiTest
     // The formula for each test case body is create an expected controller state, obtain a mapper, ask it to write to a controller state, and finally compare expected and actual states.
     
     // An empty mapper is expected to produce all zeroes in its output controller state, irrespective of the XInput controller's state.
-    TEST_CASE(ControllerMapper_State_ZeroOnEmpty)
+    TEST_CASE(Mapper_State_ZeroOnEmpty)
     {
         SState expectedState;
         ZeroMemory(&expectedState, sizeof(expectedState));
@@ -628,7 +628,7 @@ namespace XidiTest
 
     // Even though intermediate contributions may result in analog axis values that exceed the allowed range, mappers are expected to saturate at the allowed range.
     // This test verifies correct saturation in the positive direction.
-    TEST_CASE(ControllerMapper_State_AnalogSaturationPositive)
+    TEST_CASE(Mapper_State_AnalogSaturationPositive)
     {
         constexpr int32_t kInvertedInputValue = kAnalogValueMin;
         constexpr int32_t kNonInvertedInputValue = kAnalogValueMax;
@@ -657,7 +657,7 @@ namespace XidiTest
 
     // Even though intermediate contributions may result in analog axis values that exceed the allowed range, mappers are expected to saturate at the allowed range.
     // This test verifies correct saturation in the negative direction.
-    TEST_CASE(ControllerMapper_State_AnalogSaturationNegative)
+    TEST_CASE(Mapper_State_AnalogSaturationNegative)
     {
         constexpr int32_t kInvertedInputValue = kAnalogValueMax;
         constexpr int32_t kNonInvertedInputValue = kAnalogValueMin;
@@ -687,7 +687,7 @@ namespace XidiTest
     // Incoming controller data uses a range slightly different from virtual controller range.
     // Furthermore, the vertical axes on analog sticks use opposite polarity from what virtual controllers expect and present.
     // Mappers are expected to ensure values are correctly filtered and inverted to compensate.
-    TEST_CASE(ControllerMapper_State_AnalogFilterAndInvert)
+    TEST_CASE(Mapper_State_AnalogFilterAndInvert)
     {
         constexpr int32_t kExtremeNegativeInputValue = (int32_t)INT16_MIN;
         constexpr int32_t kNonInvertedExpectedOutputValue = kAnalogValueMin;
