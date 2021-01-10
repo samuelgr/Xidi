@@ -59,13 +59,13 @@ namespace Xidi
 
         /// Axis deadzone value to use for a controller presented by WinMM.
         /// WinMM has no way for applications to set deadzone, so use a small part of the axis just to enable some minor filtering but to avoid interfering with any applications that do their own filtering.
-        static constexpr int32_t kAxisDeadzone = 500;
+        static constexpr int32_t kAxisDeadzone = 750;
 
         /// Axis saturation value to use for a controller presented by WinMM.
         /// WinMM has no way for applications to set saturation, so use a small part of the axis just to enable some minor filtering but to avoid interfering with any applications that do their own filtering.
-        static constexpr int32_t kAxisSaturation = 9500;
+        static constexpr int32_t kAxisSaturation = 9250;
 
-        
+
         // -------- INTERNAL FUNCTIONS ------------------------------------- //
 
         /// Templated wrapper around the imported `joyGetDevCaps` WinMM function, which ordinarily exists in a Unicode and non-Unicode version separately.
