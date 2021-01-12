@@ -460,6 +460,7 @@ namespace Xidi
         // Nothing to do here.
     }
 
+
     // -------- INSTANCE METHODS ------------------------------------------- //
     // See "VirtualDirectInputDevice.h" for documentation.
 
@@ -629,6 +630,9 @@ namespace Xidi
         const bool willEnumerateAxes = ((DIDFT_ALL == dwFlags) || (0 != (dwFlags & DIDFT_ABSAXIS)));
         const bool willEnumerateButtons = ((DIDFT_ALL == dwFlags) || (0 != (dwFlags & DIDFT_PSHBUTTON)));
         const bool willEnumeratePov = ((DIDFT_ALL == dwFlags) || (0 != (dwFlags & DIDFT_POV)));
+
+        if (nullptr == lpCallback)
+            LOG_INVOCATION_AND_RETURN(DIERR_INVALIDPARAM, kMethodSeverity);
 
         if ((true == willEnumerateAxes) || (true == willEnumerateButtons) || (true == willEnumeratePov))
         {

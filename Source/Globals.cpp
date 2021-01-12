@@ -117,12 +117,14 @@ namespace Xidi
             static Configuration::Configuration configuration(std::make_unique<XidiConfigReader>());
 
             static std::once_flag readConfigFlag;
-            std::call_once(readConfigFlag, []() -> void {
-                configuration.ReadConfigurationFile(Strings::kStrConfigurationFilename);
+            std::call_once(readConfigFlag, []() -> void
+                {
+                    configuration.ReadConfigurationFile(Strings::kStrConfigurationFilename);
 
-                if (Configuration::EFileReadResult::Malformed == configuration.GetFileReadResult())
-                    Message::Output(Message::ESeverity::ForcedInteractiveError, configuration.GetReadErrorMessage().data());
-            });
+                    if (Configuration::EFileReadResult::Malformed == configuration.GetFileReadResult())
+                        Message::Output(Message::ESeverity::ForcedInteractiveError, configuration.GetReadErrorMessage().data());
+                }
+            );
 
             return configuration;
         }

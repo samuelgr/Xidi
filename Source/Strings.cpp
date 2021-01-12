@@ -46,16 +46,18 @@ namespace Xidi
             static std::wstring initString;
             static std::once_flag initFlag;
 
-            std::call_once(initFlag, []() -> void {
-                const wchar_t* stringStart = nullptr;
-                int stringLength = LoadString(Globals::GetInstanceHandle(), IDS_XIDI_PRODUCT_NAME, (wchar_t*)&stringStart, 0);
+            std::call_once(initFlag, []() -> void
+                {
+                    const wchar_t* stringStart = nullptr;
+                    int stringLength = LoadString(Globals::GetInstanceHandle(), IDS_XIDI_PRODUCT_NAME, (wchar_t*)&stringStart, 0);
 
-                while ((stringLength > 0) && (L'\0' == stringStart[stringLength - 1]))
-                    stringLength -= 1;
+                    while ((stringLength > 0) && (L'\0' == stringStart[stringLength - 1]))
+                        stringLength -= 1;
 
-                if (stringLength > 0)
-                    initString.assign(stringStart, &stringStart[stringLength]);
-            });
+                    if (stringLength > 0)
+                        initString.assign(stringStart, &stringStart[stringLength]);
+                }
+            );
 
             return initString;
         }
@@ -67,20 +69,22 @@ namespace Xidi
             static std::wstring initString;
             static std::once_flag initFlag;
 
-            std::call_once(initFlag, []() -> void {
+            std::call_once(initFlag, []() -> void
+                {
 #ifdef IDS_XIDI_VERSION_NAME
-                const wchar_t* stringStart = nullptr;
-                int stringLength = LoadString(Globals::GetInstanceHandle(), IDS_XIDI_VERSION_NAME, (wchar_t*)&stringStart, 0);
+                    const wchar_t* stringStart = nullptr;
+                    int stringLength = LoadString(Globals::GetInstanceHandle(), IDS_XIDI_VERSION_NAME, (wchar_t*)&stringStart, 0);
 
-                while ((stringLength > 0) && (L'\0' == stringStart[stringLength - 1]))
-                    stringLength -= 1;
+                    while ((stringLength > 0) && (L'\0' == stringStart[stringLength - 1]))
+                        stringLength -= 1;
 
-                if (stringLength > 0)
-                    initString.assign(stringStart, &stringStart[stringLength]);
+                    if (stringLength > 0)
+                        initString.assign(stringStart, &stringStart[stringLength]);
 #else
-                initString.assign(L"");
+                    initString.assign(L"");
 #endif
-            });
+                }
+            );
 
             return initString;
         }
@@ -92,12 +96,14 @@ namespace Xidi
             static std::wstring initString;
             static std::once_flag initFlag;
 
-            std::call_once(initFlag, []() -> void {
-                TemporaryBuffer<wchar_t> buf;
-                GetModuleFileName(nullptr, buf, (DWORD)buf.Count());
+            std::call_once(initFlag, []() -> void
+                {
+                    TemporaryBuffer<wchar_t> buf;
+                    GetModuleFileName(nullptr, buf, (DWORD)buf.Count());
 
-                initString.assign(buf);
-            });
+                    initString.assign(buf);
+                }
+            );
 
             return initString;
         }
@@ -109,15 +115,17 @@ namespace Xidi
             static std::wstring initString;
             static std::once_flag initFlag;
 
-            std::call_once(initFlag, []() -> void {
-                std::wstring_view executableBaseName = GetExecutableCompleteFilename();
+            std::call_once(initFlag, []() -> void
+                {
+                    std::wstring_view executableBaseName = GetExecutableCompleteFilename();
 
-                const size_t lastBackslashPos = executableBaseName.find_last_of(L"\\");
-                if (std::wstring_view::npos != lastBackslashPos)
-                    executableBaseName.remove_prefix(1 + lastBackslashPos);
+                    const size_t lastBackslashPos = executableBaseName.find_last_of(L"\\");
+                    if (std::wstring_view::npos != lastBackslashPos)
+                        executableBaseName.remove_prefix(1 + lastBackslashPos);
 
-                initString.assign(executableBaseName);
-            });
+                    initString.assign(executableBaseName);
+                }
+            );
 
             return initString;
         }
@@ -129,16 +137,18 @@ namespace Xidi
             static std::wstring initString;
             static std::once_flag initFlag;
 
-            std::call_once(initFlag, []() -> void {
-                std::wstring_view executableDirectoryName = GetExecutableCompleteFilename();
-
-                const size_t lastBackslashPos = executableDirectoryName.find_last_of(L"\\");
-                if (std::wstring_view::npos != lastBackslashPos)
+            std::call_once(initFlag, []() -> void
                 {
-                    executableDirectoryName.remove_suffix(executableDirectoryName.length() - lastBackslashPos - 1);
-                    initString.assign(executableDirectoryName);
+                    std::wstring_view executableDirectoryName = GetExecutableCompleteFilename();
+
+                    const size_t lastBackslashPos = executableDirectoryName.find_last_of(L"\\");
+                    if (std::wstring_view::npos != lastBackslashPos)
+                    {
+                        executableDirectoryName.remove_suffix(executableDirectoryName.length() - lastBackslashPos - 1);
+                        initString.assign(executableDirectoryName);
+                    }
                 }
-            });
+            );
 
             return initString;
         }
@@ -150,18 +160,20 @@ namespace Xidi
             static std::wstring initString;
             static std::once_flag initFlag;
 
-            std::call_once(initFlag, []() -> void {
-                TemporaryBuffer<wchar_t> buf;
-                const UINT numChars = GetSystemDirectory(buf, buf.Count() - 1);
-
-                if (L'\\' != buf[numChars - 1])
+            std::call_once(initFlag, []() -> void
                 {
-                    buf[numChars] = L'\\';
-                    buf[numChars + 1] = L'\0';
-                }
+                    TemporaryBuffer<wchar_t> buf;
+                    const UINT numChars = GetSystemDirectory(buf, buf.Count() - 1);
 
-                initString.assign(buf);
-            });
+                    if (L'\\' != buf[numChars - 1])
+                    {
+                        buf[numChars] = L'\\';
+                        buf[numChars + 1] = L'\0';
+                    }
+
+                    initString.assign(buf);
+                }
+            );
 
             return initString;
         }
@@ -173,18 +185,20 @@ namespace Xidi
             static std::wstring initString;
             static std::once_flag initFlag;
 
-            std::call_once(initFlag, []() -> void {
-                std::wstring_view pieces[] = {GetSystemDirectoryName(), kStrLibraryNameDirectInput};
+            std::call_once(initFlag, []() -> void
+                {
+                    std::wstring_view pieces[] = {GetSystemDirectoryName(), kStrLibraryNameDirectInput};
 
-                size_t totalLength = 0;
-                for (int i = 0; i < _countof(pieces); ++i)
-                    totalLength += pieces[i].length();
+                    size_t totalLength = 0;
+                    for (int i = 0; i < _countof(pieces); ++i)
+                        totalLength += pieces[i].length();
 
-                initString.reserve(1 + totalLength);
+                    initString.reserve(1 + totalLength);
 
-                for (int i = 0; i < _countof(pieces); ++i)
-                    initString.append(pieces[i]);
-            });
+                    for (int i = 0; i < _countof(pieces); ++i)
+                        initString.append(pieces[i]);
+                }
+            );
 
             return initString;
         }
@@ -196,18 +210,20 @@ namespace Xidi
             static std::wstring initString;
             static std::once_flag initFlag;
 
-            std::call_once(initFlag, []() -> void {
-                std::wstring_view pieces[] = {GetSystemDirectoryName(), kStrLibraryNameDirectInput8};
+            std::call_once(initFlag, []() -> void
+                {
+                    std::wstring_view pieces[] = {GetSystemDirectoryName(), kStrLibraryNameDirectInput8};
 
-                size_t totalLength = 0;
-                for (int i = 0; i < _countof(pieces); ++i)
-                    totalLength += pieces[i].length();
+                    size_t totalLength = 0;
+                    for (int i = 0; i < _countof(pieces); ++i)
+                        totalLength += pieces[i].length();
 
-                initString.reserve(1 + totalLength);
+                    initString.reserve(1 + totalLength);
 
-                for (int i = 0; i < _countof(pieces); ++i)
-                    initString.append(pieces[i]);
-            });
+                    for (int i = 0; i < _countof(pieces); ++i)
+                        initString.append(pieces[i]);
+                }
+            );
 
             return initString;
         }
@@ -219,18 +235,20 @@ namespace Xidi
             static std::wstring initString;
             static std::once_flag initFlag;
 
-            std::call_once(initFlag, []() -> void {
-                std::wstring_view pieces[] = {GetSystemDirectoryName(), kStrLibraryNameWinMM};
+            std::call_once(initFlag, []() -> void
+                {
+                    std::wstring_view pieces[] = {GetSystemDirectoryName(), kStrLibraryNameWinMM};
 
-                size_t totalLength = 0;
-                for (int i = 0; i < _countof(pieces); ++i)
-                    totalLength += pieces[i].length();
+                    size_t totalLength = 0;
+                    for (int i = 0; i < _countof(pieces); ++i)
+                        totalLength += pieces[i].length();
 
-                initString.reserve(1 + totalLength);
+                    initString.reserve(1 + totalLength);
 
-                for (int i = 0; i < _countof(pieces); ++i)
-                    initString.append(pieces[i]);
-            });
+                    for (int i = 0; i < _countof(pieces); ++i)
+                        initString.append(pieces[i]);
+                }
+            );
 
             return initString;
         }
@@ -242,18 +260,20 @@ namespace Xidi
             static std::wstring initString;
             static std::once_flag initFlag;
 
-            std::call_once(initFlag, []() -> void {
-                std::wstring_view pieces[] = {GetExecutableDirectoryName(), GetProductName(), kStrConfigurationFileExtension};
+            std::call_once(initFlag, []() -> void
+                {
+                    std::wstring_view pieces[] = {GetExecutableDirectoryName(), GetProductName(), kStrConfigurationFileExtension};
 
-                size_t totalLength = 0;
-                for (int i = 0; i < _countof(pieces); ++i)
-                    totalLength += pieces[i].length();
+                    size_t totalLength = 0;
+                    for (int i = 0; i < _countof(pieces); ++i)
+                        totalLength += pieces[i].length();
 
-                initString.reserve(1 + totalLength);
+                    initString.reserve(1 + totalLength);
 
-                for (int i = 0; i < _countof(pieces); ++i)
-                    initString.append(pieces[i]);
-            });
+                    for (int i = 0; i < _countof(pieces); ++i)
+                        initString.append(pieces[i]);
+                }
+            );
 
             return initString;
         }
@@ -265,22 +285,24 @@ namespace Xidi
             static std::wstring initString;
             static std::once_flag initFlag;
 
-            std::call_once(initFlag, []() -> void {
-                std::wstringstream logFilename;
-
-                PWSTR knownFolderPath;
-                const HRESULT result = SHGetKnownFolderPath(FOLDERID_Desktop, 0, nullptr, &knownFolderPath);
-
-                if (S_OK == result)
+            std::call_once(initFlag, []() -> void
                 {
-                    logFilename << knownFolderPath << L'\\';
-                    CoTaskMemFree(knownFolderPath);
+                    std::wstringstream logFilename;
+
+                    PWSTR knownFolderPath;
+                    const HRESULT result = SHGetKnownFolderPath(FOLDERID_Desktop, 0, nullptr, &knownFolderPath);
+
+                    if (S_OK == result)
+                    {
+                        logFilename << knownFolderPath << L'\\';
+                        CoTaskMemFree(knownFolderPath);
+                    }
+
+                    logFilename << GetProductName().c_str() << L'_' << GetVersionName().c_str() << L'_' << GetExecutableBaseName().c_str() << L'_' << Globals::GetCurrentProcessId() << kStrLogFileExtension;
+
+                    initString.assign(logFilename.str());
                 }
-
-                logFilename << GetProductName().c_str() << L'_' << GetVersionName().c_str() << L'_' << GetExecutableBaseName().c_str() << L'_' << Globals::GetCurrentProcessId() << kStrLogFileExtension;
-
-                initString.assign(logFilename.str());
-            });
+            );
 
             return initString;
         }

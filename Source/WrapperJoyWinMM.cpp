@@ -404,35 +404,37 @@ namespace Xidi
         static void Initialize(void)
         {
             static std::once_flag initializationFlag;
-            std::call_once(initializationFlag, []() -> void {
-                const Controller::Mapper* mapper = Controller::Mapper::GetConfigured();
-                if (nullptr == mapper)
+            std::call_once(initializationFlag, []() -> void
                 {
-                    Message::Output(Message::ESeverity::Error, L"Failed to locate a mapper. Xidi virtual controllers will not function.");
-                }
-                else
-                {
-                    for (int i = 0; i < _countof(controllers); ++i)
+                    const Controller::Mapper* mapper = Controller::Mapper::GetConfigured();
+                    if (nullptr == mapper)
                     {
-                        controllers[i] = new Controller::VirtualController(i, *mapper);
-                        controllers[i]->SetAllAxisDeadzone(kAxisDeadzone);
-                        controllers[i]->SetAllAxisSaturation(kAxisSaturation);
-                        controllers[i]->SetAllAxisRange(kAxisRangeMin, kAxisRangeMax);
+                        Message::Output(Message::ESeverity::Error, L"Failed to locate a mapper. Xidi virtual controllers will not function.");
                     }
+                    else
+                    {
+                        for (int i = 0; i < _countof(controllers); ++i)
+                        {
+                            controllers[i] = new Controller::VirtualController(i, *mapper);
+                            controllers[i]->SetAllAxisDeadzone(kAxisDeadzone);
+                            controllers[i]->SetAllAxisSaturation(kAxisSaturation);
+                            controllers[i]->SetAllAxisRange(kAxisRangeMin, kAxisRangeMax);
+                        }
+                    }
+
+                    // Enumerate all devices exposed by WinMM.
+                    CreateSystemDeviceInfo();
+
+                    // Initialize the joystick index map.
+                    CreateJoyIndexMap();
+
+                    // Ensure all controllers have their names published in the system registry.
+                    SetControllerNameRegistryInfo();
+
+                    // Initialization complete.
+                    Message::Output(Message::ESeverity::Info, L"Completed initialization of WinMM joystick wrapper.");
                 }
-
-                // Enumerate all devices exposed by WinMM.
-                CreateSystemDeviceInfo();
-
-                // Initialize the joystick index map.
-                CreateJoyIndexMap();
-
-                // Ensure all controllers have their names published in the system registry.
-                SetControllerNameRegistryInfo();
-
-                // Initialization complete.
-                Message::Output(Message::ESeverity::Info, L"Completed initialization of WinMM joystick wrapper.");
-            });
+            );
         }
 
 

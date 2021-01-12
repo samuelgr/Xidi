@@ -184,6 +184,14 @@ namespace Xidi
             {
                 return (-1 != FindAxis(axis));
             }
+
+            /// Checks if this capabilities object specifies that the controller has a button of the specified number.
+            /// @param [in] button Button number for which to query.
+            /// @return `true` if the button is present, `false` otherwise.
+            inline bool HasButton(EButton button) const
+            {
+                return ((uint8_t)button < numButtons);
+            }
         };
         static_assert(sizeof(SCapabilities) <= 8, L"Data structure size constraint violation.");
         static_assert((uint8_t)EAxis::Count <= 0b111, L"Number of axes does not fit into 3 bits.");

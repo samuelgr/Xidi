@@ -236,28 +236,30 @@ namespace Xidi
             static const Mapper* configuredMapper = nullptr;
             static std::once_flag configuredMapperFlag;
 
-            std::call_once(configuredMapperFlag, []() -> void {
-                const Configuration::Configuration& config = Globals::GetConfiguration();
-
-                if ((true == config.IsDataValid()) && (true == config.GetData().SectionNamePairExists(Strings::kStrConfigurationSectionMapper, Strings::kStrConfigurationSettingMapperType)))
+            std::call_once(configuredMapperFlag, []() -> void
                 {
-                    const std::wstring_view kConfiguredMapperName = config.GetData()[Strings::kStrConfigurationSectionMapper][Strings::kStrConfigurationSettingMapperType].FirstValue().GetStringValue();
+                    const Configuration::Configuration& config = Globals::GetConfiguration();
 
-                    Message::OutputFormatted(Message::ESeverity::Info, L"Attempting to locate mapper '%s' specified in the configuration file.", kConfiguredMapperName.data());
-                    configuredMapper = GetByName(kConfiguredMapperName);
-                }
+                    if ((true == config.IsDataValid()) && (true == config.GetData().SectionNamePairExists(Strings::kStrConfigurationSectionMapper, Strings::kStrConfigurationSettingMapperType)))
+                    {
+                        const std::wstring_view kConfiguredMapperName = config.GetData()[Strings::kStrConfigurationSectionMapper][Strings::kStrConfigurationSettingMapperType].FirstValue().GetStringValue();
+
+                        Message::OutputFormatted(Message::ESeverity::Info, L"Attempting to locate mapper '%s' specified in the configuration file.", kConfiguredMapperName.data());
+                        configuredMapper = GetByName(kConfiguredMapperName);
+                    }
                 
-                if (nullptr == configuredMapper)
-                {
-                    Message::Output(Message::ESeverity::Info, L"Could not locate mapper specified in the configuration file, or no mapper was specified. Using default mapper instead.");
-                    configuredMapper = GetDefault();
-                }
+                    if (nullptr == configuredMapper)
+                    {
+                        Message::Output(Message::ESeverity::Info, L"Could not locate mapper specified in the configuration file, or no mapper was specified. Using default mapper instead.");
+                        configuredMapper = GetDefault();
+                    }
 
-                if (nullptr == configuredMapper)
-                    Message::Output(Message::ESeverity::Error, L"No mappers could be located. Xidi virtual controllers are unable to function.");
-                else
-                    Message::OutputFormatted(Message::ESeverity::Info, L"Using mapper '%s' as the configured mapper type.", configuredMapper->GetName());
-            });
+                    if (nullptr == configuredMapper)
+                        Message::Output(Message::ESeverity::Error, L"No mappers could be located. Xidi virtual controllers are unable to function.");
+                    else
+                        Message::OutputFormatted(Message::ESeverity::Info, L"Using mapper '%s' as the configured mapper type.", configuredMapper->GetName().data());
+                }
+            );
 
             return configuredMapper;
         }
