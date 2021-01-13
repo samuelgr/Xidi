@@ -94,6 +94,7 @@ namespace Xidi
 
         for (DWORD idx = 0; idx < XUSER_MAX_COUNT; ++idx)
         {
+            *instanceInfo = {.dwSize = sizeof(*instanceInfo)};
             FillVirtualControllerInfo(*instanceInfo, idx);
 
             if (DIENUM_CONTINUE != lpCallback(instanceInfo.get(), pvRef))
@@ -110,13 +111,20 @@ namespace Xidi
 
     template <typename DeviceInstanceType> void FillVirtualControllerInfo(DeviceInstanceType& instanceInfo, DWORD controllerId)
     {
-        ZeroMemory(&instanceInfo, sizeof(instanceInfo));
-        instanceInfo.dwSize = sizeof(instanceInfo);
         MakeVirtualControllerInstanceGuid(instanceInfo.guidInstance, controllerId);
         instanceInfo.guidProduct = kVirtualControllerProductGuid;
         instanceInfo.dwDevType = DINPUT_DEVTYPE_XINPUT_GAMEPAD;
         FillVirtualControllerName(instanceInfo.tszInstanceName, _countof(instanceInfo.tszInstanceName), controllerId);
         FillVirtualControllerName(instanceInfo.tszProductName, _countof(instanceInfo.tszProductName), controllerId);
+
+        // DirectInput versions 5 and higher include extra members in this structure, and this is indicated on input using the size member of the structure.
+        if (instanceInfo.dwSize > offsetof(DeviceInstanceType, tszProductName) + sizeof(DeviceInstanceType::tszProductName))
+        {
+            // These fields are zeroed out because Xidi does not currently offer any of the functionality they represent.
+            instanceInfo.guidFFDriver = {};
+            instanceInfo.wUsagePage = 0;
+            instanceInfo.wUsage = 0;
+        }
     }
 
     template void FillVirtualControllerInfo(DIDEVICEINSTANCEA&, DWORD);

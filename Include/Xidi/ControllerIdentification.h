@@ -52,6 +52,8 @@ namespace Xidi
     template <typename DeviceInstanceType> BOOL EnumerateVirtualControllers(BOOL(FAR PASCAL* lpCallback)(const DeviceInstanceType*, LPVOID), LPVOID pvRef);
 
     /// Fills a DirectInput device information structure with information about the virtual controller at the specified index.
+    /// On input, the size field is expected to be initialized. Since multiple structure versions exist, it is used to determine which members to fill in.
+    /// @tparam DeviceInstanceType Either DIDEVICEINSTANCEA or DIDEVICEINSTANCEW depending on whether ASCII or Unicode is desired.
     /// @param [out] deviceInstanceInfo Structure to be filled with information.
     /// @param [in] controllerId Identifier of the controller for which information is to be filled in.
     template <typename DeviceInstanceType> void FillVirtualControllerInfo(DeviceInstanceType& instanceInfo, DWORD controllerId);

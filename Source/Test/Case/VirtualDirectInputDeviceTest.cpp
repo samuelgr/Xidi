@@ -11,6 +11,7 @@
 
 #include "ApiDirectInput.h"
 #include "ApiWindows.h"
+#include "ControllerIdentification.h"
 #include "ControllerTypes.h"
 #include "DataFormat.h"
 #include "Mapper.h"
@@ -410,8 +411,7 @@ namespace XidiTest
     {
         VirtualDirectInputDevice<ECharMode::W> diController(CreateTestVirtualController());
 
-        const DIDEVCAPS kExpectedCapabilities =
-        {
+        const DIDEVCAPS kExpectedCapabilities = {
             .dwSize = sizeof(DIDEVCAPS),
             .dwFlags = (DIDC_ATTACHED | DIDC_EMULATED | DIDC_POLLEDDEVICE | DIDC_POLLEDDATAFORMAT),
             .dwDevType = DINPUT_DEVTYPE_XINPUT_GAMEPAD,
@@ -468,6 +468,63 @@ namespace XidiTest
         DIDEVCAPS capabilities;
         ZeroMemory(&capabilities, sizeof(capabilities));
         TEST_ASSERT(DI_OK != diController.GetCapabilities(&capabilities));
+    }
+
+
+    // The following sequence of tests, which together comprise the GetDeviceInfo suite, exercise the DirectInputDevice interface method of the same name.
+    // Scopes vary, so more details are provided with each test case.
+
+    // Nominal behavior in which a structure is passed, properly initialized with the size member set.
+    // Expected outcome is the structure is filled with corrrect controller capabilities.
+    TEST_CASE(VirtualDirectInputDevice_GetDeviceInfo_Nominal)
+    {
+        VirtualDirectInputDevice<ECharMode::W> diController(CreateTestVirtualController());
+
+        DIDEVICEINSTANCE expectedDeviceInfo = {.dwSize = sizeof(DIDEVICEINSTANCE)};
+        FillVirtualControllerInfo(expectedDeviceInfo, kTestControllerIdentifier);
+
+        DIDEVICEINSTANCE actualDeviceInfo;
+        FillMemory(&actualDeviceInfo, sizeof(actualDeviceInfo), 0xcd);
+        actualDeviceInfo.dwSize = sizeof(DIDEVICEINSTANCE);
+
+        TEST_ASSERT(DI_OK == diController.GetDeviceInfo(&actualDeviceInfo));
+        TEST_ASSERT(0 == memcmp(&actualDeviceInfo, &expectedDeviceInfo, sizeof(expectedDeviceInfo)));
+    }
+
+    // Same as above, except the structure is an older version which is supported for compatibility.
+    // The older structure, with suffix _DX3, is a strict subset of the more modern version.
+    TEST_CASE(VirtualDirectInputDevice_GetDeviceInfo_Legacy)
+    {
+        constexpr uint8_t kPoisonByte = 0xcd;
+        VirtualDirectInputDevice<ECharMode::W> diController(CreateTestVirtualController());
+
+        DIDEVICEINSTANCE expectedDeviceInfo;
+        FillMemory(&expectedDeviceInfo, sizeof(expectedDeviceInfo), kPoisonByte);
+        expectedDeviceInfo.dwSize = sizeof(DIDEVICEINSTANCE_DX3);
+        FillVirtualControllerInfo(expectedDeviceInfo, kTestControllerIdentifier);
+
+        DIDEVICEINSTANCE actualDeviceInfo;
+        FillMemory(&actualDeviceInfo, sizeof(actualDeviceInfo), kPoisonByte);
+        actualDeviceInfo.dwSize = sizeof(DIDEVICEINSTANCE_DX3);
+
+        TEST_ASSERT(DI_OK == diController.GetDeviceInfo(&actualDeviceInfo));
+        TEST_ASSERT(0 == memcmp(&actualDeviceInfo, &expectedDeviceInfo, sizeof(expectedDeviceInfo)));
+    }
+
+    // A null pointer is passed. This is expected to cause the method to fail.
+    TEST_CASE(VirtualDirectInputDevice_GetDeviceInfo_BadPointer)
+    {
+        VirtualDirectInputDevice<ECharMode::W> diController(CreateTestVirtualController());
+        TEST_ASSERT(DI_OK != diController.GetDeviceInfo(nullptr));
+    }
+
+    // A valid pointer is passed but with the size member not initialized. This is expected to cause the method to fail.
+    TEST_CASE(VirtualDirectInputDevice_GetDeviceInfo_InvalidSize)
+    {
+        VirtualDirectInputDevice<ECharMode::W> diController(CreateTestVirtualController());
+        DIDEVICEINSTANCE deviceInfo;
+        ZeroMemory(&deviceInfo, sizeof(deviceInfo));
+        TEST_ASSERT(DI_OK != diController.GetDeviceInfo(&deviceInfo));
     }
 
 
@@ -668,5 +725,120 @@ namespace XidiTest
         STestDataPacket dataPacket;
         TEST_ASSERT(DI_OK == diController.SetDataFormat(&kTestFormatSpec));
         TEST_ASSERT(DI_OK != diController.GetDeviceState(sizeof(dataPacket) - 1, &dataPacket));
+    }
+
+
+    // The following sequence of tests, which together comprise the GetObjectInfo suite, exercise the DirectInputDevice interface method of the same name.
+    // Scopes vary, so more details are provided with each test case.
+
+    // Nominal behavior in which a structure is passed, properly initialized with the size member set.
+    // Objects are enumerated with EnumObjects, and the output from GetObjectInfo is compared with the enumerated object for consistency.
+    // Input to GetObjectInfo exercises both identification by offset and identification by instance and type.
+    TEST_CASE(VirtualDirectInputDevice_GetObjectInfo_Nominal)
+    {
+        VirtualDirectInputDevice<ECharMode::W> diController(CreateTestVirtualController());
+        TEST_ASSERT(DI_OK == diController.SetDataFormat(&kTestFormatSpec));
+        TEST_ASSERT(DI_OK == diController.EnumObjects([](LPCDIDEVICEOBJECTINSTANCE lpddoi, LPVOID pvRef) -> BOOL
+            {
+                VirtualDirectInputDevice<ECharMode::W>& diController = *((VirtualDirectInputDevice<ECharMode::W>*)pvRef);
+
+                const DIDEVICEOBJECTINSTANCE& kExpectedObjectInstance = *lpddoi;
+                DIDEVICEOBJECTINSTANCE actualObjectInstance;
+
+                // First identify the enumerated object by offset.
+                // Based on the test data packet at the top of this file, not all elements have offsets, so this part of the test case is not always valid.
+                if (DataFormat::kInvalidOffsetValue != kExpectedObjectInstance.dwOfs)
+                {
+                    FillMemory(&actualObjectInstance, sizeof(actualObjectInstance), 0xcd);
+                    actualObjectInstance.dwSize = sizeof(DIDEVICEOBJECTINSTANCE);
+                    TEST_ASSERT(DI_OK == diController.GetObjectInfo(&actualObjectInstance, kExpectedObjectInstance.dwOfs, DIPH_BYOFFSET));
+                    TEST_ASSERT(0 == memcmp(&actualObjectInstance, &kExpectedObjectInstance, sizeof(kExpectedObjectInstance)));
+                }
+
+                // Next try by instance type and ID.
+                FillMemory(&actualObjectInstance, sizeof(actualObjectInstance), 0xcd);
+                actualObjectInstance.dwSize = sizeof(DIDEVICEOBJECTINSTANCE);
+                TEST_ASSERT(DI_OK == diController.GetObjectInfo(&actualObjectInstance, kExpectedObjectInstance.dwType, DIPH_BYID));
+                TEST_ASSERT(0 == memcmp(&actualObjectInstance, &kExpectedObjectInstance, sizeof(kExpectedObjectInstance)));
+
+                return DIENUM_CONTINUE;
+            },
+            &diController, DIDFT_ALL)
+        );
+    }
+
+    // Same as above, except the structure is an older version which is supported for compatibility.
+    // The older structure, with suffix _DX3, is a strict subset of the more modern version.
+    TEST_CASE(VirtualDirectInputDevice_GetObjectInfo_Legacy)
+    {
+        constexpr uint8_t kPoisonByte = 0xcd;
+        VirtualDirectInputDevice<ECharMode::W> diController(CreateTestVirtualController());
+        TEST_ASSERT(DI_OK == diController.SetDataFormat(&kTestFormatSpec));
+        TEST_ASSERT(DI_OK == diController.EnumObjects([](LPCDIDEVICEOBJECTINSTANCE lpddoi, LPVOID pvRef) -> BOOL
+            {
+                VirtualDirectInputDevice<ECharMode::W>& diController = *((VirtualDirectInputDevice<ECharMode::W>*)pvRef);
+
+                DIDEVICEOBJECTINSTANCE expectedObjectInstance;
+                FillMemory(&expectedObjectInstance, sizeof(expectedObjectInstance), kPoisonByte);
+                CopyMemory(&expectedObjectInstance, lpddoi, sizeof(DIDEVICEOBJECTINSTANCE_DX3));
+                expectedObjectInstance.dwSize = sizeof(DIDEVICEOBJECTINSTANCE_DX3);
+                
+                DIDEVICEOBJECTINSTANCE actualObjectInstance;
+
+                // First identify the enumerated object by offset.
+                // Based on the test data packet at the top of this file, not all elements have offsets, so this part of the test case is not always valid.
+                if (DataFormat::kInvalidOffsetValue != expectedObjectInstance.dwOfs)
+                {
+                    FillMemory(&actualObjectInstance, sizeof(actualObjectInstance), kPoisonByte);
+                    actualObjectInstance.dwSize = sizeof(DIDEVICEOBJECTINSTANCE_DX3);
+                    TEST_ASSERT(DI_OK == diController.GetObjectInfo(&actualObjectInstance, expectedObjectInstance.dwOfs, DIPH_BYOFFSET));
+                    TEST_ASSERT(0 == memcmp(&actualObjectInstance, &expectedObjectInstance, sizeof(expectedObjectInstance)));
+                }
+
+                // Next try by instance type and ID.
+                FillMemory(&actualObjectInstance, sizeof(actualObjectInstance), kPoisonByte);
+                actualObjectInstance.dwSize = sizeof(DIDEVICEOBJECTINSTANCE_DX3);
+                TEST_ASSERT(DI_OK == diController.GetObjectInfo(&actualObjectInstance, expectedObjectInstance.dwType, DIPH_BYID));
+                TEST_ASSERT(0 == memcmp(&actualObjectInstance, &expectedObjectInstance, sizeof(expectedObjectInstance)));
+
+                return DIENUM_CONTINUE;
+            },
+            &diController, DIDFT_ALL)
+        );
+    }
+
+    // A null pointer is passed. This is expected to cause the method to fail.
+    TEST_CASE(VirtualDirectInputDevice_GetObjectInfo_BadPointer)
+    {
+        VirtualDirectInputDevice<ECharMode::W> diController(CreateTestVirtualController());
+        TEST_ASSERT(DI_OK != diController.GetObjectInfo(nullptr, DIDFT_MAKEINSTANCE(0) | DIDFT_PSHBUTTON, DIPH_BYID));
+    }
+
+    // A valid pointer is passed but with the size member not initialized. This is expected to cause the method to fail.
+    TEST_CASE(VirtualDirectInputDevice_GetObjectInfo_InvalidSize)
+    {
+        VirtualDirectInputDevice<ECharMode::W> diController(CreateTestVirtualController());
+        DIDEVICEOBJECTINSTANCE objectInstance;
+        ZeroMemory(&objectInstance, sizeof(objectInstance));
+        TEST_ASSERT(DI_OK != diController.GetObjectInfo(&objectInstance, DIDFT_MAKEINSTANCE(0) | DIDFT_PSHBUTTON, DIPH_BYID));
+    }
+
+    // All inputs are valid, but no matching object exists based on the object specification.
+    TEST_CASE(VirtualDirectInputDevice_GetObjectInfo_ObjectNotFound)
+    {
+        VirtualDirectInputDevice<ECharMode::W> diController(CreateTestVirtualController());
+        DIDEVICEOBJECTINSTANCE objectInstance = {.dwSize = sizeof(DIDEVICEOBJECTINSTANCE)};
+
+        // One axis beyond the maximum.
+        TEST_ASSERT(DIERR_OBJECTNOTFOUND == diController.GetObjectInfo(&objectInstance, DIDFT_MAKEINSTANCE(kTestMapper.GetCapabilities().numAxes) | DIDFT_ABSAXIS, DIPH_BYID));
+
+        // One button beyond the maximum.
+        TEST_ASSERT(DIERR_OBJECTNOTFOUND == diController.GetObjectInfo(&objectInstance, DIDFT_MAKEINSTANCE(kTestMapper.GetCapabilities().numButtons) | DIDFT_PSHBUTTON, DIPH_BYID));
+
+        // Using an offset that definitely does exist in the data packet, but the data format has not been set.
+        TEST_ASSERT(DIERR_OBJECTNOTFOUND == diController.GetObjectInfo(&objectInstance, 0, DIPH_BYOFFSET));
+
+        // Specifying the whole device, which is not an allowed mechanism for identifying an object for this method, meaning the parameters are invalid.
+        TEST_ASSERT(DIERR_INVALIDPARAM == diController.GetObjectInfo(&objectInstance, 0, DIPH_DEVICE));
     }
 }

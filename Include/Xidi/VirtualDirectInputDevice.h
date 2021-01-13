@@ -28,7 +28,9 @@ namespace Xidi
     {
         typedef LPCTSTR ConstStringType;
         typedef DIDEVICEINSTANCE DeviceInstanceType;
+        typedef DIDEVICEINSTANCE_DX3 DeviceInstanceCompatType;
         typedef DIDEVICEOBJECTINSTANCE DeviceObjectInstanceType;
+        typedef DIDEVICEOBJECTINSTANCE_DX3 DeviceObjectInstanceCompatType;
         typedef DIEFFECTINFO EffectInfoType;
         typedef LPDIENUMEFFECTSCALLBACK EnumEffectsCallbackType;
         typedef LPDIENUMDEVICEOBJECTSCALLBACK EnumObjectsCallbackType;
@@ -42,7 +44,9 @@ namespace Xidi
     {
         typedef LPCSTR ConstStringType;
         typedef DIDEVICEINSTANCEA DeviceInstanceType;
+        typedef DIDEVICEINSTANCE_DX3A DeviceInstanceCompatType;
         typedef DIDEVICEOBJECTINSTANCEA DeviceObjectInstanceType;
+        typedef DIDEVICEOBJECTINSTANCE_DX3A DeviceObjectInstanceCompatType;
         typedef DIEFFECTINFOA EffectInfoType;
         typedef LPDIENUMEFFECTSCALLBACKA EnumEffectsCallbackType;
         typedef LPDIENUMDEVICEOBJECTSCALLBACKA EnumObjectsCallbackType;
@@ -56,7 +60,9 @@ namespace Xidi
     {
         typedef LPCWSTR ConstStringType;
         typedef DIDEVICEINSTANCEW DeviceInstanceType;
+        typedef DIDEVICEINSTANCE_DX3W DeviceInstanceCompatType;
         typedef DIDEVICEOBJECTINSTANCEW DeviceObjectInstanceType;
+        typedef DIDEVICEOBJECTINSTANCE_DX3W DeviceObjectInstanceCompatType;
         typedef DIEFFECTINFOW EffectInfoType;
         typedef LPDIENUMEFFECTSCALLBACKW EnumEffectsCallbackType;
         typedef LPDIENUMDEVICEOBJECTSCALLBACKW EnumObjectsCallbackType;

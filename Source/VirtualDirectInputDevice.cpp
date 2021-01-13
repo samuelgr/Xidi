@@ -410,14 +410,14 @@ namespace Xidi
     }
 
     /// Fills the specified object instance information structure with information about the specified controller element.
+    /// Size member must already be initialized because multiple versions of the structure exist, so it is used to determine which members to fill in.
+    /// @tparam charMode Selects between ASCII ("A" suffix) and Unicode ("W") suffix versions of types and interfaces.
     /// @param [in] controllerCapabilities Capabilities that describe the layout of the virtual controller.
     /// @param [in] controllerElement Virtual controller element about which to fill information.
     /// @param [in] offset Offset to place into the object instance information structure.
     /// @param objectInfo [out] Structure to be filled with instance information.
     template <ECharMode charMode> static void FillObjectInstanceInfo(const Controller::SCapabilities controllerCapabilities, Controller::SElementIdentifier controllerElement, TOffset offset, typename DirectInputDeviceType<charMode>::DeviceObjectInstanceType* objectInfo)
     {
-        ZeroMemory(objectInfo, sizeof(*objectInfo));
-        objectInfo->dwSize = sizeof(*objectInfo);
         objectInfo->dwOfs = offset;
         ElementToString(controllerElement, objectInfo->tszName, _countof(objectInfo->tszName));
 
@@ -440,6 +440,21 @@ namespace Xidi
             objectInfo->dwType = DIDFT_POV | DIDFT_MAKEINSTANCE(0);
             objectInfo->dwFlags = DIDOI_POLLED;
             break;
+        }
+
+        // DirectInput versions 5 and higher include extra members in this structure, and this is indicated on input using the size member of the structure.
+        if (objectInfo->dwSize > sizeof(DirectInputDeviceType<charMode>::DeviceObjectInstanceCompatType))
+        {
+            // These fields are zeroed out because Xidi does not currently offer any of the functionality they represent.
+            objectInfo->dwFFMaxForce = 0;
+            objectInfo->dwFFForceResolution = 0;
+            objectInfo->wCollectionNumber = 0;
+            objectInfo->wDesignatorIndex = 0;
+            objectInfo->wUsagePage = 0;
+            objectInfo->wUsage = 0;
+            objectInfo->dwDimension = 0;
+            objectInfo->wExponent = 0;
+            objectInfo->wReportId = 0;
         }
     }
 
@@ -647,6 +662,7 @@ namespace Xidi
                     const Controller::SElementIdentifier kAxisIdentifier = {.type = Controller::EElementType::Axis, .axis = kAxis};
                     const TOffset kAxisOffset = ((true == IsApplicationDataFormatSet()) ? dataFormat->GetOffsetForElement(kAxisIdentifier).value_or(DataFormat::kInvalidOffsetValue) : NativeOffsetForElement(kAxisIdentifier));
 
+                    *objectDescriptor = {.dwSize = sizeof(*objectDescriptor)};
                     FillObjectInstanceInfo<charMode>(controllerCapabilities, kAxisIdentifier, kAxisOffset, objectDescriptor.get());
                     switch (lpCallback(objectDescriptor.get(), pvRef))
                     {
@@ -668,6 +684,7 @@ namespace Xidi
                     const Controller::SElementIdentifier kButtonIdentifier = {.type = Controller::EElementType::Button, .button = kButton};
                     const TOffset kButtonOffset = ((true == IsApplicationDataFormatSet()) ? dataFormat->GetOffsetForElement(kButtonIdentifier).value_or(DataFormat::kInvalidOffsetValue) : NativeOffsetForElement(kButtonIdentifier));
 
+                    *objectDescriptor = {.dwSize = sizeof(*objectDescriptor)};
                     FillObjectInstanceInfo<charMode>(controllerCapabilities, kButtonIdentifier, kButtonOffset, objectDescriptor.get());
                     switch (lpCallback(objectDescriptor.get(), pvRef))
                     {
@@ -688,6 +705,7 @@ namespace Xidi
                     const Controller::SElementIdentifier kPovIdentifier = {.type = Controller::EElementType::Pov};
                     const TOffset kPovOffset = ((true == IsApplicationDataFormatSet()) ? dataFormat->GetOffsetForElement(kPovIdentifier).value_or(DataFormat::kInvalidOffsetValue) : NativeOffsetForElement(kPovIdentifier));
                     
+                    *objectDescriptor = {.dwSize = sizeof(*objectDescriptor)};
                     FillObjectInstanceInfo<charMode>(controllerCapabilities, kPovIdentifier, kPovOffset, objectDescriptor.get());
                     switch (lpCallback(objectDescriptor.get(), pvRef))
                     {
@@ -827,8 +845,16 @@ namespace Xidi
 
         if (nullptr == pdidi)
             LOG_INVOCATION_AND_RETURN(E_POINTER, kMethodSeverity);
-        else if (sizeof(*pdidi) != pdidi->dwSize)
+
+        switch (pdidi->dwSize)
+        {
+        case (sizeof(DirectInputDeviceType<charMode>::DeviceInstanceType)):
+        case (sizeof(DirectInputDeviceType<charMode>::DeviceInstanceCompatType)):
+            break;
+
+        default:
             LOG_INVOCATION_AND_RETURN(DIERR_INVALIDPARAM, kMethodSeverity);
+        }
 
         FillVirtualControllerInfo(*pdidi, controller->GetIdentifier());
         LOG_INVOCATION_AND_RETURN(DI_OK, kMethodSeverity);
@@ -877,14 +903,25 @@ namespace Xidi
         
         if (nullptr == pdidoi)
             LOG_INVOCATION_AND_RETURN(E_POINTER, kMethodSeverity);
-        else if (sizeof(*pdidoi) != pdidoi->dwSize)
+
+        switch (pdidoi->dwSize)
+        {
+        case (sizeof(DirectInputDeviceType<charMode>::DeviceObjectInstanceType)):
+        case (sizeof(DirectInputDeviceType<charMode>::DeviceObjectInstanceCompatType)):
+            break;
+
+        default:
             LOG_INVOCATION_AND_RETURN(DIERR_INVALIDPARAM, kMethodSeverity);
+        }
 
         const std::optional<Controller::SElementIdentifier> maybeElement = IdentifyElement(dwObj, dwHow);
         if (false == maybeElement.has_value())
             LOG_INVOCATION_AND_RETURN(DIERR_OBJECTNOTFOUND, kMethodSeverity);
 
         const Controller::SElementIdentifier element = maybeElement.value();
+        if (Controller::EElementType::WholeController == element.type)
+            LOG_INVOCATION_AND_RETURN(DIERR_INVALIDPARAM, kMethodSeverity);
+
         FillObjectInstanceInfo<charMode>(controller->GetCapabilities(), element, ((true == IsApplicationDataFormatSet()) ? dataFormat->GetOffsetForElement(element).value_or(DataFormat::kInvalidOffsetValue) : NativeOffsetForElement(element)), pdidoi);
         LOG_INVOCATION_AND_RETURN(DI_OK, kMethodSeverity);
     }
