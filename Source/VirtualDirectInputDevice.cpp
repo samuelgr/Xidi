@@ -756,7 +756,10 @@ namespace Xidi
     {
         static constexpr Message::ESeverity kMethodSeverity = Message::ESeverity::SuperDebug;
         static constexpr Message::ESeverity kMethodSeverityForError = Message::ESeverity::Info;
-        
+
+        // DIDEVICEOBJECTDATA and DIDEVICEOBJECTDATA_DX3 are defined identically for all DirectInput versions below 8.
+        // There is therefore no need to differentiate, as the distinction between "dinput" and "dinput8" takes care of it.
+
         if ((false == IsApplicationDataFormatSet()) || (nullptr == pdwInOut) || (sizeof(DIDEVICEOBJECTDATA) != cbObjectData))
             LOG_INVOCATION_AND_RETURN(DIERR_INVALIDPARAM, kMethodSeverityForError);
 
@@ -837,8 +840,8 @@ namespace Xidi
     {
         static constexpr Message::ESeverity kMethodSeverity = Message::ESeverity::SuperDebug;
         static constexpr Message::ESeverity kMethodSeverityForError = Message::ESeverity::Info;
-        
-        if (false == IsApplicationDataFormatSet())
+
+        if ((nullptr == lpvData) || (false == IsApplicationDataFormatSet()) || (cbData < dataFormat->GetPacketSizeBytes()))
             LOG_INVOCATION_AND_RETURN(DIERR_INVALIDPARAM, kMethodSeverityForError);
 
         bool writeDataPacketResult = false;

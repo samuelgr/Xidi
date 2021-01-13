@@ -18,6 +18,7 @@
 #include "TestCase.h"
 #include "VirtualDirectInputDevice.h"
 
+#include <cstdint>
 #include <cstring>
 #include <memory>
 #include <set>
@@ -107,7 +108,35 @@ namespace XidiTest
         return std::make_unique<VirtualController>(kTestControllerIdentifier, kTestMapper, std::move(xinput));
     }
 
-    
+
+    // -------- INTERNAL CONSTANTS ----------------------------------------- //
+
+    /// Applies all of the buffered events in the specified array of events to the specified test data packet structure.
+    /// In doing so, ensures sequence numbers are monotonic.
+    /// @param [out] testDataPacket Data packet to which to apply the events.
+    /// @param [in] objectData Array of buffered event object data elements to apply to the data packet.
+    /// @param [in] numEvents Number of events in the array.
+    /// @param [in] lastSequence Starting sequence number for monotonicity checking, defaults to `INT_MIN`.
+    /// @return Last (highest) sequence number seen in the array of buffered event data.
+    static int ApplyEventsToTestDataPacket(STestDataPacket& testDataPacket, LPCDIDEVICEOBJECTDATA objectData, int numEvents, int lastSequence = INT_MIN)
+    {
+        for (int i = 0; i < numEvents; ++i)
+        {
+            TEST_ASSERT((int)objectData[i].dwSequence > lastSequence);
+            lastSequence = objectData[i].dwSequence;
+
+            const size_t kDataAddress = (size_t)&testDataPacket + (size_t)objectData[i].dwOfs;
+
+            if (objectData[i].dwOfs >= offsetof(STestDataPacket, button))
+                *((TButtonValue*)kDataAddress) = (TButtonValue)objectData[i].dwData;
+            else
+                *((TAxisValue*)kDataAddress) = (TAxisValue)objectData[i].dwData;
+        }
+
+        return lastSequence;
+    }
+
+
     // -------- TEST CASES ------------------------------------------------- //
 
     // Verifies that virtual controllers can be acquired as long as the data format is already set.
@@ -372,7 +401,7 @@ namespace XidiTest
     }
 
 
-    // The following sequence of tests, which together comprise the GetCapabilities suite, exercise the DirectInputDevice interface method of the same name..
+    // The following sequence of tests, which together comprise the GetCapabilities suite, exercise the DirectInputDevice interface method of the same name.
     // Scopes vary, so more details are provided with each test case.
 
     // Nominal behavior in which a structure is passed, properly initialized with the size member set.
@@ -400,12 +429,15 @@ namespace XidiTest
     }
 
     // Same as above, except the structure is an older version which is supported for compatibility.
+    // The older structure, with suffix _DX3, is a strict subset of the more modern version.
     TEST_CASE(VirtualDirectInputDevice_GetCapabilities_Legacy)
     {
+        constexpr uint8_t kPoisonByte = 0xcd;
         VirtualDirectInputDevice<ECharMode::W> diController(CreateTestVirtualController());
 
-        const DIDEVCAPS_DX3 kExpectedCapabilities =
-        {
+        DIDEVCAPS expectedCapabilities;
+        FillMemory(&expectedCapabilities, sizeof(expectedCapabilities), kPoisonByte);
+        *((DIDEVCAPS_DX3*)&expectedCapabilities) = {
             .dwSize = sizeof(DIDEVCAPS_DX3),
             .dwFlags = (DIDC_ATTACHED | DIDC_EMULATED | DIDC_POLLEDDEVICE | DIDC_POLLEDDATAFORMAT),
             .dwDevType = DINPUT_DEVTYPE_XINPUT_GAMEPAD,
@@ -414,12 +446,12 @@ namespace XidiTest
             .dwPOVs = (DWORD)((true == kTestMapper.GetCapabilities().hasPov) ? 1 : 0)
         };
 
-        DIDEVCAPS_DX3 actualCapabilities;
-        FillMemory(&actualCapabilities, sizeof(actualCapabilities), 0xcd);
+        DIDEVCAPS actualCapabilities;
+        FillMemory(&actualCapabilities, sizeof(actualCapabilities), kPoisonByte);
         actualCapabilities.dwSize = sizeof(DIDEVCAPS_DX3);
 
         TEST_ASSERT(DI_OK == diController.GetCapabilities((DIDEVCAPS*)&actualCapabilities));
-        TEST_ASSERT(0 == memcmp(&actualCapabilities, &kExpectedCapabilities, sizeof(kExpectedCapabilities)));
+        TEST_ASSERT(0 == memcmp(&actualCapabilities, &expectedCapabilities, sizeof(expectedCapabilities)));
     }
     
     // A null pointer is passed. This is expected to cause the method to fail.
@@ -436,5 +468,205 @@ namespace XidiTest
         DIDEVCAPS capabilities;
         ZeroMemory(&capabilities, sizeof(capabilities));
         TEST_ASSERT(DI_OK != diController.GetCapabilities(&capabilities));
+    }
+
+
+    // The following sequence of tests, which together comprise the GetDeviceData suite, exercise the DirectInputDevice interface method of the same name.
+    // Scopes vary, so more details are provided with each test case.
+
+    // Exercises the nominal case in which events are buffered and retrieved using various queries.
+    // Three types of accesses are exercised: peek, query event count, and buffer flush.
+    TEST_CASE(VirtualDirectInputDevice_GetDeviceData_NominalPeek)
+    {
+        constexpr DWORD kBufferSize = 16;
+        constexpr DIPROPDWORD kBufferSizeProperty = {.diph = {.dwSize = sizeof(DIPROPDWORD), .dwHeaderSize = sizeof(DIPROPHEADER), .dwObj = 0, .dwHow = DIPH_DEVICE}, .dwData = kBufferSize};
+
+        std::unique_ptr<MockXInput> xinput = std::make_unique<MockXInput>(kTestControllerIdentifier);
+        xinput->ExpectCallGetState({
+            .returnCode = ERROR_SUCCESS,
+            .maybeOutputObject = XINPUT_STATE({.dwPacketNumber = 1, .Gamepad = {.wButtons = (XINPUT_GAMEPAD_A | XINPUT_GAMEPAD_X), .sThumbLX = -1234, .sThumbRX = 5678}})
+        });
+
+        // Set based on the number of controller elements present in the above XINPUT_STATE structure that are also contained in STestDataPacket.
+        // In this case, the right thumbstick has no matching offset, but all the other three controller components are represented.
+        constexpr DWORD kExpectedNumEvents = 3;
+
+        VirtualDirectInputDevice<ECharMode::W> diController(CreateTestVirtualController(std::move(xinput)));
+        TEST_ASSERT(DI_OK == diController.SetDataFormat(&kTestFormatSpec));
+        TEST_ASSERT(DI_OK == diController.SetProperty(DIPROP_BUFFERSIZE, (LPCDIPROPHEADER)&kBufferSizeProperty));
+
+        // Based on the mapper defined at the top of this file. POV does not need to be filled in because its state is not changing and so it will not generate an event.
+        constexpr STestDataPacket kExpectedDataPacketResult = {.axisX = -1234, .button = {DataFormat::kButtonValuePressed, DataFormat::kButtonValueNotPressed, DataFormat::kButtonValuePressed, DataFormat::kButtonValueNotPressed}};
+
+        // To get the actual data packet, retrieve buffered events from the controller and modify the data packet one event at a time.
+        // First access is with DIGGD_PEEK so that no buffered events are removed.
+        STestDataPacket actualDataPacketResult;
+        ZeroMemory(&actualDataPacketResult, sizeof(actualDataPacketResult));
+
+        DIDEVICEOBJECTDATA objectData[kBufferSize];
+        DWORD numObjectDataElements = _countof(objectData);
+
+        TEST_ASSERT(DI_OK == diController.Poll());
+        TEST_ASSERT(DI_OK == diController.GetDeviceData(sizeof(DIDEVICEOBJECTDATA), objectData, &numObjectDataElements, DIGDD_PEEK));
+        TEST_ASSERT(kExpectedNumEvents == numObjectDataElements);
+        ApplyEventsToTestDataPacket(actualDataPacketResult, objectData, numObjectDataElements);
+        TEST_ASSERT(0 == memcmp(&actualDataPacketResult, &kExpectedDataPacketResult, sizeof(kExpectedDataPacketResult)));
+
+        // Second access is a query for the number of events without any retrieval or removal. Should be the same as before.
+        // This query follows the IDirectInputDevice8::GetDeviceData documentation.
+        numObjectDataElements = INFINITE;
+        TEST_ASSERT(DI_OK == diController.GetDeviceData(sizeof(DIDEVICEOBJECTDATA), nullptr, &numObjectDataElements, DIGDD_PEEK));
+        TEST_ASSERT(kExpectedNumEvents == numObjectDataElements);
+
+        // Third access removes all the events without retrieving them.
+        // This is also documented in the IDirectInputDevice8::GetDeviceData documentation.
+        numObjectDataElements = INFINITE;
+        TEST_ASSERT(DI_OK == diController.GetDeviceData(sizeof(DIDEVICEOBJECTDATA), nullptr, &numObjectDataElements, 0));
+        TEST_ASSERT(kExpectedNumEvents == numObjectDataElements);
+
+        // Finally, query again for the number of events left in the buffer. Result should be 0.
+        numObjectDataElements = INFINITE;
+        TEST_ASSERT(DI_OK == diController.GetDeviceData(sizeof(DIDEVICEOBJECTDATA), nullptr, &numObjectDataElements, DIGDD_PEEK));
+        TEST_ASSERT(0 == numObjectDataElements);
+    }
+
+    // Same as above, but without peek. Exercises the one remaining type of access, namely retrieving and popping events at the same time.
+    TEST_CASE(VirtualDirectInputDevice_GetDeviceData_NominalPop)
+    {
+        constexpr DWORD kBufferSize = 16;
+        constexpr DIPROPDWORD kBufferSizeProperty = {.diph = {.dwSize = sizeof(DIPROPDWORD), .dwHeaderSize = sizeof(DIPROPHEADER), .dwObj = 0, .dwHow = DIPH_DEVICE}, .dwData = kBufferSize};
+
+        std::unique_ptr<MockXInput> xinput = std::make_unique<MockXInput>(kTestControllerIdentifier);
+        xinput->ExpectCallGetState({
+            .returnCode = ERROR_SUCCESS,
+            .maybeOutputObject = XINPUT_STATE({.dwPacketNumber = 1, .Gamepad = {.wButtons = (XINPUT_GAMEPAD_A | XINPUT_GAMEPAD_X), .sThumbLX = -1234, .sThumbRX = 5678}})
+        });
+
+        // Set based on the number of controller elements present in the above XINPUT_STATE structure that are also contained in STestDataPacket.
+        // In this case, the right thumbstick has no matching offset, but all the other three controller components are represented.
+        constexpr DWORD kExpectedNumEvents = 3;
+
+        VirtualDirectInputDevice<ECharMode::W> diController(CreateTestVirtualController(std::move(xinput)));
+        TEST_ASSERT(DI_OK == diController.SetDataFormat(&kTestFormatSpec));
+        TEST_ASSERT(DI_OK == diController.SetProperty(DIPROP_BUFFERSIZE, (LPCDIPROPHEADER)&kBufferSizeProperty));
+
+        // Based on the mapper defined at the top of this file. POV does not need to be filled in because its state is not changing and so it will not generate an event.
+        constexpr STestDataPacket kExpectedDataPacketResult = {.axisX = -1234, .button = {DataFormat::kButtonValuePressed, DataFormat::kButtonValueNotPressed, DataFormat::kButtonValuePressed, DataFormat::kButtonValueNotPressed}};
+
+        // To get the actual data packet, retrieve buffered events from the controller and modify the data packet one event at a time.
+        STestDataPacket actualDataPacketResult;
+        ZeroMemory(&actualDataPacketResult, sizeof(actualDataPacketResult));
+
+        DIDEVICEOBJECTDATA objectData[kBufferSize];
+        DWORD numObjectDataElements = _countof(objectData);
+
+        TEST_ASSERT(DI_OK == diController.Poll());
+        TEST_ASSERT(DI_OK == diController.GetDeviceData(sizeof(DIDEVICEOBJECTDATA), objectData, &numObjectDataElements, 0));
+        TEST_ASSERT(kExpectedNumEvents == numObjectDataElements);
+        ApplyEventsToTestDataPacket(actualDataPacketResult, objectData, numObjectDataElements);
+        TEST_ASSERT(0 == memcmp(&actualDataPacketResult, &kExpectedDataPacketResult, sizeof(kExpectedDataPacketResult)));
+
+        // Since events were retrieved and popped simultaneously, querying for the number of events left in the buffer should yield a result of 0.
+        // This access is technically a flush operation, but it should work anyway.
+        numObjectDataElements = INFINITE;
+        TEST_ASSERT(DI_OK == diController.GetDeviceData(sizeof(DIDEVICEOBJECTDATA), nullptr, &numObjectDataElements, 0));
+        TEST_ASSERT(0 == numObjectDataElements);
+    }
+
+    // Data format is not set. This is expected to cause the method to fail.
+    TEST_CASE(VirtualDirectInputDevice_GetDeviceData_DataFormatNotSet)
+    {
+        VirtualDirectInputDevice<ECharMode::W> diController(CreateTestVirtualController());
+        DWORD numObjectDataElements = INFINITE;
+        TEST_ASSERT(DI_OK != diController.GetDeviceData(sizeof(DIDEVICEOBJECTDATA), nullptr, &numObjectDataElements, 0));
+    }
+
+    // Buffering is not enabled. This is expected to cause the method to fail with a specific error code.
+    TEST_CASE(VirtualDirectInputDevice_GetDeviceData_BufferingNotEnabled)
+    {
+        VirtualDirectInputDevice<ECharMode::W> diController(CreateTestVirtualController());
+        DWORD numObjectDataElements = INFINITE;
+        TEST_ASSERT(DI_OK == diController.SetDataFormat(&kTestFormatSpec));
+        TEST_ASSERT(DIERR_NOTBUFFERED == diController.GetDeviceData(sizeof(DIDEVICEOBJECTDATA), nullptr, &numObjectDataElements, 0));
+    }
+
+
+    // The following sequence of tests, which together comprise the GetDeviceState suite, exercise the DirectInputDevice interface method of the same name.
+    // Scopes vary, so more details are provided with each test case.
+
+    // Nominal situation in which all inputs are valid and a controller reports its state.
+    TEST_CASE(VirtualDirectInputDevice_GetDeviceState_Nominal)
+    {
+        std::unique_ptr<MockXInput> xinput = std::make_unique<MockXInput>(kTestControllerIdentifier);
+        xinput->ExpectCallGetState({
+            .returnCode = ERROR_SUCCESS,
+            .maybeOutputObject = XINPUT_STATE({.dwPacketNumber = 1, .Gamepad = {.wButtons = (XINPUT_GAMEPAD_A | XINPUT_GAMEPAD_X), .sThumbLX = -1234, .sThumbRX = 5678}})
+        });
+
+        // Based on the mapper defined at the top of this file. POV is filled in to reflect its centered state.
+        constexpr STestDataPacket kExpectedDataPacketResult = {.axisX = -1234, .pov = EPovValue::Center, .button = {DataFormat::kButtonValuePressed, DataFormat::kButtonValueNotPressed, DataFormat::kButtonValuePressed, DataFormat::kButtonValueNotPressed}};
+
+        VirtualDirectInputDevice<ECharMode::W> diController(CreateTestVirtualController(std::move(xinput)));
+        TEST_ASSERT(DI_OK == diController.SetDataFormat(&kTestFormatSpec));
+
+        STestDataPacket actualDataPacketResult;
+        FillMemory(&actualDataPacketResult, sizeof(actualDataPacketResult), 0xcd);
+        TEST_ASSERT(DI_OK == diController.GetDeviceState(sizeof(actualDataPacketResult), &actualDataPacketResult));
+        TEST_ASSERT(0 == memcmp(&actualDataPacketResult, &kExpectedDataPacketResult, sizeof(kExpectedDataPacketResult)));
+    }
+
+    // Data format is not set before requesting device state.
+    // Method is expected to fail.
+    TEST_CASE(VirtualDirectInputDevice_GetDeviceState_DataFormatNotSet)
+    {
+        VirtualDirectInputDevice<ECharMode::W> diController(CreateTestVirtualController());
+        STestDataPacket dataPacket;
+        TEST_ASSERT(DI_OK != diController.GetDeviceState(sizeof(dataPacket), &dataPacket));
+    }
+    
+    // Null pointer is passed, though the data packet size is correct.
+    // Method is expected to fail.
+    TEST_CASE(VirtualDirectInputDevice_GetDeviceState_BadPointer)
+    {
+        VirtualDirectInputDevice<ECharMode::W> diController(CreateTestVirtualController());
+        TEST_ASSERT(DI_OK == diController.SetDataFormat(&kTestFormatSpec));
+        TEST_ASSERT(DI_OK != diController.GetDeviceState(sizeof(STestDataPacket), nullptr));
+    }
+
+    // Same as the nominal situation, except the supplied buffer is much larger than a data packet's actual size.
+    // Method is expected to succeed.
+    TEST_CASE(VirtualDirectInputDevice_GetDeviceState_SizeTooBig)
+    {
+        std::unique_ptr<MockXInput> xinput = std::make_unique<MockXInput>(kTestControllerIdentifier);
+        xinput->ExpectCallGetState({
+            .returnCode = ERROR_SUCCESS,
+            .maybeOutputObject = XINPUT_STATE({.dwPacketNumber = 1, .Gamepad = {.wButtons = (XINPUT_GAMEPAD_A | XINPUT_GAMEPAD_X), .sThumbLX = -1234, .sThumbRX = 5678}})
+        });
+
+        VirtualDirectInputDevice<ECharMode::W> diController(CreateTestVirtualController(std::move(xinput)));
+        TEST_ASSERT(DI_OK == diController.SetDataFormat(&kTestFormatSpec));
+
+        // First element is based on the mapper defined at the top of this file. POV is filled in to reflect its centered state.
+        // Second element is zeroed out as a comparison target with the actual data packet.
+        constexpr STestDataPacket kExpectedDataPacketResult[2] = {
+            {.axisX = -1234, .pov = EPovValue::Center, .button = {DataFormat::kButtonValuePressed, DataFormat::kButtonValueNotPressed, DataFormat::kButtonValuePressed, DataFormat::kButtonValueNotPressed}},
+            {}
+        };
+
+        // This entire array is passed as the data packet buffer. It should be entirely zeroed out, except for those elements that are indicated in the expected result above.
+        STestDataPacket actualDataPacketResult[2];
+        FillMemory(actualDataPacketResult, sizeof(actualDataPacketResult), 0xcd);
+        TEST_ASSERT(DI_OK == diController.GetDeviceState(sizeof(actualDataPacketResult), actualDataPacketResult));
+        TEST_ASSERT(0 == memcmp(actualDataPacketResult, kExpectedDataPacketResult, sizeof(kExpectedDataPacketResult)));
+    }
+
+    // All inputs are valid except the size of the data packet passed during the method call is smaller than the size that was originally specified.
+    // Method is expected to fail.
+    TEST_CASE(VirtualDirectInputDevice_GetDeviceState_SizeTooSmall)
+    {
+        VirtualDirectInputDevice<ECharMode::W> diController(CreateTestVirtualController());
+        STestDataPacket dataPacket;
+        TEST_ASSERT(DI_OK == diController.SetDataFormat(&kTestFormatSpec));
+        TEST_ASSERT(DI_OK != diController.GetDeviceState(sizeof(dataPacket) - 1, &dataPacket));
     }
 }

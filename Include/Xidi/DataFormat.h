@@ -207,6 +207,14 @@ namespace Xidi
         /// @return Associated offset if it is defined in the application's data format.
         std::optional<TOffset> GetOffsetForElement(Controller::SElementIdentifier element) const;
 
+        /// Retrieves and returns the total number of bytes in the data format represented by this object.
+        /// Does not do any error checking.
+        /// @return Size of the data packet format represented by this object.
+        inline TOffset GetPacketSizeBytes(void) const
+        {
+            return dataFormatSpec.packetSizeBytes;
+        }
+
         /// Retrieves the underlying data format specification for read-only access.
         /// Primarily intended for testing.
         /// @return Read-only reference to the underlying data format specification.

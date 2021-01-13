@@ -149,14 +149,14 @@ namespace Xidi
             /// Retrieves and returns the capabilities of the virtual controller layout implemented by the mapper.
             /// Controller capabilities act as metadata that are used internally and can be presented to applications.
             /// @return Capabilities of the virtual controller.
-            inline const SCapabilities GetCapabilities(void) const
+            inline SCapabilities GetCapabilities(void) const
             {
                 return capabilities;
             }
 
             /// Retrieves and returns the name of this mapper.
             /// @return Mapper name.
-            inline const std::wstring_view GetName(void) const
+            inline std::wstring_view GetName(void) const
             {
                 return name;
             }
