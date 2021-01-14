@@ -34,13 +34,13 @@
 // -------- MACROS --------------------------------------------------------- //
 
 /// Logs a WinMM device-specific function invocation.
-#define LOG_INVOCATION(joyID, result)       Message::OutputFormatted(Message::ESeverity::Info, L"Invoked %s on device %d, result = %u.", __FUNCTIONW__ L"()", joyID, result);
+#define LOG_INVOCATION(severity, joyID, result)     Message::OutputFormatted(severity, L"Invoked %s on device %d, result = %u.", __FUNCTIONW__ L"()", joyID, result);
 
 /// Logs invocation of an unsupported WinMM operation.
-#define LOG_UNSUPPORTED_OPERATION()         Message::OutputFormatted(Message::ESeverity::Warning, L"Application invoked %s on a Xidi virtual controller, which is not supported.", __FUNCTIONW__ L"()");
+#define LOG_UNSUPPORTED_OPERATION()                 Message::OutputFormatted(Message::ESeverity::Warning, L"Application invoked %s on a Xidi virtual controller, which is not supported.", __FUNCTIONW__ L"()");
 
 /// Logs invocation of a WinMM operation with invalid parameters.
-#define LOG_INVALID_PARAMS()                Message::OutputFormatted(Message::ESeverity::Warning, L"Application invoked %s on a Xidi virtual controller, which failed due to invalid parameters.", __FUNCTIONW__ L"()");
+#define LOG_INVALID_PARAMS()                        Message::OutputFormatted(Message::ESeverity::Warning, L"Application invoked %s on a Xidi virtual controller, which failed due to invalid parameters.", __FUNCTIONW__ L"()");
 
 
 namespace Xidi
@@ -146,7 +146,7 @@ namespace Xidi
             if ((false == joySystemDeviceInfo[0].second) && !(joySystemDeviceInfo[0].first.empty()))
             {
                 // Preferred device is present but does not support XInput.
-                // Filter out all XInput devices, but ensure Xidi virtual devices are mapped to the end.
+                // Filter out all XInput devices, but ensure Xidi virtual controllers are mapped to the end.
 
                 for (int i = 0; i < (int)numDevicesFromSystem; ++i)
                 {
@@ -159,18 +159,18 @@ namespace Xidi
 
                 for (int i = 0; i < (int)numXInputVirtualDevices; ++i)
                 {
-                    Message::OutputFormatted(Message::ESeverity::Debug, L"    [%u]: Xidi virtual device for player %u", (unsigned int)joyIndexMap.size(), (unsigned int)(i + 1));
+                    Message::OutputFormatted(Message::ESeverity::Debug, L"    [%u]: Xidi virtual controller %u", (unsigned int)joyIndexMap.size(), (unsigned int)(i + 1));
                     joyIndexMap.push_back(-(i + 1));
                 }
             }
             else
             {
                 // Preferred device supports XInput or is not present.
-                // Filter out all XInput devices and present Xidi virtual devices at the start.
+                // Filter out all XInput devices and present Xidi virtual controllers at the start.
 
                 for (int i = 0; i < (int)numXInputVirtualDevices; ++i)
                 {
-                    Message::OutputFormatted(Message::ESeverity::Debug, L"    [%u]: Xidi virtual device for player %u", (unsigned int)joyIndexMap.size(), (unsigned int)(i + 1));
+                    Message::OutputFormatted(Message::ESeverity::Debug, L"    [%u]: Xidi virtual controller %u", (unsigned int)joyIndexMap.size(), (unsigned int)(i + 1));
                     joyIndexMap.push_back(-(i + 1));
                 }
 
@@ -365,7 +365,7 @@ namespace Xidi
 
                 if (joyIndexMap[i] < 0)
                 {
-                    // Map points to a Xidi virtual device.
+                    // Map points to a Xidi virtual controller.
 
                     // Index is just -1 * the value in the map.
                     // Use this value to create the correct string to write to the registry.
@@ -467,7 +467,7 @@ namespace Xidi
                 FillRegistryKeyString(pjc->szRegKey, _countof(pjc->szRegKey));
 
                 const MMRESULT result = JOYERR_NOERROR;
-                LOG_INVOCATION((unsigned int)uJoyID, result);
+                LOG_INVOCATION(Message::ESeverity::Info, (unsigned int)uJoyID, result);
                 return result;
             }
 
@@ -483,7 +483,7 @@ namespace Xidi
                 {
                     const MMRESULT result = JOYERR_PARMS;
                     LOG_INVALID_PARAMS();
-                    LOG_INVOCATION((unsigned int)uJoyID, result);
+                    LOG_INVOCATION(Message::ESeverity::Info, (unsigned int)uJoyID, result);
                     return result;
                 }
 
@@ -526,7 +526,7 @@ namespace Xidi
                 FillVirtualControllerName(pjc->szPname, _countof(pjc->szPname), xJoyID);
 
                 const MMRESULT result = JOYERR_NOERROR;
-                LOG_INVOCATION((unsigned int)uJoyID, result);
+                LOG_INVOCATION(Message::ESeverity::Info, (unsigned int)uJoyID, result);
                 return result;
             }
             else
@@ -538,7 +538,7 @@ namespace Xidi
                 if (JOYERR_NOERROR == result)
                     FillRegistryKeyString(pjc->szRegKey, _countof(pjc->szRegKey));
 
-                LOG_INVOCATION((unsigned int)uJoyID, result);
+                LOG_INVOCATION(Message::ESeverity::Info, (unsigned int)uJoyID, result);
                 return result;
             }
         }
@@ -586,14 +586,14 @@ namespace Xidi
                     pji->wButtons |= JOY_BUTTON4;
 
                 const MMRESULT result = JOYERR_NOERROR;
-                LOG_INVOCATION((unsigned int)uJoyID, result);
+                LOG_INVOCATION(Message::ESeverity::SuperDebug, (unsigned int)uJoyID, result);
                 return result;
             }
             else
             {
                 // Querying a non-XInput controller.
                 const MMRESULT result = ImportApiWinMM::joyGetPos((UINT)realJoyID, pji);
-                LOG_INVOCATION((unsigned int)uJoyID, result);
+                LOG_INVOCATION(Message::ESeverity::SuperDebug, (unsigned int)uJoyID, result);
                 return result;
             }
         }
@@ -614,7 +614,7 @@ namespace Xidi
                 {
                     MMRESULT result = JOYERR_PARMS;
                     LOG_INVALID_PARAMS();
-                    LOG_INVOCATION((unsigned int)uJoyID, result);
+                    LOG_INVOCATION(Message::ESeverity::SuperDebug, (unsigned int)uJoyID, result);
                     return result;
                 }
 
@@ -638,14 +638,14 @@ namespace Xidi
                 }
 
                 const MMRESULT result = JOYERR_NOERROR;
-                LOG_INVOCATION((unsigned int)uJoyID, result);
+                LOG_INVOCATION(Message::ESeverity::SuperDebug, (unsigned int)uJoyID, result);
                 return result;
             }
             else
             {
                 // Querying a non-XInput controller.
                 const MMRESULT result = ImportApiWinMM::joyGetPosEx((UINT)realJoyID, pji);
-                LOG_INVOCATION((unsigned int)uJoyID, result);
+                LOG_INVOCATION(Message::ESeverity::SuperDebug, (unsigned int)uJoyID, result);
                 return result;
             }
         }
@@ -664,14 +664,14 @@ namespace Xidi
                 // Operation not supported.
                 const MMRESULT result = JOYERR_NOCANDO;
                 LOG_UNSUPPORTED_OPERATION();
-                LOG_INVOCATION((unsigned int)uJoyID, result);
+                LOG_INVOCATION(Message::ESeverity::Info, (unsigned int)uJoyID, result);
                 return JOYERR_NOCANDO;
             }
             else
             {
                 // Querying a non-XInput controller.
                 const MMRESULT result = ImportApiWinMM::joyGetThreshold((UINT)realJoyID, puThreshold);
-                LOG_INVOCATION((unsigned int)uJoyID, result);
+                LOG_INVOCATION(Message::ESeverity::Info, (unsigned int)uJoyID, result);
                 return result;
             }
         }
@@ -690,14 +690,14 @@ namespace Xidi
                 // Operation not supported.
                 const MMRESULT result = JOYERR_NOCANDO;
                 LOG_UNSUPPORTED_OPERATION();
-                LOG_INVOCATION((unsigned int)uJoyID, result);
+                LOG_INVOCATION(Message::ESeverity::Info, (unsigned int)uJoyID, result);
                 return result;
             }
             else
             {
                 // Querying a non-XInput controller.
                 const MMRESULT result = ImportApiWinMM::joyReleaseCapture((UINT)realJoyID);
-                LOG_INVOCATION((unsigned int)uJoyID, result);
+                LOG_INVOCATION(Message::ESeverity::Info, (unsigned int)uJoyID, result);
                 return result;
             }
         }
@@ -716,14 +716,14 @@ namespace Xidi
                 // Operation not supported.
                 const MMRESULT result = JOYERR_NOCANDO;
                 LOG_UNSUPPORTED_OPERATION();
-                LOG_INVOCATION((unsigned int)uJoyID, result);
+                LOG_INVOCATION(Message::ESeverity::Info, (unsigned int)uJoyID, result);
                 return result;
             }
             else
             {
                 // Querying a non-XInput controller.
                 const MMRESULT result = ImportApiWinMM::joySetCapture(hwnd, (UINT)realJoyID, uPeriod, fChanged);
-                LOG_INVOCATION((unsigned int)uJoyID, result);
+                LOG_INVOCATION(Message::ESeverity::Info, (unsigned int)uJoyID, result);
                 return result;
             }
         }
@@ -742,14 +742,14 @@ namespace Xidi
                 // Operation not supported.
                 const MMRESULT result = JOYERR_NOCANDO;
                 LOG_UNSUPPORTED_OPERATION();
-                LOG_INVOCATION((unsigned int)uJoyID, result);
+                LOG_INVOCATION(Message::ESeverity::Info, (unsigned int)uJoyID, result);
                 return result;
             }
             else
             {
                 // Querying a non-XInput controller.
                 const MMRESULT result = ImportApiWinMM::joySetThreshold((UINT)realJoyID, uThreshold);
-                LOG_INVOCATION((unsigned int)uJoyID, result);
+                LOG_INVOCATION(Message::ESeverity::Info, (unsigned int)uJoyID, result);
                 return result;
             }
         }
