@@ -456,6 +456,22 @@ namespace XidiTest
             TEST_ASSERT(VirtualController::kAxisDeadzoneDefault == controller.GetAxisDeadzone((EAxis)i));
     }
 
+    // Valid force feedback gain value.
+    TEST_CASE(VirtualController_SetProperty_ForceFeedbackGainValid)
+    {
+        constexpr uint32_t kTestFfGainValue = VirtualController::kFfGainDefault / 2;
+        VirtualController controller(0, kTestMapper, std::make_unique<MockXInput>(0));
+        TEST_ASSERT(true == controller.SetForceFeedbackGain(kTestFfGainValue));
+    }
+
+    // Invalid force feedback gain value.
+    TEST_CASE(VirtualController_SetProperty_ForceFeedbackGainInvalid)
+    {
+        constexpr uint32_t kTestFfGainValue = VirtualController::kFfGainMax + 1;
+        VirtualController controller(0, kTestMapper, std::make_unique<MockXInput>(0));
+        TEST_ASSERT(false == controller.SetForceFeedbackGain(kTestFfGainValue));
+    }
+
     // Valid range values set on a single axis and then on all axes.
     TEST_CASE(VirtualController_SetProperty_RangeValid)
     {

@@ -458,7 +458,7 @@ namespace XidiTest
     TEST_CASE(VirtualDirectInputDevice_GetCapabilities_BadPointer)
     {
         VirtualDirectInputDevice<ECharMode::W> diController(CreateTestVirtualController());
-        TEST_ASSERT(DI_OK != diController.GetCapabilities(nullptr));
+        TEST_ASSERT(FAILED(diController.GetCapabilities(nullptr)));
     }
 
     // A valid pointer is passed but with the size member not initialized. This is expected to cause the method to fail.
@@ -467,7 +467,7 @@ namespace XidiTest
         VirtualDirectInputDevice<ECharMode::W> diController(CreateTestVirtualController());
         DIDEVCAPS capabilities;
         ZeroMemory(&capabilities, sizeof(capabilities));
-        TEST_ASSERT(DI_OK != diController.GetCapabilities(&capabilities));
+        TEST_ASSERT(FAILED(diController.GetCapabilities(&capabilities)));
     }
 
 
@@ -478,14 +478,17 @@ namespace XidiTest
     // Expected outcome is the structure is filled with corrrect controller capabilities.
     TEST_CASE(VirtualDirectInputDevice_GetDeviceInfo_Nominal)
     {
+        constexpr uint8_t kPoisonByte = 0xcd;
         VirtualDirectInputDevice<ECharMode::W> diController(CreateTestVirtualController());
 
-        DIDEVICEINSTANCE expectedDeviceInfo = {.dwSize = sizeof(DIDEVICEINSTANCE)};
+        DIDEVICEINSTANCE expectedDeviceInfo;
+        FillMemory(&expectedDeviceInfo, sizeof(expectedDeviceInfo), kPoisonByte);
+        expectedDeviceInfo.dwSize = sizeof(expectedDeviceInfo);
         FillVirtualControllerInfo(expectedDeviceInfo, kTestControllerIdentifier);
 
         DIDEVICEINSTANCE actualDeviceInfo;
-        FillMemory(&actualDeviceInfo, sizeof(actualDeviceInfo), 0xcd);
-        actualDeviceInfo.dwSize = sizeof(DIDEVICEINSTANCE);
+        FillMemory(&actualDeviceInfo, sizeof(actualDeviceInfo), kPoisonByte);
+        actualDeviceInfo.dwSize = sizeof(actualDeviceInfo);
 
         TEST_ASSERT(DI_OK == diController.GetDeviceInfo(&actualDeviceInfo));
         TEST_ASSERT(0 == memcmp(&actualDeviceInfo, &expectedDeviceInfo, sizeof(expectedDeviceInfo)));
@@ -515,7 +518,7 @@ namespace XidiTest
     TEST_CASE(VirtualDirectInputDevice_GetDeviceInfo_BadPointer)
     {
         VirtualDirectInputDevice<ECharMode::W> diController(CreateTestVirtualController());
-        TEST_ASSERT(DI_OK != diController.GetDeviceInfo(nullptr));
+        TEST_ASSERT(FAILED(diController.GetDeviceInfo(nullptr)));
     }
 
     // A valid pointer is passed but with the size member not initialized. This is expected to cause the method to fail.
@@ -524,7 +527,7 @@ namespace XidiTest
         VirtualDirectInputDevice<ECharMode::W> diController(CreateTestVirtualController());
         DIDEVICEINSTANCE deviceInfo;
         ZeroMemory(&deviceInfo, sizeof(deviceInfo));
-        TEST_ASSERT(DI_OK != diController.GetDeviceInfo(&deviceInfo));
+        TEST_ASSERT(FAILED(diController.GetDeviceInfo(&deviceInfo)));
     }
 
 
@@ -635,7 +638,7 @@ namespace XidiTest
     {
         VirtualDirectInputDevice<ECharMode::W> diController(CreateTestVirtualController());
         DWORD numObjectDataElements = INFINITE;
-        TEST_ASSERT(DI_OK != diController.GetDeviceData(sizeof(DIDEVICEOBJECTDATA), nullptr, &numObjectDataElements, 0));
+        TEST_ASSERT(FAILED(diController.GetDeviceData(sizeof(DIDEVICEOBJECTDATA), nullptr, &numObjectDataElements, 0)));
     }
 
     // Buffering is not enabled. This is expected to cause the method to fail with a specific error code.
@@ -678,7 +681,7 @@ namespace XidiTest
     {
         VirtualDirectInputDevice<ECharMode::W> diController(CreateTestVirtualController());
         STestDataPacket dataPacket;
-        TEST_ASSERT(DI_OK != diController.GetDeviceState(sizeof(dataPacket), &dataPacket));
+        TEST_ASSERT(FAILED(diController.GetDeviceState(sizeof(dataPacket), &dataPacket)));
     }
     
     // Null pointer is passed, though the data packet size is correct.
@@ -687,7 +690,7 @@ namespace XidiTest
     {
         VirtualDirectInputDevice<ECharMode::W> diController(CreateTestVirtualController());
         TEST_ASSERT(DI_OK == diController.SetDataFormat(&kTestFormatSpec));
-        TEST_ASSERT(DI_OK != diController.GetDeviceState(sizeof(STestDataPacket), nullptr));
+        TEST_ASSERT(FAILED(diController.GetDeviceState(sizeof(STestDataPacket), nullptr)));
     }
 
     // Same as the nominal situation, except the supplied buffer is much larger than a data packet's actual size.
@@ -724,7 +727,7 @@ namespace XidiTest
         VirtualDirectInputDevice<ECharMode::W> diController(CreateTestVirtualController());
         STestDataPacket dataPacket;
         TEST_ASSERT(DI_OK == diController.SetDataFormat(&kTestFormatSpec));
-        TEST_ASSERT(DI_OK != diController.GetDeviceState(sizeof(dataPacket) - 1, &dataPacket));
+        TEST_ASSERT(FAILED(diController.GetDeviceState(sizeof(dataPacket) - 1, &dataPacket)));
     }
 
 
@@ -737,6 +740,7 @@ namespace XidiTest
     TEST_CASE(VirtualDirectInputDevice_GetObjectInfo_Nominal)
     {
         VirtualDirectInputDevice<ECharMode::W> diController(CreateTestVirtualController());
+
         TEST_ASSERT(DI_OK == diController.SetDataFormat(&kTestFormatSpec));
         TEST_ASSERT(DI_OK == diController.EnumObjects([](LPCDIDEVICEOBJECTINSTANCE lpddoi, LPVOID pvRef) -> BOOL
             {
@@ -749,14 +753,14 @@ namespace XidiTest
                 // Based on the test data packet at the top of this file, not all elements have offsets, so this part of the test case is not always valid.
                 if (DataFormat::kInvalidOffsetValue != kExpectedObjectInstance.dwOfs)
                 {
-                    FillMemory(&actualObjectInstance, sizeof(actualObjectInstance), 0xcd);
+                    ZeroMemory(&actualObjectInstance, sizeof(actualObjectInstance));
                     actualObjectInstance.dwSize = sizeof(DIDEVICEOBJECTINSTANCE);
                     TEST_ASSERT(DI_OK == diController.GetObjectInfo(&actualObjectInstance, kExpectedObjectInstance.dwOfs, DIPH_BYOFFSET));
                     TEST_ASSERT(0 == memcmp(&actualObjectInstance, &kExpectedObjectInstance, sizeof(kExpectedObjectInstance)));
                 }
 
                 // Next try by instance type and ID.
-                FillMemory(&actualObjectInstance, sizeof(actualObjectInstance), 0xcd);
+                ZeroMemory(&actualObjectInstance, sizeof(actualObjectInstance));
                 actualObjectInstance.dwSize = sizeof(DIDEVICEOBJECTINSTANCE);
                 TEST_ASSERT(DI_OK == diController.GetObjectInfo(&actualObjectInstance, kExpectedObjectInstance.dwType, DIPH_BYID));
                 TEST_ASSERT(0 == memcmp(&actualObjectInstance, &kExpectedObjectInstance, sizeof(kExpectedObjectInstance)));
@@ -773,6 +777,7 @@ namespace XidiTest
     {
         constexpr uint8_t kPoisonByte = 0xcd;
         VirtualDirectInputDevice<ECharMode::W> diController(CreateTestVirtualController());
+
         TEST_ASSERT(DI_OK == diController.SetDataFormat(&kTestFormatSpec));
         TEST_ASSERT(DI_OK == diController.EnumObjects([](LPCDIDEVICEOBJECTINSTANCE lpddoi, LPVOID pvRef) -> BOOL
             {
@@ -782,7 +787,7 @@ namespace XidiTest
                 FillMemory(&expectedObjectInstance, sizeof(expectedObjectInstance), kPoisonByte);
                 CopyMemory(&expectedObjectInstance, lpddoi, sizeof(DIDEVICEOBJECTINSTANCE_DX3));
                 expectedObjectInstance.dwSize = sizeof(DIDEVICEOBJECTINSTANCE_DX3);
-                
+
                 DIDEVICEOBJECTINSTANCE actualObjectInstance;
 
                 // First identify the enumerated object by offset.
@@ -790,6 +795,7 @@ namespace XidiTest
                 if (DataFormat::kInvalidOffsetValue != expectedObjectInstance.dwOfs)
                 {
                     FillMemory(&actualObjectInstance, sizeof(actualObjectInstance), kPoisonByte);
+                    ZeroMemory(&actualObjectInstance, sizeof(DIDEVICEOBJECTINSTANCE_DX3));
                     actualObjectInstance.dwSize = sizeof(DIDEVICEOBJECTINSTANCE_DX3);
                     TEST_ASSERT(DI_OK == diController.GetObjectInfo(&actualObjectInstance, expectedObjectInstance.dwOfs, DIPH_BYOFFSET));
                     TEST_ASSERT(0 == memcmp(&actualObjectInstance, &expectedObjectInstance, sizeof(expectedObjectInstance)));
@@ -797,6 +803,7 @@ namespace XidiTest
 
                 // Next try by instance type and ID.
                 FillMemory(&actualObjectInstance, sizeof(actualObjectInstance), kPoisonByte);
+                ZeroMemory(&actualObjectInstance, sizeof(DIDEVICEOBJECTINSTANCE_DX3));
                 actualObjectInstance.dwSize = sizeof(DIDEVICEOBJECTINSTANCE_DX3);
                 TEST_ASSERT(DI_OK == diController.GetObjectInfo(&actualObjectInstance, expectedObjectInstance.dwType, DIPH_BYID));
                 TEST_ASSERT(0 == memcmp(&actualObjectInstance, &expectedObjectInstance, sizeof(expectedObjectInstance)));
@@ -811,7 +818,7 @@ namespace XidiTest
     TEST_CASE(VirtualDirectInputDevice_GetObjectInfo_BadPointer)
     {
         VirtualDirectInputDevice<ECharMode::W> diController(CreateTestVirtualController());
-        TEST_ASSERT(DI_OK != diController.GetObjectInfo(nullptr, DIDFT_MAKEINSTANCE(0) | DIDFT_PSHBUTTON, DIPH_BYID));
+        TEST_ASSERT(FAILED(diController.GetObjectInfo(nullptr, DIDFT_MAKEINSTANCE(0) | DIDFT_PSHBUTTON, DIPH_BYID)));
     }
 
     // A valid pointer is passed but with the size member not initialized. This is expected to cause the method to fail.
@@ -820,7 +827,7 @@ namespace XidiTest
         VirtualDirectInputDevice<ECharMode::W> diController(CreateTestVirtualController());
         DIDEVICEOBJECTINSTANCE objectInstance;
         ZeroMemory(&objectInstance, sizeof(objectInstance));
-        TEST_ASSERT(DI_OK != diController.GetObjectInfo(&objectInstance, DIDFT_MAKEINSTANCE(0) | DIDFT_PSHBUTTON, DIPH_BYID));
+        TEST_ASSERT(FAILED(diController.GetObjectInfo(&objectInstance, DIDFT_MAKEINSTANCE(0) | DIDFT_PSHBUTTON, DIPH_BYID)));
     }
 
     // All inputs are valid, but no matching object exists based on the object specification.
@@ -840,5 +847,275 @@ namespace XidiTest
 
         // Specifying the whole device, which is not an allowed mechanism for identifying an object for this method, meaning the parameters are invalid.
         TEST_ASSERT(DIERR_INVALIDPARAM == diController.GetObjectInfo(&objectInstance, 0, DIPH_DEVICE));
+    }
+
+
+    // The following sequence of tests, which together comprise the Properties suite, exercise the DirectInputDevice interface methods GetProperty and SetProperty.
+    // Scopes vary, so more details are provided with each test case.
+
+    // Nominal situation of setting some supported properties to valid values and reading them back.
+    // For read-only properties the write is expected to fail.
+    TEST_CASE(VirtualDirectInputDevice_Properties_Nominal)
+    {
+        VirtualDirectInputDevice<ECharMode::W> diController(CreateTestVirtualController());
+
+        // Buffer size
+        do {
+            constexpr DIPROPHEADER kBufferSizeHeader = {.dwSize = sizeof(DIPROPDWORD), .dwHeaderSize = sizeof(DIPROPHEADER), .dwObj = 0, .dwHow = DIPH_DEVICE};
+            constexpr DIPROPDWORD kExpectedBufferSize = {.diph = kBufferSizeHeader, .dwData = 543};
+            DIPROPDWORD actualBufferSize = {.diph = kBufferSizeHeader, .dwData = (DWORD)-1};
+            TEST_ASSERT(DI_OK == diController.SetProperty(DIPROP_BUFFERSIZE, (LPCDIPROPHEADER)&kExpectedBufferSize));
+            TEST_ASSERT(DI_OK == diController.GetProperty(DIPROP_BUFFERSIZE, (LPDIPROPHEADER)&actualBufferSize));
+            TEST_ASSERT(0 == memcmp(&actualBufferSize, &kExpectedBufferSize, sizeof(kExpectedBufferSize)));
+        } while (false);
+
+        // Deadzone
+        do {
+            constexpr DIPROPHEADER kDeadzoneHeader = {.dwSize = sizeof(DIPROPDWORD), .dwHeaderSize = sizeof(DIPROPHEADER), .dwObj = DIDFT_MAKEINSTANCE(0) | DIDFT_ABSAXIS, .dwHow = DIPH_BYID};
+            constexpr DIPROPDWORD kExpectedDeadzone = {.diph = kDeadzoneHeader, .dwData = 1234};
+            DIPROPDWORD actualDeadzone = {.diph = kDeadzoneHeader, .dwData = (DWORD)-1};
+            TEST_ASSERT(DI_OK == diController.SetProperty(DIPROP_DEADZONE, (LPCDIPROPHEADER)&kExpectedDeadzone));
+            TEST_ASSERT(DI_OK == diController.GetProperty(DIPROP_DEADZONE, (LPDIPROPHEADER)&actualDeadzone));
+            TEST_ASSERT(0 == memcmp(&actualDeadzone, &kExpectedDeadzone, sizeof(kExpectedDeadzone)));
+        } while (false);
+
+        // Force feedback gain
+        do {
+            constexpr DIPROPHEADER kFfGainHeader = {.dwSize = sizeof(DIPROPDWORD), .dwHeaderSize = sizeof(DIPROPHEADER), .dwObj = 0, .dwHow = DIPH_DEVICE};
+            constexpr DIPROPDWORD kExpectedFfGain = {.diph = kFfGainHeader, .dwData = 6677};
+            DIPROPDWORD actualFfGain = {.diph = kFfGainHeader, .dwData = (DWORD)-1};
+            TEST_ASSERT(DI_OK == diController.SetProperty(DIPROP_FFGAIN, (LPCDIPROPHEADER)&kExpectedFfGain));
+            TEST_ASSERT(DI_OK == diController.GetProperty(DIPROP_FFGAIN, (LPDIPROPHEADER)&actualFfGain));
+            TEST_ASSERT(0 == memcmp(&actualFfGain, &kExpectedFfGain, sizeof(kExpectedFfGain)));
+        } while (false);
+
+        // Range
+        do {
+            constexpr DIPROPHEADER kRangeHeader = {.dwSize = sizeof(DIPROPRANGE), .dwHeaderSize = sizeof(DIPROPHEADER), .dwObj = DIDFT_MAKEINSTANCE(0) | DIDFT_ABSAXIS, .dwHow = DIPH_BYID};
+            constexpr DIPROPRANGE kExpectedRange = {.diph = kRangeHeader, .lMin = -45665, .lMax = 100222};
+            DIPROPRANGE actualRange = {.diph = kRangeHeader, .lMin = -1, .lMax = -1};
+            TEST_ASSERT(DI_OK == diController.SetProperty(DIPROP_RANGE, (LPCDIPROPHEADER)&kExpectedRange));
+            TEST_ASSERT(DI_OK == diController.GetProperty(DIPROP_RANGE, (LPDIPROPHEADER)&actualRange));
+            TEST_ASSERT(0 == memcmp(&actualRange, &kExpectedRange, sizeof(kExpectedRange)));
+        } while (false);
+
+        // Saturation
+        do {
+            constexpr DIPROPHEADER kSaturationHeader = {.dwSize = sizeof(DIPROPDWORD), .dwHeaderSize = sizeof(DIPROPHEADER), .dwObj = DIDFT_MAKEINSTANCE(0) | DIDFT_ABSAXIS, .dwHow = DIPH_BYID};
+            constexpr DIPROPDWORD kExpectedSaturation = {.diph = kSaturationHeader, .dwData = 9876};
+            DIPROPDWORD actualSaturation = {.diph = kSaturationHeader, .dwData = (DWORD)-1};
+            TEST_ASSERT(DI_OK == diController.SetProperty(DIPROP_SATURATION, (LPCDIPROPHEADER)&kExpectedSaturation));
+            TEST_ASSERT(DI_OK == diController.GetProperty(DIPROP_SATURATION, (LPDIPROPHEADER)&actualSaturation));
+            TEST_ASSERT(0 == memcmp(&actualSaturation, &kExpectedSaturation, sizeof(kExpectedSaturation)));
+        } while (false);
+
+        // Joystick ID (read-only)
+        do {
+            constexpr DIPROPHEADER kJoystickIdHeader = {.dwSize = sizeof(DIPROPDWORD), .dwHeaderSize = sizeof(DIPROPHEADER), .dwObj = 0, .dwHow = DIPH_DEVICE};
+            constexpr DIPROPDWORD kExpectedJoystickId = {.diph = kJoystickIdHeader, .dwData = kTestControllerIdentifier};
+            DIPROPDWORD actualJoystickId = {.diph = kJoystickIdHeader, .dwData = (DWORD)-1};
+            TEST_ASSERT(FAILED(diController.SetProperty(DIPROP_JOYSTICKID, (LPCDIPROPHEADER)&kExpectedJoystickId)));
+            TEST_ASSERT(DI_OK == diController.GetProperty(DIPROP_JOYSTICKID, (LPDIPROPHEADER)&actualJoystickId));
+            TEST_ASSERT(0 == memcmp(&actualJoystickId, &kExpectedJoystickId, sizeof(kExpectedJoystickId)));
+        } while (false);
+
+
+        // Logical Range (read-only)
+        do {
+            constexpr DIPROPHEADER kLogicalRangeHeader = {.dwSize = sizeof(DIPROPRANGE), .dwHeaderSize = sizeof(DIPROPHEADER), .dwObj = DIDFT_MAKEINSTANCE(0) | DIDFT_ABSAXIS, .dwHow = DIPH_BYID};
+            constexpr DIPROPRANGE kExpectedLogicalRange = {.diph = kLogicalRangeHeader, .lMin = Controller::kAnalogValueMin, .lMax = Controller::kAnalogValueMax};
+            DIPROPRANGE actualLogicalRange = {.diph = kLogicalRangeHeader, .lMin = -1, .lMax = -1};
+            TEST_ASSERT(FAILED(diController.SetProperty(DIPROP_LOGICALRANGE, (LPCDIPROPHEADER)&kExpectedLogicalRange)));
+            TEST_ASSERT(DI_OK == diController.GetProperty(DIPROP_LOGICALRANGE, (LPDIPROPHEADER)&actualLogicalRange));
+            TEST_ASSERT(0 == memcmp(&actualLogicalRange, &kExpectedLogicalRange, sizeof(kExpectedLogicalRange)));
+        } while (false);
+
+        // Physical Range (read-only)
+        do {
+            constexpr DIPROPHEADER kPhysicalRangeHeader = {.dwSize = sizeof(DIPROPRANGE), .dwHeaderSize = sizeof(DIPROPHEADER), .dwObj = DIDFT_MAKEINSTANCE(0) | DIDFT_ABSAXIS, .dwHow = DIPH_BYID};
+            constexpr DIPROPRANGE kExpectedPhysicalRange = {.diph = kPhysicalRangeHeader, .lMin = Controller::kAnalogValueMin, .lMax = Controller::kAnalogValueMax};
+            DIPROPRANGE actualPhysicalRange = {.diph = kPhysicalRangeHeader, .lMin = -1, .lMax = -1};
+            TEST_ASSERT(FAILED(diController.SetProperty(DIPROP_PHYSICALRANGE, (LPCDIPROPHEADER)&kExpectedPhysicalRange)));
+            TEST_ASSERT(DI_OK == diController.GetProperty(DIPROP_PHYSICALRANGE, (LPDIPROPHEADER)&actualPhysicalRange));
+            TEST_ASSERT(0 == memcmp(&actualPhysicalRange, &kExpectedPhysicalRange, sizeof(kExpectedPhysicalRange)));
+        } while (false);
+    }
+
+    // Verifies that axis mode is reported as absolute and is presented as read/write but in practice is read-only.
+    TEST_CASE(VirtualDirectInputDevice_Properties_AxisMode)
+    {
+        constexpr DIPROPHEADER kAxisModeHeader = {.dwSize = sizeof(DIPROPDWORD), .dwHeaderSize = sizeof(DIPROPHEADER), .dwObj = 0, .dwHow = DIPH_DEVICE};
+
+        VirtualDirectInputDevice<ECharMode::W> diController(CreateTestVirtualController());
+        DIPROPDWORD propertyValue;
+
+        // Set axis mode to absolute. This has no effect and should succeed, but the return code could be something other than DI_OK.
+        propertyValue = {.diph = kAxisModeHeader, .dwData = DIPROPAXISMODE_ABS};
+        TEST_ASSERT(SUCCEEDED(diController.SetProperty(DIPROP_AXISMODE, (LPCDIPROPHEADER)&propertyValue)));
+
+        // Set axis mode to relative. This is not supported and should fail.
+        propertyValue = {.diph = kAxisModeHeader, .dwData = DIPROPAXISMODE_REL};
+        TEST_ASSERT(FAILED(diController.SetProperty(DIPROP_AXISMODE, (LPCDIPROPHEADER)&propertyValue)));
+
+        // Retrieve axis mode. Result should be absolute axis mode.
+        propertyValue = {.diph = kAxisModeHeader, .dwData = (DWORD)-1};
+        TEST_ASSERT(DI_OK == diController.GetProperty(DIPROP_AXISMODE, (LPDIPROPHEADER)&propertyValue));
+        TEST_ASSERT(DIPROPAXISMODE_ABS == propertyValue.dwData);
+    }
+
+    // Verifies that default property values are correct. Does not perform any writes.
+    TEST_CASE(VirtualDirectInputDevice_Properties_DefaultValues)
+    {
+        VirtualDirectInputDevice<ECharMode::W> diController(CreateTestVirtualController());
+
+        // Buffer size
+        do {
+            constexpr DIPROPHEADER kBufferSizeHeader = {.dwSize = sizeof(DIPROPDWORD), .dwHeaderSize = sizeof(DIPROPHEADER), .dwObj = 0, .dwHow = DIPH_DEVICE};
+            constexpr DIPROPDWORD kExpectedBufferSize = {.diph = kBufferSizeHeader, .dwData = 0};
+            DIPROPDWORD actualBufferSize = {.diph = kBufferSizeHeader, .dwData = (DWORD)-1};
+            TEST_ASSERT(DI_OK == diController.GetProperty(DIPROP_BUFFERSIZE, (LPDIPROPHEADER)&actualBufferSize));
+            TEST_ASSERT(0 == memcmp(&actualBufferSize, &kExpectedBufferSize, sizeof(kExpectedBufferSize)));
+        } while (false);
+
+        // Deadzone
+        do {
+            constexpr DIPROPHEADER kDeadzoneHeader = {.dwSize = sizeof(DIPROPDWORD), .dwHeaderSize = sizeof(DIPROPHEADER), .dwObj = DIDFT_MAKEINSTANCE(0) | DIDFT_ABSAXIS, .dwHow = DIPH_BYID};
+            constexpr DIPROPDWORD kExpectedDeadzone = {.diph = kDeadzoneHeader, .dwData = Controller::VirtualController::kAxisDeadzoneDefault};
+            DIPROPDWORD actualDeadzone = {.diph = kDeadzoneHeader, .dwData = (DWORD)-1};
+            TEST_ASSERT(DI_OK == diController.GetProperty(DIPROP_DEADZONE, (LPDIPROPHEADER)&actualDeadzone));
+            TEST_ASSERT(0 == memcmp(&actualDeadzone, &kExpectedDeadzone, sizeof(kExpectedDeadzone)));
+        } while (false);
+
+        // Force feedback gain
+        do {
+            constexpr DIPROPHEADER kFfGainHeader = {.dwSize = sizeof(DIPROPDWORD), .dwHeaderSize = sizeof(DIPROPHEADER), .dwObj = 0, .dwHow = DIPH_DEVICE};
+            constexpr DIPROPDWORD kExpectedFfGain = {.diph = kFfGainHeader, .dwData = Controller::VirtualController::kFfGainDefault};
+            DIPROPDWORD actualFfGain = {.diph = kFfGainHeader, .dwData = (DWORD)-1};
+            TEST_ASSERT(DI_OK == diController.GetProperty(DIPROP_FFGAIN, (LPDIPROPHEADER)&actualFfGain));
+            TEST_ASSERT(0 == memcmp(&actualFfGain, &kExpectedFfGain, sizeof(kExpectedFfGain)));
+        } while (false);
+
+        // Range
+        do {
+            constexpr DIPROPHEADER kRangeHeader = {.dwSize = sizeof(DIPROPRANGE), .dwHeaderSize = sizeof(DIPROPHEADER), .dwObj = DIDFT_MAKEINSTANCE(0) | DIDFT_ABSAXIS, .dwHow = DIPH_BYID};
+            constexpr DIPROPRANGE kExpectedRange = {.diph = kRangeHeader, .lMin = Controller::kAnalogValueMin, .lMax = Controller::kAnalogValueMax};
+            DIPROPRANGE actualRange = {.diph = kRangeHeader, .lMin = -1, .lMax = -1};
+            TEST_ASSERT(DI_OK == diController.GetProperty(DIPROP_RANGE, (LPDIPROPHEADER)&actualRange));
+            TEST_ASSERT(0 == memcmp(&actualRange, &kExpectedRange, sizeof(kExpectedRange)));
+        } while (false);
+
+        // Saturation
+        do {
+            constexpr DIPROPHEADER kSaturationHeader = {.dwSize = sizeof(DIPROPDWORD), .dwHeaderSize = sizeof(DIPROPHEADER), .dwObj = DIDFT_MAKEINSTANCE(0) | DIDFT_ABSAXIS, .dwHow = DIPH_BYID};
+            constexpr DIPROPDWORD kExpectedSaturation = {.diph = kSaturationHeader, .dwData = Controller::VirtualController::kAxisSaturationDefault};
+            DIPROPDWORD actualSaturation = {.diph = kSaturationHeader, .dwData = (DWORD)-1};
+            TEST_ASSERT(DI_OK == diController.GetProperty(DIPROP_SATURATION, (LPDIPROPHEADER)&actualSaturation));
+            TEST_ASSERT(0 == memcmp(&actualSaturation, &kExpectedSaturation, sizeof(kExpectedSaturation)));
+        } while (false);
+    }
+
+    // Passes the wrong type of property structure to GetProperty and SetProperty for the given property.
+    // Both methods are expected to fail in this situation.
+    TEST_CASE(VirtualDirectInputDevice_Properties_WrongStruct)
+    {
+        VirtualDirectInputDevice<ECharMode::W> diController(CreateTestVirtualController());
+
+        // Buffer size
+        do {
+            constexpr DIPROPHEADER kBufferSizeHeader = {.dwSize = sizeof(DIPROPSTRING), .dwHeaderSize = sizeof(DIPROPHEADER), .dwObj = 0, .dwHow = DIPH_DEVICE};
+            DIPROPSTRING propBufferSize = {.diph = kBufferSizeHeader};
+            TEST_ASSERT(DIERR_INVALIDPARAM == diController.SetProperty(DIPROP_BUFFERSIZE, (LPCDIPROPHEADER)&propBufferSize));
+            TEST_ASSERT(DIERR_INVALIDPARAM == diController.GetProperty(DIPROP_BUFFERSIZE, (LPDIPROPHEADER)&propBufferSize));
+        } while (false);
+
+        // Deadzone
+        do {
+            constexpr DIPROPHEADER kDeadzoneHeader = {.dwSize = sizeof(DIPROPSTRING), .dwHeaderSize = sizeof(DIPROPHEADER), .dwObj = DIDFT_MAKEINSTANCE(0) | DIDFT_ABSAXIS, .dwHow = DIPH_BYID};
+            DIPROPSTRING propDeadzone = {.diph = kDeadzoneHeader};
+            TEST_ASSERT(DIERR_INVALIDPARAM == diController.SetProperty(DIPROP_DEADZONE, (LPCDIPROPHEADER)&propDeadzone));
+            TEST_ASSERT(DIERR_INVALIDPARAM == diController.GetProperty(DIPROP_DEADZONE, (LPDIPROPHEADER)&propDeadzone));
+        } while (false);
+
+        // Force feedback gain
+        do {
+            constexpr DIPROPHEADER kFfGainHeader = {.dwSize = sizeof(DIPROPSTRING), .dwHeaderSize = sizeof(DIPROPHEADER), .dwObj = 0, .dwHow = DIPH_DEVICE};
+            DIPROPSTRING propFfGain = {.diph = kFfGainHeader};
+            TEST_ASSERT(DIERR_INVALIDPARAM == diController.SetProperty(DIPROP_FFGAIN, (LPCDIPROPHEADER)&propFfGain));
+            TEST_ASSERT(DIERR_INVALIDPARAM == diController.GetProperty(DIPROP_FFGAIN, (LPDIPROPHEADER)&propFfGain));
+        } while (false);
+
+        // Range
+        do {
+            constexpr DIPROPHEADER kRangeHeader = {.dwSize = sizeof(DIPROPSTRING), .dwHeaderSize = sizeof(DIPROPHEADER), .dwObj = DIDFT_MAKEINSTANCE(0) | DIDFT_ABSAXIS, .dwHow = DIPH_BYID};
+            DIPROPSTRING propRange = {.diph = kRangeHeader};
+            TEST_ASSERT(DIERR_INVALIDPARAM == diController.SetProperty(DIPROP_RANGE, (LPCDIPROPHEADER)&propRange));
+            TEST_ASSERT(DIERR_INVALIDPARAM == diController.GetProperty(DIPROP_RANGE, (LPDIPROPHEADER)&propRange));
+        } while (false);
+
+        // Saturation
+        do {
+            constexpr DIPROPHEADER kSaturationHeader = {.dwSize = sizeof(DIPROPSTRING), .dwHeaderSize = sizeof(DIPROPHEADER), .dwObj = DIDFT_MAKEINSTANCE(0) | DIDFT_ABSAXIS, .dwHow = DIPH_BYID};
+            DIPROPSTRING propSaturation = {.diph = kSaturationHeader};
+            TEST_ASSERT(DIERR_INVALIDPARAM == diController.SetProperty(DIPROP_SATURATION, (LPCDIPROPHEADER)&propSaturation));
+            TEST_ASSERT(DIERR_INVALIDPARAM == diController.GetProperty(DIPROP_SATURATION, (LPDIPROPHEADER)&propSaturation));
+        } while (false);
+
+        // Joystick ID (read-only)
+        do {
+            constexpr DIPROPHEADER kJoystickIdHeader = {.dwSize = sizeof(DIPROPSTRING), .dwHeaderSize = sizeof(DIPROPHEADER), .dwObj = 0, .dwHow = DIPH_DEVICE};
+            DIPROPSTRING propJoystickId = {.diph = kJoystickIdHeader};
+            TEST_ASSERT(DIERR_INVALIDPARAM == diController.GetProperty(DIPROP_JOYSTICKID, (LPDIPROPHEADER)&propJoystickId));
+        } while (false);
+
+
+        // Logical Range (read-only)
+        do {
+            constexpr DIPROPHEADER kLogicalRangeHeader = {.dwSize = sizeof(DIPROPSTRING), .dwHeaderSize = sizeof(DIPROPHEADER), .dwObj = DIDFT_MAKEINSTANCE(0) | DIDFT_ABSAXIS, .dwHow = DIPH_BYID};
+            DIPROPSTRING propLogicalRange = {.diph = kLogicalRangeHeader};
+            TEST_ASSERT(DIERR_INVALIDPARAM == diController.GetProperty(DIPROP_LOGICALRANGE, (LPDIPROPHEADER)&propLogicalRange));
+        } while (false);
+
+        // Physical Range (read-only)
+        do {
+            constexpr DIPROPHEADER kPhysicalRangeHeader = {.dwSize = sizeof(DIPROPSTRING), .dwHeaderSize = sizeof(DIPROPHEADER), .dwObj = DIDFT_MAKEINSTANCE(0) | DIDFT_ABSAXIS, .dwHow = DIPH_BYID};
+            DIPROPSTRING propPhysicalRange = {.diph = kPhysicalRangeHeader};
+            TEST_ASSERT(DIERR_INVALIDPARAM == diController.GetProperty(DIPROP_PHYSICALRANGE, (LPDIPROPHEADER)&propPhysicalRange));
+        } while (false);
+    }
+
+    // Passes nullptr to GetProperty and SetProperty.
+    // Both methods are expected to fail in this situation.
+    TEST_CASE(VirtualDirectInputDevice_Properties_BadPointer)
+    {
+        VirtualDirectInputDevice<ECharMode::W> diController(CreateTestVirtualController());
+
+        // Buffer size
+        TEST_ASSERT(FAILED(diController.SetProperty(DIPROP_BUFFERSIZE, nullptr)));
+        TEST_ASSERT(FAILED(diController.GetProperty(DIPROP_BUFFERSIZE, nullptr)));
+
+        // Deadzone
+        TEST_ASSERT(FAILED(diController.SetProperty(DIPROP_DEADZONE, nullptr)));
+        TEST_ASSERT(FAILED(diController.GetProperty(DIPROP_DEADZONE, nullptr)));
+
+        // Force feedback gain
+        TEST_ASSERT(FAILED(diController.SetProperty(DIPROP_FFGAIN, nullptr)));
+        TEST_ASSERT(FAILED(diController.GetProperty(DIPROP_FFGAIN, nullptr)));
+
+        // Range
+        TEST_ASSERT(FAILED(diController.SetProperty(DIPROP_RANGE, nullptr)));
+        TEST_ASSERT(FAILED(diController.GetProperty(DIPROP_RANGE, nullptr)));
+
+        // Saturation
+        TEST_ASSERT(FAILED(diController.SetProperty(DIPROP_SATURATION, nullptr)));
+        TEST_ASSERT(FAILED(diController.GetProperty(DIPROP_SATURATION, nullptr)));
+
+        // Joystick ID (read-only)
+        TEST_ASSERT(FAILED(diController.GetProperty(DIPROP_JOYSTICKID, nullptr)));
+
+        // Logical Range (read-only)
+        TEST_ASSERT(FAILED(diController.GetProperty(DIPROP_LOGICALRANGE, nullptr)));
+
+        // Physical Range (read-only)
+        TEST_ASSERT(FAILED(diController.GetProperty(DIPROP_PHYSICALRANGE, nullptr)));
     }
 }

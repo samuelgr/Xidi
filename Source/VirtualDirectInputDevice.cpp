@@ -202,8 +202,9 @@ namespace Xidi
         {
         case ((size_t)&DIPROP_AXISMODE):
         case ((size_t)&DIPROP_DEADZONE):
+        case ((size_t)&DIPROP_GRANULARITY):
         case ((size_t)&DIPROP_SATURATION):
-            // Axis mode, deadzone, and saturation all use DIPROPDWORD.
+            // Axis mode, deadzone, granularity, and saturation all use DIPROPDWORD.
             if (sizeof(DIPROPDWORD) != pdiph->dwSize)
             {
                 Message::OutputFormatted(Message::ESeverity::Warning, L"Rejected invalid property header for %s: Incorrect size for DIPROPDWORD (expected %u, got %u).", PropertyGuidString(rguidProp), (unsigned int)sizeof(DIPROPDWORD), (unsigned int)pdiph->dwSize);
@@ -212,7 +213,9 @@ namespace Xidi
             break;
 
         case ((size_t)&DIPROP_BUFFERSIZE):
-            // Buffer size uses DIPROPDWORD and is exclusively a device-wide property.
+        case ((size_t)&DIPROP_FFGAIN):
+        case ((size_t)&DIPROP_JOYSTICKID):
+            // Buffer size, force feedback gain, and joystick ID all use DIPROPDWORD and are exclusively device-wide properties.
             if (DIPH_DEVICE != pdiph->dwHow)
             {
                 Message::OutputFormatted(Message::ESeverity::Warning, L"Rejected invalid property header for %s: Incorrect object identification method for this property (expected %s, got %s).", PropertyGuidString(rguidProp), IdentificationMethodString(DIPH_DEVICE), IdentificationMethodString(pdiph->dwHow));
@@ -226,7 +229,9 @@ namespace Xidi
             break;
 
         case ((size_t)&DIPROP_RANGE):
-            // Range uses DIPROPRANGE.
+        case ((size_t)&DIPROP_LOGICALRANGE):
+        case ((size_t)&DIPROP_PHYSICALRANGE):
+            // Range-related properties use DIPROPRANGE.
             if (sizeof(DIPROPRANGE) != pdiph->dwSize)
             {
                 Message::OutputFormatted(Message::ESeverity::Warning, L"Rejected invalid property header for %s: Incorrect size for DIPROPRANGE (expected %u, got %u).", PropertyGuidString(rguidProp), (unsigned int)sizeof(DIPROPRANGE), (unsigned int)pdiph->dwSize);
@@ -946,6 +951,8 @@ namespace Xidi
         switch ((size_t)&rguidProp)
         {
         case ((size_t)&DIPROP_AXISMODE):
+            if (Controller::EElementType::WholeController != element.type)
+                LOG_PROPERTY_INVOCATION_NO_VALUE_AND_RETURN(DIERR_INVALIDPARAM, kMethodSeverity, rguidProp);
             ((LPDIPROPDWORD)pdiph)->dwData = DIPROPAXISMODE_ABS;
             LOG_PROPERTY_INVOCATION_DIPROPDWORD_AND_RETURN(DI_OK, kMethodSeverity, rguidProp, pdiph);
 
@@ -958,6 +965,42 @@ namespace Xidi
                 LOG_PROPERTY_INVOCATION_NO_VALUE_AND_RETURN(DIERR_INVALIDPARAM, kMethodSeverity, rguidProp);
             ((LPDIPROPDWORD)pdiph)->dwData = controller->GetAxisDeadzone(element.axis);
             LOG_PROPERTY_INVOCATION_DIPROPDWORD_AND_RETURN(DI_OK, kMethodSeverity, rguidProp, pdiph);
+
+        case ((size_t)&DIPROP_FFGAIN):
+            ((LPDIPROPDWORD)pdiph)->dwData = controller->GetForceFeedbackGain();
+            LOG_PROPERTY_INVOCATION_DIPROPDWORD_AND_RETURN(DI_OK, kMethodSeverity, rguidProp, pdiph);
+
+        case ((size_t)&DIPROP_GRANULARITY):
+            switch (element.type)
+            {
+            case Controller::EElementType::Axis:
+            case Controller::EElementType::WholeController:
+                break;
+
+            default:
+                LOG_PROPERTY_INVOCATION_NO_VALUE_AND_RETURN(DIERR_INVALIDPARAM, kMethodSeverity, rguidProp);
+            }
+            ((LPDIPROPDWORD)pdiph)->dwData = 1;
+            LOG_PROPERTY_INVOCATION_DIPROPDWORD_AND_RETURN(DI_OK, kMethodSeverity, rguidProp, pdiph);
+
+        case ((size_t)&DIPROP_JOYSTICKID):
+            ((LPDIPROPDWORD)pdiph)->dwData = controller->GetIdentifier();
+            LOG_PROPERTY_INVOCATION_DIPROPDWORD_AND_RETURN(DI_OK, kMethodSeverity, rguidProp, pdiph);
+
+        case ((size_t)&DIPROP_LOGICALRANGE):
+        case ((size_t)&DIPROP_PHYSICALRANGE):
+            switch (element.type)
+            {
+            case Controller::EElementType::Axis:
+            case Controller::EElementType::WholeController:
+                break;
+
+            default:
+                LOG_PROPERTY_INVOCATION_NO_VALUE_AND_RETURN(DIERR_INVALIDPARAM, kMethodSeverity, rguidProp);
+            }
+            ((LPDIPROPRANGE)pdiph)->lMin = Controller::kAnalogValueMin;
+            ((LPDIPROPRANGE)pdiph)->lMax = Controller::kAnalogValueMax;
+            LOG_PROPERTY_INVOCATION_DIPROPRANGE_AND_RETURN(DI_OK, kMethodSeverity, rguidProp, pdiph);
 
         case ((size_t)&DIPROP_RANGE):
             do
@@ -1133,6 +1176,9 @@ namespace Xidi
             default:
                 LOG_PROPERTY_INVOCATION_DIPROPDWORD_AND_RETURN(DIERR_INVALIDPARAM, kMethodSeverity, rguidProp, pdiph);
             }
+
+        case ((size_t)&DIPROP_FFGAIN):
+            LOG_PROPERTY_INVOCATION_DIPROPDWORD_AND_RETURN(((true == controller->SetForceFeedbackGain(((LPDIPROPDWORD)pdiph)->dwData)) ? DI_OK : DIERR_INVALIDPARAM), kMethodSeverity, rguidProp, pdiph);
 
         case ((size_t)&DIPROP_RANGE):
             switch (element.type)

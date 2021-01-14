@@ -325,5 +325,19 @@ namespace Xidi
 
             return true;
         }
+
+        // --------
+
+        bool VirtualController::SetForceFeedbackGain(uint32_t ffGain)
+        {
+            if ((ffGain >= kFfGainMin) && (ffGain <= kFfGainMax))
+            {
+                auto lock = Lock();
+                properties.device.SetFfGain(ffGain);
+                return true;
+            }
+
+            return false;
+        }
     }
 }

@@ -56,6 +56,15 @@ namespace Xidi
             /// Default value for an axis saturation property. No saturation region is defined by default.
             static constexpr uint32_t kAxisSaturationDefault = kAxisSaturationMax;
 
+            /// Minimum allowed value for force feedback gain, per DirectInput documentation.
+            static constexpr uint32_t kFfGainMin = 0;
+
+            /// Maximum allowed value for force feedback gain, per DirectInput documentation.
+            static constexpr uint32_t kFfGainMax = 10000;
+
+            /// Default value for force feedback gain. No scaling down of effects by default.
+            static constexpr uint32_t kFfGainDefault = 10000;
+
 
             // -------- TYPE DEFINITIONS ----------------------------------- //
 
@@ -201,7 +210,7 @@ namespace Xidi
 
                 /// Default constructor.
                 /// Initializes fields to appropriate default values.
-                SAxisProperties(void)
+                inline SAxisProperties(void)
                 {
                     SetDeadzone(kAxisDeadzoneDefault);
                     SetRange(kAnalogValueMin, kAnalogValueMax);
@@ -221,7 +230,21 @@ namespace Xidi
             /// Properties that apply to the whole device.
             struct SDeviceProperties
             {
-                // Nothing defined yet.
+                uint32_t ffGain;                                            ///< Force feedback gain. Not currently used due to lack of force feedback support, but exists for compliance with application interface expectations.
+
+                /// Sets the force feedback gain. Performs no error checking.
+                /// @param [in] newFfGain New force feedback gain value.
+                inline void SetFfGain(uint32_t newFfGain)
+                {
+                    ffGain = newFfGain;
+                }
+
+                /// Default constructor.
+                /// Initializes fields to appropriate default values.
+                inline SDeviceProperties(void)
+                {
+                    SetFfGain(kFfGainDefault);
+                }
 
                 /// Simple check for equality by low-level memory comparison.
                 /// Primarily useful during testing.
@@ -396,6 +419,13 @@ namespace Xidi
                 return eventBuffer[index];
             }
 
+            /// Retrieves and returns the force feedback gain property for this controller.
+            /// @return Force feedback gain property value.
+            inline uint32_t GetForceFeedbackGain(void) const
+            {
+                return properties.device.ffGain;
+            }
+
             /// Retrieves and returns this controller's identifier.
             /// @return This controller's identifier.
             inline TControllerIdentifier GetIdentifier(void) const
@@ -462,11 +492,6 @@ namespace Xidi
             /// @return `true` if the new saturation value was successfully validated and set, `false` otherwise.
             bool SetAxisSaturation(EAxis axis, uint32_t saturation);
 
-            /// Sets the event buffer capacity.
-            /// @param [in] capacity Desired event buffer capacity in number of events.
-            /// @return `true` if the new event buffer capacity was successfully validated and set, `false` otherwise.
-            bool SetEventBufferCapacity(uint32_t capacity);
-
             /// Sets the deadzone property for all axes.
             /// @param [in] deadzone Desired deadzone value.
             /// @return `true` if the new deadzone value was successfully validated and set, `false` otherwise.
@@ -482,6 +507,16 @@ namespace Xidi
             /// @param [in] saturation Desired saturation value.
             /// @return `true` if the new saturation value was successfully validated and set, `false` otherwise.
             bool SetAllAxisSaturation(uint32_t saturation);
+
+            /// Sets the event buffer capacity.
+            /// @param [in] capacity Desired event buffer capacity in number of events.
+            /// @return `true` if the new event buffer capacity was successfully validated and set, `false` otherwise.
+            bool SetEventBufferCapacity(uint32_t capacity);
+
+            /// Sets the force feedback gain property for this controller.
+            /// @param [in] ffGain Desired force feedback gain value.
+            /// @return `true` if the new force feedback gain value was successfully validated and set, `false` otherwise.
+            bool SetForceFeedbackGain(uint32_t ffGain);
         };
     }
 }
