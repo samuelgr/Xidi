@@ -33,9 +33,9 @@ namespace Xidi
     /// @param [in] severity Desired message severity.
     /// @param [in] baseMessage Base message text, should contain a format specifier for the product name.
     /// @param [in] deviceInstance Device instance whose product name should be printed.
-    template <ECharMode charMode> static void EnumDevicesOutputProductName(Message::ESeverity severity, const wchar_t* baseMessage, const typename DirectInputType<charMode>::DeviceInstanceType* deviceInstance) {}
+    template <ECharMode charMode> static inline void EnumDevicesOutputProductName(Message::ESeverity severity, const wchar_t* baseMessage, const typename DirectInputType<charMode>::DeviceInstanceType* deviceInstance);
 
-    template <> static void EnumDevicesOutputProductName<ECharMode::A>(Message::ESeverity severity, const wchar_t* baseMessage, typename const DirectInputType<ECharMode::A>::DeviceInstanceType* deviceInstance)
+    template <> static inline void EnumDevicesOutputProductName<ECharMode::A>(Message::ESeverity severity, const wchar_t* baseMessage, typename const DirectInputType<ECharMode::A>::DeviceInstanceType* deviceInstance)
     {
         WCHAR productName[_countof(deviceInstance->tszProductName) + 1];
         ZeroMemory(productName, sizeof(productName));
@@ -43,20 +43,20 @@ namespace Xidi
         Message::OutputFormatted(severity, baseMessage, productName);
     }
 
-    template <> static void EnumDevicesOutputProductName<ECharMode::W>(Message::ESeverity severity, const wchar_t* baseMessage, const typename DirectInputType<ECharMode::W>::DeviceInstanceType* deviceInstance)
+    template <> static inline void EnumDevicesOutputProductName<ECharMode::W>(Message::ESeverity severity, const wchar_t* baseMessage, const typename DirectInputType<ECharMode::W>::DeviceInstanceType* deviceInstance)
     {
         LPCWSTR productName = deviceInstance->tszProductName;
         Message::OutputFormatted(severity, baseMessage, productName);
     }
 
 
-    // -------- LOCAL TYPES ------------------------------------------------ //
+    // -------- INTERNAL TYPES --------------------------------------------- //
 
     /// Contains all information required to intercept callbacks to EnumDevices.
     template <ECharMode charMode> struct SEnumDevicesCallbackInfo
     {
-        WrapperIDirectInput<charMode>* instance;                                      ///< #WrapperIDirectInput instance that invoked the enumeration.
-        typename DirectInputType<charMode>::EnumDevicesCallbackType lpCallback;     ///< Application-specified callback that should be invoked.
+        WrapperIDirectInput<charMode>* instance;                                        ///< #WrapperIDirectInput instance that invoked the enumeration.
+        typename DirectInputType<charMode>::EnumDevicesCallbackType lpCallback;         ///< Application-specified callback that should be invoked.
         LPVOID pvRef;                                                                   ///< Application-specified argument to be provided to the application-specified callback.
         BOOL callbackReturnCode;                                                        ///< Indicates if the application requested that enumeration continue or stop.
         std::unordered_set<GUID> seenInstanceIdentifiers;                               ///< Holds device identifiers seen during device enumeration.

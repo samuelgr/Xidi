@@ -24,20 +24,31 @@
 
 size_t std::hash<GUID>::operator()(REFGUID keyval) const
 {
+    static_assert(0 == (sizeof(GUID) % sizeof(size_t)), L"GUID size misalignment.");
+    constexpr int kNumPieces = sizeof(GUID) / sizeof(size_t);
+
     const size_t* rawGUID = (const size_t*)&keyval;
     std::hash<size_t> hasher;
 
-    return hasher(rawGUID[0]) ^ (hasher(rawGUID[1]) << 1) ^ (hasher(rawGUID[2]) << 2) ^ (hasher(rawGUID[3]) << 3);
+    size_t hash = 0;
+    for (int i = 0; i < kNumPieces; ++i)
+        hash ^= hasher(rawGUID[i]);
+
+    return hash;
 }
 
 // --------
 
-bool std::equal_to<GUID>::operator()(REFGUID first, REFGUID second) const
+bool std::equal_to<GUID>::operator()(REFGUID lhs, REFGUID rhs) const
 {
-    const uint32_t* rawGUID1 = (const uint32_t*)&first;
-    const uint32_t* rawGUID2 = (const uint32_t*)&second;
+    return (memcmp(&lhs, &rhs, sizeof(lhs) == 0));
+}
 
-    return ((rawGUID1[0] == rawGUID2[0]) && (rawGUID1[1] == rawGUID2[1]) && (rawGUID1[2] == rawGUID2[2]) && (rawGUID1[3] == rawGUID2[3]));
+// --------
+
+bool std::less<GUID>::operator()(REFGUID lhs, REFGUID rhs) const
+{
+    return (memcmp(&lhs, &rhs, sizeof(lhs) < 0));
 }
 
 
@@ -45,3 +56,4 @@ bool std::equal_to<GUID>::operator()(REFGUID first, REFGUID second) const
 
 template struct std::hash<GUID>;
 template struct std::equal_to<GUID>;
+template struct std::less<GUID>;

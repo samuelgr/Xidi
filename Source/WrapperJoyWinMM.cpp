@@ -66,42 +66,7 @@ namespace Xidi
         static constexpr int32_t kAxisSaturation = 9250;
 
 
-        // -------- INTERNAL FUNCTIONS ------------------------------------- //
-
-        /// Templated wrapper around the imported `joyGetDevCaps` WinMM function, which ordinarily exists in a Unicode and non-Unicode version separately.
-        template <typename JoyCapsType> static inline MMRESULT ImportedJoyGetDevCaps(UINT_PTR uJoyID, JoyCapsType* pjc, UINT cbjc)
-        {
-            return JOYERR_NOCANDO;
-        }
-
-        template <> static inline MMRESULT ImportedJoyGetDevCaps<JOYCAPSA>(UINT_PTR uJoyID, LPJOYCAPSA pjc, UINT cbjc)
-        {
-            return ImportApiWinMM::joyGetDevCapsA(uJoyID, pjc, cbjc);
-        }
-
-        template <> static inline MMRESULT ImportedJoyGetDevCaps<JOYCAPSW>(UINT_PTR uJoyID, LPJOYCAPSW pjc, UINT cbjc)
-        {
-            return ImportApiWinMM::joyGetDevCapsW(uJoyID, pjc, cbjc);
-        }
-
-        /// Templated wrapper around the `LoadString` Windows API function, which ordinarily exists in a Unicode and non-Unicode version separately.
-        template <typename StringType> static inline int LoadStringT(HINSTANCE hInstance, UINT uID, StringType lpBuffer, int cchBufferMax)
-        {
-            return -1;
-        }
-
-        template <> static inline int LoadStringT<LPSTR>(HINSTANCE hInstance, UINT uID, LPSTR lpBuffer, int cchBufferMax)
-        {
-            return LoadStringA(hInstance, uID, lpBuffer, cchBufferMax);
-        }
-
-        template <> static inline int LoadStringT<LPWSTR>(HINSTANCE hInstance, UINT uID, LPWSTR lpBuffer, int cchBufferMax)
-        {
-            return LoadStringW(hInstance, uID, lpBuffer, cchBufferMax);
-        }
-
-
-        // -------- INTERNAL TYPES --------------------------------------------- //
+        // -------- INTERNAL TYPES ----------------------------------------- //
 
         // Used to provide all information needed to get a list of XInput devices exposed by WinMM.
         struct SWinMMEnumCallbackInfo
@@ -111,7 +76,7 @@ namespace Xidi
         };
 
 
-        // -------- CLASS VARIABLES ------------------------------------------------ //
+        // -------- INTERNAL VARIABLES ------------------------------------- //
 
         /// Fixed set of virtual controllers.
         static Controller::VirtualController* controllers[XUSER_MAX_COUNT];
@@ -125,7 +90,35 @@ namespace Xidi
         static std::vector<std::pair<std::wstring, bool>> joySystemDeviceInfo;
 
 
-        // -------- INTERNAL FUNCTIONS ----------------------------------------- //
+        // -------- INTERNAL FUNCTIONS ------------------------------------- //
+
+        /// Templated wrapper around the imported `joyGetDevCaps` WinMM function, which ordinarily exists in a Unicode and non-Unicode version separately.
+        /// @tparam JoyCapsType Either JOYCAPSA or JOYCAPSW depending on whether ASCII or Unicode is desired.
+        template <typename JoyCapsType> static inline MMRESULT ImportedJoyGetDevCaps(UINT_PTR uJoyID, JoyCapsType* pjc, UINT cbjc);
+
+        template <> static inline MMRESULT ImportedJoyGetDevCaps<JOYCAPSA>(UINT_PTR uJoyID, LPJOYCAPSA pjc, UINT cbjc)
+        {
+            return ImportApiWinMM::joyGetDevCapsA(uJoyID, pjc, cbjc);
+        }
+
+        template <> static inline MMRESULT ImportedJoyGetDevCaps<JOYCAPSW>(UINT_PTR uJoyID, LPJOYCAPSW pjc, UINT cbjc)
+        {
+            return ImportApiWinMM::joyGetDevCapsW(uJoyID, pjc, cbjc);
+        }
+
+        /// Templated wrapper around the `LoadString` Windows API function, which ordinarily exists in a Unicode and non-Unicode version separately.
+        /// @tparam StringType Either LPSTR or LPWSTR depending on whether ASCII or Unicode is desired.
+        template <typename StringType> static inline int LoadStringT(HINSTANCE hInstance, UINT uID, StringType lpBuffer, int cchBufferMax);
+
+        template <> static inline int LoadStringT<LPSTR>(HINSTANCE hInstance, UINT uID, LPSTR lpBuffer, int cchBufferMax)
+        {
+            return LoadStringA(hInstance, uID, lpBuffer, cchBufferMax);
+        }
+
+        template <> static inline int LoadStringT<LPWSTR>(HINSTANCE hInstance, UINT uID, LPWSTR lpBuffer, int cchBufferMax)
+        {
+            return LoadStringW(hInstance, uID, lpBuffer, cchBufferMax);
+        }
 
         /// Creates the joystick index map.
         /// Requires that the system device information data structure already be filled.

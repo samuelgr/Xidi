@@ -29,5 +29,11 @@ template <> struct std::hash<GUID>
 /// Used to compare GUID types for equality.
 template <> struct std::equal_to<GUID>
 {
-    bool operator()(REFGUID first, REFGUID second) const;
+    bool operator()(REFGUID lhs, REFGUID rhs) const;
+};
+
+/// Used to compare GUID types for ordering purposes.
+template <> struct std::less<GUID>
+{
+    bool operator()(REFGUID lhs, REFGUID rhs) const;
 };
