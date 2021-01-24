@@ -41,14 +41,14 @@ size_t std::hash<GUID>::operator()(REFGUID keyval) const
 
 bool std::equal_to<GUID>::operator()(REFGUID lhs, REFGUID rhs) const
 {
-    return (memcmp(&lhs, &rhs, sizeof(lhs) == 0));
+    return (memcmp(&lhs, &rhs, sizeof(lhs)) == 0);
 }
 
 // --------
 
 bool std::less<GUID>::operator()(REFGUID lhs, REFGUID rhs) const
 {
-    return (memcmp(&lhs, &rhs, sizeof(lhs) < 0));
+    return (memcmp(&lhs, &rhs, sizeof(lhs)) < 0);
 }
 
 
