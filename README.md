@@ -45,21 +45,51 @@ The remainder of this document is organized as follows.
 
 1. Download the latest release of Xidi.
 
-1. Depending on how the game in question communicates with its controllers, place one of the supplied DLL files into the same directory as the game executable:
-   - ``dinput8.dll`` for games that use DirectInput version 8
-   - ``dinput.dll`` for games that use any older version of DirectInput
-   - ``winmm.dll`` for games that use WinMM
+1. Install one of the [forms of Xidi](#forms-of-xidi) into the same directory as the game executable.
 
 1. Optionally supply [configuration settings](#configuring-xidi) to Xidi.
 
 1. Run the game.
 
 
+## Forms of Xidi
+
+Xidi is available in multiple forms, each of which caters to a particular way in which games might communicate with game controllers. The following subsections describe each form of Xidi and how to install it.
+
+
+### DirectInput
+
+Many games use the DirectInput API to communicate with various input devices, including game controllers. For such games, place either `dinput8.dll` or `dinput.dll` into the same directory as the game executable. The former is for games that use version 8 of DirectInput, and the latter is for games that use any older version.
+
+
+### WinMM
+
+Some games make use of the legacy joystick API offered by the Windows multimedia library. To use Xidi with these games, place `winmm.dll` into the same directory as the game executable.
+
+
+### HookModule
+
+**It is not common for games to need the HookModule form of Xidi.**
+
+Some games that use DirectInput do not directly load the DLL but rather use a Windows subsystem known as Component Object Model (COM) to request that the system figure out how to access DirectInput functionality. This makes use of information in the system registry which ends up pointing to the system-installed version of DirectInput. The HookModule form of Xidi intercepts the COM requests and redirects any DirectInput-related requests to Xidi.
+
+Games that access DirectInput via COM require the HookModule form of Xidi, which is a hook module that is intended to be loaded by [Hookshot](https://github.com/samuelgr/Hookshot). To install the HookModule form of Xidi:
+1. Place either `dinput8.dll` or `dinput.dll` into the same directory as the game executable, as usual for DirectInput games.
+1. Additionally place `Xidi.HookModule.XX.dll` into the same directory as the game executable.
+1. Download the [latest release of Hookshot](https://github.com/samuelgr/Hookshot/releases), version 1.1.0 or higher. Extract `Hookshot.XX.exe` and `Hookshot.XX.dll` into the same directory as the game executable.
+1. Run the game with Hookshot. The easiest way to do this is using the Hookshot Launcher, as follows, but there are other ways that are described in Hookshot's documentation. To use Hookshot Launcher:
+    1. Rename the game executable by adding the text `_HookshotLauncher_` to the beginning. For example, `Game.exe` would be renamed to `_HookshotLauncher_Game.exe`.
+    1. From the downloaded Hookshot release, extract `HookshotLauncher.XX.exe` to the same directory as the game executable, then rename it to the original name of the game executable. Following the example above, this would mean renaming `HookshotLauncher.XX.exe` to `Game.exe`.
+    1. Run the game as normal. Hookshot Launcher will take care of ensuring Hookshot loads the game correctly.
+
+In all of the steps above, note that `XX` is either `32` or `64` depending on whether the game executable is 32-bit or 64-bit.
+
+
 # What to Expect in a Game
 
 XInput identifies controllers by player number rather than by specific controller device (i.e. player 1, player 2, and so on), and Xidi therefore does the same thing. The system determines the assignment of controller device to player automatically, and these assignments may change as controller devices are plugged into and unplugged from the system. Some controllers such as the Xbox 360 controller indicate the assigned player number directly on the device, so it is easy to determine which controller is assigned to which player number.
 
-If a game supports explicitly specifying a controller device to use, then Xidi virtual controller devices with names similar to "Xidi: Player 1" will be visible during the configuration process. Each such controller maps to the XInput controller of the shown player number. These Xidi-supplied controllers would need to be selected during configuration in order for the corresponding XInput controllers to be used in the game. Any non-XInput controllers would still be available for selection during the configuration process, but all XInput-based controllers would be exposed only through the Xidi-supplied controllers.
+If a game supports explicitly specifying a controller device to use, then Xidi virtual controller devices with names similar to "Xidi Virtual Controller 1" will be visible during the configuration process. Each such controller maps to the XInput controller of the shown player number. These Xidi-supplied controllers would need to be selected during configuration in order for the corresponding XInput controllers to be used in the game. Any non-XInput controllers would still be available for selection during the configuration process, but all XInput-based controllers would be exposed only through the Xidi-supplied controllers.
 
 On the other hand, if a game does not allow a specific controller device to be set during configuration, then generally whichever controller is assigned to player 1 would automatically start working in the game. Games that support multiple controllers would additionally work with other controllers in ascending player number order. However, note that there are some caveats that apply to games of this type. For more information, see [questions and answers](#questions-and-answers).
 
@@ -122,7 +152,7 @@ In some situations, it may be desirable for Xidi to use functions provided by a 
 
 # Mapping Controller Buttons and Axes
 
-An XInput-based controller follows the controller layout of an Xbox controller: buttons have names (A, B, X, Y, and so on), and analog axes are identified directly (left stick, right stick, LT, RT). Games that natively support XInput can simply refer to controller components by name, such as by saying "press A to jump" or "the right stick controls the camera".
+An XInput-based controller follows the controller layout of an Xbox controller: buttons have names (A, B, X, Y, and so on), and analog axes are identified directly (left stick, right stick, LT, RT). Games that natively support XInput can simply refer to controller components by name, such as by saying "press A to jump" or "the right stick controls the camera."
 
 DirectInput, on the other hand, supports every possible form factor for a game controller: gamepads, joysticks and steering wheels, to name a few. It does not have a defined standard layout for controllers. Games generally refer to buttons by number (button 1, button 2, and so on) and analog axes by letter (X axis, Y axis, and so on), and it is up to the manufacturer of the controller to determine which physical button or axis corresponds to each number or letter, respectively. Xidi therefore implements a mapping of Xbox controller components to DirectInput controller components.
 
@@ -130,9 +160,11 @@ Most buttons and axes can be mapped directly from XInput to DirectInput, but the
 
 Many games make assumptions about the controller layout, and Xidi cannot automatically determine these assumptions. Xidi therefore includes several types of mappers and allows the specific mapper that is used to be configured. While the default, `StandardGamepad`, is expected to work well with a wide variety of games, there are undoubtedly situations in which it is unsuitable. Specifically, Xidi provides the following mappers.
 
-- **StandardGamepad** emulates older gamepads that resemble Sony PlayStation controllers. As was common for these controllers, the right stick maps to the Z and Z-rotation axes. LT and RT are mapped to digital buttons; all analog functionality is removed, but the controls are usable.
+- **StandardGamepad** emulates old gamepads that resemble Sony PlayStation controllers, such as the Logitech RumblePad 2. As was common for these controllers, the right stick maps to the Z and Z-rotation axes. LT and RT are mapped to digital buttons; all analog functionality is removed, but the controls are usable.
 
-- **ExtendedGamepad** is as above, except that the analog functionality of LT and RT is preserved. The X-rotation and Y-rotation axes were selected to retain the mapping of the right stick to the Z and Z-rotation axes.
+- **DigitalGamepad** emulates old digital-only gamepads like the Gravis GamePad Pro. All axes are digital (i.e. no analog functionality, either they are pressed to the extreme or not pressed at all). Both left stick and d-pad contribute to X and Y axes. While controllers of this type typically only had two axes, the right stick nonetheless offers Z and Z-rotation axes in digital form.
+
+- **ExtendedGamepad** is similar to StandardGamepad, except that the analog functionality of LT and RT is preserved. The X-rotation and Y-rotation axes were selected to retain the mapping of the right stick to the Z and Z-rotation axes.
 
 - **XInputNative** mirrors the previous behavior of Windows 10 when an Xbox One controller was connected. The right stick maps to X-rotation and Y-rotation, and the triggers individually map to Z and Z-rotation. This configuration broke many older games but is presented as an option to support those that require it.
 
@@ -140,25 +172,25 @@ Many games make assumptions about the controller layout, and Xidi cannot automat
 
 Precise button and axis mappings are as below.
 
-|                         | StandardGamepad   | ExtendedGamepad   | XInputNative      | XInputSharedTriggers   |
-| ----------------------- | ----------------- | ----------------- | ----------------- | ---------------------- |
-| Left Stick, Horizontal  | X axis            | X axis            | X axis            | X axis                 |
-| Left Stick, Vertical    | Y axis            | Y axis            | Y axis            | Y axis                 |
-| Right Stick, Horizontal | Z axis            | Z axis            | X-rotation axis   | X-rotation axis        |
-| Right Stick, Vertical   | Z-rotation axis   | Z-rotation axis   | Y-rotation axis   | Y-rotation axis        |
-| D-Pad                   | Point-of-view hat | Point-of-view hat | Point-of-view hat | Point-of-view hat      |
-| A                       | Button 1          | Button 1          | Button 1          | Button 1               |
-| B                       | Button 2          | Button 2          | Button 2          | Button 2               |
-| X                       | Button 3          | Button 3          | Button 3          | Button 3               |
-| Y                       | Button 4          | Button 4          | Button 4          | Button 4               |
-| LB                      | Button 5          | Button 5          | Button 5          | Button 5               |
-| RB                      | Button 6          | Button 6          | Button 6          | Button 6               |
-| LT                      | Button 7          | X-rotation axis   | Z-axis            | Z-axis (shared)        |
-| RT                      | Button 8          | Y-rotation axis   | Z-rotation axis   | Z-axis (shared)        |
-| Back                    | Button 9          | Button 7          | Button 7          | Button 7               |
-| Start                   | Button 10         | Button 8          | Button 8          | Button 8               |
-| LS                      | Button 11         | Button 9          | Button 9          | Button 9               |
-| RS                      | Button 12         | Button 10         | Button 10         | Button 10              |
+|                         | StandardGamepad   | DigitalGamepad             | ExtendedGamepad   | XInputNative      | XInputSharedTriggers   |
+| ----------------------- | ----------------- | -----------------          | ----------------- | ----------------- | ---------------------- |
+| Left Stick, Horizontal  | X axis            | X axis (digital)           | X axis            | X axis            | X axis                 |
+| Left Stick, Vertical    | Y axis            | Y axis (digital)           | Y axis            | Y axis            | Y axis                 |
+| Right Stick, Horizontal | Z axis            | Z axis (digital)           | Z axis            | X-rotation axis   | X-rotation axis        |
+| Right Stick, Vertical   | Z-rotation axis   | Z-rotation axis (digital)  | Z-rotation axis   | Y-rotation axis   | Y-rotation axis        |
+| D-Pad                   | Point-of-view hat | X and Y axes (digital)     | Point-of-view hat | Point-of-view hat | Point-of-view hat      |
+| A                       | Button 1          | Button 1                   | Button 1          | Button 1          | Button 1               |
+| B                       | Button 2          | Button 2                   | Button 2          | Button 2          | Button 2               |
+| X                       | Button 3          | Button 3                   | Button 3          | Button 3          | Button 3               |
+| Y                       | Button 4          | Button 4                   | Button 4          | Button 4          | Button 4               |
+| LB                      | Button 5          | Button 5                   | Button 5          | Button 5          | Button 5               |
+| RB                      | Button 6          | Button 6                   | Button 6          | Button 6          | Button 6               |
+| LT                      | Button 7          | Button 7                   | X-rotation axis   | Z-axis            | Z-axis (shared)        |
+| RT                      | Button 8          | Button 8                   | Y-rotation axis   | Z-rotation axis   | Z-axis (shared)        |
+| Back                    | Button 9          | Button 9                   | Button 7          | Button 7          | Button 7               |
+| Start                   | Button 10         | Button 10                  | Button 8          | Button 8          | Button 8               |
+| LS                      | Button 11         | Button 11                  | Button 9          | Button 9          | Button 9               |
+| RS                      | Button 12         | Button 12                  | Button 10         | Button 10         | Button 10              |
 
 
 # Questions and Answers

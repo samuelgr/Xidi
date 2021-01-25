@@ -1,25 +1,119 @@
 # Xidi Developer Documentation
 
-This documentation is for developers who wish to compile Xidi from source and potentially modify it. Topics include a compilation guide, a description of the organization of its source code, and an overview of the concepts that underlie its implementation.
+This documentation is for developers who wish to compile Xidi from source and potentially modify it. Topics include a compilation guide, a description of the organization of its source code, and an overview of the concepts that underlie its design and implementation.
 
 
 ## Building Xidi
 
-The build system Xidi uses is based on Microsoft Visual Studio 2019 Community Edition. To build Xidi, simply open the supplied Visual Studio solution file and build from the graphical interface. One Visual C++ project exists for each version of Xidi (`dinput.dll`, `dinput8.dll`, and `winmm.dll`), and each supports building both 32-bit and 64-bit versions of Xidi.
-
-Debug and Release configurations will respectively produce debug (checked) and optimized (unchecked) versions of each library. A third configuration, TestApp, produces an executable that is designed as a standalone test suite for Xidi's functionality. This application runs through a series of API tests designed to ensure compliance with documented API specifications for WinMM and DirectInput. It includes an interactive controller test mode at the end, in which buttons on an attached XInput controller can be pressed and the results reflected on screen.
+The build system Xidi uses is based on Microsoft Visual Studio 2019 Community Edition. To build Xidi, simply open the supplied Visual Studio solution file and build from the graphical interface. One Visual C++ project exists for each form of Xidi along with an additional project for running unit tests. Each project supports building both 32-bit and 64-bit versions of Xidi. Debug and Release configurations will respectively produce debug (checked) and optimized (unchecked) versions of each library.
 
 
-## Source Code
+## Design and Implementation
 
-Source code documentation is available and can be built using Doxygen.
-The remainder of this section provides an overview of how the source code is organized and, at a high level, how Xidi is implemented.
+This section provides a high-level description of how Xidi is designed and implemented. For those portions of this section that refer to XInput and DirectInput, it is assumed that the reader is familiar with these APIs and their relevant concepts, as described in Microsoft's documentation.
+
+A zoomed-out view of Xidi's functionality boils down to a very short sequence of three steps:
+ - *Read* the controller state of a real game controller using XInput
+ - *Translate* said controller state from an XInput representation to an internal representation for a Xidi virtual controller device
+ - *Expose* the state of Xidi virtual controller devices via DirectInput and WinMM
+
+Of these three steps, *translate* is the most intricate and interesting. The *read* step simply involves invoking the relevant XInput API functions, and the *expose* step requires that Xidi implement DirectInput and WinMM interfaces as described in the relevant documentation.
+
+Xidi's notion of virtual controller forms the heart of its implementation. A *virtual controller* is simply a layer of abstraction: it acts as an internal receptacle for translated controller data. Xidi uses mappers to translate from raw XInput controller state to the state of a virtual controller device and subsequently exposes virtual controller state to applications. Mappers also determine the capabilities (number of axes, number of buttons, and so on) of the virtual controllers that Xidi exposes to applications.
+
+Constants and data structures that are used to represent virtual controller data are defined in `ControllerTypes.h`, and the main top-level implementation of virtual controllers is in the **VirtualController** module. A virtual controller can contain up to 6 axes (X, Y, Z, X-rotation, Y-rotation, and Z-rotation), 16 buttons, and 1 POV hat. The mapper object in use determines which subset of these controller elements is actually present on the associated virtual controller and, accordingly, which elements of the virtual controller state data structure would ever contain valid data.
+
+The sections that follow describe each step in Xidi's overall functionality in more detail.
+
+
+### Reading XInput State
+
+Whenever a Xidi virtual controller needs to refresh its view of a real XInput controller's state it uses a concrete instance of `IXInput` to do so. This interface is defined in the **XInputInterface** module and exists primarily to facilitate dependency injection for testing purposes. The concrete implementation simply invokes `XInputGetState`. Mock implementations used by unit tests return canned test data.
+
+
+### Translating to Virtual Controller State
+
+Translation from XInput controller state to virtual controller state is governed entirely by mapper objects, one of which exists for each of the [documented mapper types](README.md). Internally each mapper object contains a set of *element mapper* objects, one for each XInput controller element. The subsections that follow describe how this process works.
+
+
+#### Element Mappers
+
+An *element mapper* reads the value associated with a single element of an XInput controller (i.e. A button, LT trigger, right-stick horizontal axis) and writes a value contribution to the data structure representing a virtual controller's state. Each element mapper is allowed to contribute to only one element of a virtual controller, and it is possible for multiple element mappers to contribute to the same element of a virtual controller. Element mappers are expected to be stateless.
+
+"Contributing to a virtual controller element" means producing a value for the virtual controller element and then aggregating it with whatever value already exists for that element. This is important because multiple mappers might contribute to the same virtual controller element. For an element mapper that contributes to a virtual controller axis this typically means aggregation by summation: if an element mapper intends to produce a value of 1000 for its associated axis, rather than writing 1000 it should add 1000 to whatever value already exists for that axis.
+
+Element mapper objects implement the `IElementMapper` interface defined in `ElementMapper.h`. `ContributeFromAnalogValue`, `ContributeFromButtonValue`, and `ContributeFromTriggerValue` all give the element mapper a chance to write its contribution to its associated virtual controller element. Where they differ is how the input value is obtained: from an analog stick (left or right, horizontal or vertical), from a digital button (A, B, X, Y, and so on), or from a trigger (LT or RT) respectively. In general element mappers are expected to be able to compute a contribution irrespective of the input source. The method `GetTargetElement` is used to identify the virtual controller element to which the element mapper writes its contribution.
+
+Xidi provides four types of element mappers, each of which is described in the subsections that follow. All of these element mapper types are declared and documented in `ElementMapper.h`.
+
+
+##### AxisMapper
+
+This type of element mapper writes its output to a single axis on a virtual controller. The specific axis can be specified, and the mapper can be configured to contribute either to the entire axis or to just half of the axis (either positive or negative direction). Aggregation of multiple contributions to the same virtual controller axis occurs by summation.
+
+If the input source is an analog or trigger value, AxisMapper passes the value right through to the target virtual controller axis. Half-axis mode primarily makes sense for triggers rather than full analog sticks. For example, attaching each trigger to the same axis but opposite polarity results in both triggers sharing the axis.
+
+If the input source is a button, then the output is either an extreme axis position or neutral. In whole-axis mode, the output is extreme positive if the button is pressed and extreme negative otherwise. In half-axis mode, the output is neutral (i.e. center position) if the button is not pressed and extreme in the configured direction if it is pressed.
+
+
+##### DigitalAxisMapper
+
+Largely equivalent to AxisMapper but forces all output to be digital. There is no difference for input from digital buttons. For analog and trigger inputs the output contribution is either neutral position or one of the extremes.
+
+
+##### ButtonMapper
+
+This type of element mapper writes its output to a single digital button on a virtual controller. The specific button can be specified. Aggregation of multiple contributions to the same virtual controller button occurs by means of logical or.
+
+If the input source is an analog or trigger value, the displacement from neutral is compared with a threshold. If the displacement is greater than the threshold the button is pressed, otherwise it is not pressed. In this context, "displacement from neutral" considers centered to be neutral for analog sticks and completely unpressed to be neutral for triggers.
+
+If the input source is a button value, the output button state is the same as the input.
+
+
+##### PovMapper
+
+This type of element mapper writes its output to the virtual controller's POV hat. One or two POV directions can be specified: the first is the *positive* direction and the optional second is the *negative* direction. Xidi internally treats each POV direction as its own individual digital button, so all contributions to POV directions are aggregated using logical or.
+
+If the input source is an analog stick value, then the input value is compared with a threshold. If the input value is positive and greater than the threshold then the positive direction is pressed. If the input value is negative, its absolute value exceeds the threshold, and a negative direction is configured, then the negative direction is pressed. If none of these conditions hold then the PovMapper does not cause any POV directions to be pressed.
+
+If the input source is a trigger value, then the input value is compared with a threshold. If the input value is greater than the threshold then the positive direction is pressed. If not, and a negative direction is configured, then the negative direction is pressed. If none of these conditions hold then the PovMapper does not cause any POV directions to be pressed.
+
+If the input source is a button value, then the same logic applies as with a trigger value. However, instead of comparing with a threshold, the decision is based on whether or not the input button is pressed.
+
+
+#### Top-Level Mappers
+
+Individual element mappers define how one input value is transformed to a contribution to one virtual controller element. Top-level mapper objects, instances of the `Mapper` class declared in `Mapper.h`, aggregate several element mappers together to produce one overall mapper for an entire virtual controller. At most one element mapper object exists for each XInput controller element. Setting an element mapper to `nullptr` causes the top-level mapper to ignore input from that XInput controller element.
+
+When a mapper object is constructed, it iterates through all of its associated element mappers and queries them by invoking `GetTargetElement`. This information allows the top-level mapper to determine the capabilities of the virtual controller. For example, if none of the element mappers identify Z-rotation axis as the target element, it follows that the virtual controller does not have a Z-rotation axis. The logic for buttons is slightly different: the number of buttons is determined by the highest button identified by any element mappers, even if that means skipping some. For example, if element mappers identify buttons 1, 3, and 6, the virtual controller has 6 buttons even though 2, 4, and 5 are never pressed.
+
+A mapper object's most frequent request is to translate from XInput controller state to virtual controller state.  During the processing of such a request, the mapper object iterates through all of its associated element mappers and invokes the correct contribution method: `ContributeFromAnalogValue` for element mappers associated with analog sticks, `ContributeFromButtonValue` for element mappers associated with digital buttons, and `ContributeFromTriggerValue` for element mappers associated with the left and right triggers.
+
+Mapper objects are instantiated as constants in the file `MapperDefinitions.cpp`. This is where all of the documented mapper types can be found. To create a new mapper type, append an entry to the array contained in that file.
+
+
+### Exposing Virtual Controllers to Applications
+
+The modules **VirtualDirectInputDevice**, **WrapperIDirectInput**, and **WrapperJoyWinMM** expose virtual controllers to applications using DirectInput and WinMM. Internally, objects of the class `VirtualDirectInputDevice` use instances of the `DataFormat` class to manipulate data packets in the format specified by the application.
+
+Implementations of all of these modules are intended to be as straightforward as possible. The goal is to implement the relevant APIs per Microsoft documentation and observed behavior.
+
+
+## Source Code Organization
+
+Source code documentation is available and can be built using Doxygen. This section provides an overview of how the source code is organized, with reference to the concepts and high-level design details discussed previously.
 
 **ApiDirectInput** and **ApiGUID** provide helpers for interacting with the DirectInput API. In the former case, the goal is to ensure definitions of constant-valued GUIDs are embedded into Xidi because Xidi cannot load them from the system-supplied DirectInput library. In the latter case, the goal is to provide methods of hashing and comparing GUID values so they may be used in STL containers.
 
-**Configuration** provides the functionality needed to parse and apply configuration files. Supported values and section names are defined statically using STL `unordered_map` containers. Each value is associated with a function to be invoked when the particular configuration value is applied from a configuration file. These functions return success or failure depending on the semantic validity of the value that is specified. The main control flow for the process of reading a configuration file is contained in the method `ParseAndApplyConfigurationFile()`.
+**Configuration** provides the functionality needed to parse and apply configuration files. Supported values and section names are defined statically using STL `unordered_map` containers. Each value is associated with a function to be invoked when the particular configuration value is applied from a configuration file. These functions return success or failure depending on the semantic validity of the value that is specified. The main control flow for the process of reading a configuration file is contained in the method `ParseAndApplyConfigurationFile`.
 
-**ControllerIdentification** provides helpers for identifying and enumerating XInput and non-XInput controllers. This class is used primarily during the controller enumeration process. Xidi statically defines its own GUIDs for identifying Xidi virtual controllers in a manner compatible with the DirectInput API specification. The `EnumerateXInputControllers()` methods perform a DirectInput-style enumeration of the Xidi virtual controllers to the application and return whatever status code the application's callback function supplies. Other methods are available for manipulating GUIDs that represent Xidi virtual controllers.
+**ControllerIdentification** provides helpers for identifying and enumerating XInput and non-XInput controllers. This class is used primarily during the controller enumeration process. Xidi statically defines its own GUIDs for identifying Xidi virtual controllers in a manner compatible with the DirectInput API specification. The `EnumerateXInputControllers` methods perform a DirectInput-style enumeration of the Xidi virtual controllers to the application and return whatever status code the application's callback function supplies. Other methods are available for manipulating GUIDs that represent Xidi virtual controllers.
+
+**DataFormat** is a helper class for manipulating data packets in the format specified by a DirectInput application. A key concept of DirectInput is that applications are allowed to tell the system how they expect controller data to be formatted in memory. Accordingly, the functionality offered by objects of this class is related to translating between Xidi's internal data format for virtual controllers and an application's requested DirectInput data format. Instances of this class are created via a factory method that parses an application's data format specification, which an application provides when it invokes the `IDirectInputDevice::SetDataFormat` method.
+
+**DirectInputClassFactory** implements a COM class factory interface. The HookModule form of Xidi invokes `DllGetClassObject`, a standard COM function, which in turn makes use of the functionality contained in this module to provide a standard COM interface for constructing top-level DirectInput interface objects.
+
+**ElementMapper** is where the `IElementMapper` interface is defined and all of the element mapper types are implemented.
 
 **ExportApiDirectInput** and **ExportApiWinMM** implement the external interfaces to Xidi, mimicking the interfaces exposed by the system-supplied versions of the DirectInput and WinMM libraries. Applications that load Xidi will invoke these functions directly. In many cases they simply pass through to the imported functions of the same name, but when needed they perform additional functionality, calling into other parts of Xidi.
 
@@ -29,16 +123,18 @@ The remainder of this section provides an overview of how the source code is org
 
 **Log** implements all functionality related to logging. It accepts configuration settings regarding the minimum required severity, determines which log messages to output and which to ignore, creates the log file when needed, flushes it on program termination, and handles all output to it. Various ways of generating log messages are also implemented, including specifying a string directly or loading a string from a resource embedded in the binary. String generation is separated from file output because in the future it may be desirable to support logging to somewhere other than a file, such as to a graphical interface via inter-process communciation.
 
-**MapperFactory** encapsulates all functionality related to the construction of objects that map DirectInput controller objects to XInput controller elements. Based on the configured type of mapper (either the default or overridden in a configuration file), the `CreateMapper()` method constructs and returns a mapper object.
+**Mapper** contains the declaration and implementation of top-level mapper objects.
 
-**TestAppDirectInput** and **TestAppWinMM** implement the test applications for each interface respectively. Simple checks are performed for API compliance and consistency, and an interactive mode at the end allows controllers and mappers to be tested directly by a user. These applications are console-based and quite bare-bones.
+**MapperDefinitions** contains instantiations of the mappers themselves.
 
-**VirtualDirectInputDevice** implements the IDirectInputDevice and IDirectInputDevice8 interfaces presented to applications and used to provide Xidi virtual controller devices. Each such object communicates with both a mapper object and an XInput controller object which together provide the needed functionality.
+**StateChangeEventBuffer** is a helper for virtual controller objects that allows them to support event buffering, which is in turn used to expose DirectInput buffered events to applications.
+
+**VirtualController** is the top-level virtual controller implementation. It combines all of the individual units of functionality needed to present a cohesive controller interface, including mapping, event buffering, and even some configuration properties. Some of the functionality is guided by what DirectInput expects, although none of the implementation is DirectInput-specific.
+
+**VirtualDirectInputDevice** is a DirectInput interface for exposing Xidi virtual controllers to applications. This class implements IDirectInputDevice (or IDirectInputDevice8, depending on the compiled form of Xidi) and contains a Xidi virtual controller device instance with which it communicates internally. Functionality related to application-defined data format is delegated to the DataFormat helper class.
 
 **WrapperIDirectInput** and **WrapperJoyWinMM** act as interception classes for all calls to DirectInput (via IDirectInput or IDirectInput8) and WinMM joystick (via direct function calls) APIs. In the former case, an instance of WrapperIDirectInput is returned when the application calls one of the DirectInput object creation methods exported by the Xidi DLL, and in the latter case, the joystick family of WinMM calls invokes functions supplied by WrapperJoyWinMM.
 
-**XInputController** implements communication with XInput-based controllers, translating between DirectInput and XInput as needed. Many DirectInput-specific operations are emulated, and a DirectInput-like interface is presented. Both WrapperIDirectInput and WrapperJoyWinMM communicate with XInput-based controllers thorugh this class.
+**XidiConfigReader** specializes the generic functionality offered by the Configuration subsystem and defines the allowed format of a Xidi configuration file.
 
-**Mapper::Base** provides the key mapping functionality for translating between DirectInput controller objects and XInput controller elements. Its subclasses specify the exact component mappings, but the base class implements all the logic required to perform the actual mapping operations. These operations include setting and honoring properties (range, deadzone, and so on) on axes, enumerating controller objects for applications, and parsing the format specification an application supplies for retrieving controller state. This last operation, implemented in `SetApplicationDataFormat()`, is the most complex; Xidi supports both Microsoft's built-in format specifications as well as custom format specifications.
-
-**Mapper::StandardGamepad**, **Mapper::ExtendedGamepad**, **Mapper::XInputNative**, and **Mapper::XInputSharedTriggers** are subclasses of Mapper::Base and specify the precise mappings of DirectInput controller objects to XInput controller elements. Creating a new mapping is as simple as creating a new subclass of Mapper::Base and overriding the required virtual methods.
+**XInputInterface** is a simple wrapper interface around XInput API functions. It exists to facilitate dependency injection for the purpose of testing.
