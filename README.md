@@ -98,7 +98,7 @@ A game that binds to Xidi virtual controller devices, either automatically or vi
 
 # Configuring Xidi
 
-Xidi is designed to require minimal, if any, configuration. Defaults were carefully selected to maximize the probability of compatibility. Nevertheless, it can be configured by placing a text file named `Xidi.ini` into the same directory as the game executable. This file is optional; if not present, Xidi simply uses its default settings.
+Xidi is designed to require minimal, if any, configuration. Defaults were carefully selected to maximize the probability of compatibility. Nevertheless, it can be configured by placing a text file named `Xidi.ini` into the same directory as the running form of Xidi. This file is optional; if not present, Xidi simply uses its default settings.
 
 An example configuration file is shown below, containing default values for all available settings. The remainder of this subsection describes each setting and what can be supplied as a value.
 

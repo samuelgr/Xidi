@@ -153,6 +153,70 @@ namespace Xidi
             return initString;
         }
 
+        /// Generates the value for kStrXidiCompleteFilename; see documentation of this run-time constant for more information.
+        /// @return Corresponding run-time constant value.
+        static const std::wstring& GetXidiCompleteFilename(void)
+        {
+            static std::wstring initString;
+            static std::once_flag initFlag;
+
+            std::call_once(initFlag, []() -> void
+                {
+                    TemporaryBuffer<wchar_t> buf;
+                    GetModuleFileName(Globals::GetInstanceHandle(), buf, (DWORD)buf.Count());
+
+                    initString.assign(buf);
+                }
+            );
+
+            return initString;
+        }
+
+        /// Generates the value for kStrXidiBaseName; see documentation of this run-time constant for more information.
+        /// @return Corresponding run-time constant value.
+        static const std::wstring& GetXidiBaseName(void)
+        {
+            static std::wstring initString;
+            static std::once_flag initFlag;
+
+            std::call_once(initFlag, []() -> void
+                {
+                    std::wstring_view executableBaseName = GetXidiCompleteFilename();
+
+                    const size_t lastBackslashPos = executableBaseName.find_last_of(L"\\");
+                    if (std::wstring_view::npos != lastBackslashPos)
+                        executableBaseName.remove_prefix(1 + lastBackslashPos);
+
+                    initString.assign(executableBaseName);
+                }
+            );
+
+            return initString;
+        }
+
+        /// Generates the value for kStrXidiDirectoryName; see documentation of this run-time constant for more information.
+        /// @return Corresponding run-time constant value.
+        static const std::wstring& GetXidiDirectoryName(void)
+        {
+            static std::wstring initString;
+            static std::once_flag initFlag;
+
+            std::call_once(initFlag, []() -> void
+                {
+                    std::wstring_view executableDirectoryName = GetXidiCompleteFilename();
+
+                    const size_t lastBackslashPos = executableDirectoryName.find_last_of(L"\\");
+                    if (std::wstring_view::npos != lastBackslashPos)
+                    {
+                        executableDirectoryName.remove_suffix(executableDirectoryName.length() - lastBackslashPos - 1);
+                        initString.assign(executableDirectoryName);
+                    }
+                }
+            );
+
+            return initString;
+        }
+
         /// Generates the value for kStrSystemDirectoryName; see documentation of this run-time constant for more information.
         /// @return Corresponding run-time constant value.
         static const std::wstring& GetSystemDirectoryName(void)
@@ -262,7 +326,7 @@ namespace Xidi
 
             std::call_once(initFlag, []() -> void
                 {
-                    std::wstring_view pieces[] = {GetExecutableDirectoryName(), GetProductName(), kStrConfigurationFileExtension};
+                    std::wstring_view pieces[] = {GetXidiDirectoryName(), GetProductName(), kStrConfigurationFileExtension};
 
                     size_t totalLength = 0;
                     for (int i = 0; i < _countof(pieces); ++i)
@@ -316,6 +380,9 @@ namespace Xidi
         extern const std::wstring_view kStrExecutableCompleteFilename(GetExecutableCompleteFilename());
         extern const std::wstring_view kStrExecutableBaseName(GetExecutableBaseName());
         extern const std::wstring_view kStrExecutableDirectoryName(GetExecutableDirectoryName());
+        extern const std::wstring_view kStrXidiCompleteFilename(GetXidiCompleteFilename());
+        extern const std::wstring_view kStrXidiBaseName(GetXidiBaseName());
+        extern const std::wstring_view kStrXidiDirectoryName(GetXidiDirectoryName());
         extern const std::wstring_view kStrSystemDirectoryName(GetSystemDirectoryName());
         extern const std::wstring_view kStrSystemLibraryFilenameDirectInput(GetSystemLibraryFilenameDirectInput());
         extern const std::wstring_view kStrSystemLibraryFilenameDirectInput8(GetSystemLibraryFilenameDirectInput8());

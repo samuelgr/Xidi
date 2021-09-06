@@ -98,6 +98,15 @@ namespace Xidi
         /// Directory name of the currently-running executable, including trailing backslash if available.
         extern const std::wstring_view kStrExecutableDirectoryName;
 
+        /// Complete path and filename of the currently-running form of Xidi.
+        extern const std::wstring_view kStrXidiCompleteFilename;
+
+        /// Base name of the currently-running form of Xidi.
+        extern const std::wstring_view kStrXidiBaseName;
+
+        /// Directory name of the currently-running form of Xidi, including trailing backslash if available.
+        extern const std::wstring_view kStrXidiDirectoryName;
+
         /// Directory name in which system-supplied libraries are found.
         extern const std::wstring_view kStrSystemDirectoryName;
 
