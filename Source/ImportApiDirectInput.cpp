@@ -28,26 +28,32 @@ namespace Xidi
         // -------- INTERNAL TYPES ----------------------------------------- //
 
         /// Holds pointers to all the functions imported from the native DirectInput library.
-        struct SImportTable
+        /// Exposes them as both an array of typeless pointers and a named structure of type-specific pointers.
+        union UImportTable
         {
+            struct
+            {
 #if DIRECTINPUT_VERSION >= 0x0800
-            HRESULT(STDMETHODCALLTYPE* DirectInput8Create)(HINSTANCE, DWORD, REFIID, LPVOID*, LPUNKNOWN);
+                HRESULT(STDMETHODCALLTYPE* DirectInput8Create)(HINSTANCE, DWORD, REFIID, LPVOID*, LPUNKNOWN);
 #else
-            HRESULT(STDMETHODCALLTYPE* DirectInputCreateA)(HINSTANCE, DWORD, LPDIRECTINPUTA*, LPUNKNOWN);
-            HRESULT(STDMETHODCALLTYPE* DirectInputCreateW)(HINSTANCE, DWORD, LPDIRECTINPUTW*, LPUNKNOWN);
-            HRESULT(STDMETHODCALLTYPE* DirectInputCreateEx)(HINSTANCE, DWORD, REFIID, LPVOID*, LPUNKNOWN);
+                HRESULT(STDMETHODCALLTYPE* DirectInputCreateA)(HINSTANCE, DWORD, LPDIRECTINPUTA*, LPUNKNOWN);
+                HRESULT(STDMETHODCALLTYPE* DirectInputCreateW)(HINSTANCE, DWORD, LPDIRECTINPUTW*, LPUNKNOWN);
+                HRESULT(STDMETHODCALLTYPE* DirectInputCreateEx)(HINSTANCE, DWORD, REFIID, LPVOID*, LPUNKNOWN);
 #endif
-            HRESULT(STDMETHODCALLTYPE* DllRegisterServer)(void);
-            HRESULT(STDMETHODCALLTYPE* DllUnregisterServer)(void);
-            HRESULT(STDMETHODCALLTYPE* DllCanUnloadNow)(void);
-            HRESULT(STDMETHODCALLTYPE* DllGetClassObject)(REFCLSID, REFIID, LPVOID*);
+                HRESULT(STDMETHODCALLTYPE* DllRegisterServer)(void);
+                HRESULT(STDMETHODCALLTYPE* DllUnregisterServer)(void);
+                HRESULT(STDMETHODCALLTYPE* DllCanUnloadNow)(void);
+                HRESULT(STDMETHODCALLTYPE* DllGetClassObject)(REFCLSID, REFIID, LPVOID*);
+            } named;
+
+            void* ptr[sizeof(named) / sizeof(void*)];
         };
 
 
         // -------- INTERNAL VARIABLES ------------------------------------- //
         
         /// Holds the imported DirectInput API function addresses.
-        static SImportTable importTable;
+        static UImportTable importTable;
 
 
         // -------- INTERNAL FUNCTIONS --------------------------------------------- //
@@ -152,36 +158,36 @@ namespace Xidi
 #if DIRECTINPUT_VERSION >= 0x0800
                     procAddress = GetProcAddress(loadedLibrary, "DirectInput8Create");
                     if (nullptr == procAddress) LogImportFailed(L"DirectInput8Create");
-                    importTable.DirectInput8Create = (HRESULT(STDMETHODCALLTYPE*)(HINSTANCE, DWORD, REFIID, LPVOID*, LPUNKNOWN))procAddress;
+                    importTable.named.DirectInput8Create = (HRESULT(STDMETHODCALLTYPE*)(HINSTANCE, DWORD, REFIID, LPVOID*, LPUNKNOWN))procAddress;
 #else
                     procAddress = GetProcAddress(loadedLibrary, "DirectInputCreateA");
                     if (nullptr == procAddress) LogImportFailed(L"DirectInputCreateA");
-                    importTable.DirectInputCreateA = (HRESULT(STDMETHODCALLTYPE*)(HINSTANCE, DWORD, LPDIRECTINPUTA*, LPUNKNOWN))procAddress;
+                    importTable.named.DirectInputCreateA = (HRESULT(STDMETHODCALLTYPE*)(HINSTANCE, DWORD, LPDIRECTINPUTA*, LPUNKNOWN))procAddress;
 
                     procAddress = GetProcAddress(loadedLibrary, "DirectInputCreateW");
                     if (nullptr == procAddress) LogImportFailed(L"DirectInputCreateW");
-                    importTable.DirectInputCreateW = (HRESULT(STDMETHODCALLTYPE*)(HINSTANCE, DWORD, LPDIRECTINPUTW*, LPUNKNOWN))procAddress;
+                    importTable.named.DirectInputCreateW = (HRESULT(STDMETHODCALLTYPE*)(HINSTANCE, DWORD, LPDIRECTINPUTW*, LPUNKNOWN))procAddress;
 
                     procAddress = GetProcAddress(loadedLibrary, "DirectInputCreateEx");
                     if (nullptr == procAddress) LogImportFailed(L"DirectInputCreateEx");
-                    importTable.DirectInputCreateEx = (HRESULT(STDMETHODCALLTYPE*)(HINSTANCE, DWORD, REFIID, LPVOID*, LPUNKNOWN))procAddress;
+                    importTable.named.DirectInputCreateEx = (HRESULT(STDMETHODCALLTYPE*)(HINSTANCE, DWORD, REFIID, LPVOID*, LPUNKNOWN))procAddress;
 #endif
 
                     procAddress = GetProcAddress(loadedLibrary, "DllRegisterServer");
                     if (nullptr == procAddress) LogImportFailed(L"DllRegisterServer");
-                    importTable.DllRegisterServer = (HRESULT(STDMETHODCALLTYPE*)(void))procAddress;
+                    importTable.named.DllRegisterServer = (HRESULT(STDMETHODCALLTYPE*)(void))procAddress;
 
                     procAddress = GetProcAddress(loadedLibrary, "DllUnregisterServer");
                     if (nullptr == procAddress) LogImportFailed(L"DllUnregisterServer");
-                    importTable.DllUnregisterServer = (HRESULT(STDMETHODCALLTYPE*)(void))procAddress;
+                    importTable.named.DllUnregisterServer = (HRESULT(STDMETHODCALLTYPE*)(void))procAddress;
 
                     procAddress = GetProcAddress(loadedLibrary, "DllCanUnloadNow");
                     if (nullptr == procAddress) LogImportFailed(L"DllCanUnloadNow");
-                    importTable.DllCanUnloadNow = (HRESULT(STDMETHODCALLTYPE*)(void))procAddress;
+                    importTable.named.DllCanUnloadNow = (HRESULT(STDMETHODCALLTYPE*)(void))procAddress;
 
                     procAddress = GetProcAddress(loadedLibrary, "DllGetClassObject");
                     if (nullptr == procAddress) LogImportFailed(L"DllGetClassObject");
-                    importTable.DllGetClassObject = (HRESULT(STDMETHODCALLTYPE*)(REFCLSID, REFIID, LPVOID*))procAddress;
+                    importTable.named.DllGetClassObject = (HRESULT(STDMETHODCALLTYPE*)(REFCLSID, REFIID, LPVOID*))procAddress;
 
                     // Initialization complete.
                     LogInitializeSucceeded();
@@ -198,20 +204,20 @@ namespace Xidi
         {
             Initialize();
 
-            if (nullptr == importTable.DirectInput8Create)
+            if (nullptr == importTable.named.DirectInput8Create)
                 LogMissingFunctionCalled(L"DirectInput8Create");
 
-            return importTable.DirectInput8Create(hinst, dwVersion, riidltf, ppvOut, punkOuter);
+            return importTable.named.DirectInput8Create(hinst, dwVersion, riidltf, ppvOut, punkOuter);
         }
 #else
         HRESULT DirectInputCreateA(HINSTANCE hinst, DWORD dwVersion, LPDIRECTINPUTA* ppDI, LPUNKNOWN punkOuter)
         {
             Initialize();
 
-            if (nullptr == importTable.DirectInputCreateA)
+            if (nullptr == importTable.named.DirectInputCreateA)
                 LogMissingFunctionCalled(L"DirectInputCreateA");
 
-            return importTable.DirectInputCreateA(hinst, dwVersion, ppDI, punkOuter);
+            return importTable.named.DirectInputCreateA(hinst, dwVersion, ppDI, punkOuter);
         }
 
         // ---------
@@ -220,10 +226,10 @@ namespace Xidi
         {
             Initialize();
 
-            if (nullptr == importTable.DirectInputCreateW)
+            if (nullptr == importTable.named.DirectInputCreateW)
                 LogMissingFunctionCalled(L"DirectInputCreateW");
 
-            return importTable.DirectInputCreateW(hinst, dwVersion, ppDI, punkOuter);
+            return importTable.named.DirectInputCreateW(hinst, dwVersion, ppDI, punkOuter);
         }
 
         // ---------
@@ -232,10 +238,10 @@ namespace Xidi
         {
             Initialize();
 
-            if (nullptr == importTable.DirectInputCreateEx)
+            if (nullptr == importTable.named.DirectInputCreateEx)
                 LogMissingFunctionCalled(L"DirectInputCreateEx");
 
-            return importTable.DirectInputCreateEx(hinst, dwVersion, riidltf, ppvOut, punkOuter);
+            return importTable.named.DirectInputCreateEx(hinst, dwVersion, riidltf, ppvOut, punkOuter);
         }
 #endif
 
@@ -245,10 +251,10 @@ namespace Xidi
         {
             Initialize();
 
-            if (nullptr == importTable.DllRegisterServer)
+            if (nullptr == importTable.named.DllRegisterServer)
                 LogMissingFunctionCalled(L"DllRegisterServer");
 
-            return importTable.DllRegisterServer();
+            return importTable.named.DllRegisterServer();
         }
 
         // ---------
@@ -257,10 +263,10 @@ namespace Xidi
         {
             Initialize();
 
-            if (nullptr == importTable.DllUnregisterServer)
+            if (nullptr == importTable.named.DllUnregisterServer)
                 LogMissingFunctionCalled(L"DllUnregisterServer");
 
-            return importTable.DllUnregisterServer();
+            return importTable.named.DllUnregisterServer();
         }
 
         // ---------
@@ -269,10 +275,10 @@ namespace Xidi
         {
             Initialize();
 
-            if (nullptr == importTable.DllCanUnloadNow)
+            if (nullptr == importTable.named.DllCanUnloadNow)
                 LogMissingFunctionCalled(L"DllCanUnloadNow");
 
-            return importTable.DllCanUnloadNow();
+            return importTable.named.DllCanUnloadNow();
         }
 
         // ---------
@@ -281,10 +287,10 @@ namespace Xidi
         {
             Initialize();
 
-            if (nullptr == importTable.DllGetClassObject)
+            if (nullptr == importTable.named.DllGetClassObject)
                 LogMissingFunctionCalled(L"DllGetClassObject");
 
-            return importTable.DllGetClassObject(rclsid, riid, ppv);
+            return importTable.named.DllGetClassObject(rclsid, riid, ppv);
         }
     }
 }

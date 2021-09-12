@@ -48,6 +48,15 @@
     <ClCompile Include="Source\ApiDirectInput.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="Source\SetHooksDirectInput.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\SetHooksWinMM.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\SetHooks.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Resources\Xidi.h">
@@ -80,7 +89,7 @@
     <ClInclude Include="Include\Xidi\XidiConfigReader.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="Include\Xidi\Hooks.h">
+    <ClInclude Include="Include\Xidi\SetHooks.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="Include\Xidi\ApiDirectInput.h">

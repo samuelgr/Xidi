@@ -9,25 +9,9 @@
  *   Entry point when injecting Xidi as a hook module.
  *****************************************************************************/
 
-#include "Hooks.h"
-#include "Message.h"
+#include "SetHooks.h"
 
 #include <Hookshot/Hookshot.h>
-#include <string_view>
-
-
-// -------- INTERNAL FUNCTIONS --------------------------------------------- //
-
-namespace Xidi
-{
-    static void OutputSetHookResult(const wchar_t* functionName, Hookshot::EResult setHookResult)
-    {
-        if (Hookshot::SuccessfulResult(setHookResult))
-            Message::OutputFormatted(Message::ESeverity::Info, L"Successfully set hook for %s.", functionName);
-        else
-            Message::OutputFormatted(Message::ESeverity::Error, L"Failed (Hookshot::EResult = %u) to set hook for %s.", (unsigned int)setHookResult, functionName);
-    }
-}
 
 
 // -------- ENTRY POINT ---------------------------------------------------- //
@@ -35,5 +19,6 @@ namespace Xidi
 /// Hook module entry point. 
 HOOKSHOT_HOOK_MODULE_ENTRY(hookshot)
 {
-    Xidi::OutputSetHookResult(L"CoCreateInstance", StaticHook_CoCreateInstance::SetHook(hookshot));
+    Xidi::SetHooksDirectInput(hookshot);
+    Xidi::SetHooksWinMM(hookshot);
 }

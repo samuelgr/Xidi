@@ -11,8 +11,8 @@
 
 #include "ApiDirectInput.h"
 #include "ApiWindows.h"
-#include "Hooks.h"
 #include "Message.h"
+#include "SetHooks.h"
 #include "Strings.h"
 
 #include <string>
@@ -80,7 +80,7 @@ namespace Xidi
     /// @return Address of the desired procedure, or `nullptr` on failure.
     template <const std::wstring_view* moduleName> static decltype(&DllGetClassObject) LocateDllGetClassObjectProc(void)
     {
-        static const std::wstring importLibraryFilename(std::wstring(Strings::kStrExecutableDirectoryName) + std::wstring(*moduleName));
+        static const std::wstring importLibraryFilename(std::wstring(Strings::kStrXidiDirectoryName) + std::wstring(*moduleName));
         static const HMODULE moduleHandle = LoadLibrary(importLibraryFilename.c_str());
         static const FARPROC moduleDllGetClassObjectProc = GetProcAddress(moduleHandle, "DllGetClassObject");
 
