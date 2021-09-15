@@ -34,6 +34,24 @@ namespace Xidi
         Message::Output(Message::ESeverity::Info, L"Beginning to set hooks for WinMM.");
 
         // First precondition.
+        // System joystick functions are only hooked if there exists a WinMM DLL in the same directory as this hook module and it is not already loaded.
+        static const std::wstring kImportLibraryFilename(std::wstring(Strings::kStrXidiDirectoryName) + std::wstring(Strings::kStrLibraryNameWinMM));
+        if (TRUE == PathFileExists(kImportLibraryFilename.c_str()))
+        {
+            const HMODULE kImportLibraryHandle = GetModuleHandle(kImportLibraryFilename.c_str());
+            if ((nullptr != kImportLibraryHandle) && (INVALID_HANDLE_VALUE != kImportLibraryHandle))
+            {
+                Message::OutputFormatted(Message::ESeverity::Debug, L"%s exists and is already loaded. Not attempting to hook WinMM joystick functions.", kImportLibraryFilename.c_str());
+                return;
+            }
+        }
+        else
+        {
+            Message::OutputFormatted(Message::ESeverity::Debug, L"%s does not exist. Not attempting to hook WinMM joystick functions.", kImportLibraryFilename.c_str());
+            return;
+        }
+
+        // Second precondition.
         // System joystick functions are only hooked if the system API set DLL is already loaded.
         static const std::wstring_view kApiSetJoystickName = L"api-ms-win-mm-joystick-l1-1-0";
         const HMODULE kSystemLibraryHandle = GetModuleHandle(kApiSetJoystickName.data());
@@ -49,41 +67,23 @@ namespace Xidi
             return;
         }
 
-        // Second precondition.
-        // System joystick functions are only hooked if there exists a WinMM DLL in the same directory as this hook module and it is not already loaded.
-        static const std::wstring kImportLibraryFilename(std::wstring(Strings::kStrXidiDirectoryName) + std::wstring(Strings::kStrLibraryNameWinMM));
-        if (TRUE == PathFileExists(kImportLibraryFilename.c_str()))
-        {
-            const HMODULE kImportLibraryHandle = GetModuleHandle(kImportLibraryFilename.c_str());
-            if ((nullptr != kImportLibraryHandle) && (INVALID_HANDLE_VALUE != kImportLibraryHandle))
-            {
-                Message::OutputFormatted(Message::ESeverity::Debug, L"WinMM DLL %s exists and is already loaded. Not attempting to hook WinMM joystick functions.", kImportLibraryFilename.c_str());
-                return;
-            }
-        }
-        else
-        {
-            Message::OutputFormatted(Message::ESeverity::Debug, L"WinMM DLL %s does not exist. Not attempting to hook WinMM joystick functions.", kImportLibraryFilename.c_str());
-            return;
-        }
-
         // Once all preconditions are satisfied, attempt to load the WinMM DLL in the same directory as this hook module.
         // Then use Hookshot to redirect all WinMM joystick API functions provided by the system library to the Xidi library.
         const HMODULE kImportLibraryHandle = LoadLibrary(kImportLibraryFilename.c_str());
         if ((nullptr == kImportLibraryHandle) || (INVALID_HANDLE_VALUE == kImportLibraryHandle))
         {
-            Message::OutputFormatted(Message::ESeverity::Error, L"Failed to load WinMM DLL %s. Unable to hook WinMM joystick functions.", kImportLibraryFilename.c_str());
+            Message::OutputFormatted(Message::ESeverity::Error, L"Failed to load %s. Unable to hook WinMM joystick functions.", kImportLibraryFilename.c_str());
             return;
         }
         else
         {
-            Message::OutputFormatted(Message::ESeverity::Debug, L"Successfully loaded WinMM DLL %s.", kImportLibraryFilename.c_str());
+            Message::OutputFormatted(Message::ESeverity::Debug, L"Successfully loaded %s.", kImportLibraryFilename.c_str());
         }
 
         const Xidi::Api::TGetInterfaceFunc funcXidiApiGetInterface = (Xidi::Api::TGetInterfaceFunc)GetProcAddress(kImportLibraryHandle, "XidiApiGetInterface");
         if (nullptr == funcXidiApiGetInterface)
         {
-            Message::OutputFormatted(Message::ESeverity::Warning, L"Unloading WinMM DLL %s because it is missing one or more required Xidi API entry points.", kImportLibraryFilename.c_str());
+            Message::OutputFormatted(Message::ESeverity::Warning, L"Unloading %s because it is missing one or more required Xidi API entry points.", kImportLibraryFilename.c_str());
             FreeLibrary(kImportLibraryHandle);
             return;
         }
@@ -91,7 +91,7 @@ namespace Xidi
         Xidi::Api::IImportFunctions* const importFunctions = (Xidi::Api::IImportFunctions*)funcXidiApiGetInterface(Xidi::Api::EClass::ImportFunctions);
         if (nullptr == importFunctions)
         {
-            Message::OutputFormatted(Message::ESeverity::Warning, L"Unloading WinMM DLL %s because it does not support the required Xidi API interface.", kImportLibraryFilename.c_str());
+            Message::OutputFormatted(Message::ESeverity::Warning, L"Unloading %s because it does not support the required Xidi API interface.", kImportLibraryFilename.c_str());
             FreeLibrary(kImportLibraryHandle);
             return;
         }
@@ -112,7 +112,7 @@ namespace Xidi
             void* const kImportFunc = GetProcAddress(kImportLibraryHandle, importFunctionNameAscii);
             if (nullptr == kImportFunc)
             {
-                Message::OutputFormatted(Message::ESeverity::Warning, L"Function %s is missing from the WinMM DLL file %s.", importFunctionName.data(), kImportLibraryFilename.c_str());
+                Message::OutputFormatted(Message::ESeverity::Warning, L"Function %s is missing from %s.", importFunctionName.data(), kImportLibraryFilename.c_str());
                 continue;
             }
 
