@@ -119,15 +119,21 @@ namespace Xidi
 
             if (IsSeverityForcedInteractive(severity))
             {
-                // If the severity level is forced interactive, then the only output mode is interactive.
-                // Therefore, an interactive message box is the only output mode used.
+                // If the severity level is forced interactive, then unconditionally enable an interactive output mode.
+                // Other modes might also be enabled depending on the configuration.
 
                 selectedOutputModes[numOutputModes++] = EOutputMode::GraphicalMessageBox;
+
+                if (IsDebuggerPresent())
+                    selectedOutputModes[numOutputModes++] = EOutputMode::DebugString;
+
+                if (IsLogFileEnabled())
+                    selectedOutputModes[numOutputModes++] = EOutputMode::LogFile;
             }
             else if (IsDebuggerPresent())
             {
                 // If a debugger is present, #WillOutputMessageOfSeverity will always return `true`.
-                // The goal is tn ensure that debug strings are sent for all messages irrespective of severity (assuming they are not forced interactive).
+                // The goal is tn ensure that debug strings are sent for all messages irrespective of severity.
                 // For other configured output modes, it is necessary to filter based on severity.
 
                 selectedOutputModes[numOutputModes++] = EOutputMode::DebugString;
