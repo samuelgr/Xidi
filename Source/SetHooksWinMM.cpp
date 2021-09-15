@@ -96,32 +96,49 @@ namespace Xidi
             return;
         }
 
+        const auto& kReplaceableImportFunctionNames = importFunctions->GetReplaceable();
         std::map<std::wstring_view, const void*> replacementImportFunctions;
-        for (auto importFunctionName : importFunctions->GetReplaceable())
+        for (auto importFunctionName : kReplaceableImportFunctionNames)
         {
             TemporaryBuffer<char> importFunctionNameAscii;
-            wcstombs_s(nullptr, importFunctionNameAscii, importFunctionNameAscii.Count(), importFunctionName.data(), importFunctionNameAscii.Size());
+            wcstombs_s(nullptr, importFunctionNameAscii, importFunctionNameAscii.Count(), &importFunctionName[0], importFunctionNameAscii.Size());
 
             void* const kSystemFunc = GetProcAddress(kSystemLibraryHandle, importFunctionNameAscii);
             if (nullptr == kSystemFunc)
             {
-                Message::OutputFormatted(Message::ESeverity::Warning, L"Function %s is missing from the system API set module.", importFunctionName.data());
+                Message::OutputFormatted(Message::ESeverity::Warning, L"Function %s is missing from the system API set module.", &importFunctionName[0]);
                 continue;
             }
 
             void* const kImportFunc = GetProcAddress(kImportLibraryHandle, importFunctionNameAscii);
             if (nullptr == kImportFunc)
             {
-                Message::OutputFormatted(Message::ESeverity::Warning, L"Function %s is missing from %s.", importFunctionName.data(), kImportLibraryFilename.c_str());
+                Message::OutputFormatted(Message::ESeverity::Warning, L"Function %s is missing from %s.", &importFunctionName[0], kImportLibraryFilename.c_str());
                 continue;
             }
 
             const Hookshot::EResult kHookResult = hookshot->CreateHook(kSystemFunc, kImportFunc);
-            OutputSetHookResult(importFunctionName.data(), kHookResult);
+            OutputSetHookResult(&importFunctionName[0], kHookResult);
             if (false == Hookshot::SuccessfulResult(kHookResult))
                 continue;
 
             replacementImportFunctions[importFunctionName.data()] = hookshot->GetOriginalFunction(kSystemFunc);
+        }
+
+        const size_t kNumUnsuccessfullyHooked = kReplaceableImportFunctionNames.size() - replacementImportFunctions.size();
+        if (kReplaceableImportFunctionNames.size() == kNumUnsuccessfullyHooked)
+        {
+            // Not even a single function was successfully hooked.
+            // There are no import functions to replace. The application is in a consistent state and can run, but Xidi's WinMM form will not function.
+            Message::OutputFormatted(Message::ESeverity::Error, L"Failed to hook any of the %d function(s) attempted. The application can run in this state, but Xidi will likely not work.", (int)kNumUnsuccessfullyHooked);
+            return;
+        }
+        else if (0 != kNumUnsuccessfullyHooked)
+        {
+            // Some functions were successfully hooked, but others were not.
+            // This is a serious error because some of the application's joystick API calls will be redirected to Xidi while others will not, leading to inconsistent behavior.
+            Message::OutputFormatted(Message::ESeverity::ForcedInteractiveError, L"Failed to hook %d function(s) out of a total of %d attempted. The application will likely not function correctly in this state.", (int)kNumUnsuccessfullyHooked, (int)kReplaceableImportFunctionNames.size());
+            TerminateProcess(Globals::GetCurrentProcessHandle(), (UINT)-1);
         }
 
         const size_t kNumSuccessfullyReplaced = importFunctions->SetReplaceable(replacementImportFunctions);
@@ -136,7 +153,7 @@ namespace Xidi
             // It is a serious error to have hooked system functions but only replaced the import addresses on a strict subset of them.
             // Xidi invokes the functions it imports from the system, and failure to replace the import addresses could lead to infinite accidental recursion because the system functions are redirected to Xidi.
             // Thus, the application is practically guaranteed to freeze or crash.
-            Message::OutputFormatted(Message::ESeverity::ForcedInteractiveError, L"Hooked %d function(s) but only successfully replaced the import addresses for %d of them. The application will not function correctly in this state.", (int)replacementImportFunctions.size(), (int)kNumSuccessfullyReplaced);
+            Message::OutputFormatted(Message::ESeverity::ForcedInteractiveError, L"Hooked %d function(s) but only successfully replaced the import addresses for %d of them. The application will likely not function correctly in this state.", (int)replacementImportFunctions.size(), (int)kNumSuccessfullyReplaced);
             TerminateProcess(Globals::GetCurrentProcessHandle(), (UINT)-1);
         }
     }
