@@ -211,6 +211,7 @@
     <ClInclude Include="Include\Xidi\ApiDirectInput.h" />
     <ClInclude Include="Include\Xidi\ApiGUID.h" />
     <ClInclude Include="Include\Xidi\ApiWindows.h" />
+    <ClInclude Include="Include\Xidi\ApiXidi.h" />
     <ClInclude Include="Include\Xidi\Configuration.h" />
     <ClInclude Include="Include\Xidi\Globals.h" />
     <ClInclude Include="Include\Xidi\SetHooks.h" />
@@ -238,6 +239,9 @@
       <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
       <UseLibraryDependencyInputs>false</UseLibraryDependencyInputs>
       <LinkLibraryDependencies>false</LinkLibraryDependencies>
+    </ProjectReference>
+    <ProjectReference Include="WinMM.vcxproj">
+      <Project>{97f255c7-24ce-44f1-a897-75edb97bc541}</Project>
     </ProjectReference>
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

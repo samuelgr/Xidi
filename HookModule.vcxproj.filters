@@ -95,6 +95,9 @@
     <ClInclude Include="Include\Xidi\ApiDirectInput.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="Include\Xidi\ApiXidi.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="Resources\Xidi.rc">

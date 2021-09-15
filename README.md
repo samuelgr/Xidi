@@ -71,12 +71,14 @@ Some games make use of the legacy joystick API offered by the Windows multimedia
 
 **It is not common for games to need the HookModule form of Xidi.**
 
-Some games that use DirectInput do not directly load the DLL but rather use a Windows subsystem known as Component Object Model (COM) to request that the system figure out how to access DirectInput functionality. This makes use of information in the system registry which ends up pointing to the system-installed version of DirectInput. The HookModule form of Xidi intercepts the COM requests and redirects any DirectInput-related requests to Xidi.
+Some games and mods bypass the loading mechanism upon which Xidi's other forms rely.  The result of doing so is that even following the directions above is insufficient for Xidi to work.  Both DirectInput and WinMM forms of Xidi are potentially affected.
 
-Games that access DirectInput via COM require the HookModule form of Xidi, which is a hook module that is intended to be loaded by [Hookshot](https://github.com/samuelgr/Hookshot). To install the HookModule form of Xidi:
-1. Place either `dinput8.dll` or `dinput.dll` into the same directory as the game executable, as usual for DirectInput games.
+Certain games that use DirectInput do not directly load the DLL but rather use a Windows subsystem known as Component Object Model (COM) to request that the system figure out how to access DirectInput functionality. This makes use of information in the system registry which ends up pointing to the system-installed version of DirectInput.  For WinMM, this problem can arise when the DLL search path is programmatically altered or if the WinMM DLL is loaded using by some other mechanism like [API sets](https://docs.microsoft.com/en-us/windows/win32/apiindex/windows-apisets).  In both cases, the HookModule form of Xidi intercepts invocations of the system-supplied functions and redirects them to Xidi.
+
+Games that do not work with Xidi's other forms alone require the HookModule form of Xidi, which is a hook module intended to be loaded by [Hookshot](https://github.com/samuelgr/Hookshot). To install the HookModule form of Xidi:
+1. Place either `dinput8.dll`, `dinput.dll`, or `winmm.dll` into the same directory as the game executable, as usual for the other forms of Xidi.
 1. Additionally place `Xidi.HookModule.XX.dll` into the same directory as the game executable.
-1. Download the [latest release of Hookshot](https://github.com/samuelgr/Hookshot/releases), version 1.1.0 or higher. Extract `Hookshot.XX.exe` and `Hookshot.XX.dll` into the same directory as the game executable.
+1. Download the [latest release of Hookshot](https://github.com/samuelgr/Hookshot/releases), version 1.2.0 or higher. Extract `Hookshot.XX.exe` and `Hookshot.XX.dll` into the same directory as the game executable.
 1. Run the game with Hookshot. The easiest way to do this is using the Hookshot Launcher, as follows, but there are other ways that are described in Hookshot's documentation. To use Hookshot Launcher:
     1. Rename the game executable by adding the text `_HookshotLauncher_` to the beginning. For example, `Game.exe` would be renamed to `_HookshotLauncher_Game.exe`.
     1. From the downloaded Hookshot release, extract `HookshotLauncher.XX.exe` to the same directory as the game executable, then rename it to the original name of the game executable. Following the example above, this would mean renaming `HookshotLauncher.XX.exe` to `Game.exe`.

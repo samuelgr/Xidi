@@ -134,7 +134,7 @@ namespace Xidi
             // In the event of an error, it is safest to avoid enabling any Xidi virtual controllers to prevent binding both to the WinMM version and the Xidi version of the same one.
             joyIndexMap.clear();
             joyIndexMap.reserve(numDevicesTotal);
-            Message::OutputFormatted(Message::ESeverity::Debug, L"Presenting the system with these WinMM devices:");
+            Message::OutputFormatted(Message::ESeverity::Debug, L"Presenting the application with these WinMM devices:");
 
             if ((false == joySystemDeviceInfo[0].second) && !(joySystemDeviceInfo[0].first.empty()))
             {

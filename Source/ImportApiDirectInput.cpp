@@ -101,14 +101,14 @@ namespace Xidi
         /// @param [in] libraryPath Path of the library that was loaded.
         static void LogInitializeLibraryPath(LPCWSTR libraryPath)
         {
-            Message::OutputFormatted(Message::ESeverity::Debug, L"Attempting to import DirectInput functions from \"%s\".", libraryPath);
+            Message::OutputFormatted(Message::ESeverity::Debug, L"Attempting to import DirectInput functions from %s.", libraryPath);
         }
 
         /// Logs an error event related to failure to initialize the import table because the import library could not be loaded.
         /// @param [in] libraryPath Path of the library that was loaded.
         static void LogInitializeFailed(LPCWSTR libraryPath)
         {
-            Message::OutputFormatted(Message::ESeverity::Error, L"Failed to load DirectInput import library \"%s\".", libraryPath);
+            Message::OutputFormatted(Message::ESeverity::Error, L"Failed to load DirectInput import library %s.", libraryPath);
         }
 
         /// Logs an informational event related to successful initialization of the import table.

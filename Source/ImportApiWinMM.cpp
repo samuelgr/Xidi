@@ -11,14 +11,23 @@
  *****************************************************************************/
 
 #include "ApiWindows.h"
+#include "ApiXidi.h"
 #include "Configuration.h"
 #include "Globals.h"
 #include "ImportApiWinMM.h"
 #include "Message.h"
 #include "Strings.h"
 
+#include <map>
 #include <mutex>
+#include <set>
 #include <string_view>
+
+
+// -------- MACROS --------------------------------------------------------- //
+
+/// Computes the index of the specified named function in the pointer array of the import table.
+#define IMPORT_TABLE_INDEX_OF(name)         (offsetof(UImportTable, named.##name) / sizeof(UImportTable::ptr[0]))
 
 
 namespace Xidi
@@ -219,8 +228,9 @@ namespace Xidi
                 MMRESULT(WINAPI* waveOutWrite)(HWAVEOUT, LPWAVEHDR, UINT);
             } named;
 
-            void* ptr[sizeof(named) / sizeof(void*)];
+            const void* ptr[sizeof(named) / sizeof(const void*)];
         };
+        static_assert(sizeof(UImportTable::named) == sizeof(UImportTable::ptr), L"Element size mismatch.");
 
 
         // -------- INTERNAL VARIABLES ------------------------------------- //
@@ -229,7 +239,7 @@ namespace Xidi
         static UImportTable importTable;
 
 
-        // -------- INTERNAL FUNCTIONS --------------------------------------------- //
+        // -------- INTERNAL FUNCTIONS ------------------------------------- //
 
         /// Retrieves the library path for the WinMM library that should be used for importing functions.
         /// @return Library path.
@@ -252,26 +262,6 @@ namespace Xidi
         static void LogImportFailed(LPCWSTR functionName)
         {
             Message::OutputFormatted(Message::ESeverity::Warning, L"Import library is missing WinMM function \"%s\". Attempts to call it will fail.", functionName);
-        }
-
-        /// Logs a debug event related to attempting to load the system-provided library for importing functions.
-        /// @param [in] libraryPath Path of the library that was loaded.
-        static void LogInitializeLibraryPath(LPCWSTR libraryPath)
-        {
-            Message::OutputFormatted(Message::ESeverity::Debug, L"Attempting to import WinMM functions from \"%s\".", libraryPath);
-        }
-
-        /// Logs an error event related to failure to initialize the import table because the import library could not be loaded.
-        /// @param [in] libraryPath Path of the library that was loaded.
-        static void LogInitializeFailed(void)
-        {
-            Message::Output(Message::ESeverity::Error, L"Failed to initialize imported WinMM functions.");
-        }
-
-        /// Logs an informational event related to successful initialization of the import table.
-        static void LogInitializeSucceeded(void)
-        {
-            Message::OutputFormatted(Message::ESeverity::Info, L"Successfully initialized imported WinMM functions.");
         }
 
         /// Logs an error event related to a missing import function that has been invoked.
@@ -297,11 +287,11 @@ namespace Xidi
                     std::wstring_view libraryPath = GetImportLibraryPathWinMM();
 
                     // Attempt to load the library.
-                    LogInitializeLibraryPath(libraryPath.data());
+                    Message::OutputFormatted(Message::ESeverity::Debug, L"Attempting to import WinMM functions from %s.", libraryPath.data());
                     HMODULE loadedLibrary = LoadLibraryEx(libraryPath.data(), nullptr, 0);
                     if (nullptr == loadedLibrary)
                     {
-                        LogInitializeFailed();
+                        Message::Output(Message::ESeverity::Error, L"Failed to initialize imported WinMM functions.");
                         return;
                     }
 
@@ -1021,7 +1011,7 @@ namespace Xidi
                     importTable.named.waveOutWrite = (MMRESULT(WINAPI*)(HWAVEOUT, LPWAVEHDR, UINT))procAddress;
 
                     // Initialization complete.
-                    LogInitializeSucceeded();
+                    Message::OutputFormatted(Message::ESeverity::Info, L"Successfully initialized imported WinMM functions.");
                 }
             );
         }
@@ -3097,5 +3087,79 @@ namespace Xidi
 
             return importTable.named.waveOutWrite(hwo, pwh, cbwh);
         }
+
+
+        // -------- XIDI API ----------------------------------------------- //
+
+        /// Implements the Xidi API interface #IImportFunctions.
+        /// Allows joystick WinMM functions to be replaced.
+        class JoystickFunctionReplacer : public Xidi::Api::IImportFunctions
+        {
+        private:
+            // -------- CLASS VARIABLES ------------------------------------ //
+
+            /// Maps from replaceable joystick function name to array index in the import table.
+            static const std::map<std::wstring_view, size_t> kReplaceableFunctions;
+
+
+        public:
+            // -------- CONCRETE INSTANCE METHODS -------------------------- //
+            // See "ApiXidi.h" for documentation.
+
+            virtual const std::set<std::wstring_view>& GetReplaceable(void) const
+            {
+                static std::set<std::wstring_view> initSet;
+                static std::once_flag initFlag;
+
+                std::call_once(initFlag, []() -> void
+                    {
+                        for (auto replaceableFunction : kReplaceableFunctions)
+                            initSet.insert(replaceableFunction.first);
+                    }
+                );
+
+                return initSet;
+            }
+
+            virtual size_t SetReplaceable(const std::map<std::wstring_view, const void*>& importFunctionTable)
+            {
+                Initialize();
+
+                const std::wstring_view kLibraryPath = GetImportLibraryPathWinMM();
+                size_t numReplaced = 0;
+
+                for (auto newImportFunction : importFunctionTable)
+                {
+                    if (true == kReplaceableFunctions.contains(newImportFunction.first))
+                    {
+                        Message::OutputFormatted(Message::ESeverity::Debug, L"Import function \"%s\" has been replaced.", newImportFunction.first.data());
+                        importTable.ptr[kReplaceableFunctions.at(newImportFunction.first)] = newImportFunction.second;
+                        numReplaced += 1;
+                    }
+                }
+
+                if (numReplaced > 0)
+                    Message::OutputFormatted(Message::ESeverity::Warning, L"%d function(s) previously imported from %s have been replaced. Previously imported versions will not be used.", (int)numReplaced, kLibraryPath.data());
+
+                return numReplaced;
+            }
+        };
+
+        /// Maps from replaceable import function name to its pointer's positional index in the import table.
+        const std::map<std::wstring_view, size_t> JoystickFunctionReplacer::kReplaceableFunctions = {
+            {L"joyConfigChanged", IMPORT_TABLE_INDEX_OF(joyConfigChanged)},
+            {L"joyGetDevCapsA", IMPORT_TABLE_INDEX_OF(joyGetDevCapsA)},
+            {L"joyGetDevCapsW", IMPORT_TABLE_INDEX_OF(joyGetDevCapsW)},
+            {L"joyGetNumDevs", IMPORT_TABLE_INDEX_OF(joyGetNumDevs)},
+            {L"joyGetPos", IMPORT_TABLE_INDEX_OF(joyGetPos)},
+            {L"joyGetPosEx", IMPORT_TABLE_INDEX_OF(joyGetPosEx)},
+            {L"joyGetThreshold", IMPORT_TABLE_INDEX_OF(joyGetThreshold)},
+            {L"joyReleaseCapture", IMPORT_TABLE_INDEX_OF(joyReleaseCapture)},
+            {L"joySetCapture", IMPORT_TABLE_INDEX_OF(joySetCapture)},
+            {L"joySetThreshold", IMPORT_TABLE_INDEX_OF(joySetThreshold)}
+        };
+
+        /// Singleton Xidi API implementation object.
+        static JoystickFunctionReplacer joystickFunctionReplacer;
     }
 }

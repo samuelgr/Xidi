@@ -22,6 +22,7 @@
     <ClInclude Include="Include\Xidi\ApiDirectInput.h" />
     <ClInclude Include="Include\Xidi\ApiGUID.h" />
     <ClInclude Include="Include\Xidi\ApiWindows.h" />
+    <ClInclude Include="Include\Xidi\ApiXidi.h" />
     <ClInclude Include="Include\Xidi\Configuration.h" />
     <ClInclude Include="Include\Xidi\ControllerTypes.h" />
     <ClInclude Include="Include\Xidi\DataFormat.h" />
@@ -47,6 +48,7 @@
   <ItemGroup>
     <ClCompile Include="Source\ApiDirectInput.cpp" />
     <ClCompile Include="Source\ApiGUID.cpp" />
+    <ClCompile Include="Source\ApiXidi.cpp" />
     <ClCompile Include="Source\Configuration.cpp" />
     <ClCompile Include="Source\DataFormat.cpp" />
     <ClCompile Include="Source\DirectInputClassFactory.cpp" />
