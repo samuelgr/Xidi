@@ -62,9 +62,9 @@ namespace Xidi
             return initString;
         }
 
-        /// Generates the value for kStrVersionName; see documentation of this run-time constant for more information.
+        /// Generates the value for kStrFormName; see documentation of this run-time constant for more information.
         /// @return Corresponding run-time constant value.
-        static const std::wstring& GetVersionName(void)
+        static const std::wstring& GetFormName(void)
         {
             static std::wstring initString;
             static std::once_flag initFlag;
@@ -362,7 +362,7 @@ namespace Xidi
                         CoTaskMemFree(knownFolderPath);
                     }
 
-                    logFilename << GetProductName().c_str() << L'_' << GetVersionName().c_str() << L'_' << GetExecutableBaseName().c_str() << L'_' << Globals::GetCurrentProcessId() << kStrLogFileExtension;
+                    logFilename << GetProductName().c_str() << L'_' << GetFormName().c_str() << L'_' << GetExecutableBaseName().c_str() << L'_' << Globals::GetCurrentProcessId() << kStrLogFileExtension;
 
                     initString.assign(logFilename.str());
                 }
@@ -376,7 +376,7 @@ namespace Xidi
         // See "Strings.h" for documentation.
 
         extern const std::wstring_view kStrProductName(GetProductName());
-        extern const std::wstring_view kStrVersionName(GetVersionName());
+        extern const std::wstring_view kStrFormName(GetFormName());
         extern const std::wstring_view kStrExecutableCompleteFilename(GetExecutableCompleteFilename());
         extern const std::wstring_view kStrExecutableBaseName(GetExecutableBaseName());
         extern const std::wstring_view kStrExecutableDirectoryName(GetExecutableDirectoryName());

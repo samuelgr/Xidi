@@ -40,6 +40,9 @@ namespace Xidi
         // Can safely be used at any time, including to perform static initialization.
         // Views are guaranteed to be null-terminated.
 
+        /// Xidi version string.
+        inline constexpr std::wstring_view kStrVersion = _CRT_WIDE(XIDI_VERSION_STRING);
+
         /// Base name of the DirectInput library to import.
         inline constexpr std::wstring_view kStrLibraryNameDirectInput = L"dinput.dll";
 
@@ -85,9 +88,9 @@ namespace Xidi
         /// Use this to identify Xidi in areas of user interaction.
         extern const std::wstring_view kStrProductName;
 
-        /// Version name.
-        /// Use this to identify Xidi's version (dinput, dinput8, winmm) in areas of user interaction.
-        extern const std::wstring_view kStrVersionName;
+        /// Form name.
+        /// Use this to identify Xidi's form (dinput, dinput8, winmm) in areas of user interaction.
+        extern const std::wstring_view kStrFormName;
 
         /// Complete path and filename of the currently-running executable.
         extern const std::wstring_view kStrExecutableCompleteFilename;

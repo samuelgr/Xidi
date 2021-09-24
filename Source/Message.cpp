@@ -168,8 +168,8 @@ namespace Xidi
             std::wstringstream outputString;
 
             // First compose the output string stamp.
-            // Desired format is "(product name)-(version name): [(severity)]"
-            outputString << Strings::kStrProductName << L'-' << Strings::kStrVersionName << L": [" << CharacterForSeverity(severity) << L"] ";
+            // Desired format is "(product name)-(form name): [(severity)]"
+            outputString << Strings::kStrProductName << L'-' << Strings::kStrFormName << L": [" << CharacterForSeverity(severity) << L"] ";
 
             // Append the message itself.
             outputString << message << L"\n";
@@ -307,7 +307,8 @@ namespace Xidi
                 fwprintf_s(logFileHandle, L"%s\n", kLogHeaderSeparator);
                 fwprintf_s(logFileHandle, L"%s Log\n", Strings::kStrProductName.data());
                 fwprintf_s(logFileHandle, L"%s\n", kLogHeaderSeparator);
-                fwprintf_s(logFileHandle, L"Version:   %s\n", Strings::kStrVersionName.data());
+                fwprintf_s(logFileHandle, L"Version:   %s\n", Strings::kStrVersion.data());
+                fwprintf_s(logFileHandle, L"Form:      %s\n", Strings::kStrFormName.data());
                 fwprintf_s(logFileHandle, L"Program:   %s\n", Strings::kStrExecutableCompleteFilename.data());
                 fwprintf_s(logFileHandle, L"PID:       %d\n", Globals::GetCurrentProcessId());
                 fwprintf_s(logFileHandle, L"%s\n", kLogHeaderSeparator);
