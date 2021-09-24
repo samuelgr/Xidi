@@ -59,8 +59,6 @@ if exist %output_dir% (
     rd /S /Q %output_dir%
 )
 
-if %ERRORLEVEL%==55 exit /b
-
 pushd %script_dir%
 set files_are_missing=no
 for %%F in (%files_release% %files_sdk_lib% %files_sdk_include%) do (
