@@ -29,17 +29,21 @@ set third_party_license=Hookshot Boost
 rem ---------------------------------------------------------------------------
 
 set script_path=%~dp0
-set release_ver=%1
-set output_dir=%~f2
+set output_dir=%~f1
 
+for /f "usebackq tokens=3" %%V in (`findstr VERSION_STRING %script_path%Resources\Version.h`) do set release_ver=%%~V
 if "%release_ver%"=="" (
     echo Missing release version!
-    exit /b
+    goto :exit
 )
 
 if "%output_dir%"=="" (
+    for /f "usebackq tokens=3*" %%D in (`reg query "HKEY_CURRENT_USER\Software\Microsoft\Windows\CurrentVersion\Explorer\User Shell Folders" /v Desktop`) do if "%%~E"=="" (set output_dir=%%~D) else (set output_dir=%%~D %%~E)
+    call set output_dir=!output_dir!
+)
+if "%output_dir%"=="" (
     echo Missing output directory!
-    exit /b
+    goto :exit
 )
 
 set output_dir=%output_dir%\%project_name%-v%release_ver%
@@ -51,7 +55,7 @@ if not %ERRORLEVEL%==1 exit /b
 if exist %output_dir% (
     echo Output directory exists and will be overwritten.
     choice /M "Still proceed?"
-    if not %ERRORLEVEL%==1 exit /b 55
+    if not !ERRORLEVEL!==1 exit /b
     rd /S /Q %output_dir%
 )
 
@@ -85,7 +89,7 @@ if "yes"=="%project_has_third_party_license%" (
 )
 popd
 
-if "yes"=="%files_are_missing%" exit /b
+if "yes"=="%files_are_missing%" goto :exit
 
 pushd %script_dir%
 md %output_dir%
@@ -131,3 +135,6 @@ if "yes"=="%project_has_third_party_license%" (
     )
 )
 popd
+
+:exit
+pause
