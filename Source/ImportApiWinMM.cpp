@@ -3093,7 +3093,7 @@ namespace Xidi
 
         /// Implements the Xidi API interface #IImportFunctions.
         /// Allows joystick WinMM functions to be replaced.
-        class JoystickFunctionReplacer : public Xidi::Api::IImportFunctions
+        class JoystickFunctionReplacer : public Api::IImportFunctions
         {
         private:
             // -------- CLASS VARIABLES ------------------------------------ //

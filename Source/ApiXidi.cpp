@@ -12,6 +12,7 @@
 
 #include "ApiXidi.h"
 #include "Message.h"
+#include "Strings.h"
 
 #include <unordered_map>
 
@@ -63,6 +64,30 @@ namespace Xidi
         {
             RegisterInterfaceObject(apiClass, this);
         }
+
+
+        // -------- XIDI API ----------------------------------------------- //
+
+        /// Implements the Xidi API interface #IMetadata.
+        class MetadataProvider : public IMetadata
+        {
+        public:
+            // -------- CONCRETE INSTANCE METHODS -------------------------- //
+            // See "ApiXidi.h" for documentation.
+
+            virtual IMetadata::SVersion GetVersion(void) const
+            {
+                return {XIDI_VERSION_STRUCT, Strings::kStrVersion};
+            }
+
+            virtual std::wstring_view GetFormName(void) const
+            {
+                return Strings::kStrFormName;
+            }
+        };
+
+        /// Singleton Xidi API implementation object.
+        static MetadataProvider metadataProvider;
     }
 }
 

@@ -12,6 +12,7 @@
 #pragma once
 
 #include <cstddef>
+#include <cstdint>
 #include <map>
 #include <set>
 #include <string_view>
@@ -32,6 +33,7 @@ namespace Xidi
         /// Order of enumerators also cannot be changed.
         enum class EClass : unsigned int
         {
+            Metadata,                                                       ///< See #IMetadata.
             ImportFunctions                                                 ///< See #IImportFunctions.
         };
 
@@ -49,6 +51,37 @@ namespace Xidi
             IXidi(EClass apiClass);
         };
         
+        /// Xidi API class for obtaining metadata about the running Xidi module.
+        /// Guaranteed to be implemented and available in all Xidi modules.
+        class IMetadata : public IXidi
+        {
+            XIDI_API_INTERFACE_FOR(Metadata);
+
+        public:
+            // -------- TYPE DEFINITIONS --------------------------------------- //
+            
+            /// Version information structure.
+            struct SVersion
+            {
+                uint16_t major;                                             ///< Major version number.
+                uint16_t minor;                                             ///< Minor version number.
+                uint16_t patch;                                             ///< Patch level.
+                uint16_t unused;                                            ///< Currently unused. Present for convenience and alignment with the standard resource version information structure.
+                std::wstring_view versionString;                            ///< String representation of the version information, including any suffixes.
+            };
+
+
+            // -------- ABSTRACT INSTANCE METHODS ------------------------------ //
+
+            /// Retrieves and returns the version information structure of the running Xidi module.
+            /// @return Filled-in version information structure.
+            virtual SVersion GetVersion(void) const = 0;
+
+            /// Retrieves and returns a string that identifies the running form of Xidi.
+            /// @return String identifying the form of Xidi.
+            virtual std::wstring_view GetFormName(void) const = 0;
+        };
+
         /// Xidi API class for manipulating the functions Xidi imports from the system.
         class IImportFunctions : public IXidi
         {
