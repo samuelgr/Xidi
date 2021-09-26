@@ -71,9 +71,9 @@ namespace Xidi
 
             std::call_once(initFlag, []() -> void
                 {
-#ifdef IDS_XIDI_VERSION_NAME
+#ifdef IDS_XIDI_FORM_NAME
                     const wchar_t* stringStart = nullptr;
-                    int stringLength = LoadString(Globals::GetInstanceHandle(), IDS_XIDI_VERSION_NAME, (wchar_t*)&stringStart, 0);
+                    int stringLength = LoadString(Globals::GetInstanceHandle(), IDS_XIDI_FORM_NAME, (wchar_t*)&stringStart, 0);
 
                     while ((stringLength > 0) && (L'\0' == stringStart[stringLength - 1]))
                         stringLength -= 1;

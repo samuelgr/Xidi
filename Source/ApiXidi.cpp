@@ -75,12 +75,14 @@ namespace Xidi
             // -------- CONCRETE INSTANCE METHODS -------------------------- //
             // See "ApiXidi.h" for documentation.
 
-            virtual IMetadata::SVersion GetVersion(void) const
+            IMetadata::SVersion GetVersion(void) const override
             {
                 return {XIDI_VERSION_STRUCT, Strings::kStrVersion};
             }
 
-            virtual std::wstring_view GetFormName(void) const
+            // --------
+
+            std::wstring_view GetFormName(void) const override
             {
                 return Strings::kStrFormName;
             }

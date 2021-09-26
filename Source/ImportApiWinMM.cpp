@@ -3106,7 +3106,7 @@ namespace Xidi
             // -------- CONCRETE INSTANCE METHODS -------------------------- //
             // See "ApiXidi.h" for documentation.
 
-            virtual const std::set<std::wstring_view>& GetReplaceable(void) const
+            const std::set<std::wstring_view>& GetReplaceable(void) const override
             {
                 static std::set<std::wstring_view> initSet;
                 static std::once_flag initFlag;
@@ -3121,7 +3121,9 @@ namespace Xidi
                 return initSet;
             }
 
-            virtual size_t SetReplaceable(const std::map<std::wstring_view, const void*>& importFunctionTable)
+            // --------
+
+            size_t SetReplaceable(const std::map<std::wstring_view, const void*>& importFunctionTable) override
             {
                 Initialize();
 
