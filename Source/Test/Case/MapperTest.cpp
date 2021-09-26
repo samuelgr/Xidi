@@ -96,6 +96,8 @@ namespace XidiTest
                 *contributionCounter += 1;
         }
 
+        // --------
+
         void ContributeFromButtonValue(SState& controllerState, bool buttonPressed) const override
         {
             if (EExpectedSource::Button != expectedSource)
@@ -107,6 +109,8 @@ namespace XidiTest
             if (nullptr != contributionCounter)
                 *contributionCounter += 1;
         }
+
+        // --------
 
         void ContributeFromTriggerValue(SState& controllerState, uint8_t triggerValue) const override
         {
@@ -120,9 +124,21 @@ namespace XidiTest
                 *contributionCounter += 1;
         }
 
-        SElementIdentifier GetTargetElement(void) const override
+        // --------
+
+        int GetTargetElementCount(void) const override
         {
-            return {};
+            return 1;
+        }
+
+        // --------
+
+        std::optional<SElementIdentifier> GetTargetElementAt(int index) const override
+        {
+            if (0 != index)
+                return std::nullopt;
+
+            return SElementIdentifier();
         }
     };
 

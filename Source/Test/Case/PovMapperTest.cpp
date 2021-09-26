@@ -32,7 +32,12 @@ namespace XidiTest
         for (int i = 0; i < (int)EPovDirection::Count; ++i)
         {
             const PovMapper mapper((EPovDirection)i);
-            const SElementIdentifier targetElement = mapper.GetTargetElement();
+            TEST_ASSERT(1 == mapper.GetTargetElementCount());
+
+            const std::optional<SElementIdentifier> maybeTargetElement = mapper.GetTargetElementAt(0);
+            TEST_ASSERT(true == maybeTargetElement.has_value());
+
+            const SElementIdentifier targetElement = maybeTargetElement.value();
             TEST_ASSERT(EElementType::Pov == targetElement.type);
         }
     }

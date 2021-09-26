@@ -141,25 +141,32 @@ namespace Xidi
             {
                 if (nullptr != elements.all[i])
                 {
-                    const SElementIdentifier targetElement = elements.all[i]->GetTargetElement();
-                    switch (targetElement.type)
+                    for (int j = 0; j < elements.all[i]->GetTargetElementCount(); ++j)
                     {
-                    case EElementType::Axis:
-                        if ((int)targetElement.axis < (int)EAxis::Count)
-                            axesPresent.insert(targetElement.axis);
-                        break;
+                        const std::optional<SElementIdentifier> maybeTargetElement = elements.all[i]->GetTargetElementAt(j);
+                        if (false == maybeTargetElement.has_value())
+                            continue;
 
-                    case EElementType::Button:
-                        if ((int)targetElement.button < (int)EButton::Count)
+                        const SElementIdentifier targetElement = maybeTargetElement.value();
+                        switch (targetElement.type)
                         {
-                            if ((int)targetElement.button > highestButtonSeen)
-                                highestButtonSeen = (int)targetElement.button;
-                        }
-                        break;
+                        case EElementType::Axis:
+                            if ((int)targetElement.axis < (int)EAxis::Count)
+                                axesPresent.insert(targetElement.axis);
+                            break;
 
-                    case EElementType::Pov:
-                        povPresent = true;
-                        break;
+                        case EElementType::Button:
+                            if ((int)targetElement.button < (int)EButton::Count)
+                            {
+                                if ((int)targetElement.button > highestButtonSeen)
+                                    highestButtonSeen = (int)targetElement.button;
+                            }
+                            break;
+
+                        case EElementType::Pov:
+                            povPresent = true;
+                            break;
+                        }
                     }
                 }
             }
@@ -172,7 +179,6 @@ namespace Xidi
 
             return capabilities;
         }
-
 
         /// Filters (by saturation) analog stick values that might be slightly out of range due to differences between the implemented range and the XInput actual range.
         /// @param [in] analogValue Raw analog value.

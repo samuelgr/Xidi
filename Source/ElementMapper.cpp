@@ -15,6 +15,7 @@
 #include "ElementMapper.h"
 
 #include <cstdint>
+#include <optional>
 
 
 namespace Xidi
@@ -146,9 +147,19 @@ namespace Xidi
 
         // --------
 
-        SElementIdentifier AxisMapper::GetTargetElement(void) const
+        int AxisMapper::GetTargetElementCount(void) const
         {
-            return {.type = EElementType::Axis, .axis = axis};
+            return 1;
+        }
+
+        // --------
+
+        std::optional<SElementIdentifier> AxisMapper::GetTargetElementAt(int index) const
+        {
+            if (0 != index)
+                return std::nullopt;
+
+            return SElementIdentifier({.type = EElementType::Axis, .axis = axis});
         }
         
         // --------
@@ -174,9 +185,19 @@ namespace Xidi
 
         // --------
 
-        SElementIdentifier ButtonMapper::GetTargetElement(void) const
+        int ButtonMapper::GetTargetElementCount(void) const
         {
-            return {.type = EElementType::Button, .button = button};
+            return 1;
+        }
+
+        // --------
+
+        std::optional<SElementIdentifier> ButtonMapper::GetTargetElementAt(int index) const
+        {
+            if (0 != index)
+                return std::nullopt;
+
+            return SElementIdentifier({.type = EElementType::Button, .button = button});
         }
 
         // --------
@@ -247,9 +268,19 @@ namespace Xidi
 
         // --------
 
-        SElementIdentifier PovMapper::GetTargetElement(void) const
+        int PovMapper::GetTargetElementCount(void) const
         {
-            return {.type = EElementType::Pov};
+            return 1;
+        }
+
+        // --------
+
+        std::optional<SElementIdentifier> PovMapper::GetTargetElementAt(int index) const
+        {
+            if (0 != index)
+                return std::nullopt;
+
+            return SElementIdentifier({.type = EElementType::Pov});
         }
     }
 }

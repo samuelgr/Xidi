@@ -16,6 +16,7 @@
 #include "TestCase.h"
 
 #include <cstdint>
+#include <optional>
 
 
 namespace XidiTest
@@ -31,7 +32,12 @@ namespace XidiTest
         for (int i = 0; i < (int)EAxis::Count; ++i)
         {
             const AxisMapper mapper((EAxis)i);
-            const SElementIdentifier targetElement = mapper.GetTargetElement();
+            TEST_ASSERT(1 == mapper.GetTargetElementCount());
+
+            const std::optional<SElementIdentifier> maybeTargetElement = mapper.GetTargetElementAt(0);
+            TEST_ASSERT(true == maybeTargetElement.has_value());
+
+            const SElementIdentifier targetElement = maybeTargetElement.value();
             TEST_ASSERT(EElementType::Axis == targetElement.type);
             TEST_ASSERT(i == (int)targetElement.axis);
         }

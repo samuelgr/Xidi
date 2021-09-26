@@ -47,9 +47,14 @@ namespace Xidi
             /// @param [in] buttonPressed Button state from the XInput controller, `true` if pressed and `false` otherwise.
             virtual void ContributeFromTriggerValue(SState& controllerState, uint8_t triggerValue) const = 0;
 
-            /// Specifies the virtual controller element that is the target of any contributions from this element mapper.
-            /// @return Identifier of the targert virtual controller element.
-            virtual SElementIdentifier GetTargetElement(void) const = 0;
+            /// Specifies the number of virtual controller elements that are the target of any contributions from this element mapper.
+            /// @return Number of virtual controller elements to which contributions are targetted.
+            virtual int GetTargetElementCount(void) const = 0;
+
+            /// Specifies one of the virtual controller elements that is the target of any contributions from this element mapper.
+            /// @param [in] index Index of the target element. Must be less than the count reported by #GetTargetElementCount.
+            /// @return Identifier of the targert virtual controller element, if it exists.
+            virtual std::optional<SElementIdentifier> GetTargetElementAt(int index) const = 0;
         };
 
         /// Maps a single XInput controller element such that it contributes to an axis value on a virtual controller.
@@ -98,7 +103,8 @@ namespace Xidi
             void ContributeFromAnalogValue(SState& controllerState, int16_t analogValue) const override;
             void ContributeFromButtonValue(SState& controllerState, bool buttonPressed) const override;
             void ContributeFromTriggerValue(SState& controllerState, uint8_t triggerValue) const override;
-            SElementIdentifier GetTargetElement(void) const override;
+            int GetTargetElementCount(void) const override;
+            std::optional<SElementIdentifier> GetTargetElementAt(int index) const override;
         };
 
         /// Maps a single XInput controller element such that it contributes to a button reading on a virtual controller.
@@ -130,7 +136,8 @@ namespace Xidi
             void ContributeFromAnalogValue(SState& controllerState, int16_t analogValue) const override;
             void ContributeFromButtonValue(SState& controllerState, bool buttonPressed) const override;
             void ContributeFromTriggerValue(SState& controllerState, uint8_t triggerValue) const override;
-            SElementIdentifier GetTargetElement(void) const override;
+            int GetTargetElementCount(void) const override;
+            std::optional<SElementIdentifier> GetTargetElementAt(int index) const override;
         };
 
         /// Maps a single XInput controller element such that it contributes to an axis value on a virtual controller, but removes analog functionality. Values contributed are either zero or extreme.
@@ -195,7 +202,8 @@ namespace Xidi
             void ContributeFromAnalogValue(SState& controllerState, int16_t analogValue) const override;
             void ContributeFromButtonValue(SState& controllerState, bool buttonPressed) const override;
             void ContributeFromTriggerValue(SState& controllerState, uint8_t triggerValue) const override;
-            SElementIdentifier GetTargetElement(void) const override;
+            int GetTargetElementCount(void) const override;
+            std::optional<SElementIdentifier> GetTargetElementAt(int index) const override;
         };
     }
 }

@@ -31,7 +31,12 @@ namespace XidiTest
         for (int i = 0; i < (int)EButton::Count; ++i)
         {
             const ButtonMapper mapper((EButton)i);
-            const SElementIdentifier targetElement = mapper.GetTargetElement();
+            TEST_ASSERT(1 == mapper.GetTargetElementCount());
+
+            const std::optional<SElementIdentifier> maybeTargetElement = mapper.GetTargetElementAt(0);
+            TEST_ASSERT(true == maybeTargetElement.has_value());
+
+            const SElementIdentifier targetElement = maybeTargetElement.value();
             TEST_ASSERT(EElementType::Button == targetElement.type);
             TEST_ASSERT(i == (int)targetElement.button);
         }
