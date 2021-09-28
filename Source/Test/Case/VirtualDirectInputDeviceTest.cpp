@@ -51,7 +51,7 @@ namespace XidiTest
         EPovValue pov;
         TButtonValue button[4];
     };
-    static_assert(0 == (sizeof(STestDataPacket) % 4), L"Test data packet size must be divisible by 4.");
+    static_assert(0 == (sizeof(STestDataPacket) % 4), "Test data packet size must be divisible by 4.");
 
 
     // -------- INTERNAL CONSTANTS ----------------------------------------- //

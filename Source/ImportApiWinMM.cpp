@@ -230,7 +230,7 @@ namespace Xidi
 
             const void* ptr[sizeof(named) / sizeof(const void*)];
         };
-        static_assert(sizeof(UImportTable::named) == sizeof(UImportTable::ptr), L"Element size mismatch.");
+        static_assert(sizeof(UImportTable::named) == sizeof(UImportTable::ptr), "Element size mismatch.");
 
 
         // -------- INTERNAL VARIABLES ------------------------------------- //

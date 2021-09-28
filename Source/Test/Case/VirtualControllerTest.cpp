@@ -623,7 +623,7 @@ namespace XidiTest
             {.axis = {0, 0, 0, 0, 0, 0},         .button = 0b0000, .povDirection = {.components = {false, false, true, false}}}
         };
 
-        static_assert(_countof(kXInputStates) == _countof(kExpectedControllerStates), L"Mismatch between number of XInput states and number of controller states.");
+        static_assert(_countof(kXInputStates) == _countof(kExpectedControllerStates), "Mismatch between number of XInput states and number of controller states.");
 
         // Each iteration of the loop adds one more event to the test.
         // First iteration tests only a single state change, second iteration tests two state changes, and so on.
@@ -681,7 +681,7 @@ namespace XidiTest
             {.button = 0b0000, .povDirection = {.components = {false, false, true, false}}}
         };
 
-        static_assert(_countof(kXInputStates) == _countof(kExpectedControllerStates), L"Mismatch between number of XInput states and number of controller states.");
+        static_assert(_countof(kXInputStates) == _countof(kExpectedControllerStates), "Mismatch between number of XInput states and number of controller states.");
 
         // Each iteration of the loop adds one more event to the test.
         // First iteration tests only a single state change, second iteration tests two state changes, and so on.

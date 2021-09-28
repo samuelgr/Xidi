@@ -51,7 +51,7 @@ namespace Xidi
                     return (0 == memcmp(this, &other, sizeof(*this)));
                 }
             };
-            static_assert(sizeof(SEventData) <= 8, L"Data structure size constraint violation.");
+            static_assert(sizeof(SEventData) <= 8, "Data structure size constraint violation.");
 
             /// Holds all the information that encompasses a single controller state change event.
             /// Includes state change event data along with additional metadata.
@@ -62,7 +62,7 @@ namespace Xidi
                 uint32_t timestamp;                                         ///< System time in milliseconds when the event was generated.
                 uint32_t sequence;                                          ///< Chronological sequence number of this event. Supposed to be globally monotonic with respect to all other input events, but in practice it is locally monotonic with respect to all virtual controller events.
             };
-            static_assert(sizeof(SEvent) <= 16, L"Data structure size constraint violation.");
+            static_assert(sizeof(SEvent) <= 16, "Data structure size constraint violation.");
 
 
             // -------- CONSTANTS ------------------------------------------ //

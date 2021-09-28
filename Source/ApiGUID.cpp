@@ -24,7 +24,7 @@
 
 size_t std::hash<GUID>::operator()(REFGUID keyval) const
 {
-    static_assert(0 == (sizeof(GUID) % sizeof(size_t)), L"GUID size misalignment.");
+    static_assert(0 == (sizeof(GUID) % sizeof(size_t)), "GUID size misalignment.");
     constexpr int kNumPieces = sizeof(GUID) / sizeof(size_t);
 
     const size_t* rawGUID = (const size_t*)&keyval;

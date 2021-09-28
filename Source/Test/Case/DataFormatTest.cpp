@@ -266,7 +266,7 @@ namespace XidiTest
             EPovValue extraPov[4];
         };
 
-        static_assert(0 == (sizeof(STestDataPacket) % 4), L"Test data packet size must be divisible by 4.");
+        static_assert(0 == (sizeof(STestDataPacket) % 4), "Test data packet size must be divisible by 4.");
 
         // Controller state that will be used throughout this test.
         constexpr Controller::SState kTestControllerState = {
@@ -411,7 +411,7 @@ namespace XidiTest
             TAxisValue padding2[2];
         };
 
-        static_assert(0 == (sizeof(STestDataPacket) % 4), L"Test data packet size must be divisible by 4.");
+        static_assert(0 == (sizeof(STestDataPacket) % 4), "Test data packet size must be divisible by 4.");
 
         DIOBJECTDATAFORMAT testObjectFormatSpec[] = {
             {.pguid = nullptr, .dwOfs = offsetof(STestDataPacket, axisValue1), .dwType = DIDFT_AXIS | DIDFT_ANYINSTANCE, .dwFlags = 0},
@@ -449,7 +449,7 @@ namespace XidiTest
             TAxisValue padding2[2];
         };
 
-        static_assert(0 == (sizeof(STestDataPacket) % 4), L"Test data packet size must be divisible by 4.");
+        static_assert(0 == (sizeof(STestDataPacket) % 4), "Test data packet size must be divisible by 4.");
 
         DIOBJECTDATAFORMAT testObjectFormatSpec[] = {
             {.pguid = nullptr, .dwOfs = offsetof(STestDataPacket, axisValue2), .dwType = DIDFT_AXIS | DIDFT_ANYINSTANCE, .dwFlags = 0},
@@ -488,7 +488,7 @@ namespace XidiTest
             TAxisValue padding2[2];
         };
 
-        static_assert(0 == (sizeof(STestDataPacket) % 4), L"Test data packet size must be divisible by 4.");
+        static_assert(0 == (sizeof(STestDataPacket) % 4), "Test data packet size must be divisible by 4.");
 
         DIOBJECTDATAFORMAT testObjectFormatSpec[] = {
             {.pguid = &GUID_RzAxis, .dwOfs = offsetof(STestDataPacket, axisValue1), .dwType = DIDFT_AXIS | DIDFT_ANYINSTANCE, .dwFlags = 0},
@@ -527,7 +527,7 @@ namespace XidiTest
             TAxisValue padding2[2];
         };
 
-        static_assert(0 == (sizeof(STestDataPacket) % 4), L"Test data packet size must be divisible by 4.");
+        static_assert(0 == (sizeof(STestDataPacket) % 4), "Test data packet size must be divisible by 4.");
 
         DIOBJECTDATAFORMAT testObjectFormatSpec[] = {
             {.pguid = &GUID_XAxis,  .dwOfs = offsetof(STestDataPacket, axisValue2), .dwType = DIDFT_AXIS | DIDFT_ANYINSTANCE, .dwFlags = 0},
@@ -566,7 +566,7 @@ namespace XidiTest
             TAxisValue padding2[2];
         };
 
-        static_assert(0 == (sizeof(STestDataPacket) % 4), L"Test data packet size must be divisible by 4.");
+        static_assert(0 == (sizeof(STestDataPacket) % 4), "Test data packet size must be divisible by 4.");
 
         DIOBJECTDATAFORMAT testObjectFormatSpec[] = {
             {.pguid = nullptr, .dwOfs = offsetof(STestDataPacket, axisValue1), .dwType = DIDFT_AXIS | DIDFT_MAKEINSTANCE(3), .dwFlags = 0},
@@ -605,7 +605,7 @@ namespace XidiTest
             TAxisValue padding2[2];
         };
 
-        static_assert(0 == (sizeof(STestDataPacket) % 4), L"Test data packet size must be divisible by 4.");
+        static_assert(0 == (sizeof(STestDataPacket) % 4), "Test data packet size must be divisible by 4.");
 
         DIOBJECTDATAFORMAT testObjectFormatSpec[] = {
             {.pguid = nullptr, .dwOfs = offsetof(STestDataPacket, axisValue2), .dwType = DIDFT_AXIS | DIDFT_MAKEINSTANCE(0), .dwFlags = 0},
@@ -644,7 +644,7 @@ namespace XidiTest
             TAxisValue padding2[2];
         };
 
-        static_assert(0 == (sizeof(STestDataPacket) % 4), L"Test data packet size must be divisible by 4.");
+        static_assert(0 == (sizeof(STestDataPacket) % 4), "Test data packet size must be divisible by 4.");
 
         DIOBJECTDATAFORMAT testObjectFormatSpec[] = {
             {.pguid = &GUID_RzAxis, .dwOfs = offsetof(STestDataPacket, axisValue1), .dwType = DIDFT_AXIS | DIDFT_MAKEINSTANCE(0), .dwFlags = DIDOI_ASPECTPOSITION},
@@ -683,7 +683,7 @@ namespace XidiTest
             TAxisValue padding2[2];
         };
 
-        static_assert(0 == (sizeof(STestDataPacket) % 4), L"Test data packet size must be divisible by 4.");
+        static_assert(0 == (sizeof(STestDataPacket) % 4), "Test data packet size must be divisible by 4.");
 
         DIOBJECTDATAFORMAT testObjectFormatSpec[] = {
             {.pguid = &GUID_XAxis,  .dwOfs = offsetof(STestDataPacket, axisValue2), .dwType = DIDFT_AXIS | DIDFT_MAKEINSTANCE(0), .dwFlags = DIDOI_ASPECTPOSITION},
@@ -723,7 +723,7 @@ namespace XidiTest
             TAxisValue padding3[2];
         };
 
-        static_assert(0 == (sizeof(STestDataPacket) % 4), L"Test data packet size must be divisible by 4.");
+        static_assert(0 == (sizeof(STestDataPacket) % 4), "Test data packet size must be divisible by 4.");
 
         DIOBJECTDATAFORMAT testObjectFormatSpec[] = {
             {.pguid = &GUID_RxAxis, .dwOfs = offsetof(STestDataPacket, axisValue2), .dwType = DIDFT_OPTIONAL | DIDFT_AXIS | DIDFT_ANYINSTANCE,     .dwFlags = 0},  // GUID requests an axis type not present in the virtual controller
@@ -773,7 +773,7 @@ namespace XidiTest
             TButtonValue padding9[100];
         };
 
-        static_assert(0 == (sizeof(STestDataPacket) % 4), L"Test data packet size must be divisible by 4.");
+        static_assert(0 == (sizeof(STestDataPacket) % 4), "Test data packet size must be divisible by 4.");
 
         DIOBJECTDATAFORMAT testObjectFormatSpec[] = {
             {.pguid = &GUID_Button, .dwOfs = offsetof(STestDataPacket, buttonValue1), .dwType = DIDFT_OPTIONAL | DIDFT_BUTTON | DIDFT_MAKEINSTANCE(1),  .dwFlags = 0},                      // Matches button 2 by specifically identifying it
@@ -820,7 +820,7 @@ namespace XidiTest
             EPovValue povValue;            
         };
 
-        static_assert(0 == (sizeof(STestDataPacket) % 4), L"Test data packet size must be divisible by 4.");
+        static_assert(0 == (sizeof(STestDataPacket) % 4), "Test data packet size must be divisible by 4.");
 
         DIOBJECTDATAFORMAT testObjectFormatSpec[] = {
             {.pguid = nullptr, .dwOfs = offsetof(STestDataPacket, povValue), .dwType = DIDFT_OPTIONAL | DIDFT_POV | DIDFT_ANYINSTANCE, .dwFlags = 0},
@@ -859,7 +859,7 @@ namespace XidiTest
             EPovValue povValue;            
         };
 
-        static_assert(0 == (sizeof(STestDataPacket) % 4), L"Test data packet size must be divisible by 4.");
+        static_assert(0 == (sizeof(STestDataPacket) % 4), "Test data packet size must be divisible by 4.");
 
         DIOBJECTDATAFORMAT testObjectFormatSpec[] = {
             {.pguid = &GUID_POV, .dwOfs = offsetof(STestDataPacket, povValue), .dwType = DIDFT_OPTIONAL | DIDFT_POV | DIDFT_ANYINSTANCE, .dwFlags = 0},
@@ -898,7 +898,7 @@ namespace XidiTest
             EPovValue povValue;            
         };
 
-        static_assert(0 == (sizeof(STestDataPacket) % 4), L"Test data packet size must be divisible by 4.");
+        static_assert(0 == (sizeof(STestDataPacket) % 4), "Test data packet size must be divisible by 4.");
 
         DIOBJECTDATAFORMAT testObjectFormatSpec[] = {
             {.pguid = nullptr, .dwOfs = offsetof(STestDataPacket, povValue), .dwType = DIDFT_OPTIONAL | DIDFT_POV | DIDFT_MAKEINSTANCE(0), .dwFlags = 0},
@@ -937,7 +937,7 @@ namespace XidiTest
             EPovValue povValue;            
         };
 
-        static_assert(0 == (sizeof(STestDataPacket) % 4), L"Test data packet size must be divisible by 4.");
+        static_assert(0 == (sizeof(STestDataPacket) % 4), "Test data packet size must be divisible by 4.");
 
         DIOBJECTDATAFORMAT testObjectFormatSpec[] = {
             {.pguid = &GUID_POV, .dwOfs = offsetof(STestDataPacket, povValue), .dwType = DIDFT_OPTIONAL | DIDFT_POV | DIDFT_MAKEINSTANCE(0), .dwFlags = 0},
@@ -976,7 +976,7 @@ namespace XidiTest
             EPovValue povValue;            
         };
 
-        static_assert(0 == (sizeof(STestDataPacket) % 4), L"Test data packet size must be divisible by 4.");
+        static_assert(0 == (sizeof(STestDataPacket) % 4), "Test data packet size must be divisible by 4.");
 
         DIOBJECTDATAFORMAT testObjectFormatSpec[] = {
             {.pguid = &GUID_POV, .dwOfs = offsetof(STestDataPacket, povValue), .dwType = DIDFT_OPTIONAL | DIDFT_POV | DIDFT_MAKEINSTANCE(0), .dwFlags = DIDOI_ASPECTPOSITION},
@@ -1018,7 +1018,7 @@ namespace XidiTest
             EPovValue povValue3;
         };
 
-        static_assert(0 == (sizeof(STestDataPacket) % 4), L"Test data packet size must be divisible by 4.");
+        static_assert(0 == (sizeof(STestDataPacket) % 4), "Test data packet size must be divisible by 4.");
 
         DIOBJECTDATAFORMAT testObjectFormatSpec[] = {
             {.pguid = &GUID_POV,    .dwOfs = offsetof(STestDataPacket, povValue1), .dwType = DIDFT_OPTIONAL | DIDFT_POV | DIDFT_MAKEINSTANCE(1),  .dwFlags = 0},                    // No match because the index is out of bounds
@@ -1353,7 +1353,7 @@ namespace XidiTest
             TButtonValue buttonValue;
         };
 
-        static_assert(0 != (sizeof(STestDataPacket) % 4), L"Test data packet size must not be divisible by 4 for this test.");
+        static_assert(0 != (sizeof(STestDataPacket) % 4), "Test data packet size must not be divisible by 4 for this test.");
 
         DIOBJECTDATAFORMAT testObjectFormatSpec[] = {
             {.pguid = nullptr, .dwOfs = offsetof(STestDataPacket, buttonValue), .dwType = DIDFT_OPTIONAL | DIDFT_BUTTON | DIDFT_ANYINSTANCE, .dwFlags = 0},
@@ -1379,7 +1379,7 @@ namespace XidiTest
             TButtonValue buttonValue[4 * DataFormat::kMaxDataPacketSizeBytes];
         };
 
-        static_assert(0 == (sizeof(STestDataPacket) % 4), L"Test data packet size must be divisible by 4.");
+        static_assert(0 == (sizeof(STestDataPacket) % 4), "Test data packet size must be divisible by 4.");
 
         DIOBJECTDATAFORMAT testObjectFormatSpec[] = {
             {.pguid = nullptr, .dwOfs = offsetof(STestDataPacket, buttonValue[0]), .dwType = DIDFT_OPTIONAL | DIDFT_BUTTON | DIDFT_ANYINSTANCE, .dwFlags = 0},
@@ -1405,7 +1405,7 @@ namespace XidiTest
             TButtonValue buttonValue[4];
         };
 
-        static_assert(0 == (sizeof(STestDataPacket) % 4), L"Test data packet size must be divisible by 4.");
+        static_assert(0 == (sizeof(STestDataPacket) % 4), "Test data packet size must be divisible by 4.");
 
         DIOBJECTDATAFORMAT testObjectFormatSpec[] = {
             {.pguid = nullptr, .dwOfs = offsetof(STestDataPacket, buttonValue[0]), .dwType = DIDFT_OPTIONAL | DIDFT_BUTTON | DIDFT_ANYINSTANCE, .dwFlags = 0},
@@ -1453,7 +1453,7 @@ namespace XidiTest
             TButtonValue buttonValue[4];
         };
 
-        static_assert(0 == (sizeof(STestDataPacket) % 4), L"Test data packet size must be divisible by 4.");
+        static_assert(0 == (sizeof(STestDataPacket) % 4), "Test data packet size must be divisible by 4.");
 
         DIOBJECTDATAFORMAT testObjectFormatSpec[] = {
             {.pguid = nullptr, .dwOfs = offsetof(STestDataPacket, buttonValue[0]), .dwType = DIDFT_OPTIONAL | DIDFT_BUTTON | DIDFT_ANYINSTANCE, .dwFlags = 0},
@@ -1483,7 +1483,7 @@ namespace XidiTest
             TAxisValue axisValue;
         };
 
-        static_assert(0 == (sizeof(STestDataPacket) % 4), L"Test data packet size must be divisible by 4.");
+        static_assert(0 == (sizeof(STestDataPacket) % 4), "Test data packet size must be divisible by 4.");
 
         DIOBJECTDATAFORMAT testObjectFormatSpec[] = {
             {.pguid = nullptr, .dwOfs = offsetof(STestDataPacket, buttonValue[0]), .dwType = DIDFT_OPTIONAL | DIDFT_BUTTON  | DIDFT_ANYINSTANCE, .dwFlags = 0},
@@ -1514,7 +1514,7 @@ namespace XidiTest
             TAxisValue axisValue;
         };
 
-        static_assert(0 == (sizeof(STestDataPacket) % 4), L"Test data packet size must be divisible by 4.");
+        static_assert(0 == (sizeof(STestDataPacket) % 4), "Test data packet size must be divisible by 4.");
 
         DIOBJECTDATAFORMAT testObjectFormatSpec[] = {
             {.pguid = nullptr,      .dwOfs = offsetof(STestDataPacket, buttonValue[0]), .dwType = DIDFT_OPTIONAL | DIDFT_BUTTON | DIDFT_ANYINSTANCE, .dwFlags = 0},
@@ -1545,7 +1545,7 @@ namespace XidiTest
             TAxisValue axisValue;
         };
 
-        static_assert(0 == (sizeof(STestDataPacket) % 4), L"Test data packet size must be divisible by 4.");
+        static_assert(0 == (sizeof(STestDataPacket) % 4), "Test data packet size must be divisible by 4.");
 
         DIOBJECTDATAFORMAT testObjectFormatSpec[] = {
             {.pguid = nullptr, .dwOfs = offsetof(STestDataPacket, buttonValue[0]), .dwType = DIDFT_OPTIONAL | DIDFT_BUTTON | DIDFT_ANYINSTANCE,     .dwFlags = 0},
@@ -1575,7 +1575,7 @@ namespace XidiTest
             TAxisValue axisValue[4];
         };
 
-        static_assert(0 == (sizeof(STestDataPacket) % 4), L"Test data packet size must be divisible by 4.");
+        static_assert(0 == (sizeof(STestDataPacket) % 4), "Test data packet size must be divisible by 4.");
 
         DIOBJECTDATAFORMAT testObjectFormatSpec[] = {
             {.pguid = nullptr, .dwOfs = offsetof(STestDataPacket, axisValue[0]), .dwType = DIDFT_OPTIONAL | DIDFT_AXIS | DIDFT_ANYINSTANCE, .dwFlags = 0},
@@ -1604,7 +1604,7 @@ namespace XidiTest
             TButtonValue buttonValue[4];
         };
 
-        static_assert(0 == (sizeof(STestDataPacket) % 4), L"Test data packet size must be divisible by 4.");
+        static_assert(0 == (sizeof(STestDataPacket) % 4), "Test data packet size must be divisible by 4.");
 
         DIOBJECTDATAFORMAT testObjectFormatSpec[] = {
             {.pguid = nullptr, .dwOfs = offsetof(STestDataPacket, buttonValue[0]), .dwType = DIDFT_OPTIONAL | DIDFT_BUTTON | DIDFT_ANYINSTANCE, .dwFlags = 0},
@@ -1633,7 +1633,7 @@ namespace XidiTest
             EPovValue povValue[4];
         };
 
-        static_assert(0 == (sizeof(STestDataPacket) % 4), L"Test data packet size must be divisible by 4.");
+        static_assert(0 == (sizeof(STestDataPacket) % 4), "Test data packet size must be divisible by 4.");
 
         DIOBJECTDATAFORMAT testObjectFormatSpec[] = {
             {.pguid = nullptr, .dwOfs = offsetof(STestDataPacket, povValue[0]), .dwType = DIDFT_OPTIONAL | DIDFT_POV | DIDFT_ANYINSTANCE, .dwFlags = 0},
