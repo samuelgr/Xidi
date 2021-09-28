@@ -15,6 +15,7 @@
 #include "ControllerTypes.h"
 
 #include <cstdint>
+#include <memory>
 #include <optional>
 
 
@@ -192,6 +193,43 @@ namespace Xidi
             /// Initialization constructor.
             /// Specifies two POV directions, one for positive direction updates (axis on the positive side or button/trigger pressed) and one for negative direction updates (axis on the negative side or button/trigger not pressed).
             inline constexpr PovMapper(EPovDirection povDirectionPositive, EPovDirection povDirectionNegative) : IElementMapper(), povDirectionPositive(povDirectionPositive), maybePovDirectionNegative(povDirectionNegative)
+            {
+                // Nothing to do here.
+            }
+
+
+            // -------- CONCRETE INSTANCE METHODS -------------------------- //
+
+            void ContributeFromAnalogValue(SState& controllerState, int16_t analogValue) const override;
+            void ContributeFromButtonValue(SState& controllerState, bool buttonPressed) const override;
+            void ContributeFromTriggerValue(SState& controllerState, uint8_t triggerValue) const override;
+            int GetTargetElementCount(void) const override;
+            std::optional<SElementIdentifier> GetTargetElementAt(int index) const override;
+        };
+
+        /// Maps a single XInput controller element to two underlying mappers depending on its state, either positive or negative.
+        /// For analog values, "positive" means that the axis value is greater than or equal to the netural value, and "negative" means it is less than the neutral value.
+        /// For button values, "positive" means the button is pressed, and "negative" means it is not pressed.
+        /// For trigger values, "positive" means the trigger value is greater than or equal to the midpoint, and "negative" means it is less than the midpoint.
+        class SplitMapper : public IElementMapper
+        {
+        private:
+            // -------- INSTANCE VARIABLES --------------------------------- //
+
+            /// Underlying mapper that is asked for a contribution when the associated XInput controller element is in "positive" state.
+            const std::unique_ptr<const IElementMapper> positiveMapper;
+
+            /// Underlying mapper that is asked for a contribution when the associated XInput controller element is in "negative" state.
+            const std::unique_ptr<const IElementMapper> negativeMapper;
+
+
+        public:
+            // -------- CONSTRUCTION AND DESTRUCTION ----------------------- //
+
+            /// Initialization constructor.
+            /// Requires both a positive and a negative mapper, one or both of which can be `nullptr`.
+            /// Takes ownership of the objects passed as parameters.
+            inline SplitMapper(std::unique_ptr<const IElementMapper>&& positiveMapper, std::unique_ptr<const IElementMapper>&& negativeMapper) : positiveMapper(std::move(positiveMapper)), negativeMapper(std::move(negativeMapper))
             {
                 // Nothing to do here.
             }

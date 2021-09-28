@@ -45,6 +45,9 @@ namespace Xidi
         /// Value taken from XInput documentation.
         inline constexpr int32_t kTriggerValueMin = 0;
 
+        /// Midpoint reading from an XInput controller's trigger.
+        inline constexpr int32_t kTriggerValueMid = (kTriggerValueMax + kTriggerValueMin) / 2;
+
 
         // -------- TYPE DEFINITIONS --------------------------------------- //
 
@@ -131,7 +134,7 @@ namespace Xidi
                 return (0 == memcmp(this, &other, sizeof(*this)));
             }
         };
-        static_assert(sizeof(SElementIdentifier) <= 4, L"Data structure size constraint violation.");
+        static_assert(sizeof(SElementIdentifier) <= 4, "Data structure size constraint violation.");
 
         /// Capabilities of a Xidi virtual controller.
         /// Filled in by looking at a mapper and used during operations like EnumObjects to tell the application about the virtual controller's components.
@@ -193,9 +196,9 @@ namespace Xidi
                 return ((uint8_t)button < numButtons);
             }
         };
-        static_assert(sizeof(SCapabilities) <= 8, L"Data structure size constraint violation.");
-        static_assert((uint8_t)EAxis::Count <= 0b111, L"Number of axes does not fit into 3 bits.");
-        static_assert((uint8_t)EButton::Count <= 0b11111, L"Number of buttons does not fit into 5 bits.");
+        static_assert(sizeof(SCapabilities) <= 8, "Data structure size constraint violation.");
+        static_assert((uint8_t)EAxis::Count <= 0b111, "Number of axes does not fit into 3 bits.");
+        static_assert((uint8_t)EButton::Count <= 0b11111, "Number of buttons does not fit into 5 bits.");
 
         /// Holds POV direction, which is presented both as an array of separate components and as a single aggregated integer view.
         union UPovDirection
@@ -203,7 +206,7 @@ namespace Xidi
             bool components[(int)EPovDirection::Count];                     ///< Pressed (`true`) or unpressed (`false`) state for each POV direction separately, one element per button. Bitset versus boolean produces no size difference, given the number of POV directions.
             uint32_t all;                                                   ///< Aggregate state of all POV directions, available as a single quantity for easy comparison and assignment.
         };
-        static_assert(sizeof(UPovDirection::components) == sizeof(UPovDirection::all), L"Mismatch in POV view sizes.");
+        static_assert(sizeof(UPovDirection::components) == sizeof(UPovDirection::all), "Mismatch in POV view sizes.");
         
         /// Native data format for virtual controllers, used internally to represent controller state.
         /// Instances of `XINPUT_GAMEPAD` are passed through a mapper to produce objects of this type.
@@ -223,6 +226,6 @@ namespace Xidi
                 return (0 == memcmp(this, &other, sizeof(*this)));
             }
         };
-        static_assert(sizeof(SState) <= 32, L"Data structure size constraint violation.");
+        static_assert(sizeof(SState) <= 32, "Data structure size constraint violation.");
     }
 }

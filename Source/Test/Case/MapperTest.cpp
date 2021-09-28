@@ -13,6 +13,7 @@
 #include "ControllerTypes.h"
 #include "ElementMapper.h"
 #include "Mapper.h"
+#include "MockElementMapper.h"
 #include "TestCase.h"
 
 #include <cstdint>
@@ -25,128 +26,10 @@ namespace XidiTest
     using namespace ::Xidi::Controller;
 
 
-    // -------- INTERNAL TYPES --------------------------------------------- //
-
-    /// Mock version of an element mapper, used for testing purposes to ensure that values read from a controller are correctly routed.
-    class MockElementMapper : public IElementMapper
-    {
-    public:
-        // -------- TYPE DEFINITIONS --------------------------------------- //
-
-        /// Enumerates possible expected sources of input values from an XInput controller.
-        /// Specifies which of the `ContributeFrom` methods is expected to be invoked.
-        enum class EExpectedSource
-        {
-            Analog,
-            Button,
-            Trigger
-        };
-
-        /// Holds an expected input value, one for each allowed type.
-        union UExpectedValue
-        {
-            int16_t analog;
-            bool button;
-            uint8_t trigger;
-
-            constexpr inline UExpectedValue(int16_t analog) : analog(analog) {}
-            constexpr inline UExpectedValue(bool button) : button(button) {}
-            constexpr inline UExpectedValue(uint8_t trigger) : trigger(trigger) {}
-        };
-
-
-    private:
-        // -------- INSTANCE VARIABLES --------------------------------- //
-        
-        /// Specifies the expected source of an input value.
-        /// Causes a test to fail if the wrong `ContributeFrom` method is invoked on this object.
-        const EExpectedSource expectedSource;
-
-        /// Specifies the expected input value, one for each allowed type.
-        /// Which member is valid is determined by the value of #expectedSource.
-        const UExpectedValue expectedValue;
-
-        /// Holds the address of a counter that is incremented by 1 whenever this element mapper is asked for a contribution.
-        int* const contributionCounter;
-
-
-    public:
-        // -------- CONSTRUCTION AND DESTRUCTION ----------------------- //
-
-        /// Initialization constructor.
-        /// Requires that values for all instance variables be provided.
-        /// For tests that do not exercise controller capabilities, type and index can be omitted.
-        inline MockElementMapper(EExpectedSource expectedSource, UExpectedValue expectedValue, int* contributionCounter = nullptr) : expectedSource(expectedSource), expectedValue(expectedValue), contributionCounter(contributionCounter)
-        {
-            // Nothing to do here.
-        }
-
-
-        // -------- CONCRETE INSTANCE METHODS -------------------------- //
-
-        void ContributeFromAnalogValue(SState& controllerState, int16_t analogValue) const override
-        {
-            if (EExpectedSource::Analog != expectedSource)
-                TEST_FAILED_BECAUSE(L"MockElementMapper: wrong value source (expected enumerator %d, got Analog).", (int)expectedSource);
-
-            if (expectedValue.analog != analogValue)
-                TEST_FAILED_BECAUSE(L"MockElementMapper: wrong analog value (expected %d, got %d).", (int)expectedValue.analog, (int)analogValue);
-
-            if (nullptr != contributionCounter)
-                *contributionCounter += 1;
-        }
-
-        // --------
-
-        void ContributeFromButtonValue(SState& controllerState, bool buttonPressed) const override
-        {
-            if (EExpectedSource::Button != expectedSource)
-                TEST_FAILED_BECAUSE(L"MockElementMapper: wrong value source (expected enumerator %d, got Button).", (int)expectedSource);
-
-            if (expectedValue.button != buttonPressed)
-                TEST_FAILED_BECAUSE(L"MockElementMapper: wrong button value (expected %s, got %s).", (true == expectedValue.button ? L"'true (pressed)'" : L"'false (not pressed)'"), (true == buttonPressed ? L"'true (pressed)'" : L"'false (not pressed)'"));
-
-            if (nullptr != contributionCounter)
-                *contributionCounter += 1;
-        }
-
-        // --------
-
-        void ContributeFromTriggerValue(SState& controllerState, uint8_t triggerValue) const override
-        {
-            if (EExpectedSource::Trigger != expectedSource)
-                TEST_FAILED_BECAUSE(L"MockElementMapper: wrong value source (expected enumerator %d, got Trigger).", (int)expectedSource);
-
-            if (expectedValue.trigger != triggerValue)
-                TEST_FAILED_BECAUSE(L"MockElementMapper: wrong trigger value (expected %d, got %d).", (int)expectedValue.trigger, (int)triggerValue);
-
-            if (nullptr != contributionCounter)
-                *contributionCounter += 1;
-        }
-
-        // --------
-
-        int GetTargetElementCount(void) const override
-        {
-            return 1;
-        }
-
-        // --------
-
-        std::optional<SElementIdentifier> GetTargetElementAt(int index) const override
-        {
-            if (0 != index)
-                return std::nullopt;
-
-            return SElementIdentifier();
-        }
-    };
-
-
     // -------- INTERNAL VARIABLES ----------------------------------------- //
 
-    /// Dummy controller state used for tests that need such an instance but do not care about its contents.
-    static SState dummyControllerState;
+    /// Controller state used for tests that need such an instance but do not care about its contents.
+    static SState unusedControllerState;
 
     
     // -------- TEST CASES ------------------------------------------------- //
@@ -161,7 +44,7 @@ namespace XidiTest
         int numContributions = 0;
 
         const Mapper controllerMapper({.stickLeftX = std::make_unique<MockElementMapper>(MockElementMapper::EExpectedSource::Analog, kTestValue, &numContributions)});
-        controllerMapper.MapXInputState(dummyControllerState, {.sThumbLX = kTestValue});
+        controllerMapper.MapXInputState(unusedControllerState, {.sThumbLX = kTestValue});
 
         TEST_ASSERT(1 == numContributions);
     }
@@ -174,7 +57,7 @@ namespace XidiTest
         int numContributions = 0;
 
         const Mapper controllerMapper({.stickLeftY = std::make_unique<MockElementMapper>(MockElementMapper::EExpectedSource::Analog, kInvertedTestValue, &numContributions)});
-        controllerMapper.MapXInputState(dummyControllerState, {.sThumbLY = kTestValue});
+        controllerMapper.MapXInputState(unusedControllerState, {.sThumbLY = kTestValue});
 
         TEST_ASSERT(1 == numContributions);
     }
@@ -186,7 +69,7 @@ namespace XidiTest
         int numContributions = 0;
 
         const Mapper controllerMapper({.stickRightX = std::make_unique<MockElementMapper>(MockElementMapper::EExpectedSource::Analog, kTestValue, &numContributions)});
-        controllerMapper.MapXInputState(dummyControllerState, {.sThumbRX = kTestValue});
+        controllerMapper.MapXInputState(unusedControllerState, {.sThumbRX = kTestValue});
 
         TEST_ASSERT(1 == numContributions);
     }
@@ -199,7 +82,7 @@ namespace XidiTest
         int numContributions = 0;
 
         const Mapper controllerMapper({.stickRightY = std::make_unique<MockElementMapper>(MockElementMapper::EExpectedSource::Analog, kInvertedTestValue, &numContributions)});
-        controllerMapper.MapXInputState(dummyControllerState, {.sThumbRY = kTestValue});
+        controllerMapper.MapXInputState(unusedControllerState, {.sThumbRY = kTestValue});
 
         TEST_ASSERT(1 == numContributions);
     }
@@ -211,7 +94,7 @@ namespace XidiTest
         int numContributions = 0;
 
         const Mapper controllerMapper({.dpadUp = std::make_unique<MockElementMapper>(MockElementMapper::EExpectedSource::Button, kTestValue, &numContributions)});
-        controllerMapper.MapXInputState(dummyControllerState, {.wButtons = (kTestValue ? XINPUT_GAMEPAD_DPAD_UP : 0)});
+        controllerMapper.MapXInputState(unusedControllerState, {.wButtons = (kTestValue ? XINPUT_GAMEPAD_DPAD_UP : 0)});
 
         TEST_ASSERT(1 == numContributions);
     }
@@ -223,7 +106,7 @@ namespace XidiTest
         int numContributions = 0;
 
         const Mapper controllerMapper({.dpadDown = std::make_unique<MockElementMapper>(MockElementMapper::EExpectedSource::Button, kTestValue, &numContributions)});
-        controllerMapper.MapXInputState(dummyControllerState, {.wButtons = (kTestValue ? XINPUT_GAMEPAD_DPAD_DOWN : 0)});
+        controllerMapper.MapXInputState(unusedControllerState, {.wButtons = (kTestValue ? XINPUT_GAMEPAD_DPAD_DOWN : 0)});
 
         TEST_ASSERT(1 == numContributions);
     }
@@ -235,7 +118,7 @@ namespace XidiTest
         int numContributions = 0;
 
         const Mapper controllerMapper({.dpadLeft = std::make_unique<MockElementMapper>(MockElementMapper::EExpectedSource::Button, kTestValue, &numContributions)});
-        controllerMapper.MapXInputState(dummyControllerState, {.wButtons = (kTestValue ? XINPUT_GAMEPAD_DPAD_LEFT : 0)});
+        controllerMapper.MapXInputState(unusedControllerState, {.wButtons = (kTestValue ? XINPUT_GAMEPAD_DPAD_LEFT : 0)});
 
         TEST_ASSERT(1 == numContributions);
     }
@@ -247,7 +130,7 @@ namespace XidiTest
         int numContributions = 0;
 
         const Mapper controllerMapper({.dpadRight = std::make_unique<MockElementMapper>(MockElementMapper::EExpectedSource::Button, kTestValue, &numContributions)});
-        controllerMapper.MapXInputState(dummyControllerState, {.wButtons = (kTestValue ? XINPUT_GAMEPAD_DPAD_RIGHT : 0)});
+        controllerMapper.MapXInputState(unusedControllerState, {.wButtons = (kTestValue ? XINPUT_GAMEPAD_DPAD_RIGHT : 0)});
 
         TEST_ASSERT(1 == numContributions);
     }
@@ -259,7 +142,7 @@ namespace XidiTest
         int numContributions = 0;
 
         const Mapper controllerMapper({.triggerLT = std::make_unique<MockElementMapper>(MockElementMapper::EExpectedSource::Trigger, kTestValue, &numContributions)});
-        controllerMapper.MapXInputState(dummyControllerState, {.bLeftTrigger = kTestValue});
+        controllerMapper.MapXInputState(unusedControllerState, {.bLeftTrigger = kTestValue});
 
         TEST_ASSERT(1 == numContributions);
     }
@@ -271,7 +154,7 @@ namespace XidiTest
         int numContributions = 0;
 
         const Mapper controllerMapper({.triggerRT = std::make_unique<MockElementMapper>(MockElementMapper::EExpectedSource::Trigger, kTestValue, &numContributions)});
-        controllerMapper.MapXInputState(dummyControllerState, {.bRightTrigger = kTestValue});
+        controllerMapper.MapXInputState(unusedControllerState, {.bRightTrigger = kTestValue});
 
         TEST_ASSERT(1 == numContributions);
     }
@@ -283,7 +166,7 @@ namespace XidiTest
         int numContributions = 0;
 
         const Mapper controllerMapper({.buttonA = std::make_unique<MockElementMapper>(MockElementMapper::EExpectedSource::Button, kTestValue, &numContributions)});
-        controllerMapper.MapXInputState(dummyControllerState, {.wButtons = (kTestValue ? XINPUT_GAMEPAD_A : 0)});
+        controllerMapper.MapXInputState(unusedControllerState, {.wButtons = (kTestValue ? XINPUT_GAMEPAD_A : 0)});
 
         TEST_ASSERT(1 == numContributions);
     }
@@ -295,7 +178,7 @@ namespace XidiTest
         int numContributions = 0;
 
         const Mapper controllerMapper({.buttonB = std::make_unique<MockElementMapper>(MockElementMapper::EExpectedSource::Button, kTestValue, &numContributions)});
-        controllerMapper.MapXInputState(dummyControllerState, {.wButtons = (kTestValue ? XINPUT_GAMEPAD_B : 0)});
+        controllerMapper.MapXInputState(unusedControllerState, {.wButtons = (kTestValue ? XINPUT_GAMEPAD_B : 0)});
 
         TEST_ASSERT(1 == numContributions);
     }
@@ -307,7 +190,7 @@ namespace XidiTest
         int numContributions = 0;
 
         const Mapper controllerMapper({.buttonX = std::make_unique<MockElementMapper>(MockElementMapper::EExpectedSource::Button, kTestValue, &numContributions)});
-        controllerMapper.MapXInputState(dummyControllerState, {.wButtons = (kTestValue ? XINPUT_GAMEPAD_X : 0)});
+        controllerMapper.MapXInputState(unusedControllerState, {.wButtons = (kTestValue ? XINPUT_GAMEPAD_X : 0)});
 
         TEST_ASSERT(1 == numContributions);
     }
@@ -319,7 +202,7 @@ namespace XidiTest
         int numContributions = 0;
 
         const Mapper controllerMapper({.buttonY = std::make_unique<MockElementMapper>(MockElementMapper::EExpectedSource::Button, kTestValue, &numContributions)});
-        controllerMapper.MapXInputState(dummyControllerState, {.wButtons = (kTestValue ? XINPUT_GAMEPAD_Y : 0)});
+        controllerMapper.MapXInputState(unusedControllerState, {.wButtons = (kTestValue ? XINPUT_GAMEPAD_Y : 0)});
 
         TEST_ASSERT(1 == numContributions);
     }
@@ -331,7 +214,7 @@ namespace XidiTest
         int numContributions = 0;
 
         const Mapper controllerMapper({.buttonLB = std::make_unique<MockElementMapper>(MockElementMapper::EExpectedSource::Button, kTestValue, &numContributions)});
-        controllerMapper.MapXInputState(dummyControllerState, {.wButtons = (kTestValue ? XINPUT_GAMEPAD_LEFT_SHOULDER : 0)});
+        controllerMapper.MapXInputState(unusedControllerState, {.wButtons = (kTestValue ? XINPUT_GAMEPAD_LEFT_SHOULDER : 0)});
 
         TEST_ASSERT(1 == numContributions);
     }
@@ -343,7 +226,7 @@ namespace XidiTest
         int numContributions = 0;
 
         const Mapper controllerMapper({.buttonRB = std::make_unique<MockElementMapper>(MockElementMapper::EExpectedSource::Button, kTestValue, &numContributions)});
-        controllerMapper.MapXInputState(dummyControllerState, {.wButtons = (kTestValue ? XINPUT_GAMEPAD_RIGHT_SHOULDER : 0)});
+        controllerMapper.MapXInputState(unusedControllerState, {.wButtons = (kTestValue ? XINPUT_GAMEPAD_RIGHT_SHOULDER : 0)});
 
         TEST_ASSERT(1 == numContributions);
     }
@@ -355,7 +238,7 @@ namespace XidiTest
         int numContributions = 0;
 
         const Mapper controllerMapper({.buttonBack = std::make_unique<MockElementMapper>(MockElementMapper::EExpectedSource::Button, kTestValue, &numContributions)});
-        controllerMapper.MapXInputState(dummyControllerState, {.wButtons = (kTestValue ? XINPUT_GAMEPAD_BACK : 0)});
+        controllerMapper.MapXInputState(unusedControllerState, {.wButtons = (kTestValue ? XINPUT_GAMEPAD_BACK : 0)});
 
         TEST_ASSERT(1 == numContributions);
     }
@@ -367,7 +250,7 @@ namespace XidiTest
         int numContributions = 0;
 
         const Mapper controllerMapper({.buttonStart = std::make_unique<MockElementMapper>(MockElementMapper::EExpectedSource::Button, kTestValue, &numContributions)});
-        controllerMapper.MapXInputState(dummyControllerState, {.wButtons = (kTestValue ? XINPUT_GAMEPAD_START : 0)});
+        controllerMapper.MapXInputState(unusedControllerState, {.wButtons = (kTestValue ? XINPUT_GAMEPAD_START : 0)});
 
         TEST_ASSERT(1 == numContributions);
     }
@@ -379,7 +262,7 @@ namespace XidiTest
         int numContributions = 0;
 
         const Mapper controllerMapper({.buttonLS = std::make_unique<MockElementMapper>(MockElementMapper::EExpectedSource::Button, kTestValue, &numContributions)});
-        controllerMapper.MapXInputState(dummyControllerState, {.wButtons = (kTestValue ? XINPUT_GAMEPAD_LEFT_THUMB : 0)});
+        controllerMapper.MapXInputState(unusedControllerState, {.wButtons = (kTestValue ? XINPUT_GAMEPAD_LEFT_THUMB : 0)});
 
         TEST_ASSERT(1 == numContributions);
     }
@@ -391,7 +274,7 @@ namespace XidiTest
         int numContributions = 0;
 
         const Mapper controllerMapper({.buttonRS = std::make_unique<MockElementMapper>(MockElementMapper::EExpectedSource::Button, kTestValue, &numContributions)});
-        controllerMapper.MapXInputState(dummyControllerState, {.wButtons = (kTestValue ? XINPUT_GAMEPAD_RIGHT_THUMB : 0)});
+        controllerMapper.MapXInputState(unusedControllerState, {.wButtons = (kTestValue ? XINPUT_GAMEPAD_RIGHT_THUMB : 0)});
 
         TEST_ASSERT(1 == numContributions);
     }
@@ -519,6 +402,29 @@ namespace XidiTest
             .buttonY = std::make_unique<PovMapper>(EPovDirection::Left),
             .buttonLS = std::make_unique<PovMapper>(EPovDirection::Up),
             .buttonRS = std::make_unique<PovMapper>(EPovDirection::Down)
+        });
+
+        const SCapabilities kActualCapabilities = mapper.GetCapabilities();
+        TEST_ASSERT(kActualCapabilities == kExpectedCapabilities);
+    }
+
+    // Mapper with multiple virtual elements all coming from the same XInput controller element using a SplitMapper.
+    // Virtual controller should report the presence of all parts to which the SplitMapper contributes.
+    TEST_CASE(Mapper_Capabilities_SplitMapper)
+    {
+        constexpr SCapabilities kExpectedCapabilities({
+            .axisType = {EAxis::Z},
+            .numAxes = 1,
+            .numButtons = 0,
+            .hasPov = true
+        });
+
+        const Mapper mapper({
+            .stickRightY = std::make_unique<SplitMapper>(
+                std::make_unique<MockElementMapper>(
+                    SElementIdentifier({.type = EElementType::Axis, .axis = kExpectedCapabilities.axisType[0]})),
+                std::make_unique<MockElementMapper>(
+                    SElementIdentifier({.type = EElementType::Pov})))
         });
 
         const SCapabilities kActualCapabilities = mapper.GetCapabilities();

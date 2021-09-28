@@ -282,5 +282,83 @@ namespace Xidi
 
             return SElementIdentifier({.type = EElementType::Pov});
         }
+
+        // --------
+
+        void SplitMapper::ContributeFromAnalogValue(SState& controllerState, int16_t analogValue) const
+        {
+            if ((int32_t)analogValue >= kAnalogValueNeutral)
+            {
+                if (nullptr != positiveMapper)
+                    positiveMapper->ContributeFromAnalogValue(controllerState, analogValue);
+            }
+            else
+            {
+                if (nullptr != negativeMapper)
+                    negativeMapper->ContributeFromAnalogValue(controllerState, analogValue);
+            }
+        }
+
+        // --------
+
+        void SplitMapper::ContributeFromButtonValue(SState& controllerState, bool buttonPressed) const
+        {
+            if (true == buttonPressed)
+            {
+                if (nullptr != positiveMapper)
+                    positiveMapper->ContributeFromButtonValue(controllerState, buttonPressed);
+            }
+            else
+            {
+                if (nullptr != negativeMapper)
+                    negativeMapper->ContributeFromButtonValue(controllerState, buttonPressed);
+            }
+        }
+
+        // --------
+
+        void SplitMapper::ContributeFromTriggerValue(SState& controllerState, uint8_t triggerValue) const
+        {
+            if ((int32_t)triggerValue >= kTriggerValueMid)
+            {
+                if (nullptr != positiveMapper)
+                    positiveMapper->ContributeFromTriggerValue(controllerState, triggerValue);
+            }
+            else
+            {
+                if (nullptr != negativeMapper)
+                    negativeMapper->ContributeFromTriggerValue(controllerState, triggerValue);
+            }
+        }
+
+        // --------
+
+        int SplitMapper::GetTargetElementCount(void) const
+        {
+            const int kPositiveElementCount = ((nullptr != positiveMapper) ? positiveMapper->GetTargetElementCount() : 0);
+            const int kNegativeElementCount = ((nullptr != negativeMapper) ? negativeMapper->GetTargetElementCount() : 0);
+
+            return kPositiveElementCount + kNegativeElementCount;
+        }
+
+        // --------
+
+        std::optional<SElementIdentifier> SplitMapper::GetTargetElementAt(int index) const
+        {
+            const int kPositiveElementCount = ((nullptr != positiveMapper) ? positiveMapper->GetTargetElementCount() : 0);
+
+            if (index >= kPositiveElementCount)
+            {
+                if (nullptr != negativeMapper)
+                    return negativeMapper->GetTargetElementAt(index - kPositiveElementCount);
+            }
+            else
+            {
+                if (nullptr != positiveMapper)
+                    return positiveMapper->GetTargetElementAt(index);
+            }
+
+            return std::nullopt;
+        }
     }
 }
