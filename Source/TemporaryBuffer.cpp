@@ -73,7 +73,7 @@ namespace Xidi
     TemporaryBufferBase::TemporaryBufferBase(void)
     {
         TemporaryBufferData& data = TemporaryBufferData::GetInstance();
-        std::lock_guard<std::mutex> lock(data.allocationMutex);
+        std::scoped_lock lock(data.allocationMutex);
 
         if (false == data.isInitialized)
         {
@@ -109,7 +109,7 @@ namespace Xidi
         }
         else
         {
-            std::lock_guard<std::mutex> lock(data.allocationMutex);
+            std::scoped_lock lock(data.allocationMutex);
 
             data.nextFreeBuffer += 1;
             data.freeBuffers[data.nextFreeBuffer] = buffer;

@@ -17,6 +17,7 @@
 
 #include <cstdarg>
 #include <cstdio>
+#include <mutex>
 #include <psapi.h>
 #include <sal.h>
 #include <shlobj.h>
@@ -245,31 +246,39 @@ namespace Xidi
 
         /// Outputs the specified message.
         /// Requires both a severity and a message string.
+        /// Concurrency-safe.
         /// @param [in] severity Severity of the message.
         /// @param [in] message Message text.
         static void OutputInternal(const ESeverity severity, const wchar_t* message)
         {
+            static std::mutex outputGuard;
+            
             EOutputMode outputModes[(int)EOutputMode::UpperBoundValue];
             const int numOutputModes = DetermineOutputModes(severity, outputModes);
 
-            for (int i = 0; i < numOutputModes; ++i)
+            if (numOutputModes > 0)
             {
-                switch (outputModes[i])
+                std::scoped_lock lock(outputGuard);
+
+                for (int i = 0; i < numOutputModes; ++i)
                 {
-                case EOutputMode::DebugString:
-                    OutputInternalUsingDebugString(severity, message);
-                    break;
+                    switch (outputModes[i])
+                    {
+                    case EOutputMode::DebugString:
+                        OutputInternalUsingDebugString(severity, message);
+                        break;
 
-                case EOutputMode::LogFile:
-                    OutputInternalUsingLogFile(severity, message);
-                    break;
+                    case EOutputMode::LogFile:
+                        OutputInternalUsingLogFile(severity, message);
+                        break;
 
-                case EOutputMode::GraphicalMessageBox:
-                    OutputInternalUsingMessageBox(severity, message);
-                    break;
+                    case EOutputMode::GraphicalMessageBox:
+                        OutputInternalUsingMessageBox(severity, message);
+                        break;
 
-                default:
-                    break;
+                    default:
+                        break;
+                    }
                 }
             }
         }
