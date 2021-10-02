@@ -13,6 +13,7 @@
 #include "ControllerTypes.h"
 #include "ElementMapper.h"
 #include "MockXInput.h"
+#include "PhysicalController.h"
 #include "StateChangeEventBuffer.h"
 #include "TestCase.h"
 #include "VirtualController.h"
@@ -39,6 +40,7 @@ namespace XidiTest
     using ::Xidi::Controller::Mapper;
     using ::Xidi::Controller::PovMapper;
     using ::Xidi::Controller::StateChangeEventBuffer;
+    using ::Xidi::Controller::TControllerIdentifier;
     using ::Xidi::Controller::VirtualController;
 
 
@@ -232,7 +234,7 @@ namespace XidiTest
     // Each time the virtual controller queries XInput it gets a new data packet.
     TEST_CASE(VirtualController_GetState_Nominal)
     {
-        constexpr VirtualController::TControllerIdentifier kControllerIndex = 2;
+        constexpr TControllerIdentifier kControllerIndex = 2;
 
         std::unique_ptr<MockXInput> mockXInput = std::make_unique<MockXInput>(kControllerIndex);
         mockXInput->ExpectCallGetState({
@@ -262,7 +264,7 @@ namespace XidiTest
     // Each time the virtual controller queries XInput it gets the same data packet.
     TEST_CASE(VirtualController_GetState_SameState)
     {
-        constexpr VirtualController::TControllerIdentifier kControllerIndex = 3;
+        constexpr TControllerIdentifier kControllerIndex = 3;
 
         std::unique_ptr<MockXInput> mockXInput = std::make_unique<MockXInput>(kControllerIndex);
         mockXInput->ExpectCallGetState(
@@ -288,7 +290,7 @@ namespace XidiTest
     // Verifies that virtual controllers are correctly reported as being completely neutral when an XInput error occurs.
     TEST_CASE(VirtualController_GetState_XInputErrorMeansNeutral)
     {
-        constexpr VirtualController::TControllerIdentifier kControllerIndex = 1;
+        constexpr TControllerIdentifier kControllerIndex = 1;
 
         // It is not obvious from documentation how packet numbers are supposed to behave across error conditions.
         // Nominal case is packet number increases, and the other two possibilities are packet number stays the same or decreases. All three are tested below in that order.
@@ -578,7 +580,7 @@ namespace XidiTest
     // Applies some neutral state updates to the virtual controller and verifies that no events are generated.
     TEST_CASE(VirtualController_EventBuffer_Neutral)
     {
-        constexpr VirtualController::TControllerIdentifier kControllerIndex = 0;
+        constexpr TControllerIdentifier kControllerIndex = 0;
         constexpr uint32_t kEventBufferCapacity = 64;
 
         constexpr XINPUT_STATE kXInputStates[] = {
@@ -604,7 +606,7 @@ namespace XidiTest
     // The final view of controller state should be the same regardless of whether it is obtained via snapshot or via buffered events.
     TEST_CASE(VirtualController_EventBuffer_MultipleUpdates)
     {
-        constexpr VirtualController::TControllerIdentifier kControllerIndex = 0;
+        constexpr TControllerIdentifier kControllerIndex = 0;
         constexpr uint32_t kEventBufferCapacity = 64;
 
         // Avoid using vertical components of the analog sticks to avoid having to worry about axis inversion.
@@ -662,7 +664,7 @@ namespace XidiTest
     // Similar to above, but the expected states are different because of the event filters.
     TEST_CASE(VirtualController_EventBuffer_UpdatesWithFilter)
     {
-        constexpr VirtualController::TControllerIdentifier kControllerIndex = 0;
+        constexpr TControllerIdentifier kControllerIndex = 0;
         constexpr uint32_t kEventBufferCapacity = 64;
 
         constexpr XINPUT_STATE kXInputStates[] = {

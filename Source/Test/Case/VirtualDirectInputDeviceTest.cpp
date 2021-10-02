@@ -37,6 +37,7 @@ namespace XidiTest
     using ::Xidi::Controller::Mapper;
     using ::Xidi::Controller::PovMapper;
     using ::Xidi::Controller::SElementIdentifier;
+    using ::Xidi::Controller::TControllerIdentifier;
     using ::Xidi::Controller::VirtualController;
 
 
@@ -57,7 +58,7 @@ namespace XidiTest
     // -------- INTERNAL CONSTANTS ----------------------------------------- //
 
     /// Test value of controller identifier used throughout these test cases.
-    static constexpr VirtualController::TControllerIdentifier kTestControllerIdentifier = 1;
+    static constexpr TControllerIdentifier kTestControllerIdentifier = 1;
 
     /// Test mapper used throughout these test cases.
     /// Describes a layout with 4 axes, a POV, and 8 buttons.

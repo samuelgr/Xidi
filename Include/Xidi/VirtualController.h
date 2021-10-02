@@ -13,6 +13,7 @@
 
 #include "ControllerTypes.h"
 #include "Mapper.h"
+#include "PhysicalController.h"
 #include "StateChangeEventBuffer.h"
 #include "XInputInterface.h"
 
@@ -67,9 +68,6 @@ namespace Xidi
 
 
             // -------- TYPE DEFINITIONS ----------------------------------- //
-
-            /// Integer type used to identify a controller to the underlying XInput interface.
-            typedef DWORD TControllerIdentifier;
 
             /// Permits users of the associated virtual controller to ignore certain controller elements and cause them not to generate state change events.
             /// For use with buffered events.
