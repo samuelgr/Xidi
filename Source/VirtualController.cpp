@@ -120,7 +120,7 @@ namespace Xidi
         // -------- CONSTRUCTION AND DESTRUCTION --------------------------- //
         // See "VirtualController.h" for documentation.
 
-        VirtualController::VirtualController(TControllerIdentifier controllerId, const Mapper& mapper) : kControllerIdentifier(controllerId), controllerMutex(), eventBuffer(), eventFilter(), mapper(mapper), properties(), stateRaw(), stateProcessed(), stateIdentifier(), stateChangeEventHandle(NULL), physicalControllerMonitor(), physicalControllerMonitorStop()
+        VirtualController::VirtualController(TControllerIdentifier controllerId, const Mapper& mapper) : kControllerIdentifier(controllerId), controllerMutex(), eventBuffer(), eventFilter(), mapper(mapper), properties(), stateRaw(), stateProcessed(), stateChangeEventHandle(NULL), physicalControllerMonitor(), physicalControllerMonitorStop()
         {
             Message::OutputFormatted(Message::ESeverity::Info, L"Created virtual controller object with identifier %u.", (1 + kControllerIdentifier));
 
@@ -202,36 +202,20 @@ namespace Xidi
 
         bool VirtualController::RefreshState(const SPhysicalState& newStateData)
         {
-            XINPUT_STATE xinputState = newStateData.state;
-            SStateIdentifier newStateIdentifier = {.packetNumber = 0, .errorCode = newStateData.errorCode};
-
-            auto lock = Lock();
-
-            // On success, the packet number is updated to the value received from XInput, otherwise it is left at 0.
-            // On failure, the XInput state is zeroed out so that the controller appears to be in a completely neutral state.
-            switch (newStateData.errorCode)
-            {
-            case ERROR_SUCCESS:
-                newStateIdentifier.packetNumber = xinputState.dwPacketNumber;
-                break;
-
-            default:
-                ZeroMemory(&xinputState, sizeof(xinputState));
-                break;
-            }
-
-            // If the state identifier is effectively the same then there is nothing further to do.
-            // If the packet numbers are the same and both previous and current attempt were successful, then there is no change.
-            // Regardless of packet number, if an error condition is persisting then there is also no change.
-            if ((newStateIdentifier.packetNumber == stateIdentifier.packetNumber) && (ERROR_SUCCESS == newStateIdentifier.errorCode) && (ERROR_SUCCESS == stateIdentifier.errorCode))
-                return false;
-            else if ((ERROR_SUCCESS != newStateIdentifier.errorCode) && (ERROR_SUCCESS != stateIdentifier.errorCode))
-                return false;
-
-            stateIdentifier = newStateIdentifier;
+            // This conditional has the effect of reporting the controller's physical state as neutral if the new physical state data reports anything other than success.
+            // We can assume that something about the state has changed since the last refresh.
+            const XINPUT_STATE kNewState = (ERROR_SUCCESS == newStateData.errorCode) ? newStateData.state : XINPUT_STATE();
 
             SState newStateRaw;
-            mapper.MapXInputState(newStateRaw, xinputState.Gamepad);
+            mapper.MapXInputState(newStateRaw, kNewState.Gamepad);
+
+            // Depending on what XInput controller elements the mapper is configured to take into consideration, there may not be a virtual controller state change here.
+            // For example, an axis mapped to a button may have been moved, but if that does not affect the button pressed or unpressed decision then there is no change worth continuing with.
+            if (newStateRaw == stateRaw)
+                return false;
+
+            auto lock = Lock();
+            stateRaw = newStateRaw;
 
             SState newStateProcessed = newStateRaw;
             ApplyProperties(newStateProcessed);
@@ -242,7 +226,6 @@ namespace Xidi
                 return false;
 
             SubmitStateChangeEvents(stateProcessed, newStateProcessed, eventFilter, eventBuffer);
-            stateRaw = newStateRaw;
             stateProcessed = newStateProcessed;
             return true;
         }
@@ -383,7 +366,6 @@ namespace Xidi
 
         void VirtualController::SetStateChangeEvent(HANDLE eventHandle)
         {
-            auto lock = Lock();
             stateChangeEventHandle = eventHandle;
         }
 

@@ -271,13 +271,6 @@ namespace Xidi
                 }
             };
 
-            /// Identifier for a state data packet.
-            struct SStateIdentifier
-            {
-                uint32_t packetNumber;                                      ///< Packet number. XInput provides a new packet number whenever a change in controller state is detected.
-                uint32_t errorCode;                                         ///< Error code from XInput. Can be used to stop updating controller state whenever there is an error such as an unplugged controller.
-            };
-
 
         private:
             // -------- INSTANCE VARIABLES --------------------------------- //
@@ -309,10 +302,6 @@ namespace Xidi
             /// State of the virtual controller as of the last refresh.
             /// Fully processed, all properties have been applied.
             SState stateProcessed;
-
-            /// Identifies the last data packet that was retrieved from a real XInput controller during a refresh operation.
-            /// Used to detect if there have been any changes.
-            SStateIdentifier stateIdentifier;
 
             /// State change event notification handle, optionally provided by applications.
             /// The underlying event object is owned by the application, not by this object.
