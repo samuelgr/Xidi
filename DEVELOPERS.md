@@ -19,26 +19,30 @@ A zoomed-out view of Xidi's functionality boils down to a very short sequence of
 
 Of these three steps, *translate* is the most intricate and interesting. The *read* step simply involves invoking the relevant XInput API functions, and the *expose* step requires that Xidi implement DirectInput and WinMM interfaces as described in the relevant documentation.
 
-Xidi's notion of virtual controller forms the heart of its implementation. A *virtual controller* is simply a layer of abstraction: it acts as an internal receptacle for translated controller data. Xidi uses mappers to translate from raw XInput controller state to the state of a virtual controller device and subsequently exposes virtual controller state to applications. Mappers also determine the capabilities (number of axes, number of buttons, and so on) of the virtual controllers that Xidi exposes to applications.
+Xidi's notion of virtual controller forms the heart of its implementation. A *virtual controller* is simply a layer of abstraction: it acts as an internal receptacle for translated controller data. Conversely, a *physical controller* is an actual XInput controller device, as exposed by the XInput API. The number of possible physical controllers is determined by the XInput API, but the number of virtual controller objects is not limited by the system or by Xidi. Multiple virtual controller objects can all be associated with the same physical controller device.
 
-Constants and data structures that are used to represent virtual controller data are defined in `ControllerTypes.h`, and the main top-level implementation of virtual controllers is in the **VirtualController** module. A virtual controller can contain up to 6 axes (X, Y, Z, X-rotation, Y-rotation, and Z-rotation), 16 buttons, and 1 POV hat. The mapper object in use determines which subset of these controller elements is actually present on the associated virtual controller and, accordingly, which elements of the virtual controller state data structure would ever contain valid data.
+Xidi uses mappers to translate from raw XInput controller state to the state of a virtual controller device and subsequently exposes virtual controller state to applications. Mappers also determine the capabilities (number of axes, number of buttons, and so on) of the virtual controllers that Xidi exposes to applications.
+
+Constants and data structures that are used to represent virtual controller data are defined in `ControllerTypes.h`, and the main top-level implementation of virtual controllers is in the **VirtualController** module. A virtual controller can contain up to 6 axes (X, Y, Z, X-rotation, Y-rotation, and Z-rotation), 16 buttons, and 1 POV hat. The mapper object in use determines which subset of these controller elements is actually present on the associated virtual controller and, accordingly, which elements of the virtual controller state data structure would ever contain valid data. Communication with physical controller devices via the XInput API is all contained in the **PhysicalController** module.
 
 The sections that follow describe each step in Xidi's overall functionality in more detail.
 
 
 ### Reading XInput State
 
-Whenever a Xidi virtual controller needs to refresh its view of a real XInput controller's state it uses a concrete instance of `IXInput` to do so. This interface is defined in the **XInputInterface** module and exists primarily to facilitate dependency injection for testing purposes. The concrete implementation simply invokes `XInputGetState`. Mock implementations used by unit tests return canned test data.
+The **PhysicalController** module governs all communication with physical XInput controllers. A background thread runs periodically and polls for the state of all available XInput controllers. If a change in physical state is detected, any virtual controllers associated with the physical controller whose state changed are notified. Upon receiving such a notification, a virtual controller refreshes its state by taking into consideration the updated physical controller state information. Whenever an application requests the state of the virtual controller it is simply given the view that was created during the most recent state refresh operation.
+
+Behind the scenes, the **PhysicalController** module spawns a background thread that periodically polls every possible XInput controller using `XInputGetState` and compares the results to the last known physical state of each controller. It also maintains one condition variable object per possible physical controller. If a change in state is detected for a physical controller, the state data structure for that controller is updated and the associated condition variable is signalled. On the receiving end of physical state data, each virtual controller object spawns a background thread that continually monitors the condition variable of its associated physical controller. On receiving a signal of physical state change, the virtual controller object reads the new physical state and uses it to update its own virtual state.
 
 
 ### Translating to Virtual Controller State
 
-Translation from XInput controller state to virtual controller state is governed entirely by mapper objects, one of which exists for each of the [documented mapper types](README.md). Internally each mapper object contains a set of *element mapper* objects, one for each XInput controller element. The subsections that follow describe how this process works.
+Translation from physical controller state to virtual controller state is governed entirely by mapper objects, one of which exists for each of the [documented mapper types](README.md). Internally each mapper object contains a set of *element mapper* objects, one for each XInput controller element. The subsections that follow describe how this process works.
 
 
 #### Element Mappers
 
-An *element mapper* reads the value associated with a single element of an XInput controller (i.e. A button, LT trigger, right-stick horizontal axis) and writes a value contribution to the data structure representing a virtual controller's state. Each element mapper is allowed to contribute to only one element of a virtual controller, and it is possible for multiple element mappers to contribute to the same element of a virtual controller. Element mappers are expected to be stateless.
+An *element mapper* reads the value associated with a single element of an XInput controller (i.e. A button, LT trigger, right-stick horizontal axis) and writes a value contribution to the data structure representing a virtual controller's state. Each element mapper is allowed to contribute to any number of elements of a virtual controller, and it is possible for multiple element mappers to contribute to the same element of a virtual controller. Element mappers are expected to be stateless with respect to previous or future contributions to virtual controller state.
 
 "Contributing to a virtual controller element" means producing a value for the virtual controller element and then aggregating it with whatever value already exists for that element. This is important because multiple mappers might contribute to the same virtual controller element. For an element mapper that contributes to a virtual controller axis this typically means aggregation by summation: if an element mapper intends to produce a value of 1000 for its associated axis, rather than writing 1000 it should add 1000 to whatever value already exists for that axis.
 
@@ -79,6 +83,17 @@ If the input source is an analog stick value, then the input value is compared w
 If the input source is a trigger value, then the input value is compared with a threshold. If the input value is greater than the threshold then the positive direction is pressed. If not, and a negative direction is configured, then the negative direction is pressed. If none of these conditions hold then the PovMapper does not cause any POV directions to be pressed.
 
 If the input source is a button value, then the same logic applies as with a trigger value. However, instead of comparing with a threshold, the decision is based on whether or not the input button is pressed.
+
+
+##### SplitMapper
+
+This is a multi-element mapper which contains within it two underlying element mappers. Which underlying mapper is used for any given contribution is determined by whether or not the incoming input source value is considered positive or negative. The implementation allows for either or both of the underlying mappers to be omitted.
+
+If the input source is an analog stick value, then the positive mapper is used if the raw value is non-negative, and the negative mapper is used otherwise. A good use case for this scenario is to split an XInput axis into a positive half and a negative half. For example, suppose a `SplitMapper` is used on the left stick X axis such that the negative mapper is a `ButtonMapper` assigned to button 1 and the positive mapper is a `ButtonMapper` assigned to button 2. Whenever the user pushes the left stick far enough to the left virtual button 1 is pressed, and whenever the user pushes the left stick far enough to the right virtual button 2 is pressed.
+
+If the input source is a trigger value, then the positive mapper is used if the raw value is at least equal to the mid-point value for triggers, and the negative mapper is used otherwise.
+
+If the input source is a button value, then the positive mapper is used if the raw value indicates that the button is pressed, and the negative value is used otherwise.
 
 
 #### Top-Level Mappers
@@ -127,6 +142,8 @@ Source code documentation is available and can be built using Doxygen. This sect
 
 **MapperDefinitions** contains instantiations of the mappers themselves.
 
+**PhysicalController** manages all communication with the underlying XInput API. It periodically polls devices for changes to physical state and supports notifying other modules whenever a physical state change is detected.
+
 **StateChangeEventBuffer** is a helper for virtual controller objects that allows them to support event buffering, which is in turn used to expose DirectInput buffered events to applications.
 
 **VirtualController** is the top-level virtual controller implementation. It combines all of the individual units of functionality needed to present a cohesive controller interface, including mapping, event buffering, and even some configuration properties. Some of the functionality is guided by what DirectInput expects, although none of the implementation is DirectInput-specific.
@@ -136,5 +153,3 @@ Source code documentation is available and can be built using Doxygen. This sect
 **WrapperIDirectInput** and **WrapperJoyWinMM** act as interception classes for all calls to DirectInput (via IDirectInput or IDirectInput8) and WinMM joystick (via direct function calls) APIs. In the former case, an instance of WrapperIDirectInput is returned when the application calls one of the DirectInput object creation methods exported by the Xidi DLL, and in the latter case, the joystick family of WinMM calls invokes functions supplied by WrapperJoyWinMM.
 
 **XidiConfigReader** specializes the generic functionality offered by the Configuration subsystem and defines the allowed format of a Xidi configuration file.
-
-**XInputInterface** is a simple wrapper interface around XInput API functions. It exists to facilitate dependency injection for the purpose of testing.

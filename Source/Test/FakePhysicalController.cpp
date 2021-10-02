@@ -10,6 +10,7 @@
  *   these fake functions immediately causes a test to fail.
  *****************************************************************************/
 
+#include "ApiWindows.h"
 #include "PhysicalController.h"
 #include "TestCase.h"
 
@@ -25,14 +26,19 @@ namespace Xidi
 
         SPhysicalState GetCurrentPhysicalControllerState(TControllerIdentifier controllerIdentifier)
         {
-            TEST_FAILED_BECAUSE(L"Unimplemented fake function called: %s", __FUNCTIONW__);
+            // Operation always succeeds and reports that the controller is completely neutral.
+            return {.errorCode = ERROR_SUCCESS, .state = {}};
         }
 
         // --------
 
         bool WaitForPhysicalControllerStateChange(TControllerIdentifier controllerIdentifier, SPhysicalState& state, std::stop_token stopToken)
         {
-            TEST_FAILED_BECAUSE(L"Unimplemented fake function called: %s", __FUNCTIONW__);
+            // No state changes are ever reported, so the only way this function ever returns is if a stop is requested.
+            while (false == stopToken.stop_requested())
+                Sleep(0);
+
+            return false;
         }
     }
 }

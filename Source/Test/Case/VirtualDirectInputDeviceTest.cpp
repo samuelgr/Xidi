@@ -187,7 +187,7 @@ namespace XidiTest
                 TEST_ASSERT(sizeof(*lpddoi) == lpddoi->dwSize);
                 TEST_ASSERT(DataFormat::kInvalidOffsetValue != lpddoi->dwOfs);
                 TEST_ASSERT(DIDFT_GETTYPE(lpddoi->dwType) == DIDFT_ABSAXIS);
-                TEST_ASSERT((DIDOI_ASPECTPOSITION | DIDOI_POLLED) == lpddoi->dwFlags);
+                TEST_ASSERT((DIDOI_ASPECTPOSITION) == lpddoi->dwFlags);
 
                 EAxis seenAxis;
                 if (GUID_XAxis == lpddoi->guidType)
@@ -266,7 +266,7 @@ namespace XidiTest
                 TEST_ASSERT(GUID_Button == lpddoi->guidType);
                 TEST_ASSERT(DataFormat::kInvalidOffsetValue != lpddoi->dwOfs);
                 TEST_ASSERT(DIDFT_GETTYPE(lpddoi->dwType) == DIDFT_PSHBUTTON);
-                TEST_ASSERT(DIDOI_POLLED == lpddoi->dwFlags);
+                TEST_ASSERT(0 == lpddoi->dwFlags);
 
                 EButton seenButton = (EButton)DIDFT_GETINSTANCE(lpddoi->dwType);
                 TEST_ASSERT(true == kTestMapper.GetCapabilities().HasButton(seenButton));
@@ -322,7 +322,7 @@ namespace XidiTest
                 TEST_ASSERT(DataFormat::kInvalidOffsetValue != lpddoi->dwOfs);
                 TEST_ASSERT(DIDFT_GETTYPE(lpddoi->dwType) == DIDFT_POV);
                 TEST_ASSERT(DIDFT_GETINSTANCE(lpddoi->dwType) == 0);
-                TEST_ASSERT(DIDOI_POLLED == lpddoi->dwFlags);
+                TEST_ASSERT(0 == lpddoi->dwFlags);
 
                 TEST_ASSERT(false == seenPov);
                 seenPov = true;
@@ -414,7 +414,7 @@ namespace XidiTest
 
         const DIDEVCAPS kExpectedCapabilities = {
             .dwSize = sizeof(DIDEVCAPS),
-            .dwFlags = (DIDC_ATTACHED | DIDC_EMULATED | DIDC_POLLEDDEVICE | DIDC_POLLEDDATAFORMAT),
+            .dwFlags = (DIDC_ATTACHED | DIDC_EMULATED),
             .dwDevType = DINPUT_DEVTYPE_XINPUT_GAMEPAD,
             .dwAxes = kTestMapper.GetCapabilities().numAxes,
             .dwButtons = kTestMapper.GetCapabilities().numButtons,
@@ -440,7 +440,7 @@ namespace XidiTest
         FillMemory(&expectedCapabilities, sizeof(expectedCapabilities), kPoisonByte);
         *((DIDEVCAPS_DX3*)&expectedCapabilities) = {
             .dwSize = sizeof(DIDEVCAPS_DX3),
-            .dwFlags = (DIDC_ATTACHED | DIDC_EMULATED | DIDC_POLLEDDEVICE | DIDC_POLLEDDATAFORMAT),
+            .dwFlags = (DIDC_ATTACHED | DIDC_EMULATED),
             .dwDevType = DINPUT_DEVTYPE_XINPUT_GAMEPAD,
             .dwAxes = kTestMapper.GetCapabilities().numAxes,
             .dwButtons = kTestMapper.GetCapabilities().numButtons,

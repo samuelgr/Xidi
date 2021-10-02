@@ -20,6 +20,8 @@
 #include <cstdint>
 #include <functional>
 #include <mutex>
+#include <stop_token>
+#include <thread>
 #include <utility>
 
 
@@ -301,15 +303,26 @@ namespace Xidi
             SProperties properties;
 
             /// State of the virtual controller as of the last refresh.
-            SState state;
+            /// Raw values, with no properties or other processing applied.
+            SState stateRaw;
+
+            /// State of the virtual controller as of the last refresh.
+            /// Fully processed, all properties have been applied.
+            SState stateProcessed;
 
             /// Identifies the last data packet that was retrieved from a real XInput controller during a refresh operation.
             /// Used to detect if there have been any changes.
             SStateIdentifier stateIdentifier;
 
-            /// Specifies if a state refresh is needed before obtaining data from the virtual controller.
-            /// Whenever a refresh operation occurs this flag is turned off. Whenever a data-gathering operation occurs (via state snapshot or otherwise) this flag is turned on.
-            bool stateRefreshNeeded;
+            /// State change event notification handle, optionally provided by applications.
+            /// The underlying event object is owned by the application, not by this object.
+            HANDLE stateChangeEventHandle;
+
+            /// Background thread that monitors the associated physical controller for updates.
+            std::thread physicalControllerMonitor;
+
+            /// Used to indicate that the physical controller monitor thread should stop running.
+            std::stop_source physicalControllerMonitorStop;
 
 
         public:
@@ -317,12 +330,25 @@ namespace Xidi
 
             /// Initialization constructor.
             /// Requires a complete set of metadata for describing the virtual controller to be created.
-            inline VirtualController(TControllerIdentifier controllerId, const Mapper& mapper) : kControllerIdentifier(controllerId), controllerMutex(), eventBuffer(), eventFilter(), mapper(mapper), properties(), state(), stateIdentifier(), stateRefreshNeeded(true)
-            {
-                // Nothing to do here.
-            }
+            VirtualController(TControllerIdentifier controllerId, const Mapper& mapper);
+
+            /// Default destructor.
+            /// Cleans up and terminates the background monitoring thread.
+            ~VirtualController(void);
 
 
+        private:
+            // -------- CLASS METHODS -------------------------------------- //
+
+            /// Monitors for changes in an associated physical controller's state and, on state change, causes a virtual controller to refresh its state.
+            /// Intended to be the entry point for per-virtual-controller background threads.
+            /// @param [in] thisController Controller object for which state is to be monitored.
+            /// @param [in] initialState Initial physical state of the controller. Used as the basis for looking for changes.
+            /// @param [in] stopMonitoringToken Used to indicate that the monitoring should stop and the thread should exit.
+            static void MonitorPhysicalControllerState(VirtualController* thisController, const SPhysicalState& initialState, std::stop_token stopMonitoringToken);
+
+
+        public:
             // -------- INSTANCE METHODS ----------------------------------- //
 
             /// Modifies the contents of the specified controller state object by applying this virtual controller's properties.
@@ -430,10 +456,12 @@ namespace Xidi
             /// @return Current state of this virtual controller.
             SState GetState(void);
 
-            /// Provides a direct read-only view of the state of this virtual controller.
-            /// Caller must obtain the controller lock and hold it for as long as the view is expected to remain valid, which is ideally a very short time.
-            /// @return Read-only view of the state of this virtual controller.
-            const SState& GetStateRef(void);
+            /// Checks if this virtual controller has a state change event handle which would be signalled on virtual controller state change.
+            /// @return `true` if so, `false` otherwise.
+            inline bool HasStateChangeEventHandle(void) const
+            {
+                return (NULL != stateChangeEventHandle);
+            }
 
             /// Checks if the event buffering is enabled.
             /// @return `true` if event buffering is enabled, `false` otherwise.
@@ -462,14 +490,12 @@ namespace Xidi
             /// @param [in] numEventsToPop Maximum number of events to remove.
             void PopEventBufferOldestEvents(uint32_t numEventsToPop);
 
-            /// Refreshes the view of the state of this virtual controller by querying the associated physical controller.
-            /// @return `true` if the state of the controller changed since last refresh, `false` otherwise.
-            inline bool RefreshState(void)
-            {
-                return RefreshState(GetCurrentPhysicalControllerState(kControllerIdentifier));
-            }
+            /// Generates this virtual controller's processed state view by applying this virtual controller's properties to its raw state view.
+            /// Not concurrency-safe, and primarily intended for internal use.
+            void ReapplyProperties(void);
 
             /// Refreshes the virtual controller's state using the supplied new state data.
+            /// Primarily intended to be called by a background thread, but exposed externally for testing.
             /// @param [in] newStateData Physical controller state data to apply to this virtual controller's internal state view.
             /// @return `true` if the state of the controller changed as a result of applying the new state data, `false` otherwise.
             bool RefreshState(const SPhysicalState& newStateData);
@@ -518,6 +544,14 @@ namespace Xidi
             /// @param [in] ffGain Desired force feedback gain value.
             /// @return `true` if the new force feedback gain value was successfully validated and set, `false` otherwise.
             bool SetForceFeedbackGain(uint32_t ffGain);
+
+            /// Sets the state change event handle, which will be signalled whenever a virtual controller state change occurs.
+            /// @param [in] eventHandle New event handle to set, or `NULL` to disable notifications entirely.
+            void SetStateChangeEvent(HANDLE eventHandle);
+
+            /// Signals the state change event.
+            /// Intended to be invoked internally.
+            void SignalStateChangeEvent(void);
         };
     }
 }

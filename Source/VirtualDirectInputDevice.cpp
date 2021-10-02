@@ -431,19 +431,19 @@ namespace Xidi
         case Controller::EElementType::Axis:
             objectInfo->guidType = AxisTypeGuid(controllerElement.axis);
             objectInfo->dwType = DIDFT_ABSAXIS | DIDFT_MAKEINSTANCE((int)controllerCapabilities.FindAxis(controllerElement.axis));
-            objectInfo->dwFlags = DIDOI_POLLED | DIDOI_ASPECTPOSITION;
+            objectInfo->dwFlags = DIDOI_ASPECTPOSITION;
             break;
 
         case Controller::EElementType::Button:
             objectInfo->guidType = GUID_Button;
             objectInfo->dwType = DIDFT_PSHBUTTON | DIDFT_MAKEINSTANCE((int)controllerElement.button);
-            objectInfo->dwFlags = DIDOI_POLLED;
+            objectInfo->dwFlags = 0;
             break;
 
         case Controller::EElementType::Pov:
             objectInfo->guidType = GUID_POV;
             objectInfo->dwType = DIDFT_POV | DIDFT_MAKEINSTANCE(0);
-            objectInfo->dwFlags = DIDOI_POLLED;
+            objectInfo->dwFlags = 0;
             break;
         }
 
@@ -475,7 +475,7 @@ namespace Xidi
     // -------- CONSTRUCTION AND DESTRUCTION ------------------------------- //
     // See "VirtualDirectInputDevice.h" for documentation.
 
-    template <ECharMode charMode> VirtualDirectInputDevice<charMode>::VirtualDirectInputDevice(std::unique_ptr<Controller::VirtualController>&& controller) : controller(std::move(controller)), dataFormat(), refCount(1), stateChangeEventHandle(NULL)
+    template <ECharMode charMode> VirtualDirectInputDevice<charMode>::VirtualDirectInputDevice(std::unique_ptr<Controller::VirtualController>&& controller) : controller(std::move(controller)), dataFormat(), refCount(1)
     {
         // Nothing to do here.
     }
@@ -757,7 +757,7 @@ namespace Xidi
 
             case (sizeof(DIDEVCAPS_DX3)):
                 // Top-level controller information is common to all virtual controllers.
-                lpDIDevCaps->dwFlags = DIDC_ATTACHED | DIDC_EMULATED | DIDC_POLLEDDEVICE | DIDC_POLLEDDATAFORMAT;
+                lpDIDevCaps->dwFlags = DIDC_ATTACHED | DIDC_EMULATED;
                 lpDIDevCaps->dwDevType = DINPUT_DEVTYPE_XINPUT_GAMEPAD;
                 
                 // Information about controller layout comes from controller capabilities.
@@ -879,7 +879,7 @@ namespace Xidi
         do
         {
             auto lock = controller->Lock();
-            writeDataPacketResult = dataFormat->WriteDataPacket(lpvData, cbData, controller->GetStateRef());
+            writeDataPacketResult = dataFormat->WriteDataPacket(lpvData, cbData, controller->GetState());
         } while (false);
         LOG_INVOCATION_AND_RETURN(((true == writeDataPacketResult) ? DI_OK : DIERR_INVALIDPARAM), kMethodSeverity);
     }
@@ -1041,15 +1041,7 @@ namespace Xidi
     template <ECharMode charMode> HRESULT VirtualDirectInputDevice<charMode>::Poll(void)
     {
         static constexpr Message::ESeverity kMethodSeverity = Message::ESeverity::SuperDebug;
-
-        // DirectInput documentation requires that the application data format already be set before a device can be polled.
-        if (false == IsApplicationDataFormatSet())
-            LOG_INVOCATION_AND_RETURN(DIERR_INVALIDPARAM, kMethodSeverity);
-
-        if (true == controller->RefreshState())
-            SignalEventIfEnabled(stateChangeEventHandle);
-
-        LOG_INVOCATION_AND_RETURN(DI_OK, kMethodSeverity);
+        LOG_INVOCATION_AND_RETURN(DI_NOEFFECT, kMethodSeverity);
     }
 
     // ---------
@@ -1134,8 +1126,8 @@ namespace Xidi
     {
         static constexpr Message::ESeverity kMethodSeverity = Message::ESeverity::Info;
 
-        stateChangeEventHandle = hEvent;
-        LOG_INVOCATION_AND_RETURN(DI_POLLEDDEVICE, kMethodSeverity);
+        controller->SetStateChangeEvent(hEvent);
+        LOG_INVOCATION_AND_RETURN(DI_OK, kMethodSeverity);
     }
 
     // ---------

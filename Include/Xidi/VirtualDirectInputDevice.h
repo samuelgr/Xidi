@@ -88,10 +88,6 @@ namespace Xidi
         /// Reference count.
         std::atomic<unsigned long> refCount;
 
-        /// State change event notification handle, optionally provided by applications.
-        /// The underlying event object is owned by the application, not by this object.
-        HANDLE stateChangeEventHandle;
-
     public:
         // -------- CONSTRUCTION AND DESTRUCTION ----------------------------------- //
 

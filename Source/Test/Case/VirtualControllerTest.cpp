@@ -554,6 +554,28 @@ namespace XidiTest
             TEST_ASSERT(VirtualController::kAxisSaturationDefault == controller.GetAxisSaturation((EAxis)i));
     }
 
+    // Valid property changes that should result in a transformation being applied to the current controller state view even without a state change.
+    TEST_CASE(VirtualController_SetProperty_AutoApplyToExistingState)
+    {
+        constexpr int32_t kTestAxisRangeMin = 500;
+        constexpr int32_t kTestAxisRangeMax = 1000;
+        constexpr int32_t kTestAxisRangeExpectedNeutralValue = (kTestAxisRangeMin + kTestAxisRangeMax) / 2;
+
+        constexpr SPhysicalState kPhysicalState = {.errorCode = ERROR_SUCCESS, .state = {.dwPacketNumber = 1}};
+        constexpr Controller::SState kExpectedStateBefore = {.axis = {0, 0, 0, 0, 0, 0}};
+        constexpr Controller::SState kExpectedStateAfter = {.axis = {kTestAxisRangeExpectedNeutralValue, kTestAxisRangeExpectedNeutralValue, 0, kTestAxisRangeExpectedNeutralValue, kTestAxisRangeExpectedNeutralValue, 0}};
+
+        VirtualController controller(0, kTestMapper);
+        controller.RefreshState(kPhysicalState);
+
+        const Controller::SState kActualStateBefore = controller.GetState();
+        TEST_ASSERT(kActualStateBefore == kExpectedStateBefore);
+
+        controller.SetAllAxisRange(kTestAxisRangeMin, kTestAxisRangeMax);
+        const Controller::SState kActualStateAfter = controller.GetState();
+        TEST_ASSERT(kActualStateAfter == kExpectedStateAfter);
+    }
+
 
     // The following sequence of tests, which together comprise the EventBuffer suite, verify that buffered events function correctly.
     // Each test case follows the basic steps of declaring test data, providing a controller with one or more updated controller state snapshots, and verifying that the resulting controller state is consistent with the input updates.
