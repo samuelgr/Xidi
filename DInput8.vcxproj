@@ -43,7 +43,6 @@
     <ClInclude Include="Include\Xidi\VirtualDirectInputDevice.h" />
     <ClInclude Include="Include\Xidi\WrapperIDirectInput.h" />
     <ClInclude Include="Include\Xidi\XidiConfigReader.h" />
-    <ClInclude Include="Include\Xidi\XInputInterface.h" />
     <ClInclude Include="Resources\DInput8.h" />
     <ClInclude Include="Resources\Version.h" />
     <ClInclude Include="Resources\Xidi.h" />
@@ -73,7 +72,6 @@
     <ClCompile Include="Source\DllMain.cpp" />
     <ClCompile Include="Source\VirtualDirectInputDevice.cpp" />
     <ClCompile Include="Source\XidiConfigReader.cpp" />
-    <ClCompile Include="Source\XInputInterface.cpp" />
   </ItemGroup>
   <ItemGroup>
     <None Include="dinput8.def" />

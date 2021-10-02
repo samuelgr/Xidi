@@ -103,6 +103,15 @@ namespace Xidi
     public:
         // -------- INSTANCE METHODS ----------------------------------------------- //
 
+        /// Retrieves a reference to the underlying virtual controller object.
+        /// Returned reference remains valid only as long as this object exists.
+        /// Primarily intended for testing.
+        /// @return Reference to the underlying virtual controller object.
+        inline Controller::VirtualController& GetVirtualController(void)
+        {
+            return *controller;
+        }
+
         /// Identifies a controller element, given a DirectInput-style element identifier.
         /// Parameters are named after common DirectInput field and method parameters that are used for this purpose.
         /// @param [in] dwObj Object identifier, whose semantics depends on identification method. See DirectInput documentation for more information.

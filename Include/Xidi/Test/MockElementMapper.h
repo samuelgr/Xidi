@@ -15,7 +15,6 @@
 #include "ControllerTypes.h"
 #include "ElementMapper.h"
 #include "TestCase.h"
-#include "XInputInterface.h"
 
 #include <memory>
 #include <vector>

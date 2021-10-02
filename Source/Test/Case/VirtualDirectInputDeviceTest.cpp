@@ -15,7 +15,6 @@
 #include "ControllerTypes.h"
 #include "DataFormat.h"
 #include "Mapper.h"
-#include "MockXInput.h"
 #include "TestCase.h"
 #include "VirtualDirectInputDevice.h"
 
@@ -37,6 +36,7 @@ namespace XidiTest
     using ::Xidi::Controller::Mapper;
     using ::Xidi::Controller::PovMapper;
     using ::Xidi::Controller::SElementIdentifier;
+    using ::Xidi::Controller::SPhysicalState;
     using ::Xidi::Controller::TControllerIdentifier;
     using ::Xidi::Controller::VirtualController;
 
@@ -105,9 +105,9 @@ namespace XidiTest
 
     /// Creates and returns a virtual controller object that uses the test mapper at the top of this file and a mock XInput interface object, which can be optionally specified with expected calls.
     /// @return Smart pointer to the new virtual controller object.
-    static inline std::unique_ptr<VirtualController> CreateTestVirtualController(std::unique_ptr<MockXInput> xinput = std::make_unique<MockXInput>(kTestControllerIdentifier))
+    static inline std::unique_ptr<VirtualController> CreateTestVirtualController(void)
     {
-        return std::make_unique<VirtualController>(kTestControllerIdentifier, kTestMapper, std::move(xinput));
+        return std::make_unique<VirtualController>(kTestControllerIdentifier, kTestMapper);
     }
 
 
@@ -541,20 +541,18 @@ namespace XidiTest
     {
         constexpr DWORD kBufferSize = 16;
         constexpr DIPROPDWORD kBufferSizeProperty = {.diph = {.dwSize = sizeof(DIPROPDWORD), .dwHeaderSize = sizeof(DIPROPHEADER), .dwObj = 0, .dwHow = DIPH_DEVICE}, .dwData = kBufferSize};
-
-        std::unique_ptr<MockXInput> xinput = std::make_unique<MockXInput>(kTestControllerIdentifier);
-        xinput->ExpectCallGetState({
-            .returnCode = ERROR_SUCCESS,
-            .maybeOutputObject = XINPUT_STATE({.dwPacketNumber = 1, .Gamepad = {.wButtons = (XINPUT_GAMEPAD_A | XINPUT_GAMEPAD_X), .sThumbLX = -1234, .sThumbRX = 5678}})
-        });
+        constexpr SPhysicalState kPhysicalState = {.errorCode = ERROR_SUCCESS, .state = {.dwPacketNumber = 1, .Gamepad = {.wButtons = (XINPUT_GAMEPAD_A | XINPUT_GAMEPAD_X), .sThumbLX = -1234, .sThumbRX = 5678}}};
 
         // Set based on the number of controller elements present in the above XINPUT_STATE structure that are also contained in STestDataPacket.
         // In this case, the right thumbstick has no matching offset, but all the other three controller components are represented.
         constexpr DWORD kExpectedNumEvents = 3;
 
-        VirtualDirectInputDevice<ECharMode::W> diController(CreateTestVirtualController(std::move(xinput)));
+        VirtualDirectInputDevice<ECharMode::W> diController(CreateTestVirtualController());
         TEST_ASSERT(DI_OK == diController.SetDataFormat(&kTestFormatSpec));
         TEST_ASSERT(DI_OK == diController.SetProperty(DIPROP_BUFFERSIZE, (LPCDIPROPHEADER)&kBufferSizeProperty));
+
+        // This must occur after the buffer size property is set because the latter enables event buffering.
+        diController.GetVirtualController().RefreshState(kPhysicalState);
 
         // Based on the mapper defined at the top of this file. POV does not need to be filled in because its state is not changing and so it will not generate an event.
         constexpr STestDataPacket kExpectedDataPacketResult = {.axisX = -1234, .button = {DataFormat::kButtonValuePressed, DataFormat::kButtonValueNotPressed, DataFormat::kButtonValuePressed, DataFormat::kButtonValueNotPressed}};
@@ -567,7 +565,6 @@ namespace XidiTest
         DIDEVICEOBJECTDATA objectData[kBufferSize];
         DWORD numObjectDataElements = _countof(objectData);
 
-        TEST_ASSERT(DI_OK == diController.Poll());
         TEST_ASSERT(DI_OK == diController.GetDeviceData(sizeof(DIDEVICEOBJECTDATA), objectData, &numObjectDataElements, DIGDD_PEEK));
         TEST_ASSERT(kExpectedNumEvents == numObjectDataElements);
         ApplyEventsToTestDataPacket(actualDataPacketResult, objectData, numObjectDataElements);
@@ -596,20 +593,18 @@ namespace XidiTest
     {
         constexpr DWORD kBufferSize = 16;
         constexpr DIPROPDWORD kBufferSizeProperty = {.diph = {.dwSize = sizeof(DIPROPDWORD), .dwHeaderSize = sizeof(DIPROPHEADER), .dwObj = 0, .dwHow = DIPH_DEVICE}, .dwData = kBufferSize};
-
-        std::unique_ptr<MockXInput> xinput = std::make_unique<MockXInput>(kTestControllerIdentifier);
-        xinput->ExpectCallGetState({
-            .returnCode = ERROR_SUCCESS,
-            .maybeOutputObject = XINPUT_STATE({.dwPacketNumber = 1, .Gamepad = {.wButtons = (XINPUT_GAMEPAD_A | XINPUT_GAMEPAD_X), .sThumbLX = -1234, .sThumbRX = 5678}})
-        });
+        constexpr SPhysicalState kPhysicalState = {.errorCode = ERROR_SUCCESS, .state = {.dwPacketNumber = 1, .Gamepad = {.wButtons = (XINPUT_GAMEPAD_A | XINPUT_GAMEPAD_X), .sThumbLX = -1234, .sThumbRX = 5678}}};
 
         // Set based on the number of controller elements present in the above XINPUT_STATE structure that are also contained in STestDataPacket.
         // In this case, the right thumbstick has no matching offset, but all the other three controller components are represented.
         constexpr DWORD kExpectedNumEvents = 3;
 
-        VirtualDirectInputDevice<ECharMode::W> diController(CreateTestVirtualController(std::move(xinput)));
+        VirtualDirectInputDevice<ECharMode::W> diController(CreateTestVirtualController());
         TEST_ASSERT(DI_OK == diController.SetDataFormat(&kTestFormatSpec));
         TEST_ASSERT(DI_OK == diController.SetProperty(DIPROP_BUFFERSIZE, (LPCDIPROPHEADER)&kBufferSizeProperty));
+
+        // This must occur after the buffer size property is set because the latter enables event buffering.
+        diController.GetVirtualController().RefreshState(kPhysicalState);
 
         // Based on the mapper defined at the top of this file. POV does not need to be filled in because its state is not changing and so it will not generate an event.
         constexpr STestDataPacket kExpectedDataPacketResult = {.axisX = -1234, .button = {DataFormat::kButtonValuePressed, DataFormat::kButtonValueNotPressed, DataFormat::kButtonValuePressed, DataFormat::kButtonValueNotPressed}};
@@ -621,7 +616,6 @@ namespace XidiTest
         DIDEVICEOBJECTDATA objectData[kBufferSize];
         DWORD numObjectDataElements = _countof(objectData);
 
-        TEST_ASSERT(DI_OK == diController.Poll());
         TEST_ASSERT(DI_OK == diController.GetDeviceData(sizeof(DIDEVICEOBJECTDATA), objectData, &numObjectDataElements, 0));
         TEST_ASSERT(kExpectedNumEvents == numObjectDataElements);
         ApplyEventsToTestDataPacket(actualDataPacketResult, objectData, numObjectDataElements);
@@ -658,16 +652,13 @@ namespace XidiTest
     // Nominal situation in which all inputs are valid and a controller reports its state.
     TEST_CASE(VirtualDirectInputDevice_GetDeviceState_Nominal)
     {
-        std::unique_ptr<MockXInput> xinput = std::make_unique<MockXInput>(kTestControllerIdentifier);
-        xinput->ExpectCallGetState({
-            .returnCode = ERROR_SUCCESS,
-            .maybeOutputObject = XINPUT_STATE({.dwPacketNumber = 1, .Gamepad = {.wButtons = (XINPUT_GAMEPAD_A | XINPUT_GAMEPAD_X), .sThumbLX = -1234, .sThumbRX = 5678}})
-        });
+        constexpr SPhysicalState kPhysicalState = {.errorCode = ERROR_SUCCESS, .state = {.dwPacketNumber = 1, .Gamepad = {.wButtons = (XINPUT_GAMEPAD_A | XINPUT_GAMEPAD_X), .sThumbLX = -1234, .sThumbRX = 5678}}};
 
         // Based on the mapper defined at the top of this file. POV is filled in to reflect its centered state.
         constexpr STestDataPacket kExpectedDataPacketResult = {.axisX = -1234, .pov = EPovValue::Center, .button = {DataFormat::kButtonValuePressed, DataFormat::kButtonValueNotPressed, DataFormat::kButtonValuePressed, DataFormat::kButtonValueNotPressed}};
 
-        VirtualDirectInputDevice<ECharMode::W> diController(CreateTestVirtualController(std::move(xinput)));
+        VirtualDirectInputDevice<ECharMode::W> diController(CreateTestVirtualController());
+        diController.GetVirtualController().RefreshState(kPhysicalState);
         TEST_ASSERT(DI_OK == diController.SetDataFormat(&kTestFormatSpec));
 
         STestDataPacket actualDataPacketResult;
@@ -698,13 +689,10 @@ namespace XidiTest
     // Method is expected to succeed.
     TEST_CASE(VirtualDirectInputDevice_GetDeviceState_SizeTooBig)
     {
-        std::unique_ptr<MockXInput> xinput = std::make_unique<MockXInput>(kTestControllerIdentifier);
-        xinput->ExpectCallGetState({
-            .returnCode = ERROR_SUCCESS,
-            .maybeOutputObject = XINPUT_STATE({.dwPacketNumber = 1, .Gamepad = {.wButtons = (XINPUT_GAMEPAD_A | XINPUT_GAMEPAD_X), .sThumbLX = -1234, .sThumbRX = 5678}})
-        });
+        constexpr SPhysicalState kPhysicalState = {.errorCode = ERROR_SUCCESS, .state = {.dwPacketNumber = 1, .Gamepad = {.wButtons = (XINPUT_GAMEPAD_A | XINPUT_GAMEPAD_X), .sThumbLX = -1234, .sThumbRX = 5678}}};
 
-        VirtualDirectInputDevice<ECharMode::W> diController(CreateTestVirtualController(std::move(xinput)));
+        VirtualDirectInputDevice<ECharMode::W> diController(CreateTestVirtualController());
+        diController.GetVirtualController().RefreshState(kPhysicalState);
         TEST_ASSERT(DI_OK == diController.SetDataFormat(&kTestFormatSpec));
 
         // First element is based on the mapper defined at the top of this file. POV is filled in to reflect its centered state.

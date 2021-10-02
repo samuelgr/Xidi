@@ -12,12 +12,10 @@
 #include "ApiWindows.h"
 #include "ControllerTypes.h"
 #include "ElementMapper.h"
-#include "MockXInput.h"
 #include "PhysicalController.h"
 #include "StateChangeEventBuffer.h"
 #include "TestCase.h"
 #include "VirtualController.h"
-#include "XInputInterface.h"
 
 #include <cmath>
 #include <cstdint>
@@ -39,6 +37,7 @@ namespace XidiTest
     using ::Xidi::Controller::EPovDirection;
     using ::Xidi::Controller::Mapper;
     using ::Xidi::Controller::PovMapper;
+    using ::Xidi::Controller::SPhysicalState;
     using ::Xidi::Controller::StateChangeEventBuffer;
     using ::Xidi::Controller::TControllerIdentifier;
     using ::Xidi::Controller::VirtualController;
@@ -152,7 +151,7 @@ namespace XidiTest
         // Output monotonicity check variable.
         int32_t lastOutputAxisValue = rangeMin;
 
-        VirtualController controller(0, kTestSingleAxisMapper, std::make_unique<MockXInput>(0));
+        VirtualController controller(0, kTestSingleAxisMapper);
         TEST_ASSERT(true == controller.SetAxisDeadzone(kTestSingleAxis, deadzone));
         TEST_ASSERT(true == controller.SetAxisRange(kTestSingleAxis, rangeMin, rangeMax));
         TEST_ASSERT(true == controller.SetAxisSaturation(kTestSingleAxis, saturation));
@@ -225,7 +224,7 @@ namespace XidiTest
 
         for (auto mapper : mappers)
         {
-            VirtualController controller(0, *mapper, std::make_unique<MockXInput>(0));
+            VirtualController controller(0, *mapper);
             TEST_ASSERT(mapper->GetCapabilities() == controller.GetCapabilities());
         }
     }
@@ -235,14 +234,12 @@ namespace XidiTest
     TEST_CASE(VirtualController_GetState_Nominal)
     {
         constexpr TControllerIdentifier kControllerIndex = 2;
-
-        std::unique_ptr<MockXInput> mockXInput = std::make_unique<MockXInput>(kControllerIndex);
-        mockXInput->ExpectCallGetState({
-            {.returnCode = ERROR_SUCCESS, .maybeOutputObject = XINPUT_STATE({.dwPacketNumber = 1, .Gamepad = {.wButtons = XINPUT_GAMEPAD_A}})},
-            {.returnCode = ERROR_SUCCESS, .maybeOutputObject = XINPUT_STATE({.dwPacketNumber = 2, .Gamepad = {.wButtons = XINPUT_GAMEPAD_B}})},
-            {.returnCode = ERROR_SUCCESS, .maybeOutputObject = XINPUT_STATE({.dwPacketNumber = 3, .Gamepad = {.wButtons = XINPUT_GAMEPAD_X}})},
-            {.returnCode = ERROR_SUCCESS, .maybeOutputObject = XINPUT_STATE({.dwPacketNumber = 4, .Gamepad = {.wButtons = XINPUT_GAMEPAD_Y}})}
-        });
+        constexpr SPhysicalState kPhysicalStates[] = {
+            {.errorCode = ERROR_SUCCESS, .state = {.dwPacketNumber = 1, .Gamepad = {.wButtons = XINPUT_GAMEPAD_A}}},
+            {.errorCode = ERROR_SUCCESS, .state = {.dwPacketNumber = 2, .Gamepad = {.wButtons = XINPUT_GAMEPAD_B}}},
+            {.errorCode = ERROR_SUCCESS, .state = {.dwPacketNumber = 3, .Gamepad = {.wButtons = XINPUT_GAMEPAD_X}}},
+            {.errorCode = ERROR_SUCCESS, .state = {.dwPacketNumber = 4, .Gamepad = {.wButtons = XINPUT_GAMEPAD_Y}}}
+        };
 
         // Button assignments are based on the mapper defined at the top of this file.
         constexpr Controller::SState kExpectedStates[] = {
@@ -252,11 +249,13 @@ namespace XidiTest
             {.button = 0b1000},    // Y
         };
 
-        VirtualController controller(kControllerIndex, kTestMapper, std::move(mockXInput));
-        for (const auto& expectedState : kExpectedStates)
+        VirtualController controller(kControllerIndex, kTestMapper);
+        for (int i = 0; i < _countof(kExpectedStates); ++i)
         {
-            const Controller::SState actualState = controller.GetState();
-            TEST_ASSERT(actualState == expectedState);
+            controller.RefreshState(kPhysicalStates[i]);
+
+            const Controller::SState kActualState = controller.GetState();
+            TEST_ASSERT(kActualState == kExpectedStates[i]);
         }
     }
 
@@ -265,11 +264,7 @@ namespace XidiTest
     TEST_CASE(VirtualController_GetState_SameState)
     {
         constexpr TControllerIdentifier kControllerIndex = 3;
-
-        std::unique_ptr<MockXInput> mockXInput = std::make_unique<MockXInput>(kControllerIndex);
-        mockXInput->ExpectCallGetState(
-            {.returnCode = ERROR_SUCCESS, .maybeOutputObject = XINPUT_STATE({.dwPacketNumber = 1, .Gamepad = {.wButtons = XINPUT_GAMEPAD_A | XINPUT_GAMEPAD_X}}), .repeatTimes = 3}
-        );
+        constexpr SPhysicalState kPhysicalState = {.errorCode = ERROR_SUCCESS, .state = {.dwPacketNumber = 1, .Gamepad = {.wButtons = XINPUT_GAMEPAD_A | XINPUT_GAMEPAD_X}}};
 
         // Button assignments are based on the mapper defined at the top of this file.
         constexpr Controller::SState kExpectedStates[] = {
@@ -279,9 +274,11 @@ namespace XidiTest
             {.button = 0b0101}      // A, X
         };
 
-        VirtualController controller(kControllerIndex, kTestMapper, std::move(mockXInput));
+        VirtualController controller(kControllerIndex, kTestMapper);
         for (const auto& expectedState : kExpectedStates)
         {
+            controller.RefreshState(kPhysicalState);
+
             const Controller::SState actualState = controller.GetState();
             TEST_ASSERT(actualState == expectedState);
         }
@@ -294,18 +291,17 @@ namespace XidiTest
 
         // It is not obvious from documentation how packet numbers are supposed to behave across error conditions.
         // Nominal case is packet number increases, and the other two possibilities are packet number stays the same or decreases. All three are tested below in that order.
-        std::unique_ptr<MockXInput> mockXInput = std::make_unique<MockXInput>(kControllerIndex);
-        mockXInput->ExpectCallGetState({
-            {.returnCode = ERROR_SUCCESS,               .maybeOutputObject = XINPUT_STATE({.dwPacketNumber = 1, .Gamepad = {.wButtons = XINPUT_GAMEPAD_A | XINPUT_GAMEPAD_Y}})},
-            {.returnCode = ERROR_DEVICE_NOT_CONNECTED},
-            {.returnCode = ERROR_SUCCESS,               .maybeOutputObject = XINPUT_STATE({.dwPacketNumber = 2, .Gamepad = {.wButtons = XINPUT_GAMEPAD_A | XINPUT_GAMEPAD_Y}})},
-            {.returnCode = ERROR_SUCCESS,               .maybeOutputObject = XINPUT_STATE({.dwPacketNumber = 3, .Gamepad = {.wButtons = XINPUT_GAMEPAD_B | XINPUT_GAMEPAD_Y}})},
-            {.returnCode = ERROR_INVALID_ACCESS},
-            {.returnCode = ERROR_SUCCESS,               .maybeOutputObject = XINPUT_STATE({.dwPacketNumber = 3, .Gamepad = {.wButtons = XINPUT_GAMEPAD_B | XINPUT_GAMEPAD_Y}})},
-            {.returnCode = ERROR_SUCCESS,               .maybeOutputObject = XINPUT_STATE({.dwPacketNumber = 4, .Gamepad = {.wButtons = XINPUT_GAMEPAD_X | XINPUT_GAMEPAD_Y}})},
-            {.returnCode = ERROR_NOT_SUPPORTED},
-            {.returnCode = ERROR_SUCCESS,               .maybeOutputObject = XINPUT_STATE({.dwPacketNumber = 1, .Gamepad = {.wButtons = XINPUT_GAMEPAD_X | XINPUT_GAMEPAD_Y}})}
-        });
+        constexpr SPhysicalState kPhysicalStates[] = {
+            {.errorCode = ERROR_SUCCESS,                .state = {.dwPacketNumber = 1, .Gamepad = {.wButtons = XINPUT_GAMEPAD_A | XINPUT_GAMEPAD_Y}}},
+            {.errorCode = ERROR_DEVICE_NOT_CONNECTED},
+            {.errorCode = ERROR_SUCCESS,                .state = {.dwPacketNumber = 2, .Gamepad = {.wButtons = XINPUT_GAMEPAD_A | XINPUT_GAMEPAD_Y}}},
+            {.errorCode = ERROR_SUCCESS,                .state = {.dwPacketNumber = 3, .Gamepad = {.wButtons = XINPUT_GAMEPAD_B | XINPUT_GAMEPAD_Y}}},
+            {.errorCode = ERROR_INVALID_ACCESS},
+            {.errorCode = ERROR_SUCCESS,                .state = {.dwPacketNumber = 3, .Gamepad = {.wButtons = XINPUT_GAMEPAD_B | XINPUT_GAMEPAD_Y}}},
+            {.errorCode = ERROR_SUCCESS,                .state = {.dwPacketNumber = 4, .Gamepad = {.wButtons = XINPUT_GAMEPAD_X | XINPUT_GAMEPAD_Y}}},
+            {.errorCode = ERROR_NOT_SUPPORTED},
+            {.errorCode = ERROR_SUCCESS,                .state = {.dwPacketNumber = 1, .Gamepad = {.wButtons = XINPUT_GAMEPAD_X | XINPUT_GAMEPAD_Y}}}
+        };
 
         // When XInput calls fail, the controller state should be completely neutral.
         // Button assignments are based on the mapper defined at the top of this file.
@@ -321,18 +317,20 @@ namespace XidiTest
             {.button = 0b1100}      // X, Y
         };
 
-        VirtualController controller(kControllerIndex, kTestMapper, std::move(mockXInput));
-        for (const auto& expectedState : kExpectedStates)
+        VirtualController controller(kControllerIndex, kTestMapper);
+        for (int i = 0; i < _countof(kExpectedStates); ++i)
         {
-            const Controller::SState actualState = controller.GetState();
-            TEST_ASSERT(actualState == expectedState);
+            controller.RefreshState(kPhysicalStates[i]);
+
+            const Controller::SState kActualState = controller.GetState();
+            TEST_ASSERT(kActualState == kExpectedStates[i]);
         }
     }
 
     // Verifies that attempting to obtain a controller lock results in an object that does, in fact, own the mutex with which it is associated.
     TEST_CASE(VirtualController_Lock)
     {
-        VirtualController controller(0, kTestSingleAxisMapper, std::make_unique<MockXInput>(0));
+        VirtualController controller(0, kTestSingleAxisMapper);
         auto lock = controller.Lock();
         TEST_ASSERT(true == lock.owns_lock());
     }
@@ -423,7 +421,7 @@ namespace XidiTest
         constexpr uint32_t kTestDeadzoneValue = VirtualController::kAxisDeadzoneDefault / 2;
         constexpr EAxis kTestDeadzoneAxis = EAxis::RotX;
 
-        VirtualController controller(0, kTestMapper, std::make_unique<MockXInput>(0));
+        VirtualController controller(0, kTestMapper);
         TEST_ASSERT(true == controller.SetAxisDeadzone(kTestDeadzoneAxis, kTestDeadzoneValue));
         
         for (int i = 0; i < (int)EAxis::Count; ++i)
@@ -446,7 +444,7 @@ namespace XidiTest
         constexpr uint32_t kTestDeadzoneValue = VirtualController::kAxisDeadzoneMax + 1;
         constexpr EAxis kTestDeadzoneAxis = EAxis::RotX;
 
-        VirtualController controller(0, kTestMapper, std::make_unique<MockXInput>(0));
+        VirtualController controller(0, kTestMapper);
         TEST_ASSERT(false == controller.SetAxisDeadzone(kTestDeadzoneAxis, kTestDeadzoneValue));
 
         for (int i = 0; i < (int)EAxis::Count; ++i)
@@ -462,7 +460,7 @@ namespace XidiTest
     TEST_CASE(VirtualController_SetProperty_ForceFeedbackGainValid)
     {
         constexpr uint32_t kTestFfGainValue = VirtualController::kFfGainDefault / 2;
-        VirtualController controller(0, kTestMapper, std::make_unique<MockXInput>(0));
+        VirtualController controller(0, kTestMapper);
         TEST_ASSERT(true == controller.SetForceFeedbackGain(kTestFfGainValue));
     }
 
@@ -470,7 +468,7 @@ namespace XidiTest
     TEST_CASE(VirtualController_SetProperty_ForceFeedbackGainInvalid)
     {
         constexpr uint32_t kTestFfGainValue = VirtualController::kFfGainMax + 1;
-        VirtualController controller(0, kTestMapper, std::make_unique<MockXInput>(0));
+        VirtualController controller(0, kTestMapper);
         TEST_ASSERT(false == controller.SetForceFeedbackGain(kTestFfGainValue));
     }
 
@@ -480,7 +478,7 @@ namespace XidiTest
         constexpr std::pair<int32_t, int32_t> kTestRangeValue = std::make_pair(-100, 50000);
         constexpr EAxis kTestRangeAxis = EAxis::Y;
 
-        VirtualController controller(0, kTestMapper, std::make_unique<MockXInput>(0));
+        VirtualController controller(0, kTestMapper);
         TEST_ASSERT(true == controller.SetAxisRange(kTestRangeAxis, kTestRangeValue.first, kTestRangeValue.second));
 
         for (int i = 0; i < (int)EAxis::Count; ++i)
@@ -503,7 +501,7 @@ namespace XidiTest
         constexpr std::pair<int32_t, int32_t> kTestRangeValue = std::make_pair(50000, 50000);
         constexpr EAxis kTestRangeAxis = EAxis::Y;
 
-        VirtualController controller(0, kTestMapper, std::make_unique<MockXInput>(0));
+        VirtualController controller(0, kTestMapper);
         TEST_ASSERT(false == controller.SetAxisRange(kTestRangeAxis, kTestRangeValue.first, kTestRangeValue.second));
 
         for (int i = 0; i < (int)EAxis::Count; ++i)
@@ -521,7 +519,7 @@ namespace XidiTest
         constexpr uint32_t kTestSaturationValue = VirtualController::kAxisSaturationDefault / 2;
         constexpr EAxis kTestSaturationAxis = EAxis::RotY;
 
-        VirtualController controller(0, kTestMapper, std::make_unique<MockXInput>(0));
+        VirtualController controller(0, kTestMapper);
         TEST_ASSERT(true == controller.SetAxisSaturation(kTestSaturationAxis, kTestSaturationValue));
 
         for (int i = 0; i < (int)EAxis::Count; ++i)
@@ -544,7 +542,7 @@ namespace XidiTest
         constexpr uint32_t kTestSaturationValue = VirtualController::kAxisSaturationMax + 1;
         constexpr EAxis kTestSaturationAxis = EAxis::RotY;
 
-        VirtualController controller(0, kTestMapper, std::make_unique<MockXInput>(0));
+        VirtualController controller(0, kTestMapper);
         TEST_ASSERT(false == controller.SetAxisSaturation(kTestSaturationAxis, kTestSaturationValue));
 
         for (int i = 0; i < (int)EAxis::Count; ++i)
@@ -563,7 +561,7 @@ namespace XidiTest
     // Verifies that by default buffered events are disabled.
     TEST_CASE(VirtualController_EventBuffer_DefaultDisabled)
     {
-        VirtualController controller(0, kTestMapper, std::make_unique<MockXInput>(0));
+        VirtualController controller(0, kTestMapper);
         TEST_ASSERT(0 == controller.GetEventBufferCapacity());
     }
 
@@ -572,7 +570,7 @@ namespace XidiTest
     {
         constexpr uint32_t kEventBufferCapacity = 64;
 
-        VirtualController controller(0, kTestMapper, std::make_unique<MockXInput>(0));
+        VirtualController controller(0, kTestMapper);
         controller.SetEventBufferCapacity(kEventBufferCapacity);
         TEST_ASSERT(kEventBufferCapacity == controller.GetEventBufferCapacity());
     }
@@ -583,21 +581,17 @@ namespace XidiTest
         constexpr TControllerIdentifier kControllerIndex = 0;
         constexpr uint32_t kEventBufferCapacity = 64;
 
-        constexpr XINPUT_STATE kXInputStates[] = {
-            {.dwPacketNumber = 1},
-            {.dwPacketNumber = 3},
-            {.dwPacketNumber = 5}
+        constexpr SPhysicalState kPhysicalStates[] = {
+            {.errorCode = ERROR_SUCCESS, .state = {.dwPacketNumber = 1}},
+            {.errorCode = ERROR_SUCCESS, .state = {.dwPacketNumber = 3}},
+            {.errorCode = ERROR_SUCCESS, .state = {.dwPacketNumber = 5}}
         };
 
-        std::unique_ptr<MockXInput> mockXInput = std::make_unique<MockXInput>(kControllerIndex);
-        for (const auto& kXInputState : kXInputStates)
-            mockXInput->ExpectCallGetState({.returnCode = ERROR_SUCCESS, .maybeOutputObject = kXInputState});
-
-        VirtualController controller(kControllerIndex, kTestMapper, std::move(mockXInput));
+        VirtualController controller(kControllerIndex, kTestMapper);
         controller.SetEventBufferCapacity(kEventBufferCapacity);
 
-        for (int i = 0; i < _countof(kXInputStates); ++i)
-            controller.RefreshState();
+        for (int i = 0; i < _countof(kPhysicalStates); ++i)
+            controller.RefreshState(kPhysicalStates[i]);
 
         TEST_ASSERT(0 == controller.GetEventBufferCount());
     }
@@ -610,11 +604,11 @@ namespace XidiTest
         constexpr uint32_t kEventBufferCapacity = 64;
 
         // Avoid using vertical components of the analog sticks to avoid having to worry about axis inversion.
-        constexpr XINPUT_STATE kXInputStates[] = {
-            {.dwPacketNumber = 1, .Gamepad = {.wButtons = XINPUT_GAMEPAD_A, .sThumbLX = 1111, .sThumbRX = 2222}},
-            {.dwPacketNumber = 2, .Gamepad = {.wButtons = XINPUT_GAMEPAD_A, .sThumbLX = 3333, .sThumbRX = 4444}},
-            {.dwPacketNumber = 3, .Gamepad = {.wButtons = XINPUT_GAMEPAD_A | XINPUT_GAMEPAD_Y | XINPUT_GAMEPAD_DPAD_UP, .sThumbLX = -5555, .sThumbRX = -6666}},
-            {.dwPacketNumber = 4, .Gamepad = {.wButtons = XINPUT_GAMEPAD_DPAD_LEFT}}
+        constexpr SPhysicalState kPhysicalStates[] = {
+            {.errorCode = ERROR_SUCCESS, .state = {.dwPacketNumber = 1, .Gamepad = {.wButtons = XINPUT_GAMEPAD_A, .sThumbLX = 1111, .sThumbRX = 2222}}},
+            {.errorCode = ERROR_SUCCESS, .state = {.dwPacketNumber = 2, .Gamepad = {.wButtons = XINPUT_GAMEPAD_A, .sThumbLX = 3333, .sThumbRX = 4444}}},
+            {.errorCode = ERROR_SUCCESS, .state = {.dwPacketNumber = 3, .Gamepad = {.wButtons = XINPUT_GAMEPAD_A | XINPUT_GAMEPAD_Y | XINPUT_GAMEPAD_DPAD_UP, .sThumbLX = -5555, .sThumbRX = -6666}}},
+            {.errorCode = ERROR_SUCCESS, .state = {.dwPacketNumber = 4, .Gamepad = {.wButtons = XINPUT_GAMEPAD_DPAD_LEFT}}}
         };
 
         // Values come from the mapper at the top of this file.
@@ -625,24 +619,20 @@ namespace XidiTest
             {.axis = {0, 0, 0, 0, 0, 0},         .button = 0b0000, .povDirection = {.components = {false, false, true, false}}}
         };
 
-        static_assert(_countof(kXInputStates) == _countof(kExpectedControllerStates), "Mismatch between number of XInput states and number of controller states.");
+        static_assert(_countof(kPhysicalStates) == _countof(kExpectedControllerStates), "Mismatch between number of physical and virtual controller states.");
 
         // Each iteration of the loop adds one more event to the test.
         // First iteration tests only a single state change, second iteration tests two state changes, and so on.
-        for (unsigned int i = 1; i <= _countof(kXInputStates); ++i)
+        for (unsigned int i = 1; i <= _countof(kPhysicalStates); ++i)
         {
-            std::unique_ptr<MockXInput> mockXInput = std::make_unique<MockXInput>(kControllerIndex);
-            for (unsigned int j = 0; j < i; ++j)
-                mockXInput->ExpectCallGetState({.returnCode = ERROR_SUCCESS, .maybeOutputObject = kXInputStates[j]});
-
-            VirtualController controller(kControllerIndex, kTestMapper, std::move(mockXInput));
+            VirtualController controller(kControllerIndex, kTestMapper);
             controller.SetEventBufferCapacity(kEventBufferCapacity);
 
             uint32_t lastEventCount = controller.GetEventBufferCount();
             TEST_ASSERT(0 == lastEventCount);
             for (unsigned int j = 0; j < i; ++j)
             {
-                controller.RefreshState();
+                controller.RefreshState(kPhysicalStates[j]);
                 
                 TEST_ASSERT(controller.GetEventBufferCount() > lastEventCount);
                 lastEventCount = controller.GetEventBufferCount();
@@ -667,11 +657,11 @@ namespace XidiTest
         constexpr TControllerIdentifier kControllerIndex = 0;
         constexpr uint32_t kEventBufferCapacity = 64;
 
-        constexpr XINPUT_STATE kXInputStates[] = {
-            {.dwPacketNumber = 1, .Gamepad = {.wButtons = XINPUT_GAMEPAD_A, .sThumbLX = 1111, .sThumbLY = 2222}},
-            {.dwPacketNumber = 2, .Gamepad = {.wButtons = XINPUT_GAMEPAD_A, .sThumbLX = 3333, .sThumbLY = 4444}},
-            {.dwPacketNumber = 3, .Gamepad = {.wButtons = XINPUT_GAMEPAD_A | XINPUT_GAMEPAD_Y | XINPUT_GAMEPAD_DPAD_UP, .sThumbLX = -5555, .sThumbLY = -6666}},
-            {.dwPacketNumber = 4, .Gamepad = {.wButtons = XINPUT_GAMEPAD_DPAD_LEFT}}
+        constexpr SPhysicalState kPhysicalStates[] = {
+            {.errorCode = ERROR_SUCCESS, .state = {.dwPacketNumber = 1, .Gamepad = {.wButtons = XINPUT_GAMEPAD_A, .sThumbLX = 1111, .sThumbLY = 2222}}},
+            {.errorCode = ERROR_SUCCESS, .state = {.dwPacketNumber = 2, .Gamepad = {.wButtons = XINPUT_GAMEPAD_A, .sThumbLX = 3333, .sThumbLY = 4444}}},
+            {.errorCode = ERROR_SUCCESS, .state = {.dwPacketNumber = 3, .Gamepad = {.wButtons = XINPUT_GAMEPAD_A | XINPUT_GAMEPAD_Y | XINPUT_GAMEPAD_DPAD_UP, .sThumbLX = -5555, .sThumbLY = -6666}}},
+            {.errorCode = ERROR_SUCCESS, .state = {.dwPacketNumber = 4, .Gamepad = {.wButtons = XINPUT_GAMEPAD_DPAD_LEFT}}}
         };
 
         // Values come from the mapper at the top of this file.
@@ -683,17 +673,13 @@ namespace XidiTest
             {.button = 0b0000, .povDirection = {.components = {false, false, true, false}}}
         };
 
-        static_assert(_countof(kXInputStates) == _countof(kExpectedControllerStates), "Mismatch between number of XInput states and number of controller states.");
+        static_assert(_countof(kPhysicalStates) == _countof(kExpectedControllerStates), "Mismatch between number of physical and virtual controller states.");
 
         // Each iteration of the loop adds one more event to the test.
         // First iteration tests only a single state change, second iteration tests two state changes, and so on.
-        for (unsigned int i = 1; i <= _countof(kXInputStates); ++i)
+        for (unsigned int i = 1; i <= _countof(kPhysicalStates); ++i)
         {
-            std::unique_ptr<MockXInput> mockXInput = std::make_unique<MockXInput>(kControllerIndex);
-            for (unsigned int j = 0; j < i; ++j)
-                mockXInput->ExpectCallGetState({ .returnCode = ERROR_SUCCESS, .maybeOutputObject = kXInputStates[j] });
-
-            VirtualController controller(kControllerIndex, kTestMapper, std::move(mockXInput));
+            VirtualController controller(kControllerIndex, kTestMapper);
             controller.SetEventBufferCapacity(kEventBufferCapacity);
             controller.EventFilterRemoveElement({.type = EElementType::Axis, .axis = EAxis::X});
             controller.EventFilterRemoveElement({.type = EElementType::Axis, .axis = EAxis::Y});
@@ -702,7 +688,7 @@ namespace XidiTest
             TEST_ASSERT(0 == lastEventCount);
             for (unsigned int j = 0; j < i; ++j)
             {
-                controller.RefreshState();
+                controller.RefreshState(kPhysicalStates[j]);
 
                 TEST_ASSERT(controller.GetEventBufferCount() >= lastEventCount);
                 lastEventCount = controller.GetEventBufferCount();

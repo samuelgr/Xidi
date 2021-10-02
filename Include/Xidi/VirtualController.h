@@ -15,12 +15,10 @@
 #include "Mapper.h"
 #include "PhysicalController.h"
 #include "StateChangeEventBuffer.h"
-#include "XInputInterface.h"
 
 #include <bitset>
 #include <cstdint>
 #include <functional>
-#include <memory>
 #include <mutex>
 #include <utility>
 
@@ -313,16 +311,13 @@ namespace Xidi
             /// Whenever a refresh operation occurs this flag is turned off. Whenever a data-gathering operation occurs (via state snapshot or otherwise) this flag is turned on.
             bool stateRefreshNeeded;
 
-            /// Interface through which all XInput-related functionality is accessed.
-            const std::unique_ptr<IXInput> xinput;
-
 
         public:
             // -------- CONSTRUCTION AND DESTRUCTION ----------------------- //
 
             /// Initialization constructor.
             /// Requires a complete set of metadata for describing the virtual controller to be created.
-            inline VirtualController(TControllerIdentifier controllerId, const Mapper& mapper, std::unique_ptr<IXInput>&& xinput = std::make_unique<XInput>()) : kControllerIdentifier(controllerId), controllerMutex(), eventBuffer(), eventFilter(), mapper(mapper), properties(), state(), stateIdentifier(), stateRefreshNeeded(true), xinput(std::move(xinput))
+            inline VirtualController(TControllerIdentifier controllerId, const Mapper& mapper) : kControllerIdentifier(controllerId), controllerMutex(), eventBuffer(), eventFilter(), mapper(mapper), properties(), state(), stateIdentifier(), stateRefreshNeeded(true)
             {
                 // Nothing to do here.
             }
@@ -467,9 +462,17 @@ namespace Xidi
             /// @param [in] numEventsToPop Maximum number of events to remove.
             void PopEventBufferOldestEvents(uint32_t numEventsToPop);
 
-            /// Refreshes the view of the state of this virtual controller by querying the real XInput controller.
+            /// Refreshes the view of the state of this virtual controller by querying the associated physical controller.
             /// @return `true` if the state of the controller changed since last refresh, `false` otherwise.
-            bool RefreshState(void);
+            inline bool RefreshState(void)
+            {
+                return RefreshState(GetCurrentPhysicalControllerState(kControllerIdentifier));
+            }
+
+            /// Refreshes the virtual controller's state using the supplied new state data.
+            /// @param [in] newStateData Physical controller state data to apply to this virtual controller's internal state view.
+            /// @return `true` if the state of the controller changed as a result of applying the new state data, `false` otherwise.
+            bool RefreshState(const SPhysicalState& newStateData);
 
             /// Sets the deadzone property for a single axis.
             /// @param [in] axis Target axis.

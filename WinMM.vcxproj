@@ -41,7 +41,6 @@
     <ClInclude Include="Include\Xidi\VirtualController.h" />
     <ClInclude Include="Include\Xidi\WrapperJoyWinMM.h" />
     <ClInclude Include="Include\Xidi\XidiConfigReader.h" />
-    <ClInclude Include="Include\Xidi\XInputInterface.h" />
     <ClInclude Include="Resources\Version.h" />
     <ClInclude Include="Resources\WinMM.h" />
     <ClInclude Include="Resources\Xidi.h" />
@@ -69,7 +68,6 @@
     <ClCompile Include="Source\VirtualController.cpp" />
     <ClCompile Include="Source\WrapperJoyWinMM.cpp" />
     <ClCompile Include="Source\XidiConfigReader.cpp" />
-    <ClCompile Include="Source\XInputInterface.cpp" />
   </ItemGroup>
   <ItemGroup>
     <None Include="winmm.def" />

@@ -72,13 +72,13 @@ namespace XidiTest
 }
 
 /// Exit from a test case and indicate a failing result.
-#define TEST_FAILED                         throw TestFailedException()
+#define TEST_FAILED                         throw ::XidiTest::TestFailedException()
 
 /// Format and print a message and exit from a test caes, indicating a failing result.
-#define TEST_FAILED_BECAUSE(reasonf, ...)   do {PrintFormatted(reasonf, ##__VA_ARGS__); TEST_FAILED;} while (0)
+#define TEST_FAILED_BECAUSE(reasonf, ...)   do {::XidiTest::PrintFormatted(reasonf, ##__VA_ARGS__); TEST_FAILED;} while (0)
 
 /// Exit from a test case and indicate a failing result if the expression is false.
-#define TEST_ASSERT(expr)                   do {if (!(expr)) {PrintFormatted(L"%s:%d: Assertion failed: %s", __FILEW__, __LINE__, L#expr); TEST_FAILED;}} while (0)
+#define TEST_ASSERT(expr)                   do {if (!(expr)) {::XidiTest::PrintFormatted(L"%s:%d: Assertion failed: %s", __FILEW__, __LINE__, L#expr); TEST_FAILED;}} while (0)
 
 /// Recommended way of creating test cases that execute conditionally.
 /// Requires a test case name and a condition, which evaluates to a value of type bool.
@@ -87,9 +87,9 @@ namespace XidiTest
 /// Treat this macro as a function declaration; the test case is the function body.
 #define TEST_CASE_CONDITIONAL(name, cond) \
     inline constexpr wchar_t kTestName__##name[] = L#name; \
-    XidiTest::TestCase<kTestName__##name>  testCaseInstance__##name; \
-    bool XidiTest::TestCase<kTestName__##name>::CanRun(void) const { return (cond); } \
-    void XidiTest::TestCase<kTestName__##name>::Run(void) const
+    ::XidiTest::TestCase<kTestName__##name>  testCaseInstance__##name; \
+    bool ::XidiTest::TestCase<kTestName__##name>::CanRun(void) const { return (cond); } \
+    void ::XidiTest::TestCase<kTestName__##name>::Run(void) const
 
 /// Recommended way of creating test cases that execute unconditionally.
 /// Just provide the test case name.

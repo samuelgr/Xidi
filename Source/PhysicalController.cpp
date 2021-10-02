@@ -51,42 +51,6 @@ namespace Xidi
 
 
         // -------- INTERNAL FUNCTIONS ------------------------------------- //
-
-        /// Retrieves the instantaneous state of the specified controller.
-        /// Concurrency-safe, but intended to be used for initialization and does not perform any bounds-checking on the controller identifier.
-        /// @param [in] controllerIdentifier Identifier of the physical controller of interest.
-        /// @return Physical controller state data.
-        static inline SPhysicalState GetCurrentPhysicalControllerState(TControllerIdentifier controllerIdentifier)
-        {
-            std::shared_lock lock(physicalControllerMutex[controllerIdentifier]);
-            return physicalControllerState[controllerIdentifier];
-        }
-        
-        /// Waits for the specified physical controller's state to change. When it does, retrieves and returns the new state.
-        /// Intended to be invoked by background worker threads associated with virtual controller objects.
-        /// This function is fully concurrency-safe. If needed, the caller can interrupt the wait using a stop token.
-        /// @param [in] controllerIdentifier Identifier of the physical controller of interest.
-        /// @param [in,out] state On input, used to identify the last-known physical controller state for the calling thread. On output, filled in with the updated state of the physical controller.
-        /// @param [in] stopToken Token that allows the weight to be interrupted. Defaults to an empty token that does not allow interruption.
-        /// @return `true` if the wait succeeded and the output structure was updated, `false` if no updates were made due to invalid parameter or interrupted wait.
-        static bool WaitForPhysicalControllerStateChange(TControllerIdentifier controllerIdentifier, SPhysicalState& state, std::stop_token stopToken)
-        {
-            if (controllerIdentifier >= kPhysicalControllerCount)
-                return false;
-
-            std::shared_lock lock(physicalControllerMutex[controllerIdentifier]);
-            physicalControllerUpdateNotifier[controllerIdentifier].wait(lock, stopToken, [controllerIdentifier, &state]() -> bool
-                {
-                    return (physicalControllerState[controllerIdentifier] != state);
-                }
-            );
-
-            if (stopToken.stop_requested())
-                return false;
-
-            state = physicalControllerState[controllerIdentifier];
-            return true;
-        }
         
         /// Periodically polls for physical controller state.
         /// On detected state change, updates the internal data structure and notifies all waiting threads.
@@ -146,23 +110,23 @@ namespace Xidi
                         break;
 
                     case ERROR_DEVICE_NOT_CONNECTED:
-                        Message::OutputFormatted(Message::ESeverity::Info, L"Physical controller %u: Hardware connected.", controllerIdentifier);
+                        Message::OutputFormatted(Message::ESeverity::Info, L"Physical controller %u: Hardware connected.", (1 + controllerIdentifier));
                         break;
 
                     default:
-                        Message::OutputFormatted(Message::ESeverity::Warning, L"Physical controller %u: Cleared previous error condition with code 0x%08x.", controllerIdentifier, oldPhysicalState.errorCode);
+                        Message::OutputFormatted(Message::ESeverity::Warning, L"Physical controller %u: Cleared previous error condition with code 0x%08x.", (1 + controllerIdentifier), oldPhysicalState.errorCode);
                         break;
                     }
                     break;
 
                 case ERROR_DEVICE_NOT_CONNECTED:
                     if (newPhysicalState.errorCode != oldPhysicalState.errorCode)
-                        Message::OutputFormatted(Message::ESeverity::Info, L"Physical controller %u: Hardware disconnected.", controllerIdentifier);
+                        Message::OutputFormatted(Message::ESeverity::Info, L"Physical controller %u: Hardware disconnected.", (1 + controllerIdentifier));
                     break;
 
                 default:
                     if (newPhysicalState.errorCode != oldPhysicalState.errorCode)
-                        Message::OutputFormatted(Message::ESeverity::Warning, L"Physical controller %u: Encountered error condition with code 0x%08x.", controllerIdentifier, newPhysicalState.errorCode);
+                        Message::OutputFormatted(Message::ESeverity::Warning, L"Physical controller %u: Encountered error condition with code 0x%08x.", (1 + controllerIdentifier), newPhysicalState.errorCode);
                     break;
                 }
 
@@ -212,28 +176,38 @@ namespace Xidi
         }
 
 
-        // -------- CONSTRUCTION AND DESTRUCTION --------------------------- //
+        // -------- FUNCTIONS ---------------------------------------------- //
         // See "PhysicalController.h" for documentation.
 
-        PhysicalController::PhysicalController(void) : IPhysicalController()
+        SPhysicalState GetCurrentPhysicalControllerState(TControllerIdentifier controllerIdentifier)
         {
             InitializeAndBeginPolling();
-        }
-
-
-        // -------- CONCRETE INSTANCE METHODS ------------------------------ //
-        // See "PhysicalController.h" for documentation.
-
-        SPhysicalState PhysicalController::GetCurrentState(TControllerIdentifier controllerIdentifier)
-        {
-            return GetCurrentPhysicalControllerState(controllerIdentifier);
+            
+            std::shared_lock lock(physicalControllerMutex[controllerIdentifier]);
+            return physicalControllerState[controllerIdentifier];
         }
 
         // --------
 
-        bool PhysicalController::WaitForStateChange(TControllerIdentifier controllerIdentifier, SPhysicalState& state, std::stop_token stopToken)
+        bool WaitForPhysicalControllerStateChange(TControllerIdentifier controllerIdentifier, SPhysicalState& state, std::stop_token stopToken)
         {
-            return WaitForPhysicalControllerStateChange(controllerIdentifier, state, stopToken);
+            InitializeAndBeginPolling();
+
+            if (controllerIdentifier >= kPhysicalControllerCount)
+                return false;
+
+            std::shared_lock lock(physicalControllerMutex[controllerIdentifier]);
+            physicalControllerUpdateNotifier[controllerIdentifier].wait(lock, stopToken, [controllerIdentifier, &state]() -> bool
+                {
+                    return (physicalControllerState[controllerIdentifier] != state);
+                }
+            );
+
+            if (stopToken.stop_requested())
+                return false;
+
+            state = physicalControllerState[controllerIdentifier];
+            return true;
         }
     }
 }

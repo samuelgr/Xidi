@@ -54,9 +54,6 @@
     <ClInclude Include="Include\Xidi\XidiConfigReader.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="Include\Xidi\XInputInterface.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="Include\Xidi\VirtualController.h">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -73,9 +70,6 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="Include\Xidi\ControllerIdentification.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="Include\Xidi\Test\MockXInput.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="Resources\Version.h">
@@ -171,6 +165,9 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="Source\Test\Case\SplitMapperTest.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\Test\FakePhysicalController.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

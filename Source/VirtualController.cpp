@@ -13,11 +13,10 @@
 #include "ControllerTypes.h"
 #include "Mapper.h"
 #include "Message.h"
+#include "PhysicalController.h"
 #include "VirtualController.h"
-#include "XInputInterface.h"
 
 #include <cstdint>
-#include <memory>
 
 
 namespace Xidi
@@ -158,47 +157,25 @@ namespace Xidi
         }
 
         // --------
-
-        bool VirtualController::RefreshState(void)
+        
+        bool VirtualController::RefreshState(const SPhysicalState& newStateData)
         {
-            XINPUT_STATE xinputState;
-            SStateIdentifier newStateIdentifier = {.packetNumber = 0, .errorCode = xinput->GetState(kControllerIdentifier, &xinputState)};
+            XINPUT_STATE xinputState = newStateData.state;
+            SStateIdentifier newStateIdentifier = {.packetNumber = 0, .errorCode = newStateData.errorCode};
 
             auto lock = Lock();
             stateRefreshNeeded = false;
 
-            // Most of the logic in this block is for debugging by outputting messages. The actual functionality is very simple.
             // On success, the packet number is updated to the value received from XInput, otherwise it is left at 0.
             // On failure, the XInput state is zeroed out so that the controller appears to be in a completely neutral state.
-            switch (newStateIdentifier.errorCode)
+            switch (newStateData.errorCode)
             {
             case ERROR_SUCCESS:
                 newStateIdentifier.packetNumber = xinputState.dwPacketNumber;
-                switch (stateIdentifier.errorCode)
-                {
-                case ERROR_SUCCESS:
-                    break;
-
-                case ERROR_DEVICE_NOT_CONNECTED:
-                    Message::OutputFormatted(Message::ESeverity::Info, L"Virtual controller %u: Hardware connected.", kControllerIdentifier);
-                    break;
-
-                default:
-                    Message::OutputFormatted(Message::ESeverity::Warning, L"Virtual controller %u: Cleared previous error condition with code 0x%08x.", kControllerIdentifier, stateIdentifier.errorCode);
-                    break;
-                }
-                break;
-
-            case ERROR_DEVICE_NOT_CONNECTED:
-                ZeroMemory(&xinputState, sizeof(xinputState));
-                if (newStateIdentifier.errorCode != stateIdentifier.errorCode)
-                    Message::OutputFormatted(Message::ESeverity::Info, L"Virtual controller %u: Hardware disconnected.", kControllerIdentifier);
                 break;
 
             default:
                 ZeroMemory(&xinputState, sizeof(xinputState));
-                if (newStateIdentifier.errorCode != stateIdentifier.errorCode)
-                    Message::OutputFormatted(Message::ESeverity::Warning, L"Virtual controller %u: Encountered error condition with code 0x%08x.", kControllerIdentifier, newStateIdentifier.errorCode);
                 break;
             }
 
