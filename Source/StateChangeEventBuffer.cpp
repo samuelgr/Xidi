@@ -25,16 +25,6 @@ namespace Xidi
     {
         // -------- INTERNAL FUNCTIONS --------------------------------- //
 
-        /// Computes and returns a timestamp to be used when appending an event to an event buffer.
-        /// @return Timestamp value to use.
-        static inline uint32_t GetTimestamp(void)
-        {
-            // Per DirectInput documentation, it is acceptable for the timestamp to overflow every ~50 days.
-            // See IDirectInput8::GetDeviceData documentation for more information.
-
-            return GetTickCount();
-        }
-        
         /// Handles a possible buffer overflow condition.
         /// @param [in] eventBuffer Event buffer object for which to check for overflow.
         /// @return `true` if the event buffer overflowed, `false` otherwise.
