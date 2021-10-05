@@ -81,6 +81,9 @@
     <ClInclude Include="Include\Xidi\PhysicalController.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="Include\Xidi\Test\MockPhysicalController.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Source\Test\Harness.cpp">
@@ -167,7 +170,7 @@
     <ClCompile Include="Source\Test\Case\SplitMapperTest.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="Source\Test\FakePhysicalController.cpp">
+    <ClCompile Include="Source\Test\MockPhysicalController.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

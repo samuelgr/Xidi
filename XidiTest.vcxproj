@@ -183,6 +183,7 @@
     <ClInclude Include="Include\Xidi\TemporaryBuffer.h" />
     <ClInclude Include="Include\Xidi\Test\Harness.h" />
     <ClInclude Include="Include\Xidi\Test\MockElementMapper.h" />
+    <ClInclude Include="Include\Xidi\Test\MockPhysicalController.h" />
     <ClInclude Include="Include\Xidi\Test\TestCase.h" />
     <ClInclude Include="Include\Xidi\Test\Utilities.h" />
     <ClInclude Include="Include\Xidi\VirtualController.h" />
@@ -214,7 +215,7 @@
     <ClCompile Include="Source\Test\Case\StateChangeEventBufferTest.cpp" />
     <ClCompile Include="Source\Test\Case\VirtualControllerTest.cpp" />
     <ClCompile Include="Source\Test\Case\VirtualDirectInputDeviceTest.cpp" />
-    <ClCompile Include="Source\Test\FakePhysicalController.cpp" />
+    <ClCompile Include="Source\Test\MockPhysicalController.cpp" />
     <ClCompile Include="Source\Test\Harness.cpp" />
     <ClCompile Include="Source\Test\TestCase.cpp" />
     <ClCompile Include="Source\Test\Utilities.cpp" />

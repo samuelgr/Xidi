@@ -463,14 +463,6 @@ namespace Xidi
         }
     }
 
-    /// Signals the specified event if its handle is valid.
-    /// @param [in] eventHandle Handle that can be used to identify the desired event object.
-    static inline void SignalEventIfEnabled(HANDLE eventHandle)
-    {
-        if ((NULL != eventHandle) && (INVALID_HANDLE_VALUE != eventHandle))
-            SetEvent(eventHandle);
-    }
-
 
     // -------- CONSTRUCTION AND DESTRUCTION ------------------------------- //
     // See "VirtualDirectInputDevice.h" for documentation.
@@ -1125,6 +1117,12 @@ namespace Xidi
     template <ECharMode charMode> HRESULT VirtualDirectInputDevice<charMode>::SetEventNotification(HANDLE hEvent)
     {
         static constexpr Message::ESeverity kMethodSeverity = Message::ESeverity::Info;
+
+        if (INVALID_HANDLE_VALUE == hEvent)
+            LOG_INVOCATION_AND_RETURN(DIERR_INVALIDPARAM, kMethodSeverity);
+
+        if ((NULL != hEvent) && (controller->HasStateChangeEventHandle()))
+            LOG_INVOCATION_AND_RETURN(DIERR_HANDLEEXISTS, kMethodSeverity);
 
         controller->SetStateChangeEvent(hEvent);
         LOG_INVOCATION_AND_RETURN(DI_OK, kMethodSeverity);

@@ -12,7 +12,7 @@
 #include "ApiWindows.h"
 #include "ControllerTypes.h"
 #include "ElementMapper.h"
-#include "PhysicalController.h"
+#include "MockPhysicalController.h"
 #include "StateChangeEventBuffer.h"
 #include "TestCase.h"
 #include "VirtualController.h"
@@ -36,6 +36,7 @@ namespace XidiTest
     using ::Xidi::Controller::EElementType;
     using ::Xidi::Controller::EPovDirection;
     using ::Xidi::Controller::Mapper;
+    using ::Xidi::Controller::MockPhysicalController;
     using ::Xidi::Controller::PovMapper;
     using ::Xidi::Controller::SPhysicalState;
     using ::Xidi::Controller::StateChangeEventBuffer;
@@ -70,6 +71,10 @@ namespace XidiTest
         .buttonX = std::make_unique<ButtonMapper>(EButton::B3),
         .buttonY = std::make_unique<ButtonMapper>(EButton::B4)
     });
+
+    /// Number of milliseconds to wait before declaring a timeout while waiting for a state change event to be signalled.
+    /// Should be some small multiple of the approximate default system time slice length.
+    static constexpr DWORD kTestStateChangeEventTimeoutMilliseconds = 100;
 
 
     // -------- INTERNAL FUNCTIONS ----------------------------------------- //
@@ -723,6 +728,77 @@ namespace XidiTest
                 ApplyUpdateToControllerState(controller.GetEventBufferEvent(j).data, actualStateFromBufferedEvents);
 
             TEST_ASSERT(actualStateFromBufferedEvents == kExpectedControllerStates[i - 1]);
+        }
+    }
+
+    // Submits multiple physical state changes to the physical controller associated with a virtual controller such that every single physical state change causes a virtual controller state change.
+    // Enables state change notifications and verifies that each physical controller state change causes a notification to be fired.
+    TEST_CASE(VirtualController_StateChangeNotification_Nominal)
+    {
+        constexpr TControllerIdentifier kControllerIndex = 2;
+
+        // All of the buttons used in these physical states are part of the test mapper defined at the top of this file.
+        constexpr SPhysicalState kPhysicalStates[] = {
+            {.errorCode = ERROR_SUCCESS, .state = {.dwPacketNumber = 1}},
+            {.errorCode = ERROR_SUCCESS, .state = {.dwPacketNumber = 2, .Gamepad = {.wButtons = XINPUT_GAMEPAD_A                                              }}},
+            {.errorCode = ERROR_SUCCESS, .state = {.dwPacketNumber = 3, .Gamepad = {.wButtons = XINPUT_GAMEPAD_A | XINPUT_GAMEPAD_B                           }}},
+            {.errorCode = ERROR_SUCCESS, .state = {.dwPacketNumber = 4, .Gamepad = {.wButtons = XINPUT_GAMEPAD_A | XINPUT_GAMEPAD_B | XINPUT_GAMEPAD_DPAD_LEFT}}},
+            {.errorCode = ERROR_SUCCESS, .state = {.dwPacketNumber = 5, .Gamepad = {.wButtons =                    XINPUT_GAMEPAD_B | XINPUT_GAMEPAD_DPAD_LEFT}}},
+            {.errorCode = ERROR_SUCCESS, .state = {.dwPacketNumber = 6, .Gamepad = {.wButtons =                    XINPUT_GAMEPAD_B                           }}},
+            {.errorCode = ERROR_SUCCESS, .state = {.dwPacketNumber = 7}}
+        };
+
+        const HANDLE kStateChangeEvent = CreateEvent(nullptr, FALSE, FALSE, nullptr);
+        TEST_ASSERT((nullptr != kStateChangeEvent) && (INVALID_HANDLE_VALUE != kStateChangeEvent));
+
+        MockPhysicalController physicalController(kControllerIndex, kPhysicalStates, _countof(kPhysicalStates));
+
+        VirtualController controller(kControllerIndex, kTestMapper);
+        controller.SetStateChangeEvent(kStateChangeEvent);
+
+        for (int i = 1; i < _countof(kPhysicalStates); ++i)
+        {
+            physicalController.RequestAdvancePhysicalState();
+            TEST_ASSERT(WAIT_OBJECT_0 == WaitForSingleObject(kStateChangeEvent, kTestStateChangeEventTimeoutMilliseconds));
+        }
+    }
+
+    // Submits multiple physical state changes to the physical controller associated with a virtual controller such that every other physical state change causes a virtual controller state change.
+    // Enables state change notifications and verifies that each physical controller state change causes a notification to be fired if there is a corresponding virtual controller state change.
+    TEST_CASE(VirtualController_StateChangeNotification_SomePhysicalStatesIneffective)
+    {
+        constexpr TControllerIdentifier kControllerIndex = 3;
+
+        // Only some of the buttons used in these physical states are part of the test mapper defined at the top of this file.
+        // Left and right shoulder buttons are not mapped to any virtual controller element, so pressing and releasing them counts as a physical controller state change but not as a virtual controller state change.
+        constexpr SPhysicalState kPhysicalStates[] = {
+            {.errorCode = ERROR_SUCCESS, .state = {.dwPacketNumber = 1}},
+            {.errorCode = ERROR_SUCCESS, .state = {.dwPacketNumber = 2, .Gamepad = {.wButtons = XINPUT_GAMEPAD_A                                                                                        }}},
+            {.errorCode = ERROR_SUCCESS, .state = {.dwPacketNumber = 3, .Gamepad = {.wButtons = XINPUT_GAMEPAD_A | XINPUT_GAMEPAD_LEFT_SHOULDER                                                         }}},
+            {.errorCode = ERROR_SUCCESS, .state = {.dwPacketNumber = 4, .Gamepad = {.wButtons = XINPUT_GAMEPAD_A | XINPUT_GAMEPAD_LEFT_SHOULDER | XINPUT_GAMEPAD_DPAD_UP                                }}},
+            {.errorCode = ERROR_SUCCESS, .state = {.dwPacketNumber = 5, .Gamepad = {.wButtons = XINPUT_GAMEPAD_A | XINPUT_GAMEPAD_LEFT_SHOULDER | XINPUT_GAMEPAD_DPAD_UP | XINPUT_GAMEPAD_RIGHT_SHOULDER}}},
+            {.errorCode = ERROR_SUCCESS, .state = {.dwPacketNumber = 6, .Gamepad = {.wButtons = XINPUT_GAMEPAD_A | XINPUT_GAMEPAD_LEFT_SHOULDER                          | XINPUT_GAMEPAD_RIGHT_SHOULDER}}},
+            {.errorCode = ERROR_SUCCESS, .state = {.dwPacketNumber = 7, .Gamepad = {.wButtons = XINPUT_GAMEPAD_A | XINPUT_GAMEPAD_LEFT_SHOULDER                                                         }}},
+            {.errorCode = ERROR_SUCCESS, .state = {.dwPacketNumber = 8, .Gamepad = {.wButtons =                    XINPUT_GAMEPAD_LEFT_SHOULDER                                                         }}},
+            {.errorCode = ERROR_SUCCESS, .state = {.dwPacketNumber = 9}}
+        };
+        static_assert(0 != (_countof(kPhysicalStates) % 2), "An even number of states is required beyond the initial physical state.");
+
+        const HANDLE kStateChangeEvent = CreateEvent(nullptr, FALSE, FALSE, nullptr);
+        TEST_ASSERT((nullptr != kStateChangeEvent) && (INVALID_HANDLE_VALUE != kStateChangeEvent));
+
+        MockPhysicalController physicalController(kControllerIndex, kPhysicalStates, _countof(kPhysicalStates));
+
+        VirtualController controller(kControllerIndex, kTestMapper);
+        controller.SetStateChangeEvent(kStateChangeEvent);
+
+        for (int i = 1; i < _countof(kPhysicalStates); i += 2)
+        {
+            physicalController.RequestAdvancePhysicalState();
+            TEST_ASSERT(WAIT_OBJECT_0 == WaitForSingleObject(kStateChangeEvent, kTestStateChangeEventTimeoutMilliseconds));
+
+            physicalController.RequestAdvancePhysicalState();
+            TEST_ASSERT(WAIT_TIMEOUT == WaitForSingleObject(kStateChangeEvent, kTestStateChangeEventTimeoutMilliseconds));
         }
     }
 }
