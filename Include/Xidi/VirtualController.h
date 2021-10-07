@@ -326,17 +326,6 @@ namespace Xidi
             ~VirtualController(void);
 
 
-        private:
-            // -------- CLASS METHODS -------------------------------------- //
-
-            /// Monitors for changes in an associated physical controller's state and, on state change, causes a virtual controller to refresh its state.
-            /// Intended to be the entry point for per-virtual-controller background threads.
-            /// @param [in] thisController Controller object for which state is to be monitored.
-            /// @param [in] initialState Initial physical state of the controller. Used as the basis for looking for changes.
-            /// @param [in] stopMonitoringToken Used to indicate that the monitoring should stop and the thread should exit.
-            static void MonitorPhysicalControllerState(VirtualController* thisController, const SPhysicalState& initialState, std::stop_token stopMonitoringToken);
-
-
         public:
             // -------- INSTANCE METHODS ----------------------------------- //
 

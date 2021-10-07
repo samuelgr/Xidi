@@ -45,6 +45,26 @@ namespace Xidi
             return newRangeOrigin + (int32_t)((oldRangeValueDisp * newRangeMagnitudeMax) / oldRangeMagnitudeMax);
         }
 
+        /// Monitors for changes in an associated physical controller's state and, on state change, causes a virtual controller to refresh its state.
+        /// Intended to be the entry point for per-virtual-controller background threads.
+        /// @param [in] thisController Controller object for which state is to be monitored.
+        /// @param [in] initialState Initial physical state of the controller. Used as the basis for looking for changes.
+        /// @param [in] stopMonitoringToken Used to indicate that the monitoring should stop and the thread should exit.
+        static void MonitorPhysicalControllerState(VirtualController* thisController, const SPhysicalState& initialState, std::stop_token stopMonitoringToken)
+        {
+            const TControllerIdentifier kControllerIdentifier = thisController->GetIdentifier();
+            SPhysicalState state = initialState;
+
+            while (false == stopMonitoringToken.stop_requested())
+            {
+                if (true == WaitForPhysicalControllerStateChange(kControllerIdentifier, state, stopMonitoringToken))
+                {
+                    if (true == thisController->RefreshState(state))
+                        thisController->SignalStateChangeEvent();
+                }
+            }
+        }
+
         /// Looks for differences between two virtual controller state objects and submits them as events to the specified event buffer.
         /// Events are only submitted if the associated virtual controller element is included in the event filter.
         /// @param [in] oldState Old controller state, the baseline.
@@ -138,25 +158,6 @@ namespace Xidi
             physicalControllerMonitor.join();
 
             Message::OutputFormatted(Message::ESeverity::Info, L"Destroyed virtual controller object with identifier %u.", (1 + kControllerIdentifier));
-        }
-
-
-        // -------- CLASS METHODS ------------------------------------------ //
-        // See "VirtualController.h" for documentation.
-
-        void VirtualController::MonitorPhysicalControllerState(VirtualController* thisController, const SPhysicalState& initialState, std::stop_token stopMonitoringToken)
-        {
-            const TControllerIdentifier kControllerIdentifier = thisController->GetIdentifier();
-            SPhysicalState state = initialState;
-
-            while (false == stopMonitoringToken.stop_requested())
-            {
-                if (true == WaitForPhysicalControllerStateChange(kControllerIdentifier, state, stopMonitoringToken))
-                {
-                    if (true == thisController->RefreshState(state))
-                        thisController->SignalStateChangeEvent();
-                }
-            }
         }
 
 

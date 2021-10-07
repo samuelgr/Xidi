@@ -302,6 +302,22 @@ namespace XidiTest
         TEST_ASSERT(kActualCapabilities == kExpectedCapabilities);
     }
 
+    // Null mapper.
+    // Nothing should be present on the virtual controller.
+    TEST_CASE(Mapper_Capabilities_NullMapper)
+    {
+        constexpr SCapabilities kExpectedCapabilities({
+            .numAxes = 0,
+            .numButtons = 0,
+            .hasPov = false
+            });
+
+        const Mapper* mapper = Mapper::GetNull();
+
+        const SCapabilities kActualCapabilities = mapper->GetCapabilities();
+        TEST_ASSERT(kActualCapabilities == kExpectedCapabilities);
+    }
+
     // Mapper with only buttons, and they are disjoint.
     // Virtual controller should have only buttons, and the number present is based on the highest button to which an element mapper writes.
     TEST_CASE(Mapper_Capabilities_DisjointButtons)

@@ -135,6 +135,11 @@ namespace Xidi
                 return GetByName(L"");
             }
 
+            /// Retrieves and returns a pointer to a mapper object that does nothing and affects no controller elements.
+            /// Can be used as a fall-back in the event of an error. Always returns a valid address.
+            /// @return Pointer to the null mapper object.
+            static const Mapper* GetNull(void);
+
             /// Checks if a mapper of the specified name is known and registered.
             /// @param [in] mapperName Name of the mapper to check.
             /// @return `true` if it is registered, `false` otherwise.

@@ -403,16 +403,15 @@ namespace Xidi
                     if (nullptr == mapper)
                     {
                         Message::Output(Message::ESeverity::Error, L"Failed to locate a mapper. Xidi virtual controllers will not function.");
+                        mapper = Controller::Mapper::GetNull();
                     }
-                    else
+
+                    for (int i = 0; i < _countof(controllers); ++i)
                     {
-                        for (int i = 0; i < _countof(controllers); ++i)
-                        {
-                            controllers[i] = new Controller::VirtualController(i, *mapper);
-                            controllers[i]->SetAllAxisDeadzone(kAxisDeadzone);
-                            controllers[i]->SetAllAxisSaturation(kAxisSaturation);
-                            controllers[i]->SetAllAxisRange(kAxisRangeMin, kAxisRangeMax);
-                        }
+                        controllers[i] = new Controller::VirtualController(i, *mapper);
+                        controllers[i]->SetAllAxisDeadzone(kAxisDeadzone);
+                        controllers[i]->SetAllAxisSaturation(kAxisSaturation);
+                        controllers[i]->SetAllAxisRange(kAxisRangeMin, kAxisRangeMax);
                     }
 
                     // Enumerate all devices exposed by WinMM.

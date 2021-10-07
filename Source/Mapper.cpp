@@ -270,6 +270,14 @@ namespace Xidi
             return configuredMapper;
         }
 
+        // --------
+
+        const Mapper* Mapper::GetNull(void)
+        {
+            static const Mapper kNullMapper({});
+            return &kNullMapper;
+        }
+
 
         // -------- INSTANCE METHODS --------------------------------------- //
         // See "Mapper.h" for documentation.
