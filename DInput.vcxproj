@@ -33,6 +33,7 @@
     <ClInclude Include="Include\Xidi\ControllerIdentification.h" />
     <ClInclude Include="Include\Xidi\ImportApiDirectInput.h" />
     <ClInclude Include="Include\Xidi\ImportApiWinMM.h" />
+    <ClInclude Include="Include\Xidi\Keyboard.h" />
     <ClInclude Include="Include\Xidi\Mapper.h" />
     <ClInclude Include="Include\Xidi\Message.h" />
     <ClInclude Include="Include\Xidi\PhysicalController.h" />
@@ -57,6 +58,7 @@
     <ClCompile Include="Source\ElementMapper.cpp" />
     <ClCompile Include="Source\Globals.cpp" />
     <ClCompile Include="Source\ImportApiWinMM.cpp" />
+    <ClCompile Include="Source\Keyboard.cpp" />
     <ClCompile Include="Source\Mapper.cpp" />
     <ClCompile Include="Source\MapperDefinitions.cpp" />
     <ClCompile Include="Source\Message.cpp" />

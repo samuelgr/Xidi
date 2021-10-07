@@ -23,6 +23,12 @@ namespace XidiTest
     using namespace ::Xidi::Controller;
 
 
+    // -------- INTERNAL CONSTANTS ----------------------------------------- //
+
+    /// Controller identifier used for all test cases in this file.
+    static constexpr TControllerIdentifier kControllerIdentifier = 0;
+
+
     // -------- TEST CASES ------------------------------------------------- //
 
     // Creates one button mapper for each possible virtual button and verifies that each correctly identifies its target virtual controller element.
@@ -65,7 +71,7 @@ namespace XidiTest
 
             SState actualState;
             ZeroMemory(&actualState, sizeof(actualState));
-            mapper.ContributeFromAnalogValue(actualState, (int16_t)analogValue);
+            mapper.ContributeFromAnalogValue(kControllerIdentifier, actualState, (int16_t)analogValue);
 
             if (actualState == possibleExpectedStates[0])
             {
@@ -109,7 +115,7 @@ namespace XidiTest
         SState actualState;
         ZeroMemory(&actualState, sizeof(actualState));
         for (auto& mapper : mappers)
-            mapper.ContributeFromAnalogValue(actualState, kAnalogValueNeutral);
+            mapper.ContributeFromAnalogValue(kControllerIdentifier, actualState, kAnalogValueNeutral);
 
         TEST_ASSERT(actualState == expectedState);
     }
@@ -136,7 +142,7 @@ namespace XidiTest
         SState actualState;
         ZeroMemory(&actualState, sizeof(actualState));
         for (auto& mapper : mappers)
-            mapper.ContributeFromAnalogValue(actualState, kAnalogValueMax);
+            mapper.ContributeFromAnalogValue(kControllerIdentifier, actualState, kAnalogValueMax);
 
         TEST_ASSERT(actualState == expectedState);
     }
@@ -166,9 +172,9 @@ namespace XidiTest
         SState actualState;
         ZeroMemory(&actualState, sizeof(actualState));
         for (auto& mapper : mappersPositive)
-            mapper.ContributeFromAnalogValue(actualState, kAnalogValueMax);
+            mapper.ContributeFromAnalogValue(kControllerIdentifier, actualState, kAnalogValueMax);
         for (auto& mapper : mappersNegative)
-            mapper.ContributeFromAnalogValue(actualState, kAnalogValueMin);
+            mapper.ContributeFromAnalogValue(kControllerIdentifier, actualState, kAnalogValueMin);
 
         TEST_ASSERT(actualState == expectedState);
     }
@@ -189,7 +195,7 @@ namespace XidiTest
 
             SState actualState;
             ZeroMemory(&actualState, sizeof(actualState));
-            mapper.ContributeFromButtonValue(actualState, buttonIsPressed);
+            mapper.ContributeFromButtonValue(kControllerIdentifier, actualState, buttonIsPressed);
 
             TEST_ASSERT(actualState == expectedState);
         }
@@ -219,7 +225,7 @@ namespace XidiTest
             SState actualState;
             ZeroMemory(&actualState, sizeof(actualState));
             for (auto& mapper : mappers)
-                mapper.ContributeFromButtonValue(actualState, buttonIsPressed);
+                mapper.ContributeFromButtonValue(kControllerIdentifier, actualState, buttonIsPressed);
 
             TEST_ASSERT(actualState == expectedState);
         }
@@ -249,9 +255,9 @@ namespace XidiTest
         SState actualState;
         ZeroMemory(&actualState, sizeof(actualState));
         for (auto& mapper : mappersPressed)
-            mapper.ContributeFromButtonValue(actualState, true);
+            mapper.ContributeFromButtonValue(kControllerIdentifier, actualState, true);
         for (auto& mapper : mappersNotPressed)
-            mapper.ContributeFromButtonValue(actualState, false);
+            mapper.ContributeFromButtonValue(kControllerIdentifier, actualState, false);
 
         TEST_ASSERT(actualState == expectedState);
     }
@@ -279,7 +285,7 @@ namespace XidiTest
 
             SState actualState;
             ZeroMemory(&actualState, sizeof(actualState));
-            mapper.ContributeFromTriggerValue(actualState, (uint8_t)triggerValue);
+            mapper.ContributeFromTriggerValue(kControllerIdentifier, actualState, (uint8_t)triggerValue);
 
             if (actualState == possibleExpectedStates[0])
             {
@@ -323,7 +329,7 @@ namespace XidiTest
         SState actualState;
         ZeroMemory(&actualState, sizeof(actualState));
         for (auto& mapper : mappers)
-            mapper.ContributeFromTriggerValue(actualState, kTriggerValueMin);
+            mapper.ContributeFromTriggerValue(kControllerIdentifier, actualState, kTriggerValueMin);
 
         TEST_ASSERT(actualState == expectedState);
     }
@@ -349,7 +355,7 @@ namespace XidiTest
         SState actualState;
         ZeroMemory(&actualState, sizeof(actualState));
         for (auto& mapper : mappers)
-            mapper.ContributeFromTriggerValue(actualState, kTriggerValueMax);
+            mapper.ContributeFromTriggerValue(kControllerIdentifier, actualState, kTriggerValueMax);
 
         TEST_ASSERT(actualState == expectedState);
     }
@@ -378,9 +384,9 @@ namespace XidiTest
         SState actualState;
         ZeroMemory(&actualState, sizeof(actualState));
         for (auto& mapper : mappersPressed)
-            mapper.ContributeFromTriggerValue(actualState, kTriggerValueMax);
+            mapper.ContributeFromTriggerValue(kControllerIdentifier, actualState, kTriggerValueMax);
         for (auto& mapper : mappersNotPressed)
-            mapper.ContributeFromTriggerValue(actualState, kTriggerValueMin);
+            mapper.ContributeFromTriggerValue(kControllerIdentifier, actualState, kTriggerValueMin);
 
         TEST_ASSERT(actualState == expectedState);
     }

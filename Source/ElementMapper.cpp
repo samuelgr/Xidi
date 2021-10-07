@@ -13,6 +13,7 @@
 
 #include "ControllerTypes.h"
 #include "ElementMapper.h"
+#include "Keyboard.h"
 
 #include <cstdint>
 #include <optional>
@@ -72,7 +73,7 @@ namespace Xidi
         // -------- CONCRETE INSTANCE METHODS -------------------------- //
         // See "ElementMapper.h" for documentation.
 
-        void AxisMapper::ContributeFromAnalogValue(SState& controllerState, int16_t analogValue) const
+        void AxisMapper::ContributeFromAnalogValue(TControllerIdentifier controllerIdentifier, SState& controllerState, int16_t analogValue) const
         {
             int32_t axisValueToContribute = (int32_t)analogValue;
 
@@ -95,7 +96,7 @@ namespace Xidi
 
         // --------
 
-        void AxisMapper::ContributeFromButtonValue(SState& controllerState, bool buttonPressed) const
+        void AxisMapper::ContributeFromButtonValue(TControllerIdentifier controllerIdentifier, SState& controllerState, bool buttonPressed) const
         {
             int32_t axisValueToContribute = 0;
             
@@ -119,7 +120,7 @@ namespace Xidi
 
         // --------
 
-        void AxisMapper::ContributeFromTriggerValue(SState& controllerState, uint8_t triggerValue) const
+        void AxisMapper::ContributeFromTriggerValue(TControllerIdentifier controllerIdentifier, SState& controllerState, uint8_t triggerValue) const
         {
             constexpr double kBidirectionalStepSize = (double)(kAnalogValueMax - kAnalogValueMin) / (double)(kTriggerValueMax - kTriggerValueMin);
             constexpr double kPositiveStepSize = (double)kAnalogValueMax / (double)(kTriggerValueMax - kTriggerValueMin);
@@ -164,21 +165,21 @@ namespace Xidi
         
         // --------
 
-        void ButtonMapper::ContributeFromAnalogValue(SState& controllerState, int16_t analogValue) const
+        void ButtonMapper::ContributeFromAnalogValue(TControllerIdentifier controllerIdentifier, SState& controllerState, int16_t analogValue) const
         {
             controllerState.button[(int)button] = (controllerState.button[(int)button] || IsAnalogPressed(analogValue));
         }
 
         // --------
 
-        void ButtonMapper::ContributeFromButtonValue(SState& controllerState, bool buttonPressed) const
+        void ButtonMapper::ContributeFromButtonValue(TControllerIdentifier controllerIdentifier, SState& controllerState, bool buttonPressed) const
         {
             controllerState.button[(int)button] = (controllerState.button[(int)button] || buttonPressed);
         }
 
         // --------
 
-        void ButtonMapper::ContributeFromTriggerValue(SState& controllerState, uint8_t triggerValue) const
+        void ButtonMapper::ContributeFromTriggerValue(TControllerIdentifier controllerIdentifier, SState& controllerState, uint8_t triggerValue) const
         {
             controllerState.button[(int)button] = (controllerState.button[(int)button] || IsTriggerPressed(triggerValue));
         }
@@ -202,7 +203,7 @@ namespace Xidi
 
         // --------
 
-        void DigitalAxisMapper::ContributeFromAnalogValue(SState& controllerState, int16_t analogValue) const
+        void DigitalAxisMapper::ContributeFromAnalogValue(TControllerIdentifier controllerIdentifier, SState& controllerState, int16_t analogValue) const
         {
             int32_t axisValueToContribute = 0;
 
@@ -231,14 +232,58 @@ namespace Xidi
 
         // --------
 
-        void DigitalAxisMapper::ContributeFromTriggerValue(SState& controllerState, uint8_t triggerValue) const
+        void DigitalAxisMapper::ContributeFromTriggerValue(TControllerIdentifier controllerIdentifier, SState& controllerState, uint8_t triggerValue) const
         {
-            ContributeFromButtonValue(controllerState, IsTriggerPressed(triggerValue));
+            ContributeFromButtonValue(controllerIdentifier, controllerState, IsTriggerPressed(triggerValue));
         }
 
         // --------
 
-        void PovMapper::ContributeFromAnalogValue(SState& controllerState, int16_t analogValue) const
+        void KeyboardMapper::ContributeFromAnalogValue(TControllerIdentifier controllerIdentifier, SState& controllerState, int16_t analogValue) const
+        {
+            if ((controllerIdentifier < virtualKeys.size()) && (true == IsAnalogPressed(analogValue)))
+                Keyboard::SubmitKeyPressedState(controllerIdentifier, virtualKeys[controllerIdentifier]);
+            else
+                Keyboard::SubmitKeyReleasedState(controllerIdentifier, virtualKeys[controllerIdentifier]);
+        }
+
+        // --------
+
+        void KeyboardMapper::ContributeFromButtonValue(TControllerIdentifier controllerIdentifier, SState& controllerState, bool buttonPressed) const
+        {
+            if ((controllerIdentifier < virtualKeys.size()) && (true == buttonPressed))
+                Keyboard::SubmitKeyPressedState(controllerIdentifier, virtualKeys[controllerIdentifier]);
+            else
+                Keyboard::SubmitKeyReleasedState(controllerIdentifier, virtualKeys[controllerIdentifier]);
+        }
+
+        // --------
+
+        void KeyboardMapper::ContributeFromTriggerValue(TControllerIdentifier controllerIdentifier, SState& controllerState, uint8_t triggerValue) const
+        {
+            if ((controllerIdentifier < virtualKeys.size()) && (true == IsTriggerPressed(triggerValue)))
+                Keyboard::SubmitKeyPressedState(controllerIdentifier, virtualKeys[controllerIdentifier]);
+            else
+                Keyboard::SubmitKeyReleasedState(controllerIdentifier, virtualKeys[controllerIdentifier]);
+        }
+
+        // --------
+
+        int KeyboardMapper::GetTargetElementCount(void) const
+        {
+            return 0;
+        }
+
+        // --------
+
+        std::optional<SElementIdentifier> KeyboardMapper::GetTargetElementAt(int index) const
+        {
+            return std::nullopt;
+        }
+
+        // --------
+
+        void PovMapper::ContributeFromAnalogValue(TControllerIdentifier controllerIdentifier, SState& controllerState, int16_t analogValue) const
         {
             if (true == IsAnalogPressedPositive(analogValue))
                 controllerState.povDirection.components[(int)povDirectionPositive] = true;
@@ -248,7 +293,7 @@ namespace Xidi
 
         // --------
 
-        void PovMapper::ContributeFromButtonValue(SState& controllerState, bool buttonPressed) const
+        void PovMapper::ContributeFromButtonValue(TControllerIdentifier controllerIdentifier, SState& controllerState, bool buttonPressed) const
         {
             if (true == buttonPressed)
                 controllerState.povDirection.components[(int)povDirectionPositive] = true;
@@ -258,7 +303,7 @@ namespace Xidi
 
         // --------
 
-        void PovMapper::ContributeFromTriggerValue(SState& controllerState, uint8_t triggerValue) const
+        void PovMapper::ContributeFromTriggerValue(TControllerIdentifier controllerIdentifier, SState& controllerState, uint8_t triggerValue) const
         {
             if (true == IsTriggerPressed(triggerValue))
                 controllerState.povDirection.components[(int)povDirectionPositive] = true;
@@ -285,49 +330,49 @@ namespace Xidi
 
         // --------
 
-        void SplitMapper::ContributeFromAnalogValue(SState& controllerState, int16_t analogValue) const
+        void SplitMapper::ContributeFromAnalogValue(TControllerIdentifier controllerIdentifier, SState& controllerState, int16_t analogValue) const
         {
             if ((int32_t)analogValue >= kAnalogValueNeutral)
             {
                 if (nullptr != positiveMapper)
-                    positiveMapper->ContributeFromAnalogValue(controllerState, analogValue);
+                    positiveMapper->ContributeFromAnalogValue(controllerIdentifier, controllerState, analogValue);
             }
             else
             {
                 if (nullptr != negativeMapper)
-                    negativeMapper->ContributeFromAnalogValue(controllerState, analogValue);
+                    negativeMapper->ContributeFromAnalogValue(controllerIdentifier, controllerState, analogValue);
             }
         }
 
         // --------
 
-        void SplitMapper::ContributeFromButtonValue(SState& controllerState, bool buttonPressed) const
+        void SplitMapper::ContributeFromButtonValue(TControllerIdentifier controllerIdentifier, SState& controllerState, bool buttonPressed) const
         {
             if (true == buttonPressed)
             {
                 if (nullptr != positiveMapper)
-                    positiveMapper->ContributeFromButtonValue(controllerState, buttonPressed);
+                    positiveMapper->ContributeFromButtonValue(controllerIdentifier, controllerState, buttonPressed);
             }
             else
             {
                 if (nullptr != negativeMapper)
-                    negativeMapper->ContributeFromButtonValue(controllerState, buttonPressed);
+                    negativeMapper->ContributeFromButtonValue(controllerIdentifier, controllerState, buttonPressed);
             }
         }
 
         // --------
 
-        void SplitMapper::ContributeFromTriggerValue(SState& controllerState, uint8_t triggerValue) const
+        void SplitMapper::ContributeFromTriggerValue(TControllerIdentifier controllerIdentifier, SState& controllerState, uint8_t triggerValue) const
         {
             if ((int32_t)triggerValue >= kTriggerValueMid)
             {
                 if (nullptr != positiveMapper)
-                    positiveMapper->ContributeFromTriggerValue(controllerState, triggerValue);
+                    positiveMapper->ContributeFromTriggerValue(controllerIdentifier, controllerState, triggerValue);
             }
             else
             {
                 if (nullptr != negativeMapper)
-                    negativeMapper->ContributeFromTriggerValue(controllerState, triggerValue);
+                    negativeMapper->ContributeFromTriggerValue(controllerIdentifier, controllerState, triggerValue);
             }
         }
 

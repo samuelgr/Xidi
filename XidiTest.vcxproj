@@ -175,6 +175,7 @@
     <ClInclude Include="Include\Xidi\DataFormat.h" />
     <ClInclude Include="Include\Xidi\ElementMapper.h" />
     <ClInclude Include="Include\Xidi\Globals.h" />
+    <ClInclude Include="Include\Xidi\Keyboard.h" />
     <ClInclude Include="Include\Xidi\Mapper.h" />
     <ClInclude Include="Include\Xidi\Message.h" />
     <ClInclude Include="Include\Xidi\PhysicalController.h" />
@@ -215,6 +216,7 @@
     <ClCompile Include="Source\Test\Case\StateChangeEventBufferTest.cpp" />
     <ClCompile Include="Source\Test\Case\VirtualControllerTest.cpp" />
     <ClCompile Include="Source\Test\Case\VirtualDirectInputDeviceTest.cpp" />
+    <ClCompile Include="Source\Test\FakeKeyboard.cpp" />
     <ClCompile Include="Source\Test\MockPhysicalController.cpp" />
     <ClCompile Include="Source\Test\Harness.cpp" />
     <ClCompile Include="Source\Test\TestCase.cpp" />

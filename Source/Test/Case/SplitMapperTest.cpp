@@ -27,6 +27,12 @@ namespace XidiTest
     using namespace ::Xidi::Controller;
 
 
+    // -------- INTERNAL CONSTANTS ----------------------------------------- //
+
+    /// Controller identifier used for all test cases in this file.
+    static constexpr TControllerIdentifier kControllerIdentifier = 0;
+
+
     // -------- INTERNAL VARIABLES ----------------------------------------- //
 
     /// Controller state used for tests that need such an instance but do not care about its contents.
@@ -103,11 +109,11 @@ namespace XidiTest
 
             const SplitMapper mapper(std::make_unique<MockElementMapper>(MockElementMapper::EExpectedSource::Analog, kTestValues[i].positive, &numPositiveContributions), std::make_unique<MockElementMapper>(MockElementMapper::EExpectedSource::Analog, kTestValues[i].negative, &numNegativeContributions));
 
-            mapper.ContributeFromAnalogValue(unusedControllerState, kTestValues[i].positive);
+            mapper.ContributeFromAnalogValue(kControllerIdentifier, unusedControllerState, kTestValues[i].positive);
             TEST_ASSERT(1 == numPositiveContributions);
             TEST_ASSERT(0 == numNegativeContributions);
 
-            mapper.ContributeFromAnalogValue(unusedControllerState, kTestValues[i].negative);
+            mapper.ContributeFromAnalogValue(kControllerIdentifier, unusedControllerState, kTestValues[i].negative);
             TEST_ASSERT(1 == numPositiveContributions);
             TEST_ASSERT(1 == numNegativeContributions);
         }
@@ -134,19 +140,19 @@ namespace XidiTest
             const SplitMapper mapperPositiveOnly(std::make_unique<MockElementMapper>(MockElementMapper::EExpectedSource::Analog, kTestValues[i].positive, &numPositiveContributions), nullptr);
             const SplitMapper mapperNegativeOnly(nullptr, std::make_unique<MockElementMapper>(MockElementMapper::EExpectedSource::Analog, kTestValues[i].negative, &numNegativeContributions));
 
-            mapperPositiveOnly.ContributeFromAnalogValue(unusedControllerState, kTestValues[i].negative);
+            mapperPositiveOnly.ContributeFromAnalogValue(kControllerIdentifier, unusedControllerState, kTestValues[i].negative);
             TEST_ASSERT(0 == numPositiveContributions);
             TEST_ASSERT(0 == numNegativeContributions);
 
-            mapperNegativeOnly.ContributeFromAnalogValue(unusedControllerState, kTestValues[i].positive);
+            mapperNegativeOnly.ContributeFromAnalogValue(kControllerIdentifier, unusedControllerState, kTestValues[i].positive);
             TEST_ASSERT(0 == numPositiveContributions);
             TEST_ASSERT(0 == numNegativeContributions);
 
-            mapperPositiveOnly.ContributeFromAnalogValue(unusedControllerState, kTestValues[i].positive);
+            mapperPositiveOnly.ContributeFromAnalogValue(kControllerIdentifier, unusedControllerState, kTestValues[i].positive);
             TEST_ASSERT(1 == numPositiveContributions);
             TEST_ASSERT(0 == numNegativeContributions);
 
-            mapperNegativeOnly.ContributeFromAnalogValue(unusedControllerState, kTestValues[i].negative);
+            mapperNegativeOnly.ContributeFromAnalogValue(kControllerIdentifier, unusedControllerState, kTestValues[i].negative);
             TEST_ASSERT(1 == numPositiveContributions);
             TEST_ASSERT(1 == numNegativeContributions);
         }
@@ -169,11 +175,11 @@ namespace XidiTest
 
             const SplitMapper mapper(std::make_unique<MockElementMapper>(MockElementMapper::EExpectedSource::Button, kTestValues[i].positive, &numPositiveContributions), std::make_unique<MockElementMapper>(MockElementMapper::EExpectedSource::Button, kTestValues[i].negative, &numNegativeContributions));
 
-            mapper.ContributeFromButtonValue(unusedControllerState, kTestValues[i].positive);
+            mapper.ContributeFromButtonValue(kControllerIdentifier, unusedControllerState, kTestValues[i].positive);
             TEST_ASSERT(1 == numPositiveContributions);
             TEST_ASSERT(0 == numNegativeContributions);
 
-            mapper.ContributeFromButtonValue(unusedControllerState, kTestValues[i].negative);
+            mapper.ContributeFromButtonValue(kControllerIdentifier, unusedControllerState, kTestValues[i].negative);
             TEST_ASSERT(1 == numPositiveContributions);
             TEST_ASSERT(1 == numNegativeContributions);
         }
@@ -197,19 +203,19 @@ namespace XidiTest
             const SplitMapper mapperPositiveOnly(std::make_unique<MockElementMapper>(MockElementMapper::EExpectedSource::Button, kTestValues[i].positive, &numPositiveContributions), nullptr);
             const SplitMapper mapperNegativeOnly(nullptr, std::make_unique<MockElementMapper>(MockElementMapper::EExpectedSource::Button, kTestValues[i].negative, &numNegativeContributions));
 
-            mapperPositiveOnly.ContributeFromButtonValue(unusedControllerState, kTestValues[i].negative);
+            mapperPositiveOnly.ContributeFromButtonValue(kControllerIdentifier, unusedControllerState, kTestValues[i].negative);
             TEST_ASSERT(0 == numPositiveContributions);
             TEST_ASSERT(0 == numNegativeContributions);
 
-            mapperNegativeOnly.ContributeFromButtonValue(unusedControllerState, kTestValues[i].positive);
+            mapperNegativeOnly.ContributeFromButtonValue(kControllerIdentifier, unusedControllerState, kTestValues[i].positive);
             TEST_ASSERT(0 == numPositiveContributions);
             TEST_ASSERT(0 == numNegativeContributions);
 
-            mapperPositiveOnly.ContributeFromButtonValue(unusedControllerState, kTestValues[i].positive);
+            mapperPositiveOnly.ContributeFromButtonValue(kControllerIdentifier, unusedControllerState, kTestValues[i].positive);
             TEST_ASSERT(1 == numPositiveContributions);
             TEST_ASSERT(0 == numNegativeContributions);
 
-            mapperNegativeOnly.ContributeFromButtonValue(unusedControllerState, kTestValues[i].negative);
+            mapperNegativeOnly.ContributeFromButtonValue(kControllerIdentifier, unusedControllerState, kTestValues[i].negative);
             TEST_ASSERT(1 == numPositiveContributions);
             TEST_ASSERT(1 == numNegativeContributions);
         }
@@ -235,11 +241,11 @@ namespace XidiTest
 
             const SplitMapper mapper(std::make_unique<MockElementMapper>(MockElementMapper::EExpectedSource::Trigger, kTestValues[i].positive, &numPositiveContributions), std::make_unique<MockElementMapper>(MockElementMapper::EExpectedSource::Trigger, kTestValues[i].negative, &numNegativeContributions));
 
-            mapper.ContributeFromTriggerValue(unusedControllerState, kTestValues[i].positive);
+            mapper.ContributeFromTriggerValue(kControllerIdentifier, unusedControllerState, kTestValues[i].positive);
             TEST_ASSERT(1 == numPositiveContributions);
             TEST_ASSERT(0 == numNegativeContributions);
 
-            mapper.ContributeFromTriggerValue(unusedControllerState, kTestValues[i].negative);
+            mapper.ContributeFromTriggerValue(kControllerIdentifier, unusedControllerState, kTestValues[i].negative);
             TEST_ASSERT(1 == numPositiveContributions);
             TEST_ASSERT(1 == numNegativeContributions);
         }
@@ -266,19 +272,19 @@ namespace XidiTest
             const SplitMapper mapperPositiveOnly(std::make_unique<MockElementMapper>(MockElementMapper::EExpectedSource::Trigger, kTestValues[i].positive, &numPositiveContributions), nullptr);
             const SplitMapper mapperNegativeOnly(nullptr, std::make_unique<MockElementMapper>(MockElementMapper::EExpectedSource::Trigger, kTestValues[i].negative, &numNegativeContributions));
 
-            mapperPositiveOnly.ContributeFromTriggerValue(unusedControllerState, kTestValues[i].negative);
+            mapperPositiveOnly.ContributeFromTriggerValue(kControllerIdentifier, unusedControllerState, kTestValues[i].negative);
             TEST_ASSERT(0 == numPositiveContributions);
             TEST_ASSERT(0 == numNegativeContributions);
 
-            mapperNegativeOnly.ContributeFromTriggerValue(unusedControllerState, kTestValues[i].positive);
+            mapperNegativeOnly.ContributeFromTriggerValue(kControllerIdentifier, unusedControllerState, kTestValues[i].positive);
             TEST_ASSERT(0 == numPositiveContributions);
             TEST_ASSERT(0 == numNegativeContributions);
 
-            mapperPositiveOnly.ContributeFromTriggerValue(unusedControllerState, kTestValues[i].positive);
+            mapperPositiveOnly.ContributeFromTriggerValue(kControllerIdentifier, unusedControllerState, kTestValues[i].positive);
             TEST_ASSERT(1 == numPositiveContributions);
             TEST_ASSERT(0 == numNegativeContributions);
 
-            mapperNegativeOnly.ContributeFromTriggerValue(unusedControllerState, kTestValues[i].negative);
+            mapperNegativeOnly.ContributeFromTriggerValue(kControllerIdentifier, unusedControllerState, kTestValues[i].negative);
             TEST_ASSERT(1 == numPositiveContributions);
             TEST_ASSERT(1 == numNegativeContributions);
         }
@@ -301,8 +307,8 @@ namespace XidiTest
             constexpr AxisMapper axisMapper(kTargetAxis);
             const SplitMapper splitMapper(std::make_unique<AxisMapper>(kTargetAxis), std::make_unique<AxisMapper>(kTargetAxis));
 
-            axisMapper.ContributeFromAnalogValue(expectedState, (int16_t)analogValue);
-            splitMapper.ContributeFromAnalogValue(actualState, (int16_t)analogValue);
+            axisMapper.ContributeFromAnalogValue(kControllerIdentifier, expectedState, (int16_t)analogValue);
+            splitMapper.ContributeFromAnalogValue(kControllerIdentifier, actualState, (int16_t)analogValue);
 
             TEST_ASSERT(actualState == expectedState);
         }
@@ -326,12 +332,12 @@ namespace XidiTest
             const SplitMapper splitMapper(std::make_unique<AxisMapper>(kTargetSplitAxes.positive), std::make_unique<AxisMapper>(kTargetSplitAxes.negative));
 
             ZeroMemory(&tempStateBuffer, sizeof(tempStateBuffer));
-            axisMapper.ContributeFromAnalogValue(tempStateBuffer, (int16_t)analogValue);
+            axisMapper.ContributeFromAnalogValue(kControllerIdentifier, tempStateBuffer, (int16_t)analogValue);
 
             const int32_t kExpectedAxisValue = tempStateBuffer.axis[(int)kTargetAxis];
 
             ZeroMemory(&tempStateBuffer, sizeof(tempStateBuffer));
-            splitMapper.ContributeFromAnalogValue(tempStateBuffer, (int16_t)analogValue);
+            splitMapper.ContributeFromAnalogValue(kControllerIdentifier, tempStateBuffer, (int16_t)analogValue);
 
             const int32_t kActualAxisValue = (analogValue >= kAnalogValueNeutral) ? tempStateBuffer.axis[(int)kTargetSplitAxes.positive] : tempStateBuffer.axis[(int)kTargetSplitAxes.negative];
             const int32_t kSupposedlyUntouchedAxisValue = (analogValue >= kAnalogValueNeutral) ? tempStateBuffer.axis[(int)kTargetSplitAxes.negative] : tempStateBuffer.axis[(int)kTargetSplitAxes.positive];

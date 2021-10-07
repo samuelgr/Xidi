@@ -13,10 +13,13 @@
 #pragma once
 
 #include "ControllerTypes.h"
+#include "Keyboard.h"
+#include "PhysicalController.h"
 
 #include <cstdint>
 #include <memory>
 #include <optional>
+#include <vector>
 
 
 namespace Xidi
@@ -32,21 +35,24 @@ namespace Xidi
 
             /// Calculates the contribution to controller state from a given analog reading in the standard XInput axis range -32768 to +32767.
             /// Contribution is aggregated with anything that already exists in the controller state.
+            /// @param [in] controllerIdentifier Identifier of the controller for which an update contribution is being requested.
             /// @param [in,out] controllerState Controller state data structure to be updated.
             /// @param [in] analogStickValue Raw analog stick value from the XInput controller.
-            virtual void ContributeFromAnalogValue(SState& controllerState, int16_t analogValue) const = 0;
+            virtual void ContributeFromAnalogValue(TControllerIdentifier controllerIdentifier, SState& controllerState, int16_t analogValue) const = 0;
 
             /// Calculates the contribution to controller state from a given button pressed status reading.
             /// Contribution is aggregated with anything that already exists in the controller state.
+            /// @param [in] controllerIdentifier Identifier of the controller for which an update contribution is being requested.
             /// @param [in,out] controllerState Controller state data structure to be updated.
             /// @param [in] buttonPressed Button state from the XInput controller, `true` if pressed and `false` otherwise.
-            virtual void ContributeFromButtonValue(SState& controllerState, bool buttonPressed) const = 0;
+            virtual void ContributeFromButtonValue(TControllerIdentifier controllerIdentifier, SState& controllerState, bool buttonPressed) const = 0;
 
             /// Calculates the contribution to controller state from a given trigger reading in the standard XInput trigger range 0 to 255.
             /// Contribution is aggregated with anything that already exists in the controller state.
+            /// @param [in] controllerIdentifier Identifier of the controller for which an update contribution is being requested.
             /// @param [in,out] controllerState Controller state data structure to be updated.
             /// @param [in] buttonPressed Button state from the XInput controller, `true` if pressed and `false` otherwise.
-            virtual void ContributeFromTriggerValue(SState& controllerState, uint8_t triggerValue) const = 0;
+            virtual void ContributeFromTriggerValue(TControllerIdentifier controllerIdentifier, SState& controllerState, uint8_t triggerValue) const = 0;
 
             /// Specifies the number of virtual controller elements that are the target of any contributions from this element mapper.
             /// @return Number of virtual controller elements to which contributions are targetted.
@@ -101,9 +107,9 @@ namespace Xidi
 
             // -------- CONCRETE INSTANCE METHODS -------------------------- //
 
-            void ContributeFromAnalogValue(SState& controllerState, int16_t analogValue) const override;
-            void ContributeFromButtonValue(SState& controllerState, bool buttonPressed) const override;
-            void ContributeFromTriggerValue(SState& controllerState, uint8_t triggerValue) const override;
+            void ContributeFromAnalogValue(TControllerIdentifier controllerIdentifier, SState& controllerState, int16_t analogValue) const override;
+            void ContributeFromButtonValue(TControllerIdentifier controllerIdentifier, SState& controllerState, bool buttonPressed) const override;
+            void ContributeFromTriggerValue(TControllerIdentifier controllerIdentifier, SState& controllerState, uint8_t triggerValue) const override;
             int GetTargetElementCount(void) const override;
             std::optional<SElementIdentifier> GetTargetElementAt(int index) const override;
         };
@@ -134,9 +140,9 @@ namespace Xidi
 
             // -------- CONCRETE INSTANCE METHODS -------------------------- //
 
-            void ContributeFromAnalogValue(SState& controllerState, int16_t analogValue) const override;
-            void ContributeFromButtonValue(SState& controllerState, bool buttonPressed) const override;
-            void ContributeFromTriggerValue(SState& controllerState, uint8_t triggerValue) const override;
+            void ContributeFromAnalogValue(TControllerIdentifier controllerIdentifier, SState& controllerState, int16_t analogValue) const override;
+            void ContributeFromButtonValue(TControllerIdentifier controllerIdentifier, SState& controllerState, bool buttonPressed) const override;
+            void ContributeFromTriggerValue(TControllerIdentifier controllerIdentifier, SState& controllerState, uint8_t triggerValue) const override;
             int GetTargetElementCount(void) const override;
             std::optional<SElementIdentifier> GetTargetElementAt(int index) const override;
         };
@@ -160,8 +166,49 @@ namespace Xidi
 
             // -------- CONCRETE INSTANCE METHODS -------------------------- //
 
-            void ContributeFromAnalogValue(SState& controllerState, int16_t analogValue) const override;
-            void ContributeFromTriggerValue(SState& controllerState, uint8_t triggerValue) const override;
+            void ContributeFromAnalogValue(TControllerIdentifier controllerIdentifier, SState& controllerState, int16_t analogValue) const override;
+            void ContributeFromTriggerValue(TControllerIdentifier controllerIdentifier, SState& controllerState, uint8_t triggerValue) const override;
+        };
+
+        /// Maps a single XInput controller element to a keyboard key.
+        /// For analog sticks, if the axis displacement from neutral is greater than a threshold, the keyboard key is considered pressed.
+        /// For triggers, if the magnitude of the trigger reading is greater than a threshold, the keyboard key is considered pressed.
+        /// For buttons, the button state is mapped directly to the target keyboard key.
+        class KeyboardMapper : public IElementMapper
+        {
+        private:
+            // -------- INSTANCE VARIABLES --------------------------------- //
+
+            /// Identifies the buttons to which this mapper should contribute in the internal controller state data structure.
+            /// One element per controller identifier.
+            const std::vector<Keyboard::TVirtualKey> virtualKeys;
+
+
+        public:
+            // -------- CONSTRUCTION AND DESTRUCTION ----------------------- //
+
+            /// Initialization constructor.
+            /// Specifies the virtual keys to which all updates are contributed, one element per controller identifier.
+            inline constexpr KeyboardMapper(std::vector<Keyboard::TVirtualKey>&& virtualKeys) : IElementMapper(), virtualKeys(std::move(virtualKeys))
+            {
+                // Nothing to do here.
+            }
+
+            /// Initialization constructor.
+            /// Specifies a single virtual key to which all updates are contributed.
+            inline constexpr KeyboardMapper(Keyboard::TVirtualKey virtualKey) : KeyboardMapper(std::vector<Keyboard::TVirtualKey>(kPhysicalControllerCount, virtualKey))
+            {
+                // Nothing to do here.
+            }
+
+
+            // -------- CONCRETE INSTANCE METHODS -------------------------- //
+
+            void ContributeFromAnalogValue(TControllerIdentifier controllerIdentifier, SState& controllerState, int16_t analogValue) const override;
+            void ContributeFromButtonValue(TControllerIdentifier controllerIdentifier, SState& controllerState, bool buttonPressed) const override;
+            void ContributeFromTriggerValue(TControllerIdentifier controllerIdentifier, SState& controllerState, uint8_t triggerValue) const override;
+            int GetTargetElementCount(void) const override;
+            std::optional<SElementIdentifier> GetTargetElementAt(int index) const override;
         };
 
         /// Maps a single XInput controller element such that it contributes to a POV on a virtual controller.
@@ -200,9 +247,9 @@ namespace Xidi
 
             // -------- CONCRETE INSTANCE METHODS -------------------------- //
 
-            void ContributeFromAnalogValue(SState& controllerState, int16_t analogValue) const override;
-            void ContributeFromButtonValue(SState& controllerState, bool buttonPressed) const override;
-            void ContributeFromTriggerValue(SState& controllerState, uint8_t triggerValue) const override;
+            void ContributeFromAnalogValue(TControllerIdentifier controllerIdentifier, SState& controllerState, int16_t analogValue) const override;
+            void ContributeFromButtonValue(TControllerIdentifier controllerIdentifier, SState& controllerState, bool buttonPressed) const override;
+            void ContributeFromTriggerValue(TControllerIdentifier controllerIdentifier, SState& controllerState, uint8_t triggerValue) const override;
             int GetTargetElementCount(void) const override;
             std::optional<SElementIdentifier> GetTargetElementAt(int index) const override;
         };
@@ -237,9 +284,9 @@ namespace Xidi
 
             // -------- CONCRETE INSTANCE METHODS -------------------------- //
 
-            void ContributeFromAnalogValue(SState& controllerState, int16_t analogValue) const override;
-            void ContributeFromButtonValue(SState& controllerState, bool buttonPressed) const override;
-            void ContributeFromTriggerValue(SState& controllerState, uint8_t triggerValue) const override;
+            void ContributeFromAnalogValue(TControllerIdentifier controllerIdentifier, SState& controllerState, int16_t analogValue) const override;
+            void ContributeFromButtonValue(TControllerIdentifier controllerIdentifier, SState& controllerState, bool buttonPressed) const override;
+            void ContributeFromTriggerValue(TControllerIdentifier controllerIdentifier, SState& controllerState, uint8_t triggerValue) const override;
             int GetTargetElementCount(void) const override;
             std::optional<SElementIdentifier> GetTargetElementAt(int index) const override;
         };

@@ -282,7 +282,7 @@ namespace Xidi
         // -------- INSTANCE METHODS --------------------------------------- //
         // See "Mapper.h" for documentation.
 
-        void Mapper::MapXInputState(SState& controllerState, XINPUT_GAMEPAD xinputState) const
+        void Mapper::MapXInputState(TControllerIdentifier controllerIdentifier, SState& controllerState, XINPUT_GAMEPAD xinputState) const
         {
             ZeroMemory(&controllerState, sizeof(controllerState));
 
@@ -290,33 +290,33 @@ namespace Xidi
             // This difference (-32768 extreme negative for XInput vs -32767 extreme negative for Xidi) does not affect functionality when filtered by saturation.
             // Vertical analog axes additionally need to be inverted because XInput presents up as positive and down as negative whereas Xidi needs to do the opposite.
             
-            if (nullptr != elements.named.stickLeftX) elements.named.stickLeftX->ContributeFromAnalogValue(controllerState, FilterAnalogStickValue(xinputState.sThumbLX));
-            if (nullptr != elements.named.stickLeftY) elements.named.stickLeftY->ContributeFromAnalogValue(controllerState, FilterAndInvertAnalogStickValue(xinputState.sThumbLY));
+            if (nullptr != elements.named.stickLeftX) elements.named.stickLeftX->ContributeFromAnalogValue(controllerIdentifier, controllerState, FilterAnalogStickValue(xinputState.sThumbLX));
+            if (nullptr != elements.named.stickLeftY) elements.named.stickLeftY->ContributeFromAnalogValue(controllerIdentifier, controllerState, FilterAndInvertAnalogStickValue(xinputState.sThumbLY));
 
-            if (nullptr != elements.named.stickRightX) elements.named.stickRightX->ContributeFromAnalogValue(controllerState, FilterAnalogStickValue(xinputState.sThumbRX));
-            if (nullptr != elements.named.stickRightY) elements.named.stickRightY->ContributeFromAnalogValue(controllerState, FilterAndInvertAnalogStickValue(xinputState.sThumbRY));
+            if (nullptr != elements.named.stickRightX) elements.named.stickRightX->ContributeFromAnalogValue(controllerIdentifier, controllerState, FilterAnalogStickValue(xinputState.sThumbRX));
+            if (nullptr != elements.named.stickRightY) elements.named.stickRightY->ContributeFromAnalogValue(controllerIdentifier, controllerState, FilterAndInvertAnalogStickValue(xinputState.sThumbRY));
 
-            if (nullptr != elements.named.dpadUp) elements.named.dpadUp->ContributeFromButtonValue(controllerState, (0 != (xinputState.wButtons & XINPUT_GAMEPAD_DPAD_UP)));
-            if (nullptr != elements.named.dpadDown) elements.named.dpadDown->ContributeFromButtonValue(controllerState, (0 != (xinputState.wButtons & XINPUT_GAMEPAD_DPAD_DOWN)));
-            if (nullptr != elements.named.dpadLeft) elements.named.dpadLeft->ContributeFromButtonValue(controllerState, (0 != (xinputState.wButtons & XINPUT_GAMEPAD_DPAD_LEFT)));
-            if (nullptr != elements.named.dpadRight) elements.named.dpadRight->ContributeFromButtonValue(controllerState, (0 != (xinputState.wButtons & XINPUT_GAMEPAD_DPAD_RIGHT)));
+            if (nullptr != elements.named.dpadUp) elements.named.dpadUp->ContributeFromButtonValue(controllerIdentifier, controllerState, (0 != (xinputState.wButtons & XINPUT_GAMEPAD_DPAD_UP)));
+            if (nullptr != elements.named.dpadDown) elements.named.dpadDown->ContributeFromButtonValue(controllerIdentifier, controllerState, (0 != (xinputState.wButtons & XINPUT_GAMEPAD_DPAD_DOWN)));
+            if (nullptr != elements.named.dpadLeft) elements.named.dpadLeft->ContributeFromButtonValue(controllerIdentifier, controllerState, (0 != (xinputState.wButtons & XINPUT_GAMEPAD_DPAD_LEFT)));
+            if (nullptr != elements.named.dpadRight) elements.named.dpadRight->ContributeFromButtonValue(controllerIdentifier, controllerState, (0 != (xinputState.wButtons & XINPUT_GAMEPAD_DPAD_RIGHT)));
 
-            if (nullptr != elements.named.triggerLT) elements.named.triggerLT->ContributeFromTriggerValue(controllerState, xinputState.bLeftTrigger);
-            if (nullptr != elements.named.triggerRT) elements.named.triggerRT->ContributeFromTriggerValue(controllerState, xinputState.bRightTrigger);
+            if (nullptr != elements.named.triggerLT) elements.named.triggerLT->ContributeFromTriggerValue(controllerIdentifier, controllerState, xinputState.bLeftTrigger);
+            if (nullptr != elements.named.triggerRT) elements.named.triggerRT->ContributeFromTriggerValue(controllerIdentifier, controllerState, xinputState.bRightTrigger);
 
-            if (nullptr != elements.named.buttonA) elements.named.buttonA->ContributeFromButtonValue(controllerState, (0 != (xinputState.wButtons & XINPUT_GAMEPAD_A)));
-            if (nullptr != elements.named.buttonB) elements.named.buttonB->ContributeFromButtonValue(controllerState, (0 != (xinputState.wButtons & XINPUT_GAMEPAD_B)));
-            if (nullptr != elements.named.buttonX) elements.named.buttonX->ContributeFromButtonValue(controllerState, (0 != (xinputState.wButtons & XINPUT_GAMEPAD_X)));
-            if (nullptr != elements.named.buttonY) elements.named.buttonY->ContributeFromButtonValue(controllerState, (0 != (xinputState.wButtons & XINPUT_GAMEPAD_Y)));
+            if (nullptr != elements.named.buttonA) elements.named.buttonA->ContributeFromButtonValue(controllerIdentifier, controllerState, (0 != (xinputState.wButtons & XINPUT_GAMEPAD_A)));
+            if (nullptr != elements.named.buttonB) elements.named.buttonB->ContributeFromButtonValue(controllerIdentifier, controllerState, (0 != (xinputState.wButtons & XINPUT_GAMEPAD_B)));
+            if (nullptr != elements.named.buttonX) elements.named.buttonX->ContributeFromButtonValue(controllerIdentifier, controllerState, (0 != (xinputState.wButtons & XINPUT_GAMEPAD_X)));
+            if (nullptr != elements.named.buttonY) elements.named.buttonY->ContributeFromButtonValue(controllerIdentifier, controllerState, (0 != (xinputState.wButtons & XINPUT_GAMEPAD_Y)));
 
-            if (nullptr != elements.named.buttonLB) elements.named.buttonLB->ContributeFromButtonValue(controllerState, (0 != (xinputState.wButtons & XINPUT_GAMEPAD_LEFT_SHOULDER)));
-            if (nullptr != elements.named.buttonRB) elements.named.buttonRB->ContributeFromButtonValue(controllerState, (0 != (xinputState.wButtons & XINPUT_GAMEPAD_RIGHT_SHOULDER)));
+            if (nullptr != elements.named.buttonLB) elements.named.buttonLB->ContributeFromButtonValue(controllerIdentifier, controllerState, (0 != (xinputState.wButtons & XINPUT_GAMEPAD_LEFT_SHOULDER)));
+            if (nullptr != elements.named.buttonRB) elements.named.buttonRB->ContributeFromButtonValue(controllerIdentifier, controllerState, (0 != (xinputState.wButtons & XINPUT_GAMEPAD_RIGHT_SHOULDER)));
 
-            if (nullptr != elements.named.buttonBack) elements.named.buttonBack->ContributeFromButtonValue(controllerState, (0 != (xinputState.wButtons & XINPUT_GAMEPAD_BACK)));
-            if (nullptr != elements.named.buttonStart) elements.named.buttonStart->ContributeFromButtonValue(controllerState, (0 != (xinputState.wButtons & XINPUT_GAMEPAD_START)));
+            if (nullptr != elements.named.buttonBack) elements.named.buttonBack->ContributeFromButtonValue(controllerIdentifier, controllerState, (0 != (xinputState.wButtons & XINPUT_GAMEPAD_BACK)));
+            if (nullptr != elements.named.buttonStart) elements.named.buttonStart->ContributeFromButtonValue(controllerIdentifier, controllerState, (0 != (xinputState.wButtons & XINPUT_GAMEPAD_START)));
 
-            if (nullptr != elements.named.buttonLS) elements.named.buttonLS->ContributeFromButtonValue(controllerState, (0 != (xinputState.wButtons & XINPUT_GAMEPAD_LEFT_THUMB)));
-            if (nullptr != elements.named.buttonRS) elements.named.buttonRS->ContributeFromButtonValue(controllerState, (0 != (xinputState.wButtons & XINPUT_GAMEPAD_RIGHT_THUMB)));
+            if (nullptr != elements.named.buttonLS) elements.named.buttonLS->ContributeFromButtonValue(controllerIdentifier, controllerState, (0 != (xinputState.wButtons & XINPUT_GAMEPAD_LEFT_THUMB)));
+            if (nullptr != elements.named.buttonRS) elements.named.buttonRS->ContributeFromButtonValue(controllerIdentifier, controllerState, (0 != (xinputState.wButtons & XINPUT_GAMEPAD_RIGHT_THUMB)));
 
             // Once all contributions have been committed, saturate all axis values at the extreme ends of the allowed range.
             // Doing this at the end means that intermediate contributions are computed with much more range than the controller is allowed to report, which can increase accuracy when there are multiple interfering mappers contributing to axes.
