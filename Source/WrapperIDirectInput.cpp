@@ -19,6 +19,7 @@
 #include "VirtualDirectInputDevice.h"
 #include "WrapperIDirectInput.h"
 
+#include <cstddef>
 #include <cstdlib>
 #include <optional>
 #include <unordered_set>
@@ -33,9 +34,9 @@ namespace Xidi
     /// @param [in] severity Desired message severity.
     /// @param [in] baseMessage Base message text, should contain a format specifier for the product name.
     /// @param [in] deviceInstance Device instance whose product name should be printed.
-    template <ECharMode charMode> static inline void EnumDevicesOutputProductName(Message::ESeverity severity, const wchar_t* baseMessage, const typename DirectInputType<charMode>::DeviceInstanceType* deviceInstance);
+    template <ECharMode charMode> static inline void OutputProductName(Message::ESeverity severity, const wchar_t* baseMessage, const typename DirectInputType<charMode>::DeviceInstanceType* deviceInstance);
 
-    template <> static inline void EnumDevicesOutputProductName<ECharMode::A>(Message::ESeverity severity, const wchar_t* baseMessage, typename const DirectInputType<ECharMode::A>::DeviceInstanceType* deviceInstance)
+    template <> static inline void OutputProductName<ECharMode::A>(Message::ESeverity severity, const wchar_t* baseMessage, const typename DirectInputType<ECharMode::A>::DeviceInstanceType* deviceInstance)
     {
         WCHAR productName[_countof(deviceInstance->tszProductName) + 1];
         ZeroMemory(productName, sizeof(productName));
@@ -43,7 +44,7 @@ namespace Xidi
         Message::OutputFormatted(severity, baseMessage, productName);
     }
 
-    template <> static inline void EnumDevicesOutputProductName<ECharMode::W>(Message::ESeverity severity, const wchar_t* baseMessage, const typename DirectInputType<ECharMode::W>::DeviceInstanceType* deviceInstance)
+    template <> static inline void OutputProductName<ECharMode::W>(Message::ESeverity severity, const wchar_t* baseMessage, const typename DirectInputType<ECharMode::W>::DeviceInstanceType* deviceInstance)
     {
         LPCWSTR productName = deviceInstance->tszProductName;
         Message::OutputFormatted(severity, baseMessage, productName);
@@ -144,9 +145,35 @@ namespace Xidi
         if (false == maybeVirtualControllerId.has_value())
         {
             // Not a virtual controller GUID, so just create the device as requested by the application.
-            Message::Output(Message::ESeverity::Info, L"Binding to a non-XInput device. Xidi will not handle communication with it.");
+            // However, first dump some information about the device.
+            const HRESULT kCreateDeviceResult = underlyingDIObject->CreateDevice(rguid, lplpDirectInputDevice, pUnkOuter);
+            if (DI_OK == kCreateDeviceResult)
+            {
+                if (GUID_SysKeyboard == rguid)
+                {
+                    Message::Output(Message::ESeverity::Info, L"Binding to the system keyboard device. Xidi will not handle communication with it.");
+                }
+                else if (GUID_SysMouse == rguid)
+                {
+                    Message::Output(Message::ESeverity::Info, L"Binding to the system mouse device. Xidi will not handle communication with it.");
+                }
+                else
+                {
+                    typename DirectInputType<charMode>::DeviceInstanceType deviceInfo = { .dwSize = sizeof(typename DirectInputType<charMode>::DeviceInstanceType) };
+                    const HRESULT kDeviceInfoResult = (*lplpDirectInputDevice)->GetDeviceInfo(&deviceInfo);
 
-            return underlyingDIObject->CreateDevice(rguid, lplpDirectInputDevice, pUnkOuter);
+                    if (DI_OK == kDeviceInfoResult)
+                        OutputProductName<charMode>(Message::ESeverity::Info, L"Binding to non-XInput device \"%s\". Xidi will not handle communication with it.", &deviceInfo);
+                    else
+                        Message::Output(Message::ESeverity::Info, L"Binding to an unknown non-XInput device. Xidi will not handle communication with it.");
+                }
+            }
+            else
+            {
+                Message::OutputFormatted(Message::ESeverity::Info, L"Failed (code %u) to bind to a non-XInput device.", (unsigned int)kCreateDeviceResult);
+            }
+
+            return kCreateDeviceResult;
         }
         else
         {
@@ -310,7 +337,7 @@ namespace Xidi
         if (DoesDirectInputControllerSupportXInput<DirectInputType<charMode>::EarliestIDirectInputType, DirectInputType<charMode>::EarliestIDirectInputDeviceType>(callbackInfo->instance->underlyingDIObject, lpddi->guidInstance))
         {
             callbackInfo->seenInstanceIdentifiers.insert(lpddi->guidInstance);
-            EnumDevicesOutputProductName<charMode>(Message::ESeverity::Debug, L"Enumerate: DirectInput device \"%s\" supports XInput and will not be presented to the application.", lpddi);
+            OutputProductName<charMode>(Message::ESeverity::Debug, L"Enumerate: DirectInput device \"%s\" supports XInput and will not be presented to the application.", lpddi);
         }
 
         return DIENUM_CONTINUE;
@@ -327,7 +354,7 @@ namespace Xidi
             // If the device has not been seen already, add it to the set and present it to the application.
             callbackInfo->seenInstanceIdentifiers.insert(lpddi->guidInstance);
             callbackInfo->callbackReturnCode = ((BOOL(FAR PASCAL *)(const DirectInputType<charMode>::DeviceInstanceType*,LPVOID))(callbackInfo->lpCallback))(lpddi, callbackInfo->pvRef);
-            EnumDevicesOutputProductName<charMode>(Message::ESeverity::Debug, L"Enumerate: DirectInput device \"%s\" is being presented to the application.", lpddi);
+            OutputProductName<charMode>(Message::ESeverity::Debug, L"Enumerate: DirectInput device \"%s\" is being presented to the application.", lpddi);
             return callbackInfo->callbackReturnCode;
         }
         else
