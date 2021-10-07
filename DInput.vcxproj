@@ -34,6 +34,7 @@
     <ClInclude Include="Include\Xidi\ImportApiDirectInput.h" />
     <ClInclude Include="Include\Xidi\ImportApiWinMM.h" />
     <ClInclude Include="Include\Xidi\Keyboard.h" />
+    <ClInclude Include="Include\Xidi\KeyboardTypes.h" />
     <ClInclude Include="Include\Xidi\Mapper.h" />
     <ClInclude Include="Include\Xidi\Message.h" />
     <ClInclude Include="Include\Xidi\PhysicalController.h" />

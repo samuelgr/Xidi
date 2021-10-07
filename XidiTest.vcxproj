@@ -176,6 +176,7 @@
     <ClInclude Include="Include\Xidi\ElementMapper.h" />
     <ClInclude Include="Include\Xidi\Globals.h" />
     <ClInclude Include="Include\Xidi\Keyboard.h" />
+    <ClInclude Include="Include\Xidi\KeyboardTypes.h" />
     <ClInclude Include="Include\Xidi\Mapper.h" />
     <ClInclude Include="Include\Xidi\Message.h" />
     <ClInclude Include="Include\Xidi\PhysicalController.h" />

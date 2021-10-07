@@ -12,39 +12,24 @@
 
 #pragma once
 
-#include "PhysicalController.h"
-
-#include <bitset>
-#include <cstdint>
-#include <limits>
+#include "ControllerTypes.h"
+#include "KeyboardTypes.h"
 
 
 namespace Xidi
 {
     namespace Keyboard
     {
-        // -------- TYPE DEFINITIONS --------------------------------------- //
-
-        /// Underlying type used to identify virtual keys.
-        typedef uint8_t TVirtualKey;
-
-
-        // -------- CONSTANTS ---------------------------------------------- //
-
-        /// Number of virtual keys that exist in total on a virtual keyboard.
-        static constexpr int kVirtualKeyCount = std::numeric_limits<TVirtualKey>::max();
-
-
         // -------- FUNCTIONS ---------------------------------------------- //
 
-        /// Submits a key state of pressed from a particular virtual controller.
+        /// Submits a key state of pressed from a particular identified controller.
         /// @param [in] controllerIdentifier Identifier of the controller that is the source of the key press state.
-        /// @param [in] virtualKey Virtual key that is affected.
-        void SubmitKeyPressedState(Controller::TControllerIdentifier controllerIdentifier, TVirtualKey virtualKey);
+        /// @param [in] key Keyboard key that is affected.
+        void SubmitKeyPressedState(Controller::TControllerIdentifier controllerIdentifier, TKeyIdentifier key);
 
-        /// Submits a key state of released from a particular virtual controller.
+        /// Submits a key state of released from a particular identified controller.
         /// @param [in] controllerIdentifier Identifier of the controller that is the source of the key release state.
-        /// @param [in] virtualKey Virtual key that is affected.
-        void SubmitKeyReleasedState(Controller::TControllerIdentifier controllerIdentifier, TVirtualKey virtualKey);
+        /// @param [in] key Keyboard key that is affected.
+        void SubmitKeyReleasedState(Controller::TControllerIdentifier controllerIdentifier, TKeyIdentifier key);
     }
 }

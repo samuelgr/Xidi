@@ -11,8 +11,10 @@
  *****************************************************************************/
 
 #include "ApiWindows.h"
+#include "ControllerTypes.h"
 #include "Globals.h"
 #include "Keyboard.h"
+#include "KeyboardTypes.h"
 #include "Message.h"
 
 #include <bitset>
@@ -110,13 +112,13 @@ namespace Xidi
         /// Background thread for updating the physical keyboard status by reading the virtual keyboard status snapshots.
         static std::thread physicalKeyboardUpdateThread;
         
-        /// Old view of all the virtual key states in the virtual keyboard.
+        /// Old view of all the keyboard key states in the virtual keyboard.
         /// Used to detect transitions.
-        static KeyState previousVirtualKeyboardState[kVirtualKeyCount];
+        static KeyState previousVirtualKeyboardState[kVirtualKeyboardKeyCount];
 
-        /// Upcoming view of all the virtual key states in the virtual keyboard.
+        /// Upcoming view of all the keyboard key states in the virtual keyboard.
         /// Submissions are written to this view and compared with the previous to detect transitions.
-        static KeyState nextVirtualKeyboardState[kVirtualKeyCount];
+        static KeyState nextVirtualKeyboardState[kVirtualKeyboardKeyCount];
 
 
         // -------- INTERNAL FUNCTIONS ------------------------------------- //
@@ -131,12 +133,12 @@ namespace Xidi
             return (Globals::GetCurrentProcessId() == foregroundProcess);
         }
         
-        /// Periodically checks for changes between the previous next views of the virtual keyboard key states.
+        /// Periodically checks for changes between the previous and next views of the virtual keyboard key states.
         /// On detected state change, generates and submits a keyboard input event to the system.
         static void UpdatePhysicalKeyboardState(void)
         {
             std::vector<INPUT> keyboardEvents;
-            keyboardEvents.reserve(kVirtualKeyCount);
+            keyboardEvents.reserve(kVirtualKeyboardKeyCount);
 
             while (true)
             {
@@ -146,25 +148,23 @@ namespace Xidi
                 {
                     std::scoped_lock lock(keyboardGuard);
 
-                    for (int vk = 0; vk < kVirtualKeyCount; ++vk)
+                    for (TKeyIdentifier key = 0; key < kVirtualKeyboardKeyCount; ++key)
                     {
-                        const KeyState kNextKeyState = nextVirtualKeyboardState[vk];
-
-                        switch (kNextKeyState.GetTransitionFrom(previousVirtualKeyboardState[vk]))
+                        switch (nextVirtualKeyboardState[key].GetTransitionFrom(previousVirtualKeyboardState[key]))
                         {
                         case EKeyTransition::KeyWasPressed:
-                            keyboardEvents.emplace_back(INPUT({.type = INPUT_KEYBOARD, .ki = {.wVk = (WORD)vk}}));
+                            keyboardEvents.emplace_back(INPUT({.type = INPUT_KEYBOARD, .ki = {.wScan = key, .dwFlags = KEYEVENTF_SCANCODE}}));
                             break;
 
                         case EKeyTransition::KeyWasReleased:
-                            keyboardEvents.emplace_back(INPUT({.type = INPUT_KEYBOARD, .ki = {.wVk = (WORD)vk, .dwFlags = KEYEVENTF_KEYUP}}));
+                            keyboardEvents.emplace_back(INPUT({.type = INPUT_KEYBOARD, .ki = {.wScan = key, .dwFlags = KEYEVENTF_SCANCODE | KEYEVENTF_KEYUP}}));
                             break;
 
                         default:
                             break;
                         }
 
-                        previousVirtualKeyboardState[vk] = kNextKeyState;
+                        previousVirtualKeyboardState[key] = nextVirtualKeyboardState[key];
                     }
                 } while (false);
 
@@ -195,22 +195,22 @@ namespace Xidi
         // -------- FUNCTIONS ---------------------------------------------- //
         // See "Keyboard.h" for documentation.
 
-        void SubmitKeyPressedState(Controller::TControllerIdentifier controllerIdentifier, TVirtualKey virtualKey)
+        void SubmitKeyPressedState(Controller::TControllerIdentifier controllerIdentifier, TKeyIdentifier key)
         {
             InitializeAndBeginUpdating();
 
             std::scoped_lock lock(keyboardGuard);
-            nextVirtualKeyboardState[virtualKey].Press(controllerIdentifier);
+            nextVirtualKeyboardState[key].Press(controllerIdentifier);
         }
 
         // --------
 
-        void SubmitKeyReleasedState(Controller::TControllerIdentifier controllerIdentifier, TVirtualKey virtualKey)
+        void SubmitKeyReleasedState(Controller::TControllerIdentifier controllerIdentifier, TKeyIdentifier key)
         {
             InitializeAndBeginUpdating();
 
             std::scoped_lock lock(keyboardGuard);
-            nextVirtualKeyboardState[virtualKey].Release(controllerIdentifier);
+            nextVirtualKeyboardState[key].Release(controllerIdentifier);
         }
     }
 }

@@ -11,6 +11,7 @@
  *****************************************************************************/
 
 #include "ApiWindows.h"
+#include "ControllerTypes.h"
 #include "ImportApiWinMM.h"
 #include "Message.h"
 #include "PhysicalController.h"
@@ -144,7 +145,7 @@ namespace Xidi
                     // Initialize controller state data structures.
                     for (auto controllerIdentifier = 0; controllerIdentifier < _countof(physicalControllerState); ++controllerIdentifier)
                         physicalControllerState[controllerIdentifier].errorCode = XInputGetState(controllerIdentifier, &physicalControllerState[controllerIdentifier].state);
-                    
+
                     // Ensure the system timer resolution is suitable for the desired polling frequency.
                     TIMECAPS timeCaps;
                     MMRESULT timeResult = ImportApiWinMM::timeGetDevCaps(&timeCaps, sizeof(timeCaps));

@@ -13,8 +13,7 @@
 #pragma once
 
 #include "ControllerTypes.h"
-#include "Keyboard.h"
-#include "PhysicalController.h"
+#include "KeyboardTypes.h"
 
 #include <cstdint>
 #include <memory>
@@ -181,22 +180,22 @@ namespace Xidi
 
             /// Identifies the buttons to which this mapper should contribute in the internal controller state data structure.
             /// One element per controller identifier.
-            const std::vector<Keyboard::TVirtualKey> virtualKeys;
+            const std::vector<Keyboard::TKeyIdentifier> keys;
 
 
         public:
             // -------- CONSTRUCTION AND DESTRUCTION ----------------------- //
 
             /// Initialization constructor.
-            /// Specifies the virtual keys to which all updates are contributed, one element per controller identifier.
-            inline constexpr KeyboardMapper(std::vector<Keyboard::TVirtualKey>&& virtualKeys) : IElementMapper(), virtualKeys(std::move(virtualKeys))
+            /// Specifies the keyboard keys to which all updates are contributed, one element per controller identifier.
+            inline constexpr KeyboardMapper(std::vector<Keyboard::TKeyIdentifier>&& keys) : IElementMapper(), keys(std::move(keys))
             {
                 // Nothing to do here.
             }
 
             /// Initialization constructor.
-            /// Specifies a single virtual key to which all updates are contributed.
-            inline constexpr KeyboardMapper(Keyboard::TVirtualKey virtualKey) : KeyboardMapper(std::vector<Keyboard::TVirtualKey>(kPhysicalControllerCount, virtualKey))
+            /// Specifies a single keyboard key to which all updates are contributed.
+            inline constexpr KeyboardMapper(Keyboard::TKeyIdentifier key) : KeyboardMapper(std::vector<Keyboard::TKeyIdentifier>(kPhysicalControllerCount, key))
             {
                 // Nothing to do here.
             }

@@ -12,10 +12,13 @@
 
 #pragma once
 
+#include "ApiWindows.h"
+
 #include <bitset>
 #include <cstdint>
 #include <cstdlib>
 #include <cstring>
+#include <xinput.h>
 
 
 namespace Xidi
@@ -23,6 +26,11 @@ namespace Xidi
     namespace Controller
     {
         // -------- CONSTANTS ---------------------------------------------- //
+
+        /// Number of physical controllers that the underlying system supports.
+        /// Not all will necessarily be physically present at any given time.
+        /// Maximum allowable controller identifier is one less than this value.
+        inline constexpr DWORD kPhysicalControllerCount = XUSER_MAX_COUNT;
 
         /// Maximum possible reading from an XInput controller's analog stick.
         /// Value taken from XInput documentation.
@@ -50,6 +58,9 @@ namespace Xidi
 
 
         // -------- TYPE DEFINITIONS --------------------------------------- //
+
+        /// Integer type used to identify physical controllers to the underlying system interfaces.
+        typedef decltype(kPhysicalControllerCount) TControllerIdentifier;
 
         /// Enumerates all supported axis types using DirectInput terminology.
         /// It is not necessarily the case that all of these axes are present in a virtual controller. This enumerator just lists all the possible axes.

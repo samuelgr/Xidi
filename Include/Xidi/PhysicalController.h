@@ -13,6 +13,7 @@
 #pragma once
 
 #include "ApiWindows.h"
+#include "ControllerTypes.h"
 
 #include <stop_token>
 #include <xinput.h>
@@ -23,10 +24,6 @@ namespace Xidi
     namespace Controller
     {
         // -------- TYPE DEFINITIONS --------------------------------------- //
-        
-        /// Integer type used to identify physical controllers to the underlying system interfaces.
-        /// XInput controllers are identified by user index, also known as player number.
-        typedef DWORD TControllerIdentifier;
 
         /// Structure used for holding physical controller state data.
         struct SPhysicalState
@@ -48,14 +45,6 @@ namespace Xidi
                 return true;
             }
         };
-
-
-        // -------- CONSTANTS ---------------------------------------------- //
-
-        /// Number of physical controllers that the underlying system supports.
-        /// Not all will necessarily be physically present at any given time, but all of them will be polled periodically.
-        /// Maximum allowable controller identifier is one less than this value.
-        inline constexpr TControllerIdentifier kPhysicalControllerCount = XUSER_MAX_COUNT;
 
 
         // -------- FUNCTIONS ---------------------------------------------- //

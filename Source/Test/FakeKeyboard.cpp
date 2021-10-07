@@ -20,14 +20,14 @@ namespace Xidi
         // -------- FUNCTIONS ---------------------------------------------- //
         // See "Keyboard.h" for documentation.
 
-        void SubmitKeyPressedState(Controller::TControllerIdentifier controllerIdentifier, TVirtualKey virtualKey)
+        void SubmitKeyPressedState(Controller::TControllerIdentifier controllerIdentifier, TKeyIdentifier key)
         {
             // Nothing to do here.
         }
 
         // --------
 
-        void SubmitKeyReleasedState(Controller::TControllerIdentifier controllerIdentifier, TVirtualKey virtualKey)
+        void SubmitKeyReleasedState(Controller::TControllerIdentifier controllerIdentifier, TKeyIdentifier key)
         {
             // Nothing to do here.
         }

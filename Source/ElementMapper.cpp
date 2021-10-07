@@ -14,6 +14,7 @@
 #include "ControllerTypes.h"
 #include "ElementMapper.h"
 #include "Keyboard.h"
+#include "KeyboardTypes.h"
 
 #include <cstdint>
 #include <optional>
@@ -241,30 +242,30 @@ namespace Xidi
 
         void KeyboardMapper::ContributeFromAnalogValue(TControllerIdentifier controllerIdentifier, SState& controllerState, int16_t analogValue) const
         {
-            if ((controllerIdentifier < virtualKeys.size()) && (true == IsAnalogPressed(analogValue)))
-                Keyboard::SubmitKeyPressedState(controllerIdentifier, virtualKeys[controllerIdentifier]);
+            if ((controllerIdentifier < keys.size()) && (true == IsAnalogPressed(analogValue)))
+                Keyboard::SubmitKeyPressedState(controllerIdentifier, keys[controllerIdentifier]);
             else
-                Keyboard::SubmitKeyReleasedState(controllerIdentifier, virtualKeys[controllerIdentifier]);
+                Keyboard::SubmitKeyReleasedState(controllerIdentifier, keys[controllerIdentifier]);
         }
 
         // --------
 
         void KeyboardMapper::ContributeFromButtonValue(TControllerIdentifier controllerIdentifier, SState& controllerState, bool buttonPressed) const
         {
-            if ((controllerIdentifier < virtualKeys.size()) && (true == buttonPressed))
-                Keyboard::SubmitKeyPressedState(controllerIdentifier, virtualKeys[controllerIdentifier]);
+            if ((controllerIdentifier < keys.size()) && (true == buttonPressed))
+                Keyboard::SubmitKeyPressedState(controllerIdentifier, keys[controllerIdentifier]);
             else
-                Keyboard::SubmitKeyReleasedState(controllerIdentifier, virtualKeys[controllerIdentifier]);
+                Keyboard::SubmitKeyReleasedState(controllerIdentifier, keys[controllerIdentifier]);
         }
 
         // --------
 
         void KeyboardMapper::ContributeFromTriggerValue(TControllerIdentifier controllerIdentifier, SState& controllerState, uint8_t triggerValue) const
         {
-            if ((controllerIdentifier < virtualKeys.size()) && (true == IsTriggerPressed(triggerValue)))
-                Keyboard::SubmitKeyPressedState(controllerIdentifier, virtualKeys[controllerIdentifier]);
+            if ((controllerIdentifier < keys.size()) && (true == IsTriggerPressed(triggerValue)))
+                Keyboard::SubmitKeyPressedState(controllerIdentifier, keys[controllerIdentifier]);
             else
-                Keyboard::SubmitKeyReleasedState(controllerIdentifier, virtualKeys[controllerIdentifier]);
+                Keyboard::SubmitKeyReleasedState(controllerIdentifier, keys[controllerIdentifier]);
         }
 
         // --------
