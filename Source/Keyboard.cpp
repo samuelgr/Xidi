@@ -128,8 +128,11 @@ namespace Xidi
         {
             InitializeAndBeginUpdating();
 
-            std::scoped_lock lock(keyboardGuard);
-            nextVirtualKeyboardState[key].Press(controllerIdentifier);
+            if ((key < kVirtualKeyboardKeyCount) && (false == nextVirtualKeyboardState[key].IsPressedBy(controllerIdentifier)))
+            {
+                std::scoped_lock lock(keyboardGuard);
+                nextVirtualKeyboardState[key].Press(controllerIdentifier);
+            }
         }
 
         // --------
@@ -138,8 +141,11 @@ namespace Xidi
         {
             InitializeAndBeginUpdating();
 
-            std::scoped_lock lock(keyboardGuard);
-            nextVirtualKeyboardState[key].Release(controllerIdentifier);
+            if ((key < kVirtualKeyboardKeyCount) && (true == nextVirtualKeyboardState[key].IsPressedBy(controllerIdentifier)))
+            {
+                std::scoped_lock lock(keyboardGuard);
+                nextVirtualKeyboardState[key].Release(controllerIdentifier);
+            }
         }
     }
 }

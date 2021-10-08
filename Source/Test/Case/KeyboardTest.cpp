@@ -57,6 +57,35 @@ namespace XidiTest
         }
     }
 
+    // Verifies more advanced behavior in which a key state object is asked to identify the specific controller from which it derived its pressed state.
+    TEST_CASE(KeyState_State_ControllerSpecificPressed)
+    {
+        for (TControllerIdentifier controllerThatPressedKey = 0; controllerThatPressedKey < kPhysicalControllerCount; ++controllerThatPressedKey)
+        {
+            KeyState state;
+            state.Press(controllerThatPressedKey);
+
+            for (TControllerIdentifier controller = 0; controller < kPhysicalControllerCount; ++controller)
+            {
+                TEST_ASSERT(true == state.IsPressed());
+
+                if (controllerThatPressedKey == controller)
+                    TEST_ASSERT(true == state.IsPressedBy(controller));
+                else
+                    TEST_ASSERT(false == state.IsPressedBy(controller));
+            }
+        }
+    }
+
+    // Verifies that a key state object that is completely unpressed reports that no controllers are contributing a pressed state.
+    TEST_CASE(KeyState_State_ControllerSpecificReleased)
+    {
+        KeyState state;
+
+        for (TControllerIdentifier controller = 0; controller < kPhysicalControllerCount; ++controller)
+            TEST_ASSERT(false == state.IsPressedBy(controller));
+    }
+
     // Verifies error case behavior in which controller identifiers that are out-of-bounds are used to indicate to a key state object that the key should be pressed.
     // These requests are not expected to occur at all, but the object should ignore them if they do.
     TEST_CASE(KeyState_State_OutOfBoundsController)
@@ -69,6 +98,7 @@ namespace XidiTest
         {
             state.Press(controllerIdentifier);
             TEST_ASSERT(false == state.IsPressed());
+            TEST_ASSERT(false == state.IsPressedBy(controllerIdentifier));
         }
     }
 

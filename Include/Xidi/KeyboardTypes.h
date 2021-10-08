@@ -69,6 +69,13 @@ namespace Xidi
                 return controllerContributions.any();
             }
 
+            /// Retrieves and returns the current pressed state of this keyboard key based on contributions specifically from the specified controller.
+            /// @return `true` if the specified controller has the key pressed, `false` if not.
+            inline bool IsPressedBy(Controller::TControllerIdentifier controllerIdentifier) const
+            {
+                return ((controllerIdentifier < controllerContributions.size()) && (controllerContributions.test(controllerIdentifier)));
+            }
+
             /// Computes the transition that took place from a previous keyboard key state to this one.
             /// @return Corresponding enumerator that represents a state change that may have occurred.
             inline EKeyTransition GetTransitionFrom(const KeyState& previousState) const

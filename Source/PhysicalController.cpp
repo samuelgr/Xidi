@@ -154,7 +154,7 @@ namespace Xidi
                         timeResult = ImportApiWinMM::timeBeginPeriod(timeCaps.wPeriodMin);
 
                         if (MMSYSERR_NOERROR == timeResult)
-                            Message::OutputFormatted(Message::ESeverity::Info, L"Set the system timer resolution to %u ms. Desired polling period is %u ms.", timeCaps.wPeriodMin, kPollingPeriodMilliseconds);
+                            Message::OutputFormatted(Message::ESeverity::Info, L"Set the system timer resolution to %u ms.", timeCaps.wPeriodMin);
                         else
                             Message::OutputFormatted(Message::ESeverity::Warning, L"Failed with code %u to set the system timer resolution.", timeResult);
                     }
@@ -165,12 +165,16 @@ namespace Xidi
 
                     // Create and start the polling thread.
                     pollingThread = std::thread(PollForPhysicalControllerStateChanges);
+                    Message::OutputFormatted(Message::ESeverity::Info, L"Initialized the physical controller state polling thread. Desired polling period is %u ms.", kPollingPeriodMilliseconds);
 
                     // No point monitoring physical controllers for hardware status changes if none of the messages will actually be delivered as output.
                     if (Message::WillOutputMessageOfSeverity(Message::ESeverity::Warning))
                     {
                         for (auto controllerIdentifier = 0; controllerIdentifier < _countof(physicalControllerState); ++controllerIdentifier)
+                        {
                             monitoringStatusThread[controllerIdentifier] = std::thread(MonitorPhysicalControllerStatus, controllerIdentifier);
+                            Message::OutputFormatted(Message::ESeverity::Info, L"Initialized the physical controller hardware status monitoring thread for controller %u.", (unsigned int)(1 + controllerIdentifier));
+                        }
                     }
                 }
             );
