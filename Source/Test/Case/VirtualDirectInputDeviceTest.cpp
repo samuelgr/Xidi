@@ -111,7 +111,7 @@ namespace XidiTest
     }
 
 
-    // -------- INTERNAL CONSTANTS ----------------------------------------- //
+    // -------- INTERNAL FUNCTIONS ----------------------------------------- //
 
     /// Applies all of the buffered events in the specified array of events to the specified test data packet structure.
     /// In doing so, ensures sequence numbers are monotonic.

@@ -18,6 +18,7 @@
 #include <cstdint>
 #include <cstdlib>
 #include <cstring>
+#include <type_traits>
 #include <xinput.h>
 
 
@@ -60,7 +61,7 @@ namespace Xidi
         // -------- TYPE DEFINITIONS --------------------------------------- //
 
         /// Integer type used to identify physical controllers to the underlying system interfaces.
-        typedef decltype(kPhysicalControllerCount) TControllerIdentifier;
+        typedef std::remove_const_t<decltype(kPhysicalControllerCount)> TControllerIdentifier;
 
         /// Enumerates all supported axis types using DirectInput terminology.
         /// It is not necessarily the case that all of these axes are present in a virtual controller. This enumerator just lists all the possible axes.
