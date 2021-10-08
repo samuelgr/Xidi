@@ -74,6 +74,11 @@ If the input source is an analog or trigger value, the displacement from neutral
 If the input source is a button value, the output button state is the same as the input.
 
 
+##### KeyboardMapper
+
+Behavior is very similar to ButtonMapper in terms of the logic. However, instead of contributing to a virtual controller button press, this type of mapper simulates a key press on the system keyboard. Keys are identified by DirectInput scan code, which are listed as `DIK_*` constants in the file `dinput.h`.
+
+
 ##### PovMapper
 
 This type of element mapper writes its output to the virtual controller's POV hat. One or two POV directions can be specified: the first is the *positive* direction and the optional second is the *negative* direction. Xidi internally treats each POV direction as its own individual digital button, so all contributions to POV directions are aggregated using logical or.
@@ -135,6 +140,8 @@ Source code documentation is available and can be built using Doxygen. This sect
 **Globals** holds miscellaneous global values and provides methods for accessing them. Examples include the specified import library paths from the configuration file and the internal system-defined instance handle used to refer specifically to the Xidi library.
 
 **ImportApiDirectInput** and **ImportApiWinMM** hold the addresses of all functions imported from either the system-supplied or user-overridden DirectInput and WinMM libraries. Other classes may call methods defined by these classes to invoke imported functions. The import tables are lazily initialized on first access. If an imported function is called that was missing from the originally-loaded library, these classes intentionally cause the program to crash by invoking a function using a `NULL` pointer. If logging is enabled, a message is logged indicating the problematic function.
+
+**Keyboard** tracks virtual keyboard state as reported by any `KeyboardMapper` objects that may exist. It maintains state information for each key on the virtual keyboard and periodically submits keyboard events to the system using the `SendInput` Windows API function.
 
 **Log** implements all functionality related to logging. It accepts configuration settings regarding the minimum required severity, determines which log messages to output and which to ignore, creates the log file when needed, flushes it on program termination, and handles all output to it. Various ways of generating log messages are also implemented, including specifying a string directly or loading a string from a resource embedded in the binary. String generation is separated from file output because in the future it may be desirable to support logging to somewhere other than a file, such as to a graphical interface via inter-process communciation.
 
