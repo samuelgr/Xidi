@@ -90,6 +90,9 @@
     <ClInclude Include="Include\Xidi\KeyboardTypes.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="Include\Xidi\Test\MockKeyboard.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Source\Test\Harness.cpp">
@@ -179,10 +182,13 @@
     <ClCompile Include="Source\Test\MockPhysicalController.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="Source\Test\FakeKeyboard.cpp">
+    <ClCompile Include="Source\Test\MockKeyboard.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="Source\Test\Case\KeyboardTest.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\Test\Case\KeyboardMapperTest.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

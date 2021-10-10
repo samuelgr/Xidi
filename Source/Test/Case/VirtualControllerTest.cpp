@@ -20,7 +20,6 @@
 #include <cmath>
 #include <cstdint>
 #include <deque>
-#include <initializer_list>
 #include <memory>
 #include <optional>
 #include <xinput.h>
@@ -36,7 +35,6 @@ namespace XidiTest
     using ::Xidi::Controller::EElementType;
     using ::Xidi::Controller::EPovDirection;
     using ::Xidi::Controller::Mapper;
-    using ::Xidi::Controller::MockPhysicalController;
     using ::Xidi::Controller::PovMapper;
     using ::Xidi::Controller::SPhysicalState;
     using ::Xidi::Controller::StateChangeEventBuffer;

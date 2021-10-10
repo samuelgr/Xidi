@@ -60,6 +60,18 @@ namespace Xidi
 
 
         public:
+            // -------- OPERATORS ------------------------------------------ //
+
+            /// Simple check for equality by direct comparison of all contributions to key state.
+            /// Primarily useful during testing.
+            /// @param [in] other Object with which to compare.
+            /// @return `true` if this object is equal to the other object, `false` otherwise.
+            inline bool operator==(const KeyState& other) const
+            {
+                return (other.controllerContributions == controllerContributions);
+            }
+
+
             // -------- INSTANCE METHODS ----------------------------------- //
 
             /// Retrieves and returns the current pressed state of this keyboard key.

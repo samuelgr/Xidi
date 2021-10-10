@@ -397,7 +397,7 @@ namespace Xidi
             /// Used when responding to queries for all settings of a given name across all sections.
             struct SSectionNamePair
             {
-                std::wstring_view section;                                     ///< Name of the section that holds the identified configuration setting.
+                std::wstring_view section;                                  ///< Name of the section that holds the identified configuration setting.
                 const Name& name;                                           ///< Reference to the object that holds all values for the identified configuration setting.
 
                 /// Initialization constructor. Initializes both references.

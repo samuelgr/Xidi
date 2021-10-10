@@ -185,6 +185,7 @@
     <ClInclude Include="Include\Xidi\TemporaryBuffer.h" />
     <ClInclude Include="Include\Xidi\Test\Harness.h" />
     <ClInclude Include="Include\Xidi\Test\MockElementMapper.h" />
+    <ClInclude Include="Include\Xidi\Test\MockKeyboard.h" />
     <ClInclude Include="Include\Xidi\Test\MockPhysicalController.h" />
     <ClInclude Include="Include\Xidi\Test\TestCase.h" />
     <ClInclude Include="Include\Xidi\Test\Utilities.h" />
@@ -211,6 +212,7 @@
     <ClCompile Include="Source\Test\Case\ButtonMapperTest.cpp" />
     <ClCompile Include="Source\Test\Case\DataFormatTest.cpp" />
     <ClCompile Include="Source\Test\Case\DigitalAxisMapperTest.cpp" />
+    <ClCompile Include="Source\Test\Case\KeyboardMapperTest.cpp" />
     <ClCompile Include="Source\Test\Case\KeyboardTest.cpp" />
     <ClCompile Include="Source\Test\Case\MapperTest.cpp" />
     <ClCompile Include="Source\Test\Case\PovMapperTest.cpp" />
@@ -218,7 +220,7 @@
     <ClCompile Include="Source\Test\Case\StateChangeEventBufferTest.cpp" />
     <ClCompile Include="Source\Test\Case\VirtualControllerTest.cpp" />
     <ClCompile Include="Source\Test\Case\VirtualDirectInputDeviceTest.cpp" />
-    <ClCompile Include="Source\Test\FakeKeyboard.cpp" />
+    <ClCompile Include="Source\Test\MockKeyboard.cpp" />
     <ClCompile Include="Source\Test\MockPhysicalController.cpp" />
     <ClCompile Include="Source\Test\Harness.cpp" />
     <ClCompile Include="Source\Test\TestCase.cpp" />

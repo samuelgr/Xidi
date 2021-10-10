@@ -178,24 +178,16 @@ namespace Xidi
         private:
             // -------- INSTANCE VARIABLES --------------------------------- //
 
-            /// Identifies the buttons to which this mapper should contribute in the internal controller state data structure.
-            /// One element per controller identifier.
-            const std::vector<Keyboard::TKeyIdentifier> keys;
+            /// Identifies the keyboard key to which this mapper should contribute on the virtual keyboard.
+            const Keyboard::TKeyIdentifier key;
 
 
         public:
             // -------- CONSTRUCTION AND DESTRUCTION ----------------------- //
 
             /// Initialization constructor.
-            /// Specifies the keyboard keys to which all updates are contributed, one element per controller identifier.
-            inline constexpr KeyboardMapper(std::vector<Keyboard::TKeyIdentifier>&& keys) : IElementMapper(), keys(std::move(keys))
-            {
-                // Nothing to do here.
-            }
-
-            /// Initialization constructor.
-            /// Specifies a single keyboard key to which all updates are contributed.
-            inline constexpr KeyboardMapper(Keyboard::TKeyIdentifier key) : KeyboardMapper(std::vector<Keyboard::TKeyIdentifier>(kPhysicalControllerCount, key))
+            /// Specifies the keyboard key to which to contribute.
+            inline constexpr KeyboardMapper(Keyboard::TKeyIdentifier key) : key(key)
             {
                 // Nothing to do here.
             }
