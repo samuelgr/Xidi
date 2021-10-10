@@ -16,6 +16,8 @@
 #include "TestCase.h"
 
 #include <cstdint>
+#include <memory>
+#include <optional>
 
 
 namespace XidiTest
@@ -33,7 +35,7 @@ namespace XidiTest
 
     // Creates one POV mapper for each possible virtual POV direction and verifies that each correctly identifies its target virtual controller element.
     // Because all POV mappers contribute to the same virutal POV object (one direction per mapper), the element index is always the same.
-    TEST_CASE(PovMapper_GetTargetElement)
+    TEST_CASE(PovMapper_GetTargetElement_Nominal)
     {
         for (int i = 0; i < (int)EPovDirection::Count; ++i)
         {
@@ -41,6 +43,25 @@ namespace XidiTest
             TEST_ASSERT(1 == mapper.GetTargetElementCount());
 
             const std::optional<SElementIdentifier> maybeTargetElement = mapper.GetTargetElementAt(0);
+            TEST_ASSERT(true == maybeTargetElement.has_value());
+
+            const SElementIdentifier targetElement = maybeTargetElement.value();
+            TEST_ASSERT(EElementType::Pov == targetElement.type);
+        }
+    }
+
+    // Creates and then clones one POV mapper for each possible virtual POV direction and verifies that each correctly identifies its target virtual controller element.
+    // Because all POV mappers contribute to the same virutal POV object (one direction per mapper), the element index is always the same.
+    TEST_CASE(PovMapper_GetTargetElement_Clone)
+    {
+        for (int i = 0; i < (int)EPovDirection::Count; ++i)
+        {
+            const PovMapper mapperOriginal((EPovDirection)i);
+            const std::unique_ptr<IElementMapper> mapperClone = mapperOriginal.Clone();
+            TEST_ASSERT(nullptr != dynamic_cast<PovMapper*>(mapperClone.get()));
+            TEST_ASSERT(1 == mapperClone->GetTargetElementCount());
+
+            const std::optional<SElementIdentifier> maybeTargetElement = mapperClone->GetTargetElementAt(0);
             TEST_ASSERT(true == maybeTargetElement.has_value());
 
             const SElementIdentifier targetElement = maybeTargetElement.value();

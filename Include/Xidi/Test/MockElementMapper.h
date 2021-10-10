@@ -94,6 +94,13 @@ namespace XidiTest
 
         // -------- CONCRETE INSTANCE METHODS -------------------------- //
 
+        std::unique_ptr<IElementMapper> Clone(void) const override
+        {
+            return std::make_unique<MockElementMapper>(*this);
+        }
+
+        // --------
+
         void ContributeFromAnalogValue(TControllerIdentifier controllerIdentifier, SState& controllerState, int16_t analogValue) const override
         {
             if (EExpectedSource::Analog != expectedSource)

@@ -16,6 +16,7 @@
 #include "TestCase.h"
 
 #include <cstdint>
+#include <memory>
 #include <optional>
 
 
@@ -39,8 +40,10 @@ namespace XidiTest
 
     // -------- TEST CASES ------------------------------------------------- //
 
-    // Creates one keyboard mapper for each possible keyboard key and verifies that each correctly identifies that it does not map to any virtual controller element.
-    TEST_CASE(KeyboardMapper_GetTargetElement)
+    // Creates one keyboard mapper for each possible keyboard key and verifies two things.
+    // First, verifies that it does not map to any virtual controller element.
+    // Second, verifies that it correctly identifies its target keyboard key.
+    TEST_CASE(KeyboardMapper_GetTargetElement_Nominal)
     {
         for (TKeyIdentifier i = 0; i < kVirtualKeyboardKeyCount; ++i)
         {
@@ -49,6 +52,27 @@ namespace XidiTest
 
             const std::optional<SElementIdentifier> maybeTargetElement = mapper.GetTargetElementAt(0);
             TEST_ASSERT(false == maybeTargetElement.has_value());
+
+            TEST_ASSERT(mapper.GetTargetKey() == i);
+        }
+    }
+
+    // Creates and then clones one keyboard mapper for each possible keyboard key and verifies two things.
+    // First, verifies that it does not map to any virtual controller element.
+    // Second, verifies that it correctly identifies its target keyboard key.
+    TEST_CASE(KeyboardMapper_GetTargetElement_Clone)
+    {
+        for (TKeyIdentifier i = 0; i < kVirtualKeyboardKeyCount; ++i)
+        {
+            const KeyboardMapper mapperOriginal(i);
+            const std::unique_ptr<IElementMapper> mapperClone = mapperOriginal.Clone();
+            TEST_ASSERT(nullptr != dynamic_cast<KeyboardMapper*>(mapperClone.get()));
+            TEST_ASSERT(0 == mapperClone->GetTargetElementCount());
+
+            const std::optional<SElementIdentifier> maybeTargetElement = mapperClone->GetTargetElementAt(0);
+            TEST_ASSERT(false == maybeTargetElement.has_value());
+
+            TEST_ASSERT(dynamic_cast<KeyboardMapper*>(mapperClone.get())->GetTargetKey() == i);
         }
     }
 

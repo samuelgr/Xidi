@@ -18,6 +18,7 @@
 
 #include <cstdint>
 #include <memory>
+#include <optional>
 #include <utility>
 #include <vector>
 
@@ -53,6 +54,27 @@ namespace XidiTest
         for (int i = 0; i < _countof(kUnderlyingElements); ++i)
         {
             const std::optional<SElementIdentifier> maybeTargetElement = mapper.GetTargetElementAt(i);
+            TEST_ASSERT(true == maybeTargetElement.has_value());
+
+            const SElementIdentifier targetElement = maybeTargetElement.value();
+            TEST_ASSERT(kUnderlyingElements[i] == targetElement);
+        }
+    }
+
+    // Creates and then clones one SplitMapper with both positive and negative mappers present.
+    // Verifies correct reporting of the target elements from each.
+    TEST_CASE(SplitMapper_GetTargetElement_Clone)
+    {
+        constexpr SElementIdentifier kUnderlyingElements[] = {{.type = EElementType::Button, .button = EButton::B2}, {.type = EElementType::Button, .button = EButton::B10}};
+
+        const SplitMapper mapperOriginal(std::make_unique<MockElementMapper>(kUnderlyingElements[0]), std::make_unique<MockElementMapper>(kUnderlyingElements[1]));
+        const std::unique_ptr<IElementMapper> mapperClone = mapperOriginal.Clone();
+        TEST_ASSERT(nullptr != dynamic_cast<SplitMapper*>(mapperClone.get()));
+        TEST_ASSERT(_countof(kUnderlyingElements) == mapperClone->GetTargetElementCount());
+
+        for (int i = 0; i < _countof(kUnderlyingElements); ++i)
+        {
+            const std::optional<SElementIdentifier> maybeTargetElement = mapperClone->GetTargetElementAt(i);
             TEST_ASSERT(true == maybeTargetElement.has_value());
 
             const SElementIdentifier targetElement = maybeTargetElement.value();

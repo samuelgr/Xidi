@@ -206,6 +206,17 @@ namespace Xidi
         // -------- CONSTRUCTION AND DESTRUCTION --------------------------- //
         // See "Mapper.h" for documentation.
 
+        Mapper::UElementMap::UElementMap(const UElementMap& other) : named()
+        {
+            for (int i = 0; i < _countof(all); ++i)
+            {
+                if (nullptr != other.all[i])
+                    all[i] = other.all[i]->Clone();
+            }
+        }
+
+        // --------
+
         Mapper::Mapper(const std::wstring_view name, SElementMap&& elements) : elements(std::move(elements)), capabilities(DeriveCapabilitiesFromElementMap(this->elements)), name(name)
         {
             if (false == name.empty())

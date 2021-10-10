@@ -68,7 +68,11 @@ namespace Xidi
 
                 static_assert(sizeof(named) == sizeof(all), "Element map field mismatch.");
 
-                /// Move and conversion constructor.
+                /// Copy constructor.
+                /// Clones each element mapper that is present in the underlying element map.
+                UElementMap(const UElementMap& other);
+
+                /// Move constructor.
                 /// Consumes an element map and promotes it to this dual view.
                 /// @param [in] named Normal element map structure.
                 inline UElementMap(SElementMap&& named) : named(std::move(named))
@@ -150,6 +154,14 @@ namespace Xidi
 
 
             // -------- INSTANCE METHODS ----------------------------------- //
+
+            /// Allocates, constructs, and returns a pointer to a copy of this mapper's element map.
+            /// Useful for dynamically generating new mappers using this mapper as a template.
+            /// @return Smart pointer to a copy of this mapper's element map.
+            inline std::unique_ptr<SElementMap> CloneElementMap(void) const
+            {
+                return std::make_unique<SElementMap>(UElementMap(elements).named);
+            }
 
             /// Retrieves and returns the capabilities of the virtual controller layout implemented by the mapper.
             /// Controller capabilities act as metadata that are used internally and can be presented to applications.

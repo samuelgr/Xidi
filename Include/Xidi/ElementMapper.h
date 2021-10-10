@@ -32,6 +32,10 @@ namespace Xidi
         public:
             // -------- ABSTRACT INSTANCE METHODS -------------------------- //
 
+            /// Allocates, constructs, and returns a pointer to a copy of this element mapper.
+            /// @return Smart pointer to a copy of this element mapper.
+            virtual std::unique_ptr<IElementMapper> Clone(void) const = 0;
+
             /// Calculates the contribution to controller state from a given analog reading in the standard XInput axis range -32768 to +32767.
             /// Contribution is aggregated with anything that already exists in the controller state.
             /// @param [in] controllerIdentifier Identifier of the controller for which an update contribution is being requested.
@@ -95,7 +99,7 @@ namespace Xidi
 
         public:
             // -------- CONSTRUCTION AND DESTRUCTION ----------------------- //
-            
+
             /// Initialization constructor.
             /// Specifies the axis and, optionally, the direction to which this mapper should contribute in the internal controller state data structure.
             inline constexpr AxisMapper(EAxis axis, EDirection direction = EDirection::Both) : IElementMapper(), axis(axis), direction(direction)
@@ -106,6 +110,7 @@ namespace Xidi
 
             // -------- CONCRETE INSTANCE METHODS -------------------------- //
 
+            std::unique_ptr<IElementMapper> Clone(void) const override;
             void ContributeFromAnalogValue(TControllerIdentifier controllerIdentifier, SState& controllerState, int16_t analogValue) const override;
             void ContributeFromButtonValue(TControllerIdentifier controllerIdentifier, SState& controllerState, bool buttonPressed) const override;
             void ContributeFromTriggerValue(TControllerIdentifier controllerIdentifier, SState& controllerState, uint8_t triggerValue) const override;
@@ -139,6 +144,7 @@ namespace Xidi
 
             // -------- CONCRETE INSTANCE METHODS -------------------------- //
 
+            std::unique_ptr<IElementMapper> Clone(void) const override;
             void ContributeFromAnalogValue(TControllerIdentifier controllerIdentifier, SState& controllerState, int16_t analogValue) const override;
             void ContributeFromButtonValue(TControllerIdentifier controllerIdentifier, SState& controllerState, bool buttonPressed) const override;
             void ContributeFromTriggerValue(TControllerIdentifier controllerIdentifier, SState& controllerState, uint8_t triggerValue) const override;
@@ -165,6 +171,7 @@ namespace Xidi
 
             // -------- CONCRETE INSTANCE METHODS -------------------------- //
 
+            std::unique_ptr<IElementMapper> Clone(void) const override;
             void ContributeFromAnalogValue(TControllerIdentifier controllerIdentifier, SState& controllerState, int16_t analogValue) const override;
             void ContributeFromTriggerValue(TControllerIdentifier controllerIdentifier, SState& controllerState, uint8_t triggerValue) const override;
         };
@@ -195,6 +202,18 @@ namespace Xidi
 
             // -------- CONCRETE INSTANCE METHODS -------------------------- //
 
+            /// Retrieves and returns the target keyboard key to which this object contributes.
+            /// Intended for tests.
+            /// @return Target keyboard key identifier.
+            inline Keyboard::TKeyIdentifier GetTargetKey(void) const
+            {
+                return key;
+            }
+
+
+            // -------- CONCRETE INSTANCE METHODS -------------------------- //
+
+            std::unique_ptr<IElementMapper> Clone(void) const override;
             void ContributeFromAnalogValue(TControllerIdentifier controllerIdentifier, SState& controllerState, int16_t analogValue) const override;
             void ContributeFromButtonValue(TControllerIdentifier controllerIdentifier, SState& controllerState, bool buttonPressed) const override;
             void ContributeFromTriggerValue(TControllerIdentifier controllerIdentifier, SState& controllerState, uint8_t triggerValue) const override;
@@ -238,6 +257,7 @@ namespace Xidi
 
             // -------- CONCRETE INSTANCE METHODS -------------------------- //
 
+            std::unique_ptr<IElementMapper> Clone(void) const override;
             void ContributeFromAnalogValue(TControllerIdentifier controllerIdentifier, SState& controllerState, int16_t analogValue) const override;
             void ContributeFromButtonValue(TControllerIdentifier controllerIdentifier, SState& controllerState, bool buttonPressed) const override;
             void ContributeFromTriggerValue(TControllerIdentifier controllerIdentifier, SState& controllerState, uint8_t triggerValue) const override;
@@ -272,9 +292,17 @@ namespace Xidi
                 // Nothing to do here.
             }
 
+            /// Copy constructor.
+            /// Simply clones whichever of the two sub-mappers are present.
+            inline SplitMapper(const SplitMapper& other) : positiveMapper((other.positiveMapper != nullptr) ? other.positiveMapper->Clone() : nullptr), negativeMapper((other.negativeMapper != nullptr) ? other.negativeMapper->Clone() : nullptr)
+            {
+                // Nothing to do here.
+            }
+
 
             // -------- CONCRETE INSTANCE METHODS -------------------------- //
 
+            std::unique_ptr<IElementMapper> Clone(void) const override;
             void ContributeFromAnalogValue(TControllerIdentifier controllerIdentifier, SState& controllerState, int16_t analogValue) const override;
             void ContributeFromButtonValue(TControllerIdentifier controllerIdentifier, SState& controllerState, bool buttonPressed) const override;
             void ContributeFromTriggerValue(TControllerIdentifier controllerIdentifier, SState& controllerState, uint8_t triggerValue) const override;

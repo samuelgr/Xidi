@@ -74,6 +74,13 @@ namespace Xidi
         // -------- CONCRETE INSTANCE METHODS -------------------------- //
         // See "ElementMapper.h" for documentation.
 
+        std::unique_ptr<IElementMapper> AxisMapper::Clone(void) const
+        {
+            return std::make_unique<AxisMapper>(*this);
+        }
+
+        // --------
+
         void AxisMapper::ContributeFromAnalogValue(TControllerIdentifier controllerIdentifier, SState& controllerState, int16_t analogValue) const
         {
             int32_t axisValueToContribute = (int32_t)analogValue;
@@ -163,7 +170,14 @@ namespace Xidi
 
             return SElementIdentifier({.type = EElementType::Axis, .axis = axis});
         }
-        
+
+        // --------
+
+        std::unique_ptr<IElementMapper> ButtonMapper::Clone(void) const
+        {
+            return std::make_unique<ButtonMapper>(*this);
+        }
+
         // --------
 
         void ButtonMapper::ContributeFromAnalogValue(TControllerIdentifier controllerIdentifier, SState& controllerState, int16_t analogValue) const
@@ -204,6 +218,13 @@ namespace Xidi
 
         // --------
 
+        std::unique_ptr<IElementMapper> DigitalAxisMapper::Clone(void) const
+        {
+            return std::make_unique<DigitalAxisMapper>(*this);
+        }
+
+        // --------
+
         void DigitalAxisMapper::ContributeFromAnalogValue(TControllerIdentifier controllerIdentifier, SState& controllerState, int16_t analogValue) const
         {
             int32_t axisValueToContribute = 0;
@@ -236,6 +257,13 @@ namespace Xidi
         void DigitalAxisMapper::ContributeFromTriggerValue(TControllerIdentifier controllerIdentifier, SState& controllerState, uint8_t triggerValue) const
         {
             ContributeFromButtonValue(controllerIdentifier, controllerState, IsTriggerPressed(triggerValue));
+        }
+
+        // --------
+
+        std::unique_ptr<IElementMapper> KeyboardMapper::Clone(void) const
+        {
+            return std::make_unique<KeyboardMapper>(*this);
         }
 
         // --------
@@ -284,6 +312,13 @@ namespace Xidi
 
         // --------
 
+        std::unique_ptr<IElementMapper> PovMapper::Clone(void) const
+        {
+            return std::make_unique<PovMapper>(*this);
+        }
+
+        // --------
+
         void PovMapper::ContributeFromAnalogValue(TControllerIdentifier controllerIdentifier, SState& controllerState, int16_t analogValue) const
         {
             if (true == IsAnalogPressedPositive(analogValue))
@@ -327,6 +362,13 @@ namespace Xidi
                 return std::nullopt;
 
             return SElementIdentifier({.type = EElementType::Pov});
+        }
+
+        // --------
+
+        std::unique_ptr<IElementMapper> SplitMapper::Clone(void) const
+        {
+            return std::make_unique<SplitMapper>(*this);
         }
 
         // --------

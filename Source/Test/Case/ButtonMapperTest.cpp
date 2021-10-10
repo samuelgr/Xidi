@@ -16,6 +16,8 @@
 #include "TestCase.h"
 
 #include <cstdint>
+#include <memory>
+#include <optional>
 
 
 namespace XidiTest
@@ -32,7 +34,7 @@ namespace XidiTest
     // -------- TEST CASES ------------------------------------------------- //
 
     // Creates one button mapper for each possible virtual button and verifies that each correctly identifies its target virtual controller element.
-    TEST_CASE(ButtonMapper_GetTargetElement)
+    TEST_CASE(ButtonMapper_GetTargetElement_Nominal)
     {
         for (int i = 0; i < (int)EButton::Count; ++i)
         {
@@ -40,6 +42,25 @@ namespace XidiTest
             TEST_ASSERT(1 == mapper.GetTargetElementCount());
 
             const std::optional<SElementIdentifier> maybeTargetElement = mapper.GetTargetElementAt(0);
+            TEST_ASSERT(true == maybeTargetElement.has_value());
+
+            const SElementIdentifier targetElement = maybeTargetElement.value();
+            TEST_ASSERT(EElementType::Button == targetElement.type);
+            TEST_ASSERT(i == (int)targetElement.button);
+        }
+    }
+
+    // Creates and then clones one button mapper for each possible virtual button and verifies that each correctly identifies its target virtual controller element.
+    TEST_CASE(ButtonMapper_GetTargetElement_Clone)
+    {
+        for (int i = 0; i < (int)EButton::Count; ++i)
+        {
+            const ButtonMapper mapperOriginal((EButton)i);
+            const std::unique_ptr<IElementMapper> mapperClone = mapperOriginal.Clone();
+            TEST_ASSERT(nullptr != dynamic_cast<ButtonMapper*>(mapperClone.get()));
+            TEST_ASSERT(1 == mapperClone->GetTargetElementCount());
+
+            const std::optional<SElementIdentifier> maybeTargetElement = mapperClone->GetTargetElementAt(0);
             TEST_ASSERT(true == maybeTargetElement.has_value());
 
             const SElementIdentifier targetElement = maybeTargetElement.value();

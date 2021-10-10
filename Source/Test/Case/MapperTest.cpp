@@ -539,6 +539,113 @@ namespace XidiTest
     }
 
 
+    // The following sequence of tests, which together comprise the Clone suite, verify that a cloned element map results in an equivalent map that can be modified.
+    // This is the same as the Capabilities suite using known mappers but with clones.
+
+    // StandardGamepad, a known and documented mapper.
+    // The X and Y axes are removed.
+    TEST_CASE(Mapper_Clone_StandardGamepad)
+    {
+        constexpr SCapabilities kExpectedCapabilities({
+            .axisType = {EAxis::Z, EAxis::RotZ},
+            .numAxes = 2,
+            .numButtons = 12,
+            .hasPov = true
+        });
+
+        std::unique_ptr<Mapper::SElementMap> clonedElementMap = Mapper::GetByName(L"StandardGamepad")->CloneElementMap();
+        clonedElementMap->stickLeftX = nullptr;
+        clonedElementMap->stickLeftY = nullptr;
+
+        const Mapper mapper(std::move(*clonedElementMap));
+        const SCapabilities kActualCapabilities = mapper.GetCapabilities();
+        TEST_ASSERT(kActualCapabilities == kExpectedCapabilities);
+    }
+
+    // DigitalGamepad, a known and documented mapper.
+    // The Z and RotZ axes are removed.
+    TEST_CASE(Mapper_Clone_DigitalGamepad)
+    {
+        constexpr SCapabilities kExpectedCapabilities({
+            .axisType = {EAxis::X, EAxis::Y},
+            .numAxes = 2,
+            .numButtons = 12,
+            .hasPov = false
+        });
+
+        std::unique_ptr<Mapper::SElementMap> clonedElementMap = Mapper::GetByName(L"DigitalGamepad")->CloneElementMap();
+        clonedElementMap->stickRightX = nullptr;
+        clonedElementMap->stickRightY = nullptr;
+
+        const Mapper mapper(std::move(*clonedElementMap));
+        const SCapabilities kActualCapabilities = mapper.GetCapabilities();
+        TEST_ASSERT(kActualCapabilities == kExpectedCapabilities);
+    }
+
+    // ExtendedGamepad, a known and documented mapper.
+    // The RotX and RotY axes are removed.
+    TEST_CASE(Mapper_Clone_ExtendedGamepad)
+    {
+        constexpr SCapabilities kExpectedCapabilities({
+            .axisType = {EAxis::X, EAxis::Y, EAxis::Z, EAxis::RotZ},
+            .numAxes = 4,
+            .numButtons = 10,
+            .hasPov = true
+        });
+
+        std::unique_ptr<Mapper::SElementMap> clonedElementMap = Mapper::GetByName(L"ExtendedGamepad")->CloneElementMap();
+        clonedElementMap->triggerLT = nullptr;
+        clonedElementMap->triggerRT = nullptr;
+
+        const Mapper mapper(std::move(*clonedElementMap));
+        const SCapabilities kActualCapabilities = mapper.GetCapabilities();
+        TEST_ASSERT(kActualCapabilities == kExpectedCapabilities);
+    }
+
+    // XInputNative, a known and documented mapper.
+    // The POV is removed.
+    TEST_CASE(Mapper_Clone_XInputNative)
+    {
+        constexpr SCapabilities kExpectedCapabilities({
+            .axisType = {EAxis::X, EAxis::Y, EAxis::Z, EAxis::RotX, EAxis::RotY, EAxis::RotZ},
+            .numAxes = 6,
+            .numButtons = 10,
+            .hasPov = false
+        });
+
+        std::unique_ptr<Mapper::SElementMap> clonedElementMap = Mapper::GetByName(L"XInputNative")->CloneElementMap();
+        clonedElementMap->dpadUp = nullptr;
+        clonedElementMap->dpadDown = nullptr;
+        clonedElementMap->dpadLeft = nullptr;
+        clonedElementMap->dpadRight = nullptr;
+
+        const Mapper mapper(std::move(*clonedElementMap));
+        const SCapabilities kActualCapabilities = mapper.GetCapabilities();
+        TEST_ASSERT(kActualCapabilities == kExpectedCapabilities);
+    }
+
+    // XInputSharedTriggers, a known and documented mapper.
+    // The Z axis is removed.
+    TEST_CASE(Mapper_Clone_XInputSharedTriggers)
+    {
+        constexpr SCapabilities kExpectedCapabilities({
+            .axisType = {EAxis::X, EAxis::Y, EAxis::RotX, EAxis::RotY},
+            .numAxes = 4,
+            .numButtons = 10,
+            .hasPov = true
+        });
+
+        
+        std::unique_ptr<Mapper::SElementMap> clonedElementMap = Mapper::GetByName(L"XInputSharedTriggers")->CloneElementMap();
+        clonedElementMap->triggerLT = nullptr;
+        clonedElementMap->triggerRT = nullptr; 
+
+        const Mapper mapper(std::move(*clonedElementMap));
+        const SCapabilities kActualCapabilities = mapper.GetCapabilities();
+        TEST_ASSERT(kActualCapabilities == kExpectedCapabilities);
+    }
+
+
     // The following sequence of tests, which together comprise the State suite, verify that a mapper correctly handles certain corner cases when writing to controller state.
     // The formula for each test case body is create an expected controller state, obtain a mapper, ask it to write to a controller state, and finally compare expected and actual states.
     
