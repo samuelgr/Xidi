@@ -73,26 +73,30 @@
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <LinkIncremental>false</LinkIncremental>
     <OutDir>$(SolutionDir)Output\$(Platform)\$(Configuration)\</OutDir>
-    <IntDir>Output\$(Platform)\$(Configuration)\Build\$(ProjectName)\</IntDir>
+    <IntDir>$(SolutionDir)Output\$(Platform)\$(Configuration)\Build\$(ProjectName)\</IntDir>
     <TargetName>$(SolutionName).HookModule.$(PlatformArchitecture)</TargetName>
+    <CustomBuildBeforeTargets>ClCompile</CustomBuildBeforeTargets>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <LinkIncremental>false</LinkIncremental>
     <OutDir>$(SolutionDir)Output\$(Platform)\$(Configuration)\</OutDir>
-    <IntDir>Output\$(Platform)\$(Configuration)\Build\$(ProjectName)\</IntDir>
+    <IntDir>$(SolutionDir)Output\$(Platform)\$(Configuration)\Build\$(ProjectName)\</IntDir>
     <TargetName>$(SolutionName).HookModule.$(PlatformArchitecture)</TargetName>
+    <CustomBuildBeforeTargets>ClCompile</CustomBuildBeforeTargets>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <LinkIncremental>false</LinkIncremental>
     <OutDir>$(SolutionDir)Output\$(Platform)\$(Configuration)\</OutDir>
-    <IntDir>Output\$(Platform)\$(Configuration)\Build\$(ProjectName)\</IntDir>
+    <IntDir>$(SolutionDir)Output\$(Platform)\$(Configuration)\Build\$(ProjectName)\</IntDir>
     <TargetName>$(SolutionName).HookModule.$(PlatformArchitecture)</TargetName>
+    <CustomBuildBeforeTargets>ClCompile</CustomBuildBeforeTargets>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <LinkIncremental>false</LinkIncremental>
     <OutDir>$(SolutionDir)Output\$(Platform)\$(Configuration)\</OutDir>
-    <IntDir>Output\$(Platform)\$(Configuration)\Build\$(ProjectName)\</IntDir>
+    <IntDir>$(SolutionDir)Output\$(Platform)\$(Configuration)\Build\$(ProjectName)\</IntDir>
     <TargetName>$(SolutionName).HookModule.$(PlatformArchitecture)</TargetName>
+    <CustomBuildBeforeTargets>ClCompile</CustomBuildBeforeTargets>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>
@@ -106,7 +110,7 @@
       <SupportJustMyCode>false</SupportJustMyCode>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
       <EnableEnhancedInstructionSet>AdvancedVectorExtensions</EnableEnhancedInstructionSet>
-      <ForcedIncludeFiles>$(ProjectDir)Resources\Version.h;$(ProjectDir)Resources\$(SolutionName).h;$(ProjectDir)Resources\$(ProjectName).h;%(ForcedIncludeFiles)</ForcedIncludeFiles>
+      <ForcedIncludeFiles>$(IntDir)GitVersionInfo.h;$(ProjectDir)Resources\$(SolutionName).h;$(ProjectDir)Resources\$(ProjectName).h;%(ForcedIncludeFiles)</ForcedIncludeFiles>
       <LanguageStandard_C>stdc17</LanguageStandard_C>
     </ClCompile>
     <Link>
@@ -115,6 +119,14 @@
       <AdditionalDependencies>shlwapi.lib;kernel32.lib;user32.lib;gdi32.lib;winspool.lib;comdlg32.lib;advapi32.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;odbc32.lib;odbccp32.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
     <ResourceCompile />
+    <CustomBuildStep>
+      <Command>"$(SolutionDir)GitVersionInfo.bat" "$(IntDir)" debug</Command>
+      <Outputs>$(IntDir)GitVersionInfo.h</Outputs>
+      <Message>Generating Version Information</Message>
+    </CustomBuildStep>
+    <ResourceCompile>
+      <AdditionalIncludeDirectories>$(IntDir)</AdditionalIncludeDirectories>
+    </ResourceCompile>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <ClCompile>
@@ -129,7 +141,7 @@
       <OmitFramePointers>true</OmitFramePointers>
       <WholeProgramOptimization>false</WholeProgramOptimization>
       <EnableEnhancedInstructionSet>AdvancedVectorExtensions</EnableEnhancedInstructionSet>
-      <ForcedIncludeFiles>$(ProjectDir)Resources\Version.h;$(ProjectDir)Resources\$(SolutionName).h;$(ProjectDir)Resources\$(ProjectName).h;%(ForcedIncludeFiles)</ForcedIncludeFiles>
+      <ForcedIncludeFiles>$(IntDir)GitVersionInfo.h;$(ProjectDir)Resources\$(SolutionName).h;$(ProjectDir)Resources\$(ProjectName).h;%(ForcedIncludeFiles)</ForcedIncludeFiles>
       <LanguageStandard_C>stdc17</LanguageStandard_C>
     </ClCompile>
     <Link>
@@ -141,6 +153,14 @@
       <AdditionalDependencies>shlwapi.lib;kernel32.lib;user32.lib;gdi32.lib;winspool.lib;comdlg32.lib;advapi32.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;odbc32.lib;odbccp32.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
     <ResourceCompile />
+    <CustomBuildStep>
+      <Command>"$(SolutionDir)GitVersionInfo.bat" "$(IntDir)"</Command>
+      <Outputs>$(IntDir)GitVersionInfo.h</Outputs>
+      <Message>Generating Version Information</Message>
+    </CustomBuildStep>
+    <ResourceCompile>
+      <AdditionalIncludeDirectories>$(IntDir)</AdditionalIncludeDirectories>
+    </ResourceCompile>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <ClCompile>
@@ -155,7 +175,7 @@
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
       <OmitFramePointers>false</OmitFramePointers>
       <EnableEnhancedInstructionSet>AdvancedVectorExtensions</EnableEnhancedInstructionSet>
-      <ForcedIncludeFiles>$(ProjectDir)Resources\Version.h;$(ProjectDir)Resources\$(SolutionName).h;$(ProjectDir)Resources\$(ProjectName).h;%(ForcedIncludeFiles)</ForcedIncludeFiles>
+      <ForcedIncludeFiles>$(IntDir)GitVersionInfo.h;$(ProjectDir)Resources\$(SolutionName).h;$(ProjectDir)Resources\$(ProjectName).h;%(ForcedIncludeFiles)</ForcedIncludeFiles>
       <LanguageStandard_C>stdc17</LanguageStandard_C>
     </ClCompile>
     <Link>
@@ -164,6 +184,14 @@
       <AdditionalDependencies>shlwapi.lib;kernel32.lib;user32.lib;gdi32.lib;winspool.lib;comdlg32.lib;advapi32.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;odbc32.lib;odbccp32.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
     <ResourceCompile />
+    <CustomBuildStep>
+      <Command>"$(SolutionDir)GitVersionInfo.bat" "$(IntDir)" debug</Command>
+      <Outputs>$(IntDir)GitVersionInfo.h</Outputs>
+      <Message>Generating Version Information</Message>
+    </CustomBuildStep>
+    <ResourceCompile>
+      <AdditionalIncludeDirectories>$(IntDir)</AdditionalIncludeDirectories>
+    </ResourceCompile>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <ClCompile>
@@ -178,7 +206,7 @@
       <OmitFramePointers>true</OmitFramePointers>
       <WholeProgramOptimization>false</WholeProgramOptimization>
       <EnableEnhancedInstructionSet>AdvancedVectorExtensions</EnableEnhancedInstructionSet>
-      <ForcedIncludeFiles>$(ProjectDir)Resources\Version.h;$(ProjectDir)Resources\$(SolutionName).h;$(ProjectDir)Resources\$(ProjectName).h;%(ForcedIncludeFiles)</ForcedIncludeFiles>
+      <ForcedIncludeFiles>$(IntDir)GitVersionInfo.h;$(ProjectDir)Resources\$(SolutionName).h;$(ProjectDir)Resources\$(ProjectName).h;%(ForcedIncludeFiles)</ForcedIncludeFiles>
       <LanguageStandard_C>stdc17</LanguageStandard_C>
     </ClCompile>
     <Link>
@@ -190,6 +218,14 @@
       <AdditionalDependencies>shlwapi.lib;kernel32.lib;user32.lib;gdi32.lib;winspool.lib;comdlg32.lib;advapi32.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;odbc32.lib;odbccp32.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
     <ResourceCompile />
+    <CustomBuildStep>
+      <Command>"$(SolutionDir)GitVersionInfo.bat" "$(IntDir)"</Command>
+      <Outputs>$(IntDir)GitVersionInfo.h</Outputs>
+      <Message>Generating Version Information</Message>
+    </CustomBuildStep>
+    <ResourceCompile>
+      <AdditionalIncludeDirectories>$(IntDir)</AdditionalIncludeDirectories>
+    </ResourceCompile>
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="Source\ApiDirectInput.cpp" />
@@ -221,7 +257,6 @@
     <ClInclude Include="Include\Xidi\TemporaryBuffer.h" />
     <ClInclude Include="Include\Xidi\XidiConfigReader.h" />
     <ClInclude Include="Resources\HookModule.h" />
-    <ClInclude Include="Resources\Version.h" />
     <ClInclude Include="Resources\Xidi.h" />
   </ItemGroup>
   <ItemGroup>

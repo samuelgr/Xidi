@@ -71,22 +71,26 @@
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <LinkIncremental>false</LinkIncremental>
     <OutDir>$(SolutionDir)Output\$(Platform)\$(Configuration)\</OutDir>
-    <IntDir>Output\$(Platform)\$(Configuration)\Build\$(ProjectName)\</IntDir>
+    <IntDir>$(SolutionDir)Output\$(Platform)\$(Configuration)\Build\$(ProjectName)\</IntDir>
+    <CustomBuildBeforeTargets>ClCompile</CustomBuildBeforeTargets>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <LinkIncremental>false</LinkIncremental>
     <OutDir>$(SolutionDir)Output\$(Platform)\$(Configuration)\</OutDir>
-    <IntDir>Output\$(Platform)\$(Configuration)\Build\$(ProjectName)\</IntDir>
+    <IntDir>$(SolutionDir)Output\$(Platform)\$(Configuration)\Build\$(ProjectName)\</IntDir>
+    <CustomBuildBeforeTargets>ClCompile</CustomBuildBeforeTargets>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <LinkIncremental>false</LinkIncremental>
     <OutDir>$(SolutionDir)Output\$(Platform)\$(Configuration)\</OutDir>
-    <IntDir>Output\$(Platform)\$(Configuration)\Build\$(ProjectName)\</IntDir>
+    <IntDir>$(SolutionDir)Output\$(Platform)\$(Configuration)\Build\$(ProjectName)\</IntDir>
+    <CustomBuildBeforeTargets>ClCompile</CustomBuildBeforeTargets>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <LinkIncremental>false</LinkIncremental>
     <OutDir>$(SolutionDir)Output\$(Platform)\$(Configuration)\</OutDir>
-    <IntDir>Output\$(Platform)\$(Configuration)\Build\$(ProjectName)\</IntDir>
+    <IntDir>$(SolutionDir)Output\$(Platform)\$(Configuration)\Build\$(ProjectName)\</IntDir>
+    <CustomBuildBeforeTargets>ClCompile</CustomBuildBeforeTargets>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>
@@ -102,9 +106,17 @@
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
       <Optimization>Disabled</Optimization>
       <EnableEnhancedInstructionSet>AdvancedVectorExtensions</EnableEnhancedInstructionSet>
-      <ForcedIncludeFiles>$(ProjectDir)Resources\Version.h;$(ProjectDir)Resources\$(SolutionName).h;%(ForcedIncludeFiles)</ForcedIncludeFiles>
+      <ForcedIncludeFiles>$(IntDir)GitVersionInfo.h;$(ProjectDir)Resources\$(SolutionName).h;%(ForcedIncludeFiles)</ForcedIncludeFiles>
     </ClCompile>
     <Link />
+    <CustomBuildStep>
+      <Command>"$(SolutionDir)GitVersionInfo.bat" "$(IntDir)" debug</Command>
+      <Outputs>$(IntDir)GitVersionInfo.h</Outputs>
+      <Message>Generating Version Information</Message>
+    </CustomBuildStep>
+    <ResourceCompile>
+      <AdditionalIncludeDirectories>$(IntDir)</AdditionalIncludeDirectories>
+    </ResourceCompile>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <ClCompile>
@@ -120,12 +132,20 @@
       <Optimization>MaxSpeed</Optimization>
       <OmitFramePointers>true</OmitFramePointers>
       <EnableEnhancedInstructionSet>AdvancedVectorExtensions</EnableEnhancedInstructionSet>
-      <ForcedIncludeFiles>$(ProjectDir)Resources\Version.h;$(ProjectDir)Resources\$(SolutionName).h;%(ForcedIncludeFiles)</ForcedIncludeFiles>
+      <ForcedIncludeFiles>$(IntDir)GitVersionInfo.h;$(ProjectDir)Resources\$(SolutionName).h;%(ForcedIncludeFiles)</ForcedIncludeFiles>
     </ClCompile>
     <Link>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
     </Link>
+    <CustomBuildStep>
+      <Command>"$(SolutionDir)GitVersionInfo.bat" "$(IntDir)"</Command>
+      <Outputs>$(IntDir)GitVersionInfo.h</Outputs>
+      <Message>Generating Version Information</Message>
+    </CustomBuildStep>
+    <ResourceCompile>
+      <AdditionalIncludeDirectories>$(IntDir)</AdditionalIncludeDirectories>
+    </ResourceCompile>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <ClCompile>
@@ -142,9 +162,17 @@
       <Optimization>Disabled</Optimization>
       <OmitFramePointers>false</OmitFramePointers>
       <EnableEnhancedInstructionSet>AdvancedVectorExtensions</EnableEnhancedInstructionSet>
-      <ForcedIncludeFiles>$(ProjectDir)Resources\Version.h;$(ProjectDir)Resources\$(SolutionName).h;%(ForcedIncludeFiles)</ForcedIncludeFiles>
+      <ForcedIncludeFiles>$(IntDir)GitVersionInfo.h;$(ProjectDir)Resources\$(SolutionName).h;%(ForcedIncludeFiles)</ForcedIncludeFiles>
     </ClCompile>
     <Link />
+    <CustomBuildStep>
+      <Command>"$(SolutionDir)GitVersionInfo.bat" "$(IntDir)" debug</Command>
+      <Outputs>$(IntDir)GitVersionInfo.h</Outputs>
+      <Message>Generating Version Information</Message>
+    </CustomBuildStep>
+    <ResourceCompile>
+      <AdditionalIncludeDirectories>$(IntDir)</AdditionalIncludeDirectories>
+    </ResourceCompile>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <ClCompile>
@@ -160,12 +188,20 @@
       <Optimization>MaxSpeed</Optimization>
       <OmitFramePointers>true</OmitFramePointers>
       <EnableEnhancedInstructionSet>AdvancedVectorExtensions</EnableEnhancedInstructionSet>
-      <ForcedIncludeFiles>$(ProjectDir)Resources\Version.h;$(ProjectDir)Resources\$(SolutionName).h;%(ForcedIncludeFiles)</ForcedIncludeFiles>
+      <ForcedIncludeFiles>$(IntDir)GitVersionInfo.h;$(ProjectDir)Resources\$(SolutionName).h;%(ForcedIncludeFiles)</ForcedIncludeFiles>
     </ClCompile>
     <Link>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
     </Link>
+    <CustomBuildStep>
+      <Command>"$(SolutionDir)GitVersionInfo.bat" "$(IntDir)"</Command>
+      <Outputs>$(IntDir)GitVersionInfo.h</Outputs>
+      <Message>Generating Version Information</Message>
+    </CustomBuildStep>
+    <ResourceCompile>
+      <AdditionalIncludeDirectories>$(IntDir)</AdditionalIncludeDirectories>
+    </ResourceCompile>
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClInclude Include="Include\Xidi\ApiWindows.h" />
@@ -192,7 +228,6 @@
     <ClInclude Include="Include\Xidi\VirtualController.h" />
     <ClInclude Include="Include\Xidi\VirtualDirectInputDevice.h" />
     <ClInclude Include="Include\Xidi\XidiConfigReader.h" />
-    <ClInclude Include="Resources\Version.h" />
     <ClInclude Include="Resources\Xidi.h" />
   </ItemGroup>
   <ItemGroup>

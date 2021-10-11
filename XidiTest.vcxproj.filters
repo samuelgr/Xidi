@@ -72,9 +72,6 @@
     <ClInclude Include="Include\Xidi\ControllerIdentification.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="Resources\Version.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="Include\Xidi\Test\MockElementMapper.h">
       <Filter>Header Files</Filter>
     </ClInclude>

@@ -46,7 +46,6 @@
     <ClInclude Include="Include\Xidi\VirtualDirectInputDevice.h" />
     <ClInclude Include="Include\Xidi\XidiConfigReader.h" />
     <ClInclude Include="Resources\DInput.h" />
-    <ClInclude Include="Resources\Version.h" />
     <ClInclude Include="Resources\Xidi.h" />
   </ItemGroup>
   <ItemGroup>
@@ -135,31 +134,35 @@
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <OutDir>$(SolutionDir)Output\$(Platform)\$(Configuration)\</OutDir>
-    <IntDir>Output\$(Platform)\$(Configuration)\Build\$(ProjectName)\</IntDir>
+    <IntDir>$(SolutionDir)Output\$(Platform)\$(Configuration)\Build\$(ProjectName)\</IntDir>
     <TargetName>dinput</TargetName>
     <EmbedManifest>false</EmbedManifest>
     <LinkIncremental>false</LinkIncremental>
+    <CustomBuildBeforeTargets>ClCompile</CustomBuildBeforeTargets>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <OutDir>$(SolutionDir)Output\$(Platform)\$(Configuration)\</OutDir>
-    <IntDir>Output\$(Platform)\$(Configuration)\Build\$(ProjectName)\</IntDir>
+    <IntDir>$(SolutionDir)Output\$(Platform)\$(Configuration)\Build\$(ProjectName)\</IntDir>
     <TargetName>dinput</TargetName>
     <EmbedManifest>false</EmbedManifest>
     <LinkIncremental>false</LinkIncremental>
+    <CustomBuildBeforeTargets>ClCompile</CustomBuildBeforeTargets>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <OutDir>$(SolutionDir)Output\$(Platform)\$(Configuration)\</OutDir>
-    <IntDir>Output\$(Platform)\$(Configuration)\Build\$(ProjectName)\</IntDir>
+    <IntDir>$(SolutionDir)Output\$(Platform)\$(Configuration)\Build\$(ProjectName)\</IntDir>
     <TargetName>dinput</TargetName>
     <EmbedManifest>false</EmbedManifest>
     <LinkIncremental>false</LinkIncremental>
+    <CustomBuildBeforeTargets>ClCompile</CustomBuildBeforeTargets>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <OutDir>$(SolutionDir)Output\$(Platform)\$(Configuration)\</OutDir>
-    <IntDir>Output\$(Platform)\$(Configuration)\Build\$(ProjectName)\</IntDir>
+    <IntDir>$(SolutionDir)Output\$(Platform)\$(Configuration)\Build\$(ProjectName)\</IntDir>
     <TargetName>dinput</TargetName>
     <EmbedManifest>false</EmbedManifest>
     <LinkIncremental>false</LinkIncremental>
+    <CustomBuildBeforeTargets>ClCompile</CustomBuildBeforeTargets>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>
@@ -168,7 +171,7 @@
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
       <WarningLevel>Level3</WarningLevel>
       <AdditionalIncludeDirectories>Include\$(SolutionName);$(SolutionDir)ThirdParty\Boost\Files;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
-      <ForcedIncludeFiles>$(ProjectDir)Resources\Version.h;$(ProjectDir)Resources\$(SolutionName).h;$(ProjectDir)Resources\$(ProjectName).h;%(ForcedIncludeFiles)</ForcedIncludeFiles>
+      <ForcedIncludeFiles>$(IntDir)GitVersionInfo.h;$(ProjectDir)Resources\$(SolutionName).h;$(ProjectDir)Resources\$(ProjectName).h;%(ForcedIncludeFiles)</ForcedIncludeFiles>
       <LanguageStandard>stdcpplatest</LanguageStandard>
       <EnableEnhancedInstructionSet>AdvancedVectorExtensions</EnableEnhancedInstructionSet>
       <ConformanceMode>true</ConformanceMode>
@@ -191,6 +194,14 @@
     </ManifestResourceCompile>
     <ResourceCompile />
     <ResourceCompile />
+    <CustomBuildStep>
+      <Outputs>$(IntDir)GitVersionInfo.h</Outputs>
+      <Command>"$(SolutionDir)GitVersionInfo.bat" "$(IntDir)" debug</Command>
+      <Message>Generating Version Information</Message>
+    </CustomBuildStep>
+    <ResourceCompile>
+      <AdditionalIncludeDirectories>$(IntDir)</AdditionalIncludeDirectories>
+    </ResourceCompile>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <ClCompile>
@@ -199,7 +210,7 @@
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
       <WarningLevel>Level3</WarningLevel>
       <AdditionalIncludeDirectories>Include\$(SolutionName);$(SolutionDir)ThirdParty\Boost\Files;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
-      <ForcedIncludeFiles>$(ProjectDir)Resources\Version.h;$(ProjectDir)Resources\$(SolutionName).h;$(ProjectDir)Resources\$(ProjectName).h;%(ForcedIncludeFiles)</ForcedIncludeFiles>
+      <ForcedIncludeFiles>$(IntDir)GitVersionInfo.h;$(ProjectDir)Resources\$(SolutionName).h;$(ProjectDir)Resources\$(ProjectName).h;%(ForcedIncludeFiles)</ForcedIncludeFiles>
       <LanguageStandard>stdcpplatest</LanguageStandard>
       <OmitFramePointers>false</OmitFramePointers>
       <EnableEnhancedInstructionSet>AdvancedVectorExtensions</EnableEnhancedInstructionSet>
@@ -223,6 +234,14 @@
     </ManifestResourceCompile>
     <ResourceCompile />
     <ResourceCompile />
+    <CustomBuildStep>
+      <Outputs>$(IntDir)GitVersionInfo.h</Outputs>
+      <Command>"$(SolutionDir)GitVersionInfo.bat" "$(IntDir)" debug</Command>
+      <Message>Generating Version Information</Message>
+    </CustomBuildStep>
+    <ResourceCompile>
+      <AdditionalIncludeDirectories>$(IntDir)</AdditionalIncludeDirectories>
+    </ResourceCompile>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <ClCompile>
@@ -232,7 +251,7 @@
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
       <WarningLevel>Level3</WarningLevel>
       <AdditionalIncludeDirectories>Include\$(SolutionName);$(SolutionDir)ThirdParty\Boost\Files;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
-      <ForcedIncludeFiles>$(ProjectDir)Resources\Version.h;$(ProjectDir)Resources\$(SolutionName).h;$(ProjectDir)Resources\$(ProjectName).h;%(ForcedIncludeFiles)</ForcedIncludeFiles>
+      <ForcedIncludeFiles>$(IntDir)GitVersionInfo.h;$(ProjectDir)Resources\$(SolutionName).h;$(ProjectDir)Resources\$(ProjectName).h;%(ForcedIncludeFiles)</ForcedIncludeFiles>
       <LanguageStandard>stdcpplatest</LanguageStandard>
       <OmitFramePointers>true</OmitFramePointers>
       <EnableEnhancedInstructionSet>AdvancedVectorExtensions</EnableEnhancedInstructionSet>
@@ -257,6 +276,14 @@
     </ManifestResourceCompile>
     <ResourceCompile />
     <ResourceCompile />
+    <CustomBuildStep>
+      <Outputs>$(IntDir)GitVersionInfo.h</Outputs>
+      <Command>"$(SolutionDir)GitVersionInfo.bat" "$(IntDir)"</Command>
+      <Message>Generating Version Information</Message>
+    </CustomBuildStep>
+    <ResourceCompile>
+      <AdditionalIncludeDirectories>$(IntDir)</AdditionalIncludeDirectories>
+    </ResourceCompile>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <ClCompile>
@@ -266,7 +293,7 @@
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
       <WarningLevel>Level3</WarningLevel>
       <AdditionalIncludeDirectories>Include\$(SolutionName);$(SolutionDir)ThirdParty\Boost\Files;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
-      <ForcedIncludeFiles>$(ProjectDir)Resources\Version.h;$(ProjectDir)Resources\$(SolutionName).h;$(ProjectDir)Resources\$(ProjectName).h;%(ForcedIncludeFiles)</ForcedIncludeFiles>
+      <ForcedIncludeFiles>$(IntDir)GitVersionInfo.h;$(ProjectDir)Resources\$(SolutionName).h;$(ProjectDir)Resources\$(ProjectName).h;%(ForcedIncludeFiles)</ForcedIncludeFiles>
       <LanguageStandard>stdcpplatest</LanguageStandard>
       <OmitFramePointers>true</OmitFramePointers>
       <EnableEnhancedInstructionSet>AdvancedVectorExtensions</EnableEnhancedInstructionSet>
@@ -290,6 +317,14 @@
     </ManifestResourceCompile>
     <ResourceCompile />
     <ResourceCompile />
+    <CustomBuildStep>
+      <Outputs>$(IntDir)GitVersionInfo.h</Outputs>
+      <Command>"$(SolutionDir)GitVersionInfo.bat" "$(IntDir)"</Command>
+      <Message>Generating Version Information</Message>
+    </CustomBuildStep>
+    <ResourceCompile>
+      <AdditionalIncludeDirectories>$(IntDir)</AdditionalIncludeDirectories>
+    </ResourceCompile>
   </ItemDefinitionGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

@@ -87,9 +87,6 @@
     <ClInclude Include="Include\Xidi\ApiXidi.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="Resources\Version.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="Include\Xidi\ImportApiWinMM.h">
       <Filter>Header Files</Filter>
     </ClInclude>

@@ -77,7 +77,7 @@ namespace Xidi
 
             IMetadata::SVersion GetVersion(void) const override
             {
-                return {XIDI_VERSION_STRUCT, Strings::kStrVersion};
+                return {GIT_VERSION_STRUCT, Strings::kStrVersion};
             }
 
             // --------
