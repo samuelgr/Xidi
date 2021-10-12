@@ -43,7 +43,7 @@ if not exist %version_info_file% (
 
 for /f "usebackq tokens=3" %%V in (`findstr GIT_VERSION_STRING %version_info_file%`) do set raw_release_ver=%%~V
 if "%raw_release_ver%"=="" (
-    echo Missing release version!
+    echo Missing release version^^!
     goto :exit
 )
 
@@ -52,13 +52,13 @@ echo Release version:    %raw_release_ver%
 for /f "usebackq" %%V in (`echo %raw_release_ver% ^| findstr ^^[0-9][0-9]*\.[0-9][0-9]*\.[0-9][0-9]*`) do set release_ver=%%~V
 for /f "usebackq" %%V in (`echo %release_ver% ^| findstr unknown`) do set release_ver=
 if "%release_ver%"=="" (
-    echo Invalid release version!
+    echo Invalid release version^^!
     goto :exit
 )
 
 for /f "usebackq" %%V in (`echo %release_ver% ^| findstr dirty`) do set release_is_dirty=true
 if "%release_is_dirty%"=="true" (
-    echo Working directory is dirty!
+    echo Working directory is dirty^^!
     goto :exit
 )
 
@@ -67,7 +67,7 @@ if "%output_dir%"=="" (
     call set output_dir=!output_dir!
 )
 if "%output_dir%"=="" (
-    echo Missing output directory!
+    echo Missing output directory^^!
     goto :exit
 )
 
