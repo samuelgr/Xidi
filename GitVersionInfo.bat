@@ -40,13 +40,21 @@ if %ERRORLEVEL%==0 (
     if not "!merged_release_ver!"=="" (
         for /f "usebackq delims=.- tokens=1" %%V in (`echo !merged_release_ver!`) do set version_major=%%~V
         for /f "usebackq delims=.- tokens=2" %%V in (`echo !merged_release_ver!`) do set version_minor=%%~V
-        for /f "usebackq delims=.- tokens=3" %%V in (`echo !merged_release_ver!`) do set version_patch=%%~V
+        for /f "usebackq delims=.- tokens=3" %%V in (`echo !merged_release_ver!`) do set /a version_patch=%%~V+1
         for /f "usebackq" %%V in (`git rev-list --count v!merged_release_ver!..HEAD`) do set version_commit_distance=%%~V
     ) else (
+        echo No prior version tag could be located. Unable to determine version information.
+
         set version_major=0
         set version_minor=0
         set version_patch=0
         set version_commit_distance=0
+
+        if "!extra_version_tag!"=="" (
+            set extra_version_tag=unknown
+        ) else (
+            set extra_version_tag=unknown.!extra_version_tag!
+        )
     )
 
     if "!version_commit_distance!"=="0" (
@@ -59,19 +67,26 @@ if %ERRORLEVEL%==0 (
     )
     
     if "!is_dirty!"=="yes" (
-        if "%extra_version_tag%"=="" (
+        if "!extra_version_tag!"=="" (
             set extra_version_tag=dirty
         ) else (
-            set extra_version_tag=%extra_version_tag%.dirty
+            set extra_version_tag=!extra_version_tag!.dirty
         )
     )
 ) else (
     echo Git is not installed. Unable to determine version information.
+
     set version_major=0
     set version_minor=0
     set version_patch=0
     set version_commit_distance=0
-    set version_string=!version_major!.!version_minor!.!version_patch!+unknown
+    set version_string=!version_major!.!version_minor!.!version_patch!
+
+    if "%extra_version_tag%"=="" (
+        set extra_version_tag=unknown
+    ) else (
+        set extra_version_tag=unknown.!extra_version_tag!
+    )
 )
 
 if "%extra_version_tag%"=="" (
