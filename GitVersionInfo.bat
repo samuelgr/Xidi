@@ -15,7 +15,8 @@ rem +--------------------------------------------------------------------------
 
 set script_path=%~dp0
 set output_dir=%~f1
-set extra_version_tag=%2
+
+if not "%2"=="" set version_build_metadata=%2.
 
 if "%output_dir%"=="" (
     set output_dir=%script_path%\Output
@@ -40,7 +41,7 @@ if %ERRORLEVEL%==0 (
     if not "!merged_release_ver!"=="" (
         for /f "usebackq delims=.- tokens=1" %%V in (`echo !merged_release_ver!`) do set version_major=%%~V
         for /f "usebackq delims=.- tokens=2" %%V in (`echo !merged_release_ver!`) do set version_minor=%%~V
-        for /f "usebackq delims=.- tokens=3" %%V in (`echo !merged_release_ver!`) do set /a version_patch=%%~V+1
+        for /f "usebackq delims=.- tokens=3" %%V in (`echo !merged_release_ver!`) do set version_patch=%%~V
         for /f "usebackq" %%V in (`git rev-list --count v!merged_release_ver!..HEAD`) do set version_commit_distance=%%~V
     ) else (
         echo No prior version tag could be located. Unable to determine version information.
@@ -49,28 +50,22 @@ if %ERRORLEVEL%==0 (
         set version_minor=0
         set version_patch=0
         set version_commit_distance=0
-
-        if "!extra_version_tag!"=="" (
-            set extra_version_tag=unknown
-        ) else (
-            set extra_version_tag=unknown.!extra_version_tag!
-        )
+        set version_build_metadata=unknown.!version_build_metadata!
     )
 
     if "!version_commit_distance!"=="0" (
         set version_string=!version_major!.!version_minor!.!version_patch!
+        if "!is_dirty!"=="yes" set version_build_metadata=dirty.!version_build_metadata!
     ) else (
         for /f "usebackq tokens=1" %%V in (`git describe --abbrev^=8 --always`) do (
-            set version_string=!version_major!.!version_minor!.!version_patch!-dev.!version_commit_distance!
-            set version_build_metadata=%%~V
-        )
-    )
-    
-    if "!is_dirty!"=="yes" (
-        if "!extra_version_tag!"=="" (
-            set extra_version_tag=dirty
-        ) else (
-            set extra_version_tag=!extra_version_tag!.dirty
+            set /a version_patch_plus_one=!version_patch!+1
+            set version_string=!version_major!.!version_minor!.!version_patch_plus_one!-dev.!version_commit_distance!
+            
+            if "!is_dirty!"=="yes" (
+                set version_build_metadata=%%~V.dirty.!version_build_metadata!
+            ) else (
+                set version_build_metadata=%%~V.!version_build_metadata!
+            )
         )
     )
 ) else (
@@ -81,24 +76,11 @@ if %ERRORLEVEL%==0 (
     set version_patch=0
     set version_commit_distance=0
     set version_string=!version_major!.!version_minor!.!version_patch!
-
-    if "%extra_version_tag%"=="" (
-        set extra_version_tag=unknown
-    ) else (
-        set extra_version_tag=unknown.!extra_version_tag!
-    )
+    set version_build_metadata=unknown.!version_build_metadata!
 )
 
-if "%extra_version_tag%"=="" (
-    if not "%version_build_metadata%"=="" (
-        set version_string=%version_string%+%version_build_metadata%
-    )
-) else (
-    if "%version_build_metadata%"=="" (
-        set version_string=%version_string%+%extra_version_tag%
-    ) else (
-        set version_string=%version_string%+%version_build_metadata%.%extra_version_tag%
-    )
+if not "%version_build_metadata%"=="" (
+    set version_string=%version_string%+%version_build_metadata:~0,-1%
 )
 
 set define_version_major=#define GIT_VERSION_MAJOR %version_major%
