@@ -18,7 +18,7 @@ set output_dir=%~f1
 set extra_version_tag=%2
 
 if "%output_dir%"=="" (
-    set output_dir=%script_path%
+    set output_dir=%script_path%\Output
 )
 
 set output_file=%output_dir%\GitVersionInfo.h
@@ -49,15 +49,21 @@ if %ERRORLEVEL%==0 (
         set version_commit_distance=0
     )
 
-    for /f "usebackq delims=v tokens=1" %%V in (`git tag --list v[0-9]*.[0-9]*.[0-9]* --points-at HEAD`) do set tag_release_ver=%%~V
-    if "!tag_release_ver!"=="" (
-        for /f "usebackq tokens=1" %%V in (`git describe --abbrev^=8 --always`) do set version_string=%%~V
+    if "!version_commit_distance!"=="0" (
+        set version_string=!version_major!.!version_minor!.!version_patch!
     ) else (
-        set version_string=!tag_release_ver!
+        for /f "usebackq tokens=1" %%V in (`git describe --abbrev^=8 --always`) do (
+            set version_string=!version_major!.!version_minor!.!version_patch!-dev.!version_commit_distance!
+            set version_build_metadata=%%~V
+        )
     )
     
     if "!is_dirty!"=="yes" (
-        set version_string=!version_string!-dirty
+        if "%extra_version_tag%"=="" (
+            set extra_version_tag=dirty
+        ) else (
+            set extra_version_tag=%extra_version_tag%.dirty
+        )
     )
 ) else (
     echo Git is not installed. Unable to determine version information.
@@ -65,11 +71,19 @@ if %ERRORLEVEL%==0 (
     set version_minor=0
     set version_patch=0
     set version_commit_distance=0
-    set version_string=unknown
+    set version_string=!version_major!.!version_minor!.!version_patch!+unknown
 )
 
-if not "%extra_version_tag%"=="" (
-    set version_string=%version_string%-%extra_version_tag%
+if "%extra_version_tag%"=="" (
+    if not "%version_build_metadata%"=="" (
+        set version_string=%version_string%+%version_build_metadata%
+    )
+) else (
+    if "%version_build_metadata%"=="" (
+        set version_string=%version_string%+%extra_version_tag%
+    ) else (
+        set version_string=%version_string%+%version_build_metadata%.%extra_version_tag%
+    )
 )
 
 set define_version_major=#define GIT_VERSION_MAJOR %version_major%

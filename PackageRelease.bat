@@ -47,15 +47,16 @@ if "%raw_release_ver%"=="" (
     goto :exit
 )
 
-echo Release version is %raw_release_ver%.
+echo Release version:    %raw_release_ver%
 
 for /f "usebackq" %%V in (`echo %raw_release_ver% ^| findstr ^^[0-9][0-9]*\.[0-9][0-9]*\.[0-9][0-9]*`) do set release_ver=%%~V
+for /f "usebackq" %%V in (`echo %release_ver% ^| findstr unknown`) do set release_ver=
 if "%release_ver%"=="" (
     echo Invalid release version!
     goto :exit
 )
 
-for /f "usebackq" %%V in (`echo %release_ver% ^| findstr \-dirty`) do set release_is_dirty=true
+for /f "usebackq" %%V in (`echo %release_ver% ^| findstr dirty`) do set release_is_dirty=true
 if "%release_is_dirty%"=="true" (
     echo Working directory is dirty!
     goto :exit
@@ -72,7 +73,7 @@ if "%output_dir%"=="" (
 
 set output_dir=%output_dir%\%project_name%-v%release_ver%
 
-echo Creating release of %project_name% in %output_dir%.
+echo Output directory:   %output_dir%
 choice /M "Proceed?"
 if not %ERRORLEVEL%==1 exit /b
 
