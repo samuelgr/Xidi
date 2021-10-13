@@ -33,6 +33,11 @@ namespace Xidi
         public:
             // -------- TYPE DEFINITIONS ----------------------------------- //
 
+            /// Maps from element map index to element mapper object.
+            /// Used within a blueprint to describe the element map to be created when the mapper is built.
+            typedef std::map<unsigned int, std::unique_ptr<IElementMapper>> TElementMapSpec;
+
+
             /// Holds a description about how to build a single mapper object.
             struct SBlueprint
             {
@@ -44,7 +49,7 @@ namespace Xidi
 
                 /// Holds changes to be applied to the template when the mapper is being built.
                 /// For mappers being built from scratch without a template, holds all of the controller element mappers.
-                Mapper::UElementMap deltaFromTemplate;
+                TElementMapSpec changesFromTemplate;
 
                 /// Flag for specifying if an attempt was made to build the mapper described by this blueprint.
                 /// Used to detect dependency cycles due to mappers specifying each other as templates.
@@ -84,6 +89,14 @@ namespace Xidi
             /// @return Pointer to the new mapper object if successful, `nullptr` otherwise.
             const Mapper* Build(std::wstring_view mapperName);
 
+            /// Removes an element mapper from this blueprint's element map specification so it is not applied as a modification to the template when this object is built into a mapper.
+            /// This method will fail if the mapper name does not identify an existing blueprint, if the element string cannot be mapped to a valid XInput controller element, or if no template modification exists for the specified XInput controller element.
+            /// Valid controller element strings are field names for #SElementMap with the first letter capitalized.
+            /// @param [in] mapperName Name that identifies the mapper whose element is being set.
+            /// @param [in] element String that identifies the XInput controller element. Must be null-terminated.
+            /// @return `true` if successful, `false` otherwise.
+            bool ClearBlueprintElementMapper(std::wstring_view mapperName, std::wstring_view element);
+
             /// Creates a new mapper blueprint object with the specified mapper name.
             /// This method will fail if a mapper or mapper blueprint already exists with the specified name.
             /// @param [in] mapperName Name that identifies the mapper to be described by the blueprint.
@@ -95,18 +108,19 @@ namespace Xidi
             /// @return `true` if the mapper name already exists, `false` otherwise.
             bool DoesBlueprintNameExist(std::wstring_view mapperName) const;
 
-            /// Retrieves and returns a read-only pointer to the element map associated with the blueprint for the mapper of the specified name.
+            /// Retrieves and returns a read-only pointer to the element map specification associated with the blueprint for the mapper of the specified name.
             /// Primarily useful for testing.
             /// @param [in] mapperName Name that identifies the mapper described by a possibly-existing blueprint.
             /// @return Pointer to the blueprint's element map if the blueprint exists, or `nullptr` otherwise.
-            const Mapper::UElementMap* GetBlueprintElementMap(std::wstring_view mapperName) const;
+            const TElementMapSpec* GetBlueprintElementMapSpec(std::wstring_view mapperName) const;
 
             /// Retrieves and returns the template name associated with the blueprint for the mapper of the specified name.
             /// @param [in] mapperName Name that identifies the mapper described by a possibly-existing blueprint.
             /// @return Template name associated with the blueprint if the blueprint exists.
             std::optional<std::wstring_view> GetBlueprintTemplate(std::wstring_view mapperName) const;
 
-            /// Sets a specific element mapper to be applied as a delta to the template when this object is built into a mapper.
+            /// Sets a specific element mapper to be applied as a modification to the template when this object is built into a mapper.
+            /// If `nullptr` is specified, then the modification to be applied to the template is element mapper removal. Use #ClearBlueprintElementMapper to undo a modification.
             /// This method will fail if the mapper name does not identify an existing blueprint or if the element string cannot be mapped to a valid XInput controller element.
             /// Valid controller element strings are field names for #SElementMap with the first letter capitalized.
             /// @param [in] mapperName Name that identifies the mapper whose element is being set.

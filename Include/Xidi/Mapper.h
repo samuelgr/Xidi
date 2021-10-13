@@ -24,7 +24,7 @@
 // -------- MACROS --------------------------------------------------------- //
 
 /// Computes the index of the specified named controller element in the pointer array of the element map.
-#define ELEMENT_MAP_INDEX_OF(element)       (offsetof(::Xidi::Controller::Mapper::UElementMap, named.##element) / sizeof(::Xidi::Controller::Mapper::UElementMap::all[0]))
+#define ELEMENT_MAP_INDEX_OF(element)       ((unsigned int)(offsetof(::Xidi::Controller::Mapper::UElementMap, named.##element) / sizeof(::Xidi::Controller::Mapper::UElementMap::all[0])))
 
 
 namespace Xidi

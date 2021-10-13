@@ -157,14 +157,34 @@ namespace Xidi
 
             // Loop through all the changes that the blueprint describes and apply them to the starting point.
             // If the starting point is empty then this is essentially building a new element map from scratch.
-            for (int i = 0; i < _countof(mapperElements.all); ++i)
-            {
-                if (nullptr != blueprint.deltaFromTemplate.all[i])
-                    mapperElements.all[i] = std::move(blueprint.deltaFromTemplate.all[i]);
-            }
+            for (auto& changeFromTemplate : blueprint.changesFromTemplate)
+                mapperElements.all[changeFromTemplate.first] = std::move(changeFromTemplate.second);
 
             Message::OutputFormatted(Message::ESeverity::Info, L"Successfully built mapper %s.", mapperName.data());
             return new Mapper(mapperName, std::move(mapperElements.named));
+        }
+
+        // --------
+
+        bool MapperBuilder::ClearBlueprintElementMapper(std::wstring_view mapperName, std::wstring_view element)
+        {
+            const auto blueprintIter = blueprints.find(mapperName);
+            if (blueprints.end() == blueprintIter)
+                return false;
+
+            const std::optional<unsigned int> kMaybeControllerElementIndex = FindControllerElementIndex(element);
+            if (false == kMaybeControllerElementIndex.has_value())
+                return false;
+
+            const unsigned int kControllerElementIndex = kMaybeControllerElementIndex.value();
+            if (kControllerElementIndex >= _countof(Mapper::UElementMap::all))
+                return false;
+
+            if (false == blueprintIter->second.changesFromTemplate.contains(kControllerElementIndex))
+                return false;
+
+            blueprintIter->second.changesFromTemplate.erase(kControllerElementIndex);
+            return true;
         }
 
         // --------
@@ -186,13 +206,13 @@ namespace Xidi
 
         // --------
 
-        const Mapper::UElementMap* MapperBuilder::GetBlueprintElementMap(std::wstring_view mapperName) const
+        const MapperBuilder::TElementMapSpec* MapperBuilder::GetBlueprintElementMapSpec(std::wstring_view mapperName) const
         {
             const auto blueprintIter = blueprints.find(mapperName);
             if (blueprints.cend() == blueprintIter)
                 return nullptr;
 
-            return &blueprintIter->second.deltaFromTemplate;
+            return &blueprintIter->second.changesFromTemplate;
         }
 
         // --------
@@ -222,7 +242,7 @@ namespace Xidi
             if (kControllerElementIndex >= _countof(Mapper::UElementMap::all))
                 return false;
 
-            blueprintIter->second.deltaFromTemplate.all[kControllerElementIndex] = std::move(elementMapper);
+            blueprintIter->second.changesFromTemplate[kControllerElementIndex] = std::move(elementMapper);
             return true;
         }
 

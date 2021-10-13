@@ -5,9 +5,9 @@
  * Authored by Samuel Grossman
  * Copyright (c) 2016-2021
  *************************************************************************//**
- * @file ButtonMapperTest.cpp
+ * @file KeyboardMapperTest.cpp
  *   Unit tests for controller element mappers that contribute to a virtual
- *   button.
+ *   keyboard key.
  *****************************************************************************/
 
 #include "ElementMapper.h"
