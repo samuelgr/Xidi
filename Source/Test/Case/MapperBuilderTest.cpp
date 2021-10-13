@@ -26,6 +26,67 @@ namespace XidiTest
     using namespace ::Xidi::Controller;
 
 
+    // -------- INTERNAL FUNCTIONS ----------------------------------------- //
+
+    /// Verifies that the two supplied element maps are equivalent to one another and flags a test failure if not.
+    /// Only works for simple element mappers that uniquely target a specific controller element.
+    /// @param [in] kElementMapA One side of the comparison.
+    /// @param [in] kElementMapB Another side of the comparison.
+    static void VerifyElementMapsAreEquivalent(const Mapper::UElementMap& kElementMapA, const Mapper::UElementMap& kElementMapB)
+    {
+        for (int i = 0; i < _countof(kElementMapA.all); ++i)
+        {
+            if (nullptr != kElementMapA.all[i])
+            {
+                TEST_ASSERT(nullptr != kElementMapB.all[i]);
+                TEST_ASSERT(kElementMapB.all[i]->GetTargetElementCount() == kElementMapA.all[i]->GetTargetElementCount());
+
+                for (int j = 0; j < kElementMapA.all[i]->GetTargetElementCount(); ++j)
+                    TEST_ASSERT(kElementMapB.all[i]->GetTargetElementAt(j) == kElementMapA.all[i]->GetTargetElementAt(j));
+            }
+            else
+            {
+                TEST_ASSERT(nullptr == kElementMapB.all[i]);
+            }
+        }
+    }
+
+    /// Verifies that the supplied element map is empty and flags a test failure if not.
+    static void VerifyElementMapIsEmpty(const Mapper::UElementMap& kElementMapToCheck)
+    {
+        for (const auto& elementMapper : kElementMapToCheck.all)
+            TEST_ASSERT(elementMapper == nullptr);
+    }
+
+    /// Verifies that the specified element map matches a test specification.
+    /// Test specification consists of a searchable container holding element map indices, all of which hold an element mapper equivalent to the supplied element mapper.
+    /// Only works for simple element mappers that uniquely target a specific controller element.
+    /// Any element map indices not present in the container are expected to be empty.
+    /// A test failure is flagged if a mismatch is found.
+    /// @tparam StdIndexContainer Standard searchable container type holding the element map indices to check. Any indices less than 0 are ignored.
+    /// @param [in] kElementMapLayout Container holding the element map indices and acting as a layout descriptor.
+    /// @param [in] kElementMapper Element mapper to be used for equivalence checking at each index of the layout descriptor.
+    /// @param [in] kElementMapToCheck Element map object being checked for matching with the spec.
+    template <typename StdIndexContainer> static void VerifyElementMapMatchesSpec(const StdIndexContainer& kElementMapLayout, const IElementMapper& kElementMapper, const Mapper::UElementMap& kElementMapToCheck)
+    {
+        for (int i = 0; i < _countof(kElementMapToCheck.all); ++i)
+        {
+            if (kElementMapLayout.contains(i))
+            {
+                TEST_ASSERT(nullptr != kElementMapToCheck.all[i]);
+                TEST_ASSERT(kElementMapper.GetTargetElementCount() == kElementMapToCheck.all[i]->GetTargetElementCount());
+
+                for (int j = 0; j < kElementMapper.GetTargetElementCount(); ++j)
+                    TEST_ASSERT(kElementMapper.GetTargetElementAt(j) == kElementMapToCheck.all[i]->GetTargetElementAt(j));
+            }
+            else
+            {
+                TEST_ASSERT(nullptr == kElementMapToCheck.all[i]);
+            }
+        }
+    }
+
+
     // -------- TEST CASES ------------------------------------------------- //
 
     // Verifies correct identification of valid controller element strings.
@@ -104,8 +165,7 @@ namespace XidiTest
 
         const Mapper::UElementMap* const kElementMap = builder.GetBlueprintElementMap(kMapperName);
         TEST_ASSERT(nullptr != kElementMap);
-        for (int i = 0; i < _countof(kElementMap->all); ++i)
-            TEST_ASSERT(nullptr == kElementMap->all[i]);
+        VerifyElementMapIsEmpty(*kElementMap);
 
         const std::optional<std::wstring_view> kMaybeTemplateName = builder.GetBlueprintTemplate(kMapperName);
         TEST_ASSERT(true == kMaybeTemplateName.has_value());
@@ -130,22 +190,7 @@ namespace XidiTest
 
         const Mapper::UElementMap* const kElementMap = builder.GetBlueprintElementMap(kMapperName);
         TEST_ASSERT(nullptr != kElementMap);
-        for (int i = 0; i < _countof(kElementMap->all); ++i)
-        {
-            if (kControllerElements.contains(i))
-            {
-                TEST_ASSERT(nullptr != kElementMap->all[i]);
-                TEST_ASSERT(nullptr != dynamic_cast<decltype(kTestElementMapper)*>(kElementMap->all[i].get()));
-                TEST_ASSERT(kTestElementMapper.GetTargetElementCount() == kElementMap->all[i]->GetTargetElementCount());
-
-                for (int j = 0; j < kTestElementMapper.GetTargetElementCount(); ++j)
-                    TEST_ASSERT(kTestElementMapper.GetTargetElementAt(j) == kElementMap->all[i]->GetTargetElementAt(j));
-            }
-            else
-            {
-                TEST_ASSERT(nullptr == kElementMap->all[i]);
-            }
-        }
+        VerifyElementMapMatchesSpec(kControllerElements, kTestElementMapper, *kElementMap);
     }
 
     // Verifies that element mappers can be set with some being valid and some being invalid.
@@ -172,22 +217,7 @@ namespace XidiTest
 
         const Mapper::UElementMap* const kElementMap = builder.GetBlueprintElementMap(kMapperName);
         TEST_ASSERT(nullptr != kElementMap);
-        for (int i = 0; i < _countof(kElementMap->all); ++i)
-        {
-            if (kControllerElements.contains(i))
-            {
-                TEST_ASSERT(nullptr != kElementMap->all[i]);
-                TEST_ASSERT(nullptr != dynamic_cast<decltype(kTestElementMapper)*>(kElementMap->all[i].get()));
-                TEST_ASSERT(kTestElementMapper.GetTargetElementCount() == kElementMap->all[i]->GetTargetElementCount());
-
-                for (int j = 0; j < kTestElementMapper.GetTargetElementCount(); ++j)
-                    TEST_ASSERT(kTestElementMapper.GetTargetElementAt(j) == kElementMap->all[i]->GetTargetElementAt(j));
-            }
-            else
-            {
-                TEST_ASSERT(nullptr == kElementMap->all[i]);
-            }
-        }
+        VerifyElementMapMatchesSpec(kControllerElements, kTestElementMapper, *kElementMap);
     }
 
     // Verifies that element mappers cannot be set on unknown mappers.
@@ -209,8 +239,7 @@ namespace XidiTest
 
         const Mapper::UElementMap* const kElementMap = builder.GetBlueprintElementMap(kMapperName);
         TEST_ASSERT(nullptr != kElementMap);
-        for (int i = 0; i < _countof(kElementMap->all); ++i)
-            TEST_ASSERT(nullptr == kElementMap->all[i]);
+        VerifyElementMapIsEmpty(*kElementMap);
     }
 
     // Verifies that template names can be set regardless of whether or not they refer to existing mappers, mapper blueprints, or even the mapper blueprint itself.
@@ -249,5 +278,193 @@ namespace XidiTest
 
         TEST_ASSERT(true == builder.GetBlueprintTemplate(kMapperName).has_value());
         TEST_ASSERT(true == builder.GetBlueprintTemplate(kMapperName).value().empty());
+    }
+
+    // Verifies that an empty mapper can be built and registered. This is the trivial case.
+    // Element map is expected to be empty.
+    TEST_CASE(MapperBuilder_Build_NoTemplate_Trivial)
+    {
+        constexpr std::wstring_view kMapperName = L"TestMapper";
+
+        MapperBuilder builder;
+        TEST_ASSERT(true == builder.CreateBlueprint(kMapperName));
+
+        std::unique_ptr<const Mapper> mapper(builder.Build(kMapperName));
+        TEST_ASSERT(nullptr != mapper);
+        TEST_ASSERT(Mapper::GetByName(kMapperName) == mapper.get());
+        VerifyElementMapIsEmpty(mapper->ElementMap());
+    }
+
+    // Verifies that a simple mapper without a template can be built and registered.
+    TEST_CASE(MapperBuilder_Build_NoTemplate_Nominal)
+    {
+        constexpr std::wstring_view kMapperName = L"TestMapper";
+        constexpr ButtonMapper kTestElementMapper(EButton::B15);
+        const std::unordered_map<int, std::wstring_view> kControllerElements = {
+            {ELEMENT_MAP_INDEX_OF(buttonA), L"ButtonA"},
+            {ELEMENT_MAP_INDEX_OF(triggerLT), L"TriggerLT"}
+        };
+
+        MapperBuilder builder;
+        TEST_ASSERT(true == builder.CreateBlueprint(kMapperName));
+
+        for (const auto& controllerElement : kControllerElements)
+            TEST_ASSERT(true == builder.SetBlueprintElementMapper(kMapperName, controllerElement.second, kTestElementMapper.Clone()));
+
+        std::unique_ptr<const Mapper> mapper(builder.Build(kMapperName));
+        TEST_ASSERT(nullptr != mapper);
+        TEST_ASSERT(Mapper::GetByName(kMapperName) == mapper.get());
+        VerifyElementMapMatchesSpec(kControllerElements, kTestElementMapper, mapper->ElementMap());
+    }
+
+    // Verifies that a mapper with a template and no delta can be built and registered.
+    // After build is completed, checks that the element mappers all match.
+    // For this test the template is a known and documented mapper.
+    TEST_CASE(MapperBuilder_Build_Template_NoDelta)
+    {
+        constexpr std::wstring_view kMapperName = L"TestMapper";
+
+        const Mapper* const kTemplateMapper = Mapper::GetByName(L"StandardGamepad");
+        TEST_ASSERT(nullptr != kTemplateMapper);
+
+        MapperBuilder builder;
+        TEST_ASSERT(true == builder.CreateBlueprint(kMapperName));
+        TEST_ASSERT(true == builder.SetBlueprintTemplate(kMapperName, kTemplateMapper->GetName()));
+
+        std::unique_ptr<const Mapper> mapper(builder.Build(kMapperName));
+        TEST_ASSERT(nullptr != mapper);
+        TEST_ASSERT(Mapper::GetByName(kMapperName) == mapper.get());
+
+        VerifyElementMapsAreEquivalent(mapper->ElementMap(), kTemplateMapper->ElementMap());
+    }
+
+    // Verifies that a mapper with a template and some changes applied can be built and registered.
+    // After build is completed, checks that the element mappers all match.
+    // For this test the template is a known and documented mapper, and the changes involve moving the POV entirely to a button.
+    TEST_CASE(Mapper_Build_Template_WithDelta)
+    {
+        constexpr std::wstring_view kMapperName = L"TestMapper";
+        constexpr ButtonMapper kTestElementMapper(EButton::B15);
+        const std::unordered_map<int, std::wstring_view> kControllerElements= {
+            {ELEMENT_MAP_INDEX_OF(dpadUp), L"DpadUp"},
+            {ELEMENT_MAP_INDEX_OF(dpadDown), L"DpadDown"},
+            {ELEMENT_MAP_INDEX_OF(dpadLeft), L"DpadLeft"},
+            {ELEMENT_MAP_INDEX_OF(dpadRight), L"DpadRight"}
+        };
+
+        const Mapper* const kTemplateMapper = Mapper::GetByName(L"StandardGamepad");
+        TEST_ASSERT(nullptr != kTemplateMapper);
+
+        MapperBuilder builder;
+        TEST_ASSERT(true == builder.CreateBlueprint(kMapperName));
+        TEST_ASSERT(true == builder.SetBlueprintTemplate(kMapperName, kTemplateMapper->GetName()));
+
+        Mapper::UElementMap expectedElementMap = kTemplateMapper->CloneElementMap();
+
+        for (const auto& controllerElement: kControllerElements)
+        {
+            expectedElementMap.all[controllerElement.first] = kTestElementMapper.Clone();
+            TEST_ASSERT(true == builder.SetBlueprintElementMapper(kMapperName, controllerElement.second, kTestElementMapper.Clone()));
+        }
+
+        std::unique_ptr<const Mapper> mapper(builder.Build(kMapperName));
+        TEST_ASSERT(nullptr != mapper);
+        TEST_ASSERT(Mapper::GetByName(kMapperName) == mapper.get());
+
+        const Mapper::UElementMap& kActualElementMap = mapper->ElementMap();
+        VerifyElementMapsAreEquivalent(kActualElementMap, expectedElementMap);
+    }
+
+    // Verifies that a mapper fails to be built if it refers to itself as its own template.
+    TEST_CASE(Mapper_Build_Template_SelfReference)
+    {
+        constexpr std::wstring_view kMapperName = L"TestMapper";
+
+        MapperBuilder builder;
+        TEST_ASSERT(true == builder.CreateBlueprint(kMapperName));
+        TEST_ASSERT(true == builder.SetBlueprintTemplate(kMapperName, kMapperName));
+        TEST_ASSERT(nullptr == builder.Build(kMapperName));
+    }
+
+    // Verifies that a mapper fails to be built if it refers to an unkown mapper as its template.
+    TEST_CASE(Mapper_Build_Template_InvalidReference)
+    {
+        constexpr std::wstring_view kMapperName = L"TestMapper";
+        constexpr std::wstring_view kTemplateName = L"UnknownMapper";
+
+        MapperBuilder builder;
+        TEST_ASSERT(true == builder.CreateBlueprint(kMapperName));
+        TEST_ASSERT(true == builder.SetBlueprintTemplate(kMapperName, kTemplateName));
+        TEST_ASSERT(nullptr == builder.Build(kMapperName));
+    }
+
+    // Verifies that mapper build succeeds in the presence of an acyclic chain of template dependencies.
+    // This test will pollute the global mapper registry, so the mapper names are made especially unique.
+    TEST_CASE(Mapper_Build_Template_Chain)
+    {
+        constexpr std::wstring_view kMapperNames[] = {L"TestMapperTemplateChainA", L"TestMapperTemplateChainB", L"TestMapperTemplateChainC", L"TestMapperTemplateChainD", L"TestMapperTemplateChainE", L"TestMapperTemplateChainF", L"TestMapperTemplateChainG"};
+
+        MapperBuilder builder;
+
+        for (int i = 0; i < _countof(kMapperNames); ++i)
+        {
+            const int kNameIndex = i;
+            const int kTemplateIndex = i + 1;
+
+            TEST_ASSERT(true == builder.CreateBlueprint(kMapperNames[kNameIndex]));
+
+            if (kTemplateIndex < _countof(kMapperNames))
+                TEST_ASSERT(true == builder.SetBlueprintTemplate(kMapperNames[kNameIndex], kMapperNames[kTemplateIndex]));
+        }
+
+        TEST_ASSERT(nullptr != builder.Build(kMapperNames[0]));
+        for (const auto kMapperName : kMapperNames)
+            TEST_ASSERT(true == Mapper::IsMapperNameKnown(kMapperName));
+    }
+
+    // Verifies that mapper build succeeds in the presence of an acyclic forking chain of template dependencies.
+    // This test will pollute the global mapper registry with the common dependency mapper, so its name is especially unique.
+    TEST_CASE(Mapper_Build_Template_Fork)
+    {
+        constexpr std::wstring_view kMapperNameCommonDependency = L"TestMapperTemplateForkCommonDep";
+        constexpr std::wstring_view kMapperNames[] = {L"TestMapperA", L"TestMapperB"};
+
+        MapperBuilder builder;
+        TEST_ASSERT(true == builder.CreateBlueprint(kMapperNameCommonDependency));
+
+        for (const auto kMapperName : kMapperNames)
+        {
+            TEST_ASSERT(true == builder.CreateBlueprint(kMapperName));
+            TEST_ASSERT(true == builder.SetBlueprintTemplate(kMapperName, kMapperNameCommonDependency));
+        }
+
+        for (const auto kMapperName : kMapperNames)
+        {
+            std::unique_ptr<const Mapper> mapper(builder.Build(kMapperName));
+            TEST_ASSERT(nullptr != mapper);
+            TEST_ASSERT(Mapper::GetByName(kMapperName) == mapper.get());
+        }
+
+        TEST_ASSERT(true == Mapper::IsMapperNameKnown(kMapperNameCommonDependency));
+    }
+
+    // Verifies that mapper build fails if there is a cycle in the template dependence graph.
+    TEST_CASE(Mapper_Build_Template_Cycle)
+    {
+        constexpr std::wstring_view kMapperNames[] = {L"TestMapperA", L"TestMapperB", L"TestMapperC", L"TestMapperD", L"TestMapperE", L"TestMapperF", L"TestMapperG"};
+
+        MapperBuilder builder;
+
+        for (int i = 0; i < _countof(kMapperNames); ++i)
+        {
+            const int kNameIndex = i;
+            const int kTemplateIndex = (i + 1) % _countof(kMapperNames);
+
+            TEST_ASSERT(true == builder.CreateBlueprint(kMapperNames[kNameIndex]));
+            TEST_ASSERT(true == builder.SetBlueprintTemplate(kMapperNames[kNameIndex], kMapperNames[kTemplateIndex]));
+        }
+
+        for (int i = 0; i < _countof(kMapperNames); ++i)
+            TEST_ASSERT(nullptr == builder.Build(kMapperNames[i]));
     }
 }

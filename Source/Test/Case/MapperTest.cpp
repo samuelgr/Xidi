@@ -553,11 +553,11 @@ namespace XidiTest
             .hasPov = true
         });
 
-        std::unique_ptr<Mapper::SElementMap> clonedElementMap = Mapper::GetByName(L"StandardGamepad")->CloneElementMap();
-        clonedElementMap->stickLeftX = nullptr;
-        clonedElementMap->stickLeftY = nullptr;
+        Mapper::UElementMap clonedElementMap = Mapper::GetByName(L"StandardGamepad")->CloneElementMap();
+        clonedElementMap.named.stickLeftX = nullptr;
+        clonedElementMap.named.stickLeftY = nullptr;
 
-        const Mapper mapper(std::move(*clonedElementMap));
+        const Mapper mapper(std::move(clonedElementMap.named));
         const SCapabilities kActualCapabilities = mapper.GetCapabilities();
         TEST_ASSERT(kActualCapabilities == kExpectedCapabilities);
     }
@@ -573,11 +573,11 @@ namespace XidiTest
             .hasPov = false
         });
 
-        std::unique_ptr<Mapper::SElementMap> clonedElementMap = Mapper::GetByName(L"DigitalGamepad")->CloneElementMap();
-        clonedElementMap->stickRightX = nullptr;
-        clonedElementMap->stickRightY = nullptr;
+        Mapper::UElementMap clonedElementMap = Mapper::GetByName(L"DigitalGamepad")->CloneElementMap();
+        clonedElementMap.named.stickRightX = nullptr;
+        clonedElementMap.named.stickRightY = nullptr;
 
-        const Mapper mapper(std::move(*clonedElementMap));
+        const Mapper mapper(std::move(clonedElementMap.named));
         const SCapabilities kActualCapabilities = mapper.GetCapabilities();
         TEST_ASSERT(kActualCapabilities == kExpectedCapabilities);
     }
@@ -593,11 +593,11 @@ namespace XidiTest
             .hasPov = true
         });
 
-        std::unique_ptr<Mapper::SElementMap> clonedElementMap = Mapper::GetByName(L"ExtendedGamepad")->CloneElementMap();
-        clonedElementMap->triggerLT = nullptr;
-        clonedElementMap->triggerRT = nullptr;
+        Mapper::UElementMap clonedElementMap = Mapper::GetByName(L"ExtendedGamepad")->CloneElementMap();
+        clonedElementMap.named.triggerLT = nullptr;
+        clonedElementMap.named.triggerRT = nullptr;
 
-        const Mapper mapper(std::move(*clonedElementMap));
+        const Mapper mapper(std::move(clonedElementMap.named));
         const SCapabilities kActualCapabilities = mapper.GetCapabilities();
         TEST_ASSERT(kActualCapabilities == kExpectedCapabilities);
     }
@@ -613,13 +613,13 @@ namespace XidiTest
             .hasPov = false
         });
 
-        std::unique_ptr<Mapper::SElementMap> clonedElementMap = Mapper::GetByName(L"XInputNative")->CloneElementMap();
-        clonedElementMap->dpadUp = nullptr;
-        clonedElementMap->dpadDown = nullptr;
-        clonedElementMap->dpadLeft = nullptr;
-        clonedElementMap->dpadRight = nullptr;
+        Mapper::UElementMap clonedElementMap = Mapper::GetByName(L"XInputNative")->CloneElementMap();
+        clonedElementMap.named.dpadUp = nullptr;
+        clonedElementMap.named.dpadDown = nullptr;
+        clonedElementMap.named.dpadLeft = nullptr;
+        clonedElementMap.named.dpadRight = nullptr;
 
-        const Mapper mapper(std::move(*clonedElementMap));
+        const Mapper mapper(std::move(clonedElementMap.named));
         const SCapabilities kActualCapabilities = mapper.GetCapabilities();
         TEST_ASSERT(kActualCapabilities == kExpectedCapabilities);
     }
@@ -636,11 +636,11 @@ namespace XidiTest
         });
 
         
-        std::unique_ptr<Mapper::SElementMap> clonedElementMap = Mapper::GetByName(L"XInputSharedTriggers")->CloneElementMap();
-        clonedElementMap->triggerLT = nullptr;
-        clonedElementMap->triggerRT = nullptr; 
+        Mapper::UElementMap clonedElementMap = Mapper::GetByName(L"XInputSharedTriggers")->CloneElementMap();
+        clonedElementMap.named.triggerLT = nullptr;
+        clonedElementMap.named.triggerRT = nullptr; 
 
-        const Mapper mapper(std::move(*clonedElementMap));
+        const Mapper mapper(std::move(clonedElementMap.named));
         const SCapabilities kActualCapabilities = mapper.GetCapabilities();
         TEST_ASSERT(kActualCapabilities == kExpectedCapabilities);
     }

@@ -46,13 +46,9 @@ namespace Xidi
                 /// For mappers being built from scratch without a template, holds all of the controller element mappers.
                 Mapper::UElementMap deltaFromTemplate;
 
-                /// Flag for specifying if this mapper is currently in the process of being built.
+                /// Flag for specifying if an attempt was made to build the mapper described by this blueprint.
                 /// Used to detect dependency cycles due to mappers specifying each other as templates.
-                bool buildInProgress;
-
-                /// Flag for specifying if the mapper described by this object has already been built successfully.
-                /// Once the mapper described by this object is built, this object is no longer useful.
-                bool buildCompleted;
+                bool buildAttempted;
             };
 
 
@@ -78,6 +74,15 @@ namespace Xidi
             /// Once a build attempt is made on a blueprint, that blueprint can no longer be modified.
             /// @return `true` if successful in building all of them, `false` otherwise.
             bool Build(void);
+
+            /// Attempts to use a blueprint to build a mapper object of the specified name.
+            /// Once a build attempt is made on a blueprint, that blueprint can no longer be modified.
+            /// This method will fail if a mapper already exists with the specified name or if there is a blueprint template issue.
+            /// If this method succeeds, then a mapper object was successfully created and can now be referenced by name.
+            /// Any returned pointers are owned by the internal mapper registry.
+            /// @param [in] mapperName Name that identifies the mapper described by a blueprint.
+            /// @return Pointer to the new mapper object if successful, `nullptr` otherwise.
+            const Mapper* Build(std::wstring_view mapperName);
 
             /// Creates a new mapper blueprint object with the specified mapper name.
             /// This method will fail if a mapper or mapper blueprint already exists with the specified name.

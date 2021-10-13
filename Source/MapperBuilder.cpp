@@ -17,6 +17,7 @@
 #include <map>
 #include <memory>
 #include <string_view>
+#include <vector>
 
 
 namespace Xidi
@@ -80,8 +81,90 @@ namespace Xidi
 
         bool MapperBuilder::Build(void)
         {
-            // TODO
-            return false;
+            for (const auto& blueprintItem : blueprints)
+            {
+                if (true == blueprintItem.second.buildAttempted)
+                    continue;
+
+                if (nullptr == Build(blueprintItem.first))
+                    return false;
+            }
+
+            return true;
+        }
+
+        // --------
+
+        const Mapper* MapperBuilder::Build(std::wstring_view mapperName)
+        {
+            if (false == DoesBlueprintNameExist(mapperName))
+            {
+                Message::OutputFormatted(Message::ESeverity::Error, L"Error while building mapper %s: Unrecognized name.", mapperName.data());
+                return nullptr;
+            }
+
+            if (true == Mapper::IsMapperNameKnown(mapperName))
+            {
+                Message::OutputFormatted(Message::ESeverity::Error, L"Error while building mapper %s: Internal error due to a mapper already existing with this name.", mapperName.data());
+                return nullptr;
+            }
+
+            SBlueprint& blueprint = blueprints.at(mapperName);
+
+            if (true == blueprint.buildAttempted)
+            {
+                // If the build started but was never completed, then this indicates a cycle in the dependency graph, which is an error.
+                Message::OutputFormatted(Message::ESeverity::Error, L"Error while building mapper %s: Cycle detected in the template dependency graph.", mapperName.data());
+                return nullptr;
+            }
+
+            blueprint.buildAttempted = true;
+
+            Mapper::UElementMap mapperElements;
+
+            if (false == blueprint.templateName.empty())
+            {
+                // If a template is specified, then the mapper element starting point comes from an existing mapper object.
+                // If the mapper object named in the template does not exist, try to build it. It is an error if that dependent build operation fails.
+                if (false == Mapper::IsMapperNameKnown(blueprint.templateName))
+                {
+                    Message::OutputFormatted(Message::ESeverity::Info, L"Mapper %s uses mapper %s as a template. Attempting to build it.", mapperName.data(), blueprint.templateName.data());
+                    
+                    if (nullptr == Build(blueprint.templateName))
+                    {
+                        Message::OutputFormatted(Message::ESeverity::Error, L"Error while building mapper %s: Template dependency %s failed to build.", mapperName.data(), blueprint.templateName.data());
+                        return nullptr;
+                    }
+
+                    if (false == Mapper::IsMapperNameKnown(blueprint.templateName))
+                    {
+                        Message::OutputFormatted(Message::ESeverity::Error, L"Error while building mapper %s: Internal error due to successful build of template dependency %s but failure to register the resulting mapper object.", mapperName.data(), blueprint.templateName.data());
+                        return nullptr;
+                    }
+                }
+
+                // Since the template name is known, the registered mapper object should be obtainable.
+                // It is an internal error if this fails.
+                const Mapper* const kTemplateMapper = Mapper::GetByName(blueprint.templateName);
+                if (nullptr == kTemplateMapper)
+                {
+                    Message::OutputFormatted(Message::ESeverity::Error, L"Error while building mapper %s: Internal error due to failure to locate the mapper object for template dependency %s.", mapperName.data(), blueprint.templateName.data());
+                    return nullptr;
+                }
+
+                mapperElements = Mapper::GetByName(blueprint.templateName)->CloneElementMap();
+            }
+
+            // Loop through all the changes that the blueprint describes and apply them to the starting point.
+            // If the starting point is empty then this is essentially building a new element map from scratch.
+            for (int i = 0; i < _countof(mapperElements.all); ++i)
+            {
+                if (nullptr != blueprint.deltaFromTemplate.all[i])
+                    mapperElements.all[i] = std::move(blueprint.deltaFromTemplate.all[i]);
+            }
+
+            Message::OutputFormatted(Message::ESeverity::Info, L"Successfully built mapper %s.", mapperName.data());
+            return new Mapper(mapperName, std::move(mapperElements.named));
         }
 
         // --------

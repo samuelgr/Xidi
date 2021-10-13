@@ -86,8 +86,14 @@ namespace Xidi
                 UElementMap(const UElementMap& other);
 
                 /// Move constructor.
+                /// Consumes the underlying element map from the other object.
+                inline UElementMap(UElementMap&& other) : named(std::move(other.named))
+                {
+                    // Nothing to do here.
+                }
+
+                /// Conversion constructor.
                 /// Consumes an element map and promotes it to this dual view.
-                /// @param [in] named Normal element map structure.
                 inline UElementMap(SElementMap&& named) : named(std::move(named))
                 {
                     // Nothing to do here.
@@ -99,6 +105,14 @@ namespace Xidi
                 {
                     named.~SElementMap();
                 }
+
+                /// Copy assignment operator.
+                /// Clones each underlying element from the other object.
+                UElementMap& operator=(const UElementMap& other);
+
+                /// Move assignment operator.
+                /// Consumes each underlying element from the other object.
+                UElementMap& operator=(UElementMap&& other);
             };
 
         private:
@@ -128,6 +142,11 @@ namespace Xidi
             /// Requires that a unique mapper be specified for each controller element, which in turn becomes owned by this object.
             /// For controller elements that are not used, `nullptr` may be set instead.
             Mapper(SElementMap&& elements);
+
+            /// Default destructor.
+            /// In general, mapper objects should not be destroyed once created.
+            /// However, tests may create mappers as temporaries that end up being destroyed.
+            ~Mapper(void);
 
 
             // -------- CLASS METHODS -------------------------------------- //
@@ -168,12 +187,20 @@ namespace Xidi
 
             // -------- INSTANCE METHODS ----------------------------------- //
 
-            /// Allocates, constructs, and returns a pointer to a copy of this mapper's element map.
+            /// Returns a copy of this mapper's element map.
             /// Useful for dynamically generating new mappers using this mapper as a template.
-            /// @return Smart pointer to a copy of this mapper's element map.
-            inline std::unique_ptr<SElementMap> CloneElementMap(void) const
+            /// @return Copy of this mapper's element map.
+            inline UElementMap CloneElementMap(void) const
             {
-                return std::make_unique<SElementMap>(UElementMap(elements).named);
+                return elements;
+            }
+
+            /// Returns a read-only reference to this mapper's element map.
+            /// Primarily useful for tests.
+            /// @return Read-only reference to this mapper's element map.
+            inline const UElementMap& ElementMap(void) const
+            {
+                return elements;
             }
 
             /// Retrieves and returns the capabilities of the virtual controller layout implemented by the mapper.

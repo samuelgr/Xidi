@@ -97,10 +97,48 @@ namespace Xidi
             /// @param [in] object Corresponding mapper object.
             void RegisterMapper(std::wstring_view name, const Mapper* object)
             {
+                if (true == name.empty())
+                {
+                    Message::Output(Message::ESeverity::Error, L"Internal error due to attempting to register a mapper without a name.");
+                    return;
+                }
+
                 knownMappers[name] = object;
-                
+
                 if (true == defaultMapper.empty())
                     defaultMapper = name;
+            }
+
+            /// Unregisters a mapper object from this registry, if the registration details provided match the contents of the registry.
+            /// @param [in] name Name associated with the mapper.
+            /// @param [in] object Corresponding mapper object.
+            void UnregisterMapper(std::wstring_view name, const Mapper* object)
+            {
+                if (true == name.empty())
+                {
+                    Message::Output(Message::ESeverity::Error, L"Internal error due to attempting to unregister a mapper without a name.");
+                    return;
+                }
+
+                if (defaultMapper == name)
+                {
+                    Message::OutputFormatted(Message::ESeverity::Error, L"Internal error due to attempting to unregister the default mapper %s.", name.data());
+                    return;
+                }
+
+                if (false == knownMappers.contains(name))
+                {
+                    Message::OutputFormatted(Message::ESeverity::Error, L"Internal error due to attempting to unregister unknown mapper %s.", name.data());
+                    return;
+                }
+
+                if (object != knownMappers.at(name))
+                {
+                    Message::OutputFormatted(Message::ESeverity::Error, L"Internal error due to object mismatch while attempting to unregister mapper %s.", name.data());
+                    return;
+                }
+
+                knownMappers.erase(name);
             }
 
             /// Retrieves a pointer to the mapper object that corresponds to the specified name, if it exists.
@@ -228,6 +266,44 @@ namespace Xidi
         Mapper::Mapper(SElementMap&& elements) : Mapper(L"", std::move(elements))
         {
             // Nothing to do here.
+        }
+
+        // --------
+
+        Mapper::~Mapper(void)
+        {
+            if (false == name.empty())
+            {
+                MapperRegistry::GetInstance().UnregisterMapper(name, this);
+                Message::OutputFormatted(Message::ESeverity::Warning, L"Unregistered and destroyed mapper %s.", name.data());
+            }
+        }
+
+
+        // -------- OPERATORS ---------------------------------------------- //
+        // See "Mapper.h" for documentation.
+
+        Mapper::UElementMap& Mapper::UElementMap::operator=(const UElementMap& other)
+        {
+            for (int i = 0; i < _countof(all); ++i)
+            {
+                if (nullptr == other.all[i])
+                    all[i] = nullptr;
+                else
+                    all[i] = other.all[i]->Clone();
+            }
+
+            return *this;
+        }
+
+        // --------
+
+        Mapper::UElementMap& Mapper::UElementMap::operator=(UElementMap&& other)
+        {
+            for (int i = 0; i < _countof(all); ++i)
+                all[i] = std::move(other.all[i]);
+
+            return *this;
         }
 
 
