@@ -40,9 +40,6 @@ namespace Xidi
         // Can safely be used at any time, including to perform static initialization.
         // Views are guaranteed to be null-terminated.
 
-        /// Xidi version string.
-        inline constexpr std::wstring_view kStrVersion = _CRT_WIDE(GIT_VERSION_STRING);
-
         /// Base name of the DirectInput library to import.
         inline constexpr std::wstring_view kStrLibraryNameDirectInput = L"dinput.dll";
 

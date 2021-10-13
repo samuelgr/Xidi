@@ -11,6 +11,8 @@
 
 #pragma once
 
+#include "Globals.h"
+
 #include <cstddef>
 #include <cstdint>
 #include <map>
@@ -58,24 +60,11 @@ namespace Xidi
             XIDI_API_INTERFACE_FOR(Metadata);
 
         public:
-            // -------- TYPE DEFINITIONS --------------------------------------- //
-            
-            /// Version information structure.
-            struct SVersion
-            {
-                uint16_t major;                                             ///< Major version number.
-                uint16_t minor;                                             ///< Minor version number.
-                uint16_t patch;                                             ///< Patch level.
-                uint16_t unused;                                            ///< Currently unused. Present for convenience and alignment with the standard resource version information structure.
-                std::wstring_view versionString;                            ///< String representation of the version information, including any suffixes.
-            };
-
-
             // -------- ABSTRACT INSTANCE METHODS ------------------------------ //
 
             /// Retrieves and returns the version information structure of the running Xidi module.
             /// @return Filled-in version information structure.
-            virtual SVersion GetVersion(void) const = 0;
+            virtual Globals::SVersionInfo GetVersion(void) const = 0;
 
             /// Retrieves and returns a string that identifies the running form of Xidi.
             /// @return String identifying the form of Xidi.

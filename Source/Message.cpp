@@ -316,7 +316,7 @@ namespace Xidi
                 fwprintf_s(logFileHandle, L"%s\n", kLogHeaderSeparator);
                 fwprintf_s(logFileHandle, L"%s Log\n", Strings::kStrProductName.data());
                 fwprintf_s(logFileHandle, L"%s\n", kLogHeaderSeparator);
-                fwprintf_s(logFileHandle, L"Version:   %s\n", Strings::kStrVersion.data());
+                fwprintf_s(logFileHandle, L"Version:   %s\n", Globals::GetVersion().string.data());
                 fwprintf_s(logFileHandle, L"Form:      %s\n", Strings::kStrFormName.data());
                 fwprintf_s(logFileHandle, L"Program:   %s\n", Strings::kStrExecutableCompleteFilename.data());
                 fwprintf_s(logFileHandle, L"PID:       %d\n", Globals::GetCurrentProcessId());

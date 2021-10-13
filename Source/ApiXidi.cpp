@@ -11,6 +11,7 @@
  *****************************************************************************/
 
 #include "ApiXidi.h"
+#include "Globals.h"
 #include "Message.h"
 #include "Strings.h"
 
@@ -75,9 +76,9 @@ namespace Xidi
             // -------- CONCRETE INSTANCE METHODS -------------------------- //
             // See "ApiXidi.h" for documentation.
 
-            IMetadata::SVersion GetVersion(void) const override
+            Globals::SVersionInfo GetVersion(void) const override
             {
-                return {GIT_VERSION_STRUCT, Strings::kStrVersion};
+                return Globals::GetVersion();
             }
 
             // --------
