@@ -21,6 +21,12 @@
 #include <xinput.h>
 
 
+// -------- MACROS --------------------------------------------------------- //
+
+/// Computes the index of the specified named controller element in the pointer array of the element map.
+#define ELEMENT_MAP_INDEX_OF(element)       (offsetof(::Xidi::Controller::Mapper::UElementMap, named.##element) / sizeof(::Xidi::Controller::Mapper::UElementMap::all[0]))
+
+
 namespace Xidi
 {
     namespace Controller
@@ -67,6 +73,13 @@ namespace Xidi
                 std::unique_ptr<const IElementMapper> all[sizeof(SElementMap) / sizeof(std::unique_ptr<const IElementMapper>)];
 
                 static_assert(sizeof(named) == sizeof(all), "Element map field mismatch.");
+
+                /// Default constructor.
+                /// Delegates to the underlying element map.
+                inline UElementMap(void) : named()
+                {
+                    // Nothing to do here.
+                }
 
                 /// Copy constructor.
                 /// Clones each element mapper that is present in the underlying element map.
@@ -122,10 +135,10 @@ namespace Xidi
             /// Dumps information about all registered mappers.
             static void DumpRegisteredMappers(void);
 
-            /// Retrieves and returns a pointer to the mapper object whose type is specified.
+            /// Retrieves and returns a pointer to the mapper object whose name is specified.
             /// Mapper objects are created and managed internally, so this operation does not dynamically allocate or deallocate memory, nor should the caller attempt to free the returned pointer.
-            /// @param [in] mapperName Name of the desired mapper type. Supported values are defined in "Mapper.cpp" as mapper instances.
-            /// @return Pointer to the mapper of specified type, or `nullptr` if said type is unavailable.
+            /// @param [in] mapperName Name of the desired mapper. Supported built-in values are defined in "MapperDefinitions.cpp" as mapper instances, but more could be built and registered at runtime.
+            /// @return Pointer to the mapper of specified name, or `nullptr` if said mapper is unavailable.
             static const Mapper* GetByName(std::wstring_view mapperName);
 
             /// Retrieves and returns a pointer to the mapper object whose type is read from the configuration file.

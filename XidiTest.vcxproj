@@ -214,6 +214,7 @@
     <ClInclude Include="Include\Xidi\Keyboard.h" />
     <ClInclude Include="Include\Xidi\KeyboardTypes.h" />
     <ClInclude Include="Include\Xidi\Mapper.h" />
+    <ClInclude Include="Include\Xidi\MapperBuilder.h" />
     <ClInclude Include="Include\Xidi\Message.h" />
     <ClInclude Include="Include\Xidi\PhysicalController.h" />
     <ClInclude Include="Include\Xidi\StateChangeEventBuffer.h" />
@@ -238,6 +239,7 @@
     <ClCompile Include="Source\ElementMapper.cpp" />
     <ClCompile Include="Source\Globals.cpp" />
     <ClCompile Include="Source\Mapper.cpp" />
+    <ClCompile Include="Source\MapperBuilder.cpp" />
     <ClCompile Include="Source\MapperDefinitions.cpp" />
     <ClCompile Include="Source\Message.cpp" />
     <ClCompile Include="Source\StateChangeEventBuffer.cpp" />
@@ -249,6 +251,7 @@
     <ClCompile Include="Source\Test\Case\DigitalAxisMapperTest.cpp" />
     <ClCompile Include="Source\Test\Case\KeyboardMapperTest.cpp" />
     <ClCompile Include="Source\Test\Case\KeyboardTest.cpp" />
+    <ClCompile Include="Source\Test\Case\MapperBuilderTest.cpp" />
     <ClCompile Include="Source\Test\Case\MapperTest.cpp" />
     <ClCompile Include="Source\Test\Case\PovMapperTest.cpp" />
     <ClCompile Include="Source\Test\Case\SplitMapperTest.cpp" />
