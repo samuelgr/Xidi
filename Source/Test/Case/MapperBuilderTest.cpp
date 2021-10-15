@@ -17,8 +17,8 @@
 
 #include <memory>
 #include <optional>
+#include <set>
 #include <string_view>
-#include <unordered_map>
 
 
 namespace XidiTest
@@ -120,24 +120,6 @@ namespace XidiTest
 
     // -------- TEST CASES ------------------------------------------------- //
 
-    // Verifies correct identification of valid controller element strings.
-    TEST_CASE(MapperBuilder_ControllerElementString_Valid)
-    {
-        constexpr std::wstring_view kControllerElementStrings[] = {L"StickLeftY", L"DpadDown", L"TriggerLT", L"ButtonRB", L"ButtonStart"};
-
-        for (auto controllerElementString : kControllerElementStrings)
-            TEST_ASSERT(true == MapperBuilder::IsControllerElementStringValid(controllerElementString));
-    }
-
-    // Verifies correct identification of invalid controller element strings.
-    TEST_CASE(MapperBuilder_ControllerElementString_Invalid)
-    {
-        constexpr std::wstring_view kControllerElementStrings[] = {L"stickLeftY", L"dpadDown", L"random_string"};
-
-        for (auto controllerElementString : kControllerElementStrings)
-            TEST_ASSERT(false == MapperBuilder::IsControllerElementStringValid(controllerElementString));
-    }
-
     // Verifies that blueprints can be created and successfully identified.
     TEST_CASE(MapperBuilder_BlueprintName_Nominal)
     {
@@ -208,16 +190,13 @@ namespace XidiTest
     {
         constexpr std::wstring_view kMapperName = L"TestMapper";
         constexpr AxisMapper kTestElementMapper(EAxis::X);
-        const std::unordered_map<int, std::wstring_view> kControllerElements = {
-            {ELEMENT_MAP_INDEX_OF(stickLeftY), L"StickLeftY"},
-            {ELEMENT_MAP_INDEX_OF(triggerLT), L"TriggerLT"}
-        };
+        const std::set<int> kControllerElements = {ELEMENT_MAP_INDEX_OF(stickLeftY), ELEMENT_MAP_INDEX_OF(triggerLT)};
 
         MapperBuilder builder;
         TEST_ASSERT(true == builder.CreateBlueprint(kMapperName));
 
-        for (const auto& controllerElement : kControllerElements)
-            TEST_ASSERT(true == builder.SetBlueprintElementMapper(kMapperName, controllerElement.second, kTestElementMapper.Clone()));
+        for (auto controllerElement : kControllerElements)
+            TEST_ASSERT(true == builder.SetBlueprintElementMapper(kMapperName, controllerElement, kTestElementMapper.Clone()));
 
         const MapperBuilder::TElementMapSpec* const kElementMapSpec = builder.GetBlueprintElementMapSpec(kMapperName);
         TEST_ASSERT(nullptr != kElementMapSpec);
@@ -229,18 +208,15 @@ namespace XidiTest
     {
         constexpr std::wstring_view kMapperName = L"TestMapper";
         constexpr AxisMapper kTestElementMapper(EAxis::X);
-        const std::unordered_map<int, std::wstring_view> kControllerElements = {
-            {ELEMENT_MAP_INDEX_OF(stickLeftY), L"StickLeftY"},
-            {ELEMENT_MAP_INDEX_OF(triggerLT), L"TriggerLT"}
-        };
+        const std::set<int> kControllerElements = {ELEMENT_MAP_INDEX_OF(stickLeftY), ELEMENT_MAP_INDEX_OF(triggerLT)};
 
         MapperBuilder builder;
         TEST_ASSERT(true == builder.CreateBlueprint(kMapperName));
 
-        for (const auto& controllerElement : kControllerElements)
+        for (auto controllerElement : kControllerElements)
         {
-            TEST_ASSERT(true == builder.SetBlueprintElementMapper(kMapperName, controllerElement.second, kTestElementMapper.Clone()));
-            TEST_ASSERT(true == builder.ClearBlueprintElementMapper(kMapperName, controllerElement.second));
+            TEST_ASSERT(true == builder.SetBlueprintElementMapper(kMapperName, controllerElement, kTestElementMapper.Clone()));
+            TEST_ASSERT(true == builder.ClearBlueprintElementMapper(kMapperName, controllerElement));
         }
 
         const MapperBuilder::TElementMapSpec* const kElementMapSpec = builder.GetBlueprintElementMapSpec(kMapperName);
@@ -253,19 +229,16 @@ namespace XidiTest
     {
         constexpr std::wstring_view kMapperName = L"TestMapper";
         constexpr AxisMapper kTestElementMapper(EAxis::X);
-        const std::unordered_map<int, std::wstring_view> kControllerElements = {
-            {ELEMENT_MAP_INDEX_OF(stickLeftY), L"StickLeftY"},
-            {ELEMENT_MAP_INDEX_OF(triggerLT), L"TriggerLT"}
-        };
-        constexpr std::wstring_view kControllerElementsToClear[] = {L"StickLeftX", L"StickRightY", L"DpadLeft", L"TriggerRT", L"ButtonBack"};
+        const std::set<int> kControllerElements = {ELEMENT_MAP_INDEX_OF(stickLeftY), ELEMENT_MAP_INDEX_OF(triggerLT)};
+        constexpr int kControllerElementsToClear[] = {ELEMENT_MAP_INDEX_OF(stickLeftX), ELEMENT_MAP_INDEX_OF(stickRightY), ELEMENT_MAP_INDEX_OF(dpadLeft), ELEMENT_MAP_INDEX_OF(triggerRT), ELEMENT_MAP_INDEX_OF(buttonBack)};
 
         MapperBuilder builder;
         TEST_ASSERT(true == builder.CreateBlueprint(kMapperName));
 
-        for (const auto& controllerElement : kControllerElements)
-            TEST_ASSERT(true == builder.SetBlueprintElementMapper(kMapperName, controllerElement.second, kTestElementMapper.Clone()));
+        for (auto controllerElement : kControllerElements)
+            TEST_ASSERT(true == builder.SetBlueprintElementMapper(kMapperName, controllerElement, kTestElementMapper.Clone()));
 
-        for (const auto& controllerElementToClear : kControllerElementsToClear)
+        for (auto controllerElementToClear : kControllerElementsToClear)
             TEST_ASSERT(false == builder.ClearBlueprintElementMapper(kMapperName, controllerElementToClear));
 
         const MapperBuilder::TElementMapSpec* const kElementMapSpec = builder.GetBlueprintElementMapSpec(kMapperName);
@@ -282,18 +255,13 @@ namespace XidiTest
         // Same as above, but with negative indices to indicate invalid controller elements.
         // The condition for successful insertion uses comparison-with-0 to decide whether to expect success or failure.
         // Similarly, the loop that verifies null vs non-null element mappers skips over all indices less than 0.
-        const std::unordered_map<int, std::wstring_view> kControllerElements = {
-            {ELEMENT_MAP_INDEX_OF(stickLeftY), L"StickLeftY"},
-            {-1, L"InvalidControllerElement1"},
-            {ELEMENT_MAP_INDEX_OF(triggerLT), L"TriggerLT"},
-            {-2, L"InvalidControllerElement2"},
-        };
+        const std::set<int> kControllerElements = {ELEMENT_MAP_INDEX_OF(stickLeftY), -1, ELEMENT_MAP_INDEX_OF(triggerLT), -2};
 
         MapperBuilder builder;
         TEST_ASSERT(true == builder.CreateBlueprint(kMapperName));
 
-        for (const auto& controllerElement : kControllerElements)
-            TEST_ASSERT((controllerElement.first >= 0) == builder.SetBlueprintElementMapper(kMapperName, controllerElement.second, kTestElementMapper.Clone()));
+        for (auto controllerElement : kControllerElements)
+            TEST_ASSERT((controllerElement >= 0) == builder.SetBlueprintElementMapper(kMapperName, controllerElement, kTestElementMapper.Clone()));
 
         const MapperBuilder::TElementMapSpec* const kElementMapSpec = builder.GetBlueprintElementMapSpec(kMapperName);
         TEST_ASSERT(nullptr != kElementMapSpec);
@@ -312,7 +280,7 @@ namespace XidiTest
         MapperBuilder builder;
         TEST_ASSERT(true == builder.CreateBlueprint(kMapperName));
 
-        for (const auto& controllerElement : kControllerElements)
+        for (auto controllerElement : kControllerElements)
             TEST_ASSERT(false == builder.SetBlueprintElementMapper(kUnknownMapperName, controllerElement, kTestElementMapper.Clone()));
 
         TEST_ASSERT(nullptr == builder.GetBlueprintElementMapSpec(kUnknownMapperName));
@@ -380,16 +348,13 @@ namespace XidiTest
     {
         constexpr std::wstring_view kMapperName = L"TestMapper";
         constexpr ButtonMapper kTestElementMapper(EButton::B15);
-        const std::unordered_map<int, std::wstring_view> kControllerElements = {
-            {ELEMENT_MAP_INDEX_OF(buttonA), L"ButtonA"},
-            {ELEMENT_MAP_INDEX_OF(triggerLT), L"TriggerLT"}
-        };
+        const std::set<int> kControllerElements = {ELEMENT_MAP_INDEX_OF(buttonA), ELEMENT_MAP_INDEX_OF(triggerLT)};
 
         MapperBuilder builder;
         TEST_ASSERT(true == builder.CreateBlueprint(kMapperName));
 
-        for (const auto& controllerElement : kControllerElements)
-            TEST_ASSERT(true == builder.SetBlueprintElementMapper(kMapperName, controllerElement.second, kTestElementMapper.Clone()));
+        for (auto controllerElement : kControllerElements)
+            TEST_ASSERT(true == builder.SetBlueprintElementMapper(kMapperName, controllerElement, kTestElementMapper.Clone()));
 
         std::unique_ptr<const Mapper> mapper(builder.Build(kMapperName));
         TEST_ASSERT(nullptr != mapper);
@@ -401,16 +366,13 @@ namespace XidiTest
     TEST_CASE(MapperBuilder_Build_NoTemplate_EmptyAfterElementsRemoved)
     {
         constexpr std::wstring_view kMapperName = L"TestMapper";
-        const std::unordered_map<int, std::wstring_view> kControllerElements = {
-            {ELEMENT_MAP_INDEX_OF(buttonA), L"ButtonA"},
-            {ELEMENT_MAP_INDEX_OF(triggerLT), L"TriggerLT"}
-        };
+        const std::set<int> kControllerElements = {ELEMENT_MAP_INDEX_OF(buttonA), ELEMENT_MAP_INDEX_OF(triggerLT)};
 
         MapperBuilder builder;
         TEST_ASSERT(true == builder.CreateBlueprint(kMapperName));
 
-        for (const auto& controllerElement : kControllerElements)
-            TEST_ASSERT(true == builder.SetBlueprintElementMapper(kMapperName, controllerElement.second, nullptr));
+        for (auto controllerElement : kControllerElements)
+            TEST_ASSERT(true == builder.SetBlueprintElementMapper(kMapperName, controllerElement, nullptr));
 
         std::unique_ptr<const Mapper> mapper(builder.Build(kMapperName));
         TEST_ASSERT(nullptr != mapper);
@@ -446,10 +408,7 @@ namespace XidiTest
     {
         constexpr std::wstring_view kMapperName = L"TestMapper";
         constexpr ButtonMapper kTestElementMapper(EButton::B15);
-        const std::unordered_map<int, std::wstring_view> kControllerElements = {
-            {ELEMENT_MAP_INDEX_OF(triggerLT), L"TriggerLT"},
-            {ELEMENT_MAP_INDEX_OF(triggerRT), L"TriggerRT"}
-        };
+        const std::set<int> kControllerElements = {ELEMENT_MAP_INDEX_OF(triggerLT), ELEMENT_MAP_INDEX_OF(triggerRT)};
 
         const Mapper* const kTemplateMapper = Mapper::GetByName(L"StandardGamepad");
         TEST_ASSERT(nullptr != kTemplateMapper);
@@ -460,10 +419,10 @@ namespace XidiTest
 
         Mapper::UElementMap expectedElementMap = kTemplateMapper->CloneElementMap();
 
-        for (const auto& controllerElement : kControllerElements)
+        for (auto controllerElement : kControllerElements)
         {
-            expectedElementMap.all[controllerElement.first] = kTestElementMapper.Clone();
-            TEST_ASSERT(true == builder.SetBlueprintElementMapper(kMapperName, controllerElement.second, kTestElementMapper.Clone()));
+            expectedElementMap.all[controllerElement] = kTestElementMapper.Clone();
+            TEST_ASSERT(true == builder.SetBlueprintElementMapper(kMapperName, controllerElement, kTestElementMapper.Clone()));
         }
 
         std::unique_ptr<const Mapper> mapper(builder.Build(kMapperName));
@@ -480,12 +439,7 @@ namespace XidiTest
     TEST_CASE(Mapper_Build_Template_WithRemoval)
     {
         constexpr std::wstring_view kMapperName = L"TestMapper";
-        const std::unordered_map<int, std::wstring_view> kControllerElements= {
-            {ELEMENT_MAP_INDEX_OF(dpadUp), L"DpadUp"},
-            {ELEMENT_MAP_INDEX_OF(dpadDown), L"DpadDown"},
-            {ELEMENT_MAP_INDEX_OF(dpadLeft), L"DpadLeft"},
-            {ELEMENT_MAP_INDEX_OF(dpadRight), L"DpadRight"}
-        };
+        const std::set<int> kControllerElements= {ELEMENT_MAP_INDEX_OF(dpadUp), ELEMENT_MAP_INDEX_OF(dpadDown), ELEMENT_MAP_INDEX_OF(dpadLeft), ELEMENT_MAP_INDEX_OF(dpadRight)};
 
         const Mapper* const kTemplateMapper = Mapper::GetByName(L"StandardGamepad");
         TEST_ASSERT(nullptr != kTemplateMapper);
@@ -496,10 +450,10 @@ namespace XidiTest
 
         Mapper::UElementMap expectedElementMap = kTemplateMapper->CloneElementMap();
 
-        for (const auto& controllerElement: kControllerElements)
+        for (auto controllerElement: kControllerElements)
         {
-            expectedElementMap.all[controllerElement.first] = nullptr;
-            TEST_ASSERT(true == builder.SetBlueprintElementMapper(kMapperName, controllerElement.second, nullptr));
+            expectedElementMap.all[controllerElement] = nullptr;
+            TEST_ASSERT(true == builder.SetBlueprintElementMapper(kMapperName, controllerElement, nullptr));
         }
 
         std::unique_ptr<const Mapper> mapper(builder.Build(kMapperName));
@@ -517,12 +471,7 @@ namespace XidiTest
     TEST_CASE(MapperBuilder_Build_Template_WithClearedModifications)
     {
         constexpr std::wstring_view kMapperName = L"TestMapper";
-        const std::unordered_map<int, std::wstring_view> kControllerElements = {
-           {ELEMENT_MAP_INDEX_OF(dpadUp), L"DpadUp"},
-           {ELEMENT_MAP_INDEX_OF(dpadDown), L"DpadDown"},
-           {ELEMENT_MAP_INDEX_OF(dpadLeft), L"DpadLeft"},
-           {ELEMENT_MAP_INDEX_OF(dpadRight), L"DpadRight"}
-        };
+        const std::set<int> kControllerElements = {ELEMENT_MAP_INDEX_OF(dpadUp), ELEMENT_MAP_INDEX_OF(dpadDown), ELEMENT_MAP_INDEX_OF(dpadLeft), ELEMENT_MAP_INDEX_OF(dpadRight)};
 
         const Mapper* const kTemplateMapper = Mapper::GetByName(L"StandardGamepad");
         TEST_ASSERT(nullptr != kTemplateMapper);
@@ -531,11 +480,11 @@ namespace XidiTest
         TEST_ASSERT(true == builder.CreateBlueprint(kMapperName));
         TEST_ASSERT(true == builder.SetBlueprintTemplate(kMapperName, kTemplateMapper->GetName()));
 
-        for (const auto& controllerElement : kControllerElements)
-            TEST_ASSERT(true == builder.SetBlueprintElementMapper(kMapperName, controllerElement.second, nullptr));
+        for (auto controllerElement : kControllerElements)
+            TEST_ASSERT(true == builder.SetBlueprintElementMapper(kMapperName, controllerElement, nullptr));
 
-        for (const auto& controllerElement : kControllerElements)
-            TEST_ASSERT(true == builder.ClearBlueprintElementMapper(kMapperName, controllerElement.second));
+        for (auto controllerElement : kControllerElements)
+            TEST_ASSERT(true == builder.ClearBlueprintElementMapper(kMapperName, controllerElement));
 
         std::unique_ptr<const Mapper> mapper(builder.Build(kMapperName));
         TEST_ASSERT(nullptr != mapper);
@@ -587,7 +536,7 @@ namespace XidiTest
         }
 
         TEST_ASSERT(nullptr != builder.Build(kMapperNames[0]));
-        for (const auto kMapperName : kMapperNames)
+        for (auto kMapperName : kMapperNames)
             TEST_ASSERT(true == Mapper::IsMapperNameKnown(kMapperName));
     }
 
@@ -601,13 +550,13 @@ namespace XidiTest
         MapperBuilder builder;
         TEST_ASSERT(true == builder.CreateBlueprint(kMapperNameCommonDependency));
 
-        for (const auto kMapperName : kMapperNames)
+        for (auto kMapperName : kMapperNames)
         {
             TEST_ASSERT(true == builder.CreateBlueprint(kMapperName));
             TEST_ASSERT(true == builder.SetBlueprintTemplate(kMapperName, kMapperNameCommonDependency));
         }
 
-        for (const auto kMapperName : kMapperNames)
+        for (auto kMapperName : kMapperNames)
         {
             std::unique_ptr<const Mapper> mapper(builder.Build(kMapperName));
             TEST_ASSERT(nullptr != mapper);

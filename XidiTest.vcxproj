@@ -216,6 +216,7 @@
     <ClInclude Include="Include\Xidi\Mapper.h" />
     <ClInclude Include="Include\Xidi\MapperBuilder.h" />
     <ClInclude Include="Include\Xidi\Message.h" />
+    <ClInclude Include="Include\Xidi\MapperParser.h" />
     <ClInclude Include="Include\Xidi\PhysicalController.h" />
     <ClInclude Include="Include\Xidi\StateChangeEventBuffer.h" />
     <ClInclude Include="Include\Xidi\Strings.h" />
@@ -242,6 +243,7 @@
     <ClCompile Include="Source\MapperBuilder.cpp" />
     <ClCompile Include="Source\MapperDefinitions.cpp" />
     <ClCompile Include="Source\Message.cpp" />
+    <ClCompile Include="Source\MapperParser.cpp" />
     <ClCompile Include="Source\StateChangeEventBuffer.cpp" />
     <ClCompile Include="Source\Strings.cpp" />
     <ClCompile Include="Source\TemporaryBuffer.cpp" />
@@ -253,6 +255,7 @@
     <ClCompile Include="Source\Test\Case\KeyboardTest.cpp" />
     <ClCompile Include="Source\Test\Case\MapperBuilderTest.cpp" />
     <ClCompile Include="Source\Test\Case\MapperTest.cpp" />
+    <ClCompile Include="Source\Test\Case\MapperParserTest.cpp" />
     <ClCompile Include="Source\Test\Case\PovMapperTest.cpp" />
     <ClCompile Include="Source\Test\Case\SplitMapperTest.cpp" />
     <ClCompile Include="Source\Test\Case\StateChangeEventBufferTest.cpp" />

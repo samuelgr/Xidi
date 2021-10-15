@@ -12,6 +12,7 @@
 
 #include "Mapper.h"
 #include "MapperBuilder.h"
+#include "MapperParser.h"
 #include "Message.h"
 
 #include <map>
@@ -24,58 +25,6 @@ namespace Xidi
 {
     namespace Controller
     {
-        // -------- INTERNAL CONSTANTS ------------------------------------- //
-
-        /// Map of strings representing XInput controller elements to indices within the element map data structure.
-        /// One pair exists per field in #SElementMap.
-        static const std::map<std::wstring_view, unsigned int> kControllerElementStrings = {
-            {L"StickLeftX", ELEMENT_MAP_INDEX_OF(stickLeftX)},
-            {L"StickLeftY", ELEMENT_MAP_INDEX_OF(stickLeftY)},
-            {L"StickRightX", ELEMENT_MAP_INDEX_OF(stickRightX)},
-            {L"StickRightY", ELEMENT_MAP_INDEX_OF(stickRightY)},
-            {L"DpadUp", ELEMENT_MAP_INDEX_OF(dpadUp)},
-            {L"DpadDown", ELEMENT_MAP_INDEX_OF(dpadDown)},
-            {L"DpadLeft", ELEMENT_MAP_INDEX_OF(dpadLeft)},
-            {L"DpadRight", ELEMENT_MAP_INDEX_OF(dpadRight)},
-            {L"TriggerLT", ELEMENT_MAP_INDEX_OF(triggerLT)},
-            {L"TriggerRT", ELEMENT_MAP_INDEX_OF(triggerRT)},
-            {L"ButtonA", ELEMENT_MAP_INDEX_OF(buttonA)},
-            {L"ButtonB", ELEMENT_MAP_INDEX_OF(buttonB)},
-            {L"ButtonX", ELEMENT_MAP_INDEX_OF(buttonX)},
-            {L"ButtonY", ELEMENT_MAP_INDEX_OF(buttonY)},
-            {L"ButtonLB", ELEMENT_MAP_INDEX_OF(buttonLB)},
-            {L"ButtonRB", ELEMENT_MAP_INDEX_OF(buttonRB)},
-            {L"ButtonBack", ELEMENT_MAP_INDEX_OF(buttonBack)},
-            {L"ButtonStart", ELEMENT_MAP_INDEX_OF(buttonStart)},
-            {L"ButtonLS", ELEMENT_MAP_INDEX_OF(buttonLS)},
-            {L"ButtonRS", ELEMENT_MAP_INDEX_OF(buttonRS)}
-        };
-
-
-        // -------- INTERNAL FUNCTIONS ------------------------------------- //
-
-        /// Attempts to look up the specified string in the map of known controller element strings.
-        /// If found, returns the corresponding index within the element map data structure.
-        static std::optional<unsigned int> FindControllerElementIndex(std::wstring_view controllerElementString)
-        {
-            const auto controllerElementIter = kControllerElementStrings.find(controllerElementString);
-
-            if (kControllerElementStrings.cend() == controllerElementIter)
-                return std::nullopt;
-            else
-                return controllerElementIter->second;
-        }
-
-
-        // -------- CLASS METHODS ------------------------------------------ //
-        // See "MapperBuilder.h" for documentation.
-
-        bool MapperBuilder::IsControllerElementStringValid(std::wstring_view element)
-        {
-            return FindControllerElementIndex(element).has_value();
-        }
-
-
         // -------- INSTANCE METHODS --------------------------------------- //
         // See "MapperBuilder.h" for documentation.
 
@@ -166,25 +115,31 @@ namespace Xidi
 
         // --------
 
-        bool MapperBuilder::ClearBlueprintElementMapper(std::wstring_view mapperName, std::wstring_view element)
+        bool MapperBuilder::ClearBlueprintElementMapper(std::wstring_view mapperName, unsigned int elementIndex)
         {
             const auto blueprintIter = blueprints.find(mapperName);
             if (blueprints.end() == blueprintIter)
                 return false;
 
-            const std::optional<unsigned int> kMaybeControllerElementIndex = FindControllerElementIndex(element);
+            if (elementIndex >= _countof(Mapper::UElementMap::all))
+                return false;
+
+            if (false == blueprintIter->second.changesFromTemplate.contains(elementIndex))
+                return false;
+
+            blueprintIter->second.changesFromTemplate.erase(elementIndex);
+            return true;
+        }
+
+        // --------
+
+        bool MapperBuilder::ClearBlueprintElementMapper(std::wstring_view mapperName, std::wstring_view elementString)
+        {
+            const std::optional<unsigned int> kMaybeControllerElementIndex = MapperParser::FindControllerElementIndex(elementString);
             if (false == kMaybeControllerElementIndex.has_value())
                 return false;
 
-            const unsigned int kControllerElementIndex = kMaybeControllerElementIndex.value();
-            if (kControllerElementIndex >= _countof(Mapper::UElementMap::all))
-                return false;
-
-            if (false == blueprintIter->second.changesFromTemplate.contains(kControllerElementIndex))
-                return false;
-
-            blueprintIter->second.changesFromTemplate.erase(kControllerElementIndex);
-            return true;
+            return ClearBlueprintElementMapper(mapperName, kMaybeControllerElementIndex.value());
         }
 
         // --------
@@ -228,22 +183,28 @@ namespace Xidi
 
         // --------
 
-        bool MapperBuilder::SetBlueprintElementMapper(std::wstring_view mapperName, std::wstring_view element, std::unique_ptr<IElementMapper>&& elementMapper)
+        bool MapperBuilder::SetBlueprintElementMapper(std::wstring_view mapperName, unsigned int elementIndex, std::unique_ptr<IElementMapper>&& elementMapper)
         {
             const auto blueprintIter = blueprints.find(mapperName);
             if (blueprints.end() == blueprintIter)
                 return false;
 
-            const std::optional<unsigned int> kMaybeControllerElementIndex = FindControllerElementIndex(element);
+            if (elementIndex >= _countof(Mapper::UElementMap::all))
+                return false;
+
+            blueprintIter->second.changesFromTemplate[elementIndex] = std::move(elementMapper);
+            return true;
+        }
+
+        // --------
+
+        bool MapperBuilder::SetBlueprintElementMapper(std::wstring_view mapperName, std::wstring_view elementString, std::unique_ptr<IElementMapper>&& elementMapper)
+        {
+            const std::optional<unsigned int> kMaybeControllerElementIndex = MapperParser::FindControllerElementIndex(elementString);
             if (false == kMaybeControllerElementIndex.has_value())
                 return false;
 
-            const unsigned int kControllerElementIndex = kMaybeControllerElementIndex.value();
-            if (kControllerElementIndex >= _countof(Mapper::UElementMap::all))
-                return false;
-
-            blueprintIter->second.changesFromTemplate[kControllerElementIndex] = std::move(elementMapper);
-            return true;
+            return SetBlueprintElementMapper(mapperName, kMaybeControllerElementIndex.value(), std::move(elementMapper));
         }
 
         // --------

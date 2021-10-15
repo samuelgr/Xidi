@@ -65,14 +65,6 @@ namespace Xidi
 
 
         public:
-            // -------- CLASS METHODS -------------------------------------- //
-
-            /// Determines if the specified controller element string is valid and recognized as identifying an XInput controller element.
-            /// @param [in] element String to be checked.
-            /// @return `true` if the input string is valid, `false` otherwise.
-            static bool IsControllerElementStringValid(std::wstring_view element);
-
-
             // -------- INSTANCE METHODS ----------------------------------- //
 
             /// Attempts to build mapper objects based on all of the blueprints known to this mapper builder object.
@@ -90,12 +82,18 @@ namespace Xidi
             const Mapper* Build(std::wstring_view mapperName);
 
             /// Removes an element mapper from this blueprint's element map specification so it is not applied as a modification to the template when this object is built into a mapper.
-            /// This method will fail if the mapper name does not identify an existing blueprint, if the element string cannot be mapped to a valid XInput controller element, or if no template modification exists for the specified XInput controller element.
-            /// Valid controller element strings are field names for #SElementMap with the first letter capitalized.
+            /// This method will fail if the mapper name does not identify an existing blueprint, if the element index is out of bounds, or if no template modification exists for the specified controller element.
             /// @param [in] mapperName Name that identifies the mapper whose element is being set.
-            /// @param [in] element String that identifies the XInput controller element. Must be null-terminated.
+            /// @param [in] elementIndex Index of the element within the element map data structure (i.e. the `all` member of #UElementMap).
             /// @return `true` if successful, `false` otherwise.
-            bool ClearBlueprintElementMapper(std::wstring_view mapperName, std::wstring_view element);
+            bool ClearBlueprintElementMapper(std::wstring_view mapperName, unsigned int elementIndex);
+
+            /// Convenience wrapper for both parsing a controller element string and clearing an associated template modification.
+            /// In addition to other reasons why this operation might fail, this method will fail if the element string cannot be mapped to a valid controller element.
+            /// @param [in] mapperName Name that identifies the mapper whose element is being set.
+            /// @param [in] elementString String that identifies the controller element. Must be null-terminated.
+            /// @return `true` if successful, `false` otherwise.
+            bool ClearBlueprintElementMapper(std::wstring_view mapperName, std::wstring_view elementString);
 
             /// Creates a new mapper blueprint object with the specified mapper name.
             /// This method will fail if a mapper or mapper blueprint already exists with the specified name.
@@ -121,13 +119,20 @@ namespace Xidi
 
             /// Sets a specific element mapper to be applied as a modification to the template when this object is built into a mapper.
             /// If `nullptr` is specified, then the modification to be applied to the template is element mapper removal. Use #ClearBlueprintElementMapper to undo a modification.
-            /// This method will fail if the mapper name does not identify an existing blueprint or if the element string cannot be mapped to a valid XInput controller element.
-            /// Valid controller element strings are field names for #SElementMap with the first letter capitalized.
+            /// This method will fail if the mapper name does not identify an existing blueprint or if the element index is out of bounds.
             /// @param [in] mapperName Name that identifies the mapper whose element is being set.
-            /// @param [in] element String that identifies the XInput controller element. Must be null-terminated.
+            /// @param [in] elementIndex Index of the element within the element map data structure (i.e. the `all` member of #UElementMap).
             /// @param [in] elementMapper Element mapper to use, which becomes owned by this object.
             /// @return `true` if successful, `false` otherwise.
-            bool SetBlueprintElementMapper(std::wstring_view mapperName, std::wstring_view element, std::unique_ptr<IElementMapper>&& elementMapper);
+            bool SetBlueprintElementMapper(std::wstring_view mapperName, unsigned int elementIndex, std::unique_ptr<IElementMapper>&& elementMapper);
+
+            /// Convenience wrapper for both parsing a controller element string and applying it as a template modification.
+            /// In addition to other reasons why this operation might fail, this method will fail if the element string cannot be mapped to a valid controller element.
+            /// @param [in] mapperName Name that identifies the mapper whose element is being set.
+            /// @param [in] elementString String that identifies the controller element. Must be null-terminated.
+            /// @param [in] elementMapper Element mapper to use, which becomes owned by this object.
+            /// @return `true` if successful, `false` otherwise.
+            bool SetBlueprintElementMapper(std::wstring_view mapperName, std::wstring_view elementString, std::unique_ptr<IElementMapper>&& elementMapper);
 
             /// Sets the name of the mapper that will act as a template for the mapper being built.
             /// Template names are resolved when attempting to construct a mapper object, so it is not necessary for the template name to identify an existing mapper or mapper blueprint.
