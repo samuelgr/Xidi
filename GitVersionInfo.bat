@@ -29,13 +29,8 @@ if exist %output_file% del /f %output_file%
 
 git --version >NUL 2>NUL
 if %ERRORLEVEL%==0 (
-    for /f "usebackq tokens=1" %%D in (`git diff --shortstat`) do (
-        if not "%%~D"=="" (
-            set version_is_dirty=1
-        ) else (
-            set version_is_dirty=0
-        )
-    )
+    set version_is_dirty=0
+    for /f "usebackq tokens=1" %%D in (`git diff --shortstat`) do if not "%%~D"=="" set version_is_dirty=1
 
     for /f "usebackq delims=v tokens=1" %%V in (`git tag --list v[0-9]*.[0-9]*.[0-9]* --merged HEAD`) do set merged_release_ver=%%~V
     if not "!merged_release_ver!"=="" (
