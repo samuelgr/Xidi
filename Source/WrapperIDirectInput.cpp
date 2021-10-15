@@ -185,7 +185,7 @@ namespace Xidi
             if (nullptr != pUnkOuter)
                 Message::Output(Message::ESeverity::Warning, L"Application requested COM aggregation, which is not implemented, while binding to a Xidi virtual controller.");
 
-            const Controller::Mapper* mapper = Controller::Mapper::GetConfigured();
+            const Controller::Mapper* mapper = Controller::Mapper::GetConfigured(kVirtualControllerId);
             if (nullptr == mapper)
             {
                 Message::Output(Message::ESeverity::Error, L"Failed to create a Xidi virtual controller because no mapper could be located.");

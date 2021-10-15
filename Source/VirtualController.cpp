@@ -142,12 +142,12 @@ namespace Xidi
 
         VirtualController::VirtualController(TControllerIdentifier controllerId, const Mapper& mapper) : kControllerIdentifier(controllerId), controllerMutex(), eventBuffer(), eventFilter(), mapper(mapper), properties(), stateRaw(), stateProcessed(), stateChangeEventHandle(NULL), physicalControllerMonitor(), physicalControllerMonitorStop()
         {
-            Message::OutputFormatted(Message::ESeverity::Info, L"Created virtual controller object with identifier %u.", (1 + kControllerIdentifier));
-
             const SPhysicalState initialState = GetCurrentPhysicalControllerState(kControllerIdentifier);
             
             RefreshState(initialState);
             physicalControllerMonitor = std::thread(MonitorPhysicalControllerState, this, initialState, physicalControllerMonitorStop.get_token());
+
+            Message::OutputFormatted(Message::ESeverity::Info, L"Created virtual controller object with identifier %u.", (1 + kControllerIdentifier));
         }
 
         // --------

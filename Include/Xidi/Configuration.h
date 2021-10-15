@@ -603,7 +603,7 @@ namespace Xidi
         };
 
         /// Convenience wrapper object that combines a reader with a configuration data object and presents both with a unified interface.
-        class Configuration
+        class ConfigurationFile
         {
         private:
             // -------- INSTANCE VARIABLES --------------------------------- //
@@ -622,13 +622,13 @@ namespace Xidi
             // -------- CONSTRUCTION AND DESTRUCTION ----------------------- //
 
             /// Initialization constructor. Requires a reader at construction time.
-            inline Configuration(std::unique_ptr<ConfigurationFileReader> reader) : reader(std::move(reader)), configData(), fileReadResult(EFileReadResult::InvalidResult)
+            inline ConfigurationFile(std::unique_ptr<ConfigurationFileReader> reader) : reader(std::move(reader)), configData(), fileReadResult(EFileReadResult::InvalidResult)
             {
                 // Nothing to do here.
             }
 
             /// Copy constructor. Should never be invoked.
-            Configuration(const Configuration& other) = delete;
+            ConfigurationFile(const ConfigurationFile& other) = delete;
 
 
             // -------- INSTANCE METHODS ----------------------------------- //
@@ -667,7 +667,7 @@ namespace Xidi
             /// After this method returns, use #GetFileReadResult and #GetData to retrieve configuration settings.
             /// In the event of a read error, #GetReadErrorMessage can be used to obtain a string describing the read error that occurred.
             /// @param [in] configFileName Name of the configuration file to read.
-            inline void ReadConfigurationFile(std::wstring_view configFileName)
+            inline void Read(std::wstring_view configFileName)
             {
                 fileReadResult = reader->ReadConfigurationFile(configFileName, configData);
             }

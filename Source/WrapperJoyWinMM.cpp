@@ -399,15 +399,15 @@ namespace Xidi
             static std::once_flag initializationFlag;
             std::call_once(initializationFlag, []() -> void
                 {
-                    const Controller::Mapper* mapper = Controller::Mapper::GetConfigured();
-                    if (nullptr == mapper)
+                    for (Controller::TControllerIdentifier i = 0; i < _countof(controllers); ++i)
                     {
-                        Message::Output(Message::ESeverity::Error, L"Failed to locate a mapper. Xidi virtual controllers will not function.");
-                        mapper = Controller::Mapper::GetNull();
-                    }
+                        const Controller::Mapper* mapper = Controller::Mapper::GetConfigured(i);
+                        if (nullptr == mapper)
+                        {
+                            Message::OutputFormatted(Message::ESeverity::Error, L"Virtual controller %u will not function because a mapper could not be located for it.", (unsigned int)i);
+                            mapper = Controller::Mapper::GetNull();
+                        }
 
-                    for (int i = 0; i < _countof(controllers); ++i)
-                    {
                         controllers[i] = new Controller::VirtualController(i, *mapper);
                         controllers[i]->SetAllAxisDeadzone(kAxisDeadzone);
                         controllers[i]->SetAllAxisSaturation(kAxisSaturation);

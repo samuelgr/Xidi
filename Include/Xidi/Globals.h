@@ -55,7 +55,7 @@ namespace Xidi
 
         /// Retrieves the configuration object that represents the contents of a configuration file.
         /// @return Read-only configuration object reference.
-        const Configuration::Configuration& GetConfiguration(void);
+        const Configuration::ConfigurationFile& GetConfiguration(void);
         
         /// Retrieves a pseudohandle to the current process.
         /// @return Current process pseudohandle.

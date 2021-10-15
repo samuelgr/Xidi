@@ -160,9 +160,10 @@ namespace Xidi
             /// @return Pointer to the mapper of specified name, or `nullptr` if said mapper is unavailable.
             static const Mapper* GetByName(std::wstring_view mapperName);
 
-            /// Retrieves and returns a pointer to the mapper object whose type is read from the configuration file.
+            /// Retrieves and returns a pointer to the mapper object whose type is read from the configuration file for the specified controller identifier.
             /// If no mapper specified there, then the default mapper type is used instead.
-            static const Mapper* GetConfigured(void);
+            /// @param [in] controllerIdentifier Identifier of the controller for which a mapper is requested.
+            static const Mapper* GetConfigured(TControllerIdentifier controllerIdentifier);
 
             /// Retrieves and returns a pointer to the default mapper object.
             /// @return Pointer to the default mapper object, or `nullptr` if there is no default.

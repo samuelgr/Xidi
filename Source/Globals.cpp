@@ -84,7 +84,7 @@ namespace Xidi
         /// Enables the log, if it is configured in the configuration file.
         static void EnableLogIfConfigured(void)
         {
-            const Configuration::Configuration& config = GetConfiguration();
+            const Configuration::ConfigurationFile& config = GetConfiguration();
 
             bool logEnabled = false;
             int64_t logLevel = 0;
@@ -112,14 +112,14 @@ namespace Xidi
         // -------- FUNCTIONS ---------------------------------------------- //
         // See "Globals.h" for documentation.
 
-        const Configuration::Configuration& GetConfiguration(void)
+        const Configuration::ConfigurationFile& GetConfiguration(void)
         {
-            static Configuration::Configuration configuration(std::make_unique<XidiConfigReader>());
+            static Configuration::ConfigurationFile configuration(std::make_unique<XidiConfigReader>());
 
             static std::once_flag readConfigFlag;
             std::call_once(readConfigFlag, []() -> void
                 {
-                    configuration.ReadConfigurationFile(Strings::kStrConfigurationFilename);
+                    configuration.Read(Strings::kStrConfigurationFilename);
 
                     if (Configuration::EFileReadResult::Malformed == configuration.GetFileReadResult())
                         Message::Output(Message::ESeverity::ForcedInteractiveError, configuration.GetReadErrorMessage().data());

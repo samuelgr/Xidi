@@ -11,33 +11,36 @@
 
 #include "ApiWindows.h"
 #include "Configuration.h"
+#include "ControllerTypes.h"
 #include "Mapper.h"
 #include "Strings.h"
 #include "TemporaryBuffer.h"
 #include "XidiConfigReader.h"
 
-#include <unordered_map>
-#include <string>
+#include <mutex>
 #include <string_view>
 
 
 namespace Xidi
 {
+    using namespace ::Xidi::Configuration;
+
+
     // -------- INTERNAL VARIABLES ----------------------------------------- //
 
     /// Holds the layout of the Xidi configuration file that is known statically.
-    static Configuration::TConfigurationFileLayout configurationFileLayout = {
+    static TConfigurationFileLayout configurationFileLayout = {
         ConfigurationFileLayoutSection(Strings::kStrConfigurationSectionImport, {
-            ConfigurationFileLayoutNameAndValueType(Strings::kStrConfigurationSettingImportDirectInput, Configuration::EValueType::String),
-            ConfigurationFileLayoutNameAndValueType(Strings::kStrConfigurationSettingImportDirectInput8, Configuration::EValueType::String),
-            ConfigurationFileLayoutNameAndValueType(Strings::kStrConfigurationSettingImportWinMM, Configuration::EValueType::String),
+            ConfigurationFileLayoutNameAndValueType(Strings::kStrConfigurationSettingImportDirectInput, EValueType::String),
+            ConfigurationFileLayoutNameAndValueType(Strings::kStrConfigurationSettingImportDirectInput8, EValueType::String),
+            ConfigurationFileLayoutNameAndValueType(Strings::kStrConfigurationSettingImportWinMM, EValueType::String),
         }),
         ConfigurationFileLayoutSection(Strings::kStrConfigurationSectionLog, {
-            ConfigurationFileLayoutNameAndValueType(Strings::kStrConfigurationSettingLogEnabled, Configuration::EValueType::Boolean),
-            ConfigurationFileLayoutNameAndValueType(Strings::kStrConfigurationSettingLogLevel, Configuration::EValueType::Integer),
+            ConfigurationFileLayoutNameAndValueType(Strings::kStrConfigurationSettingLogEnabled, EValueType::Boolean),
+            ConfigurationFileLayoutNameAndValueType(Strings::kStrConfigurationSettingLogLevel, EValueType::Integer),
         }),
         ConfigurationFileLayoutSection(Strings::kStrConfigurationSectionMapper, {
-            ConfigurationFileLayoutNameAndValueType(Strings::kStrConfigurationSettingMapperType, Configuration::EValueType::String),
+            ConfigurationFileLayoutNameAndValueType(Strings::kStrConfigurationSettingMapperType, EValueType::String),
         }),
     };
 
@@ -45,52 +48,63 @@ namespace Xidi
     // -------- CONCRETE INSTANCE METHODS ---------------------------------- //
     // See "Configuration.h" for documentation.
 
-    Configuration::ESectionAction XidiConfigReader::ActionForSection(std::wstring_view section)
+    ESectionAction XidiConfigReader::ActionForSection(std::wstring_view section)
     {
         if (0 != configurationFileLayout.count(section))
-            return Configuration::ESectionAction::Read;
+            return ESectionAction::Read;
 
-        return Configuration::ESectionAction::Error;
+        return ESectionAction::Error;
     }
 
     // --------
 
-    bool XidiConfigReader::CheckValue(std::wstring_view section, std::wstring_view name, const Configuration::TIntegerValue& value)
+    bool XidiConfigReader::CheckValue(std::wstring_view section, std::wstring_view name, const TIntegerValue& value)
     {
         return (value >= 0);
     }
 
     // --------
 
-    bool XidiConfigReader::CheckValue(std::wstring_view section, std::wstring_view name, const Configuration::TBooleanValue& value)
+    bool XidiConfigReader::CheckValue(std::wstring_view section, std::wstring_view name, const TBooleanValue& value)
     {
         return true;
     }
 
     // --------
 
-    bool XidiConfigReader::CheckValue(std::wstring_view section, std::wstring_view name, const Configuration::TStringValue& value)
+    bool XidiConfigReader::CheckValue(std::wstring_view section, std::wstring_view name, const TStringValue& value)
     {
-#ifndef XIDI_SKIP_MAPPERS
-        if ((Strings::kStrConfigurationSectionMapper == section) && (Strings::kStrConfigurationSettingMapperType == name))
-            return (Controller::Mapper::IsMapperNameKnown(value));
-#endif
-
         return true;
     }
 
     // --------
 
-    Configuration::EValueType XidiConfigReader::TypeForValue(std::wstring_view section, std::wstring_view name)
+    EValueType XidiConfigReader::TypeForValue(std::wstring_view section, std::wstring_view name)
     {
         auto sectionLayout = configurationFileLayout.find(section);
         if (configurationFileLayout.end() == sectionLayout)
-            return Configuration::EValueType::Error;
+            return EValueType::Error;
 
         auto settingInfo = sectionLayout->second.find(name);
         if (sectionLayout->second.end() == settingInfo)
-            return Configuration::EValueType::Error;
+            return EValueType::Error;
 
         return settingInfo->second;
+    }
+
+    // --------
+
+    void XidiConfigReader::PrepareForRead(void)
+    {
+        static std::once_flag initFlag;
+
+        std::call_once(initFlag, []() -> void
+            {
+                // Create the per-controller mapper settings types and submit them to the configuration file layout.
+                // These are gernerated dynamically based on the number of controllers the system supports.
+                for (Controller::TControllerIdentifier i = 0; i < Controller::kPhysicalControllerCount; ++i)
+                    configurationFileLayout[Strings::kStrConfigurationSectionMapper][Strings::MapperTypeConfigurationNameString(i)] = EValueType::String;
+            }
+        );
     }
 }

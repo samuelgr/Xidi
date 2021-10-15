@@ -324,37 +324,91 @@ namespace Xidi
 
         // --------
 
-        const Mapper* Mapper::GetConfigured(void)
+        const Mapper* Mapper::GetConfigured(TControllerIdentifier controllerIdentifier)
         {
-            static const Mapper* configuredMapper = nullptr;
+            static const Mapper* configuredMapper[kPhysicalControllerCount];
             static std::once_flag configuredMapperFlag;
 
             std::call_once(configuredMapperFlag, []() -> void
                 {
-                    const Configuration::Configuration& config = Globals::GetConfiguration();
+                    const Configuration::ConfigurationFile& config = Globals::GetConfiguration();
 
-                    if ((true == config.IsDataValid()) && (true == config.GetData().SectionNamePairExists(Strings::kStrConfigurationSectionMapper, Strings::kStrConfigurationSettingMapperType)))
+                    if ((true == config.IsDataValid()) && (true == config.GetData().SectionExists(Strings::kStrConfigurationSectionMapper)))
                     {
-                        const std::wstring_view kConfiguredMapperName = config.GetData()[Strings::kStrConfigurationSectionMapper][Strings::kStrConfigurationSettingMapperType].FirstValue().GetStringValue();
+                        // Mapper section exists in the configuration file.
+                        // If the controller-independent type setting exists, it will be used as the fallback default, otherwise the default mapper will be used for this purpose.
+                        // If any per-controller type settings exist, they take precedence.
+                        const auto& mapperConfigData = config.GetData()[Strings::kStrConfigurationSectionMapper];
 
-                        Message::OutputFormatted(Message::ESeverity::Info, L"Attempting to locate mapper '%s' specified in the configuration file.", kConfiguredMapperName.data());
-                        configuredMapper = GetByName(kConfiguredMapperName);
-                    }
-                
-                    if (nullptr == configuredMapper)
-                    {
-                        Message::Output(Message::ESeverity::Info, L"Could not locate mapper specified in the configuration file, or no mapper was specified. Using default mapper instead.");
-                        configuredMapper = GetDefault();
-                    }
+                        const Mapper* fallbackMapper = nullptr;
+                        if (true == mapperConfigData.NameExists(Strings::kStrConfigurationSettingMapperType))
+                        {
+                            std::wstring_view fallbackMapperName = mapperConfigData[Strings::kStrConfigurationSettingMapperType].FirstValue().GetStringValue();
+                            fallbackMapper = GetByName(fallbackMapperName);
 
-                    if (nullptr == configuredMapper)
-                        Message::Output(Message::ESeverity::Error, L"No mappers could be located. Xidi virtual controllers are unable to function.");
+                            if (nullptr == fallbackMapper)
+                                Message::OutputFormatted(Message::ESeverity::Warning, L"Could not locate mapper '%s' specified in the configuration file as the default.", fallbackMapperName.data());
+                        }
+
+                        if (nullptr == fallbackMapper)
+                        {
+                            fallbackMapper = GetDefault();
+
+                            if (nullptr == fallbackMapper)
+                            {
+                                Message::Output(Message::ESeverity::Error, L"Internal error due to inability to locate the default mapper.");
+                                fallbackMapper = GetNull();
+                            }
+                        }
+                        
+                        for (TControllerIdentifier i = 0; i < _countof(configuredMapper); ++i)
+                        {
+                            if (true == mapperConfigData.NameExists(Strings::MapperTypeConfigurationNameString(i)))
+                            {
+                                std::wstring_view configuredMapperName = mapperConfigData[Strings::MapperTypeConfigurationNameString(i)].FirstValue().GetStringValue();
+                                configuredMapper[i] = GetByName(configuredMapperName.data());
+
+                                if (nullptr == configuredMapper[i])
+                                {
+                                    Message::OutputFormatted(Message::ESeverity::Warning, L"Could not locate mapper '%s' specified in the configuration file for controller %u.", configuredMapperName.data(), (unsigned int)(1 + i));
+                                    configuredMapper[i] = fallbackMapper;
+                                }
+                            }
+                            else
+                            {
+                                configuredMapper[i] = fallbackMapper;
+                            }
+                        }
+                    }
                     else
-                        Message::OutputFormatted(Message::ESeverity::Info, L"Using mapper '%s' as the configured mapper type.", configuredMapper->GetName().data());
+                    {
+                        // Mapper section does not exist in the configuration file.
+                        Message::Output(Message::ESeverity::Info, L"No mappers configured in the configuration file. Using default mapper for all controllers.");
+
+                        const Mapper* defaultMapper = GetDefault();
+                        if (nullptr == defaultMapper)
+                        {
+                            Message::Output(Message::ESeverity::Error, L"Internal error due to inability to locate the default mapper. Virtual controllers will not function.");
+                            defaultMapper = GetNull();
+                        }
+
+                        for (TControllerIdentifier i = 0; i < _countof(configuredMapper); ++i)
+                            configuredMapper[i] = defaultMapper;
+                    }
+
+                    Message::Output(Message::ESeverity::Info, L"Mappers assigned to controllers...");
+                    for (TControllerIdentifier i = 0; i < _countof(configuredMapper); ++i)
+                        Message::OutputFormatted(Message::ESeverity::Info, L"    [%u]: %s", (unsigned int)(1 + i), configuredMapper[i]->GetName().data());
                 }
             );
 
-            return configuredMapper;
+            if (controllerIdentifier >= _countof(configuredMapper))
+            {
+                Message::OutputFormatted(Message::ESeverity::Error, L"Internal error due to requesting a mapper for out-of-bounds controller %u.", (unsigned int)(1 + controllerIdentifier));
+                return GetNull();
+            }
+
+            return configuredMapper[controllerIdentifier];
         }
 
         // --------

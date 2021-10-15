@@ -11,6 +11,8 @@
 
 #pragma once
 
+#include "ControllerTypes.h"
+
 #include <cstddef>
 #include <cstdint>
 #include <string>
@@ -60,6 +62,9 @@ namespace Xidi
 
         /// Configuration file setting for overriding import for WinMM.
         inline constexpr std::wstring_view kStrConfigurationSettingImportWinMM = kStrLibraryNameWinMM;
+
+        /// Configuration file setting separator for generating per-controller setting strings.
+        inline constexpr wchar_t kCharConfigurationSettingSeparator = L'.';
 
         /// Configuration file section name for log-related settings.
         inline constexpr std::wstring_view kStrConfigurationSectionLog = L"Log";
@@ -129,6 +134,13 @@ namespace Xidi
 
 
         // -------- FUNCTIONS ---------------------------------------------- //
+
+        /// Retrieves a string used to represent a per-controller mapper type configuration setting.
+        /// These are initialized on first invocation and returned subsequently as read-only views.
+        /// An empty view is returned if an invalid controller identifier is specified.
+        /// @param [in] controllerIdentifier Controller identifier for which a string is desired.
+        /// @return Corresponding configuration setting string, or an empty view if the controller identifier is out of range.
+        std::wstring_view MapperTypeConfigurationNameString(Controller::TControllerIdentifier controllerIdentifier);
 
         /// Generates a string representation of a system error code.
         /// @param [in] systemErrorCode System error code for which to generate a string.

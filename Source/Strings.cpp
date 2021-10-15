@@ -10,6 +10,7 @@
  *****************************************************************************/
 
 #include "ApiWindows.h"
+#include "ControllerTypes.h"
 #include "Globals.h"
 #include "Strings.h"
 #include "TemporaryBuffer.h"
@@ -393,6 +394,30 @@ namespace Xidi
 
         // -------- FUNCTIONS ---------------------------------------------- //
         // See "Strings.h" for documentation.
+
+        std::wstring_view MapperTypeConfigurationNameString(Controller::TControllerIdentifier controllerIdentifier)
+        {
+            static std::wstring initStrings[Controller::kPhysicalControllerCount];
+            static std::once_flag initFlag;
+
+            std::call_once(initFlag, []() -> void
+                {
+                    for (Controller::TControllerIdentifier i = 0; i < _countof(initStrings); ++i)
+                    {
+                        std::wstringstream perControllerMapperTypeString;
+                        perControllerMapperTypeString << kStrConfigurationSettingMapperType << kCharConfigurationSettingSeparator << (1 + i);
+                        initStrings[i] = perControllerMapperTypeString.str();
+                    }
+                }
+            );
+
+            if (controllerIdentifier >= Controller::kPhysicalControllerCount)
+                return std::wstring_view();
+
+            return initStrings[controllerIdentifier];
+        }
+
+        // --------
 
         std::wstring SystemErrorCodeString(const unsigned long systemErrorCode)
         {

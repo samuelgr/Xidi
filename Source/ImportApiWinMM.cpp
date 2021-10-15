@@ -245,7 +245,7 @@ namespace Xidi
         /// @return Library path.
         static std::wstring_view GetImportLibraryPathWinMM(void)
         {
-            const Configuration::Configuration& config = Globals::GetConfiguration();
+            const Configuration::ConfigurationFile& config = Globals::GetConfiguration();
 
             if ((true == config.IsDataValid()) && (true == config.GetData().SectionNamePairExists(Strings::kStrConfigurationSectionImport, Strings::kStrConfigurationSettingImportWinMM)))
             {
