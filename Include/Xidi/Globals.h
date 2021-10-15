@@ -75,13 +75,7 @@ namespace Xidi
 
         /// Retrieves and returns version information for this running binary.
         /// @return Version information structure.
-        constexpr SVersionInfo GetVersion(void)
-        {
-            constexpr uint16_t kVersionStructured[] = {GIT_VERSION_STRUCT};
-            static_assert(4 == _countof(kVersionStructured), "Invalid structured version information.");
-
-            return {.major = kVersionStructured[0], .minor = kVersionStructured[1], .patch = kVersionStructured[2], .flags = kVersionStructured[3], .string = _CRT_WIDE(GIT_VERSION_STRING)};
-        }
+        SVersionInfo GetVersion(void);
 
         /// Performs run-time initialization.
         /// This function only performs operations that are safe to perform within a DLL entry point.
