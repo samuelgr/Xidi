@@ -53,4 +53,36 @@ namespace XidiTest
             TEST_ASSERT(false == MapperParser::FindControllerElementIndex(controllerElementString).has_value());
         }
     }
+
+    // Verifies correct determination of recursion depth, given a set of input strings that are all properly balanced.
+    TEST_CASE(MapperParser_RecursionDepth_Balanced)
+    {
+        const std::map<unsigned int, std::wstring_view> kRecursionTestItems = {
+            {0, L" MapperStringNoParams  "},
+            {1, L"   OuterMapper  (   Param1, Param2 )"},
+            {2, L"OuterMapper( InnerMapper1( Param), InnerMapper2(Param234))"},
+            {3, L"Split(    Split( Button(1), Button(2)), Split(Button(3), Button(4)), Axis(Z))"},
+            {4, L" ( ()  (  ()   (  ()) () ))"}
+        };
+
+        for (auto& recursionTestItem : kRecursionTestItems)
+            TEST_ASSERT(recursionTestItem.first == MapperParser::ComputeRecursionDepth(recursionTestItem.second));
+    }
+
+    // Verifies inability to compute recursion depth, given a set of input strings that are not properly balanced.
+    TEST_CASE(MapperParser_RecursionDepth_Unbalanced)
+    {
+        constexpr std::wstring_view kRecursionTestStrings[] = {
+            L")",
+            L"(",
+            L"    )  (",
+            L"   (    (    )",
+            L"   (   )    (    ",
+            L"   OuterMapper    Param1, Param2 )",
+            L"Split(    Split( Button(1), Button(2)), Split(Button(3), Button(4)"
+        };
+
+        for (auto& recursionTestString : kRecursionTestStrings)
+            TEST_ASSERT(std::nullopt == MapperParser::ComputeRecursionDepth(recursionTestString));
+    }
 }

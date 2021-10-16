@@ -19,7 +19,7 @@
 using namespace Xidi;
 
 
-// -------- HELPERS -------------------------------------------------------- //
+// -------- INTERNAL FUNCTIONS --------------------------------------------- //
 
 /// Logs an error event indicating that an instance of IDirectInput(8) could not be created due to a version out-of-range error.
 /// @param [in] minVersion Minimum allowed version.
