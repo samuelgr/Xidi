@@ -88,19 +88,60 @@ namespace XidiTest
     }
 
     // Verifies correct separation of an input element mapper string into type and parameter substrings.
-    // Exercises several different nominal cases in which the input string is valid and actually contains both of these parts.
-    TEST_CASE(MapperParser_ExtractParts_Nominal)
+    // Exercises several different simple cases in which the element mapper string contains one type and one set of parameters.
+    // The whole string is consumed, so there is no remainder.
+    TEST_CASE(MapperParser_ExtractElementMapperStringParts_Simple)
     {
         const std::map<std::wstring_view, SElementMapperStringParts> kExtractPartsTestItems = {
             {L"Axis(Y)",                                {.type = L"Axis",   .params = L"Y"}},
             {L"   Axis       (    Y    ,    + )",       {.type = L"Axis",   .params = L"Y    ,    +"}},
-            {L"  Split ( Button(2), Button(3)   )",     {.type = L"Split",  .params = L"Button(2), Button(3)"}},
-            {L"   Null  ",                              {.type = L"Null"}},
-            {L"  Button( 2 ),  Button ( 3 )  ",         {.type = L"Button", .params = L"2"}},
-            {L" Null, Button(3) ",                      {.type = L"Null",   .params = L""}}
+            {L"   Null  ",                              {.type = L"Null"}}
         };
 
         for (auto& extractPartsTestItem : kExtractPartsTestItems)
-            TEST_ASSERT(extractPartsTestItem.second == MapperParser::ExtractParts(extractPartsTestItem.first));
+            TEST_ASSERT(extractPartsTestItem.second == MapperParser::ExtractElementMapperStringParts(extractPartsTestItem.first));
+    }
+
+    // Verifies correct separation of an input element mapper string into type and parameter substrings.
+    // Exercises several different nested cases in which an element mapper string has other element mapper strings as parameters.
+    // The whole string is consumed, so there is no remainder.
+    TEST_CASE(MapperParser_ExtractElementMapperStringParts_Nested)
+    {
+        const std::map<std::wstring_view, SElementMapperStringParts> kExtractPartsTestItems = {
+            {L"  Split ( Button(2), Button(3)   )",                                 {.type = L"Split",  .params = L"Button(2), Button(3)"}},
+            {L"Split( Split(Button(1), Button(2)), Split(Button(3), Button(4)) )",  {.type = L"Split",  .params = L"Split(Button(1), Button(2)), Split(Button(3), Button(4))"}}
+        };
+
+        for (auto& extractPartsTestItem : kExtractPartsTestItems)
+            TEST_ASSERT(extractPartsTestItem.second == MapperParser::ExtractElementMapperStringParts(extractPartsTestItem.first));
+    }
+
+    // Verifies correct separation of an input mapper element string into type, parameter, and remaining substrings.
+    // Exercises situations in which the whole string is not consumed, so there is a remaining part of the string left behind.
+    TEST_CASE(MapperParser_ExtractElementMapperStringParts_PartialWithRemainder)
+    {
+        const std::map<std::wstring_view, SElementMapperStringParts> kExtractPartsTestItems = {
+            {L"  Null      ,   Button(2) ",                                         {.type = L"Null",                                       .remaining = L"Button(2)"}},
+            {L"  Null,   Button(2) ",                                               {.type = L"Null",                                       .remaining = L"Button(2)"}},
+            {L"Split(Button(1), Button(2)), Split(Button(3), Button(4))",           {.type = L"Split",  .params = L"Button(1), Button(2)",  .remaining = L"Split(Button(3), Button(4))"}}
+        };
+
+        for (auto& extractPartsTestItem : kExtractPartsTestItems)
+            TEST_ASSERT(extractPartsTestItem.second == MapperParser::ExtractElementMapperStringParts(extractPartsTestItem.first));
+    }
+
+    // Verifies correct rejection of invalid element mapper strings when attempting to split into type, parameter, and remaining substrings.
+    TEST_CASE(MapperParser_ExtractElementMapperStringParts_Invalid)
+    {
+        constexpr std::wstring_view kExtractPartsTestStrings[] = {
+            L"  Null   )  ",
+            L"Null,",
+            L"  Null   , ",
+            L"Split(Button(1), Button(2)))   ",
+            L"Axis(RotZ"
+        };
+
+        for (auto& extractPartsTestString : kExtractPartsTestStrings)
+            TEST_ASSERT(false == MapperParser::ExtractElementMapperStringParts(extractPartsTestString).has_value());
     }
 }

@@ -28,13 +28,14 @@ namespace Xidi
         {
             // -------- TYPE DEFINITIONS ----------------------------------- //
 
-            /// Holds a partially-parsed representation of an element mapper string.
+            /// Holds a partially-separated representation of an element mapper string.
             /// This view of the element mapper string is separated into type and parameter portions.
             /// For example, the string "Axis(RotY, +)" would be separated into "Axis" as the type and "RotY, +" (the entire contents of the parentheses) as the parameters.
             struct SElementMapperStringParts
             {
                 std::wstring_view type;                                     ///< String identifying the element mapper type.
                 std::wstring_view params;                                   ///< String holding all of the parameters without the enclosing parentheses.
+                std::wstring_view remaining;                                ///< Remaining part of the string that was not separated into parts.
 
                 /// Simple check for equality by field-by-field comparison.
                 /// Primarily useful during testing.
@@ -42,7 +43,7 @@ namespace Xidi
                 /// @return `true` if this object is equal to the other object, `false` otherwise.
                 inline bool operator==(const SElementMapperStringParts& other) const
                 {
-                    return ((other.type == type) && (other.params == params));
+                    return ((other.type == type) && (other.params == params) && (other.remaining == remaining));
                 }
             };
 
@@ -75,10 +76,13 @@ namespace Xidi
             /// @return Recursion depth if the recursion is balanced and therefore the depth can be determined.
             std::optional<unsigned int> ComputeRecursionDepth(std::wstring_view elementMapperString);
 
-            /// Separates the supplied element mapper string into type and parameter parts and returns the result.
+            /// Separates the supplied element mapper string into type and parameter parts, with a possible remainder, and returns the result.
+            /// Example: "Axis(X)" would be split into "Axis" and "X" as type and parameters respectively.
+            /// Example: "Split( Split(Button(1), Button(2)), Split(Button(3), Button(4)) )" would be split into "Split" and "Split(Button(1), Button(2)), Split(Button(3), Button(4))" as type and parameters respectively.
+            /// Example: "Split(Button(1), Button(2)), Split(Button(3), Button(4))" would be split into "Split" and "Button(1), Button(2)" as type and parameters respectively, with "Split(Button(3), Button(4))" indicated as remaining.
             /// @param [in] elementMapperString Input string supposedly representing an element mapper.
-            /// @return Parsed pair of parts, if successful.
-            std::optional<SElementMapperStringParts> ExtractParts(std::wstring_view elementMapperString);
+            /// @return Structure of separated string parts, if successful.
+            std::optional<SElementMapperStringParts> ExtractElementMapperStringParts(std::wstring_view elementMapperString);
         }
     }
 }

@@ -106,17 +106,36 @@ namespace Xidi
                 return std::wstring_view::npos;
             }
 
-            /// Trims all whitespace from the front and end of the supplied string.
+            /// Trims all whitespace from the back of the supplied string.
             /// @param [in] stringToTrim Input string to be trimmed.
             /// @return Trimmed version of the input string, which may be empty if the input string is entirely whitespace.
-            static std::wstring_view TrimWhitespace(std::wstring_view stringToTrim)
+            static inline std::wstring_view TrimWhitespaceBack(std::wstring_view stringToTrim)
+            {
+                const size_t kLastNonWhitespacePosition = stringToTrim.find_last_not_of(kCharSetWhitespace);
+                if (std::wstring_view::npos == kLastNonWhitespacePosition)
+                    return std::wstring_view();
+
+                return stringToTrim.substr(0, 1 + kLastNonWhitespacePosition);
+            }
+
+            /// Trims all whitespace from the front of the supplied string.
+            /// @param [in] stringToTrim Input string to be trimmed.
+            /// @return Trimmed version of the input string, which may be empty if the input string is entirely whitespace.
+            static inline std::wstring_view TrimWhitespaceFront(std::wstring_view stringToTrim)
             {
                 const size_t kFirstNonWhitespacePosition = stringToTrim.find_first_not_of(kCharSetWhitespace);
                 if (std::wstring_view::npos == kFirstNonWhitespacePosition)
                     return std::wstring_view();
 
-                const size_t kLastNonWhitespacePosition = stringToTrim.find_last_not_of(kCharSetWhitespace);
-                return stringToTrim.substr(kFirstNonWhitespacePosition, (1 + kLastNonWhitespacePosition - kFirstNonWhitespacePosition));
+                return stringToTrim.substr(kFirstNonWhitespacePosition);
+            }
+
+            /// Trims all whitespace from the front and back of the supplied string.
+            /// @param [in] stringToTrim Input string to be trimmed.
+            /// @return Trimmed version of the input string, which may be empty if the input string is entirely whitespace.
+            static inline std::wstring_view TrimWhitespace(std::wstring_view stringToTrim)
+            {
+                return TrimWhitespaceBack(TrimWhitespaceFront(stringToTrim));
             }
 
 
@@ -178,36 +197,73 @@ namespace Xidi
 
             // --------
 
-            std::optional<SElementMapperStringParts> ExtractParts(std::wstring_view elementMapperString)
+            std::optional<SElementMapperStringParts> ExtractElementMapperStringParts(std::wstring_view elementMapperString)
             {
-                std::wstring_view trimmedElementMapperString = TrimWhitespace(elementMapperString);
-                if (true == trimmedElementMapperString.empty())
-                    return std::nullopt;
+                // First, look for the end of the "type" part of the string. This just means looking for the first possible separator character.
+                // Example: "Axis(X)" means the type is "Axis"
+                // Example: "Split(Null, Pov(Up))" means the type is "Split"
+                // Example: "Null, Pov(Up)" (parameters in the above example) means the type is "Null"
+                const size_t kSeparatorPosition = elementMapperString.find_first_of(kCharSetElementMapperTypeSeparator);
 
-                const size_t kOnePastTypeEndPosition = trimmedElementMapperString.find_first_of(kCharSetElementMapperTypeSeparator);
-                if (std::wstring_view::npos == kOnePastTypeEndPosition)
+                if (std::wstring_view::npos == kSeparatorPosition)
                 {
                     // No separator characters were found at all.
-                    // Example: input string "     Null    MoreStuff    " was trimmed to "Null    MoreStuff" and then returned as the type because there is no separator.
-                    return SElementMapperStringParts({.type = trimmedElementMapperString});
+                    // Example: "Null" in which case we got to the end of the string with no separator character identified.
+                    
+                    // The entire string is consumed and is the type. There are no parameters and no remaining parts to the string.
+                    return SElementMapperStringParts({.type = TrimWhitespace(elementMapperString)});
                 }
-                else if (kCharElementMapperBeginParams != trimmedElementMapperString[kOnePastTypeEndPosition])
+                else if (kCharElementMapperBeginParams != elementMapperString[kSeparatorPosition])
                 {
                     // A separator character was found but it does not begin a parameter list.
-                    // Example: "Null,   Axis(X, +)" would result in the position of the comma, so the type is "Null" and the parameter list is empty.
-                    return SElementMapperStringParts({.type = TrimWhitespace(trimmedElementMapperString.substr(0, kOnePastTypeEndPosition))});
-                }
+                    // Example: "Null, Pov(Up)" in which case we parsed the "Null" and stopped at the comma.
 
-                const size_t kParamListPos = 1 + kOnePastTypeEndPosition;
-                const size_t kParamListLength = FindParamListEndPosition(trimmedElementMapperString.substr(kParamListPos));
-                if (std::wstring_view::npos == kParamListLength)
+                    // The only possible separator character in this situation is a comma, otherwise it is an error.
+                    if (kCharElementMapperParamSeparator != elementMapperString[kSeparatorPosition])
+                        return std::nullopt;
+
+                    // Type string goes up to the separator character and the remaining part of the string comes afterwards.
+                    const std::wstring_view kTypeString = TrimWhitespace(elementMapperString.substr(0, kSeparatorPosition));
+                    const std::wstring_view kRemainingString = TrimWhitespace(elementMapperString.substr(1 + kSeparatorPosition));
+
+                    // If the remaining string is empty, it means the comma is a dangling comma which is a syntax error.
+                    if (true == kRemainingString.empty())
+                        return std::nullopt;
+
+                    return SElementMapperStringParts({.type = kTypeString, .remaining = kRemainingString});
+                }
+                else
                 {
-                    // A parameter list starting character was found with no matching end character. This is an error.
-                    // Example: "Axis(X, +" which is missing the closing parenthesis.
-                    return std::nullopt;
-                }
+                    // A separator character was found and it does begin a parameter list.
+                    // Example: "Axis(X)" and "Split(Null, Pov(Up))" in both of which cases we stopped at the open parenthesis character.
+                    const size_t kParamListStartPos = 1 + kSeparatorPosition;
+                    const size_t kParamListLength = FindParamListEndPosition(elementMapperString.substr(kParamListStartPos));
+                    const size_t kParamListEndPos = kParamListLength + kParamListStartPos;
 
-                return SElementMapperStringParts({.type = TrimWhitespace(trimmedElementMapperString.substr(0, kOnePastTypeEndPosition)), .params = TrimWhitespace(trimmedElementMapperString.substr(kParamListPos, kParamListLength))});
+                    // It is an error if a parameter list starting character was found with no matching end character.
+                    if (std::wstring_view::npos == kParamListLength)
+                        return std::nullopt;
+                                        
+                    // Figure out what part of the string is remaining. It is possible that there is nothing left or that we stopped at a comma.
+                    // Example: "Axis(X)" in which case "Axis" is the type, "X" is the parameter string, and there is nothing left as a remainder. This is true whether or not there are dangling whitespace characters at the end of the input.
+                    // Example: "Split(Button(1), Button(2)), Split(Button(3), Button(4))" in which case "Split" is the type, "Button(1), Button(2)" is the parameter string, and we need to skip over the comma to obtain "Split(Button(3), Button(4))" as the remaining string.
+                    std::wstring_view possibleRemainingString = TrimWhitespaceFront(elementMapperString.substr(1 + kParamListEndPos));
+                    if (false == possibleRemainingString.empty())
+                    {
+                        // The only possible separator that would have given rise to this situation is a comma.
+                        // Any other character at this point indicates an error.
+                        if (kCharElementMapperParamSeparator != possibleRemainingString.front())
+                            return std::nullopt;
+
+                        possibleRemainingString.remove_prefix(1);
+                    }
+                    
+                    const std::wstring_view kTypeString = TrimWhitespace(elementMapperString.substr(0, kSeparatorPosition));
+                    const std::wstring_view kParamString = TrimWhitespace(elementMapperString.substr(kParamListStartPos, kParamListLength));
+                    const std::wstring_view kRemainingString = TrimWhitespace(possibleRemainingString);
+
+                    return SElementMapperStringParts({.type = kTypeString, .params = kParamString, .remaining = kRemainingString});
+                }
             }
         }
     }
