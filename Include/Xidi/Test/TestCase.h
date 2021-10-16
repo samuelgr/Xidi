@@ -78,7 +78,7 @@ namespace XidiTest
 #define TEST_FAILED_BECAUSE(reasonf, ...)   do {::XidiTest::PrintFormatted(reasonf, ##__VA_ARGS__); TEST_FAILED;} while (0)
 
 /// Exit from a test case and indicate a failing result if the expression is false.
-#define TEST_ASSERT(expr)                   do {if (!(expr)) {::XidiTest::PrintFormatted(L"%s:%d: Assertion failed: %s", __FILEW__, __LINE__, L#expr); TEST_FAILED;}} while (0)
+#define TEST_ASSERT(expr)                   do {if (!(expr)) {::XidiTest::PrintFormatted(L"%s(%d): Assertion failed: %s", __FILEW__, __LINE__, L#expr); TEST_FAILED;}} while (0)
 
 /// Recommended way of creating test cases that execute conditionally.
 /// Requires a test case name and a condition, which evaluates to a value of type bool.
