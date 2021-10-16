@@ -16,6 +16,7 @@
 #include "ElementMapper.h"
 #include "Mapper.h"
 
+#include <memory>
 #include <optional>
 #include <string_view>
 
@@ -33,9 +34,9 @@ namespace Xidi
             /// For example, the string "Axis(RotY, +)" would be separated into "Axis" as the type and "RotY, +" (the entire contents of the parentheses) as the parameters.
             struct SElementMapperStringParts
             {
-                std::wstring_view type;                                     ///< String identifying the element mapper type.
-                std::wstring_view params;                                   ///< String holding all of the parameters without the enclosing parentheses.
-                std::wstring_view remaining;                                ///< Remaining part of the string that was not separated into parts.
+                std::wstring_view type;                                             ///< String identifying the element mapper type.
+                std::wstring_view params;                                           ///< String holding all of the parameters without the enclosing parentheses.
+                std::wstring_view remaining;                                        ///< Remaining part of the string that was not separated into parts.
 
                 /// Simple check for equality by field-by-field comparison.
                 /// Primarily useful during testing.
@@ -47,6 +48,13 @@ namespace Xidi
                 }
             };
 
+            /// Holds the result of parsing and consuming a single element mapper worth of input string.
+            struct SElementMapperParseResult
+            {
+                std::optional<std::unique_ptr<IElementMapper>> maybeElementMapper;  ///< Element mapper object, if the parse was successful. Note that `nullptr` indicates successful parse of a null element mapper.
+                std::wstring_view remainingString;                                  ///< Remaining unparsed part of the string. Either empty or contains additional element mapper strings to be parsed.
+            };
+
 
             // -------- FUNCTIONS ------------------------------------------ //
 
@@ -55,6 +63,12 @@ namespace Xidi
             /// @param [in] controllerElementString String to parse that supposedly identifies a controller element.
             /// @return Element map array index, if it could be identified based on the input string.
             std::optional<unsigned int> FindControllerElementIndex(std::wstring_view controllerElementString);
+
+            /// Attempts to build an element mapper using the supplied string.
+            /// This is the main entry point intended for use when parsing element mappers from strings.
+            /// @param [in] elementMapperString Input string supposedly representing an element mapper.
+            /// @return Pointer to the new mapper object if successful.
+            std::optional<std::unique_ptr<IElementMapper>> ElementMapperFromString(std::wstring_view elementMapperString);
 
             /// Determines if the specified controller element string is valid and recognized as identifying a controller element.
             /// See "MapperParser.cpp" for strings that will be recognized as valid.
@@ -83,6 +97,23 @@ namespace Xidi
             /// @param [in] elementMapperString Input string supposedly representing an element mapper.
             /// @return Structure of separated string parts, if successful.
             std::optional<SElementMapperStringParts> ExtractElementMapperStringParts(std::wstring_view elementMapperString);
+
+            /// Attempts to build a #ButtonMapper using the supplied parameters.
+            /// Parameter string should consist of a single integer identifying the button number.
+            /// @param [in] params Parameter string.
+            /// @return Pointer to the new mapper object if successful.
+            std::optional<std::unique_ptr<IElementMapper>> MakeButtonMapper(std::wstring_view params);
+
+            /// Attempts to build a null mapper (i.e. `nullptr`) using the supplied parameters.
+            /// Parameter string should be empty.
+            /// @param [in] params Parameter string.
+            /// @return `nullptr` if successful.
+            std::optional<std::unique_ptr<IElementMapper>> MakeNullMapper(std::wstring_view params);
+
+            /// Consumes part or all of the input string and attempts to parse it into an element mapper object.
+            /// @param [in] elementMapperString Input string supposedly containing the representation of an element mapper.
+            /// @return Result of the parse. Failure is indicated by the absence of an element mapper object.
+            SElementMapperParseResult ParseSingleElementMapper(std::wstring_view elementMapperString);
         }
     }
 }

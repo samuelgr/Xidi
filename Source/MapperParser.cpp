@@ -16,7 +16,10 @@
 #include "Mapper.h"
 #include "MapperParser.h"
 
+#include <climits>
 #include <cstddef>
+#include <cwchar>
+#include <cwctype>
 #include <map>
 #include <optional>
 #include <string_view>
@@ -48,30 +51,11 @@ namespace Xidi
             /// Terminating null character is needed so that this array acts as a null-terminated string.
             static constexpr wchar_t kCharSetElementMapperTypeSeparator[] = {kCharElementMapperBeginParams, kCharElementMapperEndParams, kCharElementMapperParamSeparator, L'\0'};
 
-            /// Map of strings representing XInput controller elements to indices within the element map data structure.
-            /// One pair exists per field in #SElementMap.
-            static const std::map<std::wstring_view, unsigned int> kControllerElementStrings = {
-                {L"StickLeftX", ELEMENT_MAP_INDEX_OF(stickLeftX)},
-                {L"StickLeftY", ELEMENT_MAP_INDEX_OF(stickLeftY)},
-                {L"StickRightX", ELEMENT_MAP_INDEX_OF(stickRightX)},
-                {L"StickRightY", ELEMENT_MAP_INDEX_OF(stickRightY)},
-                {L"DpadUp", ELEMENT_MAP_INDEX_OF(dpadUp)},
-                {L"DpadDown", ELEMENT_MAP_INDEX_OF(dpadDown)},
-                {L"DpadLeft", ELEMENT_MAP_INDEX_OF(dpadLeft)},
-                {L"DpadRight", ELEMENT_MAP_INDEX_OF(dpadRight)},
-                {L"TriggerLT", ELEMENT_MAP_INDEX_OF(triggerLT)},
-                {L"TriggerRT", ELEMENT_MAP_INDEX_OF(triggerRT)},
-                {L"ButtonA", ELEMENT_MAP_INDEX_OF(buttonA)},
-                {L"ButtonB", ELEMENT_MAP_INDEX_OF(buttonB)},
-                {L"ButtonX", ELEMENT_MAP_INDEX_OF(buttonX)},
-                {L"ButtonY", ELEMENT_MAP_INDEX_OF(buttonY)},
-                {L"ButtonLB", ELEMENT_MAP_INDEX_OF(buttonLB)},
-                {L"ButtonRB", ELEMENT_MAP_INDEX_OF(buttonRB)},
-                {L"ButtonBack", ELEMENT_MAP_INDEX_OF(buttonBack)},
-                {L"ButtonStart", ELEMENT_MAP_INDEX_OF(buttonStart)},
-                {L"ButtonLS", ELEMENT_MAP_INDEX_OF(buttonLS)},
-                {L"ButtonRS", ELEMENT_MAP_INDEX_OF(buttonRS)}
-            };
+
+            // -------- INTERNAL TYPES ------------------------------------- //
+
+            /// Type for all functions that attempt to build individual element mappers given a parameter string.
+            typedef std::optional<std::unique_ptr<IElementMapper>>(*TMakeElementMapperFunc)(std::wstring_view);
 
 
             // -------- INTERNAL FUNCTIONS --------------------------------- //
@@ -104,6 +88,51 @@ namespace Xidi
                 }
 
                 return std::wstring_view::npos;
+            }
+
+            /// Parses a relatively small unsigned integer value from the supplied input string.
+            /// A maximum of 8 characters are permitted, meaning any parsed values are guaranteed to fit into 32 bits.
+            /// This function will fail if the input string is too long or if it does not entirely represent an unsigned integer value.
+            /// @param [in] uintString String from which to parse.
+            /// @param [in] base Representation base of the number, which defaults to decimal.
+            /// @return Parsed integer value if successful.
+            static std::optional<unsigned int> ParseUnsignedInteger(std::wstring_view uintString, int base = 10)
+            {
+                constexpr size_t kMaxChars = 8;
+
+                if (true == uintString.empty())
+                    return std::nullopt;
+
+                if (uintString.length() > kMaxChars)
+                    return std::nullopt;
+
+                // Create a null-terminated version of the number by copying the digits into a small buffer.
+                wchar_t convertBuffer[1 + kMaxChars];
+                convertBuffer[kMaxChars] = L'\0';
+                for (size_t i = 0; i < kMaxChars; ++i)
+                {
+                    if (i < uintString.length())
+                    {
+                        if (iswxdigit(uintString[i]))
+                            convertBuffer[i] = uintString[i];
+                        else
+                            return std::nullopt;
+                    }
+                    else
+                    {
+                        convertBuffer[i] = L'\0';
+                        break;
+                    }
+                }
+                
+                wchar_t* endptr = nullptr;
+                unsigned int parsedValue = (unsigned int)wcstoul(convertBuffer, &endptr, base);
+
+                // Verify that the whole string was consumed.
+                if (L'\0' != *endptr)
+                    return std::nullopt;
+
+                return parsedValue;
             }
 
             /// Trims all whitespace from the back of the supplied string.
@@ -144,12 +173,54 @@ namespace Xidi
 
             std::optional<unsigned int> FindControllerElementIndex(std::wstring_view controllerElementString)
             {
+                // Map of strings representing controller elements to indices within the element map data structure.
+                // One pair exists per field in the SElementMap structure.
+                static const std::map<std::wstring_view, unsigned int> kControllerElementStrings = {
+                    {L"StickLeftX",     ELEMENT_MAP_INDEX_OF(stickLeftX)},
+                    {L"StickLeftY",     ELEMENT_MAP_INDEX_OF(stickLeftY)},
+                    {L"StickRightX",    ELEMENT_MAP_INDEX_OF(stickRightX)},
+                    {L"StickRightY",    ELEMENT_MAP_INDEX_OF(stickRightY)},
+                    {L"DpadUp",         ELEMENT_MAP_INDEX_OF(dpadUp)},
+                    {L"DpadDown",       ELEMENT_MAP_INDEX_OF(dpadDown)},
+                    {L"DpadLeft",       ELEMENT_MAP_INDEX_OF(dpadLeft)},
+                    {L"DpadRight",      ELEMENT_MAP_INDEX_OF(dpadRight)},
+                    {L"TriggerLT",      ELEMENT_MAP_INDEX_OF(triggerLT)},
+                    {L"TriggerRT",      ELEMENT_MAP_INDEX_OF(triggerRT)},
+                    {L"ButtonA",        ELEMENT_MAP_INDEX_OF(buttonA)},
+                    {L"ButtonB",        ELEMENT_MAP_INDEX_OF(buttonB)},
+                    {L"ButtonX",        ELEMENT_MAP_INDEX_OF(buttonX)},
+                    {L"ButtonY",        ELEMENT_MAP_INDEX_OF(buttonY)},
+                    {L"ButtonLB",       ELEMENT_MAP_INDEX_OF(buttonLB)},
+                    {L"ButtonRB",       ELEMENT_MAP_INDEX_OF(buttonRB)},
+                    {L"ButtonBack",     ELEMENT_MAP_INDEX_OF(buttonBack)},
+                    {L"ButtonStart",    ELEMENT_MAP_INDEX_OF(buttonStart)},
+                    {L"ButtonLS",       ELEMENT_MAP_INDEX_OF(buttonLS)},
+                    {L"ButtonRS",       ELEMENT_MAP_INDEX_OF(buttonRS)}
+                };
+
                 const auto controllerElementIter = kControllerElementStrings.find(controllerElementString);
 
                 if (kControllerElementStrings.cend() == controllerElementIter)
                     return std::nullopt;
                 else
                     return controllerElementIter->second;
+            }
+
+            // --------
+
+            std::optional<std::unique_ptr<IElementMapper>> ElementMapperFromString(std::wstring_view elementMapperString)
+            {
+                static constexpr unsigned int kMaxRecursionDepth = 3;
+
+                const unsigned int kRecursionDepth = ComputeRecursionDepth(elementMapperString).value_or(UINT_MAX);
+                if (kRecursionDepth > kMaxRecursionDepth)
+                    return std::nullopt;
+
+                SElementMapperParseResult parseResult = ParseSingleElementMapper(elementMapperString);
+                if ((false == parseResult.maybeElementMapper.has_value()) || (false == parseResult.remainingString.empty()))
+                    return std::nullopt;
+
+                return std::move(parseResult.maybeElementMapper.value());
             }
 
             // --------
@@ -255,15 +326,74 @@ namespace Xidi
                         if (kCharElementMapperParamSeparator != possibleRemainingString.front())
                             return std::nullopt;
 
-                        possibleRemainingString.remove_prefix(1);
+                        // If after skipping over the comma there is nothing left, then the comma is a dangling comma which is an error.
+                        possibleRemainingString = TrimWhitespace(possibleRemainingString.substr(1));
+                        if (true == possibleRemainingString.empty())
+                            return std::nullopt;
                     }
                     
                     const std::wstring_view kTypeString = TrimWhitespace(elementMapperString.substr(0, kSeparatorPosition));
                     const std::wstring_view kParamString = TrimWhitespace(elementMapperString.substr(kParamListStartPos, kParamListLength));
-                    const std::wstring_view kRemainingString = TrimWhitespace(possibleRemainingString);
+                    const std::wstring_view kRemainingString = possibleRemainingString;
 
                     return SElementMapperStringParts({.type = kTypeString, .params = kParamString, .remaining = kRemainingString});
                 }
+            }
+
+            // --------
+
+            std::optional<std::unique_ptr<IElementMapper>> MakeButtonMapper(std::wstring_view params)
+            {
+                const std::optional<unsigned int> kMaybeButtonNumber = ParseUnsignedInteger(params);
+                if (false == kMaybeButtonNumber.has_value())
+                    return std::nullopt;
+
+                const unsigned int kButtonNumber = kMaybeButtonNumber.value() - 1;
+                if (kButtonNumber >= (unsigned int)EButton::Count)
+                    return std::nullopt;
+
+                return std::make_unique<ButtonMapper>((EButton)kButtonNumber);
+            }
+
+            // --------
+
+            std::optional<std::unique_ptr<IElementMapper>> MakeNullMapper(std::wstring_view params)
+            {
+                if (false == params.empty())
+                    return std::nullopt;
+
+                return nullptr;
+            }
+
+            // --------
+
+            SElementMapperParseResult ParseSingleElementMapper(std::wstring_view elementMapperString)
+            {
+                static const std::map<std::wstring_view, TMakeElementMapperFunc> kMakeElementMapperFunctions = {
+                    {L"button",         &MakeButtonMapper},
+                    {L"Button",         &MakeButtonMapper},
+
+                    {L"null",           &MakeNullMapper},
+                    {L"Null",           &MakeNullMapper},
+                    {L"nothing",        &MakeNullMapper},
+                    {L"Nothing",        &MakeNullMapper},
+                    {L"none",           &MakeNullMapper},
+                    {L"None",           &MakeNullMapper},
+                    {L"empty",          &MakeNullMapper},
+                    {L"Empty",          &MakeNullMapper},
+                };
+
+                const std::optional<SElementMapperStringParts> kMaybeElementMapperStringParts = ExtractElementMapperStringParts(elementMapperString);
+                if (false == kMaybeElementMapperStringParts.has_value())
+                    return {.maybeElementMapper = std::nullopt};
+
+                const SElementMapperStringParts& kElementMapperStringParts = kMaybeElementMapperStringParts.value();
+
+                const auto kMakeElementMapperIter = kMakeElementMapperFunctions.find(kElementMapperStringParts.type);
+                if (kMakeElementMapperFunctions.cend() == kMakeElementMapperIter)
+                    return {.maybeElementMapper = std::nullopt};
+
+                return {.maybeElementMapper = kMakeElementMapperIter->second(kElementMapperStringParts.params), .remainingString = kElementMapperStringParts.remaining};
             }
         }
     }
