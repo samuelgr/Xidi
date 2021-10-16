@@ -195,20 +195,19 @@ namespace Xidi
                 {
                     // A separator character was found but it does not begin a parameter list.
                     // Example: "Null,   Axis(X, +)" would result in the position of the comma, so the type is "Null" and the parameter list is empty.
-                    return SElementMapperStringParts({.type = TrimWhitespace(trimmedElementMapperString.substr(0, kOnePastTypeEndPosition - 1))});
+                    return SElementMapperStringParts({.type = TrimWhitespace(trimmedElementMapperString.substr(0, kOnePastTypeEndPosition))});
                 }
 
-                const size_t kParamListEndPosition = FindParamListEndPosition(trimmedElementMapperString.substr(kOnePastTypeEndPosition));
-                if (std::wstring_view::npos == kParamListEndPosition)
+                const size_t kParamListPos = 1 + kOnePastTypeEndPosition;
+                const size_t kParamListLength = FindParamListEndPosition(trimmedElementMapperString.substr(kParamListPos));
+                if (std::wstring_view::npos == kParamListLength)
                 {
                     // A parameter list starting character was found with no matching end character. This is an error.
                     // Example: "Axis(X, +" which is missing the closing parenthesis.
                     return std::nullopt;
                 }
 
-                const size_t kParamListPos = 1 + kOnePastTypeEndPosition;
-                const size_t kParamListLength = kParamListEndPosition - kParamListPos;
-                return SElementMapperStringParts({.type = TrimWhitespace(trimmedElementMapperString.substr(0, kOnePastTypeEndPosition - 1)), .params = trimmedElementMapperString.substr(kParamListPos, kParamListLength)});
+                return SElementMapperStringParts({.type = TrimWhitespace(trimmedElementMapperString.substr(0, kOnePastTypeEndPosition)), .params = TrimWhitespace(trimmedElementMapperString.substr(kParamListPos, kParamListLength))});
             }
         }
     }

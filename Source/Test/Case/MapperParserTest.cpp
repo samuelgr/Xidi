@@ -20,6 +20,7 @@
 namespace XidiTest
 {
     using namespace ::Xidi::Controller;
+    using ::Xidi::Controller::MapperParser::SElementMapperStringParts;
 
 
     // -------- TEST CASES ------------------------------------------------- //
@@ -84,5 +85,22 @@ namespace XidiTest
 
         for (auto& recursionTestString : kRecursionTestStrings)
             TEST_ASSERT(std::nullopt == MapperParser::ComputeRecursionDepth(recursionTestString));
+    }
+
+    // Verifies correct separation of an input element mapper string into type and parameter substrings.
+    // Exercises several different nominal cases in which the input string is valid and actually contains both of these parts.
+    TEST_CASE(MapperParser_ExtractParts_Nominal)
+    {
+        const std::map<std::wstring_view, SElementMapperStringParts> kExtractPartsTestItems = {
+            {L"Axis(Y)",                                {.type = L"Axis",   .params = L"Y"}},
+            {L"   Axis       (    Y    ,    + )",       {.type = L"Axis",   .params = L"Y    ,    +"}},
+            {L"  Split ( Button(2), Button(3)   )",     {.type = L"Split",  .params = L"Button(2), Button(3)"}},
+            {L"   Null  ",                              {.type = L"Null"}},
+            {L"  Button( 2 ),  Button ( 3 )  ",         {.type = L"Button", .params = L"2"}},
+            {L" Null, Button(3) ",                      {.type = L"Null",   .params = L""}}
+        };
+
+        for (auto& extractPartsTestItem : kExtractPartsTestItems)
+            TEST_ASSERT(extractPartsTestItem.second == MapperParser::ExtractParts(extractPartsTestItem.first));
     }
 }

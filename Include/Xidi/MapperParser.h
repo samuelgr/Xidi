@@ -35,6 +35,15 @@ namespace Xidi
             {
                 std::wstring_view type;                                     ///< String identifying the element mapper type.
                 std::wstring_view params;                                   ///< String holding all of the parameters without the enclosing parentheses.
+
+                /// Simple check for equality by field-by-field comparison.
+                /// Primarily useful during testing.
+                /// @param [in] other Object with which to compare.
+                /// @return `true` if this object is equal to the other object, `false` otherwise.
+                inline bool operator==(const SElementMapperStringParts& other) const
+                {
+                    return ((other.type == type) && (other.params == params));
+                }
             };
 
 
