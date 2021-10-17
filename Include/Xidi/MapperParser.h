@@ -158,6 +158,12 @@ namespace Xidi
             /// @return Pointer to the new mapper object if successful.
             std::optional<std::unique_ptr<IElementMapper>> MakePovMapper(std::wstring_view params);
 
+            /// Attempts to build a #SplitMapper using the supplied parameters.
+            /// Parameter string should consist of two comma-separated strings representing element mappers.
+            /// @param [in] params Parameter string.
+            /// @return Pointer to the new mapper object if successful.
+            std::optional<std::unique_ptr<IElementMapper>> MakeSplitMapper(std::wstring_view params);
+
             /// Consumes part or all of the input string and attempts to parse it into an element mapper object.
             /// @param [in] elementMapperString Input string supposedly containing the representation of an element mapper.
             /// @return Result of the parse. Failure is indicated by the absence of an element mapper object.

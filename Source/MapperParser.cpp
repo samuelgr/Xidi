@@ -876,13 +876,36 @@ namespace Xidi
 
             // --------
 
+            std::optional<std::unique_ptr<IElementMapper>> MakeSplitMapper(std::wstring_view params)
+            {
+                // First parameter is required. It is a string that specifies the positive element mapper.
+                SElementMapperParseResult positiveElementMapperResult = ParseSingleElementMapper(params);
+                if (false == positiveElementMapperResult.maybeElementMapper.has_value())
+                    return std::nullopt;
+
+                // Second parameter is required. It is a string that specifies the negative element mapper.
+                SElementMapperParseResult negativeElementMapperResult = ParseSingleElementMapper(positiveElementMapperResult.remainingString);
+                if (false == negativeElementMapperResult.maybeElementMapper.has_value())
+                    return std::nullopt;
+
+                // No further parameters allowed.
+                if (false == negativeElementMapperResult.remainingString.empty())
+                    return std::nullopt;
+
+                return std::make_unique<SplitMapper>(std::move(positiveElementMapperResult.maybeElementMapper.value()), std::move(negativeElementMapperResult.maybeElementMapper.value()));
+            }
+
+            // --------
+
             SElementMapperParseResult ParseSingleElementMapper(std::wstring_view elementMapperString)
             {
                 static const std::map<std::wstring_view, TMakeElementMapperFunc> kMakeElementMapperFunctions = {
                     {L"axis",               &MakeAxisMapper},
                     {L"Axis",               &MakeAxisMapper},
 
-                    {L"Button",             &MakeButtonMapper},
+                    {L"btn",                &MakeButtonMapper},
+                    {L"Btn",                &MakeButtonMapper},
+                    {L"BTN",                &MakeButtonMapper},
                     {L"button",             &MakeButtonMapper},
                     {L"Button",             &MakeButtonMapper},
 
@@ -930,6 +953,9 @@ namespace Xidi
                     {L"None",               &MakeNullMapper},
                     {L"empty",              &MakeNullMapper},
                     {L"Empty",              &MakeNullMapper},
+
+                    {L"split",              &MakeSplitMapper},
+                    {L"Split",              &MakeSplitMapper},
                 };
 
                 const std::optional<SElementMapperStringParts> kMaybeElementMapperStringParts = ExtractElementMapperStringParts(elementMapperString);

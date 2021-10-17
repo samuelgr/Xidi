@@ -34,7 +34,7 @@ namespace XidiTest
     /// Only works for simple element mappers that uniquely target zero or one specific controller elements and have no side effects.
     /// @param [in] elementMapperA First of the two element mapper pointers to compare.
     /// @param [in] elementMapperB Second of the two element mapper pointers to compare.
-    static void VerifyElementMapperPointersAreEquivalent(const std::unique_ptr<IElementMapper>& elementMapperA, const std::unique_ptr<IElementMapper>& elementMapperB)
+    static void VerifyElementMapperPointersAreEquivalent(const IElementMapper* elementMapperA, const IElementMapper* elementMapperB)
     {
         if (nullptr == elementMapperA)
         {
@@ -59,7 +59,42 @@ namespace XidiTest
         TEST_ASSERT(resultA.remainingString == resultB.remainingString);
 
         if (resultA.maybeElementMapper.has_value())
-            VerifyElementMapperPointersAreEquivalent(resultA.maybeElementMapper.value(), resultB.maybeElementMapper.value());
+            VerifyElementMapperPointersAreEquivalent(resultA.maybeElementMapper.value().get(), resultB.maybeElementMapper.value().get());
+    }
+
+    /// Checks if the supplied split mapper pointers are equivalent and flags a test failure if not.
+    /// Supports recursively descending into sub-mappers that happen to be split mappers.
+    /// @param [in] splitMapperA First of the two split mapper pointers to compare.
+    /// @param [in] splitMapperB Second of the two split mapper pointers to compare.
+    static inline void VerifySplitMapperPointersAreEquivalent(const SplitMapper* splitMapperA, const SplitMapper* splitMapperB)
+    {
+        if (nullptr == splitMapperA)
+        {
+            TEST_ASSERT(nullptr == splitMapperB);
+        }
+        else
+        {
+            const IElementMapper* subMappersA[] = {splitMapperA->GetPositiveMapper(), splitMapperA->GetNegativeMapper()};
+            const IElementMapper* subMappersB[] = {splitMapperB->GetPositiveMapper(), splitMapperB->GetNegativeMapper()};
+            static_assert(_countof(subMappersA) == _countof(subMappersB), "Sub mapper array size mismatch.");
+
+            for (int i = 0; i < _countof(subMappersA); ++i)
+            {
+                const SplitMapper* subSplitMapperA = dynamic_cast<const SplitMapper*>(subMappersA[i]);
+                const SplitMapper* subSplitMapperB = dynamic_cast<const SplitMapper*>(subMappersB[i]);
+
+                if (nullptr == subSplitMapperA)
+                {
+                    TEST_ASSERT(nullptr == subSplitMapperB);
+                    VerifyElementMapperPointersAreEquivalent(subMappersA[i], subMappersB[i]);
+                }
+                else
+                {
+                    TEST_ASSERT(nullptr != subSplitMapperB);
+                    VerifySplitMapperPointersAreEquivalent(subSplitMapperA, subSplitMapperB);
+                }
+            }
+        }
     }
 
 
@@ -407,6 +442,70 @@ namespace XidiTest
         }
     }
 
+    // Verifies correct construction of split mapper objects in the nominal case of using very simple non-null inner element mappers represented by valid strings.
+    TEST_CASE(MapperParser_MakeSplitMapper_Nominal)
+    {
+        constexpr std::wstring_view kSplitMapperTestStrings[] = {
+            L"Axis(X), Axis(RotX)",
+            L" Pov(  Up  )  ,   Button  ( 10   ) ",
+            L"Axis(RotX, +), Pov(Up, Down)"
+        };
+        constexpr std::pair<SElementIdentifier, SElementIdentifier> kExpectedElements[] = {
+            {{.type = EElementType::Axis,   .axis = EAxis::X},      {.type = EElementType::Axis,    .axis = EAxis::RotX}},
+            {{.type = EElementType::Pov},                           {.type = EElementType::Button,  .button = EButton::B10}},
+            {{.type = EElementType::Axis,   .axis = EAxis::RotX},   {.type = EElementType::Pov}}
+        };
+        static_assert(_countof(kExpectedElements) == _countof(kSplitMapperTestStrings), "Mismatch between input and expected output array lengths.");
+
+        for (int i = 0; i < _countof(kSplitMapperTestStrings); ++i)
+        {
+            std::optional<std::unique_ptr<IElementMapper>> maybeSplitMapper = MapperParser::MakeSplitMapper(kSplitMapperTestStrings[i]);
+
+            TEST_ASSERT(true == maybeSplitMapper.has_value());
+            TEST_ASSERT(2 == maybeSplitMapper.value()->GetTargetElementCount());
+            TEST_ASSERT(kExpectedElements[i].first == maybeSplitMapper.value()->GetTargetElementAt(0));
+            TEST_ASSERT(kExpectedElements[i].second == maybeSplitMapper.value()->GetTargetElementAt(1));
+        }
+    }
+
+    // Verifies correct failure to create split mapper objects when the parameter strings are invalid.
+    TEST_CASE(MapperParser_MakeSplitMapper_Invalid)
+    {
+        constexpr std::wstring_view kSplitMapperTestStrings[] = {
+            L"Axis(X), Axis(RotX), Axis(Z)",
+            L"Button(10)",
+            L"Null, Null, Null, Null, Null"
+        };
+
+        for (auto& splitMapperTestString : kSplitMapperTestStrings)
+        {
+            std::optional<std::unique_ptr<IElementMapper>> maybeSplitMapper = MapperParser::MakeSplitMapper(splitMapperTestString);
+            TEST_ASSERT(false == maybeSplitMapper.has_value());
+        }
+    }
+
+    // Verifies correct construction of split mapper objects when both inner mappers are represented by valid strings but one is null.
+    TEST_CASE(MapperParser_MakeSplitMapper_OneNull)
+    {
+        constexpr std::pair<std::wstring_view, SElementIdentifier> kSplitMapperTestItems[] = {
+            {L"Axis(X), Null",          {.type = EElementType::Axis, .axis = EAxis::X}},
+            {L"Null, Axis(X)",          {.type = EElementType::Axis, .axis = EAxis::X}},
+            {L"Button(3), Null",        {.type = EElementType::Button, .button = EButton::B3}},
+            {L"Null, Button(3)",        {.type = EElementType::Button, .button = EButton::B3}},
+            {L"POV(Left), Null",        {.type = EElementType::Pov}},
+            {L"Null, POV(Right)",       {.type = EElementType::Pov}}
+        };
+
+        for (auto& splitMapperTestItem : kSplitMapperTestItems)
+        {
+            std::optional<std::unique_ptr<IElementMapper>> maybeSplitMapper = MapperParser::MakeSplitMapper(splitMapperTestItem.first);
+
+            TEST_ASSERT(true == maybeSplitMapper.has_value());
+            TEST_ASSERT(1 == maybeSplitMapper.value()->GetTargetElementCount());
+            TEST_ASSERT(splitMapperTestItem.second == maybeSplitMapper.value()->GetTargetElementAt(0));
+        }
+    }
+
     // Verifies correct parsing of single axis element mappers from a valid supplied input string.
     TEST_CASE(MapperParser_ParseSingleElementMapper_Axis)
     {
@@ -593,6 +692,50 @@ namespace XidiTest
         }
     }
 
+    // Verifies correct parsing of single split element mappers of varying complexity from a valid supplied input string.
+    TEST_CASE(MapperParser_ParseSingleElementMapper_Split)
+    {
+        constexpr std::wstring_view kTestStrings[] = {
+            L"Split(    Axis(x),  Axis(y)    )",
+            L"Split(    Split(  Button(1), Button(2)  ), Split(  Button(3), Button(4)  )    )",
+            L"Split(    Split(  Null,      Button(2)  ), Null    )",
+            L"Split( Null, Null )"
+        };
+        const SElementMapperParseResult kExpectedParseResults[] = {
+            {.maybeElementMapper = std::make_unique<SplitMapper>(
+                std::make_unique<AxisMapper>(EAxis::X),
+                std::make_unique<AxisMapper>(EAxis::Y))},
+            {.maybeElementMapper = std::make_unique<SplitMapper>(
+                std::make_unique<SplitMapper>(
+                    std::make_unique<ButtonMapper>(EButton::B1),
+                    std::make_unique<ButtonMapper>(EButton::B2)),
+                std::make_unique<SplitMapper>(
+                    std::make_unique<ButtonMapper>(EButton::B3),
+                    std::make_unique<ButtonMapper>(EButton::B4)))},
+            {.maybeElementMapper = std::make_unique<SplitMapper>(
+                std::make_unique<SplitMapper>(
+                    nullptr,
+                    std::make_unique<ButtonMapper>(EButton::B2)),
+                nullptr)},
+            {.maybeElementMapper = std::make_unique<SplitMapper>(
+                nullptr,
+                nullptr)}
+        };
+        static_assert(_countof(kExpectedParseResults) == _countof(kTestStrings), "Mismatch between input and expected output array lengths.");
+
+        for (int i = 0; i < _countof(kTestStrings); ++i)
+        {
+            SElementMapperParseResult actualParseResult = MapperParser::ParseSingleElementMapper(kTestStrings[i]);
+            VerifyParseResultsAreEquivalent(actualParseResult, kExpectedParseResults[i]);
+
+            TEST_ASSERT(nullptr != dynamic_cast<SplitMapper*>(actualParseResult.maybeElementMapper.value().get()));
+
+            const SplitMapper* const kExpectedSplitMapper = dynamic_cast<SplitMapper*>(kExpectedParseResults[i].maybeElementMapper.value().get());
+            const SplitMapper* const kActualSplitMapper = dynamic_cast<SplitMapper*>(actualParseResult.maybeElementMapper.value().get());
+            VerifySplitMapperPointersAreEquivalent(kActualSplitMapper, kExpectedSplitMapper);
+        }
+    }
+
 
     // Verifies failure to parse a single element mapper from an invalid supplied input string.
     TEST_CASE(MapperParser_ParseSingleElementMapper_Invalid)
@@ -648,7 +791,37 @@ namespace XidiTest
         {
             const std::optional<std::unique_ptr<IElementMapper>> kMaybeActualElementMapper = MapperParser::ElementMapperFromString(kTestStrings[i]);
             TEST_ASSERT(true == kMaybeActualElementMapper.has_value());
-            VerifyElementMapperPointersAreEquivalent(kMaybeActualElementMapper.value(), kExpectedElementMappers[i]);
+            VerifyElementMapperPointersAreEquivalent(kMaybeActualElementMapper.value().get(), kExpectedElementMappers[i].get());
+        }
+    }
+
+    // Verifies successful parsing of element mapper strings to element mapper objects.
+    // Exercises more complex cases in which element mappers are nested within one another.
+    TEST_CASE(MapperParser_ElementMapperFromString_Nested)
+    {
+        constexpr std::wstring_view kTestStrings[] = {
+           L"Split(Null, Null)",
+           L"Split(Split(Null, Null), Split(Button(3), Button(4)))"
+        };
+        const std::unique_ptr<IElementMapper> kExpectedElementMappers[] = {
+            std::make_unique<SplitMapper>(
+                nullptr,
+                nullptr),
+            std::make_unique<SplitMapper>(
+                std::make_unique<SplitMapper>(
+                    nullptr,
+                    nullptr),
+                std::make_unique<SplitMapper>(
+                    std::make_unique<ButtonMapper>(EButton::B3),
+                    std::make_unique<ButtonMapper>(EButton::B4)))
+        };
+        static_assert(_countof(kExpectedElementMappers) == _countof(kTestStrings), "Mismatch between input and expected output array lengths.");
+
+        for (int i = 0; i < _countof(kTestStrings); ++i)
+        {
+            const std::optional<std::unique_ptr<IElementMapper>> kMaybeActualElementMapper = MapperParser::ElementMapperFromString(kTestStrings[i]);
+            TEST_ASSERT(true == kMaybeActualElementMapper.has_value());
+            VerifyElementMapperPointersAreEquivalent(kMaybeActualElementMapper.value().get(), kExpectedElementMappers[i].get());
         }
     }
 
@@ -660,6 +833,20 @@ namespace XidiTest
            L"  UnknownMapperType  ",
            L"Button(3), Button(4)",
            L"Button((8))"
+        };
+
+        for (int i = 0; i < _countof(kTestStrings); ++i)
+        {
+            const std::optional<std::unique_ptr<IElementMapper>> kMaybeActualElementMapper = MapperParser::ElementMapperFromString(kTestStrings[i]);
+            TEST_ASSERT(false == kMaybeActualElementMapper.has_value());
+        }
+    }
+
+    // Verifies failure to parse element mapper strings that are syntactically correct but have recursion that goes too deep.
+    TEST_CASE(MapperParser_ElementMapperFromString_RecursionTooDeep)
+    {
+        constexpr std::wstring_view kTestStrings[] = {
+           L"Split(   Split(   Split(   Split(Split(Split(Null, Null), Null), Null), Null    ), Null), Null)"
         };
 
         for (int i = 0; i < _countof(kTestStrings); ++i)
