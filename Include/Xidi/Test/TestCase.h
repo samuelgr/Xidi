@@ -13,9 +13,6 @@
 
 #include "Utilities.h"
 
-#include <string>
-#include <string_view>
-
 
 namespace XidiTest
 {
@@ -74,8 +71,8 @@ namespace XidiTest
 /// Exit from a test case and indicate a failing result.
 #define TEST_FAILED                         throw ::XidiTest::TestFailedException()
 
-/// Format and print a message and exit from a test caes, indicating a failing result.
-#define TEST_FAILED_BECAUSE(reasonf, ...)   do {::XidiTest::PrintFormatted(reasonf, ##__VA_ARGS__); TEST_FAILED;} while (0)
+/// Format and print a message and exit from a test case, indicating a failing result.
+#define TEST_FAILED_BECAUSE(reasonf, ...)   do {::XidiTest::PrintFormatted(L"%s(%d): Test failed: " reasonf, __FILEW__, __LINE__, ##__VA_ARGS__); TEST_FAILED;} while (0)
 
 /// Exit from a test case and indicate a failing result if the expression is false.
 #define TEST_ASSERT(expr)                   do {if (!(expr)) {::XidiTest::PrintFormatted(L"%s(%d): Assertion failed: %s", __FILEW__, __LINE__, L#expr); TEST_FAILED;}} while (0)
