@@ -15,6 +15,7 @@
 
 #include <map>
 #include <string>
+#include <string_view>
 
 
 namespace XidiTest
@@ -58,10 +59,11 @@ namespace XidiTest
 
         /// Runs all tests registered by the harness.
         /// Typically invoked only once by the entry point to the test program.
+        /// @param [in] prefixToMatch Prefix against which to compare test case names.
         /// @return Number of failing tests.
-        static inline int RunAllTests(void)
+        static inline int RunAllTests(std::wstring_view prefixToMatch)
         {
-            return GetInstance().RunAllTestsInternal();
+            return GetInstance().RunAllTestsInternal(prefixToMatch);
         }
 
 
@@ -73,8 +75,9 @@ namespace XidiTest
         /// @param [in] name Name of the test case.
         void RegisterTestCaseInternal(const ITestCase* const testCase, const wchar_t* const name);
 
-        /// Internal implementation of running all tests.
+        /// Internal implementation of running all tests that match the specified prefix.
+        /// @param [in] prefixToMatch Prefix against which to compare test case names.
         /// @return Number of failing tests.
-        int RunAllTestsInternal(void);
+        int RunAllTestsInternal(std::wstring_view prefixToMatch);
     };
 }
