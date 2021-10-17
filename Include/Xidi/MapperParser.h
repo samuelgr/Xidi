@@ -134,6 +134,12 @@ namespace Xidi
             /// @return Pointer to the new mapper object if successful.
             std::optional<std::unique_ptr<IElementMapper>> MakeButtonMapper(std::wstring_view params);
 
+            /// Attempts to build a #DigitalAxisMapper using the supplied parameters.
+            /// Parameter string should consist of a string representing an axis and optionally a second string representing an axis direction.
+            /// @param [in] params Parameter string.
+            /// @return Pointer to the new mapper object if successful.
+            std::optional<std::unique_ptr<IElementMapper>> MakeDigitalAxisMapper(std::wstring_view params);
+
             /// Attempts to build a #KeyboardMapper using the supplied parameters.
             /// Parameter string should consist of a single integer identifying the keyboard scan code.
             /// @param [in] params Parameter string.

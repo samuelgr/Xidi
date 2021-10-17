@@ -281,6 +281,42 @@ namespace XidiTest
         }
     }
 
+    // Verifies correct construction of digital axis mapper objects in the nominal case of valid parameter strings being passed.
+    // Same as the corresponding axis mapper test but with a different target type.
+    TEST_CASE(MapperParser_MakeDigitalAxisMapper_Nominal)
+    {
+        constexpr std::pair<std::wstring_view, SElementIdentifier> kDigitalAxisMapperTestItems[] = {
+            {L"x",              {.type = EElementType::Axis, .axis = EAxis::X}},
+            {L"rX",             {.type = EElementType::Axis, .axis = EAxis::RotX}},
+            {L"RotY",           {.type = EElementType::Axis, .axis = EAxis::RotY}},
+            {L"rotz, +",        {.type = EElementType::Axis, .axis = EAxis::RotZ}},
+            {L"y, NEGATIVE",    {.type = EElementType::Axis, .axis = EAxis::Y}},
+        };
+
+        for (auto& digitalAxisMapperTestItem : kDigitalAxisMapperTestItems)
+        {
+            std::optional<std::unique_ptr<IElementMapper>> maybeDigitalAxisMapper = MapperParser::MakeDigitalAxisMapper(digitalAxisMapperTestItem.first);
+
+            TEST_ASSERT(true == maybeDigitalAxisMapper.has_value());
+            TEST_ASSERT(1 == maybeDigitalAxisMapper.value()->GetTargetElementCount());
+            TEST_ASSERT(digitalAxisMapperTestItem.second == maybeDigitalAxisMapper.value()->GetTargetElementAt(0));
+        }
+    }
+
+    // Verifies correct failure to create digital axis mapper objects when the parameter strings are invalid.
+    // Same as the corresponding axis mapper test but with a different target type.
+    TEST_CASE(MapperParser_MakeDigitalAxisMapper_Invalid)
+    {
+        const std::wstring_view kDigitalAxisMapperTestStrings[] = { L"A", L"3", L"x, anydir", L"rotz, +, morestuff" };
+
+        for (auto& digitalAxisMapperTestString : kDigitalAxisMapperTestStrings)
+        {
+            std::optional<std::unique_ptr<IElementMapper>> maybeDigitalAxisMapper = MapperParser::MakeDigitalAxisMapper(digitalAxisMapperTestString);
+            TEST_ASSERT(false == maybeDigitalAxisMapper.has_value());
+        }
+    }
+
+
     // Verifies correct construction of keyboard mapper objects in the nominal case of valid parameter strings being passed.
     TEST_CASE(MapperParser_MakeKeyboardMapper_Nominal)
     {
@@ -328,12 +364,46 @@ namespace XidiTest
     // Verifies correct failure to create null mappers when the parameter strings are non-empty.
     TEST_CASE(MapperParser_MakeNullMapper_Invalid)
     {
-        const std::wstring_view kNullMapperTestStrings[] = { L"0", L"A", L"1,+", L"A, B"};
+        const std::wstring_view kNullMapperTestStrings[] = {L"0", L"A", L"1,+", L"A, B"};
 
         for (auto& nullMapperTestString : kNullMapperTestStrings)
         {
             std::optional<std::unique_ptr<IElementMapper>> maybeNullMapper = MapperParser::MakeNullMapper(nullMapperTestString);
             TEST_ASSERT(false == maybeNullMapper.has_value());
+        }
+    }
+
+    // Verifies correct construction of POV mapper objects in the nominal case of valid parameter strings being passed.
+    // This test does not check POV directon, just target virtual controller element.
+    TEST_CASE(MapperParser_MakePovMapper_Nominal)
+    {
+        constexpr std::pair<std::wstring_view, SElementIdentifier> kPovMapperTestItems[] = {
+            {L"UP",         {.type = EElementType::Pov}},
+            {L"Dn",         {.type = EElementType::Pov}},
+            {L"Down, Up",   {.type = EElementType::Pov}},
+            {L"Left",       {.type = EElementType::Pov}},
+            {L"r, r",       {.type = EElementType::Pov}},
+        };
+
+        for (auto& povMapperTestItem : kPovMapperTestItems)
+        {
+            std::optional<std::unique_ptr<IElementMapper>> maybePovMapper = MapperParser::MakePovMapper(povMapperTestItem.first);
+
+            TEST_ASSERT(true == maybePovMapper.has_value());
+            TEST_ASSERT(1 == maybePovMapper.value()->GetTargetElementCount());
+            TEST_ASSERT(povMapperTestItem.second == maybePovMapper.value()->GetTargetElementAt(0));
+        }
+    }
+
+    // Verifies correct failure to create axis mapper objects when the parameter strings are invalid.
+    TEST_CASE(MapperParser_MakePovMapper_Invalid)
+    {
+        const std::wstring_view kPovMapperTestStrings[] = {L"Up, Left, Right", L"WhoKnows", L",", L""};
+
+        for (auto& povMapperTestString : kPovMapperTestStrings)
+        {
+            std::optional<std::unique_ptr<IElementMapper>> maybePovMapper = MapperParser::MakeAxisMapper(povMapperTestString);
+            TEST_ASSERT(false == maybePovMapper.has_value());
         }
     }
 
@@ -389,6 +459,37 @@ namespace XidiTest
         }
     }
 
+    // Verifies correct parsing of single digital axis element mappers from a valid supplied input string.
+    // Same as the axis mapper test but with a different target type.
+    TEST_CASE(MapperParser_ParseSingleElementMapper_DigitalAxis)
+    {
+        constexpr std::wstring_view kTestStrings[] = {
+            L"DigitalAxis(X)",
+            L"DigitalAxis(Y, Both)",
+            L"DigitalAxis(Z, +)",
+            L"DigitalAxis(RX, negative), Button(3)"
+        };
+        const SElementMapperParseResult kExpectedParseResults[] = {
+            {.maybeElementMapper = std::make_unique<DigitalAxisMapper>(EAxis::X)},
+            {.maybeElementMapper = std::make_unique<DigitalAxisMapper>(EAxis::Y, AxisMapper::EDirection::Both)},
+            {.maybeElementMapper = std::make_unique<DigitalAxisMapper>(EAxis::Z, AxisMapper::EDirection::Positive)},
+            {.maybeElementMapper = std::make_unique<DigitalAxisMapper>(EAxis::RotX, AxisMapper::EDirection::Negative), .remainingString = L"Button(3)"},
+        };
+        static_assert(_countof(kExpectedParseResults) == _countof(kTestStrings), "Mismatch between input and expected output array lengths.");
+
+        for (int i = 0; i < _countof(kTestStrings); ++i)
+        {
+            SElementMapperParseResult actualParseResult = MapperParser::ParseSingleElementMapper(kTestStrings[i]);
+            VerifyParseResultsAreEquivalent(actualParseResult, kExpectedParseResults[i]);
+
+            TEST_ASSERT(nullptr != dynamic_cast<DigitalAxisMapper*>(actualParseResult.maybeElementMapper.value().get()));
+
+            const AxisMapper::EDirection kExpectedDirection = dynamic_cast<DigitalAxisMapper*>(kExpectedParseResults[i].maybeElementMapper.value().get())->GetAxisDirection();
+            const AxisMapper::EDirection kActualDirection = dynamic_cast<DigitalAxisMapper*>(actualParseResult.maybeElementMapper.value().get())->GetAxisDirection();
+            TEST_ASSERT(kActualDirection == kExpectedDirection);
+        }
+    }
+
     // Verifies correct parsing of single keyboard element mappers from a valid supplied input string.
     // Exercises different scancode representations.
     TEST_CASE(MapperParser_ParseSingleElementMapper_Keyboard)
@@ -438,6 +539,38 @@ namespace XidiTest
         }
     }
 
+    // Verifies correct parsing of single POV element mappers from a valid supplied input string.
+    TEST_CASE(MapperParser_ParseSingleElementMapper_Pov)
+    {
+        constexpr std::wstring_view kTestStrings[] = {
+            L"PovHat(Up)",
+            L"Pov(Left, Right)",
+            L"POV(Dn, Down)"
+        };
+        const SElementMapperParseResult kExpectedParseResults[] = {
+            {.maybeElementMapper = std::make_unique<PovMapper>(EPovDirection::Up)},
+            {.maybeElementMapper = std::make_unique<PovMapper>(EPovDirection::Left, EPovDirection::Right)},
+            {.maybeElementMapper = std::make_unique<PovMapper>(EPovDirection::Down, EPovDirection::Down)},
+        };
+        static_assert(_countof(kExpectedParseResults) == _countof(kTestStrings), "Mismatch between input and expected output array lengths.");
+
+        for (int i = 0; i < _countof(kTestStrings); ++i)
+        {
+            SElementMapperParseResult actualParseResult = MapperParser::ParseSingleElementMapper(kTestStrings[i]);
+            VerifyParseResultsAreEquivalent(actualParseResult, kExpectedParseResults[i]);
+
+            TEST_ASSERT(nullptr != dynamic_cast<PovMapper*>(actualParseResult.maybeElementMapper.value().get()));
+
+            const EPovDirection kExpectedDirectionPositive = dynamic_cast<PovMapper*>(kExpectedParseResults[i].maybeElementMapper.value().get())->GetPositiveDirection();
+            const EPovDirection kActualDirectionPositive = dynamic_cast<PovMapper*>(actualParseResult.maybeElementMapper.value().get())->GetPositiveDirection();
+            TEST_ASSERT(kActualDirectionPositive == kExpectedDirectionPositive);
+
+            const std::optional<EPovDirection> kExpectedDirectionNegative = dynamic_cast<PovMapper*>(kExpectedParseResults[i].maybeElementMapper.value().get())->GetNegativeDirection();
+            const std::optional<EPovDirection> kActualDirectionNegative = dynamic_cast<PovMapper*>(actualParseResult.maybeElementMapper.value().get())->GetNegativeDirection();
+            TEST_ASSERT(kActualDirectionNegative == kExpectedDirectionNegative);
+        }
+    }
+
     // Verifies correct parsing of single null element mappers from a valid supplied input string.
     TEST_CASE(MapperParser_ParseSingleElementMapper_Null)
     {
@@ -460,20 +593,29 @@ namespace XidiTest
         }
     }
 
+
     // Verifies failure to parse a single element mapper from an invalid supplied input string.
     TEST_CASE(MapperParser_ParseSingleElementMapper_Invalid)
     {
         constexpr std::wstring_view kTestStrings[] = {
             L" UnknownMapperType ",
-            L"  Null , ",
             L" Axis(R)",
             L"  Axis(X, +-)",
+            L" DigitalAxis(U)",
+            L"  DigitalAxis(z, -+)",
             L"  Button(4) ) ",
             L"  Button(4) , ",
             L"Button(4,5)",
             L"Keyboard(1000)",
             L"Keyboard(10,11)",
-            L"Keyboard(0x a)"
+            L"Keyboard(0x a)",
+            L"  Null , ",
+            L"Null()",
+            L"Null(   )",
+            L"Null   (   )  ",
+            L"Null(      ",
+            L"Pov(Up, Left, Right)",
+            L"Pov(AnyDir)"
         };
         const SElementMapperParseResult kExpectedParseResult = {.maybeElementMapper = std::nullopt};
 

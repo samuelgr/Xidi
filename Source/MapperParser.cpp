@@ -58,6 +58,15 @@ namespace Xidi
             /// Type for all functions that attempt to build individual element mappers given a parameter string.
             typedef std::optional<std::unique_ptr<IElementMapper>>(*TMakeElementMapperFunc)(std::wstring_view);
 
+            /// Holds parameters for creating #AxisMapper objects.
+            /// Useful because both #AxisMapper and #DigitalAxisMapper follow the same parsing logic and parameters.
+            /// See #AxisMapper for documentation on the fields.
+            struct SAxisMapperParams
+            {
+                EAxis axis;
+                AxisMapper::EDirection direction;
+            };
+
 
             // -------- INTERNAL FUNCTIONS --------------------------------- //
 
@@ -101,14 +110,14 @@ namespace Xidi
             }
 
             /// Identifies the end position of the parameter list given a string that starts a parameter list.
-            /// For example, if the element mapper string is "Axis(RotY, +)" then the input string should be "(RotY, +)" and this function will identify the position of the closing parenthesis.
+            /// For example, if the element mapper string is "Axis(RotY, +)" then the input string should be "RotY, +)" and this function will identify the position of the closing parenthesis.
             /// @param [in] paramListString Parameter list input string to search.
             /// @return Position of the end of the parameter list if the input string is valid and contains correct balance, or `npos` otherwise.
             static size_t FindParamListEndPosition(std::wstring_view paramListString)
             {
                 unsigned int depth = 1;
 
-                for (size_t pos = 1; pos < paramListString.length(); ++pos)
+                for (size_t pos = paramListString.find_first_not_of(kCharSetWhitespace); pos < paramListString.length(); ++pos)
                 {
                     switch (paramListString[pos])
                     {
@@ -128,6 +137,117 @@ namespace Xidi
                 }
 
                 return std::wstring_view::npos;
+            }
+
+            /// Common logic for parsing axis mapper parameters from an axis mapper string.
+            /// Used for creating both #AxisMapper and #DigitalAxisMapper objects.
+            /// @param [in] params Parameter string.
+            /// @return Structure containing the parsed parameters if parsing was successful.
+            static std::optional<SAxisMapperParams> ParseAxisMapperParams(std::wstring_view params)
+            {
+                // Map of strings representing axes to axis enumerators.
+                static const std::map<std::wstring_view, EAxis> kAxisStrings = {
+                    {L"x",              EAxis::X},
+                    {L"X",              EAxis::X},
+
+                    {L"y",              EAxis::Y},
+                    {L"Y",              EAxis::Y},
+
+                    {L"z",              EAxis::Z},
+                    {L"Z",              EAxis::Z},
+
+                    {L"rx",             EAxis::RotX},
+                    {L"Rx",             EAxis::RotX},
+                    {L"rX",             EAxis::RotX},
+                    {L"RX",             EAxis::RotX},
+                    {L"rotx",           EAxis::RotX},
+                    {L"rotX",           EAxis::RotX},
+                    {L"Rotx",           EAxis::RotX},
+                    {L"RotX",           EAxis::RotX},
+
+                    {L"ry",             EAxis::RotY},
+                    {L"Ry",             EAxis::RotY},
+                    {L"rY",             EAxis::RotY},
+                    {L"RY",             EAxis::RotY},
+                    {L"roty",           EAxis::RotY},
+                    {L"rotY",           EAxis::RotY},
+                    {L"Roty",           EAxis::RotY},
+                    {L"RotY",           EAxis::RotY},
+
+                    {L"rz",             EAxis::RotZ},
+                    {L"Rz",             EAxis::RotZ},
+                    {L"rZ",             EAxis::RotZ},
+                    {L"RZ",             EAxis::RotZ},
+                    {L"rotz",           EAxis::RotZ},
+                    {L"rotZ",           EAxis::RotZ},
+                    {L"Rotz",           EAxis::RotZ},
+                    {L"RotZ",           EAxis::RotZ}
+                };
+
+                // Map of strings representing axis directions to axis direction enumerators.
+                static const std::map<std::wstring_view, AxisMapper::EDirection> kDirectionStrings = {
+                    {L"bidir",          AxisMapper::EDirection::Both},
+                    {L"Bidir",          AxisMapper::EDirection::Both},
+                    {L"BiDir",          AxisMapper::EDirection::Both},
+                    {L"BIDIR",          AxisMapper::EDirection::Both},
+                    {L"bidirectional",  AxisMapper::EDirection::Both},
+                    {L"Bidirectional",  AxisMapper::EDirection::Both},
+                    {L"BiDirectional",  AxisMapper::EDirection::Both},
+                    {L"BIDIRECTIONAL",  AxisMapper::EDirection::Both},
+                    {L"both",           AxisMapper::EDirection::Both},
+                    {L"Both",           AxisMapper::EDirection::Both},
+                    {L"BOTH",           AxisMapper::EDirection::Both},
+
+                    {L"+",              AxisMapper::EDirection::Positive},
+                    {L"+ve",            AxisMapper::EDirection::Positive},
+                    {L"pos",            AxisMapper::EDirection::Positive},
+                    {L"Pos",            AxisMapper::EDirection::Positive},
+                    {L"POS",            AxisMapper::EDirection::Positive},
+                    {L"positive",       AxisMapper::EDirection::Positive},
+                    {L"Positive",       AxisMapper::EDirection::Positive},
+                    {L"POSITIVE",       AxisMapper::EDirection::Positive},
+
+                    {L"-",              AxisMapper::EDirection::Negative},
+                    {L"-ve",            AxisMapper::EDirection::Negative},
+                    {L"neg",            AxisMapper::EDirection::Negative},
+                    {L"Neg",            AxisMapper::EDirection::Negative},
+                    {L"NEG",            AxisMapper::EDirection::Negative},
+                    {L"negative",       AxisMapper::EDirection::Negative},
+                    {L"Negative",       AxisMapper::EDirection::Negative},
+                    {L"NEGATIVE",       AxisMapper::EDirection::Negative}
+                };
+
+                SParamStringParts paramParts = ExtractParameterListStringParts(params).value_or(SParamStringParts());
+
+                // First parameter is required. It is a string that specifies the target axis.
+                if (true == paramParts.first.empty())
+                    return std::nullopt;
+
+                const auto kAxisIter = kAxisStrings.find(paramParts.first);
+                if (kAxisStrings.cend() == kAxisIter)
+                    return std::nullopt;
+
+                const EAxis kAxis = kAxisIter->second;
+
+                // Second parameter is optional. It is a string that specifies the axis direction, with the default being both.
+                AxisMapper::EDirection axisDirection = AxisMapper::EDirection::Both;
+
+                paramParts = ExtractParameterListStringParts(paramParts.remaining).value_or(SParamStringParts());
+                if (false == paramParts.first.empty())
+                {
+                    // It is an error for a second parameter to be present but invalid.
+                    const auto kDirectionIter = kDirectionStrings.find(paramParts.first);
+                    if (kDirectionStrings.cend() == kDirectionIter)
+                        return std::nullopt;
+
+                    axisDirection = kDirectionIter->second;
+                }
+
+                // No further parameters allowed.
+                if (false == paramParts.remaining.empty())
+                    return std::nullopt;
+
+                return SAxisMapperParams({.axis = kAxis, .direction = axisDirection});
             }
 
             /// Parses a relatively small unsigned integer value from the supplied input string.
@@ -574,6 +694,11 @@ namespace Xidi
                     
                     const std::wstring_view kTypeString = TrimWhitespace(elementMapperString.substr(0, kSeparatorPosition));
                     const std::wstring_view kParamString = TrimWhitespace(elementMapperString.substr(kParamListStartPos, kParamListLength));
+
+                    // Empty parameter lists are not allowed.
+                    if (true == kParamString.empty())
+                        return std::nullopt;
+
                     const std::wstring_view kRemainingString = possibleRemainingString;
 
                     return SElementMapperStringParts({.type = kTypeString, .params = kParamString, .remaining = kRemainingString});
@@ -613,109 +738,11 @@ namespace Xidi
 
             std::optional<std::unique_ptr<IElementMapper>> MakeAxisMapper(std::wstring_view params)
             {
-                // Map of strings representing axes to axis enumerators.
-                static const std::map<std::wstring_view, EAxis> kAxisStrings = {
-                    {L"x",              EAxis::X},
-                    {L"X",              EAxis::X},
-
-                    {L"y",              EAxis::Y},
-                    {L"Y",              EAxis::Y},
-
-                    {L"z",              EAxis::Z},
-                    {L"Z",              EAxis::Z},
-
-                    {L"rx",             EAxis::RotX},
-                    {L"Rx",             EAxis::RotX},
-                    {L"rX",             EAxis::RotX},
-                    {L"RX",             EAxis::RotX},
-                    {L"rotx",           EAxis::RotX},
-                    {L"rotX",           EAxis::RotX},
-                    {L"Rotx",           EAxis::RotX},
-                    {L"RotX",           EAxis::RotX},
-
-                    {L"ry",             EAxis::RotY},
-                    {L"Ry",             EAxis::RotY},
-                    {L"rY",             EAxis::RotY},
-                    {L"RY",             EAxis::RotY},
-                    {L"roty",           EAxis::RotY},
-                    {L"rotY",           EAxis::RotY},
-                    {L"Roty",           EAxis::RotY},
-                    {L"RotY",           EAxis::RotY},
-
-                    {L"rz",             EAxis::RotZ},
-                    {L"Rz",             EAxis::RotZ},
-                    {L"rZ",             EAxis::RotZ},
-                    {L"RZ",             EAxis::RotZ},
-                    {L"rotz",           EAxis::RotZ},
-                    {L"rotZ",           EAxis::RotZ},
-                    {L"Rotz",           EAxis::RotZ},
-                    {L"RotZ",           EAxis::RotZ}
-                };
-
-                // Map of strings representing axis directions to axis direction enumerators.
-                static const std::map<std::wstring_view, AxisMapper::EDirection> kDirectionStrings = {
-                    {L"bidir",          AxisMapper::EDirection::Both},
-                    {L"Bidir",          AxisMapper::EDirection::Both},
-                    {L"BiDir",          AxisMapper::EDirection::Both},
-                    {L"BIDIR",          AxisMapper::EDirection::Both},
-                    {L"bidirectional",  AxisMapper::EDirection::Both},
-                    {L"Bidirectional",  AxisMapper::EDirection::Both},
-                    {L"BiDirectional",  AxisMapper::EDirection::Both},
-                    {L"BIDIRECTIONAL",  AxisMapper::EDirection::Both},
-                    {L"both",           AxisMapper::EDirection::Both},
-                    {L"Both",           AxisMapper::EDirection::Both},
-                    {L"BOTH",           AxisMapper::EDirection::Both},
-
-                    {L"+",              AxisMapper::EDirection::Positive},
-                    {L"+ve",            AxisMapper::EDirection::Positive},
-                    {L"pos",            AxisMapper::EDirection::Positive},
-                    {L"Pos",            AxisMapper::EDirection::Positive},
-                    {L"POS",            AxisMapper::EDirection::Positive},
-                    {L"positive",       AxisMapper::EDirection::Positive},
-                    {L"Positive",       AxisMapper::EDirection::Positive},
-                    {L"POSITIVE",       AxisMapper::EDirection::Positive},
-
-                    {L"-",              AxisMapper::EDirection::Negative},
-                    {L"-ve",            AxisMapper::EDirection::Negative},
-                    {L"neg",            AxisMapper::EDirection::Negative},
-                    {L"Neg",            AxisMapper::EDirection::Negative},
-                    {L"NEG",            AxisMapper::EDirection::Negative},
-                    {L"negative",       AxisMapper::EDirection::Negative},
-                    {L"Negative",       AxisMapper::EDirection::Negative},
-                    {L"NEGATIVE",       AxisMapper::EDirection::Negative}
-                };
-
-                SParamStringParts paramParts = ExtractParameterListStringParts(params).value_or(SParamStringParts());
-
-                // First parameter is required. It is a string that specifies the target axis.
-                if (true == paramParts.first.empty())
+                const std::optional<SAxisMapperParams> kMaybeAxisMapperParams = ParseAxisMapperParams(params);
+                if (false == kMaybeAxisMapperParams.has_value())
                     return std::nullopt;
 
-                const auto kAxisIter = kAxisStrings.find(paramParts.first);
-                if (kAxisStrings.cend() == kAxisIter)
-                    return std::nullopt;
-
-                const EAxis kAxis = kAxisIter->second;
-
-                // Second parameter is optional. It is a string that specifies the axis direction, with the default being both.
-                AxisMapper::EDirection axisDirection = AxisMapper::EDirection::Both;
-
-                paramParts = ExtractParameterListStringParts(paramParts.remaining).value_or(SParamStringParts());
-                if (false == paramParts.first.empty())
-                {
-                    // It is an error for a second parameter to be present but invalid.
-                    const auto kDirectionIter = kDirectionStrings.find(paramParts.first);
-                    if (kDirectionStrings.cend() == kDirectionIter)
-                        return std::nullopt;
-
-                    axisDirection = kDirectionIter->second;
-                }
-
-                // No further parameters allowed.
-                if (false == paramParts.remaining.empty())
-                    return std::nullopt;
-
-                return std::make_unique<AxisMapper>(kAxis, axisDirection);
+                return std::make_unique<AxisMapper>(kMaybeAxisMapperParams.value().axis, kMaybeAxisMapperParams.value().direction);
             }
 
             // --------
@@ -731,6 +758,17 @@ namespace Xidi
                     return std::nullopt;
 
                 return std::make_unique<ButtonMapper>((EButton)kButtonNumber);
+            }
+
+            // --------
+
+            std::optional<std::unique_ptr<IElementMapper>> MakeDigitalAxisMapper(std::wstring_view params)
+            {
+                const std::optional<SAxisMapperParams> kMaybeAxisMapperParams = ParseAxisMapperParams(params);
+                if (false == kMaybeAxisMapperParams.has_value())
+                    return std::nullopt;
+
+                return std::make_unique<DigitalAxisMapper>(kMaybeAxisMapperParams.value().axis, kMaybeAxisMapperParams.value().direction);
             }
 
             // --------
@@ -847,6 +885,11 @@ namespace Xidi
                     {L"Button",             &MakeButtonMapper},
                     {L"button",             &MakeButtonMapper},
                     {L"Button",             &MakeButtonMapper},
+
+                    {L"digitalaxis",        &MakeDigitalAxisMapper},
+                    {L"digitalAxis",        &MakeDigitalAxisMapper},
+                    {L"Digitalaxis",        &MakeDigitalAxisMapper},
+                    {L"DigitalAxis",        &MakeDigitalAxisMapper},
 
                     {L"kb",                 &MakeKeyboardMapper},
                     {L"Kb",                 &MakeKeyboardMapper},
