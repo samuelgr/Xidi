@@ -9,6 +9,7 @@
  *   Unit tests for run-time mapper object parsing functionality.
  *****************************************************************************/
 
+#include "KeyboardTypes.h"
 #include "MapperParser.h"
 #include "TestCase.h"
 
@@ -263,12 +264,30 @@ namespace XidiTest
             L"Keyboard(10)",
             L"Keyboard(0xa)",
             L"Keyboard( 0XA )",
+            L"Keyboard(UpArrow)",
+            L"Keyboard(DIK_ESCAPE)",
+            L"Keyboard(  A  )",
+            L"Keyboard( 3  )",
+            L"Keyboard(0)",
+            L"Keyboard(0x0)",
+            L"Keyboard(0x3)",
+            L"Keyboard(00)",
+            L"Keyboard(03)",
             L"Keyboard(012), Button(3)"
         };
         const SElementMapperParseResult kExpectedParseResults[] = {
             {.maybeElementMapper = std::make_unique<KeyboardMapper>(10)},
             {.maybeElementMapper = std::make_unique<KeyboardMapper>(10)},
             {.maybeElementMapper = std::make_unique<KeyboardMapper>(10)},
+            {.maybeElementMapper = std::make_unique<KeyboardMapper>(DIK_UPARROW)},
+            {.maybeElementMapper = std::make_unique<KeyboardMapper>(DIK_ESCAPE)},
+            {.maybeElementMapper = std::make_unique<KeyboardMapper>(DIK_A)},
+            {.maybeElementMapper = std::make_unique<KeyboardMapper>(DIK_3)},
+            {.maybeElementMapper = std::make_unique<KeyboardMapper>(DIK_0)},
+            {.maybeElementMapper = std::make_unique<KeyboardMapper>(0)},
+            {.maybeElementMapper = std::make_unique<KeyboardMapper>(3)},
+            {.maybeElementMapper = std::make_unique<KeyboardMapper>(0)},
+            {.maybeElementMapper = std::make_unique<KeyboardMapper>(3)},
             {.maybeElementMapper = std::make_unique<KeyboardMapper>(10),            .remainingString = L"Button(3)"}
         };
         static_assert(_countof(kExpectedParseResults) == _countof(kTestStrings), "Mismatch between input and expected output array lengths.");
@@ -277,6 +296,12 @@ namespace XidiTest
         {
             SElementMapperParseResult actualParseResult = MapperParser::ParseSingleElementMapper(kTestStrings[i]);
             VerifyParseResultsAreEquivalent(actualParseResult, kExpectedParseResults[i]);
+
+            TEST_ASSERT(nullptr != dynamic_cast<KeyboardMapper*>(actualParseResult.maybeElementMapper.value().get()));
+
+            const ::Xidi::Keyboard::TKeyIdentifier kExpectedTargetKey = dynamic_cast<KeyboardMapper*>(kExpectedParseResults[i].maybeElementMapper.value().get())->GetTargetKey();
+            const ::Xidi::Keyboard::TKeyIdentifier kActualTargetKey = dynamic_cast<KeyboardMapper*>(actualParseResult.maybeElementMapper.value().get())->GetTargetKey();
+            TEST_ASSERT(kActualTargetKey == kExpectedTargetKey);
         }
     }
 

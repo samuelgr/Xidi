@@ -99,11 +99,9 @@ namespace Xidi
             /// @return Parsed integer value if successful.
             static std::optional<unsigned int> ParseUnsignedInteger(std::wstring_view uintString, int base = 0)
             {
-                constexpr size_t kMaxChars = 8;
-
+                static constexpr size_t kMaxChars = 8;
                 if (true == uintString.empty())
                     return std::nullopt;
-
                 if (uintString.length() > kMaxChars)
                     return std::nullopt;
 
@@ -134,6 +132,209 @@ namespace Xidi
                     return std::nullopt;
 
                 return parsedValue;
+            }
+
+            /// Parses a string representation of a DirectInput keyboard scancode into an integer.
+            /// This function will fail if the input string is too long or if it does not entirely represent an unsigned integer value.
+            /// @param [in] kbString String from which to parse.
+            /// @return Parsed integer value if successful.
+            static std::optional<unsigned int> ParseKeyboardScancode(std::wstring_view kbString)
+            {
+                // Map of strings representing keyboard scancodes to the keyboard scancodes themselves.
+                // One pair exists per DIK_* constant. Comparisons with the input string are case-insensitive because the input string is converted to uppercase to match the contents of this map.
+                static const std::map<std::wstring_view, unsigned int> kKeyboardScanCodeStrings = {
+                    {L"ESCAPE",             DIK_ESCAPE},
+                    {L"1",                  DIK_1},
+                    {L"2",                  DIK_2},
+                    {L"3",                  DIK_3},
+                    {L"4",                  DIK_4},
+                    {L"5",                  DIK_5},
+                    {L"6",                  DIK_6},
+                    {L"7",                  DIK_7},
+                    {L"8",                  DIK_8},
+                    {L"9",                  DIK_9},
+                    {L"0",                  DIK_0},
+                    {L"MINUS",              DIK_MINUS},
+                    {L"EQUALS",             DIK_EQUALS},
+                    {L"BACK",               DIK_BACK},
+                    {L"TAB",                DIK_TAB},
+                    {L"Q",                  DIK_Q},
+                    {L"W",                  DIK_W},
+                    {L"E",                  DIK_E},
+                    {L"R",                  DIK_R},
+                    {L"T",                  DIK_T},
+                    {L"Y",                  DIK_Y},
+                    {L"U",                  DIK_U},
+                    {L"I",                  DIK_I},
+                    {L"O",                  DIK_O},
+                    {L"P",                  DIK_P},
+                    {L"LBRACKET",           DIK_LBRACKET},
+                    {L"RBRACKET",           DIK_RBRACKET},
+                    {L"RETURN",             DIK_RETURN},
+                    {L"LCONTROL",           DIK_LCONTROL},
+                    {L"A",                  DIK_A},
+                    {L"S",                  DIK_S},
+                    {L"D",                  DIK_D},
+                    {L"F",                  DIK_F},
+                    {L"G",                  DIK_G},
+                    {L"H",                  DIK_H},
+                    {L"J",                  DIK_J},
+                    {L"K",                  DIK_K},
+                    {L"L",                  DIK_L},
+                    {L"SEMICOLON",          DIK_SEMICOLON},
+                    {L"APOSTROPHE",         DIK_APOSTROPHE},
+                    {L"GRAVE",              DIK_GRAVE},
+                    {L"LSHIFT",             DIK_LSHIFT},
+                    {L"BACKSLASH",          DIK_BACKSLASH},
+                    {L"Z",                  DIK_Z},
+                    {L"X",                  DIK_X},
+                    {L"C",                  DIK_C},
+                    {L"V",                  DIK_V},
+                    {L"B",                  DIK_B},
+                    {L"N",                  DIK_N},
+                    {L"M",                  DIK_M},
+                    {L"COMMA",              DIK_COMMA},
+                    {L"PERIOD",             DIK_PERIOD},
+                    {L"SLASH",              DIK_SLASH},
+                    {L"RSHIFT",             DIK_RSHIFT},
+                    {L"MULTIPLY",           DIK_MULTIPLY},
+                    {L"LMENU",              DIK_LMENU},
+                    {L"SPACE",              DIK_SPACE},
+                    {L"CAPITAL",            DIK_CAPITAL},
+                    {L"F1",                 DIK_F1},
+                    {L"F2",                 DIK_F2},
+                    {L"F3",                 DIK_F3},
+                    {L"F4",                 DIK_F4},
+                    {L"F5",                 DIK_F5},
+                    {L"F6",                 DIK_F6},
+                    {L"F7",                 DIK_F7},
+                    {L"F8",                 DIK_F8},
+                    {L"F9",                 DIK_F9},
+                    {L"F10",                DIK_F10},
+                    {L"NUMLOCK",            DIK_NUMLOCK},
+                    {L"SCROLL",             DIK_SCROLL},
+                    {L"NUMPAD7",            DIK_NUMPAD7},
+                    {L"NUMPAD8",            DIK_NUMPAD8},
+                    {L"NUMPAD9",            DIK_NUMPAD9},
+                    {L"SUBTRACT",           DIK_SUBTRACT},
+                    {L"NUMPAD4",            DIK_NUMPAD4},
+                    {L"NUMPAD5",            DIK_NUMPAD5},
+                    {L"NUMPAD6",            DIK_NUMPAD6},
+                    {L"ADD",                DIK_ADD},
+                    {L"NUMPAD1",            DIK_NUMPAD1},
+                    {L"NUMPAD2",            DIK_NUMPAD2},
+                    {L"NUMPAD3",            DIK_NUMPAD3},
+                    {L"NUMPAD0",            DIK_NUMPAD0},
+                    {L"DECIMAL",            DIK_DECIMAL},
+                    {L"OEM_102",            DIK_OEM_102},
+                    {L"F11",                DIK_F11},
+                    {L"F12",                DIK_F12},
+                    {L"F13",                DIK_F13},
+                    {L"F14",                DIK_F14},
+                    {L"F15",                DIK_F15},
+                    {L"KANA",               DIK_KANA},
+                    {L"ABNT_C1",            DIK_ABNT_C1},
+                    {L"CONVERT",            DIK_CONVERT},
+                    {L"NOCONVERT",          DIK_NOCONVERT},
+                    {L"YEN",                DIK_YEN},
+                    {L"ABNT_C2",            DIK_ABNT_C2},
+                    {L"NUMPADEQUALS",       DIK_NUMPADEQUALS},
+                    {L"PREVTRACK",          DIK_PREVTRACK},
+                    {L"AT",                 DIK_AT},
+                    {L"COLON",              DIK_COLON},
+                    {L"UNDERLINE",          DIK_UNDERLINE},
+                    {L"KANJI",              DIK_KANJI},
+                    {L"STOP",               DIK_STOP},
+                    {L"AX",                 DIK_AX},
+                    {L"UNLABELED",          DIK_UNLABELED},
+                    {L"NEXTTRACK",          DIK_NEXTTRACK},
+                    {L"NUMPADENTER",        DIK_NUMPADENTER},
+                    {L"RCONTROL",           DIK_RCONTROL},
+                    {L"MUTE",               DIK_MUTE},
+                    {L"CALCULATOR",         DIK_CALCULATOR},
+                    {L"PLAYPAUSE",          DIK_PLAYPAUSE},
+                    {L"MEDIASTOP",          DIK_MEDIASTOP},
+                    {L"VOLUMEDOWN",         DIK_VOLUMEDOWN},
+                    {L"VOLUMEUP",           DIK_VOLUMEUP},
+                    {L"WEBHOME",            DIK_WEBHOME},
+                    {L"NUMPADCOMMA",        DIK_NUMPADCOMMA},
+                    {L"DIVIDE",             DIK_DIVIDE},
+                    {L"SYSRQ",              DIK_SYSRQ},
+                    {L"RMENU",              DIK_RMENU},
+                    {L"PAUSE",              DIK_PAUSE},
+                    {L"HOME",               DIK_HOME},
+                    {L"UP",                 DIK_UP},
+                    {L"PRIOR",              DIK_PRIOR},
+                    {L"LEFT",               DIK_LEFT},
+                    {L"RIGHT",              DIK_RIGHT},
+                    {L"END",                DIK_END},
+                    {L"DOWN",               DIK_DOWN},
+                    {L"NEXT",               DIK_NEXT},
+                    {L"INSERT",             DIK_INSERT},
+                    {L"DELETE",             DIK_DELETE},
+                    {L"LWIN",               DIK_LWIN},
+                    {L"RWIN",               DIK_RWIN},
+                    {L"APPS",               DIK_APPS},
+                    {L"POWER",              DIK_POWER},
+                    {L"SLEEP",              DIK_SLEEP},
+                    {L"WAKE",               DIK_WAKE},
+                    {L"WEBSEARCH",          DIK_WEBSEARCH},
+                    {L"WEBFAVORITES",       DIK_WEBFAVORITES},
+                    {L"WEBREFRESH",         DIK_WEBREFRESH},
+                    {L"WEBSTOP",            DIK_WEBSTOP},
+                    {L"WEBFORWARD",         DIK_WEBFORWARD},
+                    {L"WEBBACK",            DIK_WEBBACK},
+                    {L"MYCOMPUTER",         DIK_MYCOMPUTER},
+                    {L"MAIL",               DIK_MAIL},
+                    {L"MEDIASELECT",        DIK_MEDIASELECT},
+                    {L"BACKSPACE",          DIK_BACKSPACE},
+                    {L"NUMPADSTAR",         DIK_NUMPADSTAR},
+                    {L"LALT",               DIK_LALT},
+                    {L"CAPSLOCK",           DIK_CAPSLOCK},
+                    {L"NUMPADMINUS",        DIK_NUMPADMINUS},
+                    {L"NUMPADPLUS",         DIK_NUMPADPLUS},
+                    {L"NUMPADPERIOD",       DIK_NUMPADPERIOD},
+                    {L"NUMPADSLASH",        DIK_NUMPADSLASH},
+                    {L"RALT",               DIK_RALT},
+                    {L"UPARROW",            DIK_UPARROW},
+                    {L"PGUP",               DIK_PGUP},
+                    {L"LEFTARROW",          DIK_LEFTARROW},
+                    {L"RIGHTARROW",         DIK_RIGHTARROW},
+                    {L"DOWNARROW",          DIK_DOWNARROW},
+                    {L"PGDN",               DIK_PGDN}
+                };
+
+                static constexpr size_t kMaxChars = 24;
+                if (kbString.length() >= kMaxChars)
+                    return std::nullopt;
+
+                static constexpr std::wstring_view kOptionalPrefix = L"DIK_";
+                if (true == kbString.starts_with(kOptionalPrefix))
+                    kbString.remove_prefix(kOptionalPrefix.length());
+                if (true == kbString.empty())
+                    return std::nullopt;
+
+                // Create an uppercase null-terminated version of the scancode string by copying the characters into a small buffer while also transforming them.
+                wchar_t convertBuffer[1 + kMaxChars];
+                convertBuffer[kMaxChars] = L'\0';
+                for (size_t i = 0; i < kMaxChars; ++i)
+                {
+                    if (i < kbString.length())
+                    {
+                        convertBuffer[i] = std::towupper(kbString[i]);
+                    }
+                    else
+                    {
+                        convertBuffer[i] = L'\0';
+                        break;
+                    }
+                }
+
+                const auto keyboardScanCodeIter = kKeyboardScanCodeStrings.find(convertBuffer);
+                if (kKeyboardScanCodeStrings.cend() == keyboardScanCodeIter)
+                    return std::nullopt;
+                else
+                    return keyboardScanCodeIter->second;
             }
 
             /// Trims all whitespace from the back of the supplied string.
@@ -200,7 +401,6 @@ namespace Xidi
                 };
 
                 const auto controllerElementIter = kControllerElementStrings.find(controllerElementString);
-
                 if (kControllerElementStrings.cend() == controllerElementIter)
                     return std::nullopt;
                 else
@@ -360,11 +560,16 @@ namespace Xidi
 
             std::optional<std::unique_ptr<IElementMapper>> MakeKeyboardMapper(std::wstring_view params)
             {
-                const std::optional<unsigned int> kMaybeKeyScanCode = ParseUnsignedInteger(params);
-                if (false == kMaybeKeyScanCode.has_value())
+                // First try parsing a friendly string representation of the keyboard scan code (i.e. strings that look like "DIK_*" constants, the "DIK_" prefix being optional).
+                // If that fails, try interpreting the scan code as an unsigned integer directly, with the possibility that it could be represented in decimal, octal, or hexadecimal.
+                // If both attempts fail then the scancode cannot be parsed, which is an error.
+                std::optional<unsigned int> maybeKeyScanCode = ParseKeyboardScancode(params);
+                if (false == maybeKeyScanCode.has_value())
+                    maybeKeyScanCode = ParseUnsignedInteger(params);
+                if (false == maybeKeyScanCode.has_value())
                     return std::nullopt;
 
-                const unsigned int kKeyScanCode = kMaybeKeyScanCode.value();
+                const unsigned int kKeyScanCode = maybeKeyScanCode.value();
                 if (kKeyScanCode >= (unsigned int)Keyboard::kVirtualKeyboardKeyCount)
                     return std::nullopt;
 
