@@ -35,6 +35,8 @@
     <ClInclude Include="Include\Xidi\Keyboard.h" />
     <ClInclude Include="Include\Xidi\KeyboardTypes.h" />
     <ClInclude Include="Include\Xidi\Mapper.h" />
+    <ClInclude Include="Include\Xidi\MapperBuilder.h" />
+    <ClInclude Include="Include\Xidi\MapperParser.h" />
     <ClInclude Include="Include\Xidi\Message.h" />
     <ClInclude Include="Include\Xidi\PhysicalController.h" />
     <ClInclude Include="Include\Xidi\StateChangeEventBuffer.h" />
@@ -60,7 +62,9 @@
     <ClCompile Include="Source\ControllerIdentification.cpp" />
     <ClCompile Include="Source\Keyboard.cpp" />
     <ClCompile Include="Source\Mapper.cpp" />
+    <ClCompile Include="Source\MapperBuilder.cpp" />
     <ClCompile Include="Source\MapperDefinitions.cpp" />
+    <ClCompile Include="Source\MapperParser.cpp" />
     <ClCompile Include="Source\Message.cpp" />
     <ClCompile Include="Source\PhysicalController.cpp" />
     <ClCompile Include="Source\StateChangeEventBuffer.cpp" />
