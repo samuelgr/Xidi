@@ -24,6 +24,8 @@ namespace XidiTest
     using namespace ::Xidi::Controller;
     using ::Xidi::Controller::MapperParser::SElementMapperStringParts;
     using ::Xidi::Controller::MapperParser::SElementMapperParseResult;
+    using ::Xidi::Controller::MapperParser::SParamStringParts;
+    using ::Xidi::Keyboard::TKeyIdentifier;
 
 
     // -------- INTERNAL FUNCTIONS ----------------------------------------- //
@@ -184,6 +186,69 @@ namespace XidiTest
             TEST_ASSERT(false == MapperParser::ExtractElementMapperStringParts(extractPartsTestString).has_value());
     }
 
+    // Verifies correct separation of a parameter string into first parameter and remainder substrings.
+    TEST_CASE(MapperParser_ExtractParameterListStringParts_Valid)
+    {
+        constexpr std::pair<std::wstring_view, SParamStringParts> kExtractPartsTestItems[] = {
+            {L"Param1",                                                     {.first = L"Param1"}},
+            {L"Param1, Param2",                                             {.first = L"Param1",                        .remaining = L"Param2"}},
+            {L"A, B, C, D",                                                 {.first = L"A",                             .remaining = L"B, C, D"}},
+            {L"A(0), B(1, 2), C(3, 4), D(5, 6)",                            {.first = L"A(0)",                          .remaining = L"B(1, 2), C(3, 4), D(5, 6)"}},
+            {L"   RotY   ,   +  ",                                          {.first = L"RotY",                          .remaining = L"+"}},
+            {L"Split(Button(1), Button(2)), Split(Button(3), Button(4))",   {.first = L"Split(Button(1), Button(2))",   .remaining = L"Split(Button(3), Button(4))"}}
+        };
+
+        for (auto& extractPartsTestItem : kExtractPartsTestItems)
+            TEST_ASSERT(extractPartsTestItem.second == MapperParser::ExtractParameterListStringParts(extractPartsTestItem.first));
+    }
+
+    // Verifies correct rejection of invalid parameter list strings when attempting to split into first parameter and remainder substrings.
+    TEST_CASE(MapperParser_ExtractParameterListStringParts_Invalid)
+    {
+        constexpr std::wstring_view kExtractPartsTestStrings[] = {
+            L"  Param1  )  ",
+            L"  Param2   , ",
+            L"Split(Button(1), Button(2), Split(Button(3), Button(4))"
+        };
+
+        for (auto& extractPartsTestString : kExtractPartsTestStrings)
+            TEST_ASSERT(false == MapperParser::ExtractParameterListStringParts(extractPartsTestString).has_value());
+    }
+
+    // Verifies correct construction of axis mapper objects in the nominal case of valid parameter strings being passed.
+    // This test does not check axis directon, just target virtual controller element.
+    TEST_CASE(MapperParser_MakeAxisMapper_Nominal)
+    {
+        constexpr std::pair<std::wstring_view, SElementIdentifier> kAxisMapperTestItems[] = {
+            {L"x",              {.type = EElementType::Axis, .axis = EAxis::X}},
+            {L"rX",             {.type = EElementType::Axis, .axis = EAxis::RotX}},
+            {L"RotY",           {.type = EElementType::Axis, .axis = EAxis::RotY}},
+            {L"rotz, +",        {.type = EElementType::Axis, .axis = EAxis::RotZ}},
+            {L"y, NEGATIVE",    {.type = EElementType::Axis, .axis = EAxis::Y}},
+        };
+
+        for (auto& axisMapperTestItem : kAxisMapperTestItems)
+        {
+            std::optional<std::unique_ptr<IElementMapper>> maybeAxisMapper = MapperParser::MakeAxisMapper(axisMapperTestItem.first);
+
+            TEST_ASSERT(true == maybeAxisMapper.has_value());
+            TEST_ASSERT(1 == maybeAxisMapper.value()->GetTargetElementCount());
+            TEST_ASSERT(axisMapperTestItem.second == maybeAxisMapper.value()->GetTargetElementAt(0));
+        }
+    }
+
+    // Verifies correct failure to create axis mapper objects when the parameter strings are invalid.
+    TEST_CASE(MapperParser_MakeAxisMapper_Invalid)
+    {
+        const std::wstring_view kAxisMapperTestStrings[] = {L"A", L"3", L"x, anydir", L"rotz, +, morestuff"};
+
+        for (auto& axisMapperTestString : kAxisMapperTestStrings)
+        {
+            std::optional<std::unique_ptr<IElementMapper>> maybeAxisMapper = MapperParser::MakeAxisMapper(axisMapperTestString);
+            TEST_ASSERT(false == maybeAxisMapper.has_value());
+        }
+    }
+
     // Verifies correct construction of button mapper objects in the nominal case of valid parameter strings being passed.
     TEST_CASE(MapperParser_MakeButtonMapper_Nominal)
     {
@@ -216,6 +281,44 @@ namespace XidiTest
         }
     }
 
+    // Verifies correct construction of keyboard mapper objects in the nominal case of valid parameter strings being passed.
+    TEST_CASE(MapperParser_MakeKeyboardMapper_Nominal)
+    {
+        constexpr std::pair<std::wstring_view, TKeyIdentifier> kKeyboardMapperTestItems[] = {
+            {L"100",        100},
+            {L"0xcc",       0xcc},
+            {L"070",        070},
+            {L"DownArrow",  DIK_DOWNARROW},
+            {L"DIK_RALT",   DIK_RALT}
+        };
+
+        for (auto& keyboardMapperTestItem : kKeyboardMapperTestItems)
+        {
+            std::optional<std::unique_ptr<IElementMapper>> maybeKeyboardMapper = MapperParser::MakeKeyboardMapper(keyboardMapperTestItem.first);
+
+            TEST_ASSERT(true == maybeKeyboardMapper.has_value());
+            TEST_ASSERT(0 == maybeKeyboardMapper.value()->GetTargetElementCount());
+
+            TEST_ASSERT(nullptr != dynamic_cast<KeyboardMapper*>(maybeKeyboardMapper.value().get()));
+
+            const TKeyIdentifier kExpectedTargetKey = keyboardMapperTestItem.second;
+            const TKeyIdentifier kActualTargetKey = dynamic_cast<KeyboardMapper*>(maybeKeyboardMapper.value().get())->GetTargetKey();
+            TEST_ASSERT(kActualTargetKey == kExpectedTargetKey);
+        }
+    }
+
+    // Verifies correct failure to create button mapper objects when the parameter strings are invalid.
+    TEST_CASE(MapperParser_MakeKeyboardMapper_Invalid)
+    {
+        const std::wstring_view kKeyboardMapperTestStrings[] = {L"256", L"0x101", L"DIK_INVALID", L"Invalid", L""};
+
+        for (auto& keyboardMapperTestString : kKeyboardMapperTestStrings)
+        {
+            std::optional<std::unique_ptr<IElementMapper>> maybeKeyboardMapper = MapperParser::MakeKeyboardMapper(keyboardMapperTestString);
+            TEST_ASSERT(false == maybeKeyboardMapper.has_value());
+        }
+    }
+
     // Verifies correct construction of null mappers in the nominal case of empty parameter strings being passed.
     TEST_CASE(MapperParser_MakeNullMapper_Nominal)
     {
@@ -231,6 +334,36 @@ namespace XidiTest
         {
             std::optional<std::unique_ptr<IElementMapper>> maybeNullMapper = MapperParser::MakeNullMapper(nullMapperTestString);
             TEST_ASSERT(false == maybeNullMapper.has_value());
+        }
+    }
+
+    // Verifies correct parsing of single axis element mappers from a valid supplied input string.
+    TEST_CASE(MapperParser_ParseSingleElementMapper_Axis)
+    {
+        constexpr std::wstring_view kTestStrings[] = {
+            L"Axis(X)",
+            L"Axis(Y, Both)",
+            L"Axis(Z, +)",
+            L"Axis(RX, negative), Button(3)"
+        };
+        const SElementMapperParseResult kExpectedParseResults[] = {
+            {.maybeElementMapper = std::make_unique<AxisMapper>(EAxis::X)},
+            {.maybeElementMapper = std::make_unique<AxisMapper>(EAxis::Y, AxisMapper::EDirection::Both)},
+            {.maybeElementMapper = std::make_unique<AxisMapper>(EAxis::Z, AxisMapper::EDirection::Positive)},
+            {.maybeElementMapper = std::make_unique<AxisMapper>(EAxis::RotX, AxisMapper::EDirection::Negative), .remainingString = L"Button(3)"},
+        };
+        static_assert(_countof(kExpectedParseResults) == _countof(kTestStrings), "Mismatch between input and expected output array lengths.");
+
+        for (int i = 0; i < _countof(kTestStrings); ++i)
+        {
+            SElementMapperParseResult actualParseResult = MapperParser::ParseSingleElementMapper(kTestStrings[i]);
+            VerifyParseResultsAreEquivalent(actualParseResult, kExpectedParseResults[i]);
+
+            TEST_ASSERT(nullptr != dynamic_cast<AxisMapper*>(actualParseResult.maybeElementMapper.value().get()));
+
+            const AxisMapper::EDirection kExpectedDirection = dynamic_cast<AxisMapper*>(kExpectedParseResults[i].maybeElementMapper.value().get())->GetAxisDirection();
+            const AxisMapper::EDirection kActualDirection = dynamic_cast<AxisMapper*>(actualParseResult.maybeElementMapper.value().get())->GetAxisDirection();
+            TEST_ASSERT(kActualDirection == kExpectedDirection);
         }
     }
 
@@ -299,8 +432,8 @@ namespace XidiTest
 
             TEST_ASSERT(nullptr != dynamic_cast<KeyboardMapper*>(actualParseResult.maybeElementMapper.value().get()));
 
-            const ::Xidi::Keyboard::TKeyIdentifier kExpectedTargetKey = dynamic_cast<KeyboardMapper*>(kExpectedParseResults[i].maybeElementMapper.value().get())->GetTargetKey();
-            const ::Xidi::Keyboard::TKeyIdentifier kActualTargetKey = dynamic_cast<KeyboardMapper*>(actualParseResult.maybeElementMapper.value().get())->GetTargetKey();
+            const TKeyIdentifier kExpectedTargetKey = dynamic_cast<KeyboardMapper*>(kExpectedParseResults[i].maybeElementMapper.value().get())->GetTargetKey();
+            const TKeyIdentifier kActualTargetKey = dynamic_cast<KeyboardMapper*>(actualParseResult.maybeElementMapper.value().get())->GetTargetKey();
             TEST_ASSERT(kActualTargetKey == kExpectedTargetKey);
         }
     }
@@ -333,6 +466,8 @@ namespace XidiTest
         constexpr std::wstring_view kTestStrings[] = {
             L" UnknownMapperType ",
             L"  Null , ",
+            L" Axis(R)",
+            L"  Axis(X, +-)",
             L"  Button(4) ) ",
             L"  Button(4) , ",
             L"Button(4,5)",
@@ -381,7 +516,8 @@ namespace XidiTest
         constexpr std::wstring_view kTestStrings[] = {
            L"Null, Null",
            L"  UnknownMapperType  ",
-           L"Button(3), Button(4)"
+           L"Button(3), Button(4)",
+           L"Button((8))"
         };
 
         for (int i = 0; i < _countof(kTestStrings); ++i)

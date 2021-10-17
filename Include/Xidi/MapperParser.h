@@ -55,6 +55,22 @@ namespace Xidi
                 std::wstring_view remainingString;                                  ///< Remaining unparsed part of the string. Either empty or contains additional element mapper strings to be parsed.
             };
 
+            /// Holds a partially-separated representation of a parameter string.
+            struct SParamStringParts
+            {
+                std::wstring_view first;                                            ///< String representing just the first parameter.
+                std::wstring_view remaining;                                        ///< String representing all the remaining parameters.
+
+                /// Simple check for equality by field-by-field comparison.
+                /// Primarily useful during testing.
+                /// @param [in] other Object with which to compare.
+                /// @return `true` if this object is equal to the other object, `false` otherwise.
+                inline bool operator==(const SParamStringParts& other) const
+                {
+                    return ((other.first == first) && (other.remaining == remaining));
+                }
+            };
+
 
             // -------- FUNCTIONS ------------------------------------------ //
 
@@ -98,6 +114,20 @@ namespace Xidi
             /// @return Structure of separated string parts, if successful.
             std::optional<SElementMapperStringParts> ExtractElementMapperStringParts(std::wstring_view elementMapperString);
 
+            /// Partially parses the supplied parameter list string by extracting the first parameter and leaving behind the rest of the string.
+            /// Example: "A, B, C, D" would result in "A" as the first parameter and "B, C, D" as the remaining part of the string.
+            /// Example: "RotY, +" would result in "RotY" as the first parameter and "+" as the remaining part of the string.
+            /// Example: "Split(Button(1), Button(2)), Split(Button(3), Button(4))" would result in "Split(Button(1), Button(2))" as the first parameter and "Split(Button(3), Button(4))" as the remaining part of the string.
+            /// @param [in] elementMapperString Input string supposedly representing an element mapper.
+            /// @return Structure of separated parameter list string parts, if successful.
+            std::optional<SParamStringParts> ExtractParameterListStringParts(std::wstring_view paramListString);
+
+            /// Attempts to build an #AxisMapper using the supplied parameters.
+            /// Parameter string should consist of a string representing an axis and optionally a second string representing an axis direction.
+            /// @param [in] params Parameter string.
+            /// @return Pointer to the new mapper object if successful.
+            std::optional<std::unique_ptr<IElementMapper>> MakeAxisMapper(std::wstring_view params);
+
             /// Attempts to build a #ButtonMapper using the supplied parameters.
             /// Parameter string should consist of a single integer identifying the button number.
             /// @param [in] params Parameter string.
@@ -115,6 +145,12 @@ namespace Xidi
             /// @param [in] params Parameter string.
             /// @return `nullptr` if successful.
             std::optional<std::unique_ptr<IElementMapper>> MakeNullMapper(std::wstring_view params);
+
+            /// Attempts to build a #PovMapper using the supplied parameters.
+            /// Parameter string should consist of a string representing a POV direction (for positive "pressed" contributions) and optionally a second string representing a POV direction (for negative "pressed" contributions).
+            /// @param [in] params Parameter string.
+            /// @return Pointer to the new mapper object if successful.
+            std::optional<std::unique_ptr<IElementMapper>> MakePovMapper(std::wstring_view params);
 
             /// Consumes part or all of the input string and attempts to parse it into an element mapper object.
             /// @param [in] elementMapperString Input string supposedly containing the representation of an element mapper.

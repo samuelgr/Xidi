@@ -108,6 +108,17 @@ namespace Xidi
             }
 
 
+            // -------- INSTANCE METHODS ----------------------------------- //
+
+            /// Retrieves and returns the axis direction to which this mapper should contribute on its associated axis.
+            /// Intended for tests.
+            /// @return Target axis direction.
+            inline AxisMapper::EDirection GetAxisDirection(void) const
+            {
+                return direction;
+            }
+
+
             // -------- CONCRETE INSTANCE METHODS -------------------------- //
 
             std::unique_ptr<IElementMapper> Clone(void) const override;
@@ -200,7 +211,7 @@ namespace Xidi
             }
 
 
-            // -------- CONCRETE INSTANCE METHODS -------------------------- //
+            // -------- INSTANCE METHODS ----------------------------------- //
 
             /// Retrieves and returns the target keyboard key to which this object contributes.
             /// Intended for tests.
@@ -241,17 +252,29 @@ namespace Xidi
             // -------- CONSTRUCTION AND DESTRUCTION ----------------------- //
 
             /// Initialization constructor.
-            /// Specifies the single POV direction to which all updates are contributed (axis on the positive side or button/trigger pressed).
-            inline constexpr PovMapper(EPovDirection povDirection) : IElementMapper(), povDirectionPositive(povDirection), maybePovDirectionNegative(std::nullopt)
+            /// Specifies two POV directions, one for positive direction updates (axis on the positive side or button/trigger pressed) and one for negative direction updates (axis on the negative side or button/trigger not pressed).
+            inline constexpr PovMapper(EPovDirection povDirectionPositive, std::optional<EPovDirection> povDirectionNegative = std::nullopt) : IElementMapper(), povDirectionPositive(povDirectionPositive), maybePovDirectionNegative(povDirectionNegative)
             {
                 // Nothing to do here.
             }
 
-            /// Initialization constructor.
-            /// Specifies two POV directions, one for positive direction updates (axis on the positive side or button/trigger pressed) and one for negative direction updates (axis on the negative side or button/trigger not pressed).
-            inline constexpr PovMapper(EPovDirection povDirectionPositive, EPovDirection povDirectionNegative) : IElementMapper(), povDirectionPositive(povDirectionPositive), maybePovDirectionNegative(povDirectionNegative)
+
+            // -------- INSTANCE METHODS ----------------------------------- //
+
+            /// Retrieves and returns the direction used for positive contributions.
+            /// Intended for tests.
+            /// @return Target direction for positive contributions.
+            inline EPovDirection GetPositiveDirection(void) const
             {
-                // Nothing to do here.
+                return povDirectionPositive;
+            }
+
+            /// Retrieves and returns the direction used for negative contributions.
+            /// Intended for tests.
+            /// @return Target direction for negative contributions.
+            inline std::optional<EPovDirection> GetNegativeDirection(void) const
+            {
+                return maybePovDirectionNegative;
             }
 
 
@@ -297,6 +320,27 @@ namespace Xidi
             inline SplitMapper(const SplitMapper& other) : positiveMapper((other.positiveMapper != nullptr) ? other.positiveMapper->Clone() : nullptr), negativeMapper((other.negativeMapper != nullptr) ? other.negativeMapper->Clone() : nullptr)
             {
                 // Nothing to do here.
+            }
+
+
+            // -------- INSTANCE METHODS ----------------------------------- //
+
+            /// Retrieves and returns a raw read-only pointer to the positive element mapper.
+            /// This object maintains ownership over the returned pointer.
+            /// Intended for tests.
+            /// @return Read-only pointer to the positive element mapper.
+            inline const IElementMapper* GetPositiveMapper(void) const
+            {
+                return positiveMapper.get();
+            }
+
+            /// Retrieves and returns a raw read-only pointer to the negative element mapper.
+            /// This object maintains ownership over the returned pointer.
+            /// Intended for tests.
+            /// @return Read-only pointer to the negative element mapper.
+            inline const IElementMapper* GetNegativeMapper(void) const
+            {
+                return negativeMapper.get();
             }
 
 

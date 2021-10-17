@@ -61,6 +61,45 @@ namespace Xidi
 
             // -------- INTERNAL FUNCTIONS --------------------------------- //
 
+            /// Identifies the end position of the first parameter in the supplied string which should be a parameter list.
+            /// Example: "RotY, +" would identify the position of the comma.
+            /// Example: "Split(Button(1), Button(2)), Split(Button(3), Button(4))" would identify the position of the second comma.
+            /// Example: "RotY" would return a value of 4, the length of the string, indicating the entire string is the first parameter.
+            /// @return End position of the first parameter in the supplied string, or `npos` if the input string is invalid thus leading to a parse error.
+            static size_t FindFirstParameterEndPosition(std::wstring_view paramListString)
+            {
+                unsigned int depth = 0;
+
+                for (size_t pos = 0; pos < paramListString.length(); ++pos)
+                {
+                    switch (paramListString[pos])
+                    {
+                    case kCharElementMapperBeginParams:
+                        depth += 1;
+                        break;
+
+                    case kCharElementMapperEndParams:
+                        if (0 == depth)
+                            return std::wstring_view::npos;
+                        depth -= 1;
+                        break;
+
+                    case kCharElementMapperParamSeparator:
+                        if (0 == depth)
+                            return pos;
+                        break;
+
+                    default:
+                        break;
+                    }
+                }
+
+                if (0 != depth)
+                    return std::wstring_view::npos;
+                else
+                    return paramListString.length();
+            }
+
             /// Identifies the end position of the parameter list given a string that starts a parameter list.
             /// For example, if the element mapper string is "Axis(RotY, +)" then the input string should be "(RotY, +)" and this function will identify the position of the closing parenthesis.
             /// @param [in] paramListString Parameter list input string to search.
@@ -543,6 +582,144 @@ namespace Xidi
 
             // --------
 
+            std::optional<SParamStringParts> ExtractParameterListStringParts(std::wstring_view paramListString)
+            {
+                const size_t kFirstParamEndPosition = FindFirstParameterEndPosition(paramListString);
+
+                if (std::wstring_view::npos == kFirstParamEndPosition)
+                    return std::nullopt;
+                
+                const std::wstring_view kFirstParamString = TrimWhitespace(paramListString.substr(0, kFirstParamEndPosition));
+
+                if (paramListString.length() == kFirstParamEndPosition)
+                {
+                    // Entire input string was consumed and no comma was located.
+                    return SParamStringParts({.first = kFirstParamString});
+                }
+                
+                const std::wstring_view kRemainingString = TrimWhitespace(paramListString.substr(1 + kFirstParamEndPosition));
+
+                if (true == kRemainingString.empty())
+                {
+                    // A comma was located but nothing appears after it.
+                    // This is an error because it indicates a dangling comma.
+                    return std::nullopt;
+                }
+
+                return SParamStringParts({.first = kFirstParamString, .remaining = kRemainingString});
+            }
+
+            // --------
+
+            std::optional<std::unique_ptr<IElementMapper>> MakeAxisMapper(std::wstring_view params)
+            {
+                // Map of strings representing axes to axis enumerators.
+                static const std::map<std::wstring_view, EAxis> kAxisStrings = {
+                    {L"x",              EAxis::X},
+                    {L"X",              EAxis::X},
+
+                    {L"y",              EAxis::Y},
+                    {L"Y",              EAxis::Y},
+
+                    {L"z",              EAxis::Z},
+                    {L"Z",              EAxis::Z},
+
+                    {L"rx",             EAxis::RotX},
+                    {L"Rx",             EAxis::RotX},
+                    {L"rX",             EAxis::RotX},
+                    {L"RX",             EAxis::RotX},
+                    {L"rotx",           EAxis::RotX},
+                    {L"rotX",           EAxis::RotX},
+                    {L"Rotx",           EAxis::RotX},
+                    {L"RotX",           EAxis::RotX},
+
+                    {L"ry",             EAxis::RotY},
+                    {L"Ry",             EAxis::RotY},
+                    {L"rY",             EAxis::RotY},
+                    {L"RY",             EAxis::RotY},
+                    {L"roty",           EAxis::RotY},
+                    {L"rotY",           EAxis::RotY},
+                    {L"Roty",           EAxis::RotY},
+                    {L"RotY",           EAxis::RotY},
+
+                    {L"rz",             EAxis::RotZ},
+                    {L"Rz",             EAxis::RotZ},
+                    {L"rZ",             EAxis::RotZ},
+                    {L"RZ",             EAxis::RotZ},
+                    {L"rotz",           EAxis::RotZ},
+                    {L"rotZ",           EAxis::RotZ},
+                    {L"Rotz",           EAxis::RotZ},
+                    {L"RotZ",           EAxis::RotZ}
+                };
+
+                // Map of strings representing axis directions to axis direction enumerators.
+                static const std::map<std::wstring_view, AxisMapper::EDirection> kDirectionStrings = {
+                    {L"bidir",          AxisMapper::EDirection::Both},
+                    {L"Bidir",          AxisMapper::EDirection::Both},
+                    {L"BiDir",          AxisMapper::EDirection::Both},
+                    {L"BIDIR",          AxisMapper::EDirection::Both},
+                    {L"bidirectional",  AxisMapper::EDirection::Both},
+                    {L"Bidirectional",  AxisMapper::EDirection::Both},
+                    {L"BiDirectional",  AxisMapper::EDirection::Both},
+                    {L"BIDIRECTIONAL",  AxisMapper::EDirection::Both},
+                    {L"both",           AxisMapper::EDirection::Both},
+                    {L"Both",           AxisMapper::EDirection::Both},
+                    {L"BOTH",           AxisMapper::EDirection::Both},
+
+                    {L"+",              AxisMapper::EDirection::Positive},
+                    {L"+ve",            AxisMapper::EDirection::Positive},
+                    {L"pos",            AxisMapper::EDirection::Positive},
+                    {L"Pos",            AxisMapper::EDirection::Positive},
+                    {L"POS",            AxisMapper::EDirection::Positive},
+                    {L"positive",       AxisMapper::EDirection::Positive},
+                    {L"Positive",       AxisMapper::EDirection::Positive},
+                    {L"POSITIVE",       AxisMapper::EDirection::Positive},
+
+                    {L"-",              AxisMapper::EDirection::Negative},
+                    {L"-ve",            AxisMapper::EDirection::Negative},
+                    {L"neg",            AxisMapper::EDirection::Negative},
+                    {L"Neg",            AxisMapper::EDirection::Negative},
+                    {L"NEG",            AxisMapper::EDirection::Negative},
+                    {L"negative",       AxisMapper::EDirection::Negative},
+                    {L"Negative",       AxisMapper::EDirection::Negative},
+                    {L"NEGATIVE",       AxisMapper::EDirection::Negative}
+                };
+
+                SParamStringParts paramParts = ExtractParameterListStringParts(params).value_or(SParamStringParts());
+
+                // First parameter is required. It is a string that specifies the target axis.
+                if (true == paramParts.first.empty())
+                    return std::nullopt;
+
+                const auto kAxisIter = kAxisStrings.find(paramParts.first);
+                if (kAxisStrings.cend() == kAxisIter)
+                    return std::nullopt;
+
+                const EAxis kAxis = kAxisIter->second;
+
+                // Second parameter is optional. It is a string that specifies the axis direction, with the default being both.
+                AxisMapper::EDirection axisDirection = AxisMapper::EDirection::Both;
+
+                paramParts = ExtractParameterListStringParts(paramParts.remaining).value_or(SParamStringParts());
+                if (false == paramParts.first.empty())
+                {
+                    // It is an error for a second parameter to be present but invalid.
+                    const auto kDirectionIter = kDirectionStrings.find(paramParts.first);
+                    if (kDirectionStrings.cend() == kDirectionIter)
+                        return std::nullopt;
+
+                    axisDirection = kDirectionIter->second;
+                }
+
+                // No further parameters allowed.
+                if (false == paramParts.remaining.empty())
+                    return std::nullopt;
+
+                return std::make_unique<AxisMapper>(kAxis, axisDirection);
+            }
+
+            // --------
+
             std::optional<std::unique_ptr<IElementMapper>> MakeButtonMapper(std::wstring_view params)
             {
                 const std::optional<unsigned int> kMaybeButtonNumber = ParseUnsignedInteger(params, 10);
@@ -588,9 +765,86 @@ namespace Xidi
 
             // --------
 
+            std::optional<std::unique_ptr<IElementMapper>> MakePovMapper(std::wstring_view params)
+            {
+                // Map of strings representing axes to POV direction.
+                static const std::map<std::wstring_view, EPovDirection> kPovDirectionStrings = {
+                    {L"u",              EPovDirection::Up},
+                    {L"U",              EPovDirection::Up},
+                    {L"up",             EPovDirection::Up},
+                    {L"Up",             EPovDirection::Up},
+                    {L"UP",             EPovDirection::Up},
+
+                    {L"d",              EPovDirection::Down},
+                    {L"D",              EPovDirection::Down},
+                    {L"dn",             EPovDirection::Down},
+                    {L"Dn",             EPovDirection::Down},
+                    {L"DN",             EPovDirection::Down},
+                    {L"down",           EPovDirection::Down},
+                    {L"Down",           EPovDirection::Down},
+                    {L"DOWN",           EPovDirection::Down},
+
+                    {L"l",              EPovDirection::Left},
+                    {L"L",              EPovDirection::Left},
+                    {L"lt",             EPovDirection::Left},
+                    {L"Lt",             EPovDirection::Left},
+                    {L"LT",             EPovDirection::Left},
+                    {L"left",           EPovDirection::Left},
+                    {L"Left",           EPovDirection::Left},
+                    {L"LEFT",           EPovDirection::Left},
+
+                    {L"r",              EPovDirection::Right},
+                    {L"R",              EPovDirection::Right},
+                    {L"rt",             EPovDirection::Right},
+                    {L"Rt",             EPovDirection::Right},
+                    {L"RT",             EPovDirection::Right},
+                    {L"right",          EPovDirection::Right},
+                    {L"Right",          EPovDirection::Right},
+                    {L"RIGHT",          EPovDirection::Right},
+                };
+
+                SParamStringParts paramParts = ExtractParameterListStringParts(params).value_or(SParamStringParts());
+
+                // First parameter is required. It is a string that specifies the positive POV direction.
+                if (true == paramParts.first.empty())
+                    return std::nullopt;
+
+                const auto kPovPositiveIter = kPovDirectionStrings.find(paramParts.first);
+                if (kPovDirectionStrings.cend() == kPovPositiveIter)
+                    return std::nullopt;
+
+                const EPovDirection kPovDirectionPositive = kPovPositiveIter->second;
+
+                // Second parameter is optional. It is a string that specifies negative POV direction.
+                std::optional<EPovDirection> maybeNegativePovDirection = std::nullopt;
+
+                paramParts = ExtractParameterListStringParts(paramParts.remaining).value_or(SParamStringParts());
+                if (false == paramParts.first.empty())
+                {
+                    // It is an error for a second parameter to be present but invalid.
+                    const auto kPovNegativeIter = kPovDirectionStrings.find(paramParts.first);
+                    if (kPovDirectionStrings.cend() == kPovNegativeIter)
+                        return std::nullopt;
+
+                    maybeNegativePovDirection = kPovNegativeIter->second;
+                }
+
+                // No further parameters allowed.
+                if (false == paramParts.remaining.empty())
+                    return std::nullopt;
+
+                return std::make_unique<PovMapper>(kPovDirectionPositive, maybeNegativePovDirection);
+            }
+
+            // --------
+
             SElementMapperParseResult ParseSingleElementMapper(std::wstring_view elementMapperString)
             {
                 static const std::map<std::wstring_view, TMakeElementMapperFunc> kMakeElementMapperFunctions = {
+                    {L"axis",               &MakeAxisMapper},
+                    {L"Axis",               &MakeAxisMapper},
+
+                    {L"Button",             &MakeButtonMapper},
                     {L"button",             &MakeButtonMapper},
                     {L"Button",             &MakeButtonMapper},
 
@@ -616,6 +870,14 @@ namespace Xidi
                     {L"keystroke",          &MakeKeyboardMapper},
                     {L"Keystroke",          &MakeKeyboardMapper},
                     {L"KeyStroke",          &MakeKeyboardMapper},
+
+                    {L"pov",                &MakePovMapper},
+                    {L"Pov",                &MakePovMapper},
+                    {L"POV",                &MakePovMapper},
+                    {L"povhat",             &MakePovMapper},
+                    {L"povHat",             &MakePovMapper},
+                    {L"Povhat",             &MakePovMapper},
+                    {L"PovHat",             &MakePovMapper},
 
                     {L"null",               &MakeNullMapper},
                     {L"Null",               &MakeNullMapper},
