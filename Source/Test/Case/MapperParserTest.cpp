@@ -255,6 +255,31 @@ namespace XidiTest
         }
     }
 
+    // Verifies correct parsing of single keyboard element mappers from a valid supplied input string.
+    // Exercises different scancode representations.
+    TEST_CASE(MapperParser_ParseSingleElementMapper_Keyboard)
+    {
+        constexpr std::wstring_view kTestStrings[] = {
+            L"Keyboard(10)",
+            L"Keyboard(0xa)",
+            L"Keyboard( 0XA )",
+            L"Keyboard(012), Button(3)"
+        };
+        const SElementMapperParseResult kExpectedParseResults[] = {
+            {.maybeElementMapper = std::make_unique<KeyboardMapper>(10)},
+            {.maybeElementMapper = std::make_unique<KeyboardMapper>(10)},
+            {.maybeElementMapper = std::make_unique<KeyboardMapper>(10)},
+            {.maybeElementMapper = std::make_unique<KeyboardMapper>(10),            .remainingString = L"Button(3)"}
+        };
+        static_assert(_countof(kExpectedParseResults) == _countof(kTestStrings), "Mismatch between input and expected output array lengths.");
+
+        for (int i = 0; i < _countof(kTestStrings); ++i)
+        {
+            SElementMapperParseResult actualParseResult = MapperParser::ParseSingleElementMapper(kTestStrings[i]);
+            VerifyParseResultsAreEquivalent(actualParseResult, kExpectedParseResults[i]);
+        }
+    }
+
     // Verifies correct parsing of single null element mappers from a valid supplied input string.
     TEST_CASE(MapperParser_ParseSingleElementMapper_Null)
     {
@@ -284,7 +309,11 @@ namespace XidiTest
             L" UnknownMapperType ",
             L"  Null , ",
             L"  Button(4) ) ",
-            L"  Button(4) , "
+            L"  Button(4) , ",
+            L"Button(4,5)",
+            L"Keyboard(1000)",
+            L"Keyboard(10,11)",
+            L"Keyboard(0x a)"
         };
         const SElementMapperParseResult kExpectedParseResult = {.maybeElementMapper = std::nullopt};
 

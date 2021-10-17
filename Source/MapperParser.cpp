@@ -13,6 +13,7 @@
 
 #include "ControllerTypes.h"
 #include "ElementMapper.h"
+#include "KeyboardTypes.h"
 #include "Mapper.h"
 #include "MapperParser.h"
 
@@ -94,9 +95,9 @@ namespace Xidi
             /// A maximum of 8 characters are permitted, meaning any parsed values are guaranteed to fit into 32 bits.
             /// This function will fail if the input string is too long or if it does not entirely represent an unsigned integer value.
             /// @param [in] uintString String from which to parse.
-            /// @param [in] base Representation base of the number, which defaults to decimal.
+            /// @param [in] base Representation base of the number, which defaults to auto-detecting the base using the prefix in the string.
             /// @return Parsed integer value if successful.
-            static std::optional<unsigned int> ParseUnsignedInteger(std::wstring_view uintString, int base = 10)
+            static std::optional<unsigned int> ParseUnsignedInteger(std::wstring_view uintString, int base = 0)
             {
                 constexpr size_t kMaxChars = 8;
 
@@ -113,7 +114,7 @@ namespace Xidi
                 {
                     if (i < uintString.length())
                     {
-                        if (iswxdigit(uintString[i]))
+                        if (iswalnum(uintString[i]))
                             convertBuffer[i] = uintString[i];
                         else
                             return std::nullopt;
@@ -344,7 +345,7 @@ namespace Xidi
 
             std::optional<std::unique_ptr<IElementMapper>> MakeButtonMapper(std::wstring_view params)
             {
-                const std::optional<unsigned int> kMaybeButtonNumber = ParseUnsignedInteger(params);
+                const std::optional<unsigned int> kMaybeButtonNumber = ParseUnsignedInteger(params, 10);
                 if (false == kMaybeButtonNumber.has_value())
                     return std::nullopt;
 
@@ -353,6 +354,21 @@ namespace Xidi
                     return std::nullopt;
 
                 return std::make_unique<ButtonMapper>((EButton)kButtonNumber);
+            }
+
+            // --------
+
+            std::optional<std::unique_ptr<IElementMapper>> MakeKeyboardMapper(std::wstring_view params)
+            {
+                const std::optional<unsigned int> kMaybeKeyScanCode = ParseUnsignedInteger(params);
+                if (false == kMaybeKeyScanCode.has_value())
+                    return std::nullopt;
+
+                const unsigned int kKeyScanCode = kMaybeKeyScanCode.value();
+                if (kKeyScanCode >= (unsigned int)Keyboard::kVirtualKeyboardKeyCount)
+                    return std::nullopt;
+
+                return std::make_unique<KeyboardMapper>((Keyboard::TKeyIdentifier)kKeyScanCode);
             }
 
             // --------
@@ -370,17 +386,40 @@ namespace Xidi
             SElementMapperParseResult ParseSingleElementMapper(std::wstring_view elementMapperString)
             {
                 static const std::map<std::wstring_view, TMakeElementMapperFunc> kMakeElementMapperFunctions = {
-                    {L"button",         &MakeButtonMapper},
-                    {L"Button",         &MakeButtonMapper},
+                    {L"button",             &MakeButtonMapper},
+                    {L"Button",             &MakeButtonMapper},
 
-                    {L"null",           &MakeNullMapper},
-                    {L"Null",           &MakeNullMapper},
-                    {L"nothing",        &MakeNullMapper},
-                    {L"Nothing",        &MakeNullMapper},
-                    {L"none",           &MakeNullMapper},
-                    {L"None",           &MakeNullMapper},
-                    {L"empty",          &MakeNullMapper},
-                    {L"Empty",          &MakeNullMapper},
+                    {L"kb",                 &MakeKeyboardMapper},
+                    {L"Kb",                 &MakeKeyboardMapper},
+                    {L"KB",                 &MakeKeyboardMapper},
+                    {L"key",                &MakeKeyboardMapper},
+                    {L"Key",                &MakeKeyboardMapper},
+                    {L"keyboard",           &MakeKeyboardMapper},
+                    {L"Keyboard",           &MakeKeyboardMapper},
+                    {L"keyboardbutton",     &MakeKeyboardMapper},
+                    {L"keyboardButton",     &MakeKeyboardMapper},
+                    {L"Keyboardbutton",     &MakeKeyboardMapper},
+                    {L"KeyboardButton",     &MakeKeyboardMapper},
+                    {L"keyboardkey",        &MakeKeyboardMapper},
+                    {L"keyboardKey",        &MakeKeyboardMapper},
+                    {L"Keyboardkey",        &MakeKeyboardMapper},
+                    {L"KeyboardKey",        &MakeKeyboardMapper},
+                    {L"keyboardpress",      &MakeKeyboardMapper},
+                    {L"keyboardPress",      &MakeKeyboardMapper},
+                    {L"Keyboardpress",      &MakeKeyboardMapper},
+                    {L"KeyboardPress",      &MakeKeyboardMapper},
+                    {L"keystroke",          &MakeKeyboardMapper},
+                    {L"Keystroke",          &MakeKeyboardMapper},
+                    {L"KeyStroke",          &MakeKeyboardMapper},
+
+                    {L"null",               &MakeNullMapper},
+                    {L"Null",               &MakeNullMapper},
+                    {L"nothing",            &MakeNullMapper},
+                    {L"Nothing",            &MakeNullMapper},
+                    {L"none",               &MakeNullMapper},
+                    {L"None",               &MakeNullMapper},
+                    {L"empty",              &MakeNullMapper},
+                    {L"Empty",              &MakeNullMapper},
                 };
 
                 const std::optional<SElementMapperStringParts> kMaybeElementMapperStringParts = ExtractElementMapperStringParts(elementMapperString);
