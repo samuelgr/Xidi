@@ -13,12 +13,13 @@
 
 #include <cstddef>
 #include <cstdint>
-#include <list>
 #include <map>
 #include <memory>
+#include <optional>
 #include <set>
 #include <string>
 #include <string_view>
+#include <vector>
 
 
 namespace Xidi
@@ -33,22 +34,12 @@ namespace Xidi
 
         // -------- TYPE DEFINITIONS --------------------------------------- //
 
-        /// Enumerates the possible results of reading a configuration file.
-        enum class EFileReadResult
+        /// Enumerates possible directives that can be issued in response to a query on how to process a section or a name/value pair encountered in a configuration file.
+        enum class EAction
         {
-            InvalidResult = -1,                                             ///< No attempt was made to read the configuration file. Used during initializion.
-            Success,                                                        ///< Configuration file was read successfully.
-            FileNotFound,                                                   ///< Configuration file does not exist.
-            Malformed,                                                      ///< Configuration file is malformed.
-        };
-
-        /// Enumerates all supported actions for configuration sections.
-        /// Used when checking with a subclass for guidance on what to do when a particular named section is encountered.
-        enum class ESectionAction
-        {
-            Error,                                                          ///< Section name is not supported.
-            Read,                                                           ///< Section name is supported and interesting, so the section will be read.
-            Skip,                                                           ///< Section name is supported but uninteresting, so the whole section should be skipped.
+            Error,                                                          ///< Flag an error. For sections, this means the remainder of the section is skipped.
+            Process,                                                        ///< Continue processing. For sections this means the name/value pairs within will be read. For name/value pairs this means the pair will be inserted into the configuration data structure.
+            Skip,                                                           ///< Skip. For sections this means to ignore all the name/value pairs within. For name/value pairs this means to do nothing.
         };
 
         /// Enumerates all supported types for configuration values.
@@ -73,22 +64,19 @@ namespace Xidi
         /// Underlying type used for storing string-valued types.
         typedef std::wstring TStringValue;
 
+        /// View type used for retrieving and returning integer-typed values.
+        typedef TIntegerValue TIntegerView;
+
+        /// View type used for retrieving and returning integer-typed values.
+        typedef TBooleanValue TBooleanView;
+
+        /// View type used for retrieving and returning string-typed values.
+        typedef std::wstring_view TStringView;
+
         /// Fourth-level object used to represent a single configuration value for a particular configuration setting.
         class Value
         {
         private:
-            // -------- TYPE DEFINITIONS ----------------------------------- //
-
-            /// View type used for retrieving and returning integer-typed values.
-            typedef TIntegerValue TIntegerView;
-
-            /// View type used for retrieving and returning integer-typed values.
-            typedef TBooleanValue TBooleanView;
-
-            /// View type used for retrieving and returning string-typed values.
-            typedef std::wstring_view TStringView;
-
-
             // -------- INSTANCE VARIABLES --------------------------------- //
 
             /// Indicates the value type.
@@ -106,44 +94,40 @@ namespace Xidi
         public:
             // -------- CONSTRUCTION AND DESTRUCTION ----------------------- //
 
-            /// Initialization constructor. Creates an integer-typed value.
+            /// Initialization constructor. Creates an integer-typed value by copying it.
             inline Value(const TIntegerValue& value) : type(EValueType::Integer), intValue(value)
             {
                 // Nothing to do here.
             }
 
-            /// Initialization constructor. Creates a Boolean-typed value.
+            /// Initialization constructor. Creates an integer-typed value by moving it.
+            inline Value(TIntegerValue&& value) : type(EValueType::Integer), intValue(std::move(value))
+            {
+                // Nothing to do here.
+            }
+
+            /// Initialization constructor. Creates a Boolean-typed value by copying it.
             inline Value(const TBooleanValue& value) : type(EValueType::Boolean), boolValue(value)
             {
                 // Nothing to do here.
             }
 
-            /// Initialization constructor. Creates a string-typed value.
+            /// Initialization constructor. Creates a Boolean-typed value by moving it.
+            inline Value(TBooleanValue&& value) : type(EValueType::Boolean), boolValue(std::move(value))
+            {
+                // Nothing to do here.
+            }
+
+            /// Initialization constructor. Creates a string-typed value by copying it.
             inline Value(const TStringValue& value) : type(EValueType::String), stringValue(value)
             {
                 // Nothing to do here.
             }
 
-            /// Default destructor.
-            inline ~Value(void)
+            /// Initialization constructor. Creates a string-typed value by moving it.
+            inline Value(TStringValue&& value) : type(EValueType::String), stringValue(std::move(value))
             {
-                switch (type)
-                {
-                case EValueType::Integer:
-                    intValue.~TIntegerValue();
-                    break;
-
-                case EValueType::Boolean:
-                    boolValue.~TBooleanValue();
-                    break;
-
-                case EValueType::String:
-                    stringValue.~TStringValue();
-                    break;
-
-                default:
-                    break;
-                }
+                // Nothing to do here.
             }
 
             /// Copy constructor.
@@ -190,6 +174,28 @@ namespace Xidi
                 }
             }
 
+            /// Default destructor.
+            inline ~Value(void)
+            {
+                switch (type)
+                {
+                case EValueType::Integer:
+                    intValue.~TIntegerValue();
+                    break;
+
+                case EValueType::Boolean:
+                    boolValue.~TBooleanValue();
+                    break;
+
+                case EValueType::String:
+                    stringValue.~TStringValue();
+                    break;
+
+                default:
+                    break;
+                }
+            }
+
 
             // -------- OPERATORS ---------------------------------------------- //
 
@@ -202,22 +208,44 @@ namespace Xidi
                     return true;
                 else if (type > rhs.type)
                     return false;
-                else
+
+                switch (type)
                 {
-                    switch (type)
-                    {
-                    case EValueType::Integer:
-                        return (intValue < rhs.intValue);
+                case EValueType::Integer:
+                    return (intValue < rhs.intValue);
 
-                    case EValueType::Boolean:
-                        return (boolValue < rhs.boolValue);
+                case EValueType::Boolean:
+                    return (boolValue < rhs.boolValue);
 
-                    case EValueType::String:
-                        return (stringValue < rhs.stringValue);
+                case EValueType::String:
+                    return (stringValue < rhs.stringValue);
 
-                    default:
-                        return false;
-                    }
+                default:
+                    return false;
+                }
+            }
+
+            /// Equality check. Compares type and value.
+            /// @param [in] rhs Right-hand side of the binary operator.
+            /// @return `true` if this object (lhs) is equal to the other object (rhs), `false` otherwise.
+            inline bool operator==(const Value& rhs) const
+            {
+                if (type != rhs.type)
+                    return false;
+
+                switch (type)
+                {
+                case EValueType::Integer:
+                    return (intValue == rhs.intValue);
+
+                case EValueType::Boolean:
+                    return (boolValue == rhs.boolValue);
+
+                case EValueType::String:
+                    return (stringValue == rhs.stringValue);
+
+                default:
+                    return false;
                 }
             }
 
@@ -274,9 +302,32 @@ namespace Xidi
 
 
         public:
+            // -------- CONSTRUCTION AND DESTRUCTION ----------------------- //
+
+            /// Initialization constructor.
+            /// Inserts an initial value by copying it.
+            /// All objects are required to contain at least one value.
+            /// @tparam ValueType Type of value to insert.
+            /// @param [in] value Value to insert.
+            template <typename ValueType> inline Name(const ValueType& firstValue) : values()
+            {
+                Insert(firstValue);
+            }
+
+            /// Initialization constructor.
+            /// Inserts an initial value by moving it.
+            /// All objects are required to contain at least one value.
+            /// @tparam ValueType Type of value to insert.
+            /// @param [in] value Value to insert.
+            template <typename ValueType> inline Name(ValueType&& firstValue) : values()
+            {
+                Insert(std::move(firstValue));
+            }
+
+
             // -------- INSTANCE METHODS ----------------------------------- //
 
-            /// Allows read-only access to the first stored value.
+            /// Allows read-only access to the first stored value, which is guaranteed to exist.
             /// Useful for single-valued settings.
             /// @return First stored value.
             inline const Value& FirstValue(void) const
@@ -284,14 +335,24 @@ namespace Xidi
                 return *(values.begin());
             }
 
-            /// Stores a new value for the configuration setting represented by this object.
+            /// Stores a new value for the configuration setting represented by this object by copying the input parameter.
             /// Will fail if the value already exists.
             /// @tparam ValueType Type of value to insert.
             /// @param [in] value Value to insert.
             /// @return `true` on success, `false` on failure.
             template <typename ValueType> bool Insert(const ValueType& value)
             {
-                return values.emplace(value).second;
+                return Insert(ValueType(value));
+            }
+
+            /// Stores a new value for the configuration setting represented by this object by moving the input parameter.
+            /// Will fail if the value already exists.
+            /// @tparam ValueType Type of value to insert.
+            /// @param [in] value Value to insert.
+            /// @return `true` on success, `false` on failure.
+            template <typename ValueType> bool Insert(ValueType&& value)
+            {
+                return values.emplace(std::move(value)).second;
             }
 
             /// Retrieves the number of values present for the configuration setting represented by this object.
@@ -340,20 +401,94 @@ namespace Xidi
 
             // -------- INSTANCE METHODS ----------------------------------- //
 
-            /// Stores a new value for the specified configuration setting in the section represented by this object.
+            /// Convenience wrapper for quickly attempting to obtain a single Boolean-typed configuration value.
+            /// @param [in] name Name of the value for which to search within this section.
+            /// @return First value associated with the section and name, if it exists.
+            inline std::optional<TBooleanView> GetFirstBooleanValue(std::wstring_view name) const
+            {
+                if (false == NameExists(name))
+                    return std::nullopt;
+
+                switch ((*this)[name].FirstValue().GetType())
+                {
+                case EValueType::Boolean:
+                case EValueType::BooleanMultiValue:
+                    break;
+
+                default:
+                    return std::nullopt;
+                }
+
+                return (*this)[name].FirstValue().GetBooleanValue();
+            }
+
+            /// Convenience wrapper for quickly attempting to obtain a single Integer-typed configuration value.
+            /// @param [in] name Name of the value for which to search within this section.
+            /// @return First value associated with the section and name, if it exists.
+            inline std::optional<TIntegerView> GetFirstIntegerValue(std::wstring_view name) const
+            {
+                if (false == NameExists(name))
+                    return std::nullopt;
+
+                switch ((*this)[name].FirstValue().GetType())
+                {
+                case EValueType::Integer:
+                case EValueType::IntegerMultiValue:
+                    break;
+
+                default:
+                    return std::nullopt;
+                }
+
+                return (*this)[name].FirstValue().GetIntegerValue();
+            }
+
+            /// Convenience wrapper for quickly attempting to obtain a single string-typed configuration value.
+            /// @param [in] name Name of the value for which to search within this section.
+            /// @return First value associated with the section and name, if it exists.
+            inline std::optional<TStringView> GetFirstStringValue(std::wstring_view name) const
+            {
+                if (false == NameExists(name))
+                    return std::nullopt;
+
+                switch ((*this)[name].FirstValue().GetType())
+                {
+                case EValueType::String:
+                case EValueType::StringMultiValue:
+                    break;
+
+                default:
+                    return std::nullopt;
+                }
+
+                return (*this)[name].FirstValue().GetStringValue();
+            }
+
+            /// Stores a new value for the specified configuration setting in the section represented by this object by copying the input parameter.
             /// Will fail if the value already exists.
             /// @tparam ValueType Type of value to insert.
             /// @param [in] name Name of the configuration setting into which to insert the value.
             /// @param [in] value Value to insert.
             /// @return `true` on success, `false` on failure.
-            template <typename ValueType> bool Insert(std::wstring_view name, const ValueType& value)
+            template <typename ValueType> inline bool Insert(std::wstring_view name, const ValueType& value)
+            {
+                return Insert(name, ValueType(value));
+            }
+
+            /// Stores a new value for the specified configuration setting in the section represented by this object by moving the input parameter.
+            /// Will fail if the value already exists.
+            /// @tparam ValueType Type of value to insert.
+            /// @param [in] name Name of the configuration setting into which to insert the value.
+            /// @param [in] value Value to insert.
+            /// @return `true` on success, `false` on failure.
+            template <typename ValueType> inline bool Insert(std::wstring_view name, ValueType&& value)
             {
                 auto nameIterator = names.find(name);
 
                 if (names.end() == nameIterator)
                 {
-                    names.emplace(name, Name());
-                    nameIterator = names.find(name);
+                    names.emplace(name, value);
+                    return true;
                 }
 
                 return nameIterator->second.Insert(value);
@@ -371,7 +506,7 @@ namespace Xidi
             /// @return `true` if the setting exists, `false` otherwise.
             inline bool NameExists(std::wstring_view name) const
             {
-                return (0 != names.count(name));
+                return names.contains(name);
             }
 
             /// Allows read-only access to all configuration settings.
@@ -391,24 +526,6 @@ namespace Xidi
 
             /// Alias for the underlying data structure used to store top-level configuration section data.
             typedef std::map<std::wstring, Section, std::less<>> TSections;
-
-
-            /// Holds an individual section and name pair.
-            /// Used when responding to queries for all settings of a given name across all sections.
-            struct SSectionNamePair
-            {
-                std::wstring_view section;                                  ///< Name of the section that holds the identified configuration setting.
-                const Name& name;                                           ///< Reference to the object that holds all values for the identified configuration setting.
-
-                /// Initialization constructor. Initializes both references.
-                inline constexpr SSectionNamePair(std::wstring_view section, const Name& name) : section(section), name(name)
-                {
-                    // Nothing to do here.
-                }
-            };
-
-            /// Alias for the data structure used to respond to queries for all settings of a given name across all sections.
-            typedef std::list<SSectionNamePair> TSectionNamePairList;
 
 
             // -------- INSTANCE VARIABLES --------------------------------- //
@@ -431,14 +548,7 @@ namespace Xidi
 
             // -------- INSTANCE METHODS ----------------------------------- //
 
-            /// Clears the contents of this object.
-            /// After clearing, all references to its contents (such as via data structures returned by querying it) are invalid.
-            inline void Clear(void)
-            {
-                sections.clear();
-            }
-
-            /// Stores a new value for the specified configuration setting in the specified section.
+            /// Stores a new value for the specified configuration setting in the specified section by copying the input parameter.
             /// Will fail if the value already exists.
             /// @tparam ValueType Type of value to insert.
             /// @param [in] section Section into which to insert the configuration setting.
@@ -446,6 +556,18 @@ namespace Xidi
             /// @param [in] value Value to insert.
             /// @return `true` on success, `false` on failure.
             template <typename ValueType> bool Insert(std::wstring_view section, std::wstring_view name, const ValueType& value)
+            {
+                return Insert(ValueType(value));
+            }
+
+            /// Stores a new value for the specified configuration setting in the specified section by moving the input parameter.
+            /// Will fail if the value already exists.
+            /// @tparam ValueType Type of value to insert.
+            /// @param [in] section Section into which to insert the configuration setting.
+            /// @param [in] name Name of the configuration setting into which to insert the value.
+            /// @param [in] value Value to insert.
+            /// @return `true` on success, `false` on failure.
+            template <typename ValueType> bool Insert(std::wstring_view section, std::wstring_view name, ValueType&& value)
             {
                 auto sectionIterator = sections.find(section);
 
@@ -455,7 +577,43 @@ namespace Xidi
                     sectionIterator = sections.find(section);
                 }
 
-                return sectionIterator->second.Insert(name, value);
+                return sectionIterator->second.Insert(name, std::move(value));
+            }
+
+            /// Convenience wrapper for quickly attempting to obtain a single Boolean-typed configuration value.
+            /// @param [in] section Section name to search for the value.
+            /// @param [in] name Name of the value for which to search.
+            /// @return First value associated with the section and name, if it exists.
+            inline std::optional<TBooleanView> GetFirstBooleanValue(std::wstring_view section, std::wstring_view name) const
+            {
+                if (false == SectionExists(section))
+                    return std::nullopt;
+
+                return (*this)[section].GetFirstBooleanValue(name);
+            }
+
+            /// Convenience wrapper for quickly attempting to obtain a single Integer-typed configuration value.
+            /// @param [in] section Section name to search for the value.
+            /// @param [in] name Name of the value for which to search.
+            /// @return First value associated with the section and name, if it exists.
+            inline std::optional<TIntegerView> GetFirstIntegerValue(std::wstring_view section, std::wstring_view name) const
+            {
+                if (false == SectionExists(section))
+                    return std::nullopt;
+
+                return (*this)[section].GetFirstIntegerValue(name);
+            }
+
+            /// Convenience wrapper for quickly attempting to obtain a single string-typed configuration value.
+            /// @param [in] section Section name to search for the value.
+            /// @param [in] name Name of the value for which to search.
+            /// @return First value associated with the section and name, if it exists.
+            inline std::optional<TStringView> GetFirstStringValue(std::wstring_view section, std::wstring_view name) const
+            {
+                if (false == SectionExists(section))
+                    return std::nullopt;
+
+                return (*this)[section].GetFirstStringValue(name);
             }
 
             /// Retrieves the number of sections present in the configuration represented by this object.
@@ -493,25 +651,6 @@ namespace Xidi
             {
                 return sections;
             }
-
-            /// Searches all sections in the configuration for settings identified by the specified name.
-            /// For each, identifies both the section (by name) and the configuration setting (by the object that holds its values).
-            /// Places all such pairs into a container and returns the container.
-            /// If there are no matches, returns an empty container.
-            /// @param [in] name Name of the configuration setting for which to search.
-            /// @return Container holding the results.
-            inline std::unique_ptr<TSectionNamePairList> SectionsContaining(std::wstring_view name) const
-            {
-                std::unique_ptr<TSectionNamePairList> sectionsWithName = std::make_unique<TSectionNamePairList>();
-
-                for (auto& section : sections)
-                {
-                    if (section.second.NameExists(name))
-                        sectionsWithName->emplace_back(section.first, section.second[name]);
-                }
-
-                return sectionsWithName;
-            }
         };
 
         /// Interface for reading and parsing INI-formatted configuration files.
@@ -522,8 +661,11 @@ namespace Xidi
         private:
             // -------- INSTANCE VARIABLES --------------------------------- //
 
-            /// Holds the error message that describes the error that arose during the last unsuccessful attempt at reading a configuration file.
-            std::wstring readErrorMessage;
+            /// Holds the error messages that describes any errors that occurred during configuration file read.
+            std::vector<std::wstring> readErrors;
+
+            /// Holds a semantically-rich error message to be presented to the user whenever there is an error processing a configuration value.
+            std::wstring lastErrorMessage;
 
 
         public:
@@ -535,54 +677,88 @@ namespace Xidi
 
             // -------- INSTANCE METHODS ----------------------------------- //
 
-            /// Retrieves and returns the error message that arose during the last unsuccessful attempt at reading a configuration file.
-            /// The error message is valid if #ReadConfigurationFile returns anything other than success.
-            /// @return Error message from last unsuccessful read attempt.
-            inline std::wstring_view GetReadErrorMessage(void)
+            /// Retrieves and returns the error messages that arose during the last attempt at reading a configuration file.
+            /// @return Error messages from last configuration file read attempt.
+            inline const std::vector<std::wstring>& GetReadErrors(void) const
             {
-                return readErrorMessage;
+                return readErrors;
+            }
+
+            /// Specifies whether or not any errors arose during the last attempt at reading a configuration files.
+            /// @return `true` if so, `false` if not.
+            inline bool HasReadErrors(void) const
+            {
+                return !(readErrors.empty());
             }
 
             /// Reads and parses a configuration file, storing the settings in the supplied configuration object.
             /// Intended to be invoked externally. Subclasses should not override this method.
             /// @param [in] configFileName Name of the configuration file to read.
-            /// @param [out] configToFill Configuration object to fill with configuration data (contents are only valid if this method succeeds).
-            /// @return Indicator of the result of the operation.
-            EFileReadResult ReadConfigurationFile(std::wstring_view configFileName, ConfigurationData& configToFill);
+            /// @return Configuration data object filled based on the contents of the configuration file.
+            ConfigurationData ReadConfigurationFile(std::wstring_view configFileName);
+
+        protected:
+            /// Sets a semantically-rich error message to be presented to the user in response to a subclass returning an error when asked what action to take.
+            /// If a subclass does not set a semantically-rich error message then the default error message is used instead.
+            /// Intended to be invoked optionally by subclasses during any method calls that return #EAction but only when #EAction::Error is being returned.
+            /// @param [in] errorMessage String that is consumed to provide a semantically-rich error message.
+            inline void SetErrorMessage(std::wstring&& errorMessage)
+            {
+                lastErrorMessage = std::move(errorMessage);
+            }
+
+        private:
+            /// Used internally to retrieve and reset a semantically-rich error message if it exists.
+            /// @return Last error message.
+            inline std::wstring GetLastErrorMessage(void)
+            {
+                return std::move(lastErrorMessage);
+            }
+
+            /// Used internally to determine if a semantically-rich error message exists.
+            /// @return `true` if an error message has been set, `false` otherwise.
+            inline bool HasLastErrorMessage(void) const
+            {
+                return !(lastErrorMessage.empty());
+            }
 
 
         private:
             // -------- ABSTRACT INSTANCE METHODS -------------------------- //
 
-            /// Specifies the action to take when a given section is encountered in a configuration file.
-            /// These are the names that typically appear in [square brackets].
+            /// Specifies the action to take when a given section is encountered in a configuration file (i.e. the names that typically appear in [square brackets] and separate the configuration file into namespaces).
             /// Invoked while reading from a configuration file.
-            /// Subclasses should override this method.
-            /// For example, if the particular section name is not within the list of supported configuration namespaces, subclasses can flag an error.
+            /// Subclasses must override this method. They are allowed to process the section name however they see fit and indicate to the caller what action to take.
             /// @param [in] section Name of the section, as read from the configuration file.
             /// @return Action to take with the section.
-            virtual ESectionAction ActionForSection(std::wstring_view section) = 0;
+            virtual EAction ActionForSection(std::wstring_view section) = 0;
 
-            /// Invoked to allow the subclass to error-check the specified integer-typed configuration setting, identified by enclosing section name and by configuration setting name.
+            /// Invoked to allow the subclass to process the specified integer-typed configuration setting, identified by enclosing section name and by configuration setting name.
+            /// Subclasses are allowed to process the value however they see fit and indicate to the caller what action to take.
+            /// Any values passed as read-only views are backed by temporary memory that will be discarded upon method return. Subclasses should copy values that need to be preserved outside of the configuration data structure.
             /// @param [in] section Name of the enclosing section, as read from the configuration file.
             /// @param [in] name Name of the configuration setting, as read from the configuration file.
-            /// @param [in] value Value of the configuration setting, as read and parsed from the configuration file.
-            /// @return `true` if the submitted value was acceptable (according to whatever arbitrary characteristics the subclass wishes), `false` otherwise.
-            virtual bool CheckValue(std::wstring_view section, std::wstring_view name, const TIntegerValue& value) = 0;
+            /// @param [in] value View of the value of the configuration setting, as read and parsed from the configuration file.
+            /// @return Action to take with the name/value pair.
+            virtual EAction ActionForValue(std::wstring_view section, std::wstring_view name, TIntegerView value) = 0;
 
-            /// Invoked to allow the subclass to error-check the specified Boolean-typed configuration setting, identified by enclosing section name and by configuration setting name.
+            /// Invoked to allow the subclass to process the specified Boolean-typed configuration setting, identified by enclosing section name and by configuration setting name.
+            /// Subclasses are allowed to process the value however they see fit and indicate to the caller what action to take.
+            /// Any values passed as read-only views are backed by temporary memory that will be discarded upon method return. Subclasses should copy values that need to be preserved outside of the configuration data structure.
             /// @param [in] section Name of the enclosing section, as read from the configuration file.
             /// @param [in] name Name of the configuration setting, as read from the configuration file.
-            /// @param [in] value Value of the configuration setting, as read and parsed from the configuration file.
-            /// @return `true` if the submitted value was acceptable (according to whatever arbitrary characteristics the subclass wishes), `false` otherwise.
-            virtual bool CheckValue(std::wstring_view section, std::wstring_view name, const TBooleanValue& value) = 0;
+            /// @param [in] value View of the value of the configuration setting, as read and parsed from the configuration file.
+            /// @return Action to take with the name/value pair.
+            virtual EAction ActionForValue(std::wstring_view section, std::wstring_view name, TBooleanView value) = 0;
 
-            /// Invoked to allow the subclass to error-check specified string-typed configuration setting, identified by enclosing section name and by configuration setting name.
+            /// Invoked to allow the subclass to process specified string-typed configuration setting, identified by enclosing section name and by configuration setting name.
+            /// Subclasses are allowed to process the value however they see fit and indicate to the caller what action to take.
+            /// Any values passed as read-only views are backed by temporary memory that will be discarded upon method return. Subclasses should copy values that need to be preserved outside of the configuration data structure.
             /// @param [in] section Name of the enclosing section, as read from the configuration file.
             /// @param [in] name Name of the configuration setting, as read from the configuration file.
-            /// @param [in] value Value of the configuration setting, as read and parsed from the configuration file.
-            /// @return `true` if the submitted value was acceptable (according to whatever arbitrary characteristics the subclass wishes), `false` otherwise.
-            virtual bool CheckValue(std::wstring_view section, std::wstring_view name, const TStringValue& value) = 0;
+            /// @param [in] value View of the value of the configuration setting, as read and parsed from the configuration file.
+            /// @return Action to take with the name/value pair.
+            virtual EAction ActionForValue(std::wstring_view section, std::wstring_view name, TStringView value) = 0;
 
             /// Specifies the type of the value for the given configuration setting.
             /// In lines that are of the form "name = value" parameters identify both the enclosing section and the name part.
@@ -602,76 +778,6 @@ namespace Xidi
             virtual void PrepareForRead(void);
         };
 
-        /// Convenience wrapper object that combines a reader with a configuration data object and presents both with a unified interface.
-        class ConfigurationFile
-        {
-        private:
-            // -------- INSTANCE VARIABLES --------------------------------- //
-
-            /// Reader object used to dictate how a configuration file is read.
-            std::unique_ptr<ConfigurationFileReader> reader;
-
-            /// Configuration data object used to hold configuration data read from the configuration file.
-            ConfigurationData configData;
-
-            /// Holds the result of the last attempt at reading a configuration file.
-            EFileReadResult fileReadResult;
-
-
-        public:
-            // -------- CONSTRUCTION AND DESTRUCTION ----------------------- //
-
-            /// Initialization constructor. Requires a reader at construction time.
-            inline ConfigurationFile(std::unique_ptr<ConfigurationFileReader> reader) : reader(std::move(reader)), configData(), fileReadResult(EFileReadResult::InvalidResult)
-            {
-                // Nothing to do here.
-            }
-
-            /// Copy constructor. Should never be invoked.
-            ConfigurationFile(const ConfigurationFile& other) = delete;
-
-
-            // -------- INSTANCE METHODS ----------------------------------- //
-
-            /// Retrieves and returns a reference to the object that holds all of Xidi's configuration settings.
-            /// @return Configuration settings object.
-            inline const ConfigurationData& GetData(void) const
-            {
-                return configData;
-            }
-
-            /// Determines if the contents of the object that holds all of Xidi's configuration settings are valid.
-            /// If a previous attempt to read the Xidi configuration file failed,
-            /// @return `true` if the contents are valid, `false` otherwise.
-            inline EFileReadResult GetFileReadResult(void) const
-            {
-                return fileReadResult;
-            }
-
-            /// Retrieves and returns the error message that arose during the last unsuccessful attempt at reading a configuration file.
-            /// The error message is valid as long as #GetFileReadResult returns anything other than success.
-            /// @return Error message from last unsuccessful read attempt.
-            inline std::wstring_view GetReadErrorMessage(void) const
-            {
-                return reader->GetReadErrorMessage();
-            }
-
-            /// Determines if the configuration data object contains valid data (i.e. the configuration file was read and parsed successfully).
-            /// @return `true` if it contains valid data, `false` if not.
-            inline bool IsDataValid(void) const
-            {
-                return (EFileReadResult::Success == GetFileReadResult());
-            }
-
-            /// Reads and parses a configuration file, storing the settings in this object.
-            /// After this method returns, use #GetFileReadResult and #GetData to retrieve configuration settings.
-            /// In the event of a read error, #GetReadErrorMessage can be used to obtain a string describing the read error that occurred.
-            /// @param [in] configFileName Name of the configuration file to read.
-            inline void Read(std::wstring_view configFileName)
-            {
-                fileReadResult = reader->ReadConfigurationFile(configFileName, configData);
-            }
-        };
 
         /// Type alias for a suggested format for storing the supported layout of a section within a configuration file.
         /// Useful for pre-determining what is allowed to appear within one section of a configuration file.

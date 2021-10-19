@@ -77,12 +77,7 @@ namespace Xidi
 
                 if (Message::WillOutputMessageOfSeverity(kDumpSeverity))
                 {
-                    Message::Output(kDumpSeverity, L"Begin dump of all known mappers.");
-
-                    Message::Output(kDumpSeverity, L"  Default:");
-                    Message::OutputFormatted(kDumpSeverity, L"    %s", defaultMapper);
-
-                    Message::Output(kDumpSeverity, L"  All:");
+                    Message::Output(kDumpSeverity, L"Dump of all known mappers...");
                     
                     for (const auto& knownMapper : knownMappers)
                     {
@@ -90,8 +85,6 @@ namespace Xidi
                         const SCapabilities kKnownMapperCapabilities = knownMapper.second->GetCapabilities();
                         Message::OutputFormatted(kDumpSeverity, L"    %-24s { numAxes = %u, numButtons = %u, hasPov = %s }", kKnownMapperName.data(), (unsigned int)kKnownMapperCapabilities.numAxes, (unsigned int)kKnownMapperCapabilities.numButtons, ((true == kKnownMapperCapabilities.hasPov) ? L"true" : L"false"));
                     }
-
-                    Message::Output(kDumpSeverity, L"End dump of all known mappers.");
                 }
             }
             
@@ -335,14 +328,14 @@ namespace Xidi
             std::call_once(configuredMapperFlag, []() -> void
                 {
 #ifndef XIDI_SKIP_CONFIG
-                    const Configuration::ConfigurationFile& config = Globals::GetConfiguration();
+                    const Configuration::ConfigurationData& configData = Globals::GetConfigurationData();
 
-                    if ((true == config.IsDataValid()) && (true == config.GetData().SectionExists(Strings::kStrConfigurationSectionMapper)))
+                    if (true == configData.SectionExists(Strings::kStrConfigurationSectionMapper))
                     {
                         // Mapper section exists in the configuration file.
                         // If the controller-independent type setting exists, it will be used as the fallback default, otherwise the default mapper will be used for this purpose.
                         // If any per-controller type settings exist, they take precedence.
-                        const auto& mapperConfigData = config.GetData()[Strings::kStrConfigurationSectionMapper];
+                        const auto& mapperConfigData = configData[Strings::kStrConfigurationSectionMapper];
 
                         const Mapper* fallbackMapper = nullptr;
                         if (true == mapperConfigData.NameExists(Strings::kStrConfigurationSettingMapperType))

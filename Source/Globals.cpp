@@ -86,30 +86,32 @@ namespace Xidi
         // -------- INTERNAL FUNCTIONS ------------------------------------- //
 
 #ifndef XIDI_SKIP_CONFIG
+        /// Enables the log if it is not already enabled.
+        /// Regardless, the minimum severity for output is set based on the parameter.
+        /// @param [in] logLevel Logging level to configure as the minimum severity for output.
+        static void EnableLog(Message::ESeverity logLevel)
+        {
+            static std::once_flag enableLogFlag;
+            std::call_once(enableLogFlag, [logLevel]() -> void
+                {
+                    Message::CreateAndEnableLogFile();
+                }
+            );
+
+            Message::SetMinimumSeverityForOutput(logLevel);
+        }
+
         /// Enables the log, if it is configured in the configuration file.
         static void EnableLogIfConfigured(void)
         {
-            const Configuration::ConfigurationFile& config = GetConfiguration();
+            const bool kLogEnabled = GetConfigurationData().GetFirstBooleanValue(Strings::kStrConfigurationSectionLog, Strings::kStrConfigurationSettingLogEnabled).value_or(false);
+            const int64_t kLogLevel = GetConfigurationData().GetFirstIntegerValue(Strings::kStrConfigurationSectionLog, Strings::kStrConfigurationSettingLogLevel).value_or(0);
 
-            bool logEnabled = false;
-            int64_t logLevel = 0;
-
-            if (true == config.IsDataValid())
-            {
-                if (true == config.GetData().SectionNamePairExists(Strings::kStrConfigurationSectionLog, Strings::kStrConfigurationSettingLogEnabled))
-                    logEnabled = config.GetData()[Strings::kStrConfigurationSectionLog][Strings::kStrConfigurationSettingLogEnabled].FirstValue().GetBooleanValue();
-
-                if (true == config.GetData().SectionNamePairExists(Strings::kStrConfigurationSectionLog, Strings::kStrConfigurationSettingLogLevel))
-                    logLevel = config.GetData()[Strings::kStrConfigurationSectionLog][Strings::kStrConfigurationSettingLogLevel].FirstValue().GetIntegerValue();
-            }
-
-            if ((true == logEnabled) && (logLevel > 0))
+            if ((true == kLogEnabled) && (kLogLevel > 0))
             {
                 // Offset the requested severity so that 0 = disabled, 1 = error, 2 = warning, etc.
-                const Message::ESeverity configureSeverity = (Message::ESeverity)(logLevel + (int64_t)Message::ESeverity::LowerBoundConfigurableValue);
-
-                Message::CreateAndEnableLogFile();
-                Message::SetMinimumSeverityForOutput((Message::ESeverity)configureSeverity);
+                const Message::ESeverity configuredSeverity = (Message::ESeverity)(kLogLevel + (int64_t)Message::ESeverity::LowerBoundConfigurableValue);
+                EnableLog(configuredSeverity);
             }
         }
 #endif
@@ -119,21 +121,30 @@ namespace Xidi
         // See "Globals.h" for documentation.
 
 #ifndef XIDI_SKIP_CONFIG
-        const Configuration::ConfigurationFile& GetConfiguration(void)
+        const Configuration::ConfigurationData& GetConfigurationData(void)
         {
-            static Configuration::ConfigurationFile configuration(std::make_unique<XidiConfigReader>());
+            static Configuration::ConfigurationData configData;
 
             static std::once_flag readConfigFlag;
             std::call_once(readConfigFlag, []() -> void
                 {
-                    configuration.Read(Strings::kStrConfigurationFilename);
+                    XidiConfigReader configReader;
+                    configData = configReader.ReadConfigurationFile(Strings::kStrConfigurationFilename);
 
-                    if (Configuration::EFileReadResult::Malformed == configuration.GetFileReadResult())
-                        Message::Output(Message::ESeverity::ForcedInteractiveError, configuration.GetReadErrorMessage().data());
+                    if (true == configReader.HasReadErrors())
+                    {
+                        Message::Output(Message::ESeverity::ForcedInteractiveError, L"Errors were encountered during configuration file reading. See log file on the Desktop for more information.");
+
+                        EnableLog(Message::ESeverity::Error);
+
+                        Message::Output(Message::ESeverity::Error, L"Errors were encountered during configuration file reading.");
+                        for (const auto& readError : configReader.GetReadErrors())
+                            Message::OutputFormatted(Message::ESeverity::Error, L"    %s", readError.c_str());
+                    }
                 }
             );
 
-            return configuration;
+            return configData;
         }
 #endif
 

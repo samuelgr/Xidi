@@ -48,33 +48,36 @@ namespace Xidi
     // -------- CONCRETE INSTANCE METHODS ---------------------------------- //
     // See "Configuration.h" for documentation.
 
-    ESectionAction XidiConfigReader::ActionForSection(std::wstring_view section)
+    EAction XidiConfigReader::ActionForSection(std::wstring_view section)
     {
         if (0 != configurationFileLayout.count(section))
-            return ESectionAction::Read;
+            return EAction::Process;
 
-        return ESectionAction::Error;
+        return EAction::Error;
     }
 
     // --------
 
-    bool XidiConfigReader::CheckValue(std::wstring_view section, std::wstring_view name, const TIntegerValue& value)
+    EAction XidiConfigReader::ActionForValue(std::wstring_view section, std::wstring_view name, TIntegerView value)
     {
-        return (value >= 0);
+        if (value >= 0)
+            return EAction::Process;
+
+        return EAction::Error;
     }
 
     // --------
 
-    bool XidiConfigReader::CheckValue(std::wstring_view section, std::wstring_view name, const TBooleanValue& value)
+    EAction XidiConfigReader::ActionForValue(std::wstring_view section, std::wstring_view name, TBooleanView value)
     {
-        return true;
+        return EAction::Process;
     }
 
     // --------
 
-    bool XidiConfigReader::CheckValue(std::wstring_view section, std::wstring_view name, const TStringValue& value)
+    EAction XidiConfigReader::ActionForValue(std::wstring_view section, std::wstring_view name, TStringView value)
     {
-        return true;
+        return EAction::Process;
     }
 
     // --------

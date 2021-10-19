@@ -100,7 +100,7 @@ namespace Xidi
                 if (keyboardEvents.size() > 0)
                 {
                     if (true == DoesCurrentProcessHaveInputFocus())
-                        SendInput(keyboardEvents.size(), keyboardEvents.data(), sizeof(INPUT));
+                        SendInput((UINT)keyboardEvents.size(), keyboardEvents.data(), (int)sizeof(INPUT));
                 }
 
                 keyboardEvents.clear();

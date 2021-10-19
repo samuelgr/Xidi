@@ -28,10 +28,10 @@ namespace Xidi
         // See "Configuration.h" for documentation.
 
         
-        ESectionAction ActionForSection(std::wstring_view section) override;
-        bool CheckValue(std::wstring_view section, std::wstring_view name, const TIntegerValue& value) override;
-        bool CheckValue(std::wstring_view section, std::wstring_view name, const TBooleanValue& value) override;
-        bool CheckValue(std::wstring_view section, std::wstring_view name, const TStringValue& value) override;
+        EAction ActionForSection(std::wstring_view section) override;
+        EAction ActionForValue(std::wstring_view section, std::wstring_view name, TIntegerView value) override;
+        EAction ActionForValue(std::wstring_view section, std::wstring_view name, TBooleanView value) override;
+        EAction ActionForValue(std::wstring_view section, std::wstring_view name, TStringView value) override;
         EValueType TypeForValue(std::wstring_view section, std::wstring_view name) override;
         void PrepareForRead(void) override;
     };

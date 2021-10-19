@@ -321,6 +321,7 @@ namespace Xidi
                 fwprintf_s(logFileHandle, L"Program:   %s\n", Strings::kStrExecutableCompleteFilename.data());
                 fwprintf_s(logFileHandle, L"PID:       %d\n", Globals::GetCurrentProcessId());
                 fwprintf_s(logFileHandle, L"%s\n", kLogHeaderSeparator);
+                fflush(logFileHandle);
             }
         }
 

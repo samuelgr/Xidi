@@ -12,6 +12,7 @@
 #include "Configuration.h"
 #include "TemporaryBuffer.h"
 
+#include <algorithm>
 #include <climits>
 #include <cstdarg>
 #include <cstdint>
@@ -20,6 +21,7 @@
 #include <cstring>
 #include <limits>
 #include <memory>
+#include <sal.h>
 #include <string>
 #include <string_view>
 #include <unordered_set>
@@ -47,6 +49,17 @@ namespace Xidi
         {
             FILE* fileHandle = nullptr;
 
+            inline FileHandle(const wchar_t* filename, const wchar_t* mode)
+            {
+                _wfopen_s(&fileHandle, filename, mode);
+            }
+
+            inline ~FileHandle(void)
+            {
+                if (nullptr != fileHandle)
+                    fclose(fileHandle);
+            }
+
             inline operator FILE*(void) const
             {
                 return fileHandle;
@@ -56,16 +69,41 @@ namespace Xidi
             {
                 return &fileHandle;
             }
-
-            inline ~FileHandle(void)
-            {
-                if (nullptr != fileHandle)
-                    fclose(fileHandle);
-            }
         };
 
 
         // -------- INTERNAL FUNCTIONS ------------------------------------- //
+
+        /// Compares two strings for equality without regard for character case.
+        /// @tparam WideStringType Type of wide-character string to compare.
+        /// @param [in] a First string to compare.
+        /// @param [in] b Second string to compare.
+        /// @return `true` if the strings are equal without regard for character case, `false` otherwise.
+        template <typename WideStringType> static inline bool CaseInsensitiveStringCompare(const WideStringType& a, const WideStringType& b)
+        {
+            return std::equal(a.cbegin(), a.cend(), b.cbegin(), b.cend(), [](wchar_t a, wchar_t b) -> bool
+                {
+                    return (towlower(a) == towlower(b));
+                }
+            );
+        }
+
+        /// Formats a string and returns the result.
+        /// @param [in] format Format string, possibly with format specifiers which must be matched with the arguments that follow.
+        /// @return Resulting string after all formatting is applied.
+        static std::wstring FormatString(_Printf_format_string_ const wchar_t* format, ...)
+        {
+            TemporaryBuffer<wchar_t> buf;
+
+            va_list args;
+            va_start(args, format);
+
+            vswprintf_s(buf, buf.Count(), format, args);
+
+            va_end(args);
+
+            return std::wstring(buf);
+        }
 
         /// Tests if the supplied character is allowed as a configuration setting name (the part before the '=' sign in the configuration file).
         /// @param [in] charToTest Character to test.
@@ -243,48 +281,31 @@ namespace Xidi
             return ELineClassification::Error;
         }
 
-        /// Creates a string based on formatting another one.
-        /// @param [out] dest String to which to output the result of formatting..
-        /// @param [in] format String to format, possibly with format specifiers.
-        static void FormatString(std::wstring& dest, const wchar_t* const format, ...)
-        {
-            TemporaryBuffer<wchar_t> buf;
-
-            va_list args;
-            va_start(args, format);
-
-            vswprintf_s(buf, buf.Count(), format, args);
-
-            va_end(args);
-
-            dest = buf;
-        }
-
         /// Parses a Boolean from the supplied input string.
         /// @param [in] source String from which to parse.
         /// @param [out] dest Filled with the result of the parse.
         /// @return `true` if the parse was successful and able to consume the whole string, `false` otherwise.
-        static bool ParseBoolean(const TStringValue& source, TBooleanValue* const dest)
+        static bool ParseBoolean(const std::wstring_view source, TBooleanValue& dest)
         {
-            static const wchar_t* const trueStrings[] = { L"t", L"true", L"on", L"y", L"yes", L"enabled", L"1" };
-            static const wchar_t* const falseStrings[] = { L"f", L"false", L"off", L"n", L"no", L"disabled", L"0" };
+            static constexpr std::wstring_view kTrueStrings[] = { L"t", L"true", L"on", L"y", L"yes", L"enabled", L"1" };
+            static constexpr std::wstring_view kFalseStrings[] = { L"f", L"false", L"off", L"n", L"no", L"disabled", L"0" };
 
             // Check if the string represents a value of TRUE.
-            for (int i = 0; i < _countof(trueStrings); ++i)
+            for (auto& trueString : kTrueStrings)
             {
-                if (0 == _wcsicmp(source.c_str(), trueStrings[i]))
+                if (true == CaseInsensitiveStringCompare(trueString, source))
                 {
-                    *dest = (TBooleanValue)true;
+                    dest = (TBooleanValue)true;
                     return true;
                 }
             }
 
             // Check if the string represents a value of FALSE.
-            for (int i = 0; i < _countof(falseStrings); ++i)
+            for (auto& falseString : kFalseStrings)
             {
-                if (0 == _wcsicmp(source.c_str(), falseStrings[i]))
+                if (true == CaseInsensitiveStringCompare(falseString, source))
                 {
-                    *dest = (TBooleanValue)false;
+                    dest = (TBooleanValue)false;
                     return true;
                 }
             }
@@ -296,36 +317,37 @@ namespace Xidi
         /// @param [in] source String from which to parse.
         /// @param [out] dest Filled with the result of the parse.
         /// @return `true` if the parse was successful and able to consume the whole string, `false` otherwise.
-        static bool ParseInteger(const TStringValue& source, TIntegerValue* const dest)
+        static bool ParseInteger(std::wstring_view source, TIntegerValue& dest)
         {
-            intmax_t value = 0ll;
+            intmax_t value = 0;
             wchar_t* endptr = nullptr;
 
             // Parse out a number in any representable base.
-            value = wcstoll(source.c_str(), &endptr, 0);
+            value = wcstoll(source.data(), &endptr, 0);
 
             // Verify that the number is not out of range.
             if (ERANGE == errno && (LLONG_MIN == value || LLONG_MAX == value))
                 return false;
-            if (value > std::numeric_limits<TIntegerValue>::max() || value < std::numeric_limits<TIntegerValue>::min())
+            if ((value > std::numeric_limits<TIntegerValue>::max()) || (value < std::numeric_limits<TIntegerValue>::min()))
                 return false;
 
             // Verify that the whole string was consumed.
-            if (L'\0' != *endptr)
+            if (source.length() != (endptr - source.data()))
                 return false;
 
-            *dest = (TIntegerValue)value;
+            dest = (TIntegerValue)value;
             return true;
         }
 
         /// Parses a name and a value for the specified configuration file line, which must first have been classified as containing a value.
+        /// On return, the configuration file line is modified to add null termination such that the views are guaranteed to be null-terminated.
         /// @param [in] configFileLine Buffer containing the configuration file line.
         /// @param [out] nameString Filled with the name of the configuration setting.
         /// @param [out] valueString Filled with the value specified for the configuration setting.
-        static void ParseNameAndValue(const wchar_t* const configFileLine, std::wstring& nameString, TStringValue& valueString)
+        static void ParseNameAndValue(wchar_t* configFileLine, std::wstring_view& nameString, std::wstring_view& valueString)
         {
             // Skip to the start of the name part of the line.
-            const wchar_t* name = configFileLine;
+            wchar_t* name = configFileLine;
             while (iswblank(name[0]))
                 name += 1;
 
@@ -335,7 +357,7 @@ namespace Xidi
                 nameLength += 1;
 
             // Advance to the value portion of the string.
-            const wchar_t* value = &name[nameLength + 1];
+            wchar_t* value = &name[nameLength + 1];
 
             // Skip over whitespace and the '=' sign.
             while ((L'=' == value[0]) || (iswblank(value[0])))
@@ -346,17 +368,22 @@ namespace Xidi
             while (IsAllowedValueCharacter(value[valueLength]))
                 valueLength += 1;
 
-            nameString = std::move(std::wstring(name, nameLength));
-            valueString = std::move(TStringValue(value, valueLength));
+            // Null-terminate both name and value strings so the resulting views are also null-terminated.
+            name[nameLength] = L'\0';
+            value[valueLength] = L'\0';
+
+            nameString = std::wstring_view(name, nameLength);
+            valueString = std::wstring_view(value, valueLength);
         }
 
         /// Parses a section name from the specified configuration file line, which must first have been classified as containing a section name.
+        /// On return, the configuration file line is modified to add null termination such that the view is guaranteed to be null-terminated.
         /// @param [in] configFileLine Buffer containing the configuration file line.
-        /// @param [out] sectionString Filled with the name of the configuration section.
-        static void ParseSectionName(const wchar_t* const configFileLine, std::wstring& sectionString)
+        /// @param String containing the name of the configuration section.
+        static std::wstring_view ParseSection(wchar_t* configFileLine)
         {
             // Skip to the '[' character and then advance once more to the section name itself.
-            const wchar_t* section = configFileLine;
+            wchar_t* section = configFileLine;
             while (L'[' != section[0])
                 section += 1;
             section += 1;
@@ -366,7 +393,10 @@ namespace Xidi
             while (L']' != section[sectionLength])
                 sectionLength += 1;
 
-            sectionString = std::move(std::wstring(section, sectionLength));
+            // Null-terminate the section name so the resulting view is also null-terminated.
+            section[sectionLength] = L'\0';
+
+            return std::wstring_view(section, sectionLength);
         }
 
         /// Reads a single line from the specified file handle, verifies that it fits within the specified buffer, and removes trailing whitespace.
@@ -398,23 +428,19 @@ namespace Xidi
         // -------- INSTANCE METHODS --------------------------------------- //
         // See "Configuration.h" for documentation.
 
-        EFileReadResult ConfigurationFileReader::ReadConfigurationFile(std::wstring_view configFileName, ConfigurationData& configToFill)
+        ConfigurationData ConfigurationFileReader::ReadConfigurationFile(std::wstring_view configFileName)
         {
-            FileHandle configFileHandle;
-            _wfopen_s(&configFileHandle, configFileName.data(), L"r");
+            ConfigurationData configToFill;
 
+            FileHandle configFileHandle(configFileName.data(), L"r");
             if (nullptr == configFileHandle)
-            {
-                FormatString(readErrorMessage, L"%s - Unable to open configuration file.", configFileName.data());
-                return EFileReadResult::FileNotFound;
-            }
+                return configToFill;
 
-            configToFill.Clear();
             PrepareForRead();
 
             // Parse the configuration file, one line at a time.
-            std::unordered_set<std::wstring> seenSections;
-            std::wstring thisSection = kSectionNameGlobal;
+            std::set<std::wstring, std::less<>> seenSections;
+            std::wstring_view thisSection = kSectionNameGlobal;
 
             int configLineNumber = 1;
             TemporaryBuffer<wchar_t> configLineBuffer;
@@ -426,43 +452,47 @@ namespace Xidi
                 switch (ClassifyConfigurationFileLine(configLineBuffer, configLineLength))
                 {
                 case ELineClassification::Error:
-                    FormatString(readErrorMessage, L"%s:%d - Unable to parse line.", configFileName.data(), configLineNumber);
-                    return EFileReadResult::Malformed;
+                    readErrors.emplace_back(FormatString(L"%s(%d): Unable to parse line.", configFileName.data(), configLineNumber));
+                    break;
 
                 case ELineClassification::Ignore:
                     break;
 
                 case ELineClassification::Section:
                 {
-                    std::wstring section;
-                    ParseSectionName(configLineBuffer, section);
+                    std::wstring_view section = ParseSection(configLineBuffer);
 
                     if (0 != seenSections.count(section))
                     {
-                        FormatString(readErrorMessage, L"%s:%d - Section \"%s\" is duplicated.", configFileName.data(), configLineNumber, section.c_str());
-                        return EFileReadResult::Malformed;
+                        readErrors.emplace_back(FormatString(L"%s(%d): %s: Duplicated section name.", configFileName.data(), configLineNumber, section.data()));
+                        skipValueLines = true;
+                        break;
                     }
 
-                    const ESectionAction sectionAction = ActionForSection(section);
+                    const EAction sectionAction = ActionForSection(section);
                     switch (sectionAction)
                     {
-                    case ESectionAction::Error:
-                        FormatString(readErrorMessage, L"%s:%d - Section \"%s\" is invalid.", configFileName.data(), configLineNumber, section.c_str());
-                        return EFileReadResult::Malformed;
+                    case EAction::Error:
+                        if (true == HasLastErrorMessage())
+                            readErrors.emplace_back(FormatString(L"%s(%d): %s", configFileName.data(), configLineNumber, GetLastErrorMessage().c_str()));
+                        else
+                            readErrors.emplace_back(FormatString(L"%s(%d): %s: Unrecognized section name.", configFileName.data(), configLineNumber, section.data()));
+                        skipValueLines = true;
+                        break;
 
-                    case ESectionAction::Read:
-                        thisSection = std::move(section);
-                        seenSections.insert(thisSection);
+                    case EAction::Process:
+                        thisSection = *(seenSections.emplace(section).first);
                         skipValueLines = false;
                         break;
 
-                    case ESectionAction::Skip:
+                    case EAction::Skip:
                         skipValueLines = true;
                         break;
 
                     default:
-                        FormatString(readErrorMessage, L"%s:%d - Internal error while processing section name.", configFileName.data(), configLineNumber);
-                        return EFileReadResult::Malformed;
+                        readErrors.emplace_back(FormatString(L"%s(%d): Internal error while processing section name.", configFileName.data(), configLineNumber));
+                        skipValueLines = true;
+                        break;
                     }
                 }
                 break;
@@ -470,11 +500,12 @@ namespace Xidi
                 case ELineClassification::Value:
                     if (false == skipValueLines)
                     {
-                        std::wstring name;
-                        TStringValue value;
+                        std::wstring_view name;
+                        std::wstring_view value;
                         ParseNameAndValue(configLineBuffer, name, value);
 
                         const EValueType valueType = TypeForValue(thisSection, name);
+                        bool shouldParseValue = true;
 
                         // If the value type does not identify it as multi-valued, make sure this is the first time the setting is seen.
                         switch (valueType)
@@ -484,42 +515,49 @@ namespace Xidi
                         case EValueType::String:
                             if (configToFill.SectionNamePairExists(thisSection, name))
                             {
-                                FormatString(readErrorMessage, L"%s:%d - Configuration setting \"%s\" only supports a single value.", configFileName.data(), configLineNumber, name.c_str());
-                                return EFileReadResult::Malformed;
+                                readErrors.emplace_back(FormatString(L"%s(%d): %s: Only a single value is allowed for this setting.", configFileName.data(), configLineNumber, name.data()));
+                                shouldParseValue = false;
                             }
+                            break;
 
                         default:
                             break;
                         }
 
+                        if (false == shouldParseValue)
+                            break;
+
                         // Attempt to parse the value.
                         switch (valueType)
                         {
                         case EValueType::Error:
-                            FormatString(readErrorMessage, L"%s:%d - Configuration setting \"%s\" is invalid.", configFileName.data(), configLineNumber, name.c_str());
-                            return EFileReadResult::Malformed;
+                            readErrors.emplace_back(FormatString(L"%s(%d): %s: Unrecognized configuration setting.", configFileName.data(), configLineNumber, name.data()));
+                            break;
 
                         case EValueType::Integer:
                         case EValueType::IntegerMultiValue:
                         {
                             TIntegerValue intValue = (TIntegerValue)0;
 
-                            if (false == ParseInteger(value, &intValue))
+                            if (false == ParseInteger(value, intValue))
                             {
-                                FormatString(readErrorMessage, L"%s:%d - Value \"%s\" is not a valid integer.", configFileName.data(), configLineNumber, value.c_str());
-                                return EFileReadResult::Malformed;
+                                readErrors.emplace_back(FormatString(L"%s(%d): %s: Failed to parse integer value.", configFileName.data(), configLineNumber, value.data()));
+                                break;
                             }
 
-                            if (false == CheckValue(thisSection, name, intValue))
+                            switch (ActionForValue(thisSection, name, intValue))
                             {
-                                FormatString(readErrorMessage, L"%s:%d - Configuration setting \"%s\" with value \"%s\" is invalid.", configFileName.data(), configLineNumber, name.c_str(), value.c_str());
-                                return EFileReadResult::Malformed;
-                            }
+                            case EAction::Error:
+                                if (true == HasLastErrorMessage())
+                                    readErrors.emplace_back(FormatString(L"%s(%d): %s", configFileName.data(), configLineNumber, GetLastErrorMessage().c_str()));
+                                else
+                                    readErrors.emplace_back(FormatString(L"%s(%d): %s: Invalid value for configuration setting %s.", configFileName.data(), configLineNumber, value.data(), name.data()));
+                                break;
 
-                            if (false == configToFill.Insert(thisSection, name, intValue))
-                            {
-                                FormatString(readErrorMessage, L"%s:%d - Value \"%s\" for configuration setting \"%s\" is duplicated.", configFileName.data(), configLineNumber, value.c_str(), name.c_str());
-                                return EFileReadResult::Malformed;
+                            case EAction::Process:
+                                if (false == configToFill.Insert(thisSection, name, TIntegerValue(intValue)))
+                                    readErrors.emplace_back(FormatString(L"%s(%d): %s: Duplicated value for configuration setting %s.", configFileName.data(), configLineNumber, value.data(), name.data()));
+                                break;
                             }
                         }
                         break;
@@ -529,51 +567,57 @@ namespace Xidi
                         {
                             TBooleanValue boolValue = (TBooleanValue)false;
 
-                            if (false == ParseBoolean(value, &boolValue))
+                            if (false == ParseBoolean(value, boolValue))
                             {
-                                FormatString(readErrorMessage, L"%s:%d - Value \"%s\" is not a valid Boolean.", configFileName.data(), configLineNumber, value.c_str());
-                                return EFileReadResult::Malformed;
+                                readErrors.emplace_back(FormatString(L"%s(%d): %s: Failed to parse Boolean value.", configFileName.data(), configLineNumber, value.data()));
+                                break;
                             }
 
-                            if (false == CheckValue(thisSection, name, boolValue))
+                            switch (ActionForValue(thisSection, name, boolValue))
                             {
-                                FormatString(readErrorMessage, L"%s:%d - Configuration setting \"%s\" with value \"%s\" is invalid.", configFileName.data(), configLineNumber, name.c_str(), value.c_str());
-                                return EFileReadResult::Malformed;
-                            }
+                            case EAction::Error:
+                                if (true == HasLastErrorMessage())
+                                    readErrors.emplace_back(FormatString(L"%s(%d): %s", configFileName.data(), configLineNumber, GetLastErrorMessage().c_str()));
+                                else
+                                    readErrors.emplace_back(FormatString(L"%s(%d): %s: Invalid value for configuration setting %s.", configFileName.data(), configLineNumber, value.data(), name.data()));
+                                break;
 
-                            if (false == configToFill.Insert(thisSection, name, boolValue))
-                            {
-                                FormatString(readErrorMessage, L"%s:%d - Value \"%s\" for configuration setting \"%s\" is duplicated.", configFileName.data(), configLineNumber, value.c_str(), name.c_str());
-                                return EFileReadResult::Malformed;
+                            case EAction::Process:
+                                if (false == configToFill.Insert(thisSection, name, TBooleanValue(boolValue)))
+                                    readErrors.emplace_back(FormatString(L"%s(%d): %s: Duplicated value for configuration setting %s.", configFileName.data(), configLineNumber, value.data(), name.data()));
+                                break;
                             }
                         }
                         break;
 
                         case EValueType::String:
                         case EValueType::StringMultiValue:
-                            if (false == CheckValue(thisSection, name, value))
+                            switch (ActionForValue(thisSection, name, value))
                             {
-                                FormatString(readErrorMessage, L"%s:%d - Configuration setting \"%s\" with value \"%s\" is invalid.", configFileName.data(), configLineNumber, name.c_str(), value.c_str());
-                                return EFileReadResult::Malformed;
-                            }
+                            case EAction::Error:
+                                if (true == HasLastErrorMessage())
+                                    readErrors.emplace_back(FormatString(L"%s(%d): %s", configFileName.data(), configLineNumber, GetLastErrorMessage().c_str()));
+                                else
+                                    readErrors.emplace_back(FormatString(L"%s(%d): %s: Invalid value for configuration setting %s.", configFileName.data(), configLineNumber, value.data(), name.data()));
+                                break;
 
-                            if (false == configToFill.Insert(thisSection, name, value))
-                            {
-                                FormatString(readErrorMessage, L"%s:%d - Value \"%s\" for configuration setting \"%s\" is duplicated.", configFileName.data(), configLineNumber, value.c_str(), name.c_str());
-                                return EFileReadResult::Malformed;
+                            case EAction::Process:
+                                if (false == configToFill.Insert(thisSection, name, TStringValue(value)))
+                                    readErrors.emplace_back(FormatString(L"%s(%d): %s: Duplicated value for configuration setting %s.", configFileName.data(), configLineNumber, value.data(), name.data()));
+                                break;
                             }
                             break;
 
                         default:
-                            FormatString(readErrorMessage, L"%s:%d - Internal error while processing configuration setting.", configFileName.data(), configLineNumber);
-                            return EFileReadResult::Malformed;
+                            readErrors.emplace_back(FormatString(L"%s(%d): Internal error while processing configuration setting.", configFileName.data(), configLineNumber));
+                            break;
                         }
                     }
                     break;
 
                 default:
-                    FormatString(readErrorMessage, L"%s:%d - Internal error while processing line.", configFileName.data(), configLineNumber);
-                    return EFileReadResult::Malformed;
+                    readErrors.emplace_back(FormatString(L"%s(%d): Internal error while processing line.", configFileName.data(), configLineNumber));
+                    break;
                 }
 
                 configLineLength = ReadAndTrimLine(configFileHandle, configLineBuffer, configLineBuffer.Count());
@@ -587,18 +631,18 @@ namespace Xidi
 
                 if (ferror(configFileHandle))
                 {
-                    FormatString(readErrorMessage, L"%s - I/O error while reading.", configFileName.data(), configLineNumber);
-                    return EFileReadResult::Malformed;
+                    readErrors.emplace_back(FormatString(L"%s(%d): I/O error while reading.", configFileName.data(), configLineNumber));
+                    return configToFill;
 
                 }
                 else if (configLineLength < 0)
                 {
-                    FormatString(readErrorMessage, L"%s:%d - Line is too long.", configFileName.data(), configLineNumber);
-                    return EFileReadResult::Malformed;
+                    readErrors.emplace_back(FormatString(L"%s(%d): Line is too long.", configFileName.data(), configLineNumber));
+                    return configToFill;
                 }
             }
 
-            return EFileReadResult::Success;
+            return configToFill;
         }
 
 

@@ -62,32 +62,14 @@ namespace Xidi
         /// @return Library path.
         static std::wstring_view GetImportLibraryPathDirectInput(void)
         {
-            const Configuration::ConfigurationFile& config = Globals::GetConfiguration();
-
-            if ((true == config.IsDataValid()) && (true == config.GetData().SectionNamePairExists(Strings::kStrConfigurationSectionImport, Strings::kStrConfigurationSettingImportDirectInput)))
-            {
-                return config.GetData()[Strings::kStrConfigurationSectionImport][Strings::kStrConfigurationSettingImportDirectInput].FirstValue().GetStringValue();
-            }
-            else
-            {
-                return Strings::kStrSystemLibraryFilenameDirectInput;
-            }
+            return Globals::GetConfigurationData().GetFirstStringValue(Strings::kStrConfigurationSectionImport, Strings::kStrConfigurationSettingImportDirectInput).value_or(Strings::kStrSystemLibraryFilenameDirectInput);
         }
 
         /// Retrieves the library path for the DirectInput8 library that should be used for importing functions.
         /// @return Library path.
         static std::wstring_view GetImportLibraryPathDirectInput8(void)
         {
-            const Configuration::ConfigurationFile& config = Globals::GetConfiguration();
-
-            if ((true == config.IsDataValid()) && (true == config.GetData().SectionNamePairExists(Strings::kStrConfigurationSectionImport, Strings::kStrConfigurationSettingImportDirectInput8)))
-            {
-                return config.GetData()[Strings::kStrConfigurationSectionImport][Strings::kStrConfigurationSettingImportDirectInput8].FirstValue().GetStringValue();
-            }
-            else
-            {
-                return Strings::kStrSystemLibraryFilenameDirectInput8;
-            }
+            return Globals::GetConfigurationData().GetFirstStringValue(Strings::kStrConfigurationSectionImport, Strings::kStrConfigurationSettingImportDirectInput8).value_or(Strings::kStrSystemLibraryFilenameDirectInput8);
         }
 
         /// Logs a warning event related to failure to import a particular function from the import library.

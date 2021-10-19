@@ -57,9 +57,9 @@ namespace Xidi
         // -------- FUNCTIONS ---------------------------------------------- //
 
 #ifndef XIDI_SKIP_CONFIG
-        /// Retrieves the configuration object that represents the contents of a configuration file.
+        /// Retrieves the configuration object that represents the data read from a configuration file.
         /// @return Read-only configuration object reference.
-        const Configuration::ConfigurationFile& GetConfiguration(void);
+        const Configuration::ConfigurationData& GetConfigurationData(void);
 #endif
         
         /// Retrieves a pseudohandle to the current process.
