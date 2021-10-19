@@ -39,9 +39,6 @@
     <ClInclude Include="Include\Xidi\Globals.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="Include\Xidi\Configuration.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="Include\Xidi\TemporaryBuffer.h">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -49,9 +46,6 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="Include\Xidi\Message.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="Include\Xidi\XidiConfigReader.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="Include\Xidi\VirtualController.h">
@@ -125,9 +119,6 @@
     <ClCompile Include="Source\Globals.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="Source\Configuration.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="Source\TemporaryBuffer.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -135,9 +126,6 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="Source\Message.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="Source\XidiConfigReader.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="Source\Test\Case\DataFormatTest.cpp">

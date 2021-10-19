@@ -13,7 +13,10 @@
 #pragma once
 
 #include "ApiWindows.h"
+
+#ifndef XIDI_SKIP_CONFIG
 #include "Configuration.h"
+#endif
 
 #include <string>
 #include <string_view>
@@ -53,9 +56,11 @@ namespace Xidi
 
         // -------- FUNCTIONS ---------------------------------------------- //
 
+#ifndef XIDI_SKIP_CONFIG
         /// Retrieves the configuration object that represents the contents of a configuration file.
         /// @return Read-only configuration object reference.
         const Configuration::ConfigurationFile& GetConfiguration(void);
+#endif
         
         /// Retrieves a pseudohandle to the current process.
         /// @return Current process pseudohandle.

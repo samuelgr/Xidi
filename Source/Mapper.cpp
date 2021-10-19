@@ -11,13 +11,16 @@
  *****************************************************************************/
 
 #include "ApiWindows.h"
-#include "Configuration.h"
 #include "ControllerTypes.h"
 #include "ElementMapper.h"
 #include "Globals.h"
 #include "Mapper.h"
 #include "Message.h"
 #include "Strings.h"
+
+#ifndef XIDI_SKIP_CONFIG
+#include "Configuration.h"
+#endif
 
 #include <map>
 #include <mutex>
@@ -331,6 +334,7 @@ namespace Xidi
 
             std::call_once(configuredMapperFlag, []() -> void
                 {
+#ifndef XIDI_SKIP_CONFIG
                     const Configuration::ConfigurationFile& config = Globals::GetConfiguration();
 
                     if ((true == config.IsDataValid()) && (true == config.GetData().SectionExists(Strings::kStrConfigurationSectionMapper)))
@@ -381,10 +385,9 @@ namespace Xidi
                         }
                     }
                     else
+#endif
                     {
-                        // Mapper section does not exist in the configuration file.
-                        Message::Output(Message::ESeverity::Info, L"No mappers configured in the configuration file. Using default mapper for all controllers.");
-
+                        // Mapper section does not exist in the configuration file, or configuration file code was skipped entirely.
                         const Mapper* defaultMapper = GetDefault();
                         if (nullptr == defaultMapper)
                         {

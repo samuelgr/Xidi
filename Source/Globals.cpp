@@ -11,13 +11,16 @@
  *****************************************************************************/
 
 #include "ApiWindows.h"
-#include "Configuration.h"
 #include "GitVersionInfo.h"
 #include "Globals.h"
 #include "Mapper.h"
 #include "Message.h"
 #include "Strings.h"
 #include "XidiConfigReader.h"
+
+#ifndef XIDI_SKIP_CONFIG
+#include "Configuration.h"
+#endif
 
 #include <cstdint>
 #include <memory>
@@ -82,6 +85,7 @@ namespace Xidi
 
         // -------- INTERNAL FUNCTIONS ------------------------------------- //
 
+#ifndef XIDI_SKIP_CONFIG
         /// Enables the log, if it is configured in the configuration file.
         static void EnableLogIfConfigured(void)
         {
@@ -108,11 +112,13 @@ namespace Xidi
                 Message::SetMinimumSeverityForOutput((Message::ESeverity)configureSeverity);
             }
         }
+#endif
 
 
         // -------- FUNCTIONS ---------------------------------------------- //
         // See "Globals.h" for documentation.
 
+#ifndef XIDI_SKIP_CONFIG
         const Configuration::ConfigurationFile& GetConfiguration(void)
         {
             static Configuration::ConfigurationFile configuration(std::make_unique<XidiConfigReader>());
@@ -129,6 +135,7 @@ namespace Xidi
 
             return configuration;
         }
+#endif
 
         // --------
 
@@ -172,7 +179,9 @@ namespace Xidi
 
         void Initialize(void)
         {
+#ifndef XIDI_SKIP_CONFIG
             EnableLogIfConfigured();
+#endif
 
 #ifndef XIDI_SKIP_MAPPERS
             Controller::Mapper::DumpRegisteredMappers();
