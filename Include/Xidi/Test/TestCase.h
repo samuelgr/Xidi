@@ -13,6 +13,8 @@
 
 #include "Utilities.h"
 
+#include <string_view>
+
 
 namespace XidiTest
 {
@@ -24,7 +26,7 @@ namespace XidiTest
 
         /// Initialization constructor. Constructs a test case object with an associated test case name, and registers it with the harness.
         /// @param [in] name Test case name.
-        ITestCase(const wchar_t* const name);
+        ITestCase(std::wstring_view name);
 
 
         // -------- ABSTRACT INSTANCE METHODS ------------------------------ //

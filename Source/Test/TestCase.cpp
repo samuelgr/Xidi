@@ -12,7 +12,7 @@
 #include "Harness.h"
 #include "TestCase.h"
 
-#include <cstdarg>
+#include <string_view>
 
 
 namespace XidiTest
@@ -20,7 +20,7 @@ namespace XidiTest
     // -------- CONSTRUCTION AND DESTRUCTION ------------------------------- //
     // See "TestCase.h" for documentation.
 
-    ITestCase::ITestCase(const wchar_t* const name)
+    ITestCase::ITestCase(std::wstring_view name)
     {
         Harness::RegisterTestCase(this, name);
     }
