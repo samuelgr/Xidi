@@ -32,7 +32,8 @@ namespace Xidi
         EAction ActionForValue(std::wstring_view section, std::wstring_view name, TIntegerView value) override;
         EAction ActionForValue(std::wstring_view section, std::wstring_view name, TBooleanView value) override;
         EAction ActionForValue(std::wstring_view section, std::wstring_view name, TStringView value) override;
+        void BeginRead(void) override;
+        void EndRead(void) override;
         EValueType TypeForValue(std::wstring_view section, std::wstring_view name) override;
-        void PrepareForRead(void) override;
     };
 }

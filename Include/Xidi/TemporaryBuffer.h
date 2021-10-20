@@ -11,7 +11,9 @@
 
 #pragma once
 
+#include <cstddef>
 #include <cstdint>
+#include <utility>
 
 
 namespace Xidi
@@ -56,8 +58,22 @@ namespace Xidi
         /// Default destructor.
         ~TemporaryBufferBase(void);
 
-        /// Copy constructor. Should never be invoked.
-        TemporaryBufferBase(const TemporaryBufferBase&) = delete;
+        /// Move constructor.
+        inline TemporaryBufferBase(TemporaryBufferBase&& other) : buffer(nullptr), isHeapAllocated(false)
+        {
+            *this = std::move(other);
+        }
+
+
+        // -------- OPERATORS ---------------------------------------------- //
+
+        /// Move assignment operator.
+        inline TemporaryBufferBase& operator=(TemporaryBufferBase&& other)
+        {
+            std::swap(buffer, other.buffer);
+            std::swap(isHeapAllocated, other.isHeapAllocated);
+            return *this;
+        }
 
 
         // -------- INSTANCE METHODS --------------------------------------- //
@@ -82,14 +98,27 @@ namespace Xidi
             // Nothing to do here.
         }
 
+        /// Move constructor.
+        inline TemporaryBuffer(TemporaryBuffer&& other) : TemporaryBufferBase(std::move(other))
+        {
+            // Nothing to do here.
+        }
+
 
         // -------- OPERATORS ---------------------------------------------- //
+
+        /// Move assignment operator.
+        inline TemporaryBuffer& operator=(TemporaryBuffer&& other)
+        {
+            TemporaryBufferBase::operator=(std::move(other));
+            return *this;
+        }
 
         /// Allows implicit conversion of a temporary buffer to the buffer pointer itself.
         /// Enables objects of this type to be used as if they were pointers to the underlying type.
         inline operator T*(void) const
         {
-            return (T*)Buffer();
+            return Data();
         }
 
 
@@ -100,6 +129,13 @@ namespace Xidi
         constexpr inline unsigned int Count(void) const
         {
             return Size() / sizeof(T);
+        }
+
+        /// Retrieves a properly-typed pointer to the buffer itself.
+        /// @return Typed pointer to the buffer.
+        inline T* Data(void) const
+        {
+            return (T*)Buffer();
         }
 
         /// Retrieves the size of the buffer space, in bytes.

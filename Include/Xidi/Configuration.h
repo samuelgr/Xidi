@@ -772,10 +772,15 @@ namespace Xidi
 
             // -------- CONCRETE INSTANCE METHODS -------------------------- //
 
-            /// Invoked at the start of a configuration file read operation.
+            /// Invoked at the beginning of a configuration file read operation.
             /// Subclasses are given the opportunity to initialize or reset any stored state, as needed.
             /// Overriding this method is optional, as a default implementation exists that does nothing.
-            virtual void PrepareForRead(void);
+            virtual void BeginRead(void);
+
+            /// Invoked at the end of a configuration file read operation.
+            /// Subclasses are given the opportunity to initialize or reset any stored state, as needed.
+            /// Overriding this method is optional, as a default implementation exists that does nothing.
+            virtual void EndRead(void);
         };
 
 

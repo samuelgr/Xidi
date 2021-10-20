@@ -75,11 +75,10 @@ namespace Xidi
         // -------- INTERNAL FUNCTIONS ------------------------------------- //
 
         /// Compares two strings for equality without regard for character case.
-        /// @tparam WideStringType Type of wide-character string to compare.
         /// @param [in] a First string to compare.
         /// @param [in] b Second string to compare.
         /// @return `true` if the strings are equal without regard for character case, `false` otherwise.
-        template <typename WideStringType> static inline bool CaseInsensitiveStringCompare(const WideStringType& a, const WideStringType& b)
+        static inline bool CaseInsensitiveStringCompare(std::wstring_view a, std::wstring_view b)
         {
             return std::equal(a.cbegin(), a.cend(), b.cbegin(), b.cend(), [](wchar_t a, wchar_t b) -> bool
                 {
@@ -88,21 +87,21 @@ namespace Xidi
             );
         }
 
-        /// Formats a string and returns the result.
+        /// Formats a string and returns the result in a newly-allocated temporary buffer.
         /// @param [in] format Format string, possibly with format specifiers which must be matched with the arguments that follow.
         /// @return Resulting string after all formatting is applied.
-        static std::wstring FormatString(_Printf_format_string_ const wchar_t* format, ...)
+        static TemporaryBuffer<wchar_t> FormatString(_Printf_format_string_ const wchar_t* format, ...)
         {
             TemporaryBuffer<wchar_t> buf;
 
             va_list args;
             va_start(args, format);
 
-            vswprintf_s(buf, buf.Count(), format, args);
+            vswprintf_s(buf.Data(), buf.Count(), format, args);
 
             va_end(args);
 
-            return std::wstring(buf);
+            return buf;
         }
 
         /// Tests if the supplied character is allowed as a configuration setting name (the part before the '=' sign in the configuration file).
@@ -436,7 +435,7 @@ namespace Xidi
             if (nullptr == configFileHandle)
                 return configToFill;
 
-            PrepareForRead();
+            BeginRead();
 
             // Parse the configuration file, one line at a time.
             std::set<std::wstring, std::less<>> seenSections;
@@ -649,7 +648,14 @@ namespace Xidi
         // -------- CONCRETE INSTANCE METHODS ------------------------------ //
         // See "Configuration.h" for documentation.
 
-        void ConfigurationFileReader::PrepareForRead(void)
+        void ConfigurationFileReader::BeginRead(void)
+        {
+            // Nothing to do here.
+        }
+
+        // --------
+
+        void ConfigurationFileReader::EndRead(void)
         {
             // Nothing to do here.
         }

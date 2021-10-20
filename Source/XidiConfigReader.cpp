@@ -82,22 +82,7 @@ namespace Xidi
 
     // --------
 
-    EValueType XidiConfigReader::TypeForValue(std::wstring_view section, std::wstring_view name)
-    {
-        auto sectionLayout = configurationFileLayout.find(section);
-        if (configurationFileLayout.end() == sectionLayout)
-            return EValueType::Error;
-
-        auto settingInfo = sectionLayout->second.find(name);
-        if (sectionLayout->second.end() == settingInfo)
-            return EValueType::Error;
-
-        return settingInfo->second;
-    }
-
-    // --------
-
-    void XidiConfigReader::PrepareForRead(void)
+    void XidiConfigReader::BeginRead(void)
     {
         static std::once_flag initFlag;
 
@@ -109,5 +94,27 @@ namespace Xidi
                     configurationFileLayout[Strings::kStrConfigurationSectionMapper][Strings::MapperTypeConfigurationNameString(i)] = EValueType::String;
             }
         );
+    }
+
+    // --------
+
+    void XidiConfigReader::EndRead(void)
+    {
+        // To be filled in.
+    }
+
+    // --------
+
+    EValueType XidiConfigReader::TypeForValue(std::wstring_view section, std::wstring_view name)
+    {
+        auto sectionLayout = configurationFileLayout.find(section);
+        if (configurationFileLayout.end() == sectionLayout)
+            return EValueType::Error;
+
+        auto settingInfo = sectionLayout->second.find(name);
+        if (sectionLayout->second.end() == settingInfo)
+            return EValueType::Error;
+
+        return settingInfo->second;
     }
 }

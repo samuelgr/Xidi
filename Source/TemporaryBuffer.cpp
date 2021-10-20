@@ -101,18 +101,24 @@ namespace Xidi
 
     TemporaryBufferBase::~TemporaryBufferBase(void)
     {
-        TemporaryBufferData& data = TemporaryBufferData::GetInstance();
+        // Buffer pointer can be `nullptr` if the move constructor is used because it initializes the buffer pointer to `nullptr` before doing assignment.
+        // Afterwards the temporary object that is consumed has `nullptr` as its buffer pointer when it is destroyed.
 
-        if (true == isHeapAllocated)
+        if (nullptr != buffer)
         {
-            delete[] buffer;
-        }
-        else
-        {
-            std::scoped_lock lock(data.allocationMutex);
+            TemporaryBufferData& data = TemporaryBufferData::GetInstance();
 
-            data.nextFreeBuffer += 1;
-            data.freeBuffers[data.nextFreeBuffer] = buffer;
+            if (true == isHeapAllocated)
+            {
+                delete[] buffer;
+            }
+            else
+            {
+                std::scoped_lock lock(data.allocationMutex);
+
+                data.nextFreeBuffer += 1;
+                data.freeBuffers[data.nextFreeBuffer] = buffer;
+            }
         }
     }
 }
