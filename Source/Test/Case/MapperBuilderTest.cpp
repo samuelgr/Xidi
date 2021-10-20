@@ -362,6 +362,19 @@ namespace XidiTest
         VerifyElementMapMatchesSpec(kControllerElements, kTestElementMapper, mapper->ElementMap());
     }
 
+    // Verifies that a trivial mapper without a template but that is marked invalid fails to build.
+    TEST_CASE(MapperBuilder_Build_NoTemplate_MarkInvalid)
+    {
+        constexpr std::wstring_view kMapperName = L"TestMapper";
+
+        MapperBuilder builder;
+        TEST_ASSERT(true == builder.CreateBlueprint(kMapperName));
+        TEST_ASSERT(true == builder.InvalidateBlueprint(kMapperName));
+
+        std::unique_ptr<const Mapper> mapper(builder.Build(kMapperName));
+        TEST_ASSERT(nullptr == mapper);
+    }
+
     // Verifies that a mapper without a template and with elements marked for removal can be built and registered, the result being an empty element map.
     TEST_CASE(MapperBuilder_Build_NoTemplate_EmptyAfterElementsRemoved)
     {
@@ -538,6 +551,23 @@ namespace XidiTest
         TEST_ASSERT(nullptr != builder.Build(kMapperNames[0]));
         for (auto kMapperName : kMapperNames)
             TEST_ASSERT(true == Mapper::IsMapperNameKnown(kMapperName));
+    }
+
+    // Verifies that a dependent mapper fails to build if its template has been invalidated.
+    TEST_CASE(Mapper_Build_Template_MarkInvalid)
+    {
+        constexpr std::wstring_view kMapperNames[] = { L"TestMapperA", L"TestMapperB" };
+
+        MapperBuilder builder;
+        
+        for (auto kMapperName : kMapperNames)
+            TEST_ASSERT(true == builder.CreateBlueprint(kMapperName));
+
+        TEST_ASSERT(true == builder.SetBlueprintTemplate(kMapperNames[0], kMapperNames[1]));
+        TEST_ASSERT(true == builder.InvalidateBlueprint(kMapperNames[1]));
+
+        std::unique_ptr<const Mapper> mapper(builder.Build(kMapperNames[0]));
+        TEST_ASSERT(nullptr == mapper);
     }
 
     // Verifies that mapper build succeeds in the presence of an acyclic forking chain of template dependencies.

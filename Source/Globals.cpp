@@ -139,7 +139,7 @@ namespace Xidi
                         for (const auto& readError : configReader.GetReadErrors())
                             Message::OutputFormatted(Message::ESeverity::Error, L"    %s", readError.c_str());
 
-                        Message::Output(Message::ESeverity::ForcedInteractiveError, L"Errors were encountered during configuration file reading. See log file on the Desktop for more information.");
+                        Message::Output(Message::ESeverity::ForcedInteractiveWarning, L"Errors were encountered during configuration file reading. See log file on the Desktop for more information.");
                     }
                 }
             );

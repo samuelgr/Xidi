@@ -32,7 +32,7 @@ namespace Xidi
         {
             for (const auto& blueprintItem : blueprints)
             {
-                if (true == blueprintItem.second.buildAttempted)
+                if ((true == blueprintItem.second.buildAttempted) || (false == blueprintItem.second.buildCanAttempt))
                     continue;
 
                 if (nullptr == Build(blueprintItem.first))
@@ -60,10 +60,17 @@ namespace Xidi
 
             SBlueprint& blueprint = blueprints.at(mapperName);
 
+            if (false == blueprint.buildCanAttempt)
+            {
+                // If the blueprint was previously invalidated, then it cannot be built.
+                Message::OutputFormatted(Message::ESeverity::Error, L"Error while building mapper %s: Mapper configuration is invalid.", mapperName.data());
+                return nullptr;
+            }
+
             if (true == blueprint.buildAttempted)
             {
                 // If the build started but was never completed, then this indicates a cycle in the dependency graph, which is an error.
-                Message::OutputFormatted(Message::ESeverity::Error, L"Error while building mapper %s: Cycle detected in the template dependency graph.", mapperName.data());
+                Message::OutputFormatted(Message::ESeverity::Error, L"Error while building mapper %s: Circular template dependency.", mapperName.data());
                 return nullptr;
             }
 
@@ -179,6 +186,18 @@ namespace Xidi
                 return std::nullopt;
 
             return blueprintIter->second.templateName;
+        }
+
+        // --------
+
+        bool MapperBuilder::InvalidateBlueprint(std::wstring_view mapperName)
+        {
+            auto blueprintIter = blueprints.find(mapperName);
+            if (blueprints.cend() == blueprintIter)
+                return false;
+
+            blueprintIter->second.buildCanAttempt = false;
+            return true;
         }
 
         // --------

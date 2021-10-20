@@ -54,6 +54,9 @@ namespace Xidi
                 /// Flag for specifying if an attempt was made to build the mapper described by this blueprint.
                 /// Used to detect dependency cycles due to mappers specifying each other as templates.
                 bool buildAttempted;
+
+                /// Flag for specifying if this blueprint is valid for building.
+                bool buildCanAttempt = true;
             };
 
 
@@ -116,6 +119,13 @@ namespace Xidi
             /// @param [in] mapperName Name that identifies the mapper described by a possibly-existing blueprint.
             /// @return Template name associated with the blueprint if the blueprint exists.
             std::optional<std::wstring_view> GetBlueprintTemplate(std::wstring_view mapperName) const;
+
+            /// Marks a blueprint as invalid such that it cannot be built. Does nothing if the blueprint does not exist.
+            /// Useful for marking a partially-parsed blueprint as invalid in response to a parse error.
+            /// This method will fail if the mapper name does not identify an existing blueprint.
+            /// @param [in] mapperName Name that identifies the mapper described by a possibly-existing blueprint.
+            /// @return `true` if successful, `false` otherwise.
+            bool InvalidateBlueprint(std::wstring_view mapperName);
 
             /// Sets a specific element mapper to be applied as a modification to the template when this object is built into a mapper.
             /// If `nullptr` is specified, then the modification to be applied to the template is element mapper removal. Use #ClearBlueprintElementMapper to undo a modification.
