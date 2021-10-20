@@ -37,6 +37,7 @@ namespace Xidi
             // Non-interactive output modes
             DebugString,                                                ///< Message is output using a debug string, which debuggers will display.
             LogFile,                                                    ///< Message is output to a log file.
+            Console,                                                    ///< Message is output to the console via `stderr`.
 
             // Boundary value between non-interactive and interactive modes
             InteractiveBoundaryValue,                                   ///< Not used as a value, but separates non-interactive output modes from interactive output modes.
@@ -121,21 +122,19 @@ namespace Xidi
             if (IsSeverityForcedInteractive(severity))
             {
                 // If the severity level is forced interactive, then unconditionally enable an interactive output mode.
-                // Other modes might also be enabled depending on the configuration.
+                // Also potentially output to an attached debugger.
 
                 selectedOutputModes[numOutputModes++] = EOutputMode::GraphicalMessageBox;
 
                 if (IsDebuggerPresent())
                     selectedOutputModes[numOutputModes++] = EOutputMode::DebugString;
-
-                if (IsLogFileEnabled())
-                    selectedOutputModes[numOutputModes++] = EOutputMode::LogFile;
             }
             else if (IsDebuggerPresent())
             {
                 // If a debugger is present, #WillOutputMessageOfSeverity will always return `true`.
                 // The goal is tn ensure that debug strings are sent for all messages irrespective of severity.
                 // For other configured output modes, it is necessary to filter based on severity.
+                // Since all messages are being sent to the debugger, using the console is unnecessary.
 
                 selectedOutputModes[numOutputModes++] = EOutputMode::DebugString;
 
@@ -149,15 +148,24 @@ namespace Xidi
             {
                 // Since a debugger is not present, #WillOutputMessageOfSeverity has already validated that the severity of the message justifies outputting it.
                 // It is therefore sufficient just to pick appropriate output modes depending on message subsystem configuration.
-                // Prefer a log file if enabled, otherwise display an interactive message box.
+                // Prefer a log file if enabled, otherwise use the console. Do not use an interactive output mode in this situation.
 
                 if (IsLogFileEnabled())
                     selectedOutputModes[numOutputModes++] = EOutputMode::LogFile;
                 else
-                    selectedOutputModes[numOutputModes++] = EOutputMode::GraphicalMessageBox;
+                    selectedOutputModes[numOutputModes++] = EOutputMode::Console;
             }
 
             return numOutputModes;
+        }
+
+        /// Outputs the specified message using standard output.
+        /// Requires both a severity and a message string.
+        /// @param [in] severity Severity of the message.
+        /// @param [in] message Message text.
+        static inline void OutputInternalUsingConsole(const ESeverity severity, const wchar_t* message)
+        {
+            fwprintf_s(stderr, L"%s-%s:[%c] %s\n", Strings::kStrProductName.data(), Strings::kStrFormName.data(), CharacterForSeverity(severity), message);
         }
 
         /// Outputs the specified message using a debug string.
@@ -166,17 +174,7 @@ namespace Xidi
         /// @param [in] message Message text.
         static void OutputInternalUsingDebugString(const ESeverity severity, const wchar_t* message)
         {
-            std::wstringstream outputString;
-
-            // First compose the output string stamp.
-            // Desired format is "(product name)-(form name): [(severity)]"
-            outputString << Strings::kStrProductName << L'-' << Strings::kStrFormName << L": [" << CharacterForSeverity(severity) << L"] ";
-
-            // Append the message itself.
-            outputString << message << L"\n";
-
-            // Output to the debugger.
-            OutputDebugString(outputString.str().c_str());
+            OutputDebugString(Strings::FormatString(L"%s-%s:[%c] %s\n", Strings::kStrProductName.data(), Strings::kStrFormName.data(), CharacterForSeverity(severity), message));
         }
 
         /// Outputs the specified message to the log file.
@@ -270,6 +268,10 @@ namespace Xidi
 
                     case EOutputMode::LogFile:
                         OutputInternalUsingLogFile(severity, message);
+                        break;
+
+                    case EOutputMode::Console:
+                        OutputInternalUsingConsole(severity, message);
                         break;
 
                     case EOutputMode::GraphicalMessageBox:

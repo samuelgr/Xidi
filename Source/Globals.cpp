@@ -133,13 +133,13 @@ namespace Xidi
 
                     if (true == configReader.HasReadErrors())
                     {
-                        Message::Output(Message::ESeverity::ForcedInteractiveError, L"Errors were encountered during configuration file reading. See log file on the Desktop for more information.");
-
                         EnableLog(Message::ESeverity::Error);
 
                         Message::Output(Message::ESeverity::Error, L"Errors were encountered during configuration file reading.");
                         for (const auto& readError : configReader.GetReadErrors())
                             Message::OutputFormatted(Message::ESeverity::Error, L"    %s", readError.c_str());
+
+                        Message::Output(Message::ESeverity::ForcedInteractiveError, L"Errors were encountered during configuration file reading. See log file on the Desktop for more information.");
                     }
                 }
             );

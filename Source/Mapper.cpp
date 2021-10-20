@@ -116,12 +116,6 @@ namespace Xidi
                     return;
                 }
 
-                if (defaultMapper == name)
-                {
-                    Message::OutputFormatted(Message::ESeverity::Error, L"Internal error due to attempting to unregister the default mapper %s.", name.data());
-                    return;
-                }
-
                 if (false == knownMappers.contains(name))
                 {
                     Message::OutputFormatted(Message::ESeverity::Error, L"Internal error due to attempting to unregister unknown mapper %s.", name.data());
@@ -135,6 +129,9 @@ namespace Xidi
                 }
 
                 knownMappers.erase(name);
+
+                if (defaultMapper == name)
+                    defaultMapper = std::wstring_view();
             }
 
             /// Retrieves a pointer to the mapper object that corresponds to the specified name, if it exists.
@@ -269,10 +266,7 @@ namespace Xidi
         Mapper::~Mapper(void)
         {
             if (false == name.empty())
-            {
                 MapperRegistry::GetInstance().UnregisterMapper(name, this);
-                Message::OutputFormatted(Message::ESeverity::Warning, L"Unregistered and destroyed mapper %s.", name.data());
-            }
         }
 
 

@@ -953,6 +953,12 @@ namespace Xidi
                     {L"None",               &MakeNullMapper},
                     {L"empty",              &MakeNullMapper},
                     {L"Empty",              &MakeNullMapper},
+                    {L"ignore",             &MakeNullMapper},
+                    {L"Ignore",             &MakeNullMapper},
+                    {L"delete",             &MakeNullMapper},
+                    {L"Delete",             &MakeNullMapper},
+                    {L"remove",             &MakeNullMapper},
+                    {L"Remove",             &MakeNullMapper},
 
                     {L"split",              &MakeSplitMapper},
                     {L"Split",              &MakeSplitMapper},

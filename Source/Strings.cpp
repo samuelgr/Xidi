@@ -19,6 +19,7 @@
 #include <intrin.h>
 #include <mutex>
 #include <psapi.h>
+#include <sal.h>
 #include <shlobj.h>
 #include <sstream>
 #include <string>
@@ -394,6 +395,22 @@ namespace Xidi
 
         // -------- FUNCTIONS ---------------------------------------------- //
         // See "Strings.h" for documentation.
+
+        TemporaryBuffer<wchar_t> FormatString(_Printf_format_string_ const wchar_t* format, ...)
+        {
+            TemporaryBuffer<wchar_t> buf;
+
+            va_list args;
+            va_start(args, format);
+
+            vswprintf_s(buf.Data(), buf.Count(), format, args);
+
+            va_end(args);
+
+            return buf;
+        }
+
+        // --------
 
         std::wstring_view MapperTypeConfigurationNameString(Controller::TControllerIdentifier controllerIdentifier)
         {

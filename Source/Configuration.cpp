@@ -10,6 +10,7 @@
  *****************************************************************************/
 
 #include "Configuration.h"
+#include "Strings.h"
 #include "TemporaryBuffer.h"
 
 #include <algorithm>
@@ -85,23 +86,6 @@ namespace Xidi
                     return (towlower(a) == towlower(b));
                 }
             );
-        }
-
-        /// Formats a string and returns the result in a newly-allocated temporary buffer.
-        /// @param [in] format Format string, possibly with format specifiers which must be matched with the arguments that follow.
-        /// @return Resulting string after all formatting is applied.
-        static TemporaryBuffer<wchar_t> FormatString(_Printf_format_string_ const wchar_t* format, ...)
-        {
-            TemporaryBuffer<wchar_t> buf;
-
-            va_list args;
-            va_start(args, format);
-
-            vswprintf_s(buf.Data(), buf.Count(), format, args);
-
-            va_end(args);
-
-            return buf;
         }
 
         /// Tests if the supplied character is allowed as a configuration setting name (the part before the '=' sign in the configuration file).
@@ -451,7 +435,7 @@ namespace Xidi
                 switch (ClassifyConfigurationFileLine(configLineBuffer, configLineLength))
                 {
                 case ELineClassification::Error:
-                    readErrors.emplace_back(FormatString(L"%s(%d): Unable to parse line.", configFileName.data(), configLineNumber));
+                    readErrors.emplace_back(Strings::FormatString(L"%s(%d): Unable to parse line.", configFileName.data(), configLineNumber));
                     break;
 
                 case ELineClassification::Ignore:
@@ -463,7 +447,7 @@ namespace Xidi
 
                     if (0 != seenSections.count(section))
                     {
-                        readErrors.emplace_back(FormatString(L"%s(%d): %s: Duplicated section name.", configFileName.data(), configLineNumber, section.data()));
+                        readErrors.emplace_back(Strings::FormatString(L"%s(%d): %s: Duplicated section name.", configFileName.data(), configLineNumber, section.data()));
                         skipValueLines = true;
                         break;
                     }
@@ -473,9 +457,9 @@ namespace Xidi
                     {
                     case EAction::Error:
                         if (true == HasLastErrorMessage())
-                            readErrors.emplace_back(FormatString(L"%s(%d): %s", configFileName.data(), configLineNumber, GetLastErrorMessage().c_str()));
+                            readErrors.emplace_back(Strings::FormatString(L"%s(%d): %s", configFileName.data(), configLineNumber, GetLastErrorMessage().c_str()));
                         else
-                            readErrors.emplace_back(FormatString(L"%s(%d): %s: Unrecognized section name.", configFileName.data(), configLineNumber, section.data()));
+                            readErrors.emplace_back(Strings::FormatString(L"%s(%d): %s: Unrecognized section name.", configFileName.data(), configLineNumber, section.data()));
                         skipValueLines = true;
                         break;
 
@@ -489,7 +473,7 @@ namespace Xidi
                         break;
 
                     default:
-                        readErrors.emplace_back(FormatString(L"%s(%d): Internal error while processing section name.", configFileName.data(), configLineNumber));
+                        readErrors.emplace_back(Strings::FormatString(L"%s(%d): Internal error while processing section name.", configFileName.data(), configLineNumber));
                         skipValueLines = true;
                         break;
                     }
@@ -514,7 +498,7 @@ namespace Xidi
                         case EValueType::String:
                             if (configToFill.SectionNamePairExists(thisSection, name))
                             {
-                                readErrors.emplace_back(FormatString(L"%s(%d): %s: Only a single value is allowed for this setting.", configFileName.data(), configLineNumber, name.data()));
+                                readErrors.emplace_back(Strings::FormatString(L"%s(%d): %s: Only a single value is allowed for this setting.", configFileName.data(), configLineNumber, name.data()));
                                 shouldParseValue = false;
                             }
                             break;
@@ -530,7 +514,7 @@ namespace Xidi
                         switch (valueType)
                         {
                         case EValueType::Error:
-                            readErrors.emplace_back(FormatString(L"%s(%d): %s: Unrecognized configuration setting.", configFileName.data(), configLineNumber, name.data()));
+                            readErrors.emplace_back(Strings::FormatString(L"%s(%d): %s: Unrecognized configuration setting.", configFileName.data(), configLineNumber, name.data()));
                             break;
 
                         case EValueType::Integer:
@@ -540,7 +524,7 @@ namespace Xidi
 
                             if (false == ParseInteger(value, intValue))
                             {
-                                readErrors.emplace_back(FormatString(L"%s(%d): %s: Failed to parse integer value.", configFileName.data(), configLineNumber, value.data()));
+                                readErrors.emplace_back(Strings::FormatString(L"%s(%d): %s: Failed to parse integer value.", configFileName.data(), configLineNumber, value.data()));
                                 break;
                             }
 
@@ -548,14 +532,14 @@ namespace Xidi
                             {
                             case EAction::Error:
                                 if (true == HasLastErrorMessage())
-                                    readErrors.emplace_back(FormatString(L"%s(%d): %s", configFileName.data(), configLineNumber, GetLastErrorMessage().c_str()));
+                                    readErrors.emplace_back(Strings::FormatString(L"%s(%d): %s", configFileName.data(), configLineNumber, GetLastErrorMessage().c_str()));
                                 else
-                                    readErrors.emplace_back(FormatString(L"%s(%d): %s: Invalid value for configuration setting %s.", configFileName.data(), configLineNumber, value.data(), name.data()));
+                                    readErrors.emplace_back(Strings::FormatString(L"%s(%d): %s: Invalid value for configuration setting %s.", configFileName.data(), configLineNumber, value.data(), name.data()));
                                 break;
 
                             case EAction::Process:
                                 if (false == configToFill.Insert(thisSection, name, TIntegerValue(intValue)))
-                                    readErrors.emplace_back(FormatString(L"%s(%d): %s: Duplicated value for configuration setting %s.", configFileName.data(), configLineNumber, value.data(), name.data()));
+                                    readErrors.emplace_back(Strings::FormatString(L"%s(%d): %s: Duplicated value for configuration setting %s.", configFileName.data(), configLineNumber, value.data(), name.data()));
                                 break;
                             }
                         }
@@ -568,7 +552,7 @@ namespace Xidi
 
                             if (false == ParseBoolean(value, boolValue))
                             {
-                                readErrors.emplace_back(FormatString(L"%s(%d): %s: Failed to parse Boolean value.", configFileName.data(), configLineNumber, value.data()));
+                                readErrors.emplace_back(Strings::FormatString(L"%s(%d): %s: Failed to parse Boolean value.", configFileName.data(), configLineNumber, value.data()));
                                 break;
                             }
 
@@ -576,14 +560,14 @@ namespace Xidi
                             {
                             case EAction::Error:
                                 if (true == HasLastErrorMessage())
-                                    readErrors.emplace_back(FormatString(L"%s(%d): %s", configFileName.data(), configLineNumber, GetLastErrorMessage().c_str()));
+                                    readErrors.emplace_back(Strings::FormatString(L"%s(%d): %s", configFileName.data(), configLineNumber, GetLastErrorMessage().c_str()));
                                 else
-                                    readErrors.emplace_back(FormatString(L"%s(%d): %s: Invalid value for configuration setting %s.", configFileName.data(), configLineNumber, value.data(), name.data()));
+                                    readErrors.emplace_back(Strings::FormatString(L"%s(%d): %s: Invalid value for configuration setting %s.", configFileName.data(), configLineNumber, value.data(), name.data()));
                                 break;
 
                             case EAction::Process:
                                 if (false == configToFill.Insert(thisSection, name, TBooleanValue(boolValue)))
-                                    readErrors.emplace_back(FormatString(L"%s(%d): %s: Duplicated value for configuration setting %s.", configFileName.data(), configLineNumber, value.data(), name.data()));
+                                    readErrors.emplace_back(Strings::FormatString(L"%s(%d): %s: Duplicated value for configuration setting %s.", configFileName.data(), configLineNumber, value.data(), name.data()));
                                 break;
                             }
                         }
@@ -595,27 +579,27 @@ namespace Xidi
                             {
                             case EAction::Error:
                                 if (true == HasLastErrorMessage())
-                                    readErrors.emplace_back(FormatString(L"%s(%d): %s", configFileName.data(), configLineNumber, GetLastErrorMessage().c_str()));
+                                    readErrors.emplace_back(Strings::FormatString(L"%s(%d): %s", configFileName.data(), configLineNumber, GetLastErrorMessage().c_str()));
                                 else
-                                    readErrors.emplace_back(FormatString(L"%s(%d): %s: Invalid value for configuration setting %s.", configFileName.data(), configLineNumber, value.data(), name.data()));
+                                    readErrors.emplace_back(Strings::FormatString(L"%s(%d): %s: Invalid value for configuration setting %s.", configFileName.data(), configLineNumber, value.data(), name.data()));
                                 break;
 
                             case EAction::Process:
                                 if (false == configToFill.Insert(thisSection, name, TStringValue(value)))
-                                    readErrors.emplace_back(FormatString(L"%s(%d): %s: Duplicated value for configuration setting %s.", configFileName.data(), configLineNumber, value.data(), name.data()));
+                                    readErrors.emplace_back(Strings::FormatString(L"%s(%d): %s: Duplicated value for configuration setting %s.", configFileName.data(), configLineNumber, value.data(), name.data()));
                                 break;
                             }
                             break;
 
                         default:
-                            readErrors.emplace_back(FormatString(L"%s(%d): Internal error while processing configuration setting.", configFileName.data(), configLineNumber));
+                            readErrors.emplace_back(Strings::FormatString(L"%s(%d): Internal error while processing configuration setting.", configFileName.data(), configLineNumber));
                             break;
                         }
                     }
                     break;
 
                 default:
-                    readErrors.emplace_back(FormatString(L"%s(%d): Internal error while processing line.", configFileName.data(), configLineNumber));
+                    readErrors.emplace_back(Strings::FormatString(L"%s(%d): Internal error while processing line.", configFileName.data(), configLineNumber));
                     break;
                 }
 
@@ -630,13 +614,13 @@ namespace Xidi
 
                 if (ferror(configFileHandle))
                 {
-                    readErrors.emplace_back(FormatString(L"%s(%d): I/O error while reading.", configFileName.data(), configLineNumber));
+                    readErrors.emplace_back(Strings::FormatString(L"%s(%d): I/O error while reading.", configFileName.data(), configLineNumber));
                     return configToFill;
 
                 }
                 else if (configLineLength < 0)
                 {
-                    readErrors.emplace_back(FormatString(L"%s(%d): Line is too long.", configFileName.data(), configLineNumber));
+                    readErrors.emplace_back(Strings::FormatString(L"%s(%d): Line is too long.", configFileName.data(), configLineNumber));
                     return configToFill;
                 }
             }
