@@ -17,6 +17,7 @@
 
 #include <map>
 #include <memory>
+#include <set>
 #include <string_view>
 #include <vector>
 
@@ -25,6 +26,19 @@ namespace Xidi
 {
     namespace Controller
     {
+        // -------- INTERNAL FUNCTIONS ------------------------------------- //
+
+        /// Retrieves and returns a safe string view that can be used to represent mapper names and template names.
+        /// This function maintains the memory needed to store mapper names permanently and deduplicates to ensure only one copy of each mapper name is ever stored.
+        /// @param [in] mapperName Name of the mapper for which a safe view is needed.
+        /// @return Safe string view of the mapper name that will remain valid until program termination.
+        static inline std::wstring_view SafeMapperNameString(std::wstring_view mapperName)
+        {
+            static std::set<std::wstring> mapperNames;
+            return *mapperNames.emplace(mapperName).first;
+        }
+
+
         // -------- INSTANCE METHODS --------------------------------------- //
         // See "MapperBuilder.h" for documentation.
 
@@ -54,7 +68,7 @@ namespace Xidi
 
             if (true == Mapper::IsMapperNameKnown(mapperName))
             {
-                Message::OutputFormatted(Message::ESeverity::Error, L"Error while building mapper %s: Internal error due to a mapper already existing with this name.", mapperName.data());
+                Message::OutputFormatted(Message::ESeverity::Error, L"Error while building mapper %s: Internal error: A mapper already exists with this name.", mapperName.data());
                 return nullptr;
             }
 
@@ -94,7 +108,7 @@ namespace Xidi
 
                     if (false == Mapper::IsMapperNameKnown(blueprint.templateName))
                     {
-                        Message::OutputFormatted(Message::ESeverity::Error, L"Error while building mapper %s: Internal error due to successful build of template dependency %s but failure to register the resulting mapper object.", mapperName.data(), blueprint.templateName.data());
+                        Message::OutputFormatted(Message::ESeverity::Error, L"Error while building mapper %s: Internal error: Successfully built template dependency %s but failed to register the resulting mapper object.", mapperName.data(), blueprint.templateName.data());
                         return nullptr;
                     }
                 }
@@ -104,7 +118,7 @@ namespace Xidi
                 const Mapper* const kTemplateMapper = Mapper::GetByName(blueprint.templateName);
                 if (nullptr == kTemplateMapper)
                 {
-                    Message::OutputFormatted(Message::ESeverity::Error, L"Error while building mapper %s: Internal error due to failure to locate the mapper object for template dependency %s.", mapperName.data(), blueprint.templateName.data());
+                    Message::OutputFormatted(Message::ESeverity::Error, L"Error while building mapper %s: Internal error: Failed to locate the mapper object for template dependency %s.", mapperName.data(), blueprint.templateName.data());
                     return nullptr;
                 }
 
@@ -156,7 +170,7 @@ namespace Xidi
             if (true == Mapper::IsMapperNameKnown(mapperName))
                 return false;
 
-            return blueprints.emplace(std::make_pair(mapperName, SBlueprint())).second;
+            return blueprints.emplace(std::make_pair(SafeMapperNameString(mapperName), SBlueprint())).second;
         }
 
         // --------
@@ -234,7 +248,7 @@ namespace Xidi
             if (blueprints.end() == blueprintIter)
                 return false;
 
-            blueprintIter->second.templateName = newTemplateName;
+            blueprintIter->second.templateName = SafeMapperNameString(newTemplateName);
             return true;
         }
     }

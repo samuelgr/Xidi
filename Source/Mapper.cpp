@@ -95,7 +95,7 @@ namespace Xidi
             {
                 if (true == name.empty())
                 {
-                    Message::Output(Message::ESeverity::Error, L"Internal error due to attempting to register a mapper without a name.");
+                    Message::Output(Message::ESeverity::Error, L"Internal error: Attempting to register a mapper without a name.");
                     return;
                 }
 
@@ -112,19 +112,19 @@ namespace Xidi
             {
                 if (true == name.empty())
                 {
-                    Message::Output(Message::ESeverity::Error, L"Internal error due to attempting to unregister a mapper without a name.");
+                    Message::Output(Message::ESeverity::Error, L"Internal error: Attempting to unregister a mapper without a name.");
                     return;
                 }
 
                 if (false == knownMappers.contains(name))
                 {
-                    Message::OutputFormatted(Message::ESeverity::Error, L"Internal error due to attempting to unregister unknown mapper %s.", name.data());
+                    Message::OutputFormatted(Message::ESeverity::Error, L"Internal error: Attempting to unregister unknown mapper %s.", name.data());
                     return;
                 }
 
                 if (object != knownMappers.at(name))
                 {
-                    Message::OutputFormatted(Message::ESeverity::Error, L"Internal error due to object mismatch while attempting to unregister mapper %s.", name.data());
+                    Message::OutputFormatted(Message::ESeverity::Error, L"Internal error: Object mismatch while attempting to unregister mapper %s.", name.data());
                     return;
                 }
 
@@ -338,7 +338,7 @@ namespace Xidi
                             fallbackMapper = GetByName(fallbackMapperName);
 
                             if (nullptr == fallbackMapper)
-                                Message::OutputFormatted(Message::ESeverity::Warning, L"Could not locate mapper '%s' specified in the configuration file as the default.", fallbackMapperName.data());
+                                Message::OutputFormatted(Message::ESeverity::Warning, L"Could not locate mapper \"%s\" specified in the configuration file as the default.", fallbackMapperName.data());
                         }
 
                         if (nullptr == fallbackMapper)
@@ -347,7 +347,7 @@ namespace Xidi
 
                             if (nullptr == fallbackMapper)
                             {
-                                Message::Output(Message::ESeverity::Error, L"Internal error due to inability to locate the default mapper.");
+                                Message::Output(Message::ESeverity::Error, L"Internal error: Unable to locate the default mapper.");
                                 fallbackMapper = GetNull();
                             }
                         }
@@ -361,7 +361,7 @@ namespace Xidi
 
                                 if (nullptr == configuredMapper[i])
                                 {
-                                    Message::OutputFormatted(Message::ESeverity::Warning, L"Could not locate mapper '%s' specified in the configuration file for controller %u.", configuredMapperName.data(), (unsigned int)(1 + i));
+                                    Message::OutputFormatted(Message::ESeverity::Warning, L"Could not locate mapper \"%s\" specified in the configuration file for controller %u.", configuredMapperName.data(), (unsigned int)(1 + i));
                                     configuredMapper[i] = fallbackMapper;
                                 }
                             }
@@ -378,7 +378,7 @@ namespace Xidi
                         const Mapper* defaultMapper = GetDefault();
                         if (nullptr == defaultMapper)
                         {
-                            Message::Output(Message::ESeverity::Error, L"Internal error due to inability to locate the default mapper. Virtual controllers will not function.");
+                            Message::Output(Message::ESeverity::Error, L"Internal error: Unable to locate the default mapper. Virtual controllers will not function.");
                             defaultMapper = GetNull();
                         }
 
@@ -394,7 +394,7 @@ namespace Xidi
 
             if (controllerIdentifier >= _countof(configuredMapper))
             {
-                Message::OutputFormatted(Message::ESeverity::Error, L"Internal error due to requesting a mapper for out-of-bounds controller %u.", (unsigned int)(1 + controllerIdentifier));
+                Message::OutputFormatted(Message::ESeverity::Error, L"Internal error: Requesting a mapper for out-of-bounds controller %u.", (unsigned int)(1 + controllerIdentifier));
                 return GetNull();
             }
 

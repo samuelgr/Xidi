@@ -54,7 +54,7 @@ namespace Xidi
 
         /// Determines if this process has input focus based on whether or not a window it owns is at the foreground.
         /// @return `true` if so, `false` if not.
-        inline bool DoesCurrentProcessHaveInputFocus(void)
+        static inline bool DoesCurrentProcessHaveInputFocus(void)
         {
             DWORD foregroundProcess = 0;
             GetWindowThreadProcessId(GetForegroundWindow(), &foregroundProcess);
@@ -62,6 +62,31 @@ namespace Xidi
             return (Globals::GetCurrentProcessId() == foregroundProcess);
         }
         
+        /// Generates the proper flags indicating how the scan code should be interpreted for the given keyboard key.
+        /// @param [in] key Keyboard key identifier.
+        /// @return Flags indicating how the scan code corresponding to the identified key should be interpreted.
+        static inline DWORD KeyboardEventFlags(TKeyIdentifier key)
+        {
+            // Any key identifiers higher than the maximum 7-bit value are "extended" keys and need to be flagged as such.
+            if (key > 0x7f)
+                return (KEYEVENTF_SCANCODE | KEYEVENTF_EXTENDEDKEY);
+            else
+                return KEYEVENTF_SCANCODE;
+        }
+
+        /// Generates the proper 16-bit scan code for the given keyboard key.
+        /// @param [in] key Keyboard key identifier.
+        /// @return Proper 16-bit scan code to use for the key.
+        static inline WORD KeyboardEventScanCode(TKeyIdentifier key)
+        {
+            // Only the bottom 7 bits of the key identifier are used.
+            // Any key identifiers higher than the maximum 7-bit value are "extended" keys for which a prefix of 0xe0 is needed in the full 16-bit quantity.
+            if (key > 0x7f)
+                return (0xe000 | (key & 0x7f));
+            else
+                return key;
+        }
+
         /// Periodically checks for changes between the previous and next views of the virtual keyboard key states.
         /// On detected state change, generates and submits a keyboard input event to the system.
         static void UpdatePhysicalKeyboardState(void)
@@ -82,11 +107,11 @@ namespace Xidi
                         switch (nextVirtualKeyboardState[key].GetTransitionFrom(previousVirtualKeyboardState[key]))
                         {
                         case EKeyTransition::KeyWasPressed:
-                            keyboardEvents.emplace_back(INPUT({.type = INPUT_KEYBOARD, .ki = {.wScan = key, .dwFlags = KEYEVENTF_SCANCODE}}));
+                            keyboardEvents.emplace_back(INPUT({.type = INPUT_KEYBOARD, .ki = {.wScan = KeyboardEventScanCode(key), .dwFlags = KeyboardEventFlags(key)}}));
                             break;
 
                         case EKeyTransition::KeyWasReleased:
-                            keyboardEvents.emplace_back(INPUT({.type = INPUT_KEYBOARD, .ki = {.wScan = key, .dwFlags = KEYEVENTF_SCANCODE | KEYEVENTF_KEYUP}}));
+                            keyboardEvents.emplace_back(INPUT({.type = INPUT_KEYBOARD, .ki = {.wScan = KeyboardEventScanCode(key), .dwFlags = KeyboardEventFlags(key) | KEYEVENTF_KEYUP}}));
                             break;
 
                         default:

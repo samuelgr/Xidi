@@ -707,6 +707,20 @@ namespace Xidi
                 lastErrorMessage = std::move(errorMessage);
             }
 
+            /// Convenience wrapper that sets a semantically-rich error message using a string view.
+            /// @param [in] errorMessage String view that is copied to provide a semantically-rich error message.
+            inline void SetErrorMessage(std::wstring_view errorMessage)
+            {
+                SetErrorMessage(std::wstring(errorMessage));
+            }
+
+            /// Convenience wrapper that sets a semantically-rich error message using a null-terminated C-style string.
+            /// @param [in] errorMessage Temporary buffer containing a null-terminated string that is copied to provide a semantically-rich error message.
+            inline void SetErrorMessage(const wchar_t* errorMessage)
+            {
+                SetErrorMessage(std::wstring(errorMessage));
+            }
+
         private:
             /// Used internally to retrieve and reset a semantically-rich error message if it exists.
             /// @return Last error message.

@@ -442,43 +442,43 @@ namespace Xidi
                     break;
 
                 case ELineClassification::Section:
-                {
-                    std::wstring_view section = ParseSection(configLineBuffer);
+                    do {
+                        std::wstring_view section = ParseSection(configLineBuffer);
 
-                    if (0 != seenSections.count(section))
-                    {
-                        readErrors.emplace_back(Strings::FormatString(L"%s(%d): %s: Duplicated section name.", configFileName.data(), configLineNumber, section.data()));
-                        skipValueLines = true;
-                        break;
-                    }
+                        if (0 != seenSections.count(section))
+                        {
+                            readErrors.emplace_back(Strings::FormatString(L"%s(%d): %s: Duplicated section name.", configFileName.data(), configLineNumber, section.data()));
+                            skipValueLines = true;
+                            break;
+                        }
 
-                    const EAction sectionAction = ActionForSection(section);
-                    switch (sectionAction)
-                    {
-                    case EAction::Error:
-                        if (true == HasLastErrorMessage())
-                            readErrors.emplace_back(Strings::FormatString(L"%s(%d): %s", configFileName.data(), configLineNumber, GetLastErrorMessage().c_str()));
-                        else
-                            readErrors.emplace_back(Strings::FormatString(L"%s(%d): %s: Unrecognized section name.", configFileName.data(), configLineNumber, section.data()));
-                        skipValueLines = true;
-                        break;
+                        const EAction sectionAction = ActionForSection(section);
+                        switch (sectionAction)
+                        {
+                        case EAction::Error:
+                            if (true == HasLastErrorMessage())
+                                readErrors.emplace_back(Strings::FormatString(L"%s(%d): %s", configFileName.data(), configLineNumber, GetLastErrorMessage().c_str()));
+                            else
+                                readErrors.emplace_back(Strings::FormatString(L"%s(%d): %s: Unrecognized section name.", configFileName.data(), configLineNumber, section.data()));
+                            skipValueLines = true;
+                            break;
 
-                    case EAction::Process:
-                        thisSection = *(seenSections.emplace(section).first);
-                        skipValueLines = false;
-                        break;
+                        case EAction::Process:
+                            thisSection = *(seenSections.emplace(section).first);
+                            skipValueLines = false;
+                            break;
 
-                    case EAction::Skip:
-                        skipValueLines = true;
-                        break;
+                        case EAction::Skip:
+                            skipValueLines = true;
+                            break;
 
-                    default:
-                        readErrors.emplace_back(Strings::FormatString(L"%s(%d): Internal error while processing section name.", configFileName.data(), configLineNumber));
-                        skipValueLines = true;
-                        break;
-                    }
-                }
-                break;
+                        default:
+                            readErrors.emplace_back(Strings::FormatString(L"%s(%d): Internal error while processing section name.", configFileName.data(), configLineNumber));
+                            skipValueLines = true;
+                            break;
+                        }
+                    } while (false);
+                    break;
 
                 case ELineClassification::Value:
                     if (false == skipValueLines)
@@ -519,76 +519,78 @@ namespace Xidi
 
                         case EValueType::Integer:
                         case EValueType::IntegerMultiValue:
-                        {
-                            TIntegerValue intValue = (TIntegerValue)0;
+                            do {
+                                TIntegerValue intValue = (TIntegerValue)0;
 
-                            if (false == ParseInteger(value, intValue))
-                            {
-                                readErrors.emplace_back(Strings::FormatString(L"%s(%d): %s: Failed to parse integer value.", configFileName.data(), configLineNumber, value.data()));
-                                break;
-                            }
+                                if (false == ParseInteger(value, intValue))
+                                {
+                                    readErrors.emplace_back(Strings::FormatString(L"%s(%d): %s: Failed to parse integer value.", configFileName.data(), configLineNumber, value.data()));
+                                    break;
+                                }
 
-                            switch (ActionForValue(thisSection, name, intValue))
-                            {
-                            case EAction::Error:
-                                if (true == HasLastErrorMessage())
-                                    readErrors.emplace_back(Strings::FormatString(L"%s(%d): %s", configFileName.data(), configLineNumber, GetLastErrorMessage().c_str()));
-                                else
-                                    readErrors.emplace_back(Strings::FormatString(L"%s(%d): %s: Invalid value for configuration setting %s.", configFileName.data(), configLineNumber, value.data(), name.data()));
-                                break;
+                                switch (ActionForValue(thisSection, name, intValue))
+                                {
+                                case EAction::Error:
+                                    if (true == HasLastErrorMessage())
+                                        readErrors.emplace_back(Strings::FormatString(L"%s(%d): %s", configFileName.data(), configLineNumber, GetLastErrorMessage().c_str()));
+                                    else
+                                        readErrors.emplace_back(Strings::FormatString(L"%s(%d): %s: Invalid value for configuration setting %s.", configFileName.data(), configLineNumber, value.data(), name.data()));
+                                    break;
 
-                            case EAction::Process:
-                                if (false == configToFill.Insert(thisSection, name, TIntegerValue(intValue)))
-                                    readErrors.emplace_back(Strings::FormatString(L"%s(%d): %s: Duplicated value for configuration setting %s.", configFileName.data(), configLineNumber, value.data(), name.data()));
-                                break;
-                            }
-                        }
-                        break;
+                                case EAction::Process:
+                                    if (false == configToFill.Insert(thisSection, name, TIntegerValue(intValue)))
+                                        readErrors.emplace_back(Strings::FormatString(L"%s(%d): %s: Duplicated value for configuration setting %s.", configFileName.data(), configLineNumber, value.data(), name.data()));
+                                    break;
+                                }
+                            } while (false);
+                            break;
 
                         case EValueType::Boolean:
                         case EValueType::BooleanMultiValue:
-                        {
-                            TBooleanValue boolValue = (TBooleanValue)false;
+                            do {
+                                TBooleanValue boolValue = (TBooleanValue)false;
 
-                            if (false == ParseBoolean(value, boolValue))
-                            {
-                                readErrors.emplace_back(Strings::FormatString(L"%s(%d): %s: Failed to parse Boolean value.", configFileName.data(), configLineNumber, value.data()));
-                                break;
-                            }
+                                if (false == ParseBoolean(value, boolValue))
+                                {
+                                    readErrors.emplace_back(Strings::FormatString(L"%s(%d): %s: Failed to parse Boolean value.", configFileName.data(), configLineNumber, value.data()));
+                                    break;
+                                }
 
-                            switch (ActionForValue(thisSection, name, boolValue))
-                            {
-                            case EAction::Error:
-                                if (true == HasLastErrorMessage())
-                                    readErrors.emplace_back(Strings::FormatString(L"%s(%d): %s", configFileName.data(), configLineNumber, GetLastErrorMessage().c_str()));
-                                else
-                                    readErrors.emplace_back(Strings::FormatString(L"%s(%d): %s: Invalid value for configuration setting %s.", configFileName.data(), configLineNumber, value.data(), name.data()));
-                                break;
+                                switch (ActionForValue(thisSection, name, boolValue))
+                                {
+                                case EAction::Error:
+                                    if (true == HasLastErrorMessage())
+                                        readErrors.emplace_back(Strings::FormatString(L"%s(%d): %s", configFileName.data(), configLineNumber, GetLastErrorMessage().c_str()));
+                                    else
+                                        readErrors.emplace_back(Strings::FormatString(L"%s(%d): %s: Invalid value for configuration setting %s.", configFileName.data(), configLineNumber, value.data(), name.data()));
+                                    break;
 
-                            case EAction::Process:
-                                if (false == configToFill.Insert(thisSection, name, TBooleanValue(boolValue)))
-                                    readErrors.emplace_back(Strings::FormatString(L"%s(%d): %s: Duplicated value for configuration setting %s.", configFileName.data(), configLineNumber, value.data(), name.data()));
-                                break;
-                            }
-                        }
-                        break;
+                                case EAction::Process:
+                                    if (false == configToFill.Insert(thisSection, name, TBooleanValue(boolValue)))
+                                        readErrors.emplace_back(Strings::FormatString(L"%s(%d): %s: Duplicated value for configuration setting %s.", configFileName.data(), configLineNumber, value.data(), name.data()));
+                                    break;
+                                }
+                            } while (false);
+                            break;
 
                         case EValueType::String:
                         case EValueType::StringMultiValue:
-                            switch (ActionForValue(thisSection, name, value))
-                            {
-                            case EAction::Error:
-                                if (true == HasLastErrorMessage())
-                                    readErrors.emplace_back(Strings::FormatString(L"%s(%d): %s", configFileName.data(), configLineNumber, GetLastErrorMessage().c_str()));
-                                else
-                                    readErrors.emplace_back(Strings::FormatString(L"%s(%d): %s: Invalid value for configuration setting %s.", configFileName.data(), configLineNumber, value.data(), name.data()));
-                                break;
+                            do {
+                                switch (ActionForValue(thisSection, name, value))
+                                {
+                                case EAction::Error:
+                                    if (true == HasLastErrorMessage())
+                                        readErrors.emplace_back(Strings::FormatString(L"%s(%d): %s", configFileName.data(), configLineNumber, GetLastErrorMessage().c_str()));
+                                    else
+                                        readErrors.emplace_back(Strings::FormatString(L"%s(%d): %s: Invalid value for configuration setting %s.", configFileName.data(), configLineNumber, value.data(), name.data()));
+                                    break;
 
-                            case EAction::Process:
-                                if (false == configToFill.Insert(thisSection, name, TStringValue(value)))
-                                    readErrors.emplace_back(Strings::FormatString(L"%s(%d): %s: Duplicated value for configuration setting %s.", configFileName.data(), configLineNumber, value.data(), name.data()));
-                                break;
-                            }
+                                case EAction::Process:
+                                    if (false == configToFill.Insert(thisSection, name, TStringValue(value)))
+                                        readErrors.emplace_back(Strings::FormatString(L"%s(%d): %s: Duplicated value for configuration setting %s.", configFileName.data(), configLineNumber, value.data(), name.data()));
+                                    break;
+                                }
+                            } while (false);
                             break;
 
                         default:
@@ -624,6 +626,8 @@ namespace Xidi
                     return configToFill;
                 }
             }
+
+            EndRead();
 
             return configToFill;
         }

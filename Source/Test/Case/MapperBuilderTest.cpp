@@ -530,7 +530,6 @@ namespace XidiTest
     }
 
     // Verifies that mapper build succeeds in the presence of an acyclic chain of template dependencies.
-    // This test will pollute the global mapper registry, so the mapper names are made especially unique.
     TEST_CASE(Mapper_Build_Template_Chain)
     {
         constexpr std::wstring_view kMapperNames[] = {L"TestMapperTemplateChainA", L"TestMapperTemplateChainB", L"TestMapperTemplateChainC", L"TestMapperTemplateChainD", L"TestMapperTemplateChainE", L"TestMapperTemplateChainF", L"TestMapperTemplateChainG"};
@@ -550,7 +549,10 @@ namespace XidiTest
 
         TEST_ASSERT(nullptr != builder.Build(kMapperNames[0]));
         for (auto kMapperName : kMapperNames)
+        {
             TEST_ASSERT(true == Mapper::IsMapperNameKnown(kMapperName));
+            delete Mapper::GetByName(kMapperName);
+        }
     }
 
     // Verifies that a dependent mapper fails to build if its template has been invalidated.
@@ -571,7 +573,6 @@ namespace XidiTest
     }
 
     // Verifies that mapper build succeeds in the presence of an acyclic forking chain of template dependencies.
-    // This test will pollute the global mapper registry with the common dependency mapper, so its name is especially unique.
     TEST_CASE(Mapper_Build_Template_Fork)
     {
         constexpr std::wstring_view kMapperNameCommonDependency = L"TestMapperTemplateForkCommonDep";
@@ -594,6 +595,7 @@ namespace XidiTest
         }
 
         TEST_ASSERT(true == Mapper::IsMapperNameKnown(kMapperNameCommonDependency));
+        delete Mapper::GetByName(kMapperNameCommonDependency);
     }
 
     // Verifies that mapper build fails if there is a cycle in the template dependence graph.

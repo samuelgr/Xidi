@@ -302,6 +302,12 @@ namespace Xidi
                 // Map of strings representing keyboard scancodes to the keyboard scancodes themselves.
                 // One pair exists per DIK_* constant. Comparisons with the input string are case-insensitive because the input string is converted to uppercase to match the contents of this map.
                 static const std::map<std::wstring_view, unsigned int> kKeyboardScanCodeStrings = {
+
+                    // Convenience aliases
+                    {L"ESC",                DIK_ESCAPE},
+                    {L"ENTER",              DIK_RETURN},
+
+                    // DIK_ constants
                     {L"ESCAPE",             DIK_ESCAPE},
                     {L"1",                  DIK_1},
                     {L"2",                  DIK_2},

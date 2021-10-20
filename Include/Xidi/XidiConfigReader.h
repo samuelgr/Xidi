@@ -13,6 +13,10 @@
 
 #include "Configuration.h"
 
+#ifndef XIDI_SKIP_MAPPERS
+#include "MapperBuilder.h"
+#endif
+
 #include <string_view>
 
 
@@ -24,10 +28,16 @@ namespace Xidi
     class XidiConfigReader : public ConfigurationFileReader
     {
     private:
+#ifndef XIDI_SKIP_MAPPERS
+        // -------- INSTANCE VARIABLES ------------------------------------- //
+
+        /// Holds custom mapper blueprints parsed from configuration files.
+        Controller::MapperBuilder customMapperBuilder;
+#endif
+
         // -------- CONCRETE INSTANCE METHODS ------------------------------ //
         // See "Configuration.h" for documentation.
 
-        
         EAction ActionForSection(std::wstring_view section) override;
         EAction ActionForValue(std::wstring_view section, std::wstring_view name, TIntegerView value) override;
         EAction ActionForValue(std::wstring_view section, std::wstring_view name, TBooleanView value) override;

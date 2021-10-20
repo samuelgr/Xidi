@@ -83,6 +83,15 @@ namespace Xidi
         /// Configuration file setting for specifying the mapper type.
         inline constexpr std::wstring_view kStrConfigurationSettingMapperType = L"Type";
 
+        /// Prefix for configuration file sections that define custom mappers.
+        inline constexpr std::wstring_view kStrConfigurationSectionCustomMapperPrefix = L"CustomMapper";
+
+        /// Character that separates a prefix from a custom mapper name within the section name for sections that define custom mappers.
+        inline constexpr wchar_t kCharConfigurationSectionCustomMapperSeparator = L':';
+
+        /// Configuration file setting for specifying a custom mapper template.
+        inline constexpr std::wstring_view kStrConfigurationSettingCustomMapperTemplate = L"Template";
+
 
         // -------- RUN-TIME CONSTANTS ------------------------------------- //
         // Not safe to access before run-time, and should not be used to perform dynamic initialization.
