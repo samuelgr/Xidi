@@ -13,7 +13,6 @@
 #include "ApiWindows.h"
 #include "GitVersionInfo.h"
 #include "Globals.h"
-#include "Mapper.h"
 #include "Message.h"
 #include "Strings.h"
 #include "XidiConfigReader.h"
@@ -22,7 +21,8 @@
 #include "Configuration.h"
 #endif
 
-#ifndef XIDI_SKIP_CONFIG
+#ifndef XIDI_SKIP_MAPPERS
+#include "Mapper.h"
 #include "MapperBuilder.h"
 #endif
 

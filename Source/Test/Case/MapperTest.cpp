@@ -9,6 +9,7 @@
  *   Unit tests for entire controller layout mapper objects.
  *****************************************************************************/
 
+#include "ApiBitSet.h"
 #include "ApiWindows.h"
 #include "ControllerTypes.h"
 #include "ElementMapper.h"
@@ -41,13 +42,25 @@ namespace XidiTest
 
     // -------- INTERNAL FUNCTIONS ----------------------------------------- //
 
+    /// Generates and returns the minimal representation of a virtual controller's capabilities.
+    /// @return Minimal capabilities structure.
+    static consteval SCapabilities MinimalCapabilities(void)
+    {
+        SCapabilities minCapabilities = {.numButtons = Mapper::kMinNumButtons, .hasPov = Mapper::kIsPovRequired};
+        for (auto requiredAxis : Mapper::kRequiredAxes)
+            minCapabilities.AppendAxis((EAxis)((int)requiredAxis));
+
+        return minCapabilities;
+    }
+
+
     /// Generates a complete expected capabilities structure by accepting a base expected capabilities from a test case and merging it with the minimum required virtual controller capabilities.
     /// Virtual controllers are required to have at least certain axes and a minimum number of buttons.
     /// @param [in] baseExpectedCapabilities Expected capabilities from the test case.
     /// @return Expected capabilities from the test case merged with the minimum allowed capabilities.
     static consteval SCapabilities MakeExpectedCapabilities(SCapabilities baseExpectedCapabilities)
     {
-        const SCapabilities kMinCapabilities = Mapper::MinimalCapabilities();
+        const SCapabilities kMinCapabilities = MinimalCapabilities();
 
         SCapabilities expectedCapabilities = {.numButtons = std::max(kMinCapabilities.numButtons, baseExpectedCapabilities.numButtons), .hasPov = (kMinCapabilities.hasPov || baseExpectedCapabilities.hasPov)};
         for (int i = 0; i < (int)EAxis::Count; ++i)

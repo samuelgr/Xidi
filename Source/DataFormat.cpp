@@ -10,6 +10,7 @@
  *   controller data using the format specified by a DirectInput application.
  *****************************************************************************/
 
+#include "ApiBitSet.h"
 #include "ApiDirectInput.h"
 #include "ControllerTypes.h"
 #include "DataFormat.h"
@@ -51,10 +52,10 @@ namespace Xidi
         // -------- INSTANCE VARIABLES ------------------------------------- //
 
         /// Ordered set of remaining available axes.
-        std::set<Controller::EAxis> availableAxes;
+        BitSetEnum<Controller::EAxis> availableAxes;
 
         /// Ordered set of remaining available buttons.
-        std::set<Controller::EButton> availableButtons;
+        BitSetEnum<Controller::EButton> availableButtons;
 
         /// Whether or not a POV is available.
         bool availablePov;
@@ -73,10 +74,10 @@ namespace Xidi
         DataFormatBuildHelper(const Controller::SCapabilities controllerCapabilities, TOffset dataPacketSize) : availableAxes(), availableButtons(), availablePov(), usedByteOffsets(dataPacketSize)
         {
             for (int i = 0; i < controllerCapabilities.numAxes; ++i)
-                availableAxes.insert(controllerCapabilities.axisType[i]);
+                availableAxes.insert((int)controllerCapabilities.axisType[i]);
 
             for (int i = 0; i < controllerCapabilities.numButtons; ++i)
-                availableButtons.insert((Controller::EButton)i);
+                availableButtons.insert(i);
 
             if (true == controllerCapabilities.hasPov)
                 availablePov = true;
@@ -122,8 +123,8 @@ namespace Xidi
             case Controller::EElementType::Axis:
                 if (false == availableAxes.empty())
                 {
-                    const Controller::EAxis nextAvailableAxis = *(availableAxes.cbegin());
-                    availableAxes.erase(availableAxes.cbegin());
+                    const Controller::EAxis nextAvailableAxis = (Controller::EAxis)((int)availableAxes.front());
+                    availableAxes.erase((int)nextAvailableAxis);
                     return Controller::SElementIdentifier({.type = Controller::EElementType::Axis, .axis = nextAvailableAxis});
                 }
                 break;
@@ -131,8 +132,8 @@ namespace Xidi
             case Controller::EElementType::Button:
                 if (false == availableButtons.empty())
                 {
-                    const Controller::EButton nextAvailableButton = *(availableButtons.cbegin());
-                    availableButtons.erase(availableButtons.cbegin());
+                    const Controller::EButton nextAvailableButton = (Controller::EButton)((int)availableButtons.front());
+                    availableButtons.erase((int)nextAvailableButton);
                     return Controller::SElementIdentifier({.type = Controller::EElementType::Button, .button = nextAvailableButton});
                 }
                 break;
@@ -159,10 +160,9 @@ namespace Xidi
             case Controller::EElementType::Axis:
                 do
                 {
-                    const auto axisIterator = availableAxes.find(element.axis);
-                    if (axisIterator != availableAxes.cend())
+                    if (true == availableAxes.contains((int)element.axis))
                     {
-                        availableAxes.erase(axisIterator);
+                        availableAxes.erase((int)element.axis);
                         return element;
                     }
                 } while (false);
@@ -171,10 +171,9 @@ namespace Xidi
             case Controller::EElementType::Button:
                 do
                 {
-                    const auto buttonIterator = availableButtons.find(element.button);
-                    if (buttonIterator != availableButtons.cend())
+                    if (true == availableButtons.contains((int)element.button))
                     {
-                        availableButtons.erase(buttonIterator);
+                        availableButtons.erase((int)element.button);
                         return element;
                     }
                 } while (false);

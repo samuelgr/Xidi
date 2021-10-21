@@ -10,6 +10,7 @@
  *   XInput controller layout to a virtual controller layout.
  *****************************************************************************/
 
+#include "ApiBitSet.h"
 #include "ApiWindows.h"
 #include "ControllerTypes.h"
 #include "ElementMapper.h"
@@ -161,11 +162,12 @@ namespace Xidi
         /// @return Virtual controller capabilities as derived from the per-element map in aggregate.
         static SCapabilities DeriveCapabilitiesFromElementMap(const Mapper::UElementMap& elements)
         {
-            SCapabilities capabilities = Mapper::MinimalCapabilities();
+            SCapabilities capabilities;
+            ZeroMemory(&capabilities, sizeof(capabilities));
 
-            std::set<EAxis> axesPresent;
-            int highestButtonSeen = capabilities.numButtons - 1;
-            bool povPresent = false;
+            BitSetEnum<EAxis> axesPresent = Mapper::kRequiredAxes;
+            int highestButtonSeen = Mapper::kMinNumButtons - 1;
+            bool povPresent = Mapper::kIsPovRequired;
 
             for (int i = 0; i < _countof(elements.all); ++i)
             {
@@ -182,7 +184,7 @@ namespace Xidi
                         {
                         case EElementType::Axis:
                             if ((int)targetElement.axis < (int)EAxis::Count)
-                                axesPresent.insert(targetElement.axis);
+                                axesPresent.insert((int)targetElement.axis);
                             break;
 
                         case EElementType::Button:
@@ -201,14 +203,11 @@ namespace Xidi
                 }
             }
 
-            for (auto it = axesPresent.cbegin(); it != axesPresent.cend(); ++it)
-            {
-                if (false == capabilities.HasAxis(*it))
-                    capabilities.AppendAxis(*it);
-            }
+            for (auto axisPresent : axesPresent)
+                capabilities.AppendAxis((EAxis)((int)axisPresent));
 
             capabilities.numButtons = highestButtonSeen + 1;
-            capabilities.hasPov = (capabilities.hasPov || povPresent);
+            capabilities.hasPov = povPresent;
 
             return capabilities;
         }
