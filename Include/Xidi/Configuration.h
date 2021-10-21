@@ -737,7 +737,7 @@ namespace Xidi
             }
 
 
-        private:
+        protected:
             // -------- ABSTRACT INSTANCE METHODS -------------------------- //
 
             /// Specifies the action to take when a given section is encountered in a configuration file (i.e. the names that typically appear in [square brackets] and separate the configuration file into namespaces).

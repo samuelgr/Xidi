@@ -98,6 +98,14 @@ namespace Xidi
                 // If the mapper object named in the template does not exist, try to build it. It is an error if that dependent build operation fails.
                 if (false == Mapper::IsMapperNameKnown(blueprint.templateName))
                 {
+                    // The purpose of this check is to make error messages easier to understand by making it immediately obvious why a template build operation failed.
+                    // Without it, the user would see an attempt to build the template take place, fail, and then this mapper would fail to build due to a template dependency build failure, so either 2 or 3 messages total when 1 would suffice and be more concise.
+                    if (false == DoesBlueprintNameExist(blueprint.templateName))
+                    {
+                        Message::OutputFormatted(Message::ESeverity::Error, L"Error while building mapper %s: Unknown template dependency %s.", mapperName.data(), blueprint.templateName.data());
+                        return nullptr;
+                    }
+
                     Message::OutputFormatted(Message::ESeverity::Info, L"Mapper %s uses mapper %s as a template. Attempting to build it.", mapperName.data(), blueprint.templateName.data());
                     
                     if (nullptr == Build(blueprint.templateName))

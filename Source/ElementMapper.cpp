@@ -298,6 +298,13 @@ namespace Xidi
 
         // --------
 
+        void KeyboardMapper::ContributeNeutral(TControllerIdentifier controllerIdentifier, SState& controllerState) const
+        {
+            Keyboard::SubmitKeyReleasedState(controllerIdentifier, key);
+        }
+
+        // --------
+
         int KeyboardMapper::GetTargetElementCount(void) const
         {
             return 0;
@@ -379,11 +386,17 @@ namespace Xidi
             {
                 if (nullptr != positiveMapper)
                     positiveMapper->ContributeFromAnalogValue(controllerIdentifier, controllerState, analogValue);
+
+                if (nullptr != negativeMapper)
+                    negativeMapper->ContributeNeutral(controllerIdentifier, controllerState);
             }
             else
             {
                 if (nullptr != negativeMapper)
                     negativeMapper->ContributeFromAnalogValue(controllerIdentifier, controllerState, analogValue);
+
+                if (nullptr != positiveMapper)
+                    positiveMapper->ContributeNeutral(controllerIdentifier, controllerState);
             }
         }
 
@@ -395,11 +408,17 @@ namespace Xidi
             {
                 if (nullptr != positiveMapper)
                     positiveMapper->ContributeFromButtonValue(controllerIdentifier, controllerState, buttonPressed);
+
+                if (nullptr != negativeMapper)
+                    negativeMapper->ContributeNeutral(controllerIdentifier, controllerState);
             }
             else
             {
                 if (nullptr != negativeMapper)
                     negativeMapper->ContributeFromButtonValue(controllerIdentifier, controllerState, buttonPressed);
+
+                if (nullptr != positiveMapper)
+                    positiveMapper->ContributeNeutral(controllerIdentifier, controllerState);
             }
         }
 
@@ -411,11 +430,17 @@ namespace Xidi
             {
                 if (nullptr != positiveMapper)
                     positiveMapper->ContributeFromTriggerValue(controllerIdentifier, controllerState, triggerValue);
+
+                if (nullptr != negativeMapper)
+                    negativeMapper->ContributeNeutral(controllerIdentifier, controllerState);
             }
             else
             {
                 if (nullptr != negativeMapper)
                     negativeMapper->ContributeFromTriggerValue(controllerIdentifier, controllerState, triggerValue);
+
+                if (nullptr != positiveMapper)
+                    positiveMapper->ContributeNeutral(controllerIdentifier, controllerState);
             }
         }
 

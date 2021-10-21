@@ -18,6 +18,7 @@
 
 #include <cstdint>
 #include <memory>
+#include <utility>
 #include <xinput.h>
 
 
@@ -36,6 +37,27 @@ namespace XidiTest
 
     /// Controller state used for tests that need such an instance but do not care about its contents.
     static SState unusedControllerState;
+
+
+    // -------- INTERNAL FUNCTIONS ----------------------------------------- //
+
+    /// Generates a complete expected capabilities structure by accepting a base expected capabilities from a test case and merging it with the minimum required virtual controller capabilities.
+    /// Virtual controllers are required to have at least certain axes and a minimum number of buttons.
+    /// @param [in] baseExpectedCapabilities Expected capabilities from the test case.
+    /// @return Expected capabilities from the test case merged with the minimum allowed capabilities.
+    static consteval SCapabilities MakeExpectedCapabilities(SCapabilities baseExpectedCapabilities)
+    {
+        const SCapabilities kMinCapabilities = Mapper::MinimalCapabilities();
+
+        SCapabilities expectedCapabilities = {.numButtons = std::max(kMinCapabilities.numButtons, baseExpectedCapabilities.numButtons), .hasPov = (kMinCapabilities.hasPov || baseExpectedCapabilities.hasPov)};
+        for (int i = 0; i < (int)EAxis::Count; ++i)
+        {
+            if (kMinCapabilities.HasAxis((EAxis)i) || baseExpectedCapabilities.HasAxis((EAxis)i))
+                expectedCapabilities.AppendAxis((EAxis)i);
+        }
+
+        return expectedCapabilities;
+    }
 
     
     // -------- TEST CASES ------------------------------------------------- //
@@ -294,7 +316,7 @@ namespace XidiTest
     // Nothing should be present on the virtual controller.
     TEST_CASE(Mapper_Capabilities_EmptyMapper)
     {
-        constexpr SCapabilities kExpectedCapabilities({
+        constexpr SCapabilities kExpectedCapabilities = MakeExpectedCapabilities({
             .numAxes = 0,
             .numButtons = 0,
             .hasPov = false
@@ -312,7 +334,7 @@ namespace XidiTest
     // Nothing should be present on the virtual controller.
     TEST_CASE(Mapper_Capabilities_NullMapper)
     {
-        constexpr SCapabilities kExpectedCapabilities({
+        constexpr SCapabilities kExpectedCapabilities = MakeExpectedCapabilities({
             .numAxes = 0,
             .numButtons = 0,
             .hasPov = false
@@ -328,7 +350,7 @@ namespace XidiTest
     // Virtual controller should have only buttons, and the number present is based on the highest button to which an element mapper writes.
     TEST_CASE(Mapper_Capabilities_DisjointButtons)
     {
-        constexpr SCapabilities kExpectedCapabilities({
+        constexpr SCapabilities kExpectedCapabilities = MakeExpectedCapabilities({
             .numAxes = 0,
             .numButtons = 10,
             .hasPov = false
@@ -349,7 +371,7 @@ namespace XidiTest
     // Virtual controller should have only buttons, and the number present is based on the button to which all element mappers write.
     TEST_CASE(Mapper_Capabilities_SingleButton)
     {
-        constexpr SCapabilities kExpectedCapabilities({
+        constexpr SCapabilities kExpectedCapabilities = MakeExpectedCapabilities({
             .numAxes = 0,
             .numButtons = 6,
             .hasPov = false
@@ -369,7 +391,7 @@ namespace XidiTest
     // Virtual controller should have only axes based on the axes to which the element mappers write.
     TEST_CASE(Mapper_Capabilities_MultipleAxes)
     {
-        constexpr SCapabilities kExpectedCapabilities({
+        constexpr SCapabilities kExpectedCapabilities = MakeExpectedCapabilities({
             .axisType = {EAxis::Y, EAxis::RotX},
             .numAxes = 2,
             .numButtons = 0,
@@ -391,7 +413,7 @@ namespace XidiTest
     // Virtual controller should have only a POV and nothing else.
     TEST_CASE(Mapper_Capabilities_IncompletePov)
     {
-        constexpr SCapabilities kExpectedCapabilities({
+        constexpr SCapabilities kExpectedCapabilities = MakeExpectedCapabilities({
             .numAxes = 0,
             .numButtons = 0,
             .hasPov = true
@@ -409,7 +431,7 @@ namespace XidiTest
     // Virtual controller should have only a POV and nothing else.
     TEST_CASE(Mapper_Capabilities_CompletePov)
     {
-        constexpr SCapabilities kExpectedCapabilities({
+        constexpr SCapabilities kExpectedCapabilities = MakeExpectedCapabilities({
             .numAxes = 0,
             .numButtons = 0,
             .hasPov = true
@@ -434,8 +456,9 @@ namespace XidiTest
     // Virtual controller should report the presence of all parts to which the SplitMapper contributes.
     TEST_CASE(Mapper_Capabilities_SplitMapper)
     {
-        constexpr SCapabilities kExpectedCapabilities({
-            .axisType = {EAxis::Z},
+        constexpr EAxis kTestAxis = EAxis::Z;
+        constexpr SCapabilities kExpectedCapabilities = MakeExpectedCapabilities({
+            .axisType = {kTestAxis},
             .numAxes = 1,
             .numButtons = 0,
             .hasPov = true
@@ -444,7 +467,7 @@ namespace XidiTest
         const Mapper mapper({
             .stickRightY = std::make_unique<SplitMapper>(
                 std::make_unique<MockElementMapper>(
-                    SElementIdentifier({.type = EElementType::Axis, .axis = kExpectedCapabilities.axisType[0]})),
+                    SElementIdentifier({.type = EElementType::Axis, .axis = kTestAxis})),
                 std::make_unique<MockElementMapper>(
                     SElementIdentifier({.type = EElementType::Pov})))
         });
@@ -456,7 +479,7 @@ namespace XidiTest
     // StandardGamepad, a known and documented mapper.
     TEST_CASE(Mapper_Capabilities_StandardGamepad)
     {
-        constexpr SCapabilities kExpectedCapabilities({
+        constexpr SCapabilities kExpectedCapabilities = MakeExpectedCapabilities({
             .axisType = {EAxis::X, EAxis::Y, EAxis::Z, EAxis::RotZ},
             .numAxes = 4,
             .numButtons = 12,
@@ -473,7 +496,7 @@ namespace XidiTest
     // DigitalGamepad, a known and documented mapper.
     TEST_CASE(Mapper_Capabilities_DigitalGamepad)
     {
-        constexpr SCapabilities kExpectedCapabilities({
+        constexpr SCapabilities kExpectedCapabilities = MakeExpectedCapabilities({
             .axisType = {EAxis::X, EAxis::Y, EAxis::Z, EAxis::RotZ},
             .numAxes = 4,
             .numButtons = 12,
@@ -490,7 +513,7 @@ namespace XidiTest
     // ExtendedGamepad, a known and documented mapper.
     TEST_CASE(Mapper_Capabilities_ExtendedGamepad)
     {
-        constexpr SCapabilities kExpectedCapabilities({
+        constexpr SCapabilities kExpectedCapabilities = MakeExpectedCapabilities({
             .axisType = {EAxis::X, EAxis::Y, EAxis::Z, EAxis::RotX, EAxis::RotY, EAxis::RotZ},
             .numAxes = 6,
             .numButtons = 10,
@@ -507,7 +530,7 @@ namespace XidiTest
     // XInputNative, a known and documented mapper.
     TEST_CASE(Mapper_Capabilities_XInputNative)
     {
-        constexpr SCapabilities kExpectedCapabilities({
+        constexpr SCapabilities kExpectedCapabilities = MakeExpectedCapabilities({
             .axisType = {EAxis::X, EAxis::Y, EAxis::Z, EAxis::RotX, EAxis::RotY, EAxis::RotZ},
             .numAxes = 6,
             .numButtons = 10,
@@ -524,7 +547,7 @@ namespace XidiTest
     // XInputSharedTriggers, a known and documented mapper.
     TEST_CASE(Mapper_Capabilities_XInputSharedTriggers)
     {
-        constexpr SCapabilities kExpectedCapabilities({
+        constexpr SCapabilities kExpectedCapabilities = MakeExpectedCapabilities({
             .axisType = {EAxis::X, EAxis::Y, EAxis::Z, EAxis::RotX, EAxis::RotY},
             .numAxes = 5,
             .numButtons = 10,
@@ -546,7 +569,7 @@ namespace XidiTest
     // The X and Y axes are removed.
     TEST_CASE(Mapper_Clone_StandardGamepad)
     {
-        constexpr SCapabilities kExpectedCapabilities({
+        constexpr SCapabilities kExpectedCapabilities = MakeExpectedCapabilities({
             .axisType = {EAxis::Z, EAxis::RotZ},
             .numAxes = 2,
             .numButtons = 12,
@@ -566,7 +589,7 @@ namespace XidiTest
     // The Z and RotZ axes are removed.
     TEST_CASE(Mapper_Clone_DigitalGamepad)
     {
-        constexpr SCapabilities kExpectedCapabilities({
+        constexpr SCapabilities kExpectedCapabilities = MakeExpectedCapabilities({
             .axisType = {EAxis::X, EAxis::Y},
             .numAxes = 2,
             .numButtons = 12,
@@ -586,7 +609,7 @@ namespace XidiTest
     // The RotX and RotY axes are removed.
     TEST_CASE(Mapper_Clone_ExtendedGamepad)
     {
-        constexpr SCapabilities kExpectedCapabilities({
+        constexpr SCapabilities kExpectedCapabilities = MakeExpectedCapabilities({
             .axisType = {EAxis::X, EAxis::Y, EAxis::Z, EAxis::RotZ},
             .numAxes = 4,
             .numButtons = 10,
@@ -606,7 +629,7 @@ namespace XidiTest
     // The POV is removed.
     TEST_CASE(Mapper_Clone_XInputNative)
     {
-        constexpr SCapabilities kExpectedCapabilities({
+        constexpr SCapabilities kExpectedCapabilities = MakeExpectedCapabilities({
             .axisType = {EAxis::X, EAxis::Y, EAxis::Z, EAxis::RotX, EAxis::RotY, EAxis::RotZ},
             .numAxes = 6,
             .numButtons = 10,
@@ -628,7 +651,7 @@ namespace XidiTest
     // The Z axis is removed.
     TEST_CASE(Mapper_Clone_XInputSharedTriggers)
     {
-        constexpr SCapabilities kExpectedCapabilities({
+        constexpr SCapabilities kExpectedCapabilities = MakeExpectedCapabilities({
             .axisType = {EAxis::X, EAxis::Y, EAxis::RotX, EAxis::RotY},
             .numAxes = 4,
             .numButtons = 10,

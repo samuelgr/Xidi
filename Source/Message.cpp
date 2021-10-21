@@ -62,13 +62,6 @@ namespace Xidi
 
         // -------- INTERNAL FUNCTIONS ------------------------------------- //
 
-        /// Checks if logging to a file is enabled.
-        /// @return `true` if so, `false` if not.
-        static inline bool IsLogFileEnabled(void)
-        {
-            return (nullptr != logFileHandle);
-        }
-
         /// Checks if the specified output mode is interactive or non-interactive.
         /// @return `true` if the mode is interactive, `false` otherwise.
         static inline bool IsOutputModeInteractive(const EOutputMode outputMode)
@@ -325,6 +318,13 @@ namespace Xidi
                 fwprintf_s(logFileHandle, L"%s\n", kLogHeaderSeparator);
                 fflush(logFileHandle);
             }
+        }
+
+        // --------
+
+        bool IsLogFileEnabled(void)
+        {
+            return (nullptr != logFileHandle);
         }
 
         // --------

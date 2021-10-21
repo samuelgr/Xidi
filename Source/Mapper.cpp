@@ -161,11 +161,10 @@ namespace Xidi
         /// @return Virtual controller capabilities as derived from the per-element map in aggregate.
         static SCapabilities DeriveCapabilitiesFromElementMap(const Mapper::UElementMap& elements)
         {
-            SCapabilities capabilities;
-            ZeroMemory(&capabilities, sizeof(capabilities));
+            SCapabilities capabilities = Mapper::MinimalCapabilities();
 
             std::set<EAxis> axesPresent;
-            int highestButtonSeen = -1;
+            int highestButtonSeen = capabilities.numButtons - 1;
             bool povPresent = false;
 
             for (int i = 0; i < _countof(elements.all); ++i)
@@ -203,10 +202,13 @@ namespace Xidi
             }
 
             for (auto it = axesPresent.cbegin(); it != axesPresent.cend(); ++it)
-                capabilities.AppendAxis(*it);
+            {
+                if (false == capabilities.HasAxis(*it))
+                    capabilities.AppendAxis(*it);
+            }
 
             capabilities.numButtons = highestButtonSeen + 1;
-            capabilities.hasPov = povPresent;
+            capabilities.hasPov = (capabilities.hasPov || povPresent);
 
             return capabilities;
         }

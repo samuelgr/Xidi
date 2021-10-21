@@ -32,9 +32,23 @@ namespace Xidi
         // -------- INSTANCE VARIABLES ------------------------------------- //
 
         /// Holds custom mapper blueprints parsed from configuration files.
-        Controller::MapperBuilder customMapperBuilder;
-#endif
+        Controller::MapperBuilder* customMapperBuilder;
 
+
+    public:
+        // -------- INSTANCE METHODS --------------------------------------- //
+
+        /// Sets the mapper builder object to be filled with custom mapper blueprints during the next configuration file read attempt.
+        /// Upon completion of the next read attempt the pointer held by this object is automatically cleared.
+        /// @param [in] newCustomMapperBuilder Pointer to the object that will receive custom mapper blueprints during configuration file read.
+        inline void SetMapperBuilder(Controller::MapperBuilder* newCustomMapperBuilder)
+        {
+            customMapperBuilder = newCustomMapperBuilder;
+        }
+
+
+#endif
+    protected:
         // -------- CONCRETE INSTANCE METHODS ------------------------------ //
         // See "Configuration.h" for documentation.
 

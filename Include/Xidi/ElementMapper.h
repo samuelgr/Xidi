@@ -65,6 +65,19 @@ namespace Xidi
             /// @param [in] index Index of the target element. Must be less than the count reported by #GetTargetElementCount.
             /// @return Identifier of the targert virtual controller element, if it exists.
             virtual std::optional<SElementIdentifier> GetTargetElementAt(int index) const = 0;
+
+
+            // -------- CONCRETE INSTANCE METHODS -------------------------- //
+
+            /// Specifies that the element mapper should make a neutral state contribution to the virtual controller.
+            /// Primarily intended for element mappers that have side effects so that they can reset their side effects in response to not making any contribution.
+            /// It is optional to override this method, as a default empty implementation is supplied.
+            /// @param [in] controllerIdentifier Identifier of the controller for which an update contribution is being requested.
+            /// @param [in,out] controllerState Controller state data structure to be updated.
+            virtual void ContributeNeutral(TControllerIdentifier controllerIdentifier, SState& controllerState) const
+            {
+                // Nothing to do here.
+            }
         };
 
         /// Maps a single XInput controller element such that it contributes to an axis value on a virtual controller.
@@ -228,6 +241,7 @@ namespace Xidi
             void ContributeFromAnalogValue(TControllerIdentifier controllerIdentifier, SState& controllerState, int16_t analogValue) const override;
             void ContributeFromButtonValue(TControllerIdentifier controllerIdentifier, SState& controllerState, bool buttonPressed) const override;
             void ContributeFromTriggerValue(TControllerIdentifier controllerIdentifier, SState& controllerState, uint8_t triggerValue) const override;
+            void ContributeNeutral(TControllerIdentifier controllerIdentifier, SState& controllerState) const override;
             int GetTargetElementCount(void) const override;
             std::optional<SElementIdentifier> GetTargetElementAt(int index) const override;
         };
@@ -292,6 +306,7 @@ namespace Xidi
         /// For analog values, "positive" means that the axis value is greater than or equal to the netural value, and "negative" means it is less than the neutral value.
         /// For button values, "positive" means the button is pressed, and "negative" means it is not pressed.
         /// For trigger values, "positive" means the trigger value is greater than or equal to the midpoint, and "negative" means it is less than the midpoint.
+        /// Whichever of the two contained element mapper is inactive during any given request for contributions is given an opportunity to contribute a neutral state.
         class SplitMapper : public IElementMapper
         {
         private:

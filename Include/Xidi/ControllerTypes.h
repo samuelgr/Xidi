@@ -172,7 +172,7 @@ namespace Xidi
             /// Appends an axis to the list of axis types in this capabilities object.
             /// Performs no bounds-checking or uniqueness-checking, so this is left to the caller to ensure.
             /// @param [in] axis Axis to append to the list of present axes.
-            inline void AppendAxis(EAxis axis)
+            constexpr inline void AppendAxis(EAxis axis)
             {
                 axisType[numAxes] = axis;
                 numAxes += 1;
@@ -181,7 +181,7 @@ namespace Xidi
             /// Determines the index of the specified axis type within this capabilities object, if it exists.
             /// @param [in] axis Axis type for which to query.
             /// @return Index of the specified axis if it is present, or -1 if it is not.
-            inline int FindAxis(EAxis axis) const
+            constexpr inline int FindAxis(EAxis axis) const
             {
                 for (int i = 0; i < numAxes; ++i)
                 {
@@ -195,7 +195,7 @@ namespace Xidi
             /// Checks if this capabilities object specifies that the controller has an axis of the specified type.
             /// @param [in] axis Axis type for which to query.
             /// @return `true` if the axis is present, `false` otherwise.
-            inline bool HasAxis(EAxis axis) const
+            constexpr inline bool HasAxis(EAxis axis) const
             {
                 return (-1 != FindAxis(axis));
             }
@@ -203,7 +203,7 @@ namespace Xidi
             /// Checks if this capabilities object specifies that the controller has a button of the specified number.
             /// @param [in] button Button number for which to query.
             /// @return `true` if the button is present, `false` otherwise.
-            inline bool HasButton(EButton button) const
+            constexpr inline bool HasButton(EButton button) const
             {
                 return ((uint8_t)button < numButtons);
             }

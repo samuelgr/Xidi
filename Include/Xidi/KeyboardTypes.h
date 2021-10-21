@@ -17,7 +17,6 @@
 #include "ControllerTypes.h"
 
 #include <bitset>
-#include <type_traits>
 
 
 namespace Xidi
@@ -28,14 +27,14 @@ namespace Xidi
 
         /// Number of keyboard keys that exist in total on a virtual keyboard.
         /// Value taken from DirectInput documentation, which indicates keyboard state is reported as an array of 256 bytes.
-        static constexpr WORD kVirtualKeyboardKeyCount = 256;
+        inline constexpr unsigned int kVirtualKeyboardKeyCount = 256;
 
 
         // -------- TYPE DEFINITIONS --------------------------------------- //
 
         /// Underlying type used to identify keyboard keys.
         /// Values themselves are DirectInput keyboard scan codes (see "dinput.h" for the DIK_* constants).
-        typedef std::remove_const_t<decltype(kVirtualKeyboardKeyCount)> TKeyIdentifier;
+        typedef unsigned int TKeyIdentifier;
 
         /// Enumerates the possible transitions of keyboard key states.
         /// Primarily for internal use, but exposed for testing.

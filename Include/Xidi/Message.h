@@ -66,6 +66,10 @@ namespace Xidi
         /// Once logging to a file is enabled, it cannot be disabled.
         void CreateAndEnableLogFile(void);
 
+        /// Checks if logging to a file is enabled.
+        /// @return `true` if so, `false` if not.
+        bool IsLogFileEnabled(void);
+
         /// Outputs the specified message.
         /// Requires both a severity and a message string.
         /// @param [in] severity Severity of the message.

@@ -84,6 +84,12 @@ namespace Xidi
             /// @return Pointer to the new mapper object if successful, `nullptr` otherwise.
             const Mapper* Build(std::wstring_view mapperName);
 
+            /// Deletes all blueprints held by this object, resetting it to a pristine state.
+            inline void Clear(void)
+            {
+                blueprints.clear();
+            }
+
             /// Removes an element mapper from this blueprint's element map specification so it is not applied as a modification to the template when this object is built into a mapper.
             /// This method will fail if the mapper name does not identify an existing blueprint, if the element index is out of bounds, or if no template modification exists for the specified controller element.
             /// @param [in] mapperName Name that identifies the mapper whose element is being set.

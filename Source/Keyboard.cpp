@@ -82,7 +82,7 @@ namespace Xidi
             // Only the bottom 7 bits of the key identifier are used.
             // Any key identifiers higher than the maximum 7-bit value are "extended" keys for which a prefix of 0xe0 is needed in the full 16-bit quantity.
             if (key > 0x7f)
-                return (0xe000 | (key & 0x7f));
+                return ((0xe0 << 8) | (key & 0x7f));
             else
                 return key;
         }

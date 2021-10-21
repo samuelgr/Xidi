@@ -150,13 +150,13 @@ namespace Xidi
     EAction XidiConfigReader::ActionForSection(std::wstring_view section)
     {
 #ifndef XIDI_SKIP_MAPPERS
-        if (true == IsCustomMapperSectionName(section))
+        if ((nullptr != customMapperBuilder) && (true == IsCustomMapperSectionName(section)))
         {
             std::optional<std::wstring_view> customMapperName = ExtractCustomMapperName(section);
             if (false == customMapperName.has_value())
                 return EAction::Error;
 
-            if (false == customMapperBuilder.CreateBlueprint(customMapperName.value()))
+            if (false == customMapperBuilder->CreateBlueprint(customMapperName.value()))
             {
                 SetErrorMessage(Strings::FormatString(L"%s: A mapper with this name already exists.", customMapperName.value().data()));
                 return EAction::Error;
@@ -194,7 +194,7 @@ namespace Xidi
     EAction XidiConfigReader::ActionForValue(std::wstring_view section, std::wstring_view name, TStringView value)
     {
 #ifndef XIDI_SKIP_MAPPERS
-        if (true == IsCustomMapperSectionName(section))
+        if ((nullptr != customMapperBuilder) && (true == IsCustomMapperSectionName(section)))
         {
             std::wstring_view customMapperName = QuickExtractCustomMapperName(section);
 
@@ -206,14 +206,14 @@ namespace Xidi
                     if (false == maybeElementMapper.has_value())
                     {
                         SetErrorMessage(Strings::FormatString(L"%s: Failed to parse string \"%s\" into an element mapper object.", name.data(), value.data()));
-                        customMapperBuilder.InvalidateBlueprint(customMapperName);
+                        customMapperBuilder->InvalidateBlueprint(customMapperName);
                         return EAction::Error;
                     }
 
-                    if (false == customMapperBuilder.SetBlueprintElementMapper(customMapperName, name, std::move(maybeElementMapper.value())))
+                    if (false == customMapperBuilder->SetBlueprintElementMapper(customMapperName, name, std::move(maybeElementMapper.value())))
                     {
                         SetErrorMessage(Strings::FormatString(L"%s: Internal error: Successfully parsed element mapper object but failed to set it on the blueprint.", name.data()));
-                        customMapperBuilder.InvalidateBlueprint(customMapperName);
+                        customMapperBuilder->InvalidateBlueprint(customMapperName);
                         return EAction::Error;
                     }
                 } while (false);
@@ -221,10 +221,10 @@ namespace Xidi
 
             case EBlueprintOperation::SetTemplate:
                 do {
-                    if (false == customMapperBuilder.SetBlueprintTemplate(customMapperName, value))
+                    if (false == customMapperBuilder->SetBlueprintTemplate(customMapperName, value))
                     {
                         SetErrorMessage(Strings::FormatString(L"Internal error: Failed to set template for %s to %s.", customMapperName.data(), value.data()));
-                        customMapperBuilder.InvalidateBlueprint(customMapperName);
+                        customMapperBuilder->InvalidateBlueprint(customMapperName);
                         return EAction::Error;
                     }
                 } while (false);
@@ -264,7 +264,7 @@ namespace Xidi
     void XidiConfigReader::EndRead(void)
     {
 #ifndef XIDI_SKIP_MAPPERS
-        customMapperBuilder.Build();
+        customMapperBuilder = nullptr;
 #endif
     }
 
@@ -273,7 +273,7 @@ namespace Xidi
     EValueType XidiConfigReader::TypeForValue(std::wstring_view section, std::wstring_view name)
     {
 #ifndef XIDI_SKIP_MAPPERS
-        if (true == IsCustomMapperSectionName(section))
+        if ((nullptr != customMapperBuilder) && (true == IsCustomMapperSectionName(section)))
         {
             // All custom mapper operations use strings as input.
             // As long as an operation can be located for the specified configuration setting name the result is a string, otherwise it is an error.

@@ -36,6 +36,28 @@ namespace Xidi
         class Mapper
         {
         public:
+            // -------- CONSTANTS ------------------------------------------ //
+
+            /// Axes that must be present on all virtual controllers.
+            /// This list is based on expectations of both DirectInput and WinMM state data structures.
+            /// If no element mappers contribute to these axes then they will be continually reported as being in a neutral position.
+            static constexpr EAxis kRequiredAxes[] = {EAxis::X, EAxis::Y};
+
+            /// Minimum number of buttons that must be present on all virtual controllers.
+            static constexpr int kMinNumButtons = 2;
+
+            /// Generates and returns the minimal representation of a virtual controller's capabilities.
+            /// @return Minimal capabilities structure.
+            static consteval SCapabilities MinimalCapabilities(void)
+            {
+                SCapabilities minCapabilities = {.numButtons = kMinNumButtons};
+                for (auto requiredAxis : kRequiredAxes)
+                    minCapabilities.AppendAxis(requiredAxis);
+
+                return minCapabilities;
+            }
+
+
             // -------- TYPE DEFINITIONS ----------------------------------- //
 
             /// XInput controller element mappers, one per controller element.

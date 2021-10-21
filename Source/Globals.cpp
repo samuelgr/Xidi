@@ -22,6 +22,10 @@
 #include "Configuration.h"
 #endif
 
+#ifndef XIDI_SKIP_CONFIG
+#include "MapperBuilder.h"
+#endif
+
 #include <cstdint>
 #include <memory>
 #include <mutex>
@@ -83,7 +87,32 @@ namespace Xidi
         };
 
 
+        // -------- INTERNAL VARIABLES ------------------------------------- //
+
+#ifndef XIDI_SKIP_MAPPERS
+        /// Holds custom mapper blueprints produced while reading from a configuration file.
+        static Controller::MapperBuilder customMapperBuilder;
+#endif
+
+
         // -------- INTERNAL FUNCTIONS ------------------------------------- //
+
+#ifndef XIDI_SKIP_MAPPERS
+        /// Attempts to build all custom mappers held by the custom mapper builder object.
+        /// Upon completion, regardless of outcome, clears out all of the stored blueprint objects.
+        static inline void BuildCustomMappers(void)
+        {
+            if (false == customMapperBuilder.Build())
+            {
+                if (true == Message::IsLogFileEnabled())
+                    Message::Output(Message::ESeverity::ForcedInteractiveWarning, L"Errors were encountered during custom mapper construction. See log file for more information.");
+                else
+                    Message::Output(Message::ESeverity::ForcedInteractiveWarning, L"Errors were encountered during custom mapper construction. Enable logging and see log file for more information.");
+            }
+
+            customMapperBuilder.Clear();
+        }
+#endif
 
 #ifndef XIDI_SKIP_CONFIG
         /// Enables the log if it is not already enabled.
@@ -129,6 +158,11 @@ namespace Xidi
             std::call_once(readConfigFlag, []() -> void
                 {
                     XidiConfigReader configReader;
+
+#ifndef XIDI_SKIP_MAPPERS
+                    configReader.SetMapperBuilder(&customMapperBuilder);
+#endif
+
                     configData = configReader.ReadConfigurationFile(Strings::kStrConfigurationFilename);
 
                     if (true == configReader.HasReadErrors())
@@ -195,6 +229,7 @@ namespace Xidi
 #endif
 
 #ifndef XIDI_SKIP_MAPPERS
+            BuildCustomMappers();
             Controller::Mapper::DumpRegisteredMappers();
 #endif
         }
