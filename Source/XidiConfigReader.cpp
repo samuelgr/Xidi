@@ -72,9 +72,9 @@ namespace Xidi
     };
 
 
-#ifndef XIDI_SKIP_MAPPERS
     // -------- INTERNAL FUNCTIONS ----------------------------------------- //
 
+#ifndef XIDI_SKIP_MAPPERS
     /// Determines the operation that should be performed on a mapper blueprint based on the name of a configuration setting.
     /// @param [in] name Configuration setting name.
     /// @return Operation to perform.
@@ -96,6 +96,7 @@ namespace Xidi
 
         return EBlueprintOperation::Error;
     }
+#endif
 
     /// Checks if the specified section name could correspond with a section that defines a custom mapper.
     /// This is simply based on whether or not the section name begins with the right prefix.
@@ -106,6 +107,7 @@ namespace Xidi
         return (section.starts_with(Strings::kStrConfigurationSectionCustomMapperPrefix));
     }
 
+#ifndef XIDI_SKIP_MAPPERS
     /// Extracts the name of a custom mapper from a section name and performs no error checks whatsoever.
     /// @param [in] section Section name from which to extract the custom mapper name.
     /// @return Custom mapper name.
@@ -164,6 +166,9 @@ namespace Xidi
 
             return EAction::Process;
         }
+#else
+        if (true == IsCustomMapperSectionName(section))
+            return EAction::Skip;
 #endif
 
         if (0 != configurationFileLayout.count(section))
