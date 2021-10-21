@@ -96,7 +96,7 @@
       <ConformanceMode>true</ConformanceMode>
       <LanguageStandard>stdcpplatest</LanguageStandard>
       <LanguageStandard_C>stdc17</LanguageStandard_C>
-      <AdditionalIncludeDirectories>Include\$(SolutionName);Include\$(SolutionName)\Test;$(SolutionDir)ThirdParty\Boost\Files;$(IntDir);%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>Include\$(SolutionName);Include\$(SolutionName)\Test;$(SolutionDir)ThirdParty\Boost\Files;$(SolutionDir)ThirdParty\XstdBitSet\Files\include;$(IntDir);%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
       <SupportJustMyCode>false</SupportJustMyCode>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
@@ -124,7 +124,7 @@
       <ConformanceMode>true</ConformanceMode>
       <LanguageStandard>stdcpplatest</LanguageStandard>
       <LanguageStandard_C>stdc17</LanguageStandard_C>
-      <AdditionalIncludeDirectories>Include\$(SolutionName);Include\$(SolutionName)\Test;$(SolutionDir)ThirdParty\Boost\Files;$(IntDir);%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>Include\$(SolutionName);Include\$(SolutionName)\Test;$(SolutionDir)ThirdParty\Boost\Files;$(SolutionDir)ThirdParty\XstdBitSet\Files\include;$(IntDir);%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
       <Optimization>MaxSpeed</Optimization>
       <OmitFramePointers>true</OmitFramePointers>
@@ -153,7 +153,7 @@
       <ConformanceMode>true</ConformanceMode>
       <LanguageStandard>stdcpplatest</LanguageStandard>
       <LanguageStandard_C>stdc17</LanguageStandard_C>
-      <AdditionalIncludeDirectories>Include\$(SolutionName);Include\$(SolutionName)\Test;$(SolutionDir)ThirdParty\Boost\Files;$(IntDir);%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>Include\$(SolutionName);Include\$(SolutionName)\Test;$(SolutionDir)ThirdParty\Boost\Files;$(SolutionDir)ThirdParty\XstdBitSet\Files\include;$(IntDir);%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
       <SupportJustMyCode>false</SupportJustMyCode>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
@@ -182,7 +182,7 @@
       <ConformanceMode>true</ConformanceMode>
       <LanguageStandard>stdcpplatest</LanguageStandard>
       <LanguageStandard_C>stdc17</LanguageStandard_C>
-      <AdditionalIncludeDirectories>Include\$(SolutionName);Include\$(SolutionName)\Test;$(SolutionDir)ThirdParty\Boost\Files;$(IntDir);%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>Include\$(SolutionName);Include\$(SolutionName)\Test;$(SolutionDir)ThirdParty\Boost\Files;$(SolutionDir)ThirdParty\XstdBitSet\Files\include;$(IntDir);%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
       <Optimization>MaxSpeed</Optimization>
       <OmitFramePointers>true</OmitFramePointers>
