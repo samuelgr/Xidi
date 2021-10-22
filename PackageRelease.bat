@@ -118,7 +118,7 @@ pushd %script_dir%
 md %output_dir%
 for %%F in (%files_release%) do (
     echo %%F
-    copy %%F %output_dir%
+    copy "%%F" "%output_dir%"
 )
 for %%P in (%project_platforms%) do (
 	if not ""=="%files_release_build%!files_release_build_%%P!" (
@@ -126,7 +126,7 @@ for %%P in (%project_platforms%) do (
 
         for %%F in (%files_release_build% !files_release_build_%%P!) do (
             echo Output\%%P\Release\%%F
-            copy Output\%%P\Release\%%F %output_dir%\%%P
+            copy "Output\%%P\Release\%%F" "%output_dir%\%%P"
         )
     )
 )
@@ -137,7 +137,7 @@ if "yes"=="%project_has_sdk%" (
         md %output_dir%\SDK\Lib
         for %%F in (%files_sdk_lib%) do (
             echo %%F
-            copy %%F %output_dir%\SDK\Lib
+            copy "%%F" "%output_dir%\SDK\Lib"
         )
     )
 
@@ -146,7 +146,7 @@ if "yes"=="%project_has_sdk%" (
         md %output_dir%\SDK\Include\%project_name%
         for %%F in (%files_sdk_include%) do (
             echo %%F
-            copy %%F %output_dir%\SDK\Include\%project_name%
+            copy "%%F" "%output_dir%\SDK\Include\%project_name%"
         )
     )
 )
@@ -154,7 +154,7 @@ if "yes"=="%project_has_third_party_license%" (
     md %output_dir%\ThirdParty
     for %%T in (%third_party_license%) do (
         echo ThirdParty\%%T\LICENSE
-        copy ThirdParty\%%T\LICENSE %output_dir%\ThirdParty\%%T_LICENSE
+        copy "ThirdParty\%%T\LICENSE" "%output_dir%\ThirdParty\%%T_LICENSE"
     )
 )
 popd
