@@ -11,7 +11,7 @@
  *****************************************************************************/
 
 #include "ElementMapper.h"
-#include "KeyboardTypes.h"
+#include "Keyboard.h"
 #include "MockKeyboard.h"
 #include "TestCase.h"
 
@@ -84,7 +84,7 @@ namespace XidiTest
         MockKeyboard expectedKeyboardStateUnpressed;
 
         MockKeyboard expectedKeyboardStatePressed;
-        expectedKeyboardStatePressed.SubmitKeyPressedState(kTestControllerIdentifier, kTestKeyIdentifier);
+        expectedKeyboardStatePressed.SubmitKeyPressedState(kTestKeyIdentifier);
 
         // Expected sequence, based on an analog value sweep, is pressed, not pressed, and finally pressed.
         // The final two values are the same as a way of simplifying the implementation thus disabling a final transition and triggering a test failure.
@@ -134,7 +134,7 @@ namespace XidiTest
         MockKeyboard expectedKeyboardStateUnpressed;
 
         MockKeyboard expectedKeyboardStatePressed;
-        expectedKeyboardStatePressed.SubmitKeyPressedState(kTestControllerIdentifier, kTestKeyIdentifier);
+        expectedKeyboardStatePressed.SubmitKeyPressedState(kTestKeyIdentifier);
 
         MockKeyboard actualKeyboardState;
         SState unusedVirtualControllerState;
@@ -163,7 +163,7 @@ namespace XidiTest
 
             MockKeyboard expectedState;
             if (true == buttonIsPressed)
-                expectedState.SubmitKeyPressedState(kTestControllerIdentifier, kTestKeyIdentifier);
+                expectedState.SubmitKeyPressedState(kTestKeyIdentifier);
 
             MockKeyboard actualState;
             actualState.BeginCapture();
@@ -183,7 +183,7 @@ namespace XidiTest
         MockKeyboard expectedKeyboardStateUnpressed;
 
         MockKeyboard expectedKeyboardStatePressed;
-        expectedKeyboardStatePressed.SubmitKeyPressedState(kTestControllerIdentifier, kTestKeyIdentifier);
+        expectedKeyboardStatePressed.SubmitKeyPressedState(kTestKeyIdentifier);
 
         MockKeyboard actualKeyboardState;
         SState unusedVirtualControllerState;
@@ -207,7 +207,7 @@ namespace XidiTest
         MockKeyboard expectedKeyboardStateUnpressed;
 
         MockKeyboard expectedKeyboardStatePressed;
-        expectedKeyboardStatePressed.SubmitKeyPressedState(kTestControllerIdentifier, kTestKeyIdentifier);
+        expectedKeyboardStatePressed.SubmitKeyPressedState(kTestKeyIdentifier);
 
         // Expected sequence, based on an analog value sweep, is pressed, not pressed, and finally pressed.
         // The final two values are the same as a way of simplifying the implementation thus disabling a final transition and triggering a test failure.
@@ -257,7 +257,7 @@ namespace XidiTest
         MockKeyboard expectedKeyboardStateUnpressed;
 
         MockKeyboard expectedKeyboardStatePressed;
-        expectedKeyboardStatePressed.SubmitKeyPressedState(kTestControllerIdentifier, kTestKeyIdentifier);
+        expectedKeyboardStatePressed.SubmitKeyPressedState(kTestKeyIdentifier);
 
         MockKeyboard actualKeyboardState;
         SState unusedVirtualControllerState;

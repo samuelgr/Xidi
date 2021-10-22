@@ -13,7 +13,7 @@
 #pragma once
 
 #include "ControllerTypes.h"
-#include "KeyboardTypes.h"
+#include "Keyboard.h"
 
 #include <cstdint>
 #include <memory>

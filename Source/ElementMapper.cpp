@@ -14,7 +14,6 @@
 #include "ControllerTypes.h"
 #include "ElementMapper.h"
 #include "Keyboard.h"
-#include "KeyboardTypes.h"
 
 #include <cstdint>
 #include <optional>
@@ -271,9 +270,9 @@ namespace Xidi
         void KeyboardMapper::ContributeFromAnalogValue(TControllerIdentifier controllerIdentifier, SState& controllerState, int16_t analogValue) const
         {
             if (true == IsAnalogPressed(analogValue))
-                Keyboard::SubmitKeyPressedState(controllerIdentifier, key);
+                Keyboard::SubmitKeyPressedState(key);
             else
-                Keyboard::SubmitKeyReleasedState(controllerIdentifier, key);
+                Keyboard::SubmitKeyReleasedState(key);
         }
 
         // --------
@@ -281,9 +280,9 @@ namespace Xidi
         void KeyboardMapper::ContributeFromButtonValue(TControllerIdentifier controllerIdentifier, SState& controllerState, bool buttonPressed) const
         {
             if (true == buttonPressed)
-                Keyboard::SubmitKeyPressedState(controllerIdentifier, key);
+                Keyboard::SubmitKeyPressedState(key);
             else
-                Keyboard::SubmitKeyReleasedState(controllerIdentifier, key);
+                Keyboard::SubmitKeyReleasedState(key);
         }
 
         // --------
@@ -291,16 +290,16 @@ namespace Xidi
         void KeyboardMapper::ContributeFromTriggerValue(TControllerIdentifier controllerIdentifier, SState& controllerState, uint8_t triggerValue) const
         {
             if (true == IsTriggerPressed(triggerValue))
-                Keyboard::SubmitKeyPressedState(controllerIdentifier, key);
+                Keyboard::SubmitKeyPressedState(key);
             else
-                Keyboard::SubmitKeyReleasedState(controllerIdentifier, key);
+                Keyboard::SubmitKeyReleasedState(key);
         }
 
         // --------
 
         void KeyboardMapper::ContributeNeutral(TControllerIdentifier controllerIdentifier, SState& controllerState) const
         {
-            Keyboard::SubmitKeyReleasedState(controllerIdentifier, key);
+            Keyboard::SubmitKeyReleasedState(key);
         }
 
         // --------

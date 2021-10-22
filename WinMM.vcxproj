@@ -34,7 +34,6 @@
     <ClInclude Include="Include\Xidi\ImportApiWinMM.h" />
     <ClInclude Include="Include\Xidi\ControllerIdentification.h" />
     <ClInclude Include="Include\Xidi\Keyboard.h" />
-    <ClInclude Include="Include\Xidi\KeyboardTypes.h" />
     <ClInclude Include="Include\Xidi\Mapper.h" />
     <ClInclude Include="Include\Xidi\MapperBuilder.h" />
     <ClInclude Include="Include\Xidi\MapperParser.h" />

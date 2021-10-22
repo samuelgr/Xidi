@@ -90,9 +90,6 @@
     <ClInclude Include="Include\Xidi\Keyboard.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="Include\Xidi\KeyboardTypes.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="Include\Xidi\MapperBuilder.h">
       <Filter>Header Files</Filter>
     </ClInclude>

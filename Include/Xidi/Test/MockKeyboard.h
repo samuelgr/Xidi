@@ -12,9 +12,9 @@
 
 #pragma once
 
+#include "ApiBitSet.h"
 #include "ControllerTypes.h"
 #include "Keyboard.h"
-#include "KeyboardTypes.h"
 
 
 namespace XidiTest
@@ -33,7 +33,7 @@ namespace XidiTest
         // -------- INSTANCE VARIABLES ------------------------------------- //
 
         /// Holds the state of the virtual keyboard that is represented by this object.
-        KeyState virtualKeyboardState[kVirtualKeyboardKeyCount];
+        Xidi::BitSet<kVirtualKeyboardKeyCount> virtualKeyboardState;
 
 
     public:
@@ -50,13 +50,7 @@ namespace XidiTest
         /// @return `true` if this object is equal to the other object, `false` otherwise.
         inline bool operator==(const MockKeyboard& other) const
         {
-            for (int i = 0; i < _countof(virtualKeyboardState); ++i)
-            {
-                if (other.virtualKeyboardState[i] != virtualKeyboardState[i])
-                    return false;
-            }
-
-            return true;
+            return (virtualKeyboardState == other.virtualKeyboardState);
         }
 
 
@@ -72,11 +66,11 @@ namespace XidiTest
         /// Submits a key state of pressed from a particular identified controller.
         /// @param [in] controllerIdentifier Identifier of the controller that is the source of the key press state.
         /// @param [in] key Keyboard key that is affected.
-        void SubmitKeyPressedState(TControllerIdentifier controllerIdentifier, TKeyIdentifier key);
+        void SubmitKeyPressedState(TKeyIdentifier key);
 
         /// Submits a key state of released from a particular identified controller.
         /// @param [in] controllerIdentifier Identifier of the controller that is the source of the key state.
         /// @param [in] key Keyboard key that is affected.
-        void SubmitKeyReleasedState(TControllerIdentifier controllerIdentifier, TKeyIdentifier key);
+        void SubmitKeyReleasedState(TKeyIdentifier key);
     };
 }

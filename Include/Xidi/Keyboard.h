@@ -12,24 +12,33 @@
 
 #pragma once
 
-#include "ControllerTypes.h"
-#include "KeyboardTypes.h"
-
 
 namespace Xidi
 {
     namespace Keyboard
     {
+        // -------- CONSTANTS ---------------------------------------------- //
+
+        /// Number of keyboard keys that exist in total on a virtual keyboard.
+        /// Value taken from DirectInput documentation, which indicates keyboard state is reported as an array of 256 bytes.
+        inline constexpr unsigned int kVirtualKeyboardKeyCount = 256;
+
+
+        // -------- TYPE DEFINITIONS --------------------------------------- //
+
+        /// Underlying type used to identify keyboard keys.
+        /// Values themselves are DirectInput keyboard scan codes (see "dinput.h" for the DIK_* constants).
+        typedef unsigned int TKeyIdentifier;
+
+
         // -------- FUNCTIONS ---------------------------------------------- //
 
-        /// Submits a key state of pressed from a particular identified controller.
-        /// @param [in] controllerIdentifier Identifier of the controller that is the source of the key press state.
+        /// Submits a key state of pressed.
         /// @param [in] key Keyboard key that is affected.
-        void SubmitKeyPressedState(Controller::TControllerIdentifier controllerIdentifier, TKeyIdentifier key);
+        void SubmitKeyPressedState(TKeyIdentifier key);
 
-        /// Submits a key state of released from a particular identified controller.
-        /// @param [in] controllerIdentifier Identifier of the controller that is the source of the key release state.
+        /// Submits a key state of released.
         /// @param [in] key Keyboard key that is affected.
-        void SubmitKeyReleasedState(Controller::TControllerIdentifier controllerIdentifier, TKeyIdentifier key);
+        void SubmitKeyReleasedState(TKeyIdentifier key);
     }
 }

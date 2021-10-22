@@ -9,7 +9,8 @@
  *   Unit tests for run-time mapper object parsing functionality.
  *****************************************************************************/
 
-#include "KeyboardTypes.h"
+#include "ApiDirectInput.h"
+#include "Keyboard.h"
 #include "MapperParser.h"
 #include "TestCase.h"
 

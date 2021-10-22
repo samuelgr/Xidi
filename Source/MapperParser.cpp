@@ -10,10 +10,10 @@
  *   from strings, typically supplied in a configuration file.
  *****************************************************************************/
 
-
+#include "ApiDirectInput.h"
 #include "ControllerTypes.h"
 #include "ElementMapper.h"
-#include "KeyboardTypes.h"
+#include "Keyboard.h"
 #include "Mapper.h"
 #include "MapperParser.h"
 

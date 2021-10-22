@@ -212,7 +212,6 @@
     <ClInclude Include="Include\Xidi\ElementMapper.h" />
     <ClInclude Include="Include\Xidi\Globals.h" />
     <ClInclude Include="Include\Xidi\Keyboard.h" />
-    <ClInclude Include="Include\Xidi\KeyboardTypes.h" />
     <ClInclude Include="Include\Xidi\Mapper.h" />
     <ClInclude Include="Include\Xidi\MapperBuilder.h" />
     <ClInclude Include="Include\Xidi\Message.h" />
@@ -250,7 +249,6 @@
     <ClCompile Include="Source\Test\Case\DataFormatTest.cpp" />
     <ClCompile Include="Source\Test\Case\DigitalAxisMapperTest.cpp" />
     <ClCompile Include="Source\Test\Case\KeyboardMapperTest.cpp" />
-    <ClCompile Include="Source\Test\Case\KeyboardTest.cpp" />
     <ClCompile Include="Source\Test\Case\MapperBuilderTest.cpp" />
     <ClCompile Include="Source\Test\Case\MapperTest.cpp" />
     <ClCompile Include="Source\Test\Case\MapperParserTest.cpp" />

@@ -67,28 +67,22 @@ namespace XidiTest
 
     // --------
 
-    void MockKeyboard::SubmitKeyPressedState(TControllerIdentifier controllerIdentifier, TKeyIdentifier key)
+    void MockKeyboard::SubmitKeyPressedState(TKeyIdentifier key)
     {
-        if (controllerIdentifier >= Xidi::Controller::kPhysicalControllerCount)
+        if (key >= virtualKeyboardState.max_size())
             TEST_FAILED_BECAUSE(L"%s: Test implementation error due to out-of-bounds controller identifier.", __FUNCTIONW__);
 
-        if (key >= _countof(virtualKeyboardState))
-            TEST_FAILED_BECAUSE(L"%s: Test implementation error due to out-of-bounds controller identifier.", __FUNCTIONW__);
-
-        virtualKeyboardState[key].Press(controllerIdentifier);
+        virtualKeyboardState.insert(key);
     }
 
     // --------
 
-    void MockKeyboard::SubmitKeyReleasedState(TControllerIdentifier controllerIdentifier, TKeyIdentifier key)
+    void MockKeyboard::SubmitKeyReleasedState(TKeyIdentifier key)
     {
-        if (controllerIdentifier >= Xidi::Controller::kPhysicalControllerCount)
+        if (key >= virtualKeyboardState.max_size())
             TEST_FAILED_BECAUSE(L"%s: Test implementation error due to out-of-bounds controller identifier.", __FUNCTIONW__);
 
-        if (key >= _countof(virtualKeyboardState))
-            TEST_FAILED_BECAUSE(L"%s: Test implementation error due to out-of-bounds controller identifier.", __FUNCTIONW__);
-
-        virtualKeyboardState[key].Release(controllerIdentifier);
+        virtualKeyboardState.erase(key);
     }
 }
 
@@ -103,26 +97,26 @@ namespace Xidi
         // -------- FUNCTIONS ---------------------------------------------- //
         // See "Keyboard.h" for documentation.
 
-        void SubmitKeyPressedState(Controller::TControllerIdentifier controllerIdentifier, TKeyIdentifier key)
+        void SubmitKeyPressedState(TKeyIdentifier key)
         {
             std::scoped_lock lock(captureGuard);
 
             if (nullptr == capturingVirtualKeyboard)
                 TEST_FAILED_BECAUSE(L"%s: No mock keyboard is installed to capture a key press event.", __FUNCTIONW__);
 
-            capturingVirtualKeyboard->SubmitKeyPressedState(controllerIdentifier, key);
+            capturingVirtualKeyboard->SubmitKeyPressedState(key);
         }
 
         // --------
 
-        void SubmitKeyReleasedState(Controller::TControllerIdentifier controllerIdentifier, TKeyIdentifier key)
+        void SubmitKeyReleasedState(TKeyIdentifier key)
         {
             std::scoped_lock lock(captureGuard);
 
             if (nullptr == capturingVirtualKeyboard)
                 TEST_FAILED_BECAUSE(L"%s: No mock keyboard is installed to capture a key release event.", __FUNCTIONW__);
 
-            capturingVirtualKeyboard->SubmitKeyReleasedState(controllerIdentifier, key);
+            capturingVirtualKeyboard->SubmitKeyReleasedState(key);
         }
     }
 }

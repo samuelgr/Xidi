@@ -10,11 +10,11 @@
  *   physical controller element to trigger key presses and releases.
  *****************************************************************************/
 
+#include "ApiBitSet.h"
 #include "ApiWindows.h"
 #include "ControllerTypes.h"
 #include "Globals.h"
 #include "Keyboard.h"
-#include "KeyboardTypes.h"
 #include "Message.h"
 
 #include <bitset>
@@ -33,21 +33,111 @@ namespace Xidi
         static constexpr DWORD kUpdatePeriodMilliseconds = 10;
 
 
+        // -------- INTERNAL TYPES ----------------------------------------- //
+
+        /// Type used to represent the state of an entire virtual keyboard.
+        typedef BitSet<kVirtualKeyboardKeyCount> TState;
+
+        /// Tracks "pressed" and "released" key state contributions and generates keyboard state snapshots.
+        class StateContributionTracker
+        {
+        private:
+            // -------- INSTANCE VARIABLES --------------------------------- //
+
+            /// Set of keys marked "pressed" since the last snapshot.
+            TState pressedKeys;
+
+            /// Inverted set of keys marked "released" since the last snapshot.
+            /// Keys present in this set have not been marked released since the last snapshot.
+            TState notReleasedKeys;
+
+
+        public:
+            // -------- CONSTRUCTION AND DESTRUCTION ----------------------- //
+
+            /// Default constructor.
+            constexpr inline StateContributionTracker(void)
+            {
+                Reset();
+            }
+
+
+            // -------- INSTANCE METHODS ----------------------------------- //
+
+            /// Determines if the specified key is marked as having been pressed since the last snapshot.
+            /// A key marked pressed can also be marked released. The two are not mutually exclusive.
+            /// @param [in] key Identifier of the keyboard key of interest.
+            /// @return `true` if it is marked pressed, `false` if not.
+            constexpr inline bool IsMarkedPressed(TKeyIdentifier key) const
+            {
+                return pressedKeys.contains(key);
+            }
+
+            /// Determines if the specified key is marked as having been released since the last snapshot.
+            /// A key marked released can also be marked pressed. The two are not mutually exclusive.
+            /// @param [in] key Identifier of the keyboard key of interest.
+            /// @return `true` if it is marked released, `false` if not.
+            constexpr inline bool IsMarkedReleased(TKeyIdentifier key) const
+            {
+                return !(notReleasedKeys.contains(key));
+            }
+
+            /// Registers a key press contribution.
+            /// Has no effect if the key is already marked as being pressed since the last snapshot.
+            /// @param [in] key Identifier of the target keyboard key.
+            constexpr inline void MarkPressed(TKeyIdentifier key)
+            {
+                pressedKeys.insert(key);
+            }
+
+            /// Registers a key release contribution.
+            /// Has no effect if the key is already marked as being released since the last snapshot.
+            /// @param [in] key Identifier of the target keyboard key.
+            constexpr inline void MarkRelease(TKeyIdentifier key)
+            {
+                notReleasedKeys.erase(key);
+            }
+
+            /// Computes the next keyboard snapshot by applying the marked changes to the specified previous snapshot.
+            /// Afterwards, resets internal state so no keys are marked as pressed or released.
+            /// @param [in] previousSnapshot Previous snapshot against which to apply the marked changes.
+            constexpr inline TState SnapshotRelativeTo(const TState& previousSnapshot)
+            {
+                // If a key is marked pressed since the last snapshot, then no matter what it is pressed in the next snapshot.
+                // Otherwise, a key continues to be pressed if it was pressed in the last snapshot and not released since.
+                const TState nextSnapshot = pressedKeys | (previousSnapshot & notReleasedKeys);
+
+                Reset();
+                return nextSnapshot;
+            }
+
+            /// Computes a keyboard state snapshot using only the marked changes.
+            /// Afterwards, resets internal state so no keys are marked as pressed or released.
+            constexpr inline TState Snapshot(void)
+            {
+                return SnapshotRelativeTo(TState());
+            }
+
+            /// Resets all marked contributions back to empty.
+            constexpr inline void Reset(void)
+            {
+                pressedKeys.clear();
+                notReleasedKeys.fill();
+            }
+        };
+
+
         // -------- INTERNAL VARIABLES ------------------------------------- //
 
         /// For ensuring proper concurrency control of accesses to the virtual keyboards.
         static std::mutex keyboardGuard;
 
+        /// Holds changes to keyboard state since the last snapshot.
+        /// Virtual keyboard state snapshots are maintained by the thread that periodically updates physical keyboard state.
+        static StateContributionTracker keyboardTracker;
+
         /// Background thread for updating the physical keyboard status by reading the virtual keyboard status snapshots.
         static std::thread physicalKeyboardUpdateThread;
-        
-        /// Old view of all the keyboard key states in the virtual keyboard.
-        /// Used to detect transitions.
-        static KeyState previousVirtualKeyboardState[kVirtualKeyboardKeyCount];
-
-        /// Upcoming view of all the keyboard key states in the virtual keyboard.
-        /// Submissions are written to this view and compared with the previous to detect transitions.
-        static KeyState nextVirtualKeyboardState[kVirtualKeyboardKeyCount];
 
 
         // -------- INTERNAL FUNCTIONS ------------------------------------- //
@@ -94,6 +184,8 @@ namespace Xidi
             std::vector<INPUT> keyboardEvents;
             keyboardEvents.reserve(kVirtualKeyboardKeyCount);
 
+            TState previousKeyboardState;
+
             while (true)
             {
                 Sleep(kUpdatePeriodMilliseconds);
@@ -102,24 +194,26 @@ namespace Xidi
                 {
                     std::scoped_lock lock(keyboardGuard);
 
-                    for (TKeyIdentifier key = 0; key < kVirtualKeyboardKeyCount; ++key)
+                    const TState nextKeyboardState = keyboardTracker.SnapshotRelativeTo(previousKeyboardState);
+                    const TState transitionedKeys = nextKeyboardState ^ previousKeyboardState;
+
+                    for (auto transitionedKeyIter : transitionedKeys)
                     {
-                        switch (nextVirtualKeyboardState[key].GetTransitionFrom(previousVirtualKeyboardState[key]))
+                        const int transitionedKey = (int)transitionedKeyIter;
+
+                        if (nextKeyboardState.contains(transitionedKey))
                         {
-                        case EKeyTransition::KeyWasPressed:
-                            keyboardEvents.emplace_back(INPUT({.type = INPUT_KEYBOARD, .ki = {.wScan = KeyboardEventScanCode(key), .dwFlags = KeyboardEventFlags(key)}}));
-                            break;
-
-                        case EKeyTransition::KeyWasReleased:
-                            keyboardEvents.emplace_back(INPUT({.type = INPUT_KEYBOARD, .ki = {.wScan = KeyboardEventScanCode(key), .dwFlags = KeyboardEventFlags(key) | KEYEVENTF_KEYUP}}));
-                            break;
-
-                        default:
-                            break;
+                            // Key with a transition is present in the next snapshot. This means it was pressed.
+                            keyboardEvents.emplace_back(INPUT({.type = INPUT_KEYBOARD, .ki = {.wScan = KeyboardEventScanCode(transitionedKey), .dwFlags = KeyboardEventFlags(transitionedKey)}}));
                         }
-
-                        previousVirtualKeyboardState[key] = nextVirtualKeyboardState[key];
+                        else
+                        {
+                            // Key with a transition is present in the next snapshot. This means it was released.
+                            keyboardEvents.emplace_back(INPUT({.type = INPUT_KEYBOARD, .ki = {.wScan = KeyboardEventScanCode(transitionedKey), .dwFlags = KEYEVENTF_KEYUP | KeyboardEventFlags(transitionedKey)}}));
+                        }
                     }
+
+                    previousKeyboardState = nextKeyboardState;
                 } while (false);
 
                 if (keyboardEvents.size() > 0)
@@ -149,27 +243,27 @@ namespace Xidi
         // -------- FUNCTIONS ---------------------------------------------- //
         // See "Keyboard.h" for documentation.
 
-        void SubmitKeyPressedState(Controller::TControllerIdentifier controllerIdentifier, TKeyIdentifier key)
+        void SubmitKeyPressedState(TKeyIdentifier key)
         {
             InitializeAndBeginUpdating();
 
-            if ((key < kVirtualKeyboardKeyCount) && (false == nextVirtualKeyboardState[key].IsPressedBy(controllerIdentifier)))
+            if (false == keyboardTracker.IsMarkedPressed(key))
             {
                 std::scoped_lock lock(keyboardGuard);
-                nextVirtualKeyboardState[key].Press(controllerIdentifier);
+                keyboardTracker.MarkPressed(key);
             }
         }
 
         // --------
 
-        void SubmitKeyReleasedState(Controller::TControllerIdentifier controllerIdentifier, TKeyIdentifier key)
+        void SubmitKeyReleasedState(TKeyIdentifier key)
         {
             InitializeAndBeginUpdating();
 
-            if ((key < kVirtualKeyboardKeyCount) && (true == nextVirtualKeyboardState[key].IsPressedBy(controllerIdentifier)))
+            if (false == keyboardTracker.IsMarkedReleased(key))
             {
                 std::scoped_lock lock(keyboardGuard);
-                nextVirtualKeyboardState[key].Release(controllerIdentifier);
+                keyboardTracker.MarkRelease(key);
             }
         }
     }
