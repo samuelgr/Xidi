@@ -28,9 +28,6 @@ namespace XidiTest
 
     // -------- INTERNAL CONSTANTS ----------------------------------------- //
 
-    /// Controller identifier used for all test cases in this file.
-    static constexpr TControllerIdentifier kTestControllerIdentifier = 1;
-
     /// Keyboard key identifier used for all test cases in this file.
     static constexpr TKeyIdentifier kTestKeyIdentifier = 55;
 
@@ -100,7 +97,7 @@ namespace XidiTest
             SState actualVirtualControllerState = kEmptyVirtualControllerState;
 
             actualState.BeginCapture();
-            mapper.ContributeFromAnalogValue(kTestControllerIdentifier, actualVirtualControllerState, (int16_t)analogValue);
+            mapper.ContributeFromAnalogValue(actualVirtualControllerState, (int16_t)analogValue);
             actualState.EndCapture();
 
             TEST_ASSERT(actualVirtualControllerState == kEmptyVirtualControllerState);
@@ -143,9 +140,9 @@ namespace XidiTest
 
         actualKeyboardState.BeginCapture();
         TEST_ASSERT(actualKeyboardState == expectedKeyboardStateUnpressed);
-        mapper.ContributeFromAnalogValue(kTestControllerIdentifier, unusedVirtualControllerState, kAnalogValuePress);
+        mapper.ContributeFromAnalogValue(unusedVirtualControllerState, kAnalogValuePress);
         TEST_ASSERT(actualKeyboardState == expectedKeyboardStatePressed);
-        mapper.ContributeFromAnalogValue(kTestControllerIdentifier, unusedVirtualControllerState, kAnalogValueRelease);
+        mapper.ContributeFromAnalogValue(unusedVirtualControllerState, kAnalogValueRelease);
         TEST_ASSERT(actualKeyboardState == expectedKeyboardStateUnpressed);
         actualKeyboardState.EndCapture();
     }
@@ -167,7 +164,7 @@ namespace XidiTest
 
             MockKeyboard actualState;
             actualState.BeginCapture();
-            mapper.ContributeFromButtonValue(kTestControllerIdentifier, unusedVirtualControllerState, buttonIsPressed);
+            mapper.ContributeFromButtonValue(unusedVirtualControllerState, buttonIsPressed);
             actualState.EndCapture();
 
             TEST_ASSERT(actualState == expectedState);
@@ -192,9 +189,9 @@ namespace XidiTest
 
         actualKeyboardState.BeginCapture();
         TEST_ASSERT(actualKeyboardState == expectedKeyboardStateUnpressed);
-        mapper.ContributeFromButtonValue(kTestControllerIdentifier, unusedVirtualControllerState, kButtonValuePress);
+        mapper.ContributeFromButtonValue(unusedVirtualControllerState, kButtonValuePress);
         TEST_ASSERT(actualKeyboardState == expectedKeyboardStatePressed);
-        mapper.ContributeFromButtonValue(kTestControllerIdentifier, unusedVirtualControllerState, kButtonValueRelease);
+        mapper.ContributeFromButtonValue(unusedVirtualControllerState, kButtonValueRelease);
         TEST_ASSERT(actualKeyboardState == expectedKeyboardStateUnpressed);
         actualKeyboardState.EndCapture();
     }
@@ -223,7 +220,7 @@ namespace XidiTest
             SState actualVirtualControllerState = kEmptyVirtualControllerState;
 
             actualState.BeginCapture();
-            mapper.ContributeFromTriggerValue(kTestControllerIdentifier, actualVirtualControllerState, (uint8_t)triggerValue);
+            mapper.ContributeFromTriggerValue(actualVirtualControllerState, (uint8_t)triggerValue);
             actualState.EndCapture();
 
             TEST_ASSERT(actualVirtualControllerState == kEmptyVirtualControllerState);
@@ -266,9 +263,9 @@ namespace XidiTest
 
         actualKeyboardState.BeginCapture();
         TEST_ASSERT(actualKeyboardState == expectedKeyboardStateUnpressed);
-        mapper.ContributeFromTriggerValue(kTestControllerIdentifier, unusedVirtualControllerState, kTriggerValuePress);
+        mapper.ContributeFromTriggerValue(unusedVirtualControllerState, kTriggerValuePress);
         TEST_ASSERT(actualKeyboardState == expectedKeyboardStatePressed);
-        mapper.ContributeFromTriggerValue(kTestControllerIdentifier, unusedVirtualControllerState, kTriggerValueRelease);
+        mapper.ContributeFromTriggerValue(unusedVirtualControllerState, kTriggerValueRelease);
         TEST_ASSERT(actualKeyboardState == expectedKeyboardStateUnpressed);
         actualKeyboardState.EndCapture();
     }

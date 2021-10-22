@@ -208,7 +208,7 @@ namespace Xidi
             const XINPUT_STATE kNewState = (ERROR_SUCCESS == newStateData.errorCode) ? newStateData.state : XINPUT_STATE();
 
             SState newStateRaw;
-            mapper.MapXInputState(GetIdentifier(), newStateRaw, kNewState.Gamepad);
+            mapper.MapXInputState(newStateRaw, kNewState.Gamepad);
 
             // Depending on what XInput controller elements the mapper is configured to take into consideration, there may not be a virtual controller state change here.
             // For example, an axis mapped to a button may have been moved, but if that does not affect the button pressed or unpressed decision then there is no change worth continuing with.

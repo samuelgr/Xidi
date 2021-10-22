@@ -236,10 +236,9 @@ namespace Xidi
 
             /// Initializes and fills in the specified virtual controller state data structure object using the specified XInput controller state information.
             /// Does not apply any properties configured by the application, such as deadzone and range. All values produced use standard XInput settings.
-            /// @param [in] controllerIdentifier Identifier of the controller making this request. Some element mappers use this information.
             /// @param [out] controllerState Controller state object to be filled.
             /// @param [in] xinputState XInput controller state from which to read.
-            void MapXInputState(TControllerIdentifier controllerIdentifier, SState& controllerState, XINPUT_GAMEPAD xinputState) const;
+            void MapXInputState(SState& controllerState, XINPUT_GAMEPAD xinputState) const;
         };
     }
 }

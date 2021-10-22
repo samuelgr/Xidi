@@ -101,7 +101,7 @@ namespace XidiTest
 
         // --------
 
-        void ContributeFromAnalogValue(TControllerIdentifier controllerIdentifier, SState& controllerState, int16_t analogValue) const override
+        void ContributeFromAnalogValue(SState& controllerState, int16_t analogValue) const override
         {
             if (EExpectedSource::Analog != expectedSource)
                 TEST_FAILED_BECAUSE(L"MockElementMapper: wrong value source (expected enumerator %d, got Analog).", (int)expectedSource);
@@ -115,7 +115,7 @@ namespace XidiTest
 
         // --------
 
-        void ContributeFromButtonValue(TControllerIdentifier controllerIdentifier, SState& controllerState, bool buttonPressed) const override
+        void ContributeFromButtonValue(SState& controllerState, bool buttonPressed) const override
         {
             if (EExpectedSource::Button != expectedSource)
                 TEST_FAILED_BECAUSE(L"MockElementMapper: wrong value source (expected enumerator %d, got Button).", (int)expectedSource);
@@ -129,7 +129,7 @@ namespace XidiTest
 
         // --------
 
-        void ContributeFromTriggerValue(TControllerIdentifier controllerIdentifier, SState& controllerState, uint8_t triggerValue) const override
+        void ContributeFromTriggerValue(SState& controllerState, uint8_t triggerValue) const override
         {
             if (EExpectedSource::Trigger != expectedSource)
                 TEST_FAILED_BECAUSE(L"MockElementMapper: wrong value source (expected enumerator %d, got Trigger).", (int)expectedSource);
