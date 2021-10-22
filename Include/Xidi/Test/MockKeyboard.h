@@ -48,7 +48,7 @@ namespace XidiTest
         /// Simple equality check by comparing all the individual key state objects that comprise the virtual keyboard state.
         /// @param [in] other Object with which to compare.
         /// @return `true` if this object is equal to the other object, `false` otherwise.
-        inline bool operator==(const MockKeyboard& other) const
+        constexpr inline bool operator==(const MockKeyboard& other) const
         {
             return (virtualKeyboardState == other.virtualKeyboardState);
         }

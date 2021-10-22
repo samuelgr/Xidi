@@ -180,7 +180,7 @@ namespace Xidi
 
                 /// Sets the deadzone and ensures value consistency between fields, but otherwise performs no error checking.
                 /// @param [in] newDeadzone New deadzone value.
-                inline void SetDeadzone(uint32_t newDeadzone)
+                constexpr inline void SetDeadzone(uint32_t newDeadzone)
                 {
                     deadzone = newDeadzone;
                     deadzoneRawCutoffPositive = kAnalogValueNeutral + (((kAnalogValueMax - kAnalogValueNeutral) * (int32_t)newDeadzone) / kAxisDeadzoneMax);
@@ -190,7 +190,7 @@ namespace Xidi
                 /// Sets the range and ensures value consistency between fields, but otherwise performs no error checking.
                 /// @param [in] newRangeMin New minimum range value.
                 /// @param [in] newRangeMax New maximum range value.
-                inline void SetRange(int32_t newRangeMin, int32_t newRangeMax)
+                constexpr inline void SetRange(int32_t newRangeMin, int32_t newRangeMax)
                 {
                     rangeMin = newRangeMin;
                     rangeMax = newRangeMax;
@@ -199,7 +199,7 @@ namespace Xidi
 
                 /// Sets the saturation and ensures value consistency between fields, but otherwise performs no error checking.
                 /// @param [in] newSaturation New saturation value.
-                inline void SetSaturation(uint32_t newSaturation)
+                constexpr inline void SetSaturation(uint32_t newSaturation)
                 {
                     saturation = newSaturation;
                     saturationRawCutoffPositive = kAnalogValueNeutral + (((kAnalogValueMax - kAnalogValueNeutral) * (int32_t)newSaturation) / kAxisSaturationMax);
@@ -208,7 +208,7 @@ namespace Xidi
 
                 /// Default constructor.
                 /// Initializes fields to appropriate default values.
-                inline SAxisProperties(void)
+                constexpr inline SAxisProperties(void)
                 {
                     SetDeadzone(kAxisDeadzoneDefault);
                     SetRange(kAnalogValueMin, kAnalogValueMax);
@@ -232,14 +232,14 @@ namespace Xidi
 
                 /// Sets the force feedback gain. Performs no error checking.
                 /// @param [in] newFfGain New force feedback gain value.
-                inline void SetFfGain(uint32_t newFfGain)
+                constexpr inline void SetFfGain(uint32_t newFfGain)
                 {
                     ffGain = newFfGain;
                 }
 
                 /// Default constructor.
                 /// Initializes fields to appropriate default values.
-                inline SDeviceProperties(void)
+                constexpr inline SDeviceProperties(void)
                 {
                     SetFfGain(kFfGainDefault);
                 }

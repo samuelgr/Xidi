@@ -34,7 +34,7 @@ namespace Xidi
             /// Simple equality check to detect physical state changes.
             /// @param [in] other Object with which to compare.
             /// @return `true` if this object is equal to the other object, `false` otherwise.
-            inline bool operator==(const SPhysicalState& other) const
+            constexpr inline bool operator==(const SPhysicalState& other) const
             {
                 if (errorCode != other.errorCode)
                     return false;

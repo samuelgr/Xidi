@@ -42,7 +42,7 @@ namespace Xidi
                 /// Primarily useful during testing.
                 /// @param [in] other Object with which to compare.
                 /// @return `true` if this object is equal to the other object, `false` otherwise.
-                inline bool operator==(const SElementMapperStringParts& other) const
+                constexpr inline bool operator==(const SElementMapperStringParts& other) const
                 {
                     return ((other.type == type) && (other.params == params) && (other.remaining == remaining));
                 }
@@ -65,7 +65,7 @@ namespace Xidi
                 /// Primarily useful during testing.
                 /// @param [in] other Object with which to compare.
                 /// @return `true` if this object is equal to the other object, `false` otherwise.
-                inline bool operator==(const SParamStringParts& other) const
+                constexpr inline bool operator==(const SParamStringParts& other) const
                 {
                     return ((other.first == first) && (other.remaining == remaining));
                 }

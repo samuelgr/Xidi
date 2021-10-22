@@ -14,6 +14,7 @@
 
 #include "ApiWindows.h"
 
+#include <algorithm>
 #include <bitset>
 #include <cstdint>
 #include <cstdlib>
@@ -137,13 +138,26 @@ namespace Xidi
                 EButton button;
             };
 
-            /// Simple check for equality by low-level memory comparison.
+            /// Simple check for equality.
             /// Primarily useful during testing.
             /// @param [in] other Object with which to compare.
             /// @return `true` if this object is equal to the other object, `false` otherwise.
-            inline bool operator==(const SElementIdentifier& other) const
+            constexpr inline bool operator==(const SElementIdentifier& other) const
             {
-                return (0 == memcmp(this, &other, sizeof(*this)));
+                if (other.type != type)
+                    return false;
+
+                switch (type)
+                {
+                case EElementType::Axis:
+                    return (other.axis == axis);
+
+                case EElementType::Button:
+                    return (other.button == button);
+
+                default:
+                    return true;
+                }
             }
         };
         static_assert(sizeof(SElementIdentifier) <= 4, "Data structure size constraint violation.");
@@ -160,13 +174,16 @@ namespace Xidi
             };
             bool hasPov;                                                    ///< Specifies whether or not the virtual controller has a POV. If it does, then the POV buttons in the controller state are used, otherwise they are ignored.
 
-            /// Simple check for equality by low-level memory comparison.
+            /// Simple check for equality.
             /// Primarily useful during testing.
             /// @param [in] other Object with which to compare.
             /// @return `true` if this object is equal to the other object, `false` otherwise.
-            inline bool operator==(const SCapabilities& other) const
+            constexpr inline bool operator==(const SCapabilities& other) const
             {
-                return (0 == memcmp(this, &other, sizeof(*this)));
+                return ((other.numAxes == numAxes)
+                    && (other.numButtons == numButtons)
+                    && (other.hasPov == hasPov)
+                    && std::equal(other.axisType, &other.axisType[numAxes], axisType, &axisType[numAxes]));
             }
 
             /// Appends an axis to the list of axis types in this capabilities object.
@@ -217,6 +234,15 @@ namespace Xidi
         {
             bool components[(int)EPovDirection::Count];                     ///< Pressed (`true`) or unpressed (`false`) state for each POV direction separately, one element per button. Bitset versus boolean produces no size difference, given the number of POV directions.
             uint32_t all;                                                   ///< Aggregate state of all POV directions, available as a single quantity for easy comparison and assignment.
+
+            /// Simple check for equality.
+            /// Primarily useful during testing.
+            /// @param [in] other Object with which to compare.
+            /// @return `true` if this object is equal to the other object, `false` otherwise.
+            constexpr inline bool operator==(const UPovDirection& other) const
+            {
+                return (other.all == all);
+            }
         };
         static_assert(sizeof(UPovDirection::components) == sizeof(UPovDirection::all), "Mismatch in POV view sizes.");
         
@@ -229,13 +255,15 @@ namespace Xidi
             std::bitset<(int)EButton::Count> button;                        ///< Pressed (`true`) or unpressed (`false`) state for each button, one bit per button. Bitset is used as a size optimization, given the number of buttons.
             UPovDirection povDirection;                                     ///< POV direction, presented simultaneously as individual components and as an aggregate quantity.
 
-            /// Simple check for equality by low-level memory comparison.
+            /// Simple check for equality.
             /// Primarily useful during testing.
             /// @param [in] other Object with which to compare.
             /// @return `true` if this object is equal to the other object, `false` otherwise.
-            inline bool operator==(const SState& other) const
+            constexpr inline bool operator==(const SState& other) const
             {
-                return (0 == memcmp(this, &other, sizeof(*this)));
+                return (std::equal(std::cbegin(other.axis), std::cend(other.axis), std::cbegin(axis), std::cend(axis))
+                    && (other.button == button)
+                    && (other.povDirection == povDirection));
             }
         };
         static_assert(sizeof(SState) <= 32, "Data structure size constraint violation.");

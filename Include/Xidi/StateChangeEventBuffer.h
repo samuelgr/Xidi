@@ -42,13 +42,29 @@ namespace Xidi
                     UPovDirection povDirection;                             ///< Updated POV direction state, if the controller element type is a POV.
                 } value;
 
-                /// Simple check for equality by low-level memory comparison.
+                /// Simple check for equality.
                 /// Primarily useful during testing.
                 /// @param [in] other Object with which to compare.
                 /// @return `true` if this object is equal to the other object, `false` otherwise.
-                inline bool operator==(const SEventData& other) const
+                constexpr inline bool operator==(const SEventData& other) const
                 {
-                    return (0 == memcmp(this, &other, sizeof(*this)));
+                    if (other.element.type != element.type)
+                        return false;
+
+                    switch (element.type)
+                    {
+                    case EElementType::Axis:
+                        return (other.value.axis == value.axis);
+
+                    case EElementType::Button:
+                        return (other.value.button == value.button);
+
+                    case EElementType::Pov:
+                        return (other.value.povDirection == value.povDirection);
+
+                    default:
+                        return true;
+                    }
                 }
             };
             static_assert(sizeof(SEventData) <= 8, "Data structure size constraint violation.");
