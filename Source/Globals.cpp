@@ -102,7 +102,7 @@ namespace Xidi
         /// Upon completion, regardless of outcome, clears out all of the stored blueprint objects.
         static inline void BuildCustomMappers(void)
         {
-            if (false == customMapperBuilder.Build())
+            if ((false == customMapperBuilder.Build()) && (false == GetConfigurationData().HasErrors()))
             {
                 if (true == Message::IsLogFileEnabled())
                     Message::Output(Message::ESeverity::ForcedInteractiveWarning, L"Errors were encountered during custom mapper construction. See log file for more information.");

@@ -417,7 +417,10 @@ namespace Xidi
 
             FileHandle configFileHandle(configFileName.data(), L"r");
             if (nullptr == configFileHandle)
+            {
+                configToFill.SetError();
                 return configToFill;
+            }
 
             BeginRead();
 
@@ -617,17 +620,22 @@ namespace Xidi
                 if (ferror(configFileHandle))
                 {
                     readErrors.emplace_back(Strings::FormatString(L"%s(%d): I/O error while reading.", configFileName.data(), configLineNumber));
+                    configToFill.SetError();
                     return configToFill;
 
                 }
                 else if (configLineLength < 0)
                 {
                     readErrors.emplace_back(Strings::FormatString(L"%s(%d): Line is too long.", configFileName.data(), configLineNumber));
+                    configToFill.SetError();
                     return configToFill;
                 }
             }
 
             EndRead();
+
+            if (false == readErrors.empty())
+                configToFill.SetError();
 
             return configToFill;
         }

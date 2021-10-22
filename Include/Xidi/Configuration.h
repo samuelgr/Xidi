@@ -533,6 +533,9 @@ namespace Xidi
             /// Holds configuration data at the level of entire sections, one element per section.
             TSections sections;
 
+            /// Specifies if errors were encountered while generating the data contained within this object.
+            bool hasErrors;
+
 
         public:
             // -------- OPERATORS ------------------------------------------ //
@@ -616,6 +619,13 @@ namespace Xidi
                 return (*this)[section].GetFirstStringValue(name);
             }
 
+            /// Specifies if one or more errors were encountered while generating the data contained in this object.
+            /// @return `true` if so, `false` if not.
+            inline bool HasErrors(void) const
+            {
+                return hasErrors;
+            }
+
             /// Retrieves the number of sections present in the configuration represented by this object.
             /// @return Number of configuration settings present.
             inline size_t SectionCount(void) const
@@ -650,6 +660,13 @@ namespace Xidi
             inline const TSections& Sections(void) const
             {
                 return sections;
+            }
+
+            /// Marks this object as having errors associated with the process of inserting data.
+            /// For use by whatever function is generating the configuration data to be contained within this object.
+            inline void SetError(void)
+            {
+                hasErrors = true;
             }
         };
 
