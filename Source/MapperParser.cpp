@@ -306,6 +306,7 @@ namespace Xidi
                     // Convenience aliases
                     {L"ESC",                DIK_ESCAPE},
                     {L"ENTER",              DIK_RETURN},
+                    {L"SCROLLLOCK",         DIK_SCROLL},
 
                     // DIK_ constants
                     {L"ESCAPE",             DIK_ESCAPE},
@@ -847,37 +848,11 @@ namespace Xidi
                     {L"RIGHT",          EPovDirection::Right},
                 };
 
-                SParamStringParts paramParts = ExtractParameterListStringParts(params).value_or(SParamStringParts());
-
-                // First parameter is required. It is a string that specifies the positive POV direction.
-                if (true == paramParts.first.empty())
+                const auto kPovDirectionIter = kPovDirectionStrings.find(params);
+                if (kPovDirectionStrings.cend() == kPovDirectionIter)
                     return std::nullopt;
 
-                const auto kPovPositiveIter = kPovDirectionStrings.find(paramParts.first);
-                if (kPovDirectionStrings.cend() == kPovPositiveIter)
-                    return std::nullopt;
-
-                const EPovDirection kPovDirectionPositive = kPovPositiveIter->second;
-
-                // Second parameter is optional. It is a string that specifies negative POV direction.
-                std::optional<EPovDirection> maybeNegativePovDirection = std::nullopt;
-
-                paramParts = ExtractParameterListStringParts(paramParts.remaining).value_or(SParamStringParts());
-                if (false == paramParts.first.empty())
-                {
-                    // It is an error for a second parameter to be present but invalid.
-                    const auto kPovNegativeIter = kPovDirectionStrings.find(paramParts.first);
-                    if (kPovDirectionStrings.cend() == kPovNegativeIter)
-                        return std::nullopt;
-
-                    maybeNegativePovDirection = kPovNegativeIter->second;
-                }
-
-                // No further parameters allowed.
-                if (false == paramParts.remaining.empty())
-                    return std::nullopt;
-
-                return std::make_unique<PovMapper>(kPovDirectionPositive, maybeNegativePovDirection);
+                return std::make_unique<PovMapper>(kPovDirectionIter->second);
             }
 
             // --------

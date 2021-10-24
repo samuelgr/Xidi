@@ -70,9 +70,9 @@ namespace XidiTest
     {
         constexpr EPovDirection kTargetPov = EPovDirection::Up;
 
-        // Expected sequence, based on an analog value sweep, not pressed followed by pressed.
+        // Expected sequence, based on an analog value sweep is pressed, not pressed, and finally pressed.
         // The final two values are the same as a way of simplifying the implementation thus disabling a final transition and triggering a test failure.
-        constexpr bool kExpectedPovSequence[] = {false, true, true};
+        constexpr bool kExpectedPovSequence[] = {true, false, true, true};
         int currentSequenceIndex = 0;
 
         for (int32_t analogValue = kAnalogValueMin; analogValue <= kAnalogValueMax; ++analogValue)
@@ -106,53 +106,6 @@ namespace XidiTest
         // The last value in the allowed values array is a sentinel just for ease of implementation.
         // We do, however, expect that all other values will have been reached.
         TEST_ASSERT(currentSequenceIndex == (_countof(kExpectedPovSequence) - 1) - 1);
-    }
-
-    // Same as above, but with a negative POV direction specified as well.
-    TEST_CASE(PovMapper_ContributeFromAnalogValue_NominalBidirectional)
-    {
-        constexpr EPovDirection kTargetPovPositive = EPovDirection::Up;
-        constexpr EPovDirection kTargetPovNegative = EPovDirection::Down;
-
-        // Expected sequence, based on an analog value sweep, is negative pressed, then neither pressed, then positive pressed.
-        // The final two values are the same as a way of simplifying the implementation thus disabling a final transition and triggering a test failure.
-        constexpr bool kExpectedPovSequencePositive[] = {false, false, true, true};
-        constexpr bool kExpectedPovSequenceNegative[] = {true, false, false, false};
-        int currentSequenceIndex = 0;
-
-        for (int32_t analogValue = kAnalogValueMin; analogValue <= kAnalogValueMax; ++analogValue)
-        {
-            const PovMapper mapper(kTargetPovPositive, kTargetPovNegative);
-
-            SState possibleExpectedStates[2];
-            ZeroMemory(possibleExpectedStates, sizeof(possibleExpectedStates));
-            possibleExpectedStates[0].povDirection.components[(int)kTargetPovPositive] = kExpectedPovSequencePositive[currentSequenceIndex];
-            possibleExpectedStates[0].povDirection.components[(int)kTargetPovNegative] = kExpectedPovSequenceNegative[currentSequenceIndex];
-            possibleExpectedStates[1].povDirection.components[(int)kTargetPovPositive] = kExpectedPovSequencePositive[currentSequenceIndex + 1];
-            possibleExpectedStates[1].povDirection.components[(int)kTargetPovNegative] = kExpectedPovSequenceNegative[currentSequenceIndex + 1];
-
-            SState actualState;
-            ZeroMemory(&actualState, sizeof(actualState));
-            mapper.ContributeFromAnalogValue(actualState, (int16_t)analogValue);
-
-            if (actualState == possibleExpectedStates[0])
-            {
-                continue;
-            }
-            else if (actualState == possibleExpectedStates[1])
-            {
-                currentSequenceIndex += 1;
-                continue;
-            }
-            else
-            {
-                TEST_FAILED_BECAUSE(L"Out-of-sequence values produced by a POV mapper with analog input %d.", analogValue);
-            }
-        }
-
-        // The last value in the allowed values array is a sentinel just for ease of implementation.
-        // We do, however, expect that all other values will have been reached.
-        TEST_ASSERT(currentSequenceIndex == (_countof(kExpectedPovSequencePositive) - 1) - 1);
     }
 
     // Verifies correct behavior when multiple POV mappers all contribute to the same virtual POV direction with neutral analog values as input.
@@ -254,30 +207,6 @@ namespace XidiTest
             SState expectedState;
             ZeroMemory(&expectedState, sizeof(expectedState));
             expectedState.povDirection.components[(int)kTargetPov] = buttonIsPressed;
-
-            SState actualState;
-            ZeroMemory(&actualState, sizeof(actualState));
-            mapper.ContributeFromButtonValue(actualState, buttonIsPressed);
-
-            TEST_ASSERT(actualState == expectedState);
-        }
-    }
-
-    // Same as above, but with a negative POV direction specified as well.
-    TEST_CASE(PovMapper_ContributeFromButtonValue_NominalBidirectional)
-    {
-        constexpr EPovDirection kTargetPovPositive = EPovDirection::Up;
-        constexpr EPovDirection kTargetPovNegative = EPovDirection::Right;
-        constexpr bool kButtonStates[] = {false, true};
-
-        for (bool buttonIsPressed : kButtonStates)
-        {
-            constexpr PovMapper mapper(kTargetPovPositive, kTargetPovNegative);
-
-            SState expectedState;
-            ZeroMemory(&expectedState, sizeof(expectedState));
-            expectedState.povDirection.components[(int)kTargetPovPositive] = buttonIsPressed;
-            expectedState.povDirection.components[(int)kTargetPovNegative] = !buttonIsPressed;
 
             SState actualState;
             ZeroMemory(&actualState, sizeof(actualState));
@@ -391,53 +320,6 @@ namespace XidiTest
         // The last value in the allowed values array is a sentinel just for ease of implementation.
         // We do, however, expect that all other values will have been reached.
         TEST_ASSERT(currentSequenceIndex == (_countof(kExpectedPovSequence) - 1) - 1);
-    }
-
-    // Same as above, but with a negative POV direction specified as well.
-    TEST_CASE(PovMapper_ContributeFromTriggerValue_NominalBidirectional)
-    {
-        constexpr EPovDirection kTargetPovPositive = EPovDirection::Right;
-        constexpr EPovDirection kTargetPovNegative = EPovDirection::Left;
-
-        // Expected sequence, based on a trigger value sweep, is negative pressed followed by positive pressed.
-        // The final two values are the same as a way of simplifying the implementation thus disabling a final transition and triggering a test failure.
-        constexpr bool kExpectedPovSequencePositive[] = {false, true, true};
-        constexpr bool kExpectedPovSequenceNegative[] = {true, false, false};
-        int currentSequenceIndex = 0;
-
-        for (int32_t triggerValue = kTriggerValueMin; triggerValue <= kTriggerValueMax; ++triggerValue)
-        {
-            const PovMapper mapper(kTargetPovPositive, kTargetPovNegative);
-
-            SState possibleExpectedStates[2];
-            ZeroMemory(possibleExpectedStates, sizeof(possibleExpectedStates));
-            possibleExpectedStates[0].povDirection.components[(int)kTargetPovPositive] = kExpectedPovSequencePositive[currentSequenceIndex];
-            possibleExpectedStates[0].povDirection.components[(int)kTargetPovNegative] = kExpectedPovSequenceNegative[currentSequenceIndex];
-            possibleExpectedStates[1].povDirection.components[(int)kTargetPovPositive] = kExpectedPovSequencePositive[currentSequenceIndex + 1];
-            possibleExpectedStates[1].povDirection.components[(int)kTargetPovNegative] = kExpectedPovSequenceNegative[currentSequenceIndex + 1];
-
-            SState actualState;
-            ZeroMemory(&actualState, sizeof(actualState));
-            mapper.ContributeFromTriggerValue(actualState, (uint8_t)triggerValue);
-
-            if (actualState == possibleExpectedStates[0])
-            {
-                continue;
-            }
-            else if (actualState == possibleExpectedStates[1])
-            {
-                currentSequenceIndex += 1;
-                continue;
-            }
-            else
-            {
-                TEST_FAILED_BECAUSE(L"Out-of-sequence values produced by a POV mapper with trigger input %d.", triggerValue);
-            }
-        }
-
-        // The last value in the allowed values array is a sentinel just for ease of implementation.
-        // We do, however, expect that all other values will have been reached.
-        TEST_ASSERT(currentSequenceIndex == (_countof(kExpectedPovSequencePositive) - 1) - 1);
     }
 
     // Verifies correct behavior when multiple POV mappers all contribute to the same virtual POV direction with minimum trigger values as input.

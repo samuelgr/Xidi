@@ -327,10 +327,8 @@ namespace Xidi
 
         void PovMapper::ContributeFromAnalogValue(SState& controllerState, int16_t analogValue) const
         {
-            if (true == IsAnalogPressedPositive(analogValue))
-                controllerState.povDirection.components[(int)povDirectionPositive] = true;
-            else if ((maybePovDirectionNegative.has_value()) && (true == IsAnalogPressedNegative(analogValue)))
-                controllerState.povDirection.components[(int)maybePovDirectionNegative.value()] = true;
+            if (true == IsAnalogPressed(analogValue))
+                controllerState.povDirection.components[(int)povDirection] = true;
         }
 
         // --------
@@ -338,9 +336,7 @@ namespace Xidi
         void PovMapper::ContributeFromButtonValue(SState& controllerState, bool buttonPressed) const
         {
             if (true == buttonPressed)
-                controllerState.povDirection.components[(int)povDirectionPositive] = true;
-            else if (maybePovDirectionNegative.has_value())
-                controllerState.povDirection.components[(int)maybePovDirectionNegative.value()] = true;
+                controllerState.povDirection.components[(int)povDirection] = true;
         }
 
         // --------
@@ -348,9 +344,7 @@ namespace Xidi
         void PovMapper::ContributeFromTriggerValue(SState& controllerState, uint8_t triggerValue) const
         {
             if (true == IsTriggerPressed(triggerValue))
-                controllerState.povDirection.components[(int)povDirectionPositive] = true;
-            else if (maybePovDirectionNegative.has_value())
-                controllerState.povDirection.components[(int)maybePovDirectionNegative.value()] = true;
+                controllerState.povDirection.components[(int)povDirection] = true;
         }
 
         // --------
@@ -406,7 +400,7 @@ namespace Xidi
             if (true == buttonPressed)
             {
                 if (nullptr != positiveMapper)
-                    positiveMapper->ContributeFromButtonValue(controllerState, buttonPressed);
+                    positiveMapper->ContributeFromButtonValue(controllerState, true);
 
                 if (nullptr != negativeMapper)
                     negativeMapper->ContributeNeutral(controllerState);
@@ -414,7 +408,7 @@ namespace Xidi
             else
             {
                 if (nullptr != negativeMapper)
-                    negativeMapper->ContributeFromButtonValue(controllerState, buttonPressed);
+                    negativeMapper->ContributeFromButtonValue(controllerState, true);
 
                 if (nullptr != positiveMapper)
                     positiveMapper->ContributeNeutral(controllerState);
@@ -441,6 +435,17 @@ namespace Xidi
                 if (nullptr != positiveMapper)
                     positiveMapper->ContributeNeutral(controllerState);
             }
+        }
+
+        // --------
+
+        void SplitMapper::ContributeNeutral(SState& controllerState) const
+        {
+            if (nullptr != positiveMapper)
+                positiveMapper->ContributeNeutral(controllerState);
+
+            if (nullptr != negativeMapper)
+                negativeMapper->ContributeNeutral(controllerState);
         }
 
         // --------

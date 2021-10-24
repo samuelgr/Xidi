@@ -416,9 +416,7 @@ namespace XidiTest
         constexpr std::pair<std::wstring_view, SElementIdentifier> kPovMapperTestItems[] = {
             {L"UP",         {.type = EElementType::Pov}},
             {L"Dn",         {.type = EElementType::Pov}},
-            {L"Down, Up",   {.type = EElementType::Pov}},
-            {L"Left",       {.type = EElementType::Pov}},
-            {L"r, r",       {.type = EElementType::Pov}},
+            {L"Left",       {.type = EElementType::Pov}}
         };
 
         for (auto& povMapperTestItem : kPovMapperTestItems)
@@ -449,7 +447,7 @@ namespace XidiTest
         constexpr std::wstring_view kSplitMapperTestStrings[] = {
             L"Axis(X), Axis(RotX)",
             L" Pov(  Up  )  ,   Button  ( 10   ) ",
-            L"Axis(RotX, +), Pov(Up, Down)"
+            L"Axis(RotX, +), Pov(Down)"
         };
         constexpr std::pair<SElementIdentifier, SElementIdentifier> kExpectedElements[] = {
             {{.type = EElementType::Axis,   .axis = EAxis::X},      {.type = EElementType::Axis,    .axis = EAxis::RotX}},
@@ -644,13 +642,13 @@ namespace XidiTest
     {
         constexpr std::wstring_view kTestStrings[] = {
             L"PovHat(Up)",
-            L"Pov(Left, Right)",
-            L"POV(Dn, Down)"
+            L"Pov(Left)",
+            L"POV(Dn)"
         };
         const SElementMapperParseResult kExpectedParseResults[] = {
             {.maybeElementMapper = std::make_unique<PovMapper>(EPovDirection::Up)},
-            {.maybeElementMapper = std::make_unique<PovMapper>(EPovDirection::Left, EPovDirection::Right)},
-            {.maybeElementMapper = std::make_unique<PovMapper>(EPovDirection::Down, EPovDirection::Down)},
+            {.maybeElementMapper = std::make_unique<PovMapper>(EPovDirection::Left)},
+            {.maybeElementMapper = std::make_unique<PovMapper>(EPovDirection::Down)},
         };
         static_assert(_countof(kExpectedParseResults) == _countof(kTestStrings), "Mismatch between input and expected output array lengths.");
 
@@ -661,13 +659,9 @@ namespace XidiTest
 
             TEST_ASSERT(nullptr != dynamic_cast<PovMapper*>(actualParseResult.maybeElementMapper.value().get()));
 
-            const EPovDirection kExpectedDirectionPositive = dynamic_cast<PovMapper*>(kExpectedParseResults[i].maybeElementMapper.value().get())->GetPositiveDirection();
-            const EPovDirection kActualDirectionPositive = dynamic_cast<PovMapper*>(actualParseResult.maybeElementMapper.value().get())->GetPositiveDirection();
-            TEST_ASSERT(kActualDirectionPositive == kExpectedDirectionPositive);
-
-            const std::optional<EPovDirection> kExpectedDirectionNegative = dynamic_cast<PovMapper*>(kExpectedParseResults[i].maybeElementMapper.value().get())->GetNegativeDirection();
-            const std::optional<EPovDirection> kActualDirectionNegative = dynamic_cast<PovMapper*>(actualParseResult.maybeElementMapper.value().get())->GetNegativeDirection();
-            TEST_ASSERT(kActualDirectionNegative == kExpectedDirectionNegative);
+            const EPovDirection kExpectedDirection = dynamic_cast<PovMapper*>(kExpectedParseResults[i].maybeElementMapper.value().get())->GetDirection();
+            const EPovDirection kActualDirection = dynamic_cast<PovMapper*>(actualParseResult.maybeElementMapper.value().get())->GetDirection();
+            TEST_ASSERT(kActualDirection == kExpectedDirection);
         }
     }
 

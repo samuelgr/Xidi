@@ -189,7 +189,7 @@ namespace XidiTest
             int numPositiveContributions = 0;
             int numNegativeContributions = 0;
 
-            const SplitMapper mapper(std::make_unique<MockElementMapper>(MockElementMapper::EExpectedSource::Button, kTestValues[i].positive, &numPositiveContributions), std::make_unique<MockElementMapper>(MockElementMapper::EExpectedSource::Button, kTestValues[i].negative, &numNegativeContributions));
+            const SplitMapper mapper(std::make_unique<MockElementMapper>(MockElementMapper::EExpectedSource::Button, true, &numPositiveContributions), std::make_unique<MockElementMapper>(MockElementMapper::EExpectedSource::Button, true, &numNegativeContributions));
 
             mapper.ContributeFromButtonValue(unusedControllerState, kTestValues[i].positive);
             TEST_ASSERT(1 == numPositiveContributions);
@@ -216,8 +216,8 @@ namespace XidiTest
             int numPositiveContributions = 0;
             int numNegativeContributions = 0;
 
-            const SplitMapper mapperPositiveOnly(std::make_unique<MockElementMapper>(MockElementMapper::EExpectedSource::Button, kTestValues[i].positive, &numPositiveContributions), nullptr);
-            const SplitMapper mapperNegativeOnly(nullptr, std::make_unique<MockElementMapper>(MockElementMapper::EExpectedSource::Button, kTestValues[i].negative, &numNegativeContributions));
+            const SplitMapper mapperPositiveOnly(std::make_unique<MockElementMapper>(MockElementMapper::EExpectedSource::Button, true, &numPositiveContributions), nullptr);
+            const SplitMapper mapperNegativeOnly(nullptr, std::make_unique<MockElementMapper>(MockElementMapper::EExpectedSource::Button, true, &numNegativeContributions));
 
             mapperPositiveOnly.ContributeFromButtonValue(unusedControllerState, kTestValues[i].negative);
             TEST_ASSERT(0 == numPositiveContributions);

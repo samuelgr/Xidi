@@ -249,22 +249,16 @@ namespace Xidi
         private:
             // -------- INSTANCE VARIABLES --------------------------------- //
 
-            /// Identifies the POV direction to which this mapper should nominally contribute in the internal controller state data structure.
-            /// This direction is used for positive "pressed" analog values, "pressed" button states, and "pressed" trigger states.
-            const EPovDirection povDirectionPositive;
-
-            /// Identifies an optional second POV direction to which this mapper should contribute in the internal controller state data structure.
-            /// If present, this direction is used for negative "pressed" analog values, "not pressed" button states, and "not pressed" trigger states.
-            /// If absent, no contribution is made at all for negative "pressed" analog values, "not pressed" button states, and "not pressed" trigger states.
-            const std::optional<EPovDirection> maybePovDirectionNegative;
+            /// Identifies the POV direction to which this mapper should contribute in the internal controller state data structure.
+            const EPovDirection povDirection;
 
 
         public:
             // -------- CONSTRUCTION AND DESTRUCTION ----------------------- //
 
             /// Initialization constructor.
-            /// Specifies two POV directions, one for positive direction updates (axis on the positive side or button/trigger pressed) and one for negative direction updates (axis on the negative side or button/trigger not pressed).
-            inline constexpr PovMapper(EPovDirection povDirectionPositive, std::optional<EPovDirection> povDirectionNegative = std::nullopt) : IElementMapper(), povDirectionPositive(povDirectionPositive), maybePovDirectionNegative(povDirectionNegative)
+            /// Specifies the POV contribution direction.
+            inline constexpr PovMapper(EPovDirection povDirection) : IElementMapper(), povDirection(povDirection)
             {
                 // Nothing to do here.
             }
@@ -272,20 +266,12 @@ namespace Xidi
 
             // -------- INSTANCE METHODS ----------------------------------- //
 
-            /// Retrieves and returns the direction used for positive contributions.
+            /// Retrieves and returns the direction used for contributions.
             /// Intended for tests.
             /// @return Target direction for positive contributions.
-            inline EPovDirection GetPositiveDirection(void) const
+            inline EPovDirection GetDirection(void) const
             {
-                return povDirectionPositive;
-            }
-
-            /// Retrieves and returns the direction used for negative contributions.
-            /// Intended for tests.
-            /// @return Target direction for negative contributions.
-            inline std::optional<EPovDirection> GetNegativeDirection(void) const
-            {
-                return maybePovDirectionNegative;
+                return povDirection;
             }
 
 
@@ -362,6 +348,7 @@ namespace Xidi
             void ContributeFromAnalogValue(SState& controllerState, int16_t analogValue) const override;
             void ContributeFromButtonValue(SState& controllerState, bool buttonPressed) const override;
             void ContributeFromTriggerValue(SState& controllerState, uint8_t triggerValue) const override;
+            void ContributeNeutral(SState& controllerState) const override;
             int GetTargetElementCount(void) const override;
             std::optional<SElementIdentifier> GetTargetElementAt(int index) const override;
         };
