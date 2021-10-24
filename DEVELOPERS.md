@@ -147,7 +147,11 @@ Source code documentation is available and can be built using Doxygen. This sect
 
 **Mapper** contains the declaration and implementation of top-level mapper objects.
 
-**MapperDefinitions** contains instantiations of the mappers themselves.
+**MapperBuilder** implements all custom mapper building functionality. A single `MapperBuilder` object holds custom mapper blueprint objects, each of which contains a description of the desired contents of a custom mapper. Once all custom mapper candidates are fully parsed from the configuration file, this object attempts to resolve all template dependencies and construct mapper objects.
+
+**MapperDefinitions** contains instantiations of the built-in mappers.
+
+**MapperParser** implements all string-parsing functionality for identifying XInput controller elements and constructing element mappers based on strings contained within a configuration file.
 
 **PhysicalController** manages all communication with the underlying XInput API. It periodically polls devices for changes to physical state and supports notifying other modules whenever a physical state change is detected.
 

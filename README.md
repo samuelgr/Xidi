@@ -147,7 +147,7 @@ This section controls the mapping scheme Xidi uses when mapping between XInput a
 - **Type** specifies the [type of mapper](#mapping-controller-buttons-and-axes) that Xidi should for all controllers by default. Supported values are the names of any mapper, [built-in](#built-in-mappers) or [custom](#custom-mappers).
 - **Type.1** specifies the type of mapper that Xidi should use for controller 1, overriding the default.
 - **Type.2** specifies the type of mapper that Xidi should use for controller 2, overriding the default.
-- **Type.1** specifies the type of mapper that Xidi should use for controller 3, overriding the default.
+- **Type.3** specifies the type of mapper that Xidi should use for controller 3, overriding the default.
 - **Type.4** specifies the type of mapper that Xidi should use for controller 4, overriding the default.
 
 
@@ -234,7 +234,9 @@ Precise button and axis mappings are as below.
 
 ## Custom Mappers
 
-Recognizing that the built-in mapper selection might not be optimal for all games, Xidi allows mapper behavior to be customized using a configuration file. The simplest way to do this is to include a configuration file section named "CustomMapper" and specify "Custom" as the desired type of mapper. An example is shown below.
+Recognizing that the built-in mapper selection might not be optimal for all games, Xidi allows mapper behavior to be customized using a configuration file. A small collection of pre-made custom mapper configurations is available in the [XidiGameConfigurations](https://www.github.com/samuelgr/XidiGameConfigurations) repository.
+
+The simplest way to create a custom mapper is to include a configuration file section named "CustomMapper" and specify "Custom" as the desired type of mapper. An example is shown below.
 
 ```ini
 [Mapper]
