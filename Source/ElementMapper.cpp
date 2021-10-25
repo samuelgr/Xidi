@@ -260,6 +260,74 @@ namespace Xidi
 
         // --------
 
+        std::unique_ptr<IElementMapper> InvertMapper::Clone(void) const
+        {
+            return std::make_unique<InvertMapper>(*this);
+        }
+
+        // --------
+
+        void InvertMapper::ContributeFromAnalogValue(SState& controllerState, int16_t analogValue) const
+        {
+            if (nullptr != elementMapper)
+            {
+                const int32_t kInvertedAnalogValue = (kAnalogValueMax + kAnalogValueMin) - (int32_t)analogValue;
+                elementMapper->ContributeFromAnalogValue(controllerState, (int16_t)kInvertedAnalogValue);
+            }
+        }
+
+        // --------
+
+        void InvertMapper::ContributeFromButtonValue(SState& controllerState, bool buttonPressed) const
+        {
+            if (nullptr != elementMapper)
+            {
+                const bool kInvertedButtonValue = !buttonPressed;
+                elementMapper->ContributeFromButtonValue(controllerState, kInvertedButtonValue);
+            }
+        }
+
+        // --------
+
+        void InvertMapper::ContributeFromTriggerValue(SState& controllerState, uint8_t triggerValue) const
+        {
+            if (nullptr != elementMapper)
+            {
+                const int32_t kInvertedTriggerValue = (kTriggerValueMax + kTriggerValueMin) - (int32_t)triggerValue;
+                elementMapper->ContributeFromTriggerValue(controllerState, (uint8_t)kInvertedTriggerValue);
+            }
+        }
+
+        // --------
+
+        void InvertMapper::ContributeNeutral(SState& controllerState) const
+        {
+            if (nullptr != elementMapper)
+                elementMapper->ContributeNeutral(controllerState);
+        }
+
+        // --------
+
+        int InvertMapper::GetTargetElementCount(void) const
+        {
+            if (nullptr != elementMapper)
+                return elementMapper->GetTargetElementCount();
+
+            return 0;
+        }
+
+        // --------
+
+        std::optional<SElementIdentifier> InvertMapper::GetTargetElementAt(int index) const
+        {
+            if (nullptr != elementMapper)
+                return elementMapper->GetTargetElementAt(index);
+
+            return std::nullopt;
+        }
+
+        // --------
+
         std::unique_ptr<IElementMapper> KeyboardMapper::Clone(void) const
         {
             return std::make_unique<KeyboardMapper>(*this);

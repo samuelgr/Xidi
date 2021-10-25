@@ -248,6 +248,7 @@
     <ClCompile Include="Source\Test\Case\ButtonMapperTest.cpp" />
     <ClCompile Include="Source\Test\Case\DataFormatTest.cpp" />
     <ClCompile Include="Source\Test\Case\DigitalAxisMapperTest.cpp" />
+    <ClCompile Include="Source\Test\Case\InvertMapperTest.cpp" />
     <ClCompile Include="Source\Test\Case\KeyboardMapperTest.cpp" />
     <ClCompile Include="Source\Test\Case\MapperBuilderTest.cpp" />
     <ClCompile Include="Source\Test\Case\MapperTest.cpp" />

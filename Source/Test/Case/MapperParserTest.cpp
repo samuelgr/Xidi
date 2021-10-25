@@ -352,6 +352,48 @@ namespace XidiTest
         }
     }
 
+    // Verifies correct construction of invert mapper objects in the nominal case of using very simple non-null inner element mappers represented by valid strings.
+    TEST_CASE(MapperParser_MakeInvertMapper_Nominal)
+    {
+        constexpr std::wstring_view kInvertMapperTestStrings[] = {
+            L"Axis(X)",
+            L" Pov(  Up  )",
+            L"   Button(10) ",
+            L"Axis(RotX, +)"
+        };
+        constexpr SElementIdentifier kExpectedElements[] = {
+            {.type = EElementType::Axis,   .axis = EAxis::X},
+            {.type = EElementType::Pov},
+            {.type = EElementType::Button, .button = EButton::B10},
+            {.type = EElementType::Axis,   .axis = EAxis::RotX},
+        };
+        static_assert(_countof(kExpectedElements) == _countof(kInvertMapperTestStrings), "Mismatch between input and expected output array lengths.");
+
+        for (int i = 0; i < _countof(kInvertMapperTestStrings); ++i)
+        {
+            std::optional<std::unique_ptr<IElementMapper>> maybeInvertMapper = MapperParser::MakeInvertMapper(kInvertMapperTestStrings[i]);
+
+            TEST_ASSERT(true == maybeInvertMapper.has_value());
+            TEST_ASSERT(1 == maybeInvertMapper.value()->GetTargetElementCount());
+            TEST_ASSERT(kExpectedElements[i] == maybeInvertMapper.value()->GetTargetElementAt(0));
+        }
+    }
+
+    // Verifies correct failure to create invert mapper objects when the parameter strings are invalid.
+    TEST_CASE(MapperParser_MakeInvertMapper_Invalid)
+    {
+        constexpr std::wstring_view kInvertMapperTestStrings[] = {
+            L"Axis(X), Axis(RotX), Axis(Z)",
+            L"Button(100)",
+            L"Null, Null"
+        };
+
+        for (auto& invertMapperTestString : kInvertMapperTestStrings)
+        {
+            std::optional<std::unique_ptr<IElementMapper>> maybeInvertMapper = MapperParser::MakeInvertMapper(invertMapperTestString);
+            TEST_ASSERT(false == maybeInvertMapper.has_value());
+        }
+    }
 
     // Verifies correct construction of keyboard mapper objects in the nominal case of valid parameter strings being passed.
     TEST_CASE(MapperParser_MakeKeyboardMapper_Nominal)
@@ -585,6 +627,36 @@ namespace XidiTest
             const AxisMapper::EDirection kExpectedDirection = dynamic_cast<DigitalAxisMapper*>(kExpectedParseResults[i].maybeElementMapper.value().get())->GetAxisDirection();
             const AxisMapper::EDirection kActualDirection = dynamic_cast<DigitalAxisMapper*>(actualParseResult.maybeElementMapper.value().get())->GetAxisDirection();
             TEST_ASSERT(kActualDirection == kExpectedDirection);
+        }
+    }
+
+    // Verifies correct parsing of single invert element mappers from a valid supplied input string.
+    TEST_CASE(MapperParser_ParseSingleElementMapper_Invert)
+    {
+        constexpr std::wstring_view kTestStrings[] = {
+            L"Invert(Axis(X))",
+            L"Invert(Pov(Right))",
+            L"Invert( Split(Button(10), Button(12)) )"
+        };
+        const SElementMapperParseResult kExpectedParseResults[] = {
+            {.maybeElementMapper = std::make_unique<InvertMapper>(std::make_unique<AxisMapper>(EAxis::X))},
+            {.maybeElementMapper = std::make_unique<InvertMapper>(std::make_unique<PovMapper>(EPovDirection::Right))},
+            {.maybeElementMapper = std::make_unique<InvertMapper>(std::make_unique<SplitMapper>(
+                std::make_unique<ButtonMapper>(EButton::B10),
+                std::make_unique<ButtonMapper>(EButton::B12)))}
+        };
+        static_assert(_countof(kExpectedParseResults) == _countof(kTestStrings), "Mismatch between input and expected output array lengths.");
+
+        for (int i = 0; i < _countof(kTestStrings); ++i)
+        {
+            SElementMapperParseResult actualParseResult = MapperParser::ParseSingleElementMapper(kTestStrings[i]);
+            VerifyParseResultsAreEquivalent(actualParseResult, kExpectedParseResults[i]);
+
+            TEST_ASSERT(nullptr != dynamic_cast<InvertMapper*>(actualParseResult.maybeElementMapper.value().get()));
+
+            const IElementMapper* kExpectedElementMapper = kExpectedParseResults[i].maybeElementMapper.value().get();
+            const IElementMapper* kActualElementMapper = dynamic_cast<InvertMapper*>(actualParseResult.maybeElementMapper.value().get())->GetElementMapper();
+            VerifyElementMapperPointersAreEquivalent(kActualElementMapper, kExpectedElementMapper);
         }
     }
 

@@ -780,6 +780,17 @@ namespace Xidi
 
             // --------
 
+            std::optional<std::unique_ptr<IElementMapper>> MakeInvertMapper(std::wstring_view params)
+            {
+                SElementMapperParseResult elementMapperResult = ParseSingleElementMapper(params);
+                if ((false == elementMapperResult.maybeElementMapper.has_value()) || (false == elementMapperResult.remainingString.empty()))
+                    return std::nullopt;
+
+                return std::make_unique<InvertMapper>(std::move(elementMapperResult.maybeElementMapper.value()));
+            }
+
+            // --------
+
             std::optional<std::unique_ptr<IElementMapper>> MakeKeyboardMapper(std::wstring_view params)
             {
                 // First try parsing a friendly string representation of the keyboard scan code (i.e. strings that look like "DIK_*" constants, the "DIK_" prefix being optional).
@@ -891,6 +902,9 @@ namespace Xidi
                     {L"digitalAxis",        &MakeDigitalAxisMapper},
                     {L"Digitalaxis",        &MakeDigitalAxisMapper},
                     {L"DigitalAxis",        &MakeDigitalAxisMapper},
+
+                    {L"invert",             &MakeInvertMapper},
+                    {L"Invert",             &MakeInvertMapper},
 
                     {L"keyboard",           &MakeKeyboardMapper},
                     {L"Keyboard",           &MakeKeyboardMapper},

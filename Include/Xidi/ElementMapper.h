@@ -197,6 +197,58 @@ namespace Xidi
             void ContributeFromTriggerValue(SState& controllerState, uint8_t triggerValue) const override;
         };
 
+        /// Inverts the input reading from an XInput controller element and then forwards it to another element mapper.
+        class InvertMapper : public IElementMapper
+        {
+        private:
+            // -------- INSTANCE VARIABLES --------------------------------- //
+
+            /// Mapper to which inverted input is forwarded.
+            const std::unique_ptr<const IElementMapper> elementMapper;
+
+
+        public:
+            // -------- CONSTRUCTION AND DESTRUCTION ----------------------- //
+
+            /// Initialization constructor.
+            /// Requires an underlying element.
+            /// Takes ownership of the objects passed as parameters.
+            inline InvertMapper(std::unique_ptr<const IElementMapper>&& elementMapper) : elementMapper(std::move(elementMapper))
+            {
+                // Nothing to do here.
+            }
+
+            /// Copy constructor.
+            /// Simply clones its underlying element mapper.
+            inline InvertMapper(const InvertMapper& other) : elementMapper((other.elementMapper != nullptr) ? other.elementMapper->Clone() : nullptr)
+            {
+                // Nothing to do here.
+            }
+
+
+            // -------- INSTANCE METHODS ----------------------------------- //
+
+            /// Retrieves and returns a raw read-only pointer to the underlying element mapper.
+            /// This object maintains ownership over the returned pointer.
+            /// Intended for tests.
+            /// @return Read-only pointer to the positive element mapper.
+            inline const IElementMapper* GetElementMapper(void) const
+            {
+                return elementMapper.get();
+            }
+
+
+            // -------- CONCRETE INSTANCE METHODS -------------------------- //
+
+            std::unique_ptr<IElementMapper> Clone(void) const override;
+            void ContributeFromAnalogValue(SState& controllerState, int16_t analogValue) const override;
+            void ContributeFromButtonValue(SState& controllerState, bool buttonPressed) const override;
+            void ContributeFromTriggerValue(SState& controllerState, uint8_t triggerValue) const override;
+            void ContributeNeutral(SState& controllerState) const override;
+            int GetTargetElementCount(void) const override;
+            std::optional<SElementIdentifier> GetTargetElementAt(int index) const override;
+        };
+        
         /// Maps a single XInput controller element to a keyboard key.
         /// For analog sticks, if the axis displacement from neutral is greater than a threshold, the keyboard key is considered pressed.
         /// For triggers, if the magnitude of the trigger reading is greater than a threshold, the keyboard key is considered pressed.
