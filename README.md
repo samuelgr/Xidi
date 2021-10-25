@@ -120,20 +120,20 @@ An example configuration file is shown below, containing default values for all 
 
 ```ini
 [Mapper]
-Type              = StandardGamepad
-Type.1            = StandardGamepad
-Type.2            = StandardGamepad
-Type.3            = StandardGamepad
-Type.4            = StandardGamepad
+Type                = StandardGamepad
+Type.1              = StandardGamepad
+Type.2              = StandardGamepad
+Type.3              = StandardGamepad
+Type.4              = StandardGamepad
 
 [Log]
-Enabled           = no
-Level             = 1
+Enabled             = no
+Level               = 1
 
 [Import]
-dinput.dll        = C:\Windows\system32\dinput.dll
-dinput8.dll       = C:\Windows\system32\dinput8.dll
-winmm.dll         = C:\Windows\system32\winmm.dll
+dinput.dll          = C:\Windows\system32\dinput.dll
+dinput8.dll         = C:\Windows\system32\dinput8.dll
+winmm.dll           = C:\Windows\system32\winmm.dll
 
 [CustomMapper]
 ; This section does not exist by default.
@@ -240,7 +240,7 @@ The simplest way to create a custom mapper is to include a configuration file se
 
 ```ini
 [Mapper]
-Type              = Custom
+Type                = Custom
 
 [CustomMapper]
 ; Custom mapper settings go here.
@@ -250,10 +250,10 @@ It is also possible to define multiple custom mappers and give each its own name
 
 ```ini
 [Mapper]
-Type.1            = FancyMapper1
-Type.2            = Game2
-Type.3            = Three
-Type.4            = 4thMapper
+Type.1              = FancyMapper1
+Type.2              = Game2
+Type.3              = Three
+Type.4              = 4thMapper
 
 [CustomMapper:FancyMapper1]
 ; Custom mapper settings for "FancyMapper1" go here.
@@ -293,13 +293,13 @@ The configuration below shows how to create a custom mapper that behaves the sam
 
 ; Imports all of the element mappers from StandardGamepad.
 ; This line is allowed to appear anywhere in the section, including between or after the element mappers below.
-Template        = StandardGamepad
+Template            = StandardGamepad
 
 ; These changes are applied on top of the template.
-ButtonA         = Button(4)
-ButtonB         = Button(3)
-ButtonX         = Button(2)
-ButtonY         = Button(1)
+ButtonA             = Button(4)
+ButtonB             = Button(3)
+ButtonX             = Button(2)
+ButtonY             = Button(1)
 ```
 
 The above configuration is equivalent to the below configuration, which does the same thing but without the use of a template. Shown are all of the supported XInput controller elements to which an element mapper can be assigned. If an XInput controller element is not assigned an element mapper, all input from it is ignored.
@@ -310,31 +310,31 @@ The above configuration is equivalent to the below configuration, which does the
 ; Because there is no template specified, every element mapper needs to be defined explicitly.
 ; Element mappers below are taken from StandardGamepad documentation.
 
-StickLeftX      = Axis(X)
-StickLeftY      = Axis(Y)
-StickRightX     = Axis(Z)
-StickRightY     = Axis(RotZ)
+StickLeftX          = Axis(X)
+StickLeftY          = Axis(Y)
+StickRightX         = Axis(Z)
+StickRightY         = Axis(RotZ)
 
-DpadUp          = Pov(Up)
-DpadDown        = Pov(Down)
-DpadLeft        = Pov(Left)
-DpadRight       = Pov(Right)
+DpadUp              = Pov(Up)
+DpadDown            = Pov(Down)
+DpadLeft            = Pov(Left)
+DpadRight           = Pov(Right)
 
-ButtonLB        = Button(5)
-ButtonRB        = Button(6) 
-TriggerLT       = Button(7)
-TriggerRT       = Button(8)
-ButtonBack      = Button(9)
-ButtonStart     = Button(10)
-ButtonLS        = Button(11)
-ButtonRS        = Button(12)
+ButtonLB            = Button(5)
+ButtonRB            = Button(6) 
+TriggerLT           = Button(7)
+TriggerRT           = Button(8)
+ButtonBack          = Button(9)
+ButtonStart         = Button(10)
+ButtonLS            = Button(11)
+ButtonRS            = Button(12)
 
 ; These are different from StandardGamepad, per the original purpose of this example.
 
-ButtonA         = Button(4)
-ButtonB         = Button(3)
-ButtonX         = Button(2)
-ButtonY         = Button(1)
+ButtonA             = Button(4)
+ButtonB             = Button(3)
+ButtonX             = Button(2)
+ButtonY             = Button(1)
 ```
 
 It is permissible for multiple element mappers to be linked to the same virtual controller element. Xidi intelligently combines the multiple inputs into a single coherent output as follows.
@@ -386,7 +386,7 @@ To see how this unidirectional configuration works in practice, below are two ex
 ; The A button is mapped to the X axis. Resulting behavior is likely undesirable.
 ; If the A button is pressed, X axis is extreme positive (i.e. all the way to the right).
 ; If the A button is not pressed, X axis is extreme negative (i.e. all the way to the left).
-ButtonA           = Axis(X)
+ButtonA             = Axis(X)
 
 
 [CustomMapper:UnidirectionalAxisExample]
@@ -398,7 +398,7 @@ ButtonA           = Axis(X)
 ; The A button is mapped to the positive direction of the X axis.
 ; If the A button is pressed, X axis is extreme positive (i.e. all the way to the right).
 ; If the A button is not pressed, X axis is neutral (i.e. centered).
-ButtonA           = Axis(X, +)
+ButtonA             = Axis(X, +)
 ```
 
 XInputSharedTriggers, a built-in mapper, uses unidirectional Axis element mappers to implement sharing of the Z axis across both triggers. The example below shows how this would be represented in a configuration file.
@@ -410,14 +410,35 @@ XInputSharedTriggers, a built-in mapper, uses unidirectional Axis element mapper
 ; It only defines element mappers for a small subset of controller elements.
 
 ; One trigger each is assigned to a different Z axis direction, equivalent to XInputSharedTriggers behavior.
-TriggerLT         = Axis(Z, +)
-TriggerRT         = Axis(Z, -)
+TriggerLT           = Axis(Z, +)
+TriggerRT           = Axis(Z, -)
 ```
 
 
 #### Button
 
 A Button element mapper links an XInput controller element to a virtual controller button. It requires a single parameter specifying the button number, from 1 to 16.
+
+
+#### Invert *(unreleased)*
+
+An Invert element mapper inverts whatever input it receives from its associated XInput controller element and then forwards the result to another element mapper. It requires a single parameter specifying an element mapper.
+
+This type of element mapper is primarily useful for inverting axis values, which has the effect of swapping the positive and negative directions. The example below shows how this would be implemented in a configuration file.
+
+```ini
+[CustomMapper:InvertExample]
+
+; This example is not complete.
+; It only defines element mappers for a small subset of controller elements.
+
+; Inverts analog input received from the left stick.
+; Normally, right direction on the analog stick is positive and left direction is negative.
+; As a result of the inversion, right direction on the analog stick is negative and left direction is positive.
+StickLeftX          = Invert( Axis(X) )
+```
+
+Inversion also works on triggers and buttons. For triggers, a completely unpressed state is inverted to a completely pressed state, and for buttons, unpressed and pressed states are swapped.
 
 
 #### Keyboard
@@ -447,12 +468,12 @@ For example, the below configuration links the d-pad of an XInput controller to 
 ; This example is not complete.
 ; It only defines element mappers for a small subset of controller elements.
 
-DpadUp            = Keyboard(UpArrow)
-DpadDown          = Keyboard(DownArrow)
-DpadLeft          = Keyboard(LeftArrow)
-DpadRight         = Keyboard(RightArrow)
-ButtonStart       = Keyboard(Enter)
-ButtonBack        = Keyboard(Esc)
+DpadUp              = Keyboard(UpArrow)
+DpadDown            = Keyboard(DownArrow)
+DpadLeft            = Keyboard(LeftArrow)
+DpadRight           = Keyboard(RightArrow)
+ButtonStart         = Keyboard(Enter)
+ButtonBack          = Keyboard(Esc)
 ```
 
 
@@ -469,8 +490,8 @@ This type of element mapper is primarily useful for removing element mappers fro
 
 ```ini
 [CustomMapper:NullExample]
-Template          = StandardGamepad
-ButtonA           = Null
+Template            = StandardGamepad
+ButtonA             = Null
 ```
 
 
@@ -489,12 +510,12 @@ The primary use case for a Split element mapper is to separate an XInput control
 ; If the left stick's X axis is moved sufficiently to the right (positive), press the right arrow key.
 ; If the left stick's X axis is moved sufficiently to the left (negative), press the left arrow key.
 ; Of course, if the left stick's X axis is neutral, then neither key is pressed.
-StickLeftX        = Split( Keyboard(Right), Keyboard(Left) )
+StickLeftX          = Split( Keyboard(Right), Keyboard(Left) )
 
 ; If the left stick's Y axis is moved sufficiently down (positive), press the down arrow key.
 ; If the left stick's Y axis is moved sufficiently up (negative), press the up arrow key.
 ; Of course, if the left stick's X axis is neutral, then neither key is pressed.
-StickLeftY        = Split( Keyboard(Down), Keyboard(Up) )
+StickLeftY          = Split( Keyboard(Down), Keyboard(Up) )
 ```
 
 Another possible use case is filtering. Suppose the goal is to map from the left stick's X axis on an XInput controller to virtual controller button 2, but only if the left stick is pressed in the positive direction (i.e. to the right). The configuration below would not adequately capture this goal because the button would be pressed irrespective of axis direction.
@@ -506,7 +527,7 @@ Another possible use case is filtering. Suppose the goal is to map from the left
 ; It only defines element mappers for a small subset of controller elements.
 
 ; If the left stick's X axis is pressed in either direction then button 2 is pressed.
-StickLeftX        = Button(2)
+StickLeftX          = Button(2)
 ```
 
 A Split element mapper can be used to filter out all of the negative input so that the button is only considered pressed in the positive direction.
@@ -518,7 +539,7 @@ A Split element mapper can be used to filter out all of the negative input so th
 ; It only defines element mappers for a small subset of controller elements.
 
 ; If the left stick's X axis is pressed to the right (positive direction) direction then button 2 is pressed.
-StickLeftX        = Split( Button(2), Null )
+StickLeftX          = Split( Button(2), Null )
 ```
 
 Split element mappers behave somewhat differently depending if they are linked to an XInput axis, button, or trigger, as follows.
