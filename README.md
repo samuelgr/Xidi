@@ -155,7 +155,7 @@ This section controls the mapping scheme Xidi uses when mapping between XInput a
 
 This section controls Xidi's logging output. Logging should generally be disabled unless issues are discovered.
 
-Any log files Xidi produces are placed on the current user's desktop and are named to specify both the executable and the specific version of Xidi that was loaded (`dinput.dll`, `dinput8.dll`, or `winmm.dll`).
+Any log files Xidi produces are placed on the current user's desktop and are named to specify both the executable and the specific form of Xidi that was loaded.
 
 - **Enabled** specifies whether or not Xidi should produce a log during game execution. Supported values are `yes` and `no`.
 
@@ -273,7 +273,7 @@ Custom mappers named this way must:
   - Not be named "Custom" as this would clash with the default name of a custom mapper.
   - Not have the same name as any of the built-in mappers.
 
-Xidi will display a warning message box if it detects an error with how a custom mapper is defined or named. To see the details, ensure logging is turned on and consult the log file Xidi places on the desktop. Unlike for configuration file errors, Xidi will not automatically turn on logging in the event of a custom mapper definition error.
+Xidi will display a warning message box if it detects an error with how a custom mapper is defined. To see the details, ensure logging is turned on and consult the log file Xidi places on the desktop. Unlike for configuration file errors, Xidi will not automatically turn on logging in the event of a custom mapper definition error.
 
 The subsections that follow describe what each "CustomMapper" configuration section should contain in order to define a custom mapper.
 
@@ -282,7 +282,7 @@ The subsections that follow describe what each "CustomMapper" configuration sect
 
 Configuration file sections that define custom mappers contain two types of settings: top-level settings and element mappers.
 
-Currently the only available *top-level setting* is "Template" whose value is the name of any other mapper, be it built-in or custom. This has the effect of copying all of the element mappers from the template mapper to use as a starting point for the custom mapper. Individual element mappers can still be specified, and these are applied as modifications to the template. Specifying a template is optional; if no template is specified, then Xidi assumes the custom mapper is being built from scratch. Ordering of custom mapper definitions within the configuration file is not important. In the preceding example, "FancyMapper1" is allowed to use any of "Game2," "Three," and "4thMapper" as a template even though their definitions appear later in the configuration file. However, self-references and circular references are forbidden, and Xidi will flag an error if any such issues are detected.
+Currently the only available *top-level setting* is "Template" whose value is the name of any other mapper, be it built-in or custom. This has the effect of copying all of the element mappers from the template mapper to use as a starting point for the custom mapper. Individual element mappers can still be specified, and these are applied as modifications to the template. Use of a template is optional; in the absence of a template the custom mapper is built from scratch. Ordering of custom mapper definitions within the configuration file is not important. In the preceding example, "FancyMapper1" is allowed to use any of "Game2," "Three," and "4thMapper" as a template even though their definitions appear later in the configuration file. However, self-references and circular references are forbidden, and Xidi will flag an error if any such issues are detected.
 
 An *element mapper* defines how Xidi should process input from a specific XInput controller element. For example, an element mapper assigned to the A button might specify that input should be routed to button 1 on a virtual controller. At the same time, another element mapper assigned to trigger LT might specify that input should be routed to the RotZ axis on the virtual controller.
 
@@ -302,7 +302,7 @@ ButtonX             = Button(2)
 ButtonY             = Button(1)
 ```
 
-The above configuration is equivalent to the below configuration, which does the same thing but without the use of a template. Shown are all of the supported XInput controller elements to which an element mapper can be assigned. If an XInput controller element is not assigned an element mapper, all input from it is ignored.
+The above configuration is equivalent to the below configuration, which does the same thing but without the use of a template. Shown are all of the supported XInput controller elements to which an element mapper can be assigned. If an XInput controller element is not assigned an element mapper then all input from it is ignored.
 
 ```ini
 [CustomMapper:ModifiedStandardGamepadNoTemplate]
@@ -347,7 +347,7 @@ It is permissible for multiple element mappers to be linked to the same virtual 
 Custom mappers theoretically can define virtual controllers of arbitrary capabilities (i.e. which axes are present, how many buttons are present, and whether or not a POV hat exists). Xidi imposes certain limits to simplify its own implementation and to accomodate expectations of both the DirectInput and WinMM APIs. Specifically, the following limits exist.
 - Axes
   - Minimum: X axis and Y axis must both be present.
-    - If no element mapper is linked to either of these axes, then the application's view is that the corresponding axis is present but always held in a neutral position.
+    - If no element mapper is linked to one of these axes then the application's view is that the corresponding axis is present but always held in a neutral position.
   - Maximum: X, Y, Z, RotX, RotY, and RotZ axes are supported.
 - Buttons
   - The highest-numbered button determines the number of buttons Xidi reports to the application. Any buttons not linked to an element mapper are always held in an unpressed state.
@@ -372,7 +372,7 @@ Both types of element mapper link an XInput controller element to a virtual cont
 
 Axis and DigitalAxis both require a parameter specifying the virtual controller axis to which to link. Supported axis names are `X`, `Y`, `Z`, `RotX`, `RotY`, and `RotZ`. A second optional parameter is additionally allowed to specify the axis direction, either `+` or `-` (alternative values `Positive` and `Negative` are also accepted).
 
-By default all Axis and DigitalAxis element mappers are bidirectional, meaning they cover the entire range of possible axis values from extreme negative to extreme positive. Specifying a direction modifies this behavior and is primarily useful for Axis and DigitalAxis element mappers that accept input from XInput controller buttons. In bidirectional mode, the axis is reported as extreme positive if the button is pressed and extreme negative if not pressed. In unidirectional mode, the axis is reported as extreme in the configured direction if the button is pressed and neutral if the button is not pressed.
+By default all Axis and DigitalAxis element mappers are bidirectional, meaning they cover the entire range of possible axis values from extreme negative to extreme positive. Specifying a direction modifies this behavior and is primarily useful for Axis and DigitalAxis element mappers that accept input from XInput controller buttons. In bidirectional mode the axis is reported as extreme positive if the button is pressed and extreme negative if not pressed. In unidirectional mode the axis is reported as extreme in the configured direction if the button is pressed and neutral if the button is not pressed.
 
 To see how this unidirectional configuration works in practice, below are two examples to highlight the difference.
 
@@ -438,7 +438,7 @@ This type of element mapper is primarily useful for inverting axis values, which
 StickLeftX          = Invert( Axis(X) )
 ```
 
-Inversion also works on triggers and buttons. For triggers, a completely unpressed state is inverted to a completely pressed state, and for buttons, unpressed and pressed states are swapped.
+Inversion also works on triggers and buttons. Triggers follow the same basic inversion logic as axes, and buttons have their pressed and unpressed states swapped.
 
 
 #### Keyboard
@@ -446,7 +446,7 @@ Inversion also works on triggers and buttons. For triggers, a completely unpress
 A keyboard element mapper links an XInput controller element to a key on the keyboard. As a result, it is not linked to any virtual controller element.
 
 Element mappers of this type require a single parameter identifying the associated keyboard key. Keyboard keys can be identified in a few different ways, as listed below in order of precedence from top to bottom.
-1. Symbolic key name, which is case-insensitive and takes the form of one of the `DIK_` DirectInput [keyboard device enumeration](https://docs.microsoft.com/en-us/previous-versions/windows/desktop/ee418641(v=vs.85)) values, with or without the "DIK_" prefix.
+1. Symbolic key name, which is case-insensitive and takes the form of one of the `DIK_` enumerator names from the DirectInput [keyboard device enumeration](https://docs.microsoft.com/en-us/previous-versions/windows/desktop/ee418641(v=vs.85)), with or without the "DIK_" prefix.
 1. Numeric scan code expressed as a number in decimal, octal (prefix "0" required), or hexadecimal (prefix "0x" required).
 
 In general, the easiest way of identifying a keyboard key is by symbolic name. The complete list of supported symbolic names is contained in the `MapperParser.cpp` source code file, but as a summary the following are recognized. Note that Xidi internally maps all keyboard key identifiers to hardware scan codes. Therefore, all symbolic names represent physical key positions on a US QWERTY keyboard.
@@ -497,7 +497,7 @@ ButtonA             = Null
 
 #### Split
 
-A Split element mapper is a compound element mapper. It requires two parameters, each of which is another entire element mapper. The first parameter is its "positive" element mapper and the second is its "negative" element mapper. If the assigned XInput controller element reports positive input (i.e. stick position is positive, button is pressed, or trigger is greater than the mid-point value) then the positive element mapper is asked to process the input, otherwise the negative element mapper is asked to do so. It is valid to specify "Null" as a parameter, with the outcome being that the corresponding input (positive or negative) is simply ignored.
+A Split element mapper requires two parameters, each of which is another element mapper. The first parameter is its "positive" element mapper and the second is its "negative" element mapper. If the assigned XInput controller element reports positive input (i.e. stick position is positive, button is pressed, or trigger is greater than the mid-point value) then the positive element mapper is asked to process the input, otherwise the negative element mapper is asked to do so. It is valid to specify "Null" as a parameter, with the outcome being that the corresponding input (positive or negative) is simply ignored.
 
 The primary use case for a Split element mapper is to separate an XInput controller's analog stick axis into a positive part and a negative part. For example, the below configuration splits both axes of the left stick into a positive part and a negative part, triggering a different keyboard key in each case.
 
@@ -549,7 +549,7 @@ Split element mappers behave somewhat differently depending if they are linked t
 - If assigned to a **button**...
   - If the button is *pressed*, the positive element mapper is sent a "button pressed" input.
   - If the button is *not pressed*, the negative element mapper is sent a "button pressed" input.
-    - This behavior may be counter-intuitive.  Its supportiong rationale is that sending a "button not pressed" input to an element mapper is functionally useless.
+    - This behavior may be counter-intuitive.  Its supporting rationale is that sending a "button not pressed" input to an element mapper is functionally useless.
 - If assigned to a **trigger**...
   - If the trigger is *pressed to at least at the midpoint position* then the positive element mapper is forwarded the trigger value.
   - If the trigger is either *not pressed* or *pressed below the midpoint position* then the negaive element mapper is forwarded the trigger value.
