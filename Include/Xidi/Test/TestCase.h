@@ -28,6 +28,9 @@ namespace XidiTest
         /// @param [in] name Test case name.
         ITestCase(std::wstring_view name);
 
+        /// Default destructor.
+        virtual ~ITestCase(void) = default;
+
 
         // -------- ABSTRACT INSTANCE METHODS ------------------------------ //
 

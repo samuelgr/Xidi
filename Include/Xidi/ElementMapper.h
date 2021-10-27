@@ -30,6 +30,12 @@ namespace Xidi
         class IElementMapper
         {
         public:
+            // -------- CONSTRUCTION AND DESTRUCTION ----------------------- //
+
+            /// Default destructor.
+            virtual ~IElementMapper(void) = default;
+
+
             // -------- ABSTRACT INSTANCE METHODS -------------------------- //
 
             /// Allocates, constructs, and returns a pointer to a copy of this element mapper.

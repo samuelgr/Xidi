@@ -51,6 +51,10 @@ namespace Xidi
             /// When constructed they are expected to be associated with a particular API class enumerator as the API implementation provider object.
             /// @param [in] apiClass API class enumerator to associate with the object.
             IXidi(EClass apiClass);
+
+        public:
+            /// Default destructor.
+            virtual ~IXidi(void) = default;
         };
         
         /// Xidi API class for obtaining metadata about the running Xidi module.
