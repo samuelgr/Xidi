@@ -306,6 +306,18 @@ namespace XidiTest
         }
     }
 
+    // Verifies correct routing of neutral contributions to all underlying element mappers.
+    TEST_CASE(SplitMapper_RouteNeutral)
+    {
+        constexpr int kExpectedContributionCount = 2;
+        int actualContributionCount = 0;
+
+        const SplitMapper mapper(std::make_unique<MockElementMapper>(MockElementMapper::EExpectedSource::Neutral, false, &actualContributionCount), std::make_unique<MockElementMapper>(MockElementMapper::EExpectedSource::Neutral, false, &actualContributionCount));
+
+        mapper.ContributeNeutral(unusedControllerState);
+        TEST_ASSERT(actualContributionCount == kExpectedContributionCount);
+    }
+
     // Verifies that two axis mappers contribute the same state to a virtual controller as does one full axis mapper that is not split.
     // This does not represent a particularly useful use case but is still a condition that should be true.
     TEST_CASE(SplitMapper_SplitAxisEquivalence_SingleAxis)

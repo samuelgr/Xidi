@@ -32,13 +32,14 @@ namespace XidiTest
         // -------- TYPE DEFINITIONS --------------------------------------- //
 
         /// Enumerates possible expected sources of input values from an XInput controller.
-        /// Specifies which of the `ContributeFrom` methods is expected to be invoked.
+        /// Specifies which of the `Contribute` methods is expected to be invoked.
         enum class EExpectedSource
         {
             None,
             Analog,
             Button,
-            Trigger
+            Trigger,
+            Neutral
         };
 
         /// Holds an expected input value, one for each allowed type.
@@ -139,6 +140,24 @@ namespace XidiTest
 
             if (nullptr != contributionCounter)
                 *contributionCounter += 1;
+        }
+
+        // --------
+
+        void ContributeNeutral(SState& controllerState) const override
+        {
+            // Neutral contributions are non-destructive.
+            // Some element mappers will forward these to sub-element mappers, so unless explicitly testing for neutral contributions they can largely be ignored.
+            // The exception is if no contributions whatsoever are expected, in which case any contributions are errors.
+
+            if (EExpectedSource::None == expectedSource)
+                TEST_FAILED_BECAUSE(L"MockElementMapper: wrong value source (expected enumerator %d, got Trigger).", (int)expectedSource);
+
+            if (EExpectedSource::Neutral == expectedSource)
+            {
+                if (nullptr != contributionCounter)
+                    *contributionCounter += 1;
+            }
         }
 
         // --------

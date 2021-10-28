@@ -19,7 +19,6 @@
 #include <memory>
 #include <optional>
 #include <utility>
-#include <vector>
 
 
 namespace XidiTest
@@ -133,5 +132,17 @@ namespace XidiTest
             mapper.ContributeFromTriggerValue(unusedControllerState, (uint8_t)triggerValue);
             TEST_ASSERT(actualContributionCount == kExpectedContributionCount);
         }
+    }
+
+    // Verifies that InvertMapper objects correctly forward neutral contributions.
+    TEST_CASE(InvertMapper_InvertContribution_Neutral)
+    {
+        constexpr int kExpectedContributionCount = 1;
+        int actualContributionCount = 0;
+
+        const InvertMapper mapper(std::make_unique<MockElementMapper>(MockElementMapper::EExpectedSource::Neutral, false, &actualContributionCount));
+
+        mapper.ContributeNeutral(unusedControllerState);
+        TEST_ASSERT(actualContributionCount == kExpectedContributionCount);
     }
 }

@@ -269,4 +269,23 @@ namespace XidiTest
         TEST_ASSERT(actualKeyboardState == expectedKeyboardStateUnpressed);
         actualKeyboardState.EndCapture();
     }
+
+    // Verifies that a keyboard mapper causes a key to be released when it is asked for a neutral contribution.
+    TEST_CASE(KeyboardMapper_ContributeNeutral)
+    {
+        constexpr KeyboardMapper mapper(kTestKeyIdentifier);
+
+        SState unusedVirtualControllerState;
+
+        MockKeyboard expectedState;
+        
+        MockKeyboard actualState;
+        actualState.SubmitKeyPressedState(kTestKeyIdentifier);
+
+        actualState.BeginCapture();
+        mapper.ContributeNeutral(unusedVirtualControllerState);
+        actualState.EndCapture();
+
+        TEST_ASSERT(actualState == expectedState);
+    }
 }
