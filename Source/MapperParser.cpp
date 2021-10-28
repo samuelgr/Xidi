@@ -769,6 +769,35 @@ namespace Xidi
 
             // --------
 
+            std::optional<std::unique_ptr<IElementMapper>> MakeCompoundMapper(std::wstring_view params)
+            {
+                CompoundMapper::TElementMappers elementMappers;
+                SElementMapperParseResult elementMapperResult = {.remainingString = params};
+
+                // Parse element mappers one at a time.
+                // At least one underlying element mapper is required, with all the rest being optional.
+                for (size_t i = 0; i < elementMappers.size(); ++i)
+                {
+                    elementMapperResult = ParseSingleElementMapper(elementMapperResult.remainingString);
+                    if (false == elementMapperResult.maybeElementMapper.has_value())
+                        return std::nullopt;
+
+                    elementMappers[i] = std::move(elementMapperResult.maybeElementMapper.value());
+
+                    if (true == elementMapperResult.remainingString.empty())
+                        break;
+                }
+
+                // No further parameters allowed.
+                // Specifying too many underlying element mappers is an error.
+                if (false == elementMapperResult.remainingString.empty())
+                    return std::nullopt;
+
+                return std::make_unique<CompoundMapper>(std::move(elementMappers));
+            }
+
+            // --------
+
             std::optional<std::unique_ptr<IElementMapper>> MakeDigitalAxisMapper(std::wstring_view params)
             {
                 const std::optional<SAxisMapperParams> kMaybeAxisMapperParams = ParseAxisMapperParams(params);
@@ -897,6 +926,9 @@ namespace Xidi
 
                     {L"button",             &MakeButtonMapper},
                     {L"Button",             &MakeButtonMapper},
+
+                    {L"compound",           &MakeCompoundMapper},
+                    {L"Compound",           &MakeCompoundMapper},
 
                     {L"digitalaxis",        &MakeDigitalAxisMapper},
                     {L"digitalAxis",        &MakeDigitalAxisMapper},

@@ -217,6 +217,94 @@ namespace Xidi
 
         // --------
 
+        std::unique_ptr<IElementMapper> CompoundMapper::Clone(void) const
+        {
+            return std::make_unique<CompoundMapper>(*this);
+        }
+
+        // --------
+
+        void CompoundMapper::ContributeFromAnalogValue(SState& controllerState, int16_t analogValue) const
+        {
+            for (const auto& elementMapper : elementMappers)
+            {
+                if (nullptr != elementMapper)
+                    elementMapper->ContributeFromAnalogValue(controllerState, analogValue);
+            }
+        }
+
+        // --------
+
+        void CompoundMapper::ContributeFromButtonValue(SState& controllerState, bool buttonPressed) const
+        {
+            for (const auto& elementMapper : elementMappers)
+            {
+                if (nullptr != elementMapper)
+                    elementMapper->ContributeFromButtonValue(controllerState, buttonPressed);
+            }
+        }
+
+        // --------
+
+        void CompoundMapper::ContributeFromTriggerValue(SState& controllerState, uint8_t triggerValue) const
+        {
+            for (const auto& elementMapper : elementMappers)
+            {
+                if (nullptr != elementMapper)
+                    elementMapper->ContributeFromTriggerValue(controllerState, triggerValue);
+            }
+        }
+
+        // --------
+
+        void CompoundMapper::ContributeNeutral(SState& controllerState) const
+        {
+            for (const auto& elementMapper : elementMappers)
+            {
+                if (nullptr != elementMapper)
+                    elementMapper->ContributeNeutral(controllerState);
+            }
+        }
+
+        // --------
+
+        int CompoundMapper::GetTargetElementCount(void) const
+        {
+            int numTargetElements = 0;
+
+            for (const auto& elementMapper : elementMappers)
+            {
+                if (nullptr != elementMapper)
+                    numTargetElements += elementMapper->GetTargetElementCount();
+            }
+
+            return numTargetElements;
+        }
+
+        // --------
+
+        std::optional<SElementIdentifier> CompoundMapper::GetTargetElementAt(int index) const
+        {
+            int indexOffset = 0;
+
+            for (const auto& elementMapper : elementMappers)
+            {
+                if (nullptr != elementMapper)
+                {
+                    const int kElementCount = elementMapper->GetTargetElementCount();
+
+                    if (index < (indexOffset + kElementCount))
+                        return elementMapper->GetTargetElementAt(index - indexOffset);
+
+                    indexOffset += kElementCount;
+                }   
+            }
+
+            return std::nullopt;
+        }
+
+        // --------
+
         std::unique_ptr<IElementMapper> DigitalAxisMapper::Clone(void) const
         {
             return std::make_unique<DigitalAxisMapper>(*this);

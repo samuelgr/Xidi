@@ -18,6 +18,7 @@
 #include <optional>
 #include <string_view>
 #include <utility>
+#include <vector>
 
 
 namespace XidiTest
@@ -317,6 +318,64 @@ namespace XidiTest
         }
     }
 
+    // Verifies correct construction of compound mapper objects in the nominal case of valid parameter strings being passed.
+    // In this test only simple underlying element mapper types are used.
+    TEST_CASE(MapperParser_MakeCompoundMapper_Nominal)
+    {
+        constexpr std::wstring_view kCompoundMapperTestStrings[] = {
+            L"Null, Null, Null, Null",
+            L"Button(1), Button(2), Button(3), Button(4)",
+            L"Axis(X), Axis(RotX)",
+            L" Pov(  Up  )  ,   Button  ( 10   ) ",
+            L"Axis(RotX, +), Pov(Down)",
+            L"Pov(Up), Pov(Down), Pov(Left), Pov(Right)"
+        };
+        const std::vector<SElementIdentifier> kExpectedElements[] = {
+            {},
+            {{.type = EElementType::Button, .button = EButton::B1}, {.type = EElementType::Button, .button = EButton::B2}, {.type = EElementType::Button, .button = EButton::B3}, {.type = EElementType::Button, .button = EButton::B4}},
+            {{.type = EElementType::Axis, .axis = EAxis::X}, {.type = EElementType::Axis, .axis = EAxis::RotX}},
+            {{.type = EElementType::Pov}, {.type = EElementType::Button, .button = EButton::B10}},
+            {{.type = EElementType::Axis, .axis = EAxis::RotX}, {.type = EElementType::Pov}},
+            {{.type = EElementType::Pov}, {.type = EElementType::Pov}, {.type = EElementType::Pov}, {.type = EElementType::Pov}}
+        };
+        static_assert(_countof(kExpectedElements) == _countof(kCompoundMapperTestStrings), "Mismatch between input and expected output array lengths.");
+
+        for (int i = 0; i < _countof(kCompoundMapperTestStrings); ++i)
+        {
+            std::optional<std::unique_ptr<IElementMapper>> maybeCompoundMapper = MapperParser::MakeCompoundMapper(kCompoundMapperTestStrings[i]);
+
+            TEST_ASSERT(true == maybeCompoundMapper.has_value());
+            TEST_ASSERT(kExpectedElements[i].size() == maybeCompoundMapper.value()->GetTargetElementCount());
+
+            for (size_t j = 0; j < kExpectedElements[i].size(); ++j)
+            {
+                const SElementIdentifier kExpectedElement = kExpectedElements[i][j];
+
+                const std::optional<SElementIdentifier> kMaybeActualElement = maybeCompoundMapper.value()->GetTargetElementAt(j);
+                TEST_ASSERT(true == kMaybeActualElement.has_value());
+
+                const SElementIdentifier kActualElement = kMaybeActualElement.value();
+                TEST_ASSERT(kActualElement == kExpectedElement);
+            }
+        }
+    }
+
+    // Verifies correct failure to create compound mapper objects when the parameter strings are invalid.
+    TEST_CASE(MapperParser_MakeCompoundMapper_Invalid)
+    {
+        constexpr std::wstring_view kCompoundMapperTestStrings[] = {
+            L"Null, Null, Null, Null, Null, Null, Null, Null, Null, Null, Null, Null, Null, Null, Null, Null, Null, Null, Null, Null",
+            L"Axis(X), Axis(Y), Axis(Z), Axis(RotX), Axis(RotY), Axis(RotZ), Axis(X), Axis(Y), Axis(Z), Axis(RotX), Axis(RotY), Axis(RotZ)"
+            L"Button(800)"
+        };
+
+        for (auto& compoundMapperTestString : kCompoundMapperTestStrings)
+        {
+            std::optional<std::unique_ptr<IElementMapper>> maybeCompoundMapper = MapperParser::MakeCompoundMapper(compoundMapperTestString);
+            TEST_ASSERT(false == maybeCompoundMapper.has_value());
+        }
+        }
+
     // Verifies correct construction of digital axis mapper objects in the nominal case of valid parameter strings being passed.
     // Same as the corresponding axis mapper test but with a different target type.
     TEST_CASE(MapperParser_MakeDigitalAxisMapper_Nominal)
@@ -599,6 +658,61 @@ namespace XidiTest
         }
     }
 
+    // Verifies correct parsing of single compound element mappers from a valid supplied input string.
+    TEST_CASE(MapperParser_ParseSingleElementMapper_Compound)
+    {
+        constexpr std::wstring_view kTestStrings[] = {
+            L"Compound(Null, Null, Null, Null)",
+            L"Compound(Button(10), Button(11))",
+            L"Compound( Invert(Axis(X)), Pov(Up) )",
+            L"Compound( Button(1), Button(2), Button(3), Button(4), Button(5), Button(6), Button(7), Button(8) )",
+            L"Compound( Button(1), Button(2), Button(3), Button(4), Keyboard(5), Keyboard(6), Keyboard(7), Keyboard(8) )"
+        };
+        const SElementMapperParseResult kExpectedParseResults[] = {
+            {.maybeElementMapper = std::make_unique<CompoundMapper>(CompoundMapper::TElementMappers())},
+            {.maybeElementMapper = std::make_unique<CompoundMapper>(CompoundMapper::TElementMappers({
+                std::make_unique<ButtonMapper>(EButton::B10),
+                std::make_unique<ButtonMapper>(EButton::B11)}))},
+            {.maybeElementMapper = std::make_unique<CompoundMapper>(CompoundMapper::TElementMappers({
+                std::make_unique<InvertMapper>(
+                    std::make_unique<AxisMapper>(EAxis::X)),
+                std::make_unique<PovMapper>(EPovDirection::Up)}))},
+            {.maybeElementMapper = std::make_unique<CompoundMapper>(CompoundMapper::TElementMappers({
+                std::make_unique<ButtonMapper>(EButton::B1),
+                std::make_unique<ButtonMapper>(EButton::B2),
+                std::make_unique<ButtonMapper>(EButton::B3),
+                std::make_unique<ButtonMapper>(EButton::B4),
+                std::make_unique<ButtonMapper>(EButton::B5),
+                std::make_unique<ButtonMapper>(EButton::B6),
+                std::make_unique<ButtonMapper>(EButton::B7),
+                std::make_unique<ButtonMapper>(EButton::B8)}))},
+            {.maybeElementMapper = std::make_unique<CompoundMapper>(CompoundMapper::TElementMappers({
+                std::make_unique<ButtonMapper>(EButton::B1),
+                std::make_unique<ButtonMapper>(EButton::B2),
+                std::make_unique<ButtonMapper>(EButton::B3),
+                std::make_unique<ButtonMapper>(EButton::B4),
+                std::make_unique<KeyboardMapper>(DIK_5),
+                std::make_unique<KeyboardMapper>(DIK_6),
+                std::make_unique<KeyboardMapper>(DIK_7),
+                std::make_unique<KeyboardMapper>(DIK_8)}))}
+        };
+        static_assert(_countof(kExpectedParseResults) == _countof(kTestStrings), "Mismatch between input and expected output array lengths.");
+
+        for (int i = 0; i < _countof(kTestStrings); ++i)
+        {
+            SElementMapperParseResult actualParseResult = MapperParser::ParseSingleElementMapper(kTestStrings[i]);
+            VerifyParseResultsAreEquivalent(actualParseResult, kExpectedParseResults[i]);
+
+            TEST_ASSERT(nullptr != dynamic_cast<CompoundMapper*>(actualParseResult.maybeElementMapper.value().get()));
+
+            const CompoundMapper::TElementMappers& kExpectedElementMappers = dynamic_cast<CompoundMapper*>(kExpectedParseResults[i].maybeElementMapper.value().get())->GetElementMappers();
+            const CompoundMapper::TElementMappers& kActualElementMappers = dynamic_cast<CompoundMapper*>(actualParseResult.maybeElementMapper.value().get())->GetElementMappers();
+
+            for (size_t j = 0; j < kExpectedElementMappers.size(); ++j)
+                VerifyElementMapperPointersAreEquivalent(kActualElementMappers[j].get(), kExpectedElementMappers[j].get());
+        }
+    }
+
     // Verifies correct parsing of single digital axis element mappers from a valid supplied input string.
     // Same as the axis mapper test but with a different target type.
     TEST_CASE(MapperParser_ParseSingleElementMapper_DigitalAxis)
@@ -811,11 +925,14 @@ namespace XidiTest
             L" UnknownMapperType ",
             L" Axis(R)",
             L"  Axis(X, +-)",
-            L" DigitalAxis(U)",
-            L"  DigitalAxis(z, -+)",
             L"  Button(4) ) ",
             L"  Button(4) , ",
             L"Button(4,5)",
+            L"Compound",
+            L"Compound(Null, Null, Null, Null, Null, Null, Null, Null, Null, Null, Null, Null, Null, Null, Null, Null, Null, Null, Null, Null)"
+            L" DigitalAxis(U)",
+            L"  DigitalAxis(z, -+)",
+            L"  Invert(asdf) ",
             L"Keyboard(1000)",
             L"Keyboard(10,11)",
             L"Keyboard(0x a)",

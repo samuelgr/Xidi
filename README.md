@@ -420,6 +420,24 @@ TriggerRT           = Axis(Z, -)
 A Button element mapper links an XInput controller element to a virtual controller button. It requires a single parameter specifying the button number, from 1 to 16.
 
 
+#### Compound *(unreleased)*
+
+A Compound element mapper forwards input to multiple element mappers, up to a maximum of 8. It requires one or more parameters each specifying an element mapper.
+
+The example below shows how to use a Compound element mapper to link an XInput controller button to both a virtual controller button and a keyboard key. As a result, pressing the XInput controller button has the effect causing both the virtual controller button and the keyboard key to be pressed.
+
+```ini
+[CustomMapper:CompoundExample]
+
+; This example is not complete.
+; It only defines element mappers for a small subset of controller elements.
+
+; Routes input from the Start button to both button 10 on the virtual controller the Enter key on the keyboard.
+; Parameter order does not matter.
+ButtonStart         = Compound( Button(10), Keyboard(Enter) )
+```
+
+
 #### Invert *(unreleased)*
 
 An Invert element mapper inverts whatever input it receives from its associated XInput controller element and then forwards the result to another element mapper. It requires a single parameter specifying an element mapper.

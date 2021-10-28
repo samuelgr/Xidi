@@ -15,6 +15,8 @@
 #include "ControllerTypes.h"
 #include "Keyboard.h"
 
+#include <array>
+#include <cstddef>
 #include <cstdint>
 #include <memory>
 #include <optional>
@@ -179,6 +181,94 @@ namespace Xidi
             std::optional<SElementIdentifier> GetTargetElementAt(int index) const override;
         };
 
+        /// Maps a single XInput controller element to multiple underlying element mappers.
+        class CompoundMapper : public IElementMapper
+        {
+        public:
+            // -------- CONSTANTS ------------------------------------------ //
+
+            /// Maximum number of underlying element mappers that can be present.
+            static constexpr int kMaxUnderlyingElementMappers = 8;
+
+
+            // -------- TYPE DEFINITIONS ----------------------------------- //
+
+            /// Convenience alias for the type used to hold underlying element mappers.
+            typedef std::array<std::unique_ptr<IElementMapper>, kMaxUnderlyingElementMappers> TElementMappers;
+
+
+        private:
+            // -------- INSTANCE VARIABLES --------------------------------- //
+
+            /// Element mappers to which input is forwarded.
+            const TElementMappers elementMappers;
+
+
+        public:
+            // -------- CONSTRUCTION AND DESTRUCTION ----------------------- //
+
+            /// Initialization constructor.
+            /// Requires an array of underlying element mappers.
+            /// Takes ownership of the objects passed as parameters.
+            inline CompoundMapper(TElementMappers&& elementMappers) : elementMappers(std::move(elementMappers))
+            {
+                // Nothing to do here.
+            }
+
+            /// Copy constructor.
+            /// Simply clones its underlying element mapper array.
+            inline CompoundMapper(const CompoundMapper& other) : elementMappers(CopyElementMappers(other.GetElementMappers()))
+            {
+                // Nothing to do here.
+            }
+
+
+        private:
+            // -------- CLASS METHODS -------------------------------------- //
+
+            /// Copies the underlying element mapper data structure.
+            /// For internal use only.
+            /// @param [in] elementMappers Source element mapper data structure.
+            /// @return Copy of the source element mapper data structure.
+            static inline TElementMappers CopyElementMappers(const TElementMappers& elementMappers)
+            {
+                TElementMappers copyOfElementMappers;
+
+                for (size_t i = 0; i < elementMappers.size(); ++i)
+                {
+                    if (nullptr == elementMappers[i])
+                        copyOfElementMappers[i] = nullptr;
+                    else
+                        copyOfElementMappers[i] = elementMappers[i]->Clone();
+                }
+
+                return copyOfElementMappers;
+            }
+
+
+        public:
+            // -------- INSTANCE METHODS ----------------------------------- //
+
+            /// Retrieves and returns a read-only reference to the underlying element mapper array.
+            /// Intended for tests.
+            /// @return Read-only reference to the underlying element mapper array.
+            inline const TElementMappers& GetElementMappers(void) const
+            {
+                return elementMappers;
+            }
+
+
+            // -------- CONCRETE INSTANCE METHODS -------------------------- //
+
+            std::unique_ptr<IElementMapper> Clone(void) const override;
+            void ContributeFromAnalogValue(SState& controllerState, int16_t analogValue) const override;
+            void ContributeFromButtonValue(SState& controllerState, bool buttonPressed) const override;
+            void ContributeFromTriggerValue(SState& controllerState, uint8_t triggerValue) const override;
+            void ContributeNeutral(SState& controllerState) const override;
+            int GetTargetElementCount(void) const override;
+            std::optional<SElementIdentifier> GetTargetElementAt(int index) const override;
+        };
+
         /// Maps a single XInput controller element such that it contributes to an axis value on a virtual controller, but removes analog functionality. Values contributed are either zero or extreme.
         /// For analog sticks, the value read is mapped to either neutral or an extreme axis value. In whole-axis mode, the possible values are negative extreme, neutral, and positive extreme. In half-axis mode, possible values are neutral and extreme (input in the inactive direction is ignored).
         /// For triggers, which unlike analog sticks do not have a centered neutral position, possible values depend on the axis mode. In whole-axis mode, the possible values are negative extreme and positive extreme. In half-axis mode, the possible values are neutral and extreme.
@@ -217,7 +307,7 @@ namespace Xidi
             // -------- CONSTRUCTION AND DESTRUCTION ----------------------- //
 
             /// Initialization constructor.
-            /// Requires an underlying element.
+            /// Requires an underlying element mapper.
             /// Takes ownership of the objects passed as parameters.
             inline InvertMapper(std::unique_ptr<const IElementMapper>&& elementMapper) : elementMapper(std::move(elementMapper))
             {
@@ -237,7 +327,7 @@ namespace Xidi
             /// Retrieves and returns a raw read-only pointer to the underlying element mapper.
             /// This object maintains ownership over the returned pointer.
             /// Intended for tests.
-            /// @return Read-only pointer to the positive element mapper.
+            /// @return Read-only pointer to the underlying element mapper.
             inline const IElementMapper* GetElementMapper(void) const
             {
                 return elementMapper.get();
@@ -343,7 +433,7 @@ namespace Xidi
             std::optional<SElementIdentifier> GetTargetElementAt(int index) const override;
         };
 
-        /// Maps a single XInput controller element to two underlying mappers depending on its state, either positive or negative.
+        /// Maps a single XInput controller element to two underlying element mappers depending on its state, either positive or negative.
         /// For analog values, "positive" means that the axis value is greater than or equal to the netural value, and "negative" means it is less than the neutral value.
         /// For button values, "positive" means the button is pressed, and "negative" means it is not pressed.
         /// For trigger values, "positive" means the trigger value is greater than or equal to the midpoint, and "negative" means it is less than the midpoint.
