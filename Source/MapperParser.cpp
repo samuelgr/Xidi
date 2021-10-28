@@ -34,6 +34,10 @@ namespace Xidi
         {
             // -------- INTERNAL CONSTANTS --------------------------------- //
 
+            /// Maximum recursion depth allowed for an element mapper string.
+            /// Should be at least one more than the total number of element mapper types that accept underlying element mappers.
+            static constexpr unsigned int kElementMapperMaxRecursionDepth = 4;
+
             /// Character used inside an element mapper string to indicate the beginning of a parameter list.
             static constexpr wchar_t kCharElementMapperBeginParams = '(';
 
@@ -577,10 +581,8 @@ namespace Xidi
 
             std::optional<std::unique_ptr<IElementMapper>> ElementMapperFromString(std::wstring_view elementMapperString)
             {
-                static constexpr unsigned int kMaxRecursionDepth = 3;
-
                 const unsigned int kRecursionDepth = ComputeRecursionDepth(elementMapperString).value_or(UINT_MAX);
-                if (kRecursionDepth > kMaxRecursionDepth)
+                if (kRecursionDepth > kElementMapperMaxRecursionDepth)
                     return std::nullopt;
 
                 SElementMapperParseResult parseResult = ParseSingleElementMapper(elementMapperString);
