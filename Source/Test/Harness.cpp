@@ -67,7 +67,6 @@ namespace XidiTest
 
         for (auto testCaseIterator = testCases.begin(); testCaseIterator != testCases.end(); ++testCaseIterator)
         {
-            const bool lastTestCase = (testCaseIterator == --testCases.end());
             const auto& name = testCaseIterator->first;
             const ITestCase* const testCase = testCaseIterator->second;
 
@@ -76,7 +75,7 @@ namespace XidiTest
 
             if (testCase->CanRun())
             {
-                PrintFormatted(L"[ %-9s ] %s", L"RUN", name.data());
+                PrintFormatted(L"\n[ %-9s ] %s", L"RUN", name.data());
 
                 bool testCasePassed = false;
                 try
@@ -94,16 +93,16 @@ namespace XidiTest
                 if (true != testCasePassed)
                     failingTests.insert(name.data());
 
-                PrintFormatted(L"[ %9s ] %s%s", (true == testCasePassed ? L"PASS" : L"FAIL"), name.data(), (lastTestCase ? L"" : L"\n"));
+                PrintFormatted(L"[ %9s ] %s", (true == testCasePassed ? L"PASS" : L"FAIL"), name.data());
             }
             else
             {
-                PrintFormatted(L"[  %-8s ] %s%s", L"SKIPPED", name.data(), (lastTestCase ? L"" : L"\n"));
+                PrintFormatted(L"[  %-8s ] %s", L"SKIPPED", name.data());
                 numSkippedTests += 1;
             }
         }
 
-        Print(L"================================================================================");
+        Print(L"\n================================================================================");
         
         if (numSkippedTests > 0)
             PrintFormatted(L"\nFinished running %u test%s (%u skipped).\n", numExecutedTests, ((1 == numExecutedTests) ? L"" : L"s"), numSkippedTests);
