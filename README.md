@@ -465,7 +465,11 @@ A keyboard element mapper links an XInput controller element to a key on the key
 
 Element mappers of this type require a single parameter identifying the associated keyboard key. Keyboard keys can be identified in a few different ways, as listed below in order of precedence from top to bottom.
 1. Symbolic key name, which is case-insensitive and takes the form of one of the `DIK_` enumerator names from the DirectInput [keyboard device enumeration](https://docs.microsoft.com/en-us/previous-versions/windows/desktop/ee418641(v=vs.85)), with or without the "DIK_" prefix.
-1. Numeric scan code expressed as a number in decimal, octal (prefix "0" required), or hexadecimal (prefix "0x" required).
+   - This is the recommended way to identify a keyboard key.
+1. Raw numeric scan code expressed as a single byte number in decimal, octal (prefix "0" required), or hexadecimal (prefix "0x" required).
+   - Valid values are 0 to 255 (0x0 to 0xFF).
+   - Scan codes that identify keys other than extended keys fall into the range 0 to 127 (0x0 to 0x7F).
+   - Scan codes that identify extended keys typically use two bytes, the first of which is the prefix byte 0xE0. Instead of including a prefix byte, follow the DirectInput convention of setting the most significant bit to obtain a value from 128 to 255 (0x80 to 0xFF).
 
 In general, the easiest way of identifying a keyboard key is by symbolic name. The complete list of supported symbolic names is contained in the `MapperParser.cpp` source code file, but as a summary the following are recognized. Note that Xidi internally maps all keyboard key identifiers to hardware scan codes. Therefore, all symbolic names represent physical key positions on a US QWERTY keyboard.
 
