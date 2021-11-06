@@ -16,6 +16,7 @@
 #include "Keyboard.h"
 #include "Mapper.h"
 #include "MapperParser.h"
+#include "Strings.h"
 
 #include <climits>
 #include <cstddef>
@@ -579,17 +580,23 @@ namespace Xidi
 
             // --------
 
-            std::optional<std::unique_ptr<IElementMapper>> ElementMapperFromString(std::wstring_view elementMapperString)
+            ElementMapperOrError ElementMapperFromString(std::wstring_view elementMapperString)
             {
-                const unsigned int kRecursionDepth = ComputeRecursionDepth(elementMapperString).value_or(UINT_MAX);
+                const std::optional<unsigned int>kMaybeRecursionDepth = ComputeRecursionDepth(elementMapperString);
+                if (false == kMaybeRecursionDepth.has_value())
+                    return Strings::FormatString(L"Syntax error: Unbalanced parentheses").Data();
+
+                const unsigned int kRecursionDepth = ComputeRecursionDepth(elementMapperString).value();
                 if (kRecursionDepth > kElementMapperMaxRecursionDepth)
-                    return std::nullopt;
+                    return Strings::FormatString(L"Nesting depth %u exceeds limit of %u", kRecursionDepth, kElementMapperMaxRecursionDepth).Data();
 
                 SElementMapperParseResult parseResult = ParseSingleElementMapper(elementMapperString);
-                if ((false == parseResult.maybeElementMapper.has_value()) || (false == parseResult.remainingString.empty()))
-                    return std::nullopt;
+                if (false == parseResult.maybeElementMapper.HasValue())
+                    return std::move(parseResult.maybeElementMapper);
+                else if (false == parseResult.remainingString.empty())
+                    return Strings::FormatString(L"Extraneous string \"%s\" could not be parsed", std::wstring(parseResult.remainingString).c_str()).Data();
 
-                return std::move(parseResult.maybeElementMapper.value());
+                return std::move(parseResult.maybeElementMapper);
             }
 
             // --------
@@ -774,17 +781,17 @@ namespace Xidi
             std::optional<std::unique_ptr<IElementMapper>> MakeCompoundMapper(std::wstring_view params)
             {
                 CompoundMapper::TElementMappers elementMappers;
-                SElementMapperParseResult elementMapperResult = {.remainingString = params};
+                SElementMapperParseResult elementMapperResult = {.maybeElementMapper = nullptr, .remainingString = params};
 
                 // Parse element mappers one at a time.
                 // At least one underlying element mapper is required, with all the rest being optional.
                 for (size_t i = 0; i < elementMappers.size(); ++i)
                 {
                     elementMapperResult = ParseSingleElementMapper(elementMapperResult.remainingString);
-                    if (false == elementMapperResult.maybeElementMapper.has_value())
+                    if (false == elementMapperResult.maybeElementMapper.HasValue())
                         return std::nullopt;
 
-                    elementMappers[i] = std::move(elementMapperResult.maybeElementMapper.value());
+                    elementMappers[i] = std::move(elementMapperResult.maybeElementMapper.Value());
 
                     if (true == elementMapperResult.remainingString.empty())
                         break;
@@ -814,10 +821,10 @@ namespace Xidi
             std::optional<std::unique_ptr<IElementMapper>> MakeInvertMapper(std::wstring_view params)
             {
                 SElementMapperParseResult elementMapperResult = ParseSingleElementMapper(params);
-                if ((false == elementMapperResult.maybeElementMapper.has_value()) || (false == elementMapperResult.remainingString.empty()))
+                if ((false == elementMapperResult.maybeElementMapper.HasValue()) || (false == elementMapperResult.remainingString.empty()))
                     return std::nullopt;
 
-                return std::make_unique<InvertMapper>(std::move(elementMapperResult.maybeElementMapper.value()));
+                return std::make_unique<InvertMapper>(std::move(elementMapperResult.maybeElementMapper.Value()));
             }
 
             // --------
@@ -903,19 +910,19 @@ namespace Xidi
             {
                 // First parameter is required. It is a string that specifies the positive element mapper.
                 SElementMapperParseResult positiveElementMapperResult = ParseSingleElementMapper(params);
-                if (false == positiveElementMapperResult.maybeElementMapper.has_value())
+                if (false == positiveElementMapperResult.maybeElementMapper.HasValue())
                     return std::nullopt;
 
                 // Second parameter is required. It is a string that specifies the negative element mapper.
                 SElementMapperParseResult negativeElementMapperResult = ParseSingleElementMapper(positiveElementMapperResult.remainingString);
-                if (false == negativeElementMapperResult.maybeElementMapper.has_value())
+                if (false == negativeElementMapperResult.maybeElementMapper.HasValue())
                     return std::nullopt;
 
                 // No further parameters allowed.
                 if (false == negativeElementMapperResult.remainingString.empty())
                     return std::nullopt;
 
-                return std::make_unique<SplitMapper>(std::move(positiveElementMapperResult.maybeElementMapper.value()), std::move(negativeElementMapperResult.maybeElementMapper.value()));
+                return std::make_unique<SplitMapper>(std::move(positiveElementMapperResult.maybeElementMapper.Value()), std::move(negativeElementMapperResult.maybeElementMapper.Value()));
             }
 
             // --------
@@ -969,15 +976,19 @@ namespace Xidi
 
                 const std::optional<SElementMapperStringParts> kMaybeElementMapperStringParts = ExtractElementMapperStringParts(elementMapperString);
                 if (false == kMaybeElementMapperStringParts.has_value())
-                    return {.maybeElementMapper = std::nullopt};
+                    return {.maybeElementMapper = Strings::FormatString(L"String \"%s\" contains a syntax error", std::wstring(elementMapperString).c_str()).Data()};
 
                 const SElementMapperStringParts& kElementMapperStringParts = kMaybeElementMapperStringParts.value();
 
                 const auto kMakeElementMapperIter = kMakeElementMapperFunctions.find(kElementMapperStringParts.type);
                 if (kMakeElementMapperFunctions.cend() == kMakeElementMapperIter)
-                    return {.maybeElementMapper = std::nullopt};
+                    return {.maybeElementMapper = Strings::FormatString(L"%s: Unrecognized element mapper type", std::wstring(kElementMapperStringParts.type).c_str()).Data()};
 
-                return {.maybeElementMapper = kMakeElementMapperIter->second(kElementMapperStringParts.params), .remainingString = kElementMapperStringParts.remaining};
+                std::optional<std::unique_ptr<IElementMapper>> maybeElementMapper = kMakeElementMapperIter->second(kElementMapperStringParts.params);
+                if (false == maybeElementMapper.has_value())
+                    return {.maybeElementMapper = Strings::FormatString(L"%s: Invalid parameters", std::wstring(kElementMapperStringParts.type).c_str()).Data()};
+
+                return {.maybeElementMapper = std::move(maybeElementMapper.value()), .remainingString = kElementMapperStringParts.remaining};
             }
         }
     }

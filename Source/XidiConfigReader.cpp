@@ -207,15 +207,15 @@ namespace Xidi
             {
             case EBlueprintOperation::SetElementMapper:
                 do {
-                    std::optional<std::unique_ptr<Controller::IElementMapper>> maybeElementMapper = Controller::MapperParser::ElementMapperFromString(value);
-                    if (false == maybeElementMapper.has_value())
+                    Xidi::Controller::MapperParser::ElementMapperOrError maybeElementMapper = Controller::MapperParser::ElementMapperFromString(value);
+                    if (false == maybeElementMapper.HasValue())
                     {
-                        SetErrorMessage(Strings::FormatString(L"%s: Failed to parse string \"%s\" into an element mapper object.", name.data(), value.data()));
+                        SetErrorMessage(Strings::FormatString(L"%s: Failed to parse element mapper: %s.", name.data(), maybeElementMapper.Error().c_str()));
                         customMapperBuilder->InvalidateBlueprint(customMapperName);
                         return EAction::Error;
                     }
 
-                    if (false == customMapperBuilder->SetBlueprintElementMapper(customMapperName, name, std::move(maybeElementMapper.value())))
+                    if (false == customMapperBuilder->SetBlueprintElementMapper(customMapperName, name, std::move(maybeElementMapper.Value())))
                     {
                         SetErrorMessage(Strings::FormatString(L"%s: Internal error: Successfully parsed element mapper object but failed to set it on the blueprint.", name.data()));
                         customMapperBuilder->InvalidateBlueprint(customMapperName);

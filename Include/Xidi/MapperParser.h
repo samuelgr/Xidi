@@ -15,6 +15,7 @@
 #include "ControllerTypes.h"
 #include "ElementMapper.h"
 #include "Mapper.h"
+#include "ValueOrError.h"
 
 #include <memory>
 #include <optional>
@@ -28,6 +29,10 @@ namespace Xidi
         namespace MapperParser
         {
             // -------- TYPE DEFINITIONS ----------------------------------- //
+
+            /// Type alias for representing either an element mapper pointer or an error message.
+            /// Intended to be returned from functions that parse element mapper strings and can be used to hold semantically-rich error messages for the user.
+            typedef ValueOrError<std::unique_ptr<IElementMapper>, std::wstring> ElementMapperOrError;
 
             /// Holds a partially-separated representation of an element mapper string.
             /// This view of the element mapper string is separated into type and parameter portions.
@@ -51,7 +56,7 @@ namespace Xidi
             /// Holds the result of parsing and consuming a single element mapper worth of input string.
             struct SElementMapperParseResult
             {
-                std::optional<std::unique_ptr<IElementMapper>> maybeElementMapper;  ///< Element mapper object, if the parse was successful. Note that `nullptr` indicates successful parse of a null element mapper.
+                ElementMapperOrError maybeElementMapper;                            ///< Element mapper object, if the parse was successful. Note that `nullptr` indicates successful parse of a null element mapper.
                 std::wstring_view remainingString;                                  ///< Remaining unparsed part of the string. Either empty or contains additional element mapper strings to be parsed.
             };
 
@@ -83,8 +88,8 @@ namespace Xidi
             /// Attempts to build an element mapper using the supplied string.
             /// This is the main entry point intended for use when parsing element mappers from strings.
             /// @param [in] elementMapperString Input string supposedly representing an element mapper.
-            /// @return Pointer to the new mapper object if successful.
-            std::optional<std::unique_ptr<IElementMapper>> ElementMapperFromString(std::wstring_view elementMapperString);
+            /// @return Pointer to the new mapper object if successful, error message string otherwise.
+            ElementMapperOrError ElementMapperFromString(std::wstring_view elementMapperString);
 
             /// Determines if the specified controller element string is valid and recognized as identifying a controller element.
             /// See "MapperParser.cpp" for strings that will be recognized as valid.

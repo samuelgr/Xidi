@@ -42,6 +42,7 @@
     <ClInclude Include="Include\Xidi\StateChangeEventBuffer.h" />
     <ClInclude Include="Include\Xidi\Strings.h" />
     <ClInclude Include="Include\Xidi\TemporaryBuffer.h" />
+    <ClInclude Include="Include\Xidi\ValueOrError.h" />
     <ClInclude Include="Include\Xidi\VirtualController.h" />
     <ClInclude Include="Include\Xidi\WrapperJoyWinMM.h" />
     <ClInclude Include="Include\Xidi\XidiConfigReader.h" />

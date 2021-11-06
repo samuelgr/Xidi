@@ -24,6 +24,7 @@
 namespace XidiTest
 {
     using namespace ::Xidi::Controller;
+    using ::Xidi::Controller::MapperParser::ElementMapperOrError;
     using ::Xidi::Controller::MapperParser::SElementMapperStringParts;
     using ::Xidi::Controller::MapperParser::SElementMapperParseResult;
     using ::Xidi::Controller::MapperParser::SParamStringParts;
@@ -57,11 +58,11 @@ namespace XidiTest
     /// @param [in] resultB Second of the two parse result structures to compare.
     static void VerifyParseResultsAreEquivalent(const SElementMapperParseResult& resultA, const SElementMapperParseResult& resultB)
     {
-        TEST_ASSERT(resultA.maybeElementMapper.has_value() == resultB.maybeElementMapper.has_value());
+        TEST_ASSERT(resultA.maybeElementMapper.HasValue() == resultB.maybeElementMapper.HasValue());
         TEST_ASSERT(resultA.remainingString == resultB.remainingString);
 
-        if (resultA.maybeElementMapper.has_value())
-            VerifyElementMapperPointersAreEquivalent(resultA.maybeElementMapper.value().get(), resultB.maybeElementMapper.value().get());
+        if (resultA.maybeElementMapper.HasValue())
+            VerifyElementMapperPointersAreEquivalent(resultA.maybeElementMapper.Value().get(), resultB.maybeElementMapper.Value().get());
     }
 
     /// Checks if the supplied split mapper pointers are equivalent and flags a test failure if not.
@@ -628,10 +629,10 @@ namespace XidiTest
             SElementMapperParseResult actualParseResult = MapperParser::ParseSingleElementMapper(kTestStrings[i]);
             VerifyParseResultsAreEquivalent(actualParseResult, kExpectedParseResults[i]);
 
-            TEST_ASSERT(nullptr != dynamic_cast<AxisMapper*>(actualParseResult.maybeElementMapper.value().get()));
+            TEST_ASSERT(nullptr != dynamic_cast<AxisMapper*>(actualParseResult.maybeElementMapper.Value().get()));
 
-            const AxisMapper::EDirection kExpectedDirection = dynamic_cast<AxisMapper*>(kExpectedParseResults[i].maybeElementMapper.value().get())->GetAxisDirection();
-            const AxisMapper::EDirection kActualDirection = dynamic_cast<AxisMapper*>(actualParseResult.maybeElementMapper.value().get())->GetAxisDirection();
+            const AxisMapper::EDirection kExpectedDirection = dynamic_cast<AxisMapper*>(kExpectedParseResults[i].maybeElementMapper.Value().get())->GetAxisDirection();
+            const AxisMapper::EDirection kActualDirection = dynamic_cast<AxisMapper*>(actualParseResult.maybeElementMapper.Value().get())->GetAxisDirection();
             TEST_ASSERT(kActualDirection == kExpectedDirection);
         }
     }
@@ -703,10 +704,10 @@ namespace XidiTest
             SElementMapperParseResult actualParseResult = MapperParser::ParseSingleElementMapper(kTestStrings[i]);
             VerifyParseResultsAreEquivalent(actualParseResult, kExpectedParseResults[i]);
 
-            TEST_ASSERT(nullptr != dynamic_cast<CompoundMapper*>(actualParseResult.maybeElementMapper.value().get()));
+            TEST_ASSERT(nullptr != dynamic_cast<CompoundMapper*>(actualParseResult.maybeElementMapper.Value().get()));
 
-            const CompoundMapper::TElementMappers& kExpectedElementMappers = dynamic_cast<CompoundMapper*>(kExpectedParseResults[i].maybeElementMapper.value().get())->GetElementMappers();
-            const CompoundMapper::TElementMappers& kActualElementMappers = dynamic_cast<CompoundMapper*>(actualParseResult.maybeElementMapper.value().get())->GetElementMappers();
+            const CompoundMapper::TElementMappers& kExpectedElementMappers = dynamic_cast<CompoundMapper*>(kExpectedParseResults[i].maybeElementMapper.Value().get())->GetElementMappers();
+            const CompoundMapper::TElementMappers& kActualElementMappers = dynamic_cast<CompoundMapper*>(actualParseResult.maybeElementMapper.Value().get())->GetElementMappers();
 
             for (size_t j = 0; j < kExpectedElementMappers.size(); ++j)
                 VerifyElementMapperPointersAreEquivalent(kActualElementMappers[j].get(), kExpectedElementMappers[j].get());
@@ -736,10 +737,10 @@ namespace XidiTest
             SElementMapperParseResult actualParseResult = MapperParser::ParseSingleElementMapper(kTestStrings[i]);
             VerifyParseResultsAreEquivalent(actualParseResult, kExpectedParseResults[i]);
 
-            TEST_ASSERT(nullptr != dynamic_cast<DigitalAxisMapper*>(actualParseResult.maybeElementMapper.value().get()));
+            TEST_ASSERT(nullptr != dynamic_cast<DigitalAxisMapper*>(actualParseResult.maybeElementMapper.Value().get()));
 
-            const AxisMapper::EDirection kExpectedDirection = dynamic_cast<DigitalAxisMapper*>(kExpectedParseResults[i].maybeElementMapper.value().get())->GetAxisDirection();
-            const AxisMapper::EDirection kActualDirection = dynamic_cast<DigitalAxisMapper*>(actualParseResult.maybeElementMapper.value().get())->GetAxisDirection();
+            const AxisMapper::EDirection kExpectedDirection = dynamic_cast<DigitalAxisMapper*>(kExpectedParseResults[i].maybeElementMapper.Value().get())->GetAxisDirection();
+            const AxisMapper::EDirection kActualDirection = dynamic_cast<DigitalAxisMapper*>(actualParseResult.maybeElementMapper.Value().get())->GetAxisDirection();
             TEST_ASSERT(kActualDirection == kExpectedDirection);
         }
     }
@@ -766,10 +767,10 @@ namespace XidiTest
             SElementMapperParseResult actualParseResult = MapperParser::ParseSingleElementMapper(kTestStrings[i]);
             VerifyParseResultsAreEquivalent(actualParseResult, kExpectedParseResults[i]);
 
-            TEST_ASSERT(nullptr != dynamic_cast<InvertMapper*>(actualParseResult.maybeElementMapper.value().get()));
+            TEST_ASSERT(nullptr != dynamic_cast<InvertMapper*>(actualParseResult.maybeElementMapper.Value().get()));
 
-            const IElementMapper* kExpectedElementMapper = kExpectedParseResults[i].maybeElementMapper.value().get();
-            const IElementMapper* kActualElementMapper = dynamic_cast<InvertMapper*>(actualParseResult.maybeElementMapper.value().get())->GetElementMapper();
+            const IElementMapper* kExpectedElementMapper = kExpectedParseResults[i].maybeElementMapper.Value().get();
+            const IElementMapper* kActualElementMapper = dynamic_cast<InvertMapper*>(actualParseResult.maybeElementMapper.Value().get())->GetElementMapper();
             VerifyElementMapperPointersAreEquivalent(kActualElementMapper, kExpectedElementMapper);
         }
     }
@@ -815,10 +816,10 @@ namespace XidiTest
             SElementMapperParseResult actualParseResult = MapperParser::ParseSingleElementMapper(kTestStrings[i]);
             VerifyParseResultsAreEquivalent(actualParseResult, kExpectedParseResults[i]);
 
-            TEST_ASSERT(nullptr != dynamic_cast<KeyboardMapper*>(actualParseResult.maybeElementMapper.value().get()));
+            TEST_ASSERT(nullptr != dynamic_cast<KeyboardMapper*>(actualParseResult.maybeElementMapper.Value().get()));
 
-            const TKeyIdentifier kExpectedTargetKey = dynamic_cast<KeyboardMapper*>(kExpectedParseResults[i].maybeElementMapper.value().get())->GetTargetKey();
-            const TKeyIdentifier kActualTargetKey = dynamic_cast<KeyboardMapper*>(actualParseResult.maybeElementMapper.value().get())->GetTargetKey();
+            const TKeyIdentifier kExpectedTargetKey = dynamic_cast<KeyboardMapper*>(kExpectedParseResults[i].maybeElementMapper.Value().get())->GetTargetKey();
+            const TKeyIdentifier kActualTargetKey = dynamic_cast<KeyboardMapper*>(actualParseResult.maybeElementMapper.Value().get())->GetTargetKey();
             TEST_ASSERT(kActualTargetKey == kExpectedTargetKey);
         }
     }
@@ -843,10 +844,10 @@ namespace XidiTest
             SElementMapperParseResult actualParseResult = MapperParser::ParseSingleElementMapper(kTestStrings[i]);
             VerifyParseResultsAreEquivalent(actualParseResult, kExpectedParseResults[i]);
 
-            TEST_ASSERT(nullptr != dynamic_cast<PovMapper*>(actualParseResult.maybeElementMapper.value().get()));
+            TEST_ASSERT(nullptr != dynamic_cast<PovMapper*>(actualParseResult.maybeElementMapper.Value().get()));
 
-            const EPovDirection kExpectedDirection = dynamic_cast<PovMapper*>(kExpectedParseResults[i].maybeElementMapper.value().get())->GetDirection();
-            const EPovDirection kActualDirection = dynamic_cast<PovMapper*>(actualParseResult.maybeElementMapper.value().get())->GetDirection();
+            const EPovDirection kExpectedDirection = dynamic_cast<PovMapper*>(kExpectedParseResults[i].maybeElementMapper.Value().get())->GetDirection();
+            const EPovDirection kActualDirection = dynamic_cast<PovMapper*>(actualParseResult.maybeElementMapper.Value().get())->GetDirection();
             TEST_ASSERT(kActualDirection == kExpectedDirection);
         }
     }
@@ -909,10 +910,10 @@ namespace XidiTest
             SElementMapperParseResult actualParseResult = MapperParser::ParseSingleElementMapper(kTestStrings[i]);
             VerifyParseResultsAreEquivalent(actualParseResult, kExpectedParseResults[i]);
 
-            TEST_ASSERT(nullptr != dynamic_cast<SplitMapper*>(actualParseResult.maybeElementMapper.value().get()));
+            TEST_ASSERT(nullptr != dynamic_cast<SplitMapper*>(actualParseResult.maybeElementMapper.Value().get()));
 
-            const SplitMapper* const kExpectedSplitMapper = dynamic_cast<SplitMapper*>(kExpectedParseResults[i].maybeElementMapper.value().get());
-            const SplitMapper* const kActualSplitMapper = dynamic_cast<SplitMapper*>(actualParseResult.maybeElementMapper.value().get());
+            const SplitMapper* const kExpectedSplitMapper = dynamic_cast<SplitMapper*>(kExpectedParseResults[i].maybeElementMapper.Value().get());
+            const SplitMapper* const kActualSplitMapper = dynamic_cast<SplitMapper*>(actualParseResult.maybeElementMapper.Value().get());
             VerifySplitMapperPointersAreEquivalent(kActualSplitMapper, kExpectedSplitMapper);
         }
     }
@@ -944,7 +945,7 @@ namespace XidiTest
             L"Pov(Up, Left, Right)",
             L"Pov(AnyDir)"
         };
-        const SElementMapperParseResult kExpectedParseResult = {.maybeElementMapper = std::nullopt};
+        const SElementMapperParseResult kExpectedParseResult = {.maybeElementMapper = L"Test error message."};
 
         for (int i = 0; i < _countof(kTestStrings); ++i)
         {
@@ -973,9 +974,9 @@ namespace XidiTest
 
         for (int i = 0; i < _countof(kTestStrings); ++i)
         {
-            const std::optional<std::unique_ptr<IElementMapper>> kMaybeActualElementMapper = MapperParser::ElementMapperFromString(kTestStrings[i]);
-            TEST_ASSERT(true == kMaybeActualElementMapper.has_value());
-            VerifyElementMapperPointersAreEquivalent(kMaybeActualElementMapper.value().get(), kExpectedElementMappers[i].get());
+            const ElementMapperOrError kMaybeActualElementMapper = MapperParser::ElementMapperFromString(kTestStrings[i]);
+            TEST_ASSERT(true == kMaybeActualElementMapper.HasValue());
+            VerifyElementMapperPointersAreEquivalent(kMaybeActualElementMapper.Value().get(), kExpectedElementMappers[i].get());
         }
     }
 
@@ -1003,9 +1004,9 @@ namespace XidiTest
 
         for (int i = 0; i < _countof(kTestStrings); ++i)
         {
-            const std::optional<std::unique_ptr<IElementMapper>> kMaybeActualElementMapper = MapperParser::ElementMapperFromString(kTestStrings[i]);
-            TEST_ASSERT(true == kMaybeActualElementMapper.has_value());
-            VerifyElementMapperPointersAreEquivalent(kMaybeActualElementMapper.value().get(), kExpectedElementMappers[i].get());
+            const ElementMapperOrError kMaybeActualElementMapper = MapperParser::ElementMapperFromString(kTestStrings[i]);
+            TEST_ASSERT(true == kMaybeActualElementMapper.HasValue());
+            VerifyElementMapperPointersAreEquivalent(kMaybeActualElementMapper.Value().get(), kExpectedElementMappers[i].get());
         }
     }
 
@@ -1021,8 +1022,8 @@ namespace XidiTest
 
         for (int i = 0; i < _countof(kTestStrings); ++i)
         {
-            const std::optional<std::unique_ptr<IElementMapper>> kMaybeActualElementMapper = MapperParser::ElementMapperFromString(kTestStrings[i]);
-            TEST_ASSERT(false == kMaybeActualElementMapper.has_value());
+            const ElementMapperOrError kMaybeActualElementMapper = MapperParser::ElementMapperFromString(kTestStrings[i]);
+            TEST_ASSERT(true == kMaybeActualElementMapper.HasError());
         }
     }
 
@@ -1035,8 +1036,8 @@ namespace XidiTest
 
         for (int i = 0; i < _countof(kTestStrings); ++i)
         {
-            const std::optional<std::unique_ptr<IElementMapper>> kMaybeActualElementMapper = MapperParser::ElementMapperFromString(kTestStrings[i]);
-            TEST_ASSERT(false == kMaybeActualElementMapper.has_value());
+            const ElementMapperOrError kMaybeActualElementMapper = MapperParser::ElementMapperFromString(kTestStrings[i]);
+            TEST_ASSERT(true == kMaybeActualElementMapper.HasError());
         }
     }
 }

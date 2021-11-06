@@ -217,6 +217,7 @@
     <ClInclude Include="Include\Xidi\Message.h" />
     <ClInclude Include="Include\Xidi\MapperParser.h" />
     <ClInclude Include="Include\Xidi\PhysicalController.h" />
+    <ClInclude Include="Include\Xidi\ValueOrError.h" />
     <ClInclude Include="Include\Xidi\StateChangeEventBuffer.h" />
     <ClInclude Include="Include\Xidi\Strings.h" />
     <ClInclude Include="Include\Xidi\TemporaryBuffer.h" />
