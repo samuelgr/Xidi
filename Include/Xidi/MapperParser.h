@@ -130,56 +130,56 @@ namespace Xidi
             /// Attempts to build an #AxisMapper using the supplied parameters.
             /// Parameter string should consist of a string representing an axis and optionally a second string representing an axis direction.
             /// @param [in] params Parameter string.
-            /// @return Pointer to the new mapper object if successful.
-            std::optional<std::unique_ptr<IElementMapper>> MakeAxisMapper(std::wstring_view params);
+            /// @return Pointer to the new mapper object if successful, error message string otherwise.
+            ElementMapperOrError MakeAxisMapper(std::wstring_view params);
 
             /// Attempts to build a #ButtonMapper using the supplied parameters.
             /// Parameter string should consist of a single integer identifying the button number.
             /// @param [in] params Parameter string.
-            /// @return Pointer to the new mapper object if successful.
-            std::optional<std::unique_ptr<IElementMapper>> MakeButtonMapper(std::wstring_view params);
+            /// @return Pointer to the new mapper object if successful, error message string otherwise.
+            ElementMapperOrError MakeButtonMapper(std::wstring_view params);
 
             /// Attempts to build a #CompoundMapper using the supplied parameters.
             /// Parameter string should consist of a comma-separated list of element mappers, up to the maximum number allowed.
             /// @param [in] params Parameter string.
-            /// @return Pointer to the new mapper object if successful.
-            std::optional<std::unique_ptr<IElementMapper>> MakeCompoundMapper(std::wstring_view params);
+            /// @return Pointer to the new mapper object if successful, error message string otherwise.
+            ElementMapperOrError MakeCompoundMapper(std::wstring_view params);
 
             /// Attempts to build a #DigitalAxisMapper using the supplied parameters.
             /// Parameter string should consist of a string representing an axis and optionally a second string representing an axis direction.
             /// @param [in] params Parameter string.
-            /// @return Pointer to the new mapper object if successful.
-            std::optional<std::unique_ptr<IElementMapper>> MakeDigitalAxisMapper(std::wstring_view params);
+            /// @return Pointer to the new mapper object if successful, error message string otherwise.
+            ElementMapperOrError MakeDigitalAxisMapper(std::wstring_view params);
 
             /// Attempts to build an #InvertMapper using the supplied parameters.
             /// Parameter string should consist of a string representing an element mapper.
             /// @param [in] params Parameter string.
-            /// @return Pointer to the new mapper object if successful.
-            std::optional<std::unique_ptr<IElementMapper>> MakeInvertMapper(std::wstring_view params);
+            /// @return Pointer to the new mapper object if successful, error message string otherwise.
+            ElementMapperOrError MakeInvertMapper(std::wstring_view params);
 
             /// Attempts to build a #KeyboardMapper using the supplied parameters.
             /// Parameter string should consist of a single integer identifying the keyboard scan code.
             /// @param [in] params Parameter string.
-            /// @return Pointer to the new mapper object if successful.
-            std::optional<std::unique_ptr<IElementMapper>> MakeKeyboardMapper(std::wstring_view params);
+            /// @return Pointer to the new mapper object if successful, error message string otherwise.
+            ElementMapperOrError MakeKeyboardMapper(std::wstring_view params);
 
             /// Attempts to build a null mapper (i.e. `nullptr`) using the supplied parameters.
             /// Parameter string should be empty.
             /// @param [in] params Parameter string.
-            /// @return `nullptr` if successful.
-            std::optional<std::unique_ptr<IElementMapper>> MakeNullMapper(std::wstring_view params);
+            /// @return `nullptr` if successful, error message string otherwise.
+            ElementMapperOrError MakeNullMapper(std::wstring_view params);
 
             /// Attempts to build a #PovMapper using the supplied parameters.
             /// Parameter string should consist of a string representing a POV direction (for positive "pressed" contributions) and optionally a second string representing a POV direction (for negative "pressed" contributions).
             /// @param [in] params Parameter string.
-            /// @return Pointer to the new mapper object if successful.
-            std::optional<std::unique_ptr<IElementMapper>> MakePovMapper(std::wstring_view params);
+            /// @return Pointer to the new mapper object if successful, error message string otherwise.
+            ElementMapperOrError MakePovMapper(std::wstring_view params);
 
             /// Attempts to build a #SplitMapper using the supplied parameters.
             /// Parameter string should consist of two comma-separated strings representing element mappers.
             /// @param [in] params Parameter string.
-            /// @return Pointer to the new mapper object if successful.
-            std::optional<std::unique_ptr<IElementMapper>> MakeSplitMapper(std::wstring_view params);
+            /// @return Pointer to the new mapper object if successful, error message string otherwise.
+            ElementMapperOrError MakeSplitMapper(std::wstring_view params);
 
             /// Consumes part or all of the input string and attempts to parse it into an element mapper object.
             /// @param [in] elementMapperString Input string supposedly containing the representation of an element mapper.

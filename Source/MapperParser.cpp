@@ -17,6 +17,7 @@
 #include "Mapper.h"
 #include "MapperParser.h"
 #include "Strings.h"
+#include "ValueOrError.h"
 
 #include <climits>
 #include <cstddef>
@@ -61,7 +62,7 @@ namespace Xidi
             // -------- INTERNAL TYPES ------------------------------------- //
 
             /// Type for all functions that attempt to build individual element mappers given a parameter string.
-            typedef std::optional<std::unique_ptr<IElementMapper>>(*TMakeElementMapperFunc)(std::wstring_view);
+            typedef ElementMapperOrError(*TMakeElementMapperFunc)(std::wstring_view);
 
             /// Holds parameters for creating #AxisMapper objects.
             /// Useful because both #AxisMapper and #DigitalAxisMapper follow the same parsing logic and parameters.
@@ -71,6 +72,9 @@ namespace Xidi
                 EAxis axis;
                 AxisMapper::EDirection direction;
             };
+
+            /// Type alias for enabling axis parameter parsing to indicate a semantically-rich error on parse failure.
+            typedef ValueOrError<SAxisMapperParams, std::wstring> AxisMapperParamsOrError;
 
 
             // -------- INTERNAL FUNCTIONS --------------------------------- //
@@ -147,8 +151,8 @@ namespace Xidi
             /// Common logic for parsing axis mapper parameters from an axis mapper string.
             /// Used for creating both #AxisMapper and #DigitalAxisMapper objects.
             /// @param [in] params Parameter string.
-            /// @return Structure containing the parsed parameters if parsing was successful.
-            static std::optional<SAxisMapperParams> ParseAxisMapperParams(std::wstring_view params)
+            /// @return Structure containing the parsed parameters if parsing was successful, error message otherwise.
+            static AxisMapperParamsOrError ParseAxisMapperParams(std::wstring_view params)
             {
                 // Map of strings representing axes to axis enumerators.
                 static const std::map<std::wstring_view, EAxis> kAxisStrings = {
@@ -226,11 +230,11 @@ namespace Xidi
 
                 // First parameter is required. It is a string that specifies the target axis.
                 if (true == paramParts.first.empty())
-                    return std::nullopt;
+                    return L"Missing or unparseable axis";
 
                 const auto kAxisIter = kAxisStrings.find(paramParts.first);
                 if (kAxisStrings.cend() == kAxisIter)
-                    return std::nullopt;
+                    return Strings::FormatString(L"%s: Unrecognized axis", std::wstring(paramParts.first).c_str()).Data();
 
                 const EAxis kAxis = kAxisIter->second;
 
@@ -243,14 +247,14 @@ namespace Xidi
                     // It is an error for a second parameter to be present but invalid.
                     const auto kDirectionIter = kDirectionStrings.find(paramParts.first);
                     if (kDirectionStrings.cend() == kDirectionIter)
-                        return std::nullopt;
+                        return Strings::FormatString(L"%s: Unrecognized axis direction", std::wstring(paramParts.first).c_str()).Data();
 
                     axisDirection = kDirectionIter->second;
                 }
 
                 // No further parameters allowed.
                 if (false == paramParts.remaining.empty())
-                    return std::nullopt;
+                    return Strings::FormatString(L"\"%s\" is extraneous", std::wstring(paramParts.remaining).c_str()).Data();
 
                 return SAxisMapperParams({.axis = kAxis, .direction = axisDirection});
             }
@@ -594,7 +598,7 @@ namespace Xidi
                 if (false == parseResult.maybeElementMapper.HasValue())
                     return std::move(parseResult.maybeElementMapper);
                 else if (false == parseResult.remainingString.empty())
-                    return Strings::FormatString(L"Extraneous string \"%s\" could not be parsed", std::wstring(parseResult.remainingString).c_str()).Data();
+                    return Strings::FormatString(L"\"%s\" is extraneous", std::wstring(parseResult.remainingString).c_str()).Data();
 
                 return std::move(parseResult.maybeElementMapper);
             }
@@ -752,33 +756,33 @@ namespace Xidi
 
             // --------
 
-            std::optional<std::unique_ptr<IElementMapper>> MakeAxisMapper(std::wstring_view params)
+            ElementMapperOrError MakeAxisMapper(std::wstring_view params)
             {
-                const std::optional<SAxisMapperParams> kMaybeAxisMapperParams = ParseAxisMapperParams(params);
-                if (false == kMaybeAxisMapperParams.has_value())
-                    return std::nullopt;
+                const AxisMapperParamsOrError kMaybeAxisMapperParams = ParseAxisMapperParams(params);
+                if (true == kMaybeAxisMapperParams.HasError())
+                    return Strings::FormatString(L"Axis: %s", kMaybeAxisMapperParams.Error().c_str()).Data();
 
-                return std::make_unique<AxisMapper>(kMaybeAxisMapperParams.value().axis, kMaybeAxisMapperParams.value().direction);
+                return std::make_unique<AxisMapper>(kMaybeAxisMapperParams.Value().axis, kMaybeAxisMapperParams.Value().direction);
             }
 
             // --------
 
-            std::optional<std::unique_ptr<IElementMapper>> MakeButtonMapper(std::wstring_view params)
+            ElementMapperOrError MakeButtonMapper(std::wstring_view params)
             {
                 const std::optional<unsigned int> kMaybeButtonNumber = ParseUnsignedInteger(params, 10);
                 if (false == kMaybeButtonNumber.has_value())
-                    return std::nullopt;
+                    return Strings::FormatString(L"Button: Parameter \"%s\" must be a number between 1 and %u", std::wstring(params).c_str(), (unsigned int)EButton::Count).Data();
 
                 const unsigned int kButtonNumber = kMaybeButtonNumber.value() - 1;
                 if (kButtonNumber >= (unsigned int)EButton::Count)
-                    return std::nullopt;
+                    return Strings::FormatString(L"Button: Parameter \"%s\" must be a number between 1 and %u", std::wstring(params).c_str(), (unsigned int)EButton::Count).Data();
 
                 return std::make_unique<ButtonMapper>((EButton)kButtonNumber);
             }
 
             // --------
 
-            std::optional<std::unique_ptr<IElementMapper>> MakeCompoundMapper(std::wstring_view params)
+            ElementMapperOrError MakeCompoundMapper(std::wstring_view params)
             {
                 CompoundMapper::TElementMappers elementMappers;
                 SElementMapperParseResult elementMapperResult = {.maybeElementMapper = nullptr, .remainingString = params};
@@ -789,7 +793,7 @@ namespace Xidi
                 {
                     elementMapperResult = ParseSingleElementMapper(elementMapperResult.remainingString);
                     if (false == elementMapperResult.maybeElementMapper.HasValue())
-                        return std::nullopt;
+                        return Strings::FormatString(L"Compound: Parameter %u: %s", (unsigned int)(1 + i), elementMapperResult.maybeElementMapper.Error().c_str()).Data();
 
                     elementMappers[i] = std::move(elementMapperResult.maybeElementMapper.Value());
 
@@ -800,36 +804,39 @@ namespace Xidi
                 // No further parameters allowed.
                 // Specifying too many underlying element mappers is an error.
                 if (false == elementMapperResult.remainingString.empty())
-                    return std::nullopt;
+                    return Strings::FormatString(L"Compound: Number of parameters exceeds limit of %u", (unsigned int)elementMappers.size()).Data();
 
                 return std::make_unique<CompoundMapper>(std::move(elementMappers));
             }
 
             // --------
 
-            std::optional<std::unique_ptr<IElementMapper>> MakeDigitalAxisMapper(std::wstring_view params)
+            ElementMapperOrError MakeDigitalAxisMapper(std::wstring_view params)
             {
-                const std::optional<SAxisMapperParams> kMaybeAxisMapperParams = ParseAxisMapperParams(params);
-                if (false == kMaybeAxisMapperParams.has_value())
-                    return std::nullopt;
+                const AxisMapperParamsOrError kMaybeAxisMapperParams = ParseAxisMapperParams(params);
+                if (true == kMaybeAxisMapperParams.HasError())
+                    return Strings::FormatString(L"DigitalAxis: %s", kMaybeAxisMapperParams.Error().c_str()).Data();
 
-                return std::make_unique<DigitalAxisMapper>(kMaybeAxisMapperParams.value().axis, kMaybeAxisMapperParams.value().direction);
+                return std::make_unique<DigitalAxisMapper>(kMaybeAxisMapperParams.Value().axis, kMaybeAxisMapperParams.Value().direction);
             }
 
             // --------
 
-            std::optional<std::unique_ptr<IElementMapper>> MakeInvertMapper(std::wstring_view params)
+            ElementMapperOrError MakeInvertMapper(std::wstring_view params)
             {
                 SElementMapperParseResult elementMapperResult = ParseSingleElementMapper(params);
-                if ((false == elementMapperResult.maybeElementMapper.HasValue()) || (false == elementMapperResult.remainingString.empty()))
-                    return std::nullopt;
+
+                if (false == elementMapperResult.maybeElementMapper.HasValue())
+                    return Strings::FormatString(L"Invert: Parameter 1: %s", elementMapperResult.maybeElementMapper.Error().c_str()).Data();
+                else if (false == elementMapperResult.remainingString.empty())
+                    return Strings::FormatString(L"Invert: \"%s\" is extraneous", std::wstring(elementMapperResult.remainingString).c_str()).Data();
 
                 return std::make_unique<InvertMapper>(std::move(elementMapperResult.maybeElementMapper.Value()));
             }
 
             // --------
 
-            std::optional<std::unique_ptr<IElementMapper>> MakeKeyboardMapper(std::wstring_view params)
+            ElementMapperOrError MakeKeyboardMapper(std::wstring_view params)
             {
                 // First try parsing a friendly string representation of the keyboard scan code (i.e. strings that look like "DIK_*" constants, the "DIK_" prefix being optional).
                 // If that fails, try interpreting the scan code as an unsigned integer directly, with the possibility that it could be represented in decimal, octal, or hexadecimal.
@@ -838,28 +845,28 @@ namespace Xidi
                 if (false == maybeKeyScanCode.has_value())
                     maybeKeyScanCode = ParseUnsignedInteger(params);
                 if (false == maybeKeyScanCode.has_value())
-                    return std::nullopt;
+                    return Strings::FormatString(L"Keyboard: \"%s\" must map to a scan code between 0 and %u", std::wstring(params).c_str(), (Keyboard::kVirtualKeyboardKeyCount - 1)).Data();
 
                 const unsigned int kKeyScanCode = maybeKeyScanCode.value();
-                if (kKeyScanCode >= (unsigned int)Keyboard::kVirtualKeyboardKeyCount)
-                    return std::nullopt;
+                if (kKeyScanCode >= Keyboard::kVirtualKeyboardKeyCount)
+                    return Strings::FormatString(L"Keyboard: \"%s\" must map to a scan code between 0 and %u", std::wstring(params).c_str(), (Keyboard::kVirtualKeyboardKeyCount - 1)).Data();
 
                 return std::make_unique<KeyboardMapper>((Keyboard::TKeyIdentifier)kKeyScanCode);
             }
 
             // --------
 
-            std::optional<std::unique_ptr<IElementMapper>> MakeNullMapper(std::wstring_view params)
+            ElementMapperOrError MakeNullMapper(std::wstring_view params)
             {
                 if (false == params.empty())
-                    return std::nullopt;
+                    return Strings::FormatString(L"Null: \"%s\" is extraneous", std::wstring(params).c_str()).Data();
 
                 return nullptr;
             }
 
             // --------
 
-            std::optional<std::unique_ptr<IElementMapper>> MakePovMapper(std::wstring_view params)
+            ElementMapperOrError MakePovMapper(std::wstring_view params)
             {
                 // Map of strings representing axes to POV direction.
                 static const std::map<std::wstring_view, EPovDirection> kPovDirectionStrings = {
@@ -899,28 +906,28 @@ namespace Xidi
 
                 const auto kPovDirectionIter = kPovDirectionStrings.find(params);
                 if (kPovDirectionStrings.cend() == kPovDirectionIter)
-                    return std::nullopt;
+                    return Strings::FormatString(L"Pov: %s: Unrecognized POV direction", std::wstring(params).c_str()).Data();
 
                 return std::make_unique<PovMapper>(kPovDirectionIter->second);
             }
 
             // --------
 
-            std::optional<std::unique_ptr<IElementMapper>> MakeSplitMapper(std::wstring_view params)
+            ElementMapperOrError MakeSplitMapper(std::wstring_view params)
             {
                 // First parameter is required. It is a string that specifies the positive element mapper.
                 SElementMapperParseResult positiveElementMapperResult = ParseSingleElementMapper(params);
                 if (false == positiveElementMapperResult.maybeElementMapper.HasValue())
-                    return std::nullopt;
+                    return Strings::FormatString(L"Split: Parameter 1: %s", positiveElementMapperResult.maybeElementMapper.Error().c_str()).Data();
 
                 // Second parameter is required. It is a string that specifies the negative element mapper.
                 SElementMapperParseResult negativeElementMapperResult = ParseSingleElementMapper(positiveElementMapperResult.remainingString);
                 if (false == negativeElementMapperResult.maybeElementMapper.HasValue())
-                    return std::nullopt;
+                    return Strings::FormatString(L"Split: Parameter 2: ", negativeElementMapperResult.maybeElementMapper.Error().c_str()).Data();
 
                 // No further parameters allowed.
                 if (false == negativeElementMapperResult.remainingString.empty())
-                    return std::nullopt;
+                    return Strings::FormatString(L"Split: \"%s\" is extraneous", std::wstring(negativeElementMapperResult.remainingString).c_str()).Data();
 
                 return std::make_unique<SplitMapper>(std::move(positiveElementMapperResult.maybeElementMapper.Value()), std::move(negativeElementMapperResult.maybeElementMapper.Value()));
             }
@@ -976,7 +983,7 @@ namespace Xidi
 
                 const std::optional<SElementMapperStringParts> kMaybeElementMapperStringParts = ExtractElementMapperStringParts(elementMapperString);
                 if (false == kMaybeElementMapperStringParts.has_value())
-                    return {.maybeElementMapper = Strings::FormatString(L"String \"%s\" contains a syntax error", std::wstring(elementMapperString).c_str()).Data()};
+                    return {.maybeElementMapper = Strings::FormatString(L"\"%s\" contains a syntax error", std::wstring(elementMapperString).c_str()).Data()};
 
                 const SElementMapperStringParts& kElementMapperStringParts = kMaybeElementMapperStringParts.value();
 
@@ -984,11 +991,7 @@ namespace Xidi
                 if (kMakeElementMapperFunctions.cend() == kMakeElementMapperIter)
                     return {.maybeElementMapper = Strings::FormatString(L"%s: Unrecognized element mapper type", std::wstring(kElementMapperStringParts.type).c_str()).Data()};
 
-                std::optional<std::unique_ptr<IElementMapper>> maybeElementMapper = kMakeElementMapperIter->second(kElementMapperStringParts.params);
-                if (false == maybeElementMapper.has_value())
-                    return {.maybeElementMapper = Strings::FormatString(L"%s: Invalid parameters", std::wstring(kElementMapperStringParts.type).c_str()).Data()};
-
-                return {.maybeElementMapper = std::move(maybeElementMapper.value()), .remainingString = kElementMapperStringParts.remaining};
+                return {.maybeElementMapper = kMakeElementMapperIter->second(kElementMapperStringParts.params), .remainingString = kElementMapperStringParts.remaining};
             }
         }
     }

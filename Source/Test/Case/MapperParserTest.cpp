@@ -267,11 +267,11 @@ namespace XidiTest
 
         for (auto& axisMapperTestItem : kAxisMapperTestItems)
         {
-            std::optional<std::unique_ptr<IElementMapper>> maybeAxisMapper = MapperParser::MakeAxisMapper(axisMapperTestItem.first);
+            ElementMapperOrError maybeAxisMapper = MapperParser::MakeAxisMapper(axisMapperTestItem.first);
 
-            TEST_ASSERT(true == maybeAxisMapper.has_value());
-            TEST_ASSERT(1 == maybeAxisMapper.value()->GetTargetElementCount());
-            TEST_ASSERT(axisMapperTestItem.second == maybeAxisMapper.value()->GetTargetElementAt(0));
+            TEST_ASSERT(true == maybeAxisMapper.HasValue());
+            TEST_ASSERT(1 == maybeAxisMapper.Value()->GetTargetElementCount());
+            TEST_ASSERT(axisMapperTestItem.second == maybeAxisMapper.Value()->GetTargetElementAt(0));
         }
     }
 
@@ -282,8 +282,8 @@ namespace XidiTest
 
         for (auto& axisMapperTestString : kAxisMapperTestStrings)
         {
-            std::optional<std::unique_ptr<IElementMapper>> maybeAxisMapper = MapperParser::MakeAxisMapper(axisMapperTestString);
-            TEST_ASSERT(false == maybeAxisMapper.has_value());
+            ElementMapperOrError maybeAxisMapper = MapperParser::MakeAxisMapper(axisMapperTestString);
+            TEST_ASSERT(false == maybeAxisMapper.HasValue());
         }
     }
 
@@ -299,11 +299,11 @@ namespace XidiTest
 
         for (auto& buttonMapperTestItem : kButtonMapperTestItems)
         {
-            std::optional<std::unique_ptr<IElementMapper>> maybeButtonMapper = MapperParser::MakeButtonMapper(buttonMapperTestItem.first);
+            ElementMapperOrError maybeButtonMapper = MapperParser::MakeButtonMapper(buttonMapperTestItem.first);
 
-            TEST_ASSERT(true == maybeButtonMapper.has_value());
-            TEST_ASSERT(1 == maybeButtonMapper.value()->GetTargetElementCount());
-            TEST_ASSERT(buttonMapperTestItem.second == maybeButtonMapper.value()->GetTargetElementAt(0));
+            TEST_ASSERT(true == maybeButtonMapper.HasValue());
+            TEST_ASSERT(1 == maybeButtonMapper.Value()->GetTargetElementCount());
+            TEST_ASSERT(buttonMapperTestItem.second == maybeButtonMapper.Value()->GetTargetElementAt(0));
         }
     }
 
@@ -314,8 +314,8 @@ namespace XidiTest
 
         for (auto& buttonMapperTestString : kButtonMapperTestStrings)
         {
-            std::optional<std::unique_ptr<IElementMapper>> maybeButtonMapper = MapperParser::MakeButtonMapper(buttonMapperTestString);
-            TEST_ASSERT(false == maybeButtonMapper.has_value());
+            ElementMapperOrError maybeButtonMapper = MapperParser::MakeButtonMapper(buttonMapperTestString);
+            TEST_ASSERT(false == maybeButtonMapper.HasValue());
         }
     }
 
@@ -343,16 +343,16 @@ namespace XidiTest
 
         for (int i = 0; i < _countof(kCompoundMapperTestStrings); ++i)
         {
-            std::optional<std::unique_ptr<IElementMapper>> maybeCompoundMapper = MapperParser::MakeCompoundMapper(kCompoundMapperTestStrings[i]);
+            ElementMapperOrError maybeCompoundMapper = MapperParser::MakeCompoundMapper(kCompoundMapperTestStrings[i]);
 
-            TEST_ASSERT(true == maybeCompoundMapper.has_value());
-            TEST_ASSERT(kExpectedElements[i].size() == maybeCompoundMapper.value()->GetTargetElementCount());
+            TEST_ASSERT(true == maybeCompoundMapper.HasValue());
+            TEST_ASSERT(kExpectedElements[i].size() == maybeCompoundMapper.Value()->GetTargetElementCount());
 
             for (size_t j = 0; j < kExpectedElements[i].size(); ++j)
             {
                 const SElementIdentifier kExpectedElement = kExpectedElements[i][j];
 
-                const std::optional<SElementIdentifier> kMaybeActualElement = maybeCompoundMapper.value()->GetTargetElementAt(j);
+                const std::optional<SElementIdentifier> kMaybeActualElement = maybeCompoundMapper.Value()->GetTargetElementAt(j);
                 TEST_ASSERT(true == kMaybeActualElement.has_value());
 
                 const SElementIdentifier kActualElement = kMaybeActualElement.value();
@@ -372,8 +372,8 @@ namespace XidiTest
 
         for (auto& compoundMapperTestString : kCompoundMapperTestStrings)
         {
-            std::optional<std::unique_ptr<IElementMapper>> maybeCompoundMapper = MapperParser::MakeCompoundMapper(compoundMapperTestString);
-            TEST_ASSERT(false == maybeCompoundMapper.has_value());
+            ElementMapperOrError maybeCompoundMapper = MapperParser::MakeCompoundMapper(compoundMapperTestString);
+            TEST_ASSERT(false == maybeCompoundMapper.HasValue());
         }
         }
 
@@ -391,11 +391,11 @@ namespace XidiTest
 
         for (auto& digitalAxisMapperTestItem : kDigitalAxisMapperTestItems)
         {
-            std::optional<std::unique_ptr<IElementMapper>> maybeDigitalAxisMapper = MapperParser::MakeDigitalAxisMapper(digitalAxisMapperTestItem.first);
+            ElementMapperOrError maybeDigitalAxisMapper = MapperParser::MakeDigitalAxisMapper(digitalAxisMapperTestItem.first);
 
-            TEST_ASSERT(true == maybeDigitalAxisMapper.has_value());
-            TEST_ASSERT(1 == maybeDigitalAxisMapper.value()->GetTargetElementCount());
-            TEST_ASSERT(digitalAxisMapperTestItem.second == maybeDigitalAxisMapper.value()->GetTargetElementAt(0));
+            TEST_ASSERT(true == maybeDigitalAxisMapper.HasValue());
+            TEST_ASSERT(1 == maybeDigitalAxisMapper.Value()->GetTargetElementCount());
+            TEST_ASSERT(digitalAxisMapperTestItem.second == maybeDigitalAxisMapper.Value()->GetTargetElementAt(0));
         }
     }
 
@@ -407,8 +407,8 @@ namespace XidiTest
 
         for (auto& digitalAxisMapperTestString : kDigitalAxisMapperTestStrings)
         {
-            std::optional<std::unique_ptr<IElementMapper>> maybeDigitalAxisMapper = MapperParser::MakeDigitalAxisMapper(digitalAxisMapperTestString);
-            TEST_ASSERT(false == maybeDigitalAxisMapper.has_value());
+            ElementMapperOrError maybeDigitalAxisMapper = MapperParser::MakeDigitalAxisMapper(digitalAxisMapperTestString);
+            TEST_ASSERT(false == maybeDigitalAxisMapper.HasValue());
         }
     }
 
@@ -431,11 +431,11 @@ namespace XidiTest
 
         for (int i = 0; i < _countof(kInvertMapperTestStrings); ++i)
         {
-            std::optional<std::unique_ptr<IElementMapper>> maybeInvertMapper = MapperParser::MakeInvertMapper(kInvertMapperTestStrings[i]);
+            ElementMapperOrError maybeInvertMapper = MapperParser::MakeInvertMapper(kInvertMapperTestStrings[i]);
 
-            TEST_ASSERT(true == maybeInvertMapper.has_value());
-            TEST_ASSERT(1 == maybeInvertMapper.value()->GetTargetElementCount());
-            TEST_ASSERT(kExpectedElements[i] == maybeInvertMapper.value()->GetTargetElementAt(0));
+            TEST_ASSERT(true == maybeInvertMapper.HasValue());
+            TEST_ASSERT(1 == maybeInvertMapper.Value()->GetTargetElementCount());
+            TEST_ASSERT(kExpectedElements[i] == maybeInvertMapper.Value()->GetTargetElementAt(0));
         }
     }
 
@@ -450,8 +450,8 @@ namespace XidiTest
 
         for (auto& invertMapperTestString : kInvertMapperTestStrings)
         {
-            std::optional<std::unique_ptr<IElementMapper>> maybeInvertMapper = MapperParser::MakeInvertMapper(invertMapperTestString);
-            TEST_ASSERT(false == maybeInvertMapper.has_value());
+            ElementMapperOrError maybeInvertMapper = MapperParser::MakeInvertMapper(invertMapperTestString);
+            TEST_ASSERT(false == maybeInvertMapper.HasValue());
         }
     }
 
@@ -468,15 +468,15 @@ namespace XidiTest
 
         for (auto& keyboardMapperTestItem : kKeyboardMapperTestItems)
         {
-            std::optional<std::unique_ptr<IElementMapper>> maybeKeyboardMapper = MapperParser::MakeKeyboardMapper(keyboardMapperTestItem.first);
+            ElementMapperOrError maybeKeyboardMapper = MapperParser::MakeKeyboardMapper(keyboardMapperTestItem.first);
 
-            TEST_ASSERT(true == maybeKeyboardMapper.has_value());
-            TEST_ASSERT(0 == maybeKeyboardMapper.value()->GetTargetElementCount());
+            TEST_ASSERT(true == maybeKeyboardMapper.HasValue());
+            TEST_ASSERT(0 == maybeKeyboardMapper.Value()->GetTargetElementCount());
 
-            TEST_ASSERT(nullptr != dynamic_cast<KeyboardMapper*>(maybeKeyboardMapper.value().get()));
+            TEST_ASSERT(nullptr != dynamic_cast<KeyboardMapper*>(maybeKeyboardMapper.Value().get()));
 
             const TKeyIdentifier kExpectedTargetKey = keyboardMapperTestItem.second;
-            const TKeyIdentifier kActualTargetKey = dynamic_cast<KeyboardMapper*>(maybeKeyboardMapper.value().get())->GetTargetKey();
+            const TKeyIdentifier kActualTargetKey = dynamic_cast<KeyboardMapper*>(maybeKeyboardMapper.Value().get())->GetTargetKey();
             TEST_ASSERT(kActualTargetKey == kExpectedTargetKey);
         }
     }
@@ -488,8 +488,8 @@ namespace XidiTest
 
         for (auto& keyboardMapperTestString : kKeyboardMapperTestStrings)
         {
-            std::optional<std::unique_ptr<IElementMapper>> maybeKeyboardMapper = MapperParser::MakeKeyboardMapper(keyboardMapperTestString);
-            TEST_ASSERT(false == maybeKeyboardMapper.has_value());
+            ElementMapperOrError maybeKeyboardMapper = MapperParser::MakeKeyboardMapper(keyboardMapperTestString);
+            TEST_ASSERT(false == maybeKeyboardMapper.HasValue());
         }
     }
 
@@ -506,8 +506,8 @@ namespace XidiTest
 
         for (auto& nullMapperTestString : kNullMapperTestStrings)
         {
-            std::optional<std::unique_ptr<IElementMapper>> maybeNullMapper = MapperParser::MakeNullMapper(nullMapperTestString);
-            TEST_ASSERT(false == maybeNullMapper.has_value());
+            ElementMapperOrError maybeNullMapper = MapperParser::MakeNullMapper(nullMapperTestString);
+            TEST_ASSERT(false == maybeNullMapper.HasValue());
         }
     }
 
@@ -523,11 +523,11 @@ namespace XidiTest
 
         for (auto& povMapperTestItem : kPovMapperTestItems)
         {
-            std::optional<std::unique_ptr<IElementMapper>> maybePovMapper = MapperParser::MakePovMapper(povMapperTestItem.first);
+            ElementMapperOrError maybePovMapper = MapperParser::MakePovMapper(povMapperTestItem.first);
 
-            TEST_ASSERT(true == maybePovMapper.has_value());
-            TEST_ASSERT(1 == maybePovMapper.value()->GetTargetElementCount());
-            TEST_ASSERT(povMapperTestItem.second == maybePovMapper.value()->GetTargetElementAt(0));
+            TEST_ASSERT(true == maybePovMapper.HasValue());
+            TEST_ASSERT(1 == maybePovMapper.Value()->GetTargetElementCount());
+            TEST_ASSERT(povMapperTestItem.second == maybePovMapper.Value()->GetTargetElementAt(0));
         }
     }
 
@@ -538,8 +538,8 @@ namespace XidiTest
 
         for (auto& povMapperTestString : kPovMapperTestStrings)
         {
-            std::optional<std::unique_ptr<IElementMapper>> maybePovMapper = MapperParser::MakeAxisMapper(povMapperTestString);
-            TEST_ASSERT(false == maybePovMapper.has_value());
+            ElementMapperOrError maybePovMapper = MapperParser::MakeAxisMapper(povMapperTestString);
+            TEST_ASSERT(false == maybePovMapper.HasValue());
         }
     }
 
@@ -560,12 +560,12 @@ namespace XidiTest
 
         for (int i = 0; i < _countof(kSplitMapperTestStrings); ++i)
         {
-            std::optional<std::unique_ptr<IElementMapper>> maybeSplitMapper = MapperParser::MakeSplitMapper(kSplitMapperTestStrings[i]);
+            ElementMapperOrError maybeSplitMapper = MapperParser::MakeSplitMapper(kSplitMapperTestStrings[i]);
 
-            TEST_ASSERT(true == maybeSplitMapper.has_value());
-            TEST_ASSERT(2 == maybeSplitMapper.value()->GetTargetElementCount());
-            TEST_ASSERT(kExpectedElements[i].first == maybeSplitMapper.value()->GetTargetElementAt(0));
-            TEST_ASSERT(kExpectedElements[i].second == maybeSplitMapper.value()->GetTargetElementAt(1));
+            TEST_ASSERT(true == maybeSplitMapper.HasValue());
+            TEST_ASSERT(2 == maybeSplitMapper.Value()->GetTargetElementCount());
+            TEST_ASSERT(kExpectedElements[i].first == maybeSplitMapper.Value()->GetTargetElementAt(0));
+            TEST_ASSERT(kExpectedElements[i].second == maybeSplitMapper.Value()->GetTargetElementAt(1));
         }
     }
 
@@ -580,8 +580,8 @@ namespace XidiTest
 
         for (auto& splitMapperTestString : kSplitMapperTestStrings)
         {
-            std::optional<std::unique_ptr<IElementMapper>> maybeSplitMapper = MapperParser::MakeSplitMapper(splitMapperTestString);
-            TEST_ASSERT(false == maybeSplitMapper.has_value());
+            ElementMapperOrError maybeSplitMapper = MapperParser::MakeSplitMapper(splitMapperTestString);
+            TEST_ASSERT(false == maybeSplitMapper.HasValue());
         }
     }
 
@@ -599,11 +599,11 @@ namespace XidiTest
 
         for (auto& splitMapperTestItem : kSplitMapperTestItems)
         {
-            std::optional<std::unique_ptr<IElementMapper>> maybeSplitMapper = MapperParser::MakeSplitMapper(splitMapperTestItem.first);
+            ElementMapperOrError maybeSplitMapper = MapperParser::MakeSplitMapper(splitMapperTestItem.first);
 
-            TEST_ASSERT(true == maybeSplitMapper.has_value());
-            TEST_ASSERT(1 == maybeSplitMapper.value()->GetTargetElementCount());
-            TEST_ASSERT(splitMapperTestItem.second == maybeSplitMapper.value()->GetTargetElementAt(0));
+            TEST_ASSERT(true == maybeSplitMapper.HasValue());
+            TEST_ASSERT(1 == maybeSplitMapper.Value()->GetTargetElementCount());
+            TEST_ASSERT(splitMapperTestItem.second == maybeSplitMapper.Value()->GetTargetElementAt(0));
         }
     }
 
