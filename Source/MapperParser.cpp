@@ -923,7 +923,7 @@ namespace Xidi
                 // Second parameter is required. It is a string that specifies the negative element mapper.
                 SElementMapperParseResult negativeElementMapperResult = ParseSingleElementMapper(positiveElementMapperResult.remainingString);
                 if (false == negativeElementMapperResult.maybeElementMapper.HasValue())
-                    return Strings::FormatString(L"Split: Parameter 2: ", negativeElementMapperResult.maybeElementMapper.Error().c_str()).Data();
+                    return Strings::FormatString(L"Split: Parameter 2: %s", negativeElementMapperResult.maybeElementMapper.Error().c_str()).Data();
 
                 // No further parameters allowed.
                 if (false == negativeElementMapperResult.remainingString.empty())
@@ -986,6 +986,8 @@ namespace Xidi
                     return {.maybeElementMapper = Strings::FormatString(L"\"%s\" contains a syntax error", std::wstring(elementMapperString).c_str()).Data()};
 
                 const SElementMapperStringParts& kElementMapperStringParts = kMaybeElementMapperStringParts.value();
+                if (true == kElementMapperStringParts.type.empty())
+                    return {.maybeElementMapper = L"Missing or unparseable element mapper type."};
 
                 const auto kMakeElementMapperIter = kMakeElementMapperFunctions.find(kElementMapperStringParts.type);
                 if (kMakeElementMapperFunctions.cend() == kMakeElementMapperIter)
