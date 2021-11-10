@@ -46,7 +46,7 @@ The remainder of this document is organized as follows.
 
 # Getting Started
 
-1. Ensure the combined [Visual C++ 2015, 2017, and 2019 Runtime](https://support.microsoft.com/en-us/help/2977003/the-latest-supported-visual-c-downloads) is installed. Xidi is linked against this runtime and will not work without it. If running a 64-bit operating system, install both the x86 and the x64 versions of this runtime, otherwise install just the x86 version.
+1. Ensure the [Visual C++ Runtime for Visual Studio 2019](https://docs.microsoft.com/en-us/cpp/windows/latest-supported-vc-redist) is installed. Xidi is linked against this runtime and will not work without it. If running a 64-bit operating system, install both the x86 and the x64 versions of this runtime, otherwise install just the x86 version.
 
 1. Download the latest release of Xidi.
 
