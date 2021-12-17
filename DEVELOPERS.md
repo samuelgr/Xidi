@@ -5,7 +5,7 @@ This documentation is for developers who wish to compile Xidi from source and po
 
 ## Building Xidi
 
-The build system Xidi uses is based on Microsoft Visual Studio 2019 Community Edition. To build Xidi, simply open the supplied Visual Studio solution file and build from the graphical interface. One Visual C++ project exists for each form of Xidi along with an additional project for running unit tests. Each project supports building both 32-bit and 64-bit versions of Xidi. Debug and Release configurations will respectively produce debug (checked) and optimized (unchecked) versions of each library.
+The build system Xidi uses is based on Microsoft Visual Studio 2022. To build Xidi, simply open the supplied Visual Studio solution file and build from the graphical interface. One Visual C++ project exists for each form of Xidi along with an additional project for running unit tests. Each project supports building both 32-bit and 64-bit versions of Xidi. Debug and Release configurations will respectively produce debug (checked) and optimized (unchecked) versions of each library.
 
 
 ## Design and Implementation

@@ -348,7 +348,7 @@ namespace XidiTest
             TEST_ASSERT(true == maybeCompoundMapper.HasValue());
             TEST_ASSERT(kExpectedElements[i].size() == maybeCompoundMapper.Value()->GetTargetElementCount());
 
-            for (size_t j = 0; j < kExpectedElements[i].size(); ++j)
+            for (unsigned int j = 0; j < kExpectedElements[i].size(); ++j)
             {
                 const SElementIdentifier kExpectedElement = kExpectedElements[i][j];
 
