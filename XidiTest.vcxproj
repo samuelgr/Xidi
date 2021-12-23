@@ -210,6 +210,7 @@
     <ClInclude Include="Include\Xidi\ControllerTypes.h" />
     <ClInclude Include="Include\Xidi\DataFormat.h" />
     <ClInclude Include="Include\Xidi\ElementMapper.h" />
+    <ClInclude Include="Include\Xidi\ForceFeedbackEffect.h" />
     <ClInclude Include="Include\Xidi\Globals.h" />
     <ClInclude Include="Include\Xidi\Keyboard.h" />
     <ClInclude Include="Include\Xidi\Mapper.h" />
@@ -236,6 +237,7 @@
     <ClCompile Include="Source\ControllerIdentification.cpp" />
     <ClCompile Include="Source\DataFormat.cpp" />
     <ClCompile Include="Source\ElementMapper.cpp" />
+    <ClCompile Include="Source\ForceFeedbackEffect.cpp" />
     <ClCompile Include="Source\Globals.cpp" />
     <ClCompile Include="Source\Mapper.cpp" />
     <ClCompile Include="Source\MapperBuilder.cpp" />
@@ -248,8 +250,10 @@
     <ClCompile Include="Source\Test\Case\AxisMapperTest.cpp" />
     <ClCompile Include="Source\Test\Case\ButtonMapperTest.cpp" />
     <ClCompile Include="Source\Test\Case\CompoundMapperTest.cpp" />
+    <ClCompile Include="Source\Test\Case\ConstantForceEffectTest.cpp" />
     <ClCompile Include="Source\Test\Case\DataFormatTest.cpp" />
     <ClCompile Include="Source\Test\Case\DigitalAxisMapperTest.cpp" />
+    <ClCompile Include="Source\Test\Case\ForceFeedbackEffectTest.cpp" />
     <ClCompile Include="Source\Test\Case\InvertMapperTest.cpp" />
     <ClCompile Include="Source\Test\Case\KeyboardMapperTest.cpp" />
     <ClCompile Include="Source\Test\Case\MapperBuilderTest.cpp" />
