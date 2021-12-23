@@ -26,6 +26,9 @@ namespace XidiTest
     /// Common start delay value used throughout test cases.
     static constexpr TEffectTimeMs kTestEffectStartDelay = 500;
 
+    /// Common sample period value used throughout test cases.
+    static constexpr TEffectTimeMs kTestEffectSamplePeriod = 10;
+
     /// Common gain value used throughout test cases.
     static constexpr TEffectValue kTestEffectGain = 1000;
 
@@ -36,7 +39,7 @@ namespace XidiTest
 
     // -------- INTERNAL TYPES --------------------------------------------- //
 
-    /// Simple test force feedback effect that returns a the raw time as its computed magnitude.
+    /// Simple test force feedback effect that returns the raw time as its computed magnitude.
     class TestEffect : public Effect
     {
     public:
@@ -109,6 +112,42 @@ namespace XidiTest
 
         TEST_ASSERT(kTestEffectStartDelay == effect.GetStartDelay());
         TEST_ASSERT(SEffectCommonParameters::kDefaultSamplePeriod == effect.GetSamplePeriod());
+        TEST_ASSERT(SEffectCommonParameters::kDefaultGain == effect.GetGain());
+        TEST_ASSERT(SEffectCommonParameters::kDefaultEnvelope == effect.GetEnvelope());
+    }
+
+    // Creates a test effect with a sample period.
+    // Verifies that it returns the correct computed magnitude at all times throughout its duration.
+    TEST_CASE(ForceFeedbackEffect_EffectWithSamplePeriod_Magnitude)
+    {
+        TestEffect effect;
+        effect.SetDuration(kTestEffectDuration);
+        effect.SetSamplePeriod(kTestEffectSamplePeriod);
+
+        for (TEffectTimeMs t = 0; t < kTestEffectDuration; ++t)
+        {
+            // Time input, and hence magnitude output, should only increase in multiples of the specified sample period.
+            const TEffectValue kExpectedMagnitude = (TEffectValue)(t / kTestEffectSamplePeriod) * kTestEffectSamplePeriod;
+            const TEffectValue kActualMagnitude = effect.ComputeMagnitude(t);
+
+            TEST_ASSERT(kActualMagnitude == kExpectedMagnitude);
+        }
+    }
+
+    // Creates a test effect with a sample period.
+    // Verifies that it returns the correct values for all of its common properties.
+    TEST_CASE(ForceFeedbackEffect_EffectWithSamplePeriod_Parameters)
+    {
+        TestEffect effect;
+        effect.SetDuration(kTestEffectDuration);
+        effect.SetSamplePeriod(kTestEffectSamplePeriod);
+
+        TEST_ASSERT(true == effect.GetDuration().has_value());
+        TEST_ASSERT(kTestEffectDuration == effect.GetDuration().value());
+        TEST_ASSERT(kTestEffectDuration == effect.GetTotalTime());
+
+        TEST_ASSERT(SEffectCommonParameters::kDefaultStartDelay == effect.GetStartDelay());
+        TEST_ASSERT(kTestEffectSamplePeriod == effect.GetSamplePeriod());
         TEST_ASSERT(SEffectCommonParameters::kDefaultGain == effect.GetGain());
         TEST_ASSERT(SEffectCommonParameters::kDefaultEnvelope == effect.GetEnvelope());
     }
