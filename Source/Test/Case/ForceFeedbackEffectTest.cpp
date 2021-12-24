@@ -10,6 +10,7 @@
  *****************************************************************************/
 
 #include "ForceFeedbackEffect.h"
+#include "ForceFeedbackParameters.h"
 #include "TestCase.h"
 
 
@@ -34,7 +35,7 @@ namespace XidiTest
 
     /// Common trivial envelope used throughout test cases.
     /// This envelope has no effect. Magnitudes should remain completely unchanged.
-    static constexpr SEffectEnvelope kTestTrivialEnvelope = {.attackTime = 0, .attackLevel = 1000, .fadeTime = 0, .fadeLevel = 2500};
+    static constexpr SEnvelope kTestTrivialEnvelope = {.attackTime = 0, .attackLevel = 1000, .fadeTime = 0, .fadeLevel = 2500};
 
 
     // -------- INTERNAL TYPES --------------------------------------------- //
@@ -77,10 +78,10 @@ namespace XidiTest
         TEST_ASSERT(kTestEffectDuration == effect.GetDuration().value());
         TEST_ASSERT(kTestEffectDuration == effect.GetTotalTime());
 
-        TEST_ASSERT(SEffectCommonParameters::kDefaultStartDelay == effect.GetStartDelay());
-        TEST_ASSERT(SEffectCommonParameters::kDefaultSamplePeriod == effect.GetSamplePeriod());
-        TEST_ASSERT(SEffectCommonParameters::kDefaultGain == effect.GetGain());
-        TEST_ASSERT(SEffectCommonParameters::kDefaultEnvelope == effect.GetEnvelope());
+        TEST_ASSERT(SCommonParameters::kDefaultStartDelay == effect.GetStartDelay());
+        TEST_ASSERT(SCommonParameters::kDefaultSamplePeriod == effect.GetSamplePeriod());
+        TEST_ASSERT(SCommonParameters::kDefaultGain == effect.GetGain());
+        TEST_ASSERT(SCommonParameters::kDefaultEnvelope == effect.GetEnvelope());
     }
 
     // Creates a test effect with a start delay.
@@ -111,9 +112,9 @@ namespace XidiTest
         TEST_ASSERT(kTestEffectDuration + kTestEffectStartDelay == effect.GetTotalTime());
 
         TEST_ASSERT(kTestEffectStartDelay == effect.GetStartDelay());
-        TEST_ASSERT(SEffectCommonParameters::kDefaultSamplePeriod == effect.GetSamplePeriod());
-        TEST_ASSERT(SEffectCommonParameters::kDefaultGain == effect.GetGain());
-        TEST_ASSERT(SEffectCommonParameters::kDefaultEnvelope == effect.GetEnvelope());
+        TEST_ASSERT(SCommonParameters::kDefaultSamplePeriod == effect.GetSamplePeriod());
+        TEST_ASSERT(SCommonParameters::kDefaultGain == effect.GetGain());
+        TEST_ASSERT(SCommonParameters::kDefaultEnvelope == effect.GetEnvelope());
     }
 
     // Creates a test effect with a sample period.
@@ -146,10 +147,10 @@ namespace XidiTest
         TEST_ASSERT(kTestEffectDuration == effect.GetDuration().value());
         TEST_ASSERT(kTestEffectDuration == effect.GetTotalTime());
 
-        TEST_ASSERT(SEffectCommonParameters::kDefaultStartDelay == effect.GetStartDelay());
+        TEST_ASSERT(SCommonParameters::kDefaultStartDelay == effect.GetStartDelay());
         TEST_ASSERT(kTestEffectSamplePeriod == effect.GetSamplePeriod());
-        TEST_ASSERT(SEffectCommonParameters::kDefaultGain == effect.GetGain());
-        TEST_ASSERT(SEffectCommonParameters::kDefaultEnvelope == effect.GetEnvelope());
+        TEST_ASSERT(SCommonParameters::kDefaultGain == effect.GetGain());
+        TEST_ASSERT(SCommonParameters::kDefaultEnvelope == effect.GetEnvelope());
     }
 
     // Creates a test effect with a gain.
@@ -176,10 +177,10 @@ namespace XidiTest
         TEST_ASSERT(kTestEffectDuration == effect.GetDuration().value());
         TEST_ASSERT(kTestEffectDuration== effect.GetTotalTime());
 
-        TEST_ASSERT(SEffectCommonParameters::kDefaultStartDelay == effect.GetStartDelay());
-        TEST_ASSERT(SEffectCommonParameters::kDefaultSamplePeriod == effect.GetSamplePeriod());
+        TEST_ASSERT(SCommonParameters::kDefaultStartDelay == effect.GetStartDelay());
+        TEST_ASSERT(SCommonParameters::kDefaultSamplePeriod == effect.GetSamplePeriod());
         TEST_ASSERT(kTestEffectGain == effect.GetGain());
-        TEST_ASSERT(SEffectCommonParameters::kDefaultEnvelope == effect.GetEnvelope());
+        TEST_ASSERT(SCommonParameters::kDefaultEnvelope == effect.GetEnvelope());
     }
 
     // Creates a test effect with a trivial envelope that has no effect.
@@ -206,9 +207,9 @@ namespace XidiTest
         TEST_ASSERT(kTestEffectDuration == effect.GetDuration().value());
         TEST_ASSERT(kTestEffectDuration == effect.GetTotalTime());
 
-        TEST_ASSERT(SEffectCommonParameters::kDefaultStartDelay == effect.GetStartDelay());
-        TEST_ASSERT(SEffectCommonParameters::kDefaultSamplePeriod == effect.GetSamplePeriod());
-        TEST_ASSERT(SEffectCommonParameters::kDefaultGain == effect.GetGain());
+        TEST_ASSERT(SCommonParameters::kDefaultStartDelay == effect.GetStartDelay());
+        TEST_ASSERT(SCommonParameters::kDefaultSamplePeriod == effect.GetSamplePeriod());
+        TEST_ASSERT(SCommonParameters::kDefaultGain == effect.GetGain());
         TEST_ASSERT(kTestTrivialEnvelope == effect.GetEnvelope());
     }
 
@@ -218,7 +219,7 @@ namespace XidiTest
         // Pattern of increase is equivalent to the simple effect tests in which the result of applying the envelope is simply equal to the input time.
         // Both attack and fade times are half the duration, so the entire effect is defined by the envelope. Sustain level is equal to half the duration.
         // Attack region starts at 0 and goes up to the sustain level in half the duration, and the fade region starts at the sustain level and continues up to the entire duration worth of magnitude.
-        constexpr SEffectEnvelope kTestEnvelope = {.attackTime = kTestEffectDuration / 2, .attackLevel = kEffectForceMagnitudeZero, .fadeTime = kTestEffectDuration / 2, .fadeLevel = kTestEffectDuration};
+        constexpr SEnvelope kTestEnvelope = {.attackTime = kTestEffectDuration / 2, .attackLevel = kEffectForceMagnitudeZero, .fadeTime = kTestEffectDuration / 2, .fadeLevel = kTestEffectDuration};
         constexpr TEffectValue kSustainLevel = kTestEffectDuration / 2;
 
         TestEffect effect;
@@ -234,7 +235,7 @@ namespace XidiTest
     {
         // Pattern is exactly as in the linear increase case but inverted.
         // Expected result of applying the envelope is to start at the duration and descend down to 0.
-        constexpr SEffectEnvelope kTestEnvelope = {.attackTime = kTestEffectDuration / 2, .attackLevel = kTestEffectDuration, .fadeTime = kTestEffectDuration / 2, .fadeLevel = kEffectForceMagnitudeZero};
+        constexpr SEnvelope kTestEnvelope = {.attackTime = kTestEffectDuration / 2, .attackLevel = kTestEffectDuration, .fadeTime = kTestEffectDuration / 2, .fadeLevel = kEffectForceMagnitudeZero};
         constexpr TEffectValue kSustainLevel = kTestEffectDuration / 2;
 
         TestEffect effect;
@@ -248,7 +249,7 @@ namespace XidiTest
     // Submits a constant sustain level and uses an envelope to turn it into a piece-wise function with three pieces: linear increase, constant sustain, and linear decrease.
     TEST_CASE(ForceFeedbackEffect_ApplyEnvelope_PiecewiseUpThenDown)
     {
-        constexpr SEffectEnvelope kTestEnvelope = {.attackTime = kTestEffectDuration / 4, .attackLevel = kEffectForceMagnitudeZero, .fadeTime = kTestEffectDuration / 4, .fadeLevel = kEffectForceMagnitudeZero};
+        constexpr SEnvelope kTestEnvelope = {.attackTime = kTestEffectDuration / 4, .attackLevel = kEffectForceMagnitudeZero, .fadeTime = kTestEffectDuration / 4, .fadeLevel = kEffectForceMagnitudeZero};
         constexpr TEffectValue kSustainLevel = kTestEffectDuration;
 
         TestEffect effect;
@@ -279,15 +280,15 @@ namespace XidiTest
         TEST_ASSERT(false == effect.SetDuration(0));
         TEST_ASSERT(false == effect.GetDuration().has_value());
 
-        TEST_ASSERT(false == effect.SetGain(kEffectModifierMinimum - 1.0));
-        TEST_ASSERT(false == effect.SetGain(kEffectModifierMaximum + 1.0));
-        TEST_ASSERT(SEffectCommonParameters::kDefaultGain == effect.GetGain());
+        TEST_ASSERT(false == effect.SetGain(kEffectModifierMinimum - 1));
+        TEST_ASSERT(false == effect.SetGain(kEffectModifierMaximum + 1));
+        TEST_ASSERT(SCommonParameters::kDefaultGain == effect.GetGain());
 
-        TEST_ASSERT(false == effect.SetEnvelope({.attackLevel = kEffectModifierMinimum - 1.0}));
-        TEST_ASSERT(false == effect.SetEnvelope({.attackLevel = kEffectModifierMaximum + 1.0}));
-        TEST_ASSERT(false == effect.SetEnvelope({.fadeLevel = kEffectModifierMinimum - 1.0}));
-        TEST_ASSERT(false == effect.SetEnvelope({.fadeLevel = kEffectModifierMaximum + 1.0}));
-        TEST_ASSERT(SEffectCommonParameters::kDefaultEnvelope == effect.GetEnvelope());
+        TEST_ASSERT(false == effect.SetEnvelope({.attackLevel = kEffectModifierMinimum - 1}));
+        TEST_ASSERT(false == effect.SetEnvelope({.attackLevel = kEffectModifierMaximum + 1}));
+        TEST_ASSERT(false == effect.SetEnvelope({.fadeLevel = kEffectModifierMinimum - 1}));
+        TEST_ASSERT(false == effect.SetEnvelope({.fadeLevel = kEffectModifierMaximum + 1}));
+        TEST_ASSERT(SCommonParameters::kDefaultEnvelope == effect.GetEnvelope());
     }
 
     // Creates an effect and verifies that it reports correct information for whether or not it is completely defined.

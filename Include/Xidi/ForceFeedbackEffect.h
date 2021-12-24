@@ -12,6 +12,8 @@
 
 #pragma once
 
+#include "ForceFeedbackParameters.h"
+
 #include <cstdint>
 #include <optional>
 
@@ -20,93 +22,6 @@ namespace Xidi
 {
     namespace ForceFeedback
     {
-        /// Type used for keeping track of time as it relates to force feedback effects in millisecond units.
-        typedef uint32_t TEffectTimeMs;
-
-        /// Type used for all values used in internal effect-related computations.
-        typedef float TEffectValue;
-
-        /// Minimum value for an effect modifier.
-        inline constexpr TEffectValue kEffectModifierMinimum = 0;
-
-        /// Maximum value for an effect modifier.
-        inline constexpr TEffectValue kEffectModifierMaximum = 10000;
-
-        /// Denominator for relative effect modifiers.
-        inline constexpr TEffectValue kEffectModifierRelativeDenominator = (kEffectModifierMaximum - kEffectModifierMinimum);
-
-        /// Minimum value for an effect's output magnitude.
-        /// This value is intended to signify full device strength in the negative direction.
-        inline constexpr TEffectValue kEffectForceMagnitudeMinimum = -10000;
-
-        /// Maximum value for an effect's output magnitude.
-        /// This value is intended to signify full device strength in the positive direction.
-        inline constexpr TEffectValue kEffectForceMagnitudeMaximum = 10000;
-
-        /// Zero value for an effect's output magnitude.
-        /// This value is intended to signify that there is no force generated at all.
-        inline constexpr TEffectValue kEffectForceMagnitudeZero = 0;
-
-        /// Structure for representing an envelope that might be applied to an effect.
-        /// See https://docs.microsoft.com/en-us/previous-versions/windows/desktop/ee416225%28v=vs.85%29 for more information on how envelopes work.
-        struct SEffectEnvelope
-        {
-            /// Duration of the "attack" part of the envelope.
-            /// The attack transformation is applied from time 0 to this time.
-            TEffectTimeMs attackTime;
-
-            /// Desired amplitude for the "attack" part of the envelope which occurs at the very beginning of the effect.
-            TEffectValue attackLevel;
-
-            /// Duration of the "fade" part of the envelope.
-            /// The fade transformation is applied from this time before the end of the effect and finishes right at the end of the effect.
-            TEffectTimeMs fadeTime;
-
-            /// Desired amplitude for the "fade" part of the envelope which occurs at the very end of the effect.
-            TEffectValue fadeLevel;
-
-            /// Simple check for equality.
-            /// Primarily useful during testing.
-            /// @param [in] other Object with which to compare.
-            /// @return `true` if this object is equal to the other object, `false` otherwise.
-            constexpr inline bool operator==(const SEffectEnvelope& other) const = default;
-        };
-
-        /// Structure for holding parameters common to all effects.
-        struct SEffectCommonParameters
-        {
-            /// Default values for all common parameters.
-            /// See specific named field descriptions for documentation.
-            static constexpr TEffectTimeMs kDefaultStartDelay = 0;
-            static constexpr TEffectTimeMs kDefaultSamplePeriod = 0;
-            static constexpr TEffectValue kDefaultGain = kEffectModifierRelativeDenominator;
-            static constexpr std::optional<SEffectEnvelope> kDefaultEnvelope = std::nullopt;
-
-            /// Total playback time of the effect.
-            /// Does not include any start delay, just includes the amount of time potentially generating a force.
-            /// It is an error for the application not to specify a value.
-            std::optional<TEffectTimeMs> duration = std::nullopt;
-
-            /// Amount of time to wait before starting to play back the effect. Not counted in the duration.
-            /// Once the application asks to play the effect, this start delay is a wait time and then immediately thereafter the effect plays for the requested duration.
-            TEffectTimeMs startDelay = kDefaultStartDelay;
-
-            /// Granularity with which to generate samples.
-            /// The exact magnitude of a force is computed as a function of time.
-            /// This value specifies the increments of time that are passed into the computation function.
-            /// For example, a value of 10 would indicate that the input to the computation function increases in increments of 10 milliseconds.
-            /// A value of 0 means to use the default sample period.
-            TEffectTimeMs samplePeriod = kDefaultSamplePeriod;
-
-            /// Overall adjustment to the magnitude of a force feedback effect.
-            /// This modifier acts as a per-effect "volume control" knob.
-            TEffectValue gain = kDefaultGain;
-
-            /// Optional envelope to be applied as a transformation to this effect.
-            /// If not present then no envelope is applied when this effect's force magnitude is computed.
-            std::optional<SEffectEnvelope> envelope = kDefaultEnvelope;
-        };
-
         /// Base class for all force feedback effects.
         /// Holds common parameters and provides some common functionality but otherwise delegates key computations to subclasses.
         class Effect
@@ -115,16 +30,16 @@ namespace Xidi
             // -------- INSTANCE VARIABLES --------------------------------- //
 
             /// Holds parameters common to all effects.
-            SEffectCommonParameters commonParameters;
+            SCommonParameters commonParameters;
 
             /// Alternative representation of the gain as a fraction to be multiplied by the final magnitude.
             /// Stored as a slight performance optimization to avoid a division operation each time magnitude is computed.
-            TEffectValue gainFraction = SEffectCommonParameters::kDefaultGain / kEffectModifierRelativeDenominator;
+            TEffectValue gainFraction = SCommonParameters::kDefaultGain / kEffectModifierRelativeDenominator;
 
             /// Alternative representation of the sample period to be used directly by computations.
             /// Avoids a computation-time conditional by providing a value that can be used without checking for equality with 0.
             /// The default sample period is 1, meaning update the magnitude at the finest granularity possible.
-            TEffectTimeMs samplePeriodForComputations = (0 == SEffectCommonParameters::kDefaultSamplePeriod) ? 1 : SEffectCommonParameters::kDefaultSamplePeriod;
+            TEffectTimeMs samplePeriodForComputations = (0 == SCommonParameters::kDefaultSamplePeriod) ? 1 : SCommonParameters::kDefaultSamplePeriod;
 
 
         public:
@@ -221,7 +136,7 @@ namespace Xidi
 
             /// Retrieves and returns this effect's envelope parameter.
             /// @return Envelope parameter structure, if it exists.
-            inline std::optional<SEffectEnvelope> GetEnvelope(void) const
+            inline std::optional<SEnvelope> GetEnvelope(void) const
             {
                 return commonParameters.envelope;
             }
@@ -292,7 +207,7 @@ namespace Xidi
             /// Updates this effect's envelope parameter structure.
             /// @param [in] newValue New parameter value.
             /// @return `true` if successful, `false` otherwise. This method will fail if the new parameter value is invalid.
-            inline bool SetEnvelope(const SEffectEnvelope& newValue)
+            inline bool SetEnvelope(const SEnvelope& newValue)
             {
                 if ((newValue.attackLevel < kEffectModifierMinimum) || (newValue.attackLevel > kEffectModifierMaximum))
                     return false;

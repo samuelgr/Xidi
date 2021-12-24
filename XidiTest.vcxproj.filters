@@ -96,6 +96,9 @@
     <ClInclude Include="Include\Xidi\ForceFeedbackEffect.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="Include\Xidi\ForceFeedbackParameters.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Source\Test\Harness.cpp">
@@ -210,6 +213,12 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="Source\Test\Case\ConstantForceEffectTest.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\ForceFeedbackParameters.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\Test\Case\ForceFeedbackDirectionVectorTest.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

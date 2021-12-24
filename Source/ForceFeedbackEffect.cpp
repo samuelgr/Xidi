@@ -47,7 +47,7 @@ namespace Xidi
             if (false == commonParameters.envelope.has_value())
                 return sustainLevel;
 
-            const SEffectEnvelope& envelope = commonParameters.envelope.value();
+            const SEnvelope& envelope = commonParameters.envelope.value();
 
             if (rawTime < envelope.attackTime)
             {

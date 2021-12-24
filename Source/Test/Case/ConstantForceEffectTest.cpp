@@ -11,6 +11,7 @@
  *****************************************************************************/
 
 #include "ForceFeedbackEffect.h"
+#include "ForceFeedbackParameters.h"
 #include "TestCase.h"
 
 
@@ -96,7 +97,7 @@ namespace XidiTest
         effect.SetDuration(kTestEffectDuration);
         effect.SetTypeSpecificParameters({.magnitude = kTestMagnitude});
 
-        constexpr SEffectEnvelope kTestEnvelope = {.attackTime = kTestEffectDuration / 10, .attackLevel = 7000, .fadeTime = kTestEffectDuration / 5, .fadeLevel = 1000};
+        constexpr SEnvelope kTestEnvelope = {.attackTime = kTestEffectDuration / 10, .attackLevel = 7000, .fadeTime = kTestEffectDuration / 5, .fadeLevel = 1000};
         effect.SetEnvelope(kTestEnvelope);
         TEST_ASSERT(true == effect.GetEnvelope().has_value());
         TEST_ASSERT(kTestEnvelope == effect.GetEnvelope().value());
@@ -129,7 +130,7 @@ namespace XidiTest
         effect.SetDuration(kTestEffectDuration);
         effect.SetTypeSpecificParameters({.magnitude = kTestMagnitude});
 
-        constexpr SEffectEnvelope kTestEnvelope = {.attackTime = kTestEffectDuration / 10, .attackLevel = 7000, .fadeTime = kTestEffectDuration / 5, .fadeLevel = 1000};
+        constexpr SEnvelope kTestEnvelope = {.attackTime = kTestEffectDuration / 10, .attackLevel = 7000, .fadeTime = kTestEffectDuration / 5, .fadeLevel = 1000};
         effect.SetEnvelope(kTestEnvelope);
         TEST_ASSERT(true == effect.GetEnvelope().has_value());
         TEST_ASSERT(kTestEnvelope == effect.GetEnvelope().value());
