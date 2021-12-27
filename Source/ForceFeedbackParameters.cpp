@@ -21,6 +21,14 @@ namespace Xidi
 {
     namespace ForceFeedback
     {
+        // -------- INTERNAL CONSTANTS ------------------------------------- //
+
+        /// Precision to which internal trigonometric and other mathematic operations should be rounded.
+        /// Helps with avoiding imprecision error when using conversions between degrees and radians, which happens internally.
+        /// The value used is equal to 1/64, also known as 2e-6.
+        static constexpr TEffectValue kMathRoundingPrecision = 0.015625;
+
+
         // -------- INTERNAL FUNCTIONS ------------------------------------- //
 
         /// Converts the supplied angle from hundredths of degrees to radians.
@@ -41,29 +49,41 @@ namespace Xidi
             return angle * kConversionFactor;
         }
 
+        /// Rounds the supplied value to the nearest multiple of another supplied value.
+        /// @param [in] value Value to be rounded.
+        /// @param [in] roundToMultiple Desired multiple of the input to which the input should be rounded.
+        /// @return Input rounded to the nearest multiple of the desired value.
+        inline TEffectValue NearestMultiple(TEffectValue value, TEffectValue roundToMultiple)
+        {
+            return std::nearbyint(value / roundToMultiple) * roundToMultiple;
+        }
+
         /// Computes the cosine of the supplied angle, which is measured in hundredths of degrees.
+        /// Rounds the result to the nearest multiple of the constant at the top of this file.
         /// @param [in] angle Angle whose cosine is to be computed.
         /// @return Cosine of the input angle.
         static inline TEffectValue TrigonometryCosine(TEffectValue angle)
         {
-            return std::cos(DegreeHundredthsToRadians(angle));
+            return NearestMultiple(std::cos(DegreeHundredthsToRadians(angle)), kMathRoundingPrecision);
         }
 
         /// Computes the sine of the supplied angle, which is measured in hundredths of degrees.
+        /// Rounds the result to the nearest multiple of the constant at the top of this file.
         /// @param [in] angle Angle whose sine is to be computed.
         /// @return Sine of the input angle.
         static inline TEffectValue TrigonometrySine(TEffectValue angle)
         {
-            return std::sin(DegreeHundredthsToRadians(angle));
+            return NearestMultiple(std::sin(DegreeHundredthsToRadians(angle)), kMathRoundingPrecision);
         }
 
         /// Computes the inverse tangent of the ratio if the supplied parameters.
+        /// Rounds the result to the nearest multiple of the constant at the top of this file.
         /// @param [in] numerator Numerator of the ratio.
         /// @param [in] denominator Denominator of the ratio.
         /// @return Inverse tangent in hundredths of degrees of the numerator divided by the denominator.
         static inline TEffectValue TrigonometryArcTanOfRatio(TEffectValue numerator, TEffectValue denominator)
         {
-            const TEffectValue kRawAngle = RadiansToDegreeHundredths(std::atan2(numerator, denominator));
+            const TEffectValue kRawAngle = NearestMultiple(RadiansToDegreeHundredths(std::atan2(numerator, denominator)), kMathRoundingPrecision);
 
             if (kRawAngle < 0)
                 return kRawAngle + 36000;
@@ -197,7 +217,7 @@ namespace Xidi
             // If all the components are 0 then the vector is invalid for representing a force feedback effect direction.
             TEffectValue cartesianSum = 0;
             for (int i = 0; i < numCoordinates; ++i)
-                cartesianSum += coordinates[i];
+                cartesianSum += abs(coordinates[i]);
             if (0 == cartesianSum)
                 return false;
 
