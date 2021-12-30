@@ -212,6 +212,7 @@
     <ClInclude Include="Include\Xidi\ElementMapper.h" />
     <ClInclude Include="Include\Xidi\ForceFeedbackEffect.h" />
     <ClInclude Include="Include\Xidi\ForceFeedbackParameters.h" />
+    <ClInclude Include="Include\Xidi\ForceFeedbackTypes.h" />
     <ClInclude Include="Include\Xidi\Globals.h" />
     <ClInclude Include="Include\Xidi\Keyboard.h" />
     <ClInclude Include="Include\Xidi\Mapper.h" />

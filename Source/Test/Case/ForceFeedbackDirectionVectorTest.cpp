@@ -10,6 +10,7 @@
  *****************************************************************************/
 
 #include "ForceFeedbackParameters.h"
+#include "ForceFeedbackTypes.h"
 #include "TestCase.h"
 
 #include <array>
@@ -18,7 +19,7 @@
 
 namespace XidiTest
 {
-    using namespace ::Xidi::ForceFeedback;
+    using namespace ::Xidi::Controller::ForceFeedback;
 
 
     // -------- INTERNAL CONSTANTS ----------------------------------------- //
@@ -495,12 +496,12 @@ namespace XidiTest
         TEST_ASSERT(false == vector.HasDirection());
 
         TEST_ASSERT(true == vector.SetDirectionUsingCartesian(kTestCoordinates, _countof(kTestCoordinates)));
-        TEST_ASSERT(DirectionVector::ECoordinateSystem::Cartesian == vector.GetOriginalCoordinateSystem());
+        TEST_ASSERT(ECoordinateSystem::Cartesian == vector.GetOriginalCoordinateSystem());
 
         TEST_ASSERT(true == vector.SetDirectionUsingPolar(kTestCoordinates, _countof(kTestCoordinates)));
-        TEST_ASSERT(DirectionVector::ECoordinateSystem::Polar == vector.GetOriginalCoordinateSystem());
+        TEST_ASSERT(ECoordinateSystem::Polar == vector.GetOriginalCoordinateSystem());
 
         TEST_ASSERT(true == vector.SetDirectionUsingSpherical(kTestCoordinates, _countof(kTestCoordinates)));
-        TEST_ASSERT(DirectionVector::ECoordinateSystem::Spherical == vector.GetOriginalCoordinateSystem());
+        TEST_ASSERT(ECoordinateSystem::Spherical == vector.GetOriginalCoordinateSystem());
     }
 }

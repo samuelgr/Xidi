@@ -12,12 +12,13 @@
 
 #include "ForceFeedbackEffect.h"
 #include "ForceFeedbackParameters.h"
+#include "ForceFeedbackTypes.h"
 #include "TestCase.h"
 
 
 namespace XidiTest
 {
-    using namespace ::Xidi::ForceFeedback;
+    using namespace ::Xidi::Controller::ForceFeedback;
 
 
     // -------- INTERNAL CONSTANTS ----------------------------------------- //
