@@ -414,6 +414,28 @@ namespace Xidi
         }
     }
 
+    /// Generates an object identifier given a controller element and its associated controller capabilities.
+    /// @param [in] controllerCapabilities Capabilities that describe the layout of the virtual controller.
+    /// @param [in] controllerElement Virtual controller element for which an identifier is desired.
+    /// @return Resulting object identifier, where a value of `0` indicates an error.
+    static DWORD GetObjectId(Controller::SCapabilities controllerCapabilities, Controller::SElementIdentifier controllerElement)
+    {
+        switch (controllerElement.type)
+        {
+        case Controller::EElementType::Axis:
+            return (DIDFT_ABSAXIS | DIDFT_MAKEINSTANCE((int)controllerCapabilities.FindAxis(controllerElement.axis)));
+
+        case Controller::EElementType::Button:
+            return (DIDFT_PSHBUTTON | DIDFT_MAKEINSTANCE((int)controllerElement.button));
+
+        case Controller::EElementType::Pov:
+            return (DIDFT_POV | DIDFT_MAKEINSTANCE(0));
+
+        default:
+            return 0;
+        }
+    }
+
     /// Fills the specified object instance information structure with information about the specified controller element.
     /// Size member must already be initialized because multiple versions of the structure exist, so it is used to determine which members to fill in.
     /// @tparam charMode Selects between ASCII ("A" suffix) and Unicode ("W") suffix versions of types and interfaces.
@@ -421,28 +443,26 @@ namespace Xidi
     /// @param [in] controllerElement Virtual controller element about which to fill information.
     /// @param [in] offset Offset to place into the object instance information structure.
     /// @param objectInfo [out] Structure to be filled with instance information.
-    template <ECharMode charMode> static void FillObjectInstanceInfo(const Controller::SCapabilities controllerCapabilities, Controller::SElementIdentifier controllerElement, TOffset offset, typename DirectInputDeviceType<charMode>::DeviceObjectInstanceType* objectInfo)
+    template <ECharMode charMode> static void FillObjectInstanceInfo(Controller::SCapabilities controllerCapabilities, Controller::SElementIdentifier controllerElement, TOffset offset, typename DirectInputDeviceType<charMode>::DeviceObjectInstanceType* objectInfo)
     {
         objectInfo->dwOfs = offset;
+        objectInfo->dwType = GetObjectId(controllerCapabilities, controllerElement);
         ElementToString(controllerElement, objectInfo->tszName, _countof(objectInfo->tszName));
 
         switch (controllerElement.type)
         {
         case Controller::EElementType::Axis:
             objectInfo->guidType = AxisTypeGuid(controllerElement.axis);
-            objectInfo->dwType = DIDFT_ABSAXIS | DIDFT_MAKEINSTANCE((int)controllerCapabilities.FindAxis(controllerElement.axis));
             objectInfo->dwFlags = DIDOI_ASPECTPOSITION;
             break;
 
         case Controller::EElementType::Button:
             objectInfo->guidType = GUID_Button;
-            objectInfo->dwType = DIDFT_PSHBUTTON | DIDFT_MAKEINSTANCE((int)controllerElement.button);
             objectInfo->dwFlags = 0;
             break;
 
         case Controller::EElementType::Pov:
             objectInfo->guidType = GUID_POV;
-            objectInfo->dwType = DIDFT_POV | DIDFT_MAKEINSTANCE(0);
             objectInfo->dwFlags = 0;
             break;
         }
@@ -522,6 +542,27 @@ namespace Xidi
             }
             break;
         }
+
+        return std::nullopt;
+    }
+
+    // --------
+
+    template <ECharMode charMode> std::optional<DWORD> VirtualDirectInputDevice<charMode>::IdentifyObjectById(Controller::SElementIdentifier element) const
+    {
+        const DWORD kObjectId = GetObjectId(controller->GetCapabilities(), element);
+        if (0 != kObjectId)
+            return kObjectId;
+
+        return std::nullopt;
+    }
+
+    // --------
+
+    template <ECharMode charMode> std::optional<TOffset> VirtualDirectInputDevice<charMode>::IdentifyObjectByOffset(Controller::SElementIdentifier element) const
+    {
+        if (true == IsApplicationDataFormatSet())
+            return dataFormat->GetOffsetForElement(element);
 
         return std::nullopt;
     }

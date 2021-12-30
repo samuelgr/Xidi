@@ -96,7 +96,6 @@ namespace Xidi
         VirtualDirectInputDevice(std::unique_ptr<Controller::VirtualController>&& controller);
 
 
-    public:
         // -------- INSTANCE METHODS ----------------------------------------------- //
 
         /// Retrieves a reference to the underlying virtual controller object.
@@ -114,6 +113,16 @@ namespace Xidi
         /// @param [in] dwHow Identification method. See DirectInput documentation for more information.
         /// @return Virtual controller element identifier that matches the DirectInput-style element identifier, if such a match exists.
         std::optional<Controller::SElementIdentifier> IdentifyElement(DWORD dwObj, DWORD dwHow) const;
+
+        /// Identifies a controller element using a DirectInput-style object ID.
+        /// @param [in] element Controller element to be identified.
+        /// @return Resulting DirectInput-style identifier, if it exists.
+        std::optional<DWORD> IdentifyObjectById(Controller::SElementIdentifier element) const;
+
+        /// Identifies a controller element using a DirectInput-style offset into the application's data format.
+        /// @param [in] element Controller element to be identified.
+        /// @return Resulting DirectInput-style identifier, if it exists.
+        std::optional<TOffset> IdentifyObjectByOffset(Controller::SElementIdentifier element) const;
 
         /// Specifies if the application's data format is set.
         /// @return `true` if the application's data format has been successfully set, `false` otherwise.
