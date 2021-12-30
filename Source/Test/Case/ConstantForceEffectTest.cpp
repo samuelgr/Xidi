@@ -40,6 +40,7 @@ namespace XidiTest
         for (const auto kTestMagnitude : kTestMagnitudes)
         {
             ConstantForceEffect effect;
+            effect.InitializeDefaultDirection();
             effect.SetDuration(kTestEffectDuration);
             effect.SetTypeSpecificParameters({.magnitude = kTestMagnitude});
 
@@ -57,6 +58,7 @@ namespace XidiTest
         for (const auto kTestMagnitude : kTestMagnitudes)
         {
             ConstantForceEffect effect;
+            effect.InitializeDefaultDirection();
             effect.SetDuration(kTestEffectDuration);
             effect.SetTypeSpecificParameters({.magnitude = kTestMagnitude});
 
@@ -75,6 +77,7 @@ namespace XidiTest
         constexpr TEffectTimeMs kTestStartDelay = 50;
 
         ConstantForceEffect effect;
+        effect.InitializeDefaultDirection();
         effect.SetDuration(kTestEffectDuration);
         effect.SetTypeSpecificParameters({.magnitude = kTestMagnitude});
 
@@ -94,6 +97,7 @@ namespace XidiTest
         constexpr TEffectValue kTestMagnitude = 5000;
 
         ConstantForceEffect effect;
+        effect.InitializeDefaultDirection();
         effect.SetDuration(kTestEffectDuration);
         effect.SetTypeSpecificParameters({.magnitude = kTestMagnitude});
 
@@ -127,6 +131,7 @@ namespace XidiTest
         constexpr TEffectValue kTestMagnitude = -5000;
 
         ConstantForceEffect effect;
+        effect.InitializeDefaultDirection();
         effect.SetDuration(kTestEffectDuration);
         effect.SetTypeSpecificParameters({.magnitude = kTestMagnitude});
 
@@ -169,6 +174,7 @@ namespace XidiTest
 
         TEST_ASSERT(false == effect.IsCompletelyDefined());
         TEST_ASSERT(true == effect.SetDuration(kTestEffectDuration));
+        TEST_ASSERT(true == effect.InitializeDefaultDirection());
         TEST_ASSERT(false == effect.IsCompletelyDefined());
         TEST_ASSERT(true == effect.SetTypeSpecificParameters({.magnitude = 0}));
         TEST_ASSERT(true == effect.IsCompletelyDefined());
