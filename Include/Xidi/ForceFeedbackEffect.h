@@ -98,12 +98,51 @@ namespace Xidi
             /// @return Magnitude value that corresponds to the given time, assuming the effect is completely defined (i.e. parameters are all set), and any other value otherwise.
             TEffectValue ComputeMagnitude(TEffectTimeMs time) const;
 
+            /// Computes the magnitude component vector of the force that this effect should generate at the given time.
+            /// @param [in] time Time for which the magnitude is being requested relative to when the application requested the effect be started.
+            /// @return Magnitude component vector that corresponds to the given time, assuming the effect is completely defined (i.e. parameters are all set), and any other value otherwise.
+            inline TMagnitudeComponents ComputeMagnitudeComponents(TEffectTimeMs time) const
+            {
+                return commonParameters.direction.ComputeMagnitudeComponents(ComputeMagnitude(time));
+            }
+
+            /// Provides access to the direction vector associated with this force feedback effect.
+            /// @return Mutable reference to the direction vector object.
+            inline DirectionVector& Direction(void)
+            {
+                return commonParameters.direction;
+            }
+
+            /// Checks if the direction vector associated with this force feedback effect has a direction set.
+            /// @return `true` if so, `false` otherwise.
+            inline bool HasDirection(void) const
+            {
+                return commonParameters.direction.HasDirection();
+            }
+
+            /// Checks if this force feedback effect has a duration set.
+            /// @return `true` if so, `false` otherwise.
+            inline bool HasDuration(void) const
+            {
+                return commonParameters.duration.has_value();
+            }
+
+            /// Initializes the direction vector associated with this force feedback effect to a simple default of one axis in the positive direction.
+            /// The Cartesian coordinate system is used.
+            /// Primarily useful for testing.
+            /// @return `true` if the direction initialization operation succeeded, `false` otherwise.
+            inline bool InitializeDefaultDirection(void)
+            {
+                static constexpr TEffectValue kDefaultCartesianCoordinates[] = {1};
+                return commonParameters.direction.SetDirectionUsingCartesian(kDefaultCartesianCoordinates, _countof(kDefaultCartesianCoordinates));
+            }
+
             /// Verifies that all required parameters have been specified for this effect.
             /// If this method returns `true` then the effect is ready to be played.
             /// @return `true` if all parameters have been specified for this effect, `false` otherwise.
             inline bool IsCompletelyDefined(void) const
             {
-                return (true == commonParameters.duration.has_value()) && IsTypeSpecificEffectCompletelyDefined();
+                return (HasDirection() && HasDuration() && IsTypeSpecificEffectCompletelyDefined());
             }
 
             /// Retrieves and returns this effect's duration parameter.

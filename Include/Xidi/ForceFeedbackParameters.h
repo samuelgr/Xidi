@@ -68,11 +68,26 @@ namespace Xidi
         /// See https://docs.microsoft.com/en-us/previous-versions/windows/desktop/ee416616%28v=vs.85%29 for more information on how direction vectors are represented.
         class DirectionVector
         {
+        public:
+            // -------- TYPE DEFINITIONS ----------------------------------- //
+
+            /// Enumerates the different types of supported coordinate systems.
+            enum class ECoordinateSystem : uint8_t
+            {
+                Cartesian,
+                Polar,
+                Spherical
+            };
+
+
         private:
             // -------- INSTANCE VARIABLES --------------------------------- //
 
             /// Number of axes represented by this direction vector.
             int numAxes;
+
+            /// Coordinate system that was used to set the direction of this vector, once it is set.
+            std::optional<ECoordinateSystem> originalCoordinateSystem;
 
             /// Direction vector represented using Cartesian coordinates.
             /// Valid when any number of axes are present.
@@ -86,15 +101,36 @@ namespace Xidi
             /// Direction vector represented using spherical coordinates, represented as angles in hundredths of a degree.
             /// First element is an angle from (1,0) to (0,1), next element is the angle from that plane to (0,0,1), and so on.
             /// Valid when more than one axis is present and with certain specific values when only one axis is present.
-            TEffectValue spherical[kEffectAxesMaximumNumber - 1];
+            std::array<TEffectValue, kEffectAxesMaximumNumber - 1> spherical;
 
 
         public:
             // -------- CONSTRUCTION AND DESTRUCTION ----------------------- //
 
             /// Default constructor.
-            /// Initializes a direction vector with a single axis.
+            /// Initializes a direction vector with no coordinates.
             DirectionVector(void);
+
+
+            // -------- OPERATORS ------------------------------------------ //
+
+            /// Simple check for equality. Primarily useful during testing.
+            /// Vector equivalence relies on number of axes and spherical coordinates being the same. Polar and Cartesian coordinates can be ignored.
+            /// @param [in] other Object with which to compare.
+            /// @return `true` if this object is equal to the other object, `false` otherwise.
+            constexpr inline bool operator==(const DirectionVector& other) const
+            {
+                if (other.numAxes != numAxes)
+                    return false;
+
+                for (int i = 0; i < (numAxes - 1); ++i)
+                {
+                    if (other.spherical[i] != spherical[i])
+                        return false;
+                }
+
+                return true;
+            }
 
 
             // -------- INSTANCE METHODS ----------------------------------- //
@@ -109,6 +145,14 @@ namespace Xidi
             inline int GetNumAxes(void) const
             {
                 return numAxes;
+            }
+
+            /// Retrieves and returns the original coordinate system that was used to set this vector's direction.
+            /// Does not verify that this vector actually has a direction set. Call #HasDirection to check for that.
+            /// @return Coordinate system that was used.
+            inline ECoordinateSystem GetOriginalCoordinateSystem(void) const
+            {
+                return originalCoordinateSystem.value();
             }
 
             /// Retrieves the Cartesian coordinate representation of this direction vector.
@@ -127,6 +171,13 @@ namespace Xidi
             /// @param [out] coordinates Pointer to a buffer to hold the spherical coordinate components. Number of components is one less than the number of axes represented.
             /// @param [in] numCoordinates Size of the buffer in number of components it can hold.
             int GetSphericalCoordinates(TEffectValue* coordinates, int numCoordinates) const;
+
+            /// Checks if this direction vector has a direction set.
+            /// @return `true` if so, `false` otherwise.
+            inline bool HasDirection(void) const
+            {
+                return originalCoordinateSystem.has_value();
+            }
 
             /// Attempts to change the direction represented by this direction vector using Cartesian coordinates.
             /// Number of axes is inferred based on the number of coordinates present.
@@ -210,6 +261,16 @@ namespace Xidi
             /// Optional envelope to be applied as a transformation to this effect.
             /// If not present then no envelope is applied when this effect's force magnitude is computed.
             std::optional<SEnvelope> envelope = kDefaultEnvelope;
+
+            /// Vector that specifies the direction of the force feedback effect. By default this vector does not specify a direction.
+            /// Setting a direction is mandatory and can be accomplished by calling the methods offered by this object.
+            DirectionVector direction;
+
+            /// Simple check for equality.
+            /// Primarily useful during testing.
+            /// @param [in] other Object with which to compare.
+            /// @return `true` if this object is equal to the other object, `false` otherwise.
+            constexpr inline bool operator==(const SCommonParameters& other) const = default;
         };
     }
 }

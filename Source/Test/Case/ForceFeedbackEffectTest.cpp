@@ -60,6 +60,7 @@ namespace XidiTest
     TEST_CASE(ForceFeedbackEffect_NominalEffect_Magnitude)
     {
         TestEffect effect;
+        effect.InitializeDefaultDirection();
         effect.SetDuration(kTestEffectDuration);
 
         for (TEffectTimeMs t = 0; t < kTestEffectDuration; ++t)
@@ -71,10 +72,14 @@ namespace XidiTest
     TEST_CASE(ForceFeedbackEffect_NominalEffect_Parameters)
     {
         TestEffect effect;
-        TEST_ASSERT(false == effect.GetDuration().has_value());
+        TEST_ASSERT(false == effect.HasDirection());
+        TEST_ASSERT(false == effect.HasDuration());
+
+        effect.InitializeDefaultDirection();
+        TEST_ASSERT(true == effect.HasDirection());
 
         effect.SetDuration(kTestEffectDuration);
-        TEST_ASSERT(true == effect.GetDuration().has_value());
+        TEST_ASSERT(true == effect.HasDuration());
         TEST_ASSERT(kTestEffectDuration == effect.GetDuration().value());
         TEST_ASSERT(kTestEffectDuration == effect.GetTotalTime());
 
@@ -89,6 +94,7 @@ namespace XidiTest
     TEST_CASE(ForceFeedbackEffect_EffectWithStartDelay_Magnitude)
     {
         TestEffect effect;
+        effect.InitializeDefaultDirection();
         effect.SetDuration(kTestEffectDuration);
         effect.SetStartDelay(kTestEffectStartDelay);
 
@@ -104,10 +110,11 @@ namespace XidiTest
     TEST_CASE(ForceFeedbackEffect_EffectWithStartDelay_Parameters)
     {
         TestEffect effect;
+        effect.InitializeDefaultDirection();
         effect.SetDuration(kTestEffectDuration);
         effect.SetStartDelay(kTestEffectStartDelay);
 
-        TEST_ASSERT(true == effect.GetDuration().has_value());
+        TEST_ASSERT(true == effect.HasDuration());
         TEST_ASSERT(kTestEffectDuration == effect.GetDuration().value());
         TEST_ASSERT(kTestEffectDuration + kTestEffectStartDelay == effect.GetTotalTime());
 
@@ -122,6 +129,7 @@ namespace XidiTest
     TEST_CASE(ForceFeedbackEffect_EffectWithSamplePeriod_Magnitude)
     {
         TestEffect effect;
+        effect.InitializeDefaultDirection();
         effect.SetDuration(kTestEffectDuration);
         effect.SetSamplePeriod(kTestEffectSamplePeriod);
 
@@ -140,10 +148,11 @@ namespace XidiTest
     TEST_CASE(ForceFeedbackEffect_EffectWithSamplePeriod_Parameters)
     {
         TestEffect effect;
+        effect.InitializeDefaultDirection();
         effect.SetDuration(kTestEffectDuration);
         effect.SetSamplePeriod(kTestEffectSamplePeriod);
 
-        TEST_ASSERT(true == effect.GetDuration().has_value());
+        TEST_ASSERT(true == effect.HasDuration());
         TEST_ASSERT(kTestEffectDuration == effect.GetDuration().value());
         TEST_ASSERT(kTestEffectDuration == effect.GetTotalTime());
 
@@ -158,6 +167,7 @@ namespace XidiTest
     TEST_CASE(ForceFeedbackEffect_EffectWithGain_Magnitude)
     {
         TestEffect effect;
+        effect.InitializeDefaultDirection();
         effect.SetDuration(kTestEffectDuration);
         effect.SetGain(kTestEffectGain);
 
@@ -170,10 +180,11 @@ namespace XidiTest
     TEST_CASE(ForceFeedbackEffect_EffectWithGain_Parameters)
     {
         TestEffect effect;
+        effect.InitializeDefaultDirection();
         effect.SetDuration(kTestEffectDuration);
         effect.SetGain(kTestEffectGain);
 
-        TEST_ASSERT(true == effect.GetDuration().has_value());
+        TEST_ASSERT(true == effect.HasDuration());
         TEST_ASSERT(kTestEffectDuration == effect.GetDuration().value());
         TEST_ASSERT(kTestEffectDuration== effect.GetTotalTime());
 
@@ -188,6 +199,7 @@ namespace XidiTest
     TEST_CASE(ForceFeedbackEffect_EffectWithTrivialEnvelope_Magnitude)
     {
         TestEffect effect;
+        effect.InitializeDefaultDirection();
         effect.SetDuration(kTestEffectDuration);
         effect.SetEnvelope(kTestTrivialEnvelope);
 
@@ -200,10 +212,11 @@ namespace XidiTest
     TEST_CASE(ForceFeedbackEffect_EffectWithTrivialEnvelope_Parameters)
     {
         TestEffect effect;
+        effect.InitializeDefaultDirection();
         effect.SetDuration(kTestEffectDuration);
         effect.SetEnvelope(kTestTrivialEnvelope);
 
-        TEST_ASSERT(true == effect.GetDuration().has_value());
+        TEST_ASSERT(true == effect.HasDuration());
         TEST_ASSERT(kTestEffectDuration == effect.GetDuration().value());
         TEST_ASSERT(kTestEffectDuration == effect.GetTotalTime());
 
@@ -223,6 +236,7 @@ namespace XidiTest
         constexpr TEffectValue kSustainLevel = kTestEffectDuration / 2;
 
         TestEffect effect;
+        effect.InitializeDefaultDirection();
         effect.SetDuration(kTestEffectDuration);
         effect.SetEnvelope(kTestEnvelope);
 
@@ -239,6 +253,7 @@ namespace XidiTest
         constexpr TEffectValue kSustainLevel = kTestEffectDuration / 2;
 
         TestEffect effect;
+        effect.InitializeDefaultDirection();
         effect.SetDuration(kTestEffectDuration);
         effect.SetEnvelope(kTestEnvelope);
 
@@ -253,6 +268,7 @@ namespace XidiTest
         constexpr TEffectValue kSustainLevel = kTestEffectDuration;
 
         TestEffect effect;
+        effect.InitializeDefaultDirection();
         effect.SetDuration(kTestEffectDuration);
         effect.SetEnvelope(kTestEnvelope);
 
@@ -278,7 +294,7 @@ namespace XidiTest
         TestEffect effect;
         
         TEST_ASSERT(false == effect.SetDuration(0));
-        TEST_ASSERT(false == effect.GetDuration().has_value());
+        TEST_ASSERT(false == effect.HasDuration());
 
         TEST_ASSERT(false == effect.SetGain(kEffectModifierMinimum - 1));
         TEST_ASSERT(false == effect.SetGain(kEffectModifierMaximum + 1));
@@ -299,6 +315,8 @@ namespace XidiTest
 
         TEST_ASSERT(false == effect.IsCompletelyDefined());
         TEST_ASSERT(true == effect.SetDuration(kTestEffectDuration));
+        TEST_ASSERT(false == effect.IsCompletelyDefined());
+        TEST_ASSERT(true == effect.InitializeDefaultDirection());
         TEST_ASSERT(true == effect.IsCompletelyDefined());
     }
 }

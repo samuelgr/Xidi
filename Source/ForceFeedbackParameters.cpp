@@ -111,7 +111,7 @@ namespace Xidi
         // -------- CONSTRUCTION AND DESTRUCTION --------------------------- //
         // See "ForceFeedbackParameters.h" for documentation.
 
-        DirectionVector::DirectionVector(void) : numAxes(1), cartesian({1}), polar(), spherical()
+        DirectionVector::DirectionVector(void) : numAxes(), originalCoordinateSystem(), cartesian(), polar(), spherical()
         {
             // Nothing to do here.
         }
@@ -123,39 +123,42 @@ namespace Xidi
         TMagnitudeComponents DirectionVector::ComputeMagnitudeComponents(TEffectValue magnitude) const
         {
             TMagnitudeComponents magnitudeComponents({});
-            
-            if (1 == numAxes)
+
+            if (0 != magnitude)
             {
-                // For single-axis forces, only the direction of the single Cartesian coordinate matters.
-
-                if (cartesian[0] > 0)
-                    magnitudeComponents[0] = magnitude;
-                else
-                    magnitudeComponents[0] = -magnitude;
-            }
-            else
-            {
-                // For multi-axis forces, the spherical coordinate system makes it easy to convert to individual components.
-                // This is in essence a spherical-to-Cartesian conversion using the force's magnitude as input.
-
-                for (int i = 0; i < numAxes; ++i)
-                    magnitudeComponents[i] = magnitude;
-
-                // Intuition for this algorithm is as follows.
-                // Component of the highest-numbered dimension (i.e. the highest-indexed element in the Cartesian component array) has a projection along it that is the sine of the highest-index spherical coordinate angle.
-                // All other components use a projection of that same angle along the orthogonal plane, which is to say multiply by the cosine of that same angle.
-                // This acts as a sort of dimensionality reduction which then repeats.
-                // Following this logic for a two-dimensional vector, and assuming dimensions X and Y in that order, Y component = magnitude * sin(spherical[0]), X component = magnitude * cos(spherical[0]).
-                // Extending that logic to three dimensions, and assuming dimensions X, Y, and Z in that order, Z component = magnitude * sin(spherical[1]), X-Y projection vector magnitude = magnitude * cos(spherical[1]), Y component = (X-Y projection) * sin(spherical[0]), X component = (X-Y projection) * cos(spherical[0]).
-                // Same can be extended to four and more dimensions. This pair of loops simply implements the above intuition.
-                for (int coordinateIndex = 0; coordinateIndex < (numAxes - 1); ++coordinateIndex)
+                if (1 == numAxes)
                 {
-                    for (int axisIndex = 0; axisIndex < numAxes; ++axisIndex)
+                    // For single-axis forces, only the direction of the single Cartesian coordinate matters.
+
+                    if (cartesian[0] > 0)
+                        magnitudeComponents[0] = magnitude;
+                    else
+                        magnitudeComponents[0] = -magnitude;
+                }
+                else
+                {
+                    // For multi-axis forces, the spherical coordinate system makes it easy to convert to individual components.
+                    // This is in essence a spherical-to-Cartesian conversion using the force's magnitude as input.
+
+                    for (int i = 0; i < numAxes; ++i)
+                        magnitudeComponents[i] = magnitude;
+
+                    // Intuition for this algorithm is as follows.
+                    // Component of the highest-numbered dimension (i.e. the highest-indexed element in the Cartesian component array) has a projection along it that is the sine of the highest-index spherical coordinate angle.
+                    // All other components use a projection of that same angle along the orthogonal plane, which is to say multiply by the cosine of that same angle.
+                    // This acts as a sort of dimensionality reduction which then repeats.
+                    // Following this logic for a two-dimensional vector, and assuming dimensions X and Y in that order, Y component = magnitude * sin(spherical[0]), X component = magnitude * cos(spherical[0]).
+                    // Extending that logic to three dimensions, and assuming dimensions X, Y, and Z in that order, Z component = magnitude * sin(spherical[1]), X-Y projection vector magnitude = magnitude * cos(spherical[1]), Y component = (X-Y projection) * sin(spherical[0]), X component = (X-Y projection) * cos(spherical[0]).
+                    // Same can be extended to four and more dimensions. This pair of loops simply implements the above intuition.
+                    for (int coordinateIndex = 0; coordinateIndex < (numAxes - 1); ++coordinateIndex)
                     {
-                        if (axisIndex <= coordinateIndex)
-                            magnitudeComponents[axisIndex] *= TrigonometryCosine(spherical[coordinateIndex]);
-                        else if (axisIndex == (coordinateIndex + 1))
-                            magnitudeComponents[axisIndex] *= TrigonometrySine(spherical[coordinateIndex]);
+                        for (int axisIndex = 0; axisIndex < numAxes; ++axisIndex)
+                        {
+                            if (axisIndex <= coordinateIndex)
+                                magnitudeComponents[axisIndex] *= TrigonometryCosine(spherical[coordinateIndex]);
+                            else if (axisIndex == (coordinateIndex + 1))
+                                magnitudeComponents[axisIndex] *= TrigonometrySine(spherical[coordinateIndex]);
+                        }
                     }
                 }
             }
@@ -222,6 +225,7 @@ namespace Xidi
                 return false;
 
             numAxes = kNewNumAxes;
+            originalCoordinateSystem = ECoordinateSystem::Cartesian;
 
             // Set the Cartesian coordinate representation.
             for (int i = 0; i < numCoordinates; ++i)
@@ -267,6 +271,7 @@ namespace Xidi
                 return false;
 
             numAxes = kNewNumAxes;
+            originalCoordinateSystem = ECoordinateSystem::Polar;
 
             // Set the polar coordinate representation.
             polar = coordinates[0];
@@ -303,23 +308,31 @@ namespace Xidi
             }
 
             numAxes = kNewNumAxes;
+            originalCoordinateSystem = ECoordinateSystem::Spherical;
 
-            // Set the spherical coordinate representation.
-            for (int i = 0; i < numCoordinates; ++i)
-                spherical[i] = coordinates[i];
-
-            // Convert to polar if that makes sense.
-            if (2 == kNewNumAxes)
+            if (1 == numAxes)
             {
-                // As with converting from polar to spherical, this is just an arithmetic transformation.
-                polar = spherical[0] - 27000;
-                if (polar < 0)
-                    polar += 36000;
+                cartesian[0] = 1;
             }
+            else
+            {
+                // Set the spherical coordinate representation.
+                for (int i = 0; i < numCoordinates; ++i)
+                    spherical[i] = coordinates[i];
 
-            // Convert to Cartesian.
-            // Assume a magnitude of 100,000,000 so there will be reasonable precision in the integer part of each Cartesian component.
-            cartesian = ComputeMagnitudeComponents(100000000);
+                // Convert to polar if that makes sense.
+                if (2 == kNewNumAxes)
+                {
+                    // As with converting from polar to spherical, this is just an arithmetic transformation.
+                    polar = spherical[0] - 27000;
+                    if (polar < 0)
+                        polar += 36000;
+                }
+
+                // Convert to Cartesian.
+                // Assume a magnitude of 100,000,000 so there will be reasonable precision in the integer part of each Cartesian component.
+                cartesian = ComputeMagnitudeComponents(100000000);
+            }
 
             return true;
         }

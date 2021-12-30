@@ -266,6 +266,18 @@ namespace XidiTest
 
         for (const auto kTestMagnitude : kTestMagnitudes)
         {
+            // Verify that a zero-coordinate spherical specification works and also produces the same single axis vector as above.
+            do
+            {
+                DirectionVector vector;
+                TEST_ASSERT(true == vector.SetDirectionUsingSpherical(nullptr, 0));
+
+                const TMagnitudeComponents kExpectedOutput = {kTestMagnitude};
+                const TMagnitudeComponents kActualOutput = vector.ComputeMagnitudeComponents(kTestMagnitude);
+                TEST_ASSERT(kActualOutput == kExpectedOutput);
+            } while (false);
+
+            // Verify all the specified Cartesian test coordinates.
             for (const auto kTestCoordinate : kTestCoordinates)
             {
                 DirectionVector vector;
@@ -469,5 +481,26 @@ namespace XidiTest
 
         for (const auto kInvalidAngleCoordinate : kInvalidAngleCoordinates)
             TEST_ASSERT(false == vector.SetDirectionUsingSpherical(&kInvalidAngleCoordinate, 1));
+
+        // Finally, verify that the vector reports not having any direction set, since all of the above attempts should have failed.
+        TEST_ASSERT(false == vector.HasDirection());
+    }
+
+    // Verifies that direction vector objects correctly report their original coordinate system once a direction is set.
+    TEST_CASE(ForceFeedbackDirectionVector_OriginalCoordinateSystem)
+    {
+        constexpr TEffectValue kTestCoordinates[] = {5566};
+
+        DirectionVector vector;
+        TEST_ASSERT(false == vector.HasDirection());
+
+        TEST_ASSERT(true == vector.SetDirectionUsingCartesian(kTestCoordinates, _countof(kTestCoordinates)));
+        TEST_ASSERT(DirectionVector::ECoordinateSystem::Cartesian == vector.GetOriginalCoordinateSystem());
+
+        TEST_ASSERT(true == vector.SetDirectionUsingPolar(kTestCoordinates, _countof(kTestCoordinates)));
+        TEST_ASSERT(DirectionVector::ECoordinateSystem::Polar == vector.GetOriginalCoordinateSystem());
+
+        TEST_ASSERT(true == vector.SetDirectionUsingSpherical(kTestCoordinates, _countof(kTestCoordinates)));
+        TEST_ASSERT(DirectionVector::ECoordinateSystem::Spherical == vector.GetOriginalCoordinateSystem());
     }
 }
