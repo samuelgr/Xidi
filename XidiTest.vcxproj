@@ -231,6 +231,7 @@
     <ClInclude Include="Include\Xidi\Test\Utilities.h" />
     <ClInclude Include="Include\Xidi\VirtualController.h" />
     <ClInclude Include="Include\Xidi\VirtualDirectInputDevice.h" />
+    <ClInclude Include="Include\Xidi\VirtualDirectInputEffect.h" />
     <ClInclude Include="Resources\Xidi.h" />
   </ItemGroup>
   <ItemGroup>
@@ -274,6 +275,7 @@
     <ClCompile Include="Source\Test\Utilities.cpp" />
     <ClCompile Include="Source\VirtualController.cpp" />
     <ClCompile Include="Source\VirtualDirectInputDevice.cpp" />
+    <ClCompile Include="Source\VirtualDirectInputEffect.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="Resources\Xidi.rc" />
