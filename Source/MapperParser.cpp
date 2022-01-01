@@ -70,7 +70,7 @@ namespace Xidi
             struct SAxisMapperParams
             {
                 EAxis axis;
-                AxisMapper::EDirection direction;
+                EAxisDirection direction;
             };
 
             /// Type alias for enabling axis parameter parsing to indicate a semantically-rich error on parse failure.
@@ -194,36 +194,36 @@ namespace Xidi
                 };
 
                 // Map of strings representing axis directions to axis direction enumerators.
-                static const std::map<std::wstring_view, AxisMapper::EDirection> kDirectionStrings = {
-                    {L"bidir",          AxisMapper::EDirection::Both},
-                    {L"Bidir",          AxisMapper::EDirection::Both},
-                    {L"BiDir",          AxisMapper::EDirection::Both},
-                    {L"BIDIR",          AxisMapper::EDirection::Both},
-                    {L"bidirectional",  AxisMapper::EDirection::Both},
-                    {L"Bidirectional",  AxisMapper::EDirection::Both},
-                    {L"BiDirectional",  AxisMapper::EDirection::Both},
-                    {L"BIDIRECTIONAL",  AxisMapper::EDirection::Both},
-                    {L"both",           AxisMapper::EDirection::Both},
-                    {L"Both",           AxisMapper::EDirection::Both},
-                    {L"BOTH",           AxisMapper::EDirection::Both},
+                static const std::map<std::wstring_view, EAxisDirection> kDirectionStrings = {
+                    {L"bidir",          EAxisDirection::Both},
+                    {L"Bidir",          EAxisDirection::Both},
+                    {L"BiDir",          EAxisDirection::Both},
+                    {L"BIDIR",          EAxisDirection::Both},
+                    {L"bidirectional",  EAxisDirection::Both},
+                    {L"Bidirectional",  EAxisDirection::Both},
+                    {L"BiDirectional",  EAxisDirection::Both},
+                    {L"BIDIRECTIONAL",  EAxisDirection::Both},
+                    {L"both",           EAxisDirection::Both},
+                    {L"Both",           EAxisDirection::Both},
+                    {L"BOTH",           EAxisDirection::Both},
 
-                    {L"+",              AxisMapper::EDirection::Positive},
-                    {L"+ve",            AxisMapper::EDirection::Positive},
-                    {L"pos",            AxisMapper::EDirection::Positive},
-                    {L"Pos",            AxisMapper::EDirection::Positive},
-                    {L"POS",            AxisMapper::EDirection::Positive},
-                    {L"positive",       AxisMapper::EDirection::Positive},
-                    {L"Positive",       AxisMapper::EDirection::Positive},
-                    {L"POSITIVE",       AxisMapper::EDirection::Positive},
+                    {L"+",              EAxisDirection::Positive},
+                    {L"+ve",            EAxisDirection::Positive},
+                    {L"pos",            EAxisDirection::Positive},
+                    {L"Pos",            EAxisDirection::Positive},
+                    {L"POS",            EAxisDirection::Positive},
+                    {L"positive",       EAxisDirection::Positive},
+                    {L"Positive",       EAxisDirection::Positive},
+                    {L"POSITIVE",       EAxisDirection::Positive},
 
-                    {L"-",              AxisMapper::EDirection::Negative},
-                    {L"-ve",            AxisMapper::EDirection::Negative},
-                    {L"neg",            AxisMapper::EDirection::Negative},
-                    {L"Neg",            AxisMapper::EDirection::Negative},
-                    {L"NEG",            AxisMapper::EDirection::Negative},
-                    {L"negative",       AxisMapper::EDirection::Negative},
-                    {L"Negative",       AxisMapper::EDirection::Negative},
-                    {L"NEGATIVE",       AxisMapper::EDirection::Negative}
+                    {L"-",              EAxisDirection::Negative},
+                    {L"-ve",            EAxisDirection::Negative},
+                    {L"neg",            EAxisDirection::Negative},
+                    {L"Neg",            EAxisDirection::Negative},
+                    {L"NEG",            EAxisDirection::Negative},
+                    {L"negative",       EAxisDirection::Negative},
+                    {L"Negative",       EAxisDirection::Negative},
+                    {L"NEGATIVE",       EAxisDirection::Negative}
                 };
 
                 SParamStringParts paramParts = ExtractParameterListStringParts(params).value_or(SParamStringParts());
@@ -239,7 +239,7 @@ namespace Xidi
                 const EAxis kAxis = kAxisIter->second;
 
                 // Second parameter is optional. It is a string that specifies the axis direction, with the default being both.
-                AxisMapper::EDirection axisDirection = AxisMapper::EDirection::Both;
+                EAxisDirection axisDirection = EAxisDirection::Both;
 
                 paramParts = ExtractParameterListStringParts(paramParts.remaining).value_or(SParamStringParts());
                 if (false == paramParts.first.empty())

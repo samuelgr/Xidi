@@ -618,9 +618,9 @@ namespace XidiTest
         };
         const SElementMapperParseResult kExpectedParseResults[] = {
             {.maybeElementMapper = std::make_unique<AxisMapper>(EAxis::X)},
-            {.maybeElementMapper = std::make_unique<AxisMapper>(EAxis::Y, AxisMapper::EDirection::Both)},
-            {.maybeElementMapper = std::make_unique<AxisMapper>(EAxis::Z, AxisMapper::EDirection::Positive)},
-            {.maybeElementMapper = std::make_unique<AxisMapper>(EAxis::RotX, AxisMapper::EDirection::Negative), .remainingString = L"Button(3)"},
+            {.maybeElementMapper = std::make_unique<AxisMapper>(EAxis::Y, EAxisDirection::Both)},
+            {.maybeElementMapper = std::make_unique<AxisMapper>(EAxis::Z, EAxisDirection::Positive)},
+            {.maybeElementMapper = std::make_unique<AxisMapper>(EAxis::RotX, EAxisDirection::Negative), .remainingString = L"Button(3)"},
         };
         static_assert(_countof(kExpectedParseResults) == _countof(kTestStrings), "Mismatch between input and expected output array lengths.");
 
@@ -631,8 +631,8 @@ namespace XidiTest
 
             TEST_ASSERT(nullptr != dynamic_cast<AxisMapper*>(actualParseResult.maybeElementMapper.Value().get()));
 
-            const AxisMapper::EDirection kExpectedDirection = dynamic_cast<AxisMapper*>(kExpectedParseResults[i].maybeElementMapper.Value().get())->GetAxisDirection();
-            const AxisMapper::EDirection kActualDirection = dynamic_cast<AxisMapper*>(actualParseResult.maybeElementMapper.Value().get())->GetAxisDirection();
+            const EAxisDirection kExpectedDirection = dynamic_cast<AxisMapper*>(kExpectedParseResults[i].maybeElementMapper.Value().get())->GetAxisDirection();
+            const EAxisDirection kActualDirection = dynamic_cast<AxisMapper*>(actualParseResult.maybeElementMapper.Value().get())->GetAxisDirection();
             TEST_ASSERT(kActualDirection == kExpectedDirection);
         }
     }
@@ -726,9 +726,9 @@ namespace XidiTest
         };
         const SElementMapperParseResult kExpectedParseResults[] = {
             {.maybeElementMapper = std::make_unique<DigitalAxisMapper>(EAxis::X)},
-            {.maybeElementMapper = std::make_unique<DigitalAxisMapper>(EAxis::Y, AxisMapper::EDirection::Both)},
-            {.maybeElementMapper = std::make_unique<DigitalAxisMapper>(EAxis::Z, AxisMapper::EDirection::Positive)},
-            {.maybeElementMapper = std::make_unique<DigitalAxisMapper>(EAxis::RotX, AxisMapper::EDirection::Negative), .remainingString = L"Button(3)"},
+            {.maybeElementMapper = std::make_unique<DigitalAxisMapper>(EAxis::Y, EAxisDirection::Both)},
+            {.maybeElementMapper = std::make_unique<DigitalAxisMapper>(EAxis::Z, EAxisDirection::Positive)},
+            {.maybeElementMapper = std::make_unique<DigitalAxisMapper>(EAxis::RotX, EAxisDirection::Negative), .remainingString = L"Button(3)"},
         };
         static_assert(_countof(kExpectedParseResults) == _countof(kTestStrings), "Mismatch between input and expected output array lengths.");
 
@@ -739,8 +739,8 @@ namespace XidiTest
 
             TEST_ASSERT(nullptr != dynamic_cast<DigitalAxisMapper*>(actualParseResult.maybeElementMapper.Value().get()));
 
-            const AxisMapper::EDirection kExpectedDirection = dynamic_cast<DigitalAxisMapper*>(kExpectedParseResults[i].maybeElementMapper.Value().get())->GetAxisDirection();
-            const AxisMapper::EDirection kActualDirection = dynamic_cast<DigitalAxisMapper*>(actualParseResult.maybeElementMapper.Value().get())->GetAxisDirection();
+            const EAxisDirection kExpectedDirection = dynamic_cast<DigitalAxisMapper*>(kExpectedParseResults[i].maybeElementMapper.Value().get())->GetAxisDirection();
+            const EAxisDirection kActualDirection = dynamic_cast<DigitalAxisMapper*>(actualParseResult.maybeElementMapper.Value().get())->GetAxisDirection();
             TEST_ASSERT(kActualDirection == kExpectedDirection);
         }
     }

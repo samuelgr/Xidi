@@ -93,15 +93,7 @@ namespace Xidi
         public:
             // -------- TYPE DEFINITIONS ----------------------------------- //
 
-            /// Enumerates the possible directions to which the contributions of this element should be mapped.
-            /// Typically an analog stick axis would contribute to the whole axis (i.e. both directions).
-            /// Triggers might be made to share an axis by having one be positive and one be negative.
-            enum class EDirection : uint8_t
-            {
-                Both,                                                       ///< Specifies that the contribution is to the whole axis, mapping evenly to both directions.
-                Positive,                                                   ///< Specifies that the contribution is only to the positive part of the axis.
-                Negative                                                    ///< Specifies that the contribution is only to the negative part of the axis.
-            };
+            
 
 
         protected:
@@ -112,7 +104,7 @@ namespace Xidi
 
             /// Identifies the direction to which this mapper should contribute on its associated axis.
             /// If set to anything other than both directions, the contribution is to half of the axis only.
-            const EDirection direction;
+            const EAxisDirection direction;
 
 
         public:
@@ -120,7 +112,7 @@ namespace Xidi
 
             /// Initialization constructor.
             /// Specifies the axis and, optionally, the direction to which this mapper should contribute in the internal controller state data structure.
-            inline constexpr AxisMapper(EAxis axis, EDirection direction = EDirection::Both) : IElementMapper(), axis(axis), direction(direction)
+            inline constexpr AxisMapper(EAxis axis, EAxisDirection direction = EAxisDirection::Both) : IElementMapper(), axis(axis), direction(direction)
             {
                 // Nothing to do here.
             }
@@ -131,7 +123,7 @@ namespace Xidi
             /// Retrieves and returns the axis direction to which this mapper should contribute on its associated axis.
             /// Intended for tests.
             /// @return Target axis direction.
-            inline AxisMapper::EDirection GetAxisDirection(void) const
+            inline EAxisDirection GetAxisDirection(void) const
             {
                 return direction;
             }
@@ -280,7 +272,7 @@ namespace Xidi
 
             /// Initialization constructor.
             /// Specifies the axis and, optionally, the direction to which this mapper should contribute in the internal controller state data structure.
-            inline constexpr DigitalAxisMapper(EAxis axis, EDirection direction = EDirection::Both) : AxisMapper(axis, direction)
+            inline constexpr DigitalAxisMapper(EAxis axis, EAxisDirection direction = EAxisDirection::Both) : AxisMapper(axis, direction)
             {
                 // Nothing to do here.
             }

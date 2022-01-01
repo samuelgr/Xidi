@@ -93,7 +93,7 @@ namespace XidiTest
 
         for (int32_t analogValue = kAnalogValueMin; analogValue <= kAnalogValueMax; ++analogValue)
         {
-            constexpr AxisMapper mapper(kTargetAxis, AxisMapper::EDirection::Positive);
+            constexpr AxisMapper mapper(kTargetAxis, EAxisDirection::Positive);
             const double analogValueDisplacement = (double)analogValue - (double)kAnalogValueMin;
 
             SState expectedState;
@@ -116,7 +116,7 @@ namespace XidiTest
 
         for (int32_t analogValue = kAnalogValueMin; analogValue <= kAnalogValueMax; ++analogValue)
         {
-            constexpr AxisMapper mapper(kTargetAxis, AxisMapper::EDirection::Negative);
+            constexpr AxisMapper mapper(kTargetAxis, EAxisDirection::Negative);
             const double analogValueDisplacement = (double)analogValue - (double)kAnalogValueMin;
 
             SState expectedState;
@@ -222,7 +222,7 @@ namespace XidiTest
 
         for (bool buttonIsPressed : kButtonStates)
         {
-            constexpr AxisMapper mapper(kTargetAxis, AxisMapper::EDirection::Positive);
+            constexpr AxisMapper mapper(kTargetAxis, EAxisDirection::Positive);
 
             SState expectedState;
             ZeroMemory(&expectedState, sizeof(expectedState));
@@ -244,7 +244,7 @@ namespace XidiTest
 
         for (bool buttonIsPressed : kButtonStates)
         {
-            constexpr AxisMapper mapper(kTargetAxis, AxisMapper::EDirection::Negative);
+            constexpr AxisMapper mapper(kTargetAxis, EAxisDirection::Negative);
 
             SState expectedState;
             ZeroMemory(&expectedState, sizeof(expectedState));
@@ -353,7 +353,7 @@ namespace XidiTest
 
         for (int32_t triggerValue = kTriggerValueMin; triggerValue <= kTriggerValueMax; ++triggerValue)
         {
-            constexpr AxisMapper mapper(kTargetAxis, AxisMapper::EDirection::Positive);
+            constexpr AxisMapper mapper(kTargetAxis, EAxisDirection::Positive);
             const double triggerValueDisplacement = (double)triggerValue - (double)kTriggerValueMin;
 
             SState expectedState;
@@ -376,7 +376,7 @@ namespace XidiTest
 
         for (int32_t triggerValue = kTriggerValueMin; triggerValue <= kTriggerValueMax; ++triggerValue)
         {
-            constexpr AxisMapper mapper(kTargetAxis, AxisMapper::EDirection::Negative);
+            constexpr AxisMapper mapper(kTargetAxis, EAxisDirection::Negative);
             const double triggerValueDisplacement = (double)triggerValue - (double)kTriggerValueMin;
 
             SState expectedState;

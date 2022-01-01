@@ -54,8 +54,8 @@ namespace XidiTest
             std::make_unique<ButtonMapper>(EButton::B10),
             nullptr,
             std::make_unique<SplitMapper>(
-                std::make_unique<AxisMapper>(EAxis::X, AxisMapper::EDirection::Positive),
-                std::make_unique<AxisMapper>(EAxis::X, AxisMapper::EDirection::Negative)),
+                std::make_unique<AxisMapper>(EAxis::X, EAxisDirection::Positive),
+                std::make_unique<AxisMapper>(EAxis::X, EAxisDirection::Negative)),
             nullptr,
             std::make_unique<InvertMapper>(
                 std::make_unique<PovMapper>(EPovDirection::Up))
@@ -90,8 +90,8 @@ namespace XidiTest
             std::make_unique<ButtonMapper>(EButton::B10),
             nullptr,
             std::make_unique<SplitMapper>(
-                std::make_unique<AxisMapper>(EAxis::X, AxisMapper::EDirection::Positive),
-                std::make_unique<AxisMapper>(EAxis::X, AxisMapper::EDirection::Negative))
+                std::make_unique<AxisMapper>(EAxis::X, EAxisDirection::Positive),
+                std::make_unique<AxisMapper>(EAxis::X, EAxisDirection::Negative))
         });
         const std::unique_ptr<IElementMapper> mapperClone = mapperOriginal.Clone();
         TEST_ASSERT(_countof(kUnderlyingElements) == mapperClone->GetTargetElementCount());

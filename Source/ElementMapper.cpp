@@ -86,14 +86,14 @@ namespace Xidi
 
             switch (direction)
             {
-            case EDirection::Both:
+            case EAxisDirection::Both:
                 break;
 
-            case EDirection::Positive:
+            case EAxisDirection::Positive:
                 axisValueToContribute = (axisValueToContribute - kAnalogValueMin) >> 1;
                 break;
 
-            case EDirection::Negative:
+            case EAxisDirection::Negative:
                 axisValueToContribute = (axisValueToContribute - kAnalogValueMax) >> 1;
                 break;
             }
@@ -109,15 +109,15 @@ namespace Xidi
             
             switch (direction)
             {
-            case EDirection::Both:
+            case EAxisDirection::Both:
                 axisValueToContribute = (buttonPressed ? kAnalogValueMax : kAnalogValueMin);
                 break;
 
-            case EDirection::Positive:
+            case EAxisDirection::Positive:
                 axisValueToContribute = (buttonPressed ? kAnalogValueMax : kAnalogValueNeutral);
                 break;
 
-            case EDirection::Negative:
+            case EAxisDirection::Negative:
                 axisValueToContribute = (buttonPressed ? kAnalogValueMin : kAnalogValueNeutral);
                 break;
             }
@@ -137,15 +137,15 @@ namespace Xidi
 
             switch (direction)
             {
-            case EDirection::Both:
+            case EAxisDirection::Both:
                 axisValueToContribute = (int32_t)((double)triggerValue * kBidirectionalStepSize) + kAnalogValueMin;
                 break;
 
-            case EDirection::Positive:
+            case EAxisDirection::Positive:
                 axisValueToContribute = (int32_t)((double)triggerValue * kPositiveStepSize) + kAnalogValueNeutral;
                 break;
 
-            case EDirection::Negative:
+            case EAxisDirection::Negative:
                 axisValueToContribute = (int32_t)((double)triggerValue * kNegativeStepSize) - kAnalogValueNeutral;
                 break;
             }
@@ -318,19 +318,19 @@ namespace Xidi
 
             switch (direction)
             {
-            case EDirection::Both:
+            case EAxisDirection::Both:
                 if (IsAnalogPressedNegative(analogValue))
                     axisValueToContribute = kAnalogValueMin;
                 else if (IsAnalogPressedPositive(analogValue))
                     axisValueToContribute = kAnalogValueMax;
                 break;
 
-            case EDirection::Positive:
+            case EAxisDirection::Positive:
                 if (IsAnalogPressedPositive(analogValue))
                     axisValueToContribute = kAnalogValueMax;
                 break;
 
-            case EDirection::Negative:
+            case EAxisDirection::Negative:
                 if (IsAnalogPressedNegative(analogValue))
                     axisValueToContribute = kAnalogValueMin;
                 break;

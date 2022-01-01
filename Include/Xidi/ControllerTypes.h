@@ -78,6 +78,15 @@ namespace Xidi
             Count                                                           ///< Sentinel value, total number of enumerators
         };
 
+        /// Enumerates the possible directions that can be recognized for an axis.
+        /// Used for specifying the parts of an axis to which element mappers should contribute and from which force feedback actuators should obtain their input.
+        enum class EAxisDirection : uint8_t
+        {
+            Both,                                                           ///< Specifies that the entire axis should be used, both positive and negative.
+            Positive,                                                       ///< Specifies that only the positive part of the axis should be used.
+            Negative                                                        ///< Specifies that only the negative part of the axis should be used.
+        };
+
         /// Enumerates all supported buttons.
         /// It is not necessarily the case that all of these buttons are present in a virtual controller. This enumerator just lists all the possible buttons.
         /// Semantically, the value of each enumerator maps to an array position in the controller's internal state data structure.
