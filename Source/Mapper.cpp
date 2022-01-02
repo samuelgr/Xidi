@@ -166,6 +166,9 @@ namespace Xidi
             ZeroMemory(&capabilities, sizeof(capabilities));
 
             BitSetEnum<EAxis> axesPresent = Mapper::kRequiredAxes;
+            BitSetEnum<EAxis> axesMappedToPhysicalControllerElement;
+            BitSetEnum<EAxis> axesMappedToForceFeedbackActuator;
+
             int highestButtonSeen = Mapper::kMinNumButtons - 1;
             bool povPresent = Mapper::kIsPovRequired;
 
@@ -184,7 +187,10 @@ namespace Xidi
                         {
                         case EElementType::Axis:
                             if ((int)targetElement.axis < (int)EAxis::Count)
+                            {
                                 axesPresent.insert((int)targetElement.axis);
+                                axesMappedToPhysicalControllerElement.insert((int)targetElement.axis);
+                            }
                             break;
 
                         case EElementType::Button:
@@ -204,7 +210,13 @@ namespace Xidi
             }
 
             for (auto axisPresent : axesPresent)
-                capabilities.AppendAxis((EAxis)((int)axisPresent));
+                capabilities.AppendAxis(
+                    {
+                        .type = (EAxis)((int)axisPresent),
+                        .isMappedToPhysicalControllerElement = axesMappedToPhysicalControllerElement.contains(axisPresent),
+                        .isMappedToForceFeedbackActuator = axesMappedToForceFeedbackActuator.contains(axisPresent)
+                    }
+                );
 
             capabilities.numButtons = highestButtonSeen + 1;
             capabilities.hasPov = povPresent;

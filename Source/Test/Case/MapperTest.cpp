@@ -42,7 +42,7 @@ namespace XidiTest
     {
         SCapabilities minCapabilities = {.numButtons = Mapper::kMinNumButtons, .hasPov = Mapper::kIsPovRequired};
         for (auto requiredAxis : Mapper::kRequiredAxes)
-            minCapabilities.AppendAxis((EAxis)((int)requiredAxis));
+            minCapabilities.AppendAxis({.type = (EAxis)((int)requiredAxis)});
 
         return minCapabilities;
     }
@@ -59,8 +59,10 @@ namespace XidiTest
         SCapabilities expectedCapabilities = {.numButtons = std::max(kMinCapabilities.numButtons, baseExpectedCapabilities.numButtons), .hasPov = (kMinCapabilities.hasPov || baseExpectedCapabilities.hasPov)};
         for (int i = 0; i < (int)EAxis::Count; ++i)
         {
-            if (kMinCapabilities.HasAxis((EAxis)i) || baseExpectedCapabilities.HasAxis((EAxis)i))
-                expectedCapabilities.AppendAxis((EAxis)i);
+            if (baseExpectedCapabilities.HasAxis((EAxis)i))
+                expectedCapabilities.AppendAxis(baseExpectedCapabilities.axisCapabilities[baseExpectedCapabilities.FindAxis((EAxis)i)]);
+            else if (kMinCapabilities.HasAxis((EAxis)i))
+                expectedCapabilities.AppendAxis(kMinCapabilities.axisCapabilities[kMinCapabilities.FindAxis((EAxis)i)]);
         }
 
         return expectedCapabilities;
@@ -399,7 +401,10 @@ namespace XidiTest
     TEST_CASE(Mapper_Capabilities_MultipleAxes)
     {
         constexpr SCapabilities kExpectedCapabilities = MakeExpectedCapabilities({
-            .axisCapabilities = {{.type = EAxis::Y}, {.type = EAxis::RotX}},
+            .axisCapabilities = {
+                {.type = EAxis::Y, .isMappedToPhysicalControllerElement = true},
+                {.type = EAxis::RotX, .isMappedToPhysicalControllerElement = true}
+            },
             .numAxes = 2,
             .numButtons = 0,
             .hasPov = false
@@ -465,7 +470,7 @@ namespace XidiTest
     {
         constexpr EAxis kTestAxis = EAxis::Z;
         constexpr SCapabilities kExpectedCapabilities = MakeExpectedCapabilities({
-            .axisCapabilities = {{.type = kTestAxis}},
+            .axisCapabilities = {{.type = kTestAxis, .isMappedToPhysicalControllerElement = true}},
             .numAxes = 1,
             .numButtons = 0,
             .hasPov = true
@@ -487,7 +492,12 @@ namespace XidiTest
     TEST_CASE(Mapper_Capabilities_StandardGamepad)
     {
         constexpr SCapabilities kExpectedCapabilities = MakeExpectedCapabilities({
-            .axisCapabilities = {{.type = EAxis::X}, {.type = EAxis::Y}, {.type = EAxis::Z}, {.type = EAxis::RotZ}},
+            .axisCapabilities = {
+                {.type = EAxis::X, .isMappedToPhysicalControllerElement = true},
+                {.type = EAxis::Y, .isMappedToPhysicalControllerElement = true},
+                {.type = EAxis::Z, .isMappedToPhysicalControllerElement = true},
+                {.type = EAxis::RotZ, .isMappedToPhysicalControllerElement = true}
+            },
             .numAxes = 4,
             .numButtons = 12,
             .hasPov = true
@@ -504,7 +514,12 @@ namespace XidiTest
     TEST_CASE(Mapper_Capabilities_DigitalGamepad)
     {
         constexpr SCapabilities kExpectedCapabilities = MakeExpectedCapabilities({
-            .axisCapabilities = {{.type = EAxis::X}, {.type = EAxis::Y}, {.type = EAxis::Z}, {.type = EAxis::RotZ}},
+            .axisCapabilities = {
+                {.type = EAxis::X, .isMappedToPhysicalControllerElement = true},
+                {.type = EAxis::Y, .isMappedToPhysicalControllerElement = true},
+                {.type = EAxis::Z, .isMappedToPhysicalControllerElement = true},
+                {.type = EAxis::RotZ, .isMappedToPhysicalControllerElement = true}
+            },
             .numAxes = 4,
             .numButtons = 12,
             .hasPov = false
@@ -521,7 +536,14 @@ namespace XidiTest
     TEST_CASE(Mapper_Capabilities_ExtendedGamepad)
     {
         constexpr SCapabilities kExpectedCapabilities = MakeExpectedCapabilities({
-            .axisCapabilities = {{.type = EAxis::X}, {.type = EAxis::Y}, {.type = EAxis::Z}, {.type = EAxis::RotX}, {.type = EAxis::RotY}, {.type = EAxis::RotZ}},
+            .axisCapabilities = {
+                {.type = EAxis::X, .isMappedToPhysicalControllerElement = true},
+                {.type = EAxis::Y, .isMappedToPhysicalControllerElement = true},
+                {.type = EAxis::Z, .isMappedToPhysicalControllerElement = true},
+                {.type = EAxis::RotX, .isMappedToPhysicalControllerElement = true},
+                {.type = EAxis::RotY, .isMappedToPhysicalControllerElement = true},
+                {.type = EAxis::RotZ, .isMappedToPhysicalControllerElement = true}
+            },
             .numAxes = 6,
             .numButtons = 10,
             .hasPov = true
@@ -538,7 +560,14 @@ namespace XidiTest
     TEST_CASE(Mapper_Capabilities_XInputNative)
     {
         constexpr SCapabilities kExpectedCapabilities = MakeExpectedCapabilities({
-            .axisCapabilities = {{.type = EAxis::X}, {.type = EAxis::Y}, {.type = EAxis::Z}, {.type = EAxis::RotX}, {.type = EAxis::RotY}, {.type = EAxis::RotZ}},
+            .axisCapabilities = {
+                {.type = EAxis::X, .isMappedToPhysicalControllerElement = true},
+                {.type = EAxis::Y, .isMappedToPhysicalControllerElement = true},
+                {.type = EAxis::Z, .isMappedToPhysicalControllerElement = true},
+                {.type = EAxis::RotX, .isMappedToPhysicalControllerElement = true},
+                {.type = EAxis::RotY, .isMappedToPhysicalControllerElement = true},
+                {.type = EAxis::RotZ, .isMappedToPhysicalControllerElement = true}
+            },
             .numAxes = 6,
             .numButtons = 10,
             .hasPov = true
@@ -555,7 +584,13 @@ namespace XidiTest
     TEST_CASE(Mapper_Capabilities_XInputSharedTriggers)
     {
         constexpr SCapabilities kExpectedCapabilities = MakeExpectedCapabilities({
-            .axisCapabilities = {{.type = EAxis::X}, {.type = EAxis::Y}, {.type = EAxis::Z}, {.type = EAxis::RotX}, {.type = EAxis::RotY}},
+            .axisCapabilities = {
+                {.type = EAxis::X, .isMappedToPhysicalControllerElement = true},
+                {.type = EAxis::Y, .isMappedToPhysicalControllerElement = true},
+                {.type = EAxis::Z, .isMappedToPhysicalControllerElement = true},
+                {.type = EAxis::RotX, .isMappedToPhysicalControllerElement = true},
+                {.type = EAxis::RotY, .isMappedToPhysicalControllerElement = true}
+            },
             .numAxes = 5,
             .numButtons = 10,
             .hasPov = true
@@ -577,7 +612,10 @@ namespace XidiTest
     TEST_CASE(Mapper_Clone_StandardGamepad)
     {
         constexpr SCapabilities kExpectedCapabilities = MakeExpectedCapabilities({
-            .axisCapabilities = {{.type = EAxis::Z}, {.type = EAxis::RotZ}},
+            .axisCapabilities = {
+                {.type = EAxis::Z, .isMappedToPhysicalControllerElement = true},
+                {.type = EAxis::RotZ, .isMappedToPhysicalControllerElement = true}
+            },
             .numAxes = 2,
             .numButtons = 12,
             .hasPov = true
@@ -597,7 +635,10 @@ namespace XidiTest
     TEST_CASE(Mapper_Clone_DigitalGamepad)
     {
         constexpr SCapabilities kExpectedCapabilities = MakeExpectedCapabilities({
-            .axisCapabilities = {{.type = EAxis::X}, {.type = EAxis::Y}},
+            .axisCapabilities = {
+                {.type = EAxis::X, .isMappedToPhysicalControllerElement = true},
+                {.type = EAxis::Y, .isMappedToPhysicalControllerElement = true}
+            },
             .numAxes = 2,
             .numButtons = 12,
             .hasPov = false
@@ -617,7 +658,12 @@ namespace XidiTest
     TEST_CASE(Mapper_Clone_ExtendedGamepad)
     {
         constexpr SCapabilities kExpectedCapabilities = MakeExpectedCapabilities({
-            .axisCapabilities = {{.type = EAxis::X}, {.type = EAxis::Y}, {.type = EAxis::Z}, {.type = EAxis::RotZ}},
+            .axisCapabilities = {
+                {.type = EAxis::X, .isMappedToPhysicalControllerElement = true},
+                {.type = EAxis::Y, .isMappedToPhysicalControllerElement = true},
+                {.type = EAxis::Z, .isMappedToPhysicalControllerElement = true},
+                {.type = EAxis::RotZ, .isMappedToPhysicalControllerElement = true}
+            },
             .numAxes = 4,
             .numButtons = 10,
             .hasPov = true
@@ -637,7 +683,14 @@ namespace XidiTest
     TEST_CASE(Mapper_Clone_XInputNative)
     {
         constexpr SCapabilities kExpectedCapabilities = MakeExpectedCapabilities({
-            .axisCapabilities = {{.type = EAxis::X}, {.type = EAxis::Y}, {.type = EAxis::Z}, {.type = EAxis::RotX}, {.type = EAxis::RotY}, {.type = EAxis::RotZ}},
+            .axisCapabilities = {
+                {.type = EAxis::X, .isMappedToPhysicalControllerElement = true},
+                {.type = EAxis::Y, .isMappedToPhysicalControllerElement = true},
+                {.type = EAxis::Z, .isMappedToPhysicalControllerElement = true},
+                {.type = EAxis::RotX, .isMappedToPhysicalControllerElement = true},
+                {.type = EAxis::RotY, .isMappedToPhysicalControllerElement = true},
+                {.type = EAxis::RotZ, .isMappedToPhysicalControllerElement = true}
+            },
             .numAxes = 6,
             .numButtons = 10,
             .hasPov = false
@@ -659,7 +712,12 @@ namespace XidiTest
     TEST_CASE(Mapper_Clone_XInputSharedTriggers)
     {
         constexpr SCapabilities kExpectedCapabilities = MakeExpectedCapabilities({
-            .axisCapabilities = {{.type = EAxis::X}, {.type = EAxis::Y}, {.type = EAxis::RotX}, {.type = EAxis::RotY}},
+            .axisCapabilities = {
+                {.type = EAxis::X, .isMappedToPhysicalControllerElement = true},
+                {.type = EAxis::Y, .isMappedToPhysicalControllerElement = true},
+                {.type = EAxis::RotX, .isMappedToPhysicalControllerElement = true},
+                {.type = EAxis::RotY, .isMappedToPhysicalControllerElement = true}
+            },
             .numAxes = 4,
             .numButtons = 10,
             .hasPov = true

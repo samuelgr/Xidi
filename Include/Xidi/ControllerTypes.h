@@ -176,7 +176,8 @@ namespace Xidi
         struct SAxisCapabilities
         {
             EAxis type : 3;                                                 ///< Type of axis.
-            bool isMappedToForceFeedbackActuator : 1;                       ///< Whether or not the axis is mapped to a force feedback actuator.
+            bool isMappedToPhysicalControllerElement : 1;                   ///< Whether or not the axis is mapped to a physical controller element for receiving input.
+            bool isMappedToForceFeedbackActuator : 1;                       ///< Whether or not the axis is mapped to a force feedback actuator for sending output.
 
             /// Simple check for equality.
             /// Primarily useful during testing.
@@ -213,10 +214,10 @@ namespace Xidi
 
             /// Appends an axis to the list of axis types in this capabilities object.
             /// Performs no bounds-checking or uniqueness-checking, so this is left to the caller to ensure.
-            /// @param [in] axis Axis to append to the list of present axes.
-            constexpr inline void AppendAxis(EAxis axis)
+            /// @param [in] newAxisCapabilities Axis capabilities object to append to the list of present axes.
+            constexpr inline void AppendAxis(SAxisCapabilities newAxisCapabilities)
             {
-                axisCapabilities[numAxes] = {.type = axis};
+                axisCapabilities[numAxes] = newAxisCapabilities;
                 numAxes += 1;
             }
 
