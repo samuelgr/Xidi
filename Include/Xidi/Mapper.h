@@ -79,6 +79,18 @@ namespace Xidi
                 std::unique_ptr<const IElementMapper> buttonRS = nullptr;
             };
 
+            /// XInput force feedback actuator mappers, one per force feedback actuator.
+            /// For force feedback actuators that are not used, the `valid` bit is set to 0.
+            /// Names correspond to the enumerators in the #EForceFeedbackActuator enumeration.
+            struct SForceFeedbackActuatorMap
+            {
+                SForceFeedbackActuatorElement leftMotor;
+                SForceFeedbackActuatorElement rightMotor;
+                SForceFeedbackActuatorElement leftImpulseTrigger;
+                SForceFeedbackActuatorElement rightImpulseTrigger;
+            };
+            static_assert(sizeof(SForceFeedbackActuatorMap) <= 4, "Data structure size constraint violation.");
+
             /// Dual representation of a controller element map. Intended for internal use only.
             /// In one representation the elements all have names for element-specific access.
             /// In the other, all the elements are collapsed into an array for easy iteration.
@@ -91,7 +103,7 @@ namespace Xidi
 
                 /// Default constructor.
                 /// Delegates to the underlying element map.
-                inline UElementMap(void) : named()
+                constexpr inline UElementMap(void) : named()
                 {
                     // Nothing to do here.
                 }
@@ -130,11 +142,61 @@ namespace Xidi
                 UElementMap& operator=(UElementMap&& other);
             };
 
+            /// Dual representation of a force feedback actuator map. Intended for internal use only.
+            /// In one representation the elements all have names for element-specific access.
+            /// In the other, all the elements are collapsed into an array for easy iteration.
+            union UForceFeedbackActuatorMap
+            {
+                SForceFeedbackActuatorMap named;
+                SForceFeedbackActuatorElement all[(int)EForceFeedbackActuator::Count];
+
+                /// Default constructor.
+                /// Delegates to the underlying force feedback actuator map.
+                constexpr inline UForceFeedbackActuatorMap(void) : named()
+                {
+                    // Nothing to do here.
+                }
+
+                /// Copy constructor.
+                /// Delegates to the underlying force feedback actuator map.
+                constexpr inline UForceFeedbackActuatorMap(const UForceFeedbackActuatorMap& other) : named(other.named)
+                {
+                    // Nothing to do here.
+                }
+
+                /// Conversion constructor.
+                /// Promotes the supplied force feedback actuator map to this dual view by delegating to the underlying force feedback actuator map's copy constructor.
+                constexpr inline UForceFeedbackActuatorMap(const SForceFeedbackActuatorMap& actuatorMap) : named(actuatorMap)
+                {
+                    // Nothing to do here.
+                }
+
+                /// Default destructor.
+                /// Delegates to the underlying force feedback actuator map.
+                inline ~UForceFeedbackActuatorMap(void)
+                {
+                    named.~SForceFeedbackActuatorMap();
+                }
+
+                /// Copy assignment operator.
+                /// Delegates to the underlying force feedback actuator map.
+                constexpr inline UForceFeedbackActuatorMap& operator=(const UForceFeedbackActuatorMap& other)
+                {
+                    named = other.named;
+                    return *this;
+                }
+            };
+            static_assert(sizeof(UForceFeedbackActuatorMap::named) == sizeof(UForceFeedbackActuatorMap::all), "Force feedback actuator field mismatch.");
+
+
         private:
             // -------- INSTANCE VARIABLES --------------------------------- //
 
             /// All controller element mappers.
             const UElementMap elements;
+
+            /// All force feedback actuator mappings.
+            const UForceFeedbackActuatorMap forceFeedbackActuators;
 
             /// Capabilities of the controller described by the element mappers in aggregate.
             /// Initialization of this member depends on prior initialization of #elements so it must come after.
@@ -150,13 +212,13 @@ namespace Xidi
             /// Initialization constructor.
             /// Requires a name and, for each controller element, a unique element mapper which becomes owned by this object.
             /// For controller elements that are not used, `nullptr` may be set instead.
-            Mapper(const std::wstring_view name, SElementMap&& elements);
+            Mapper(const std::wstring_view name, SElementMap&& elements, SForceFeedbackActuatorMap forceFeedbackActuators = {});
 
             /// Initialization constructor.
             /// Does not require or register a name for this mapper. This version is primarily useful for testing.
             /// Requires that a unique mapper be specified for each controller element, which in turn becomes owned by this object.
             /// For controller elements that are not used, `nullptr` may be set instead.
-            Mapper(SElementMap&& elements);
+            Mapper(SElementMap&& elements, SForceFeedbackActuatorMap forceFeedbackActuators = {});
 
             /// Default destructor.
             /// In general, mapper objects should not be destroyed once created.
@@ -225,6 +287,13 @@ namespace Xidi
             inline SCapabilities GetCapabilities(void) const
             {
                 return capabilities;
+            }
+
+            /// Returns this mapper's force feedback actuator map.
+            /// @return Copy of this mapper's force feedback actuator map.
+            inline UForceFeedbackActuatorMap GetForceFeedbackActuatorMap(void) const
+            {
+                return forceFeedbackActuators;
             }
 
             /// Retrieves and returns the name of this mapper.

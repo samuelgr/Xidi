@@ -91,6 +91,7 @@ namespace Xidi
             blueprint.buildAttempted = true;
 
             Mapper::UElementMap mapperElements;
+            Mapper::UForceFeedbackActuatorMap mapperForceFeedbackActuators;
 
             if (false == blueprint.templateName.empty())
             {
@@ -131,6 +132,7 @@ namespace Xidi
                 }
 
                 mapperElements = Mapper::GetByName(blueprint.templateName)->CloneElementMap();
+                mapperForceFeedbackActuators = Mapper::GetByName(blueprint.templateName)->GetForceFeedbackActuatorMap();
             }
 
             // Loop through all the changes that the blueprint describes and apply them to the starting point.
@@ -139,7 +141,7 @@ namespace Xidi
                 mapperElements.all[changeFromTemplate.first] = std::move(changeFromTemplate.second);
 
             Message::OutputFormatted(Message::ESeverity::Info, L"Successfully built mapper %s.", mapperName.data());
-            return new Mapper(mapperName, std::move(mapperElements.named));
+            return new Mapper(mapperName, std::move(mapperElements.named), mapperForceFeedbackActuators.named);
         }
 
         // --------

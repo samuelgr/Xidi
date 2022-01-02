@@ -90,12 +90,6 @@ namespace Xidi
         /// For buttons, the value is either negative extreme if the button is not pressed or positive extreme if the value is pressed. Use a half-axis configuration to map to either neutral (not pressed) or extreme value (pressed).
         class AxisMapper : public IElementMapper
         {
-        public:
-            // -------- TYPE DEFINITIONS ----------------------------------- //
-
-            
-
-
         protected:
             // -------- INSTANCE VARIABLES --------------------------------- //
 

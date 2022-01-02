@@ -493,7 +493,7 @@ namespace XidiTest
     {
         constexpr SCapabilities kExpectedCapabilities = MakeExpectedCapabilities({
             .axisCapabilities = {
-                {.type = EAxis::X, .isMappedToPhysicalControllerElement = true},
+                {.type = EAxis::X, .isMappedToPhysicalControllerElement = true, .isMappedToForceFeedbackActuator = true},
                 {.type = EAxis::Y, .isMappedToPhysicalControllerElement = true},
                 {.type = EAxis::Z, .isMappedToPhysicalControllerElement = true},
                 {.type = EAxis::RotZ, .isMappedToPhysicalControllerElement = true}
@@ -515,7 +515,7 @@ namespace XidiTest
     {
         constexpr SCapabilities kExpectedCapabilities = MakeExpectedCapabilities({
             .axisCapabilities = {
-                {.type = EAxis::X, .isMappedToPhysicalControllerElement = true},
+                {.type = EAxis::X, .isMappedToPhysicalControllerElement = true, .isMappedToForceFeedbackActuator = true},
                 {.type = EAxis::Y, .isMappedToPhysicalControllerElement = true},
                 {.type = EAxis::Z, .isMappedToPhysicalControllerElement = true},
                 {.type = EAxis::RotZ, .isMappedToPhysicalControllerElement = true}
@@ -537,7 +537,7 @@ namespace XidiTest
     {
         constexpr SCapabilities kExpectedCapabilities = MakeExpectedCapabilities({
             .axisCapabilities = {
-                {.type = EAxis::X, .isMappedToPhysicalControllerElement = true},
+                {.type = EAxis::X, .isMappedToPhysicalControllerElement = true, .isMappedToForceFeedbackActuator = true},
                 {.type = EAxis::Y, .isMappedToPhysicalControllerElement = true},
                 {.type = EAxis::Z, .isMappedToPhysicalControllerElement = true},
                 {.type = EAxis::RotX, .isMappedToPhysicalControllerElement = true},
@@ -561,7 +561,7 @@ namespace XidiTest
     {
         constexpr SCapabilities kExpectedCapabilities = MakeExpectedCapabilities({
             .axisCapabilities = {
-                {.type = EAxis::X, .isMappedToPhysicalControllerElement = true},
+                {.type = EAxis::X, .isMappedToPhysicalControllerElement = true, .isMappedToForceFeedbackActuator = true},
                 {.type = EAxis::Y, .isMappedToPhysicalControllerElement = true},
                 {.type = EAxis::Z, .isMappedToPhysicalControllerElement = true},
                 {.type = EAxis::RotX, .isMappedToPhysicalControllerElement = true},
@@ -585,7 +585,7 @@ namespace XidiTest
     {
         constexpr SCapabilities kExpectedCapabilities = MakeExpectedCapabilities({
             .axisCapabilities = {
-                {.type = EAxis::X, .isMappedToPhysicalControllerElement = true},
+                {.type = EAxis::X, .isMappedToPhysicalControllerElement = true, .isMappedToForceFeedbackActuator = true},
                 {.type = EAxis::Y, .isMappedToPhysicalControllerElement = true},
                 {.type = EAxis::Z, .isMappedToPhysicalControllerElement = true},
                 {.type = EAxis::RotX, .isMappedToPhysicalControllerElement = true},
@@ -613,19 +613,21 @@ namespace XidiTest
     {
         constexpr SCapabilities kExpectedCapabilities = MakeExpectedCapabilities({
             .axisCapabilities = {
+                {.type = EAxis::X, .isMappedToPhysicalControllerElement = false, .isMappedToForceFeedbackActuator = true},
                 {.type = EAxis::Z, .isMappedToPhysicalControllerElement = true},
                 {.type = EAxis::RotZ, .isMappedToPhysicalControllerElement = true}
             },
-            .numAxes = 2,
+            .numAxes = 3,
             .numButtons = 12,
             .hasPov = true
         });
 
         Mapper::UElementMap clonedElementMap = Mapper::GetByName(L"StandardGamepad")->CloneElementMap();
+        Mapper::UForceFeedbackActuatorMap clonedForceFeedbackActuatorMap = Mapper::GetByName(L"StandardGamepad")->GetForceFeedbackActuatorMap();
         clonedElementMap.named.stickLeftX = nullptr;
         clonedElementMap.named.stickLeftY = nullptr;
 
-        const Mapper mapper(std::move(clonedElementMap.named));
+        const Mapper mapper(std::move(clonedElementMap.named), clonedForceFeedbackActuatorMap.named);
         const SCapabilities kActualCapabilities = mapper.GetCapabilities();
         TEST_ASSERT(kActualCapabilities == kExpectedCapabilities);
     }
@@ -636,7 +638,7 @@ namespace XidiTest
     {
         constexpr SCapabilities kExpectedCapabilities = MakeExpectedCapabilities({
             .axisCapabilities = {
-                {.type = EAxis::X, .isMappedToPhysicalControllerElement = true},
+                {.type = EAxis::X, .isMappedToPhysicalControllerElement = true, .isMappedToForceFeedbackActuator = true},
                 {.type = EAxis::Y, .isMappedToPhysicalControllerElement = true}
             },
             .numAxes = 2,
@@ -645,10 +647,11 @@ namespace XidiTest
         });
 
         Mapper::UElementMap clonedElementMap = Mapper::GetByName(L"DigitalGamepad")->CloneElementMap();
+        Mapper::UForceFeedbackActuatorMap clonedForceFeedbackActuatorMap = Mapper::GetByName(L"DigitalGamepad")->GetForceFeedbackActuatorMap();
         clonedElementMap.named.stickRightX = nullptr;
         clonedElementMap.named.stickRightY = nullptr;
 
-        const Mapper mapper(std::move(clonedElementMap.named));
+        const Mapper mapper(std::move(clonedElementMap.named), clonedForceFeedbackActuatorMap.named);
         const SCapabilities kActualCapabilities = mapper.GetCapabilities();
         TEST_ASSERT(kActualCapabilities == kExpectedCapabilities);
     }
@@ -659,7 +662,7 @@ namespace XidiTest
     {
         constexpr SCapabilities kExpectedCapabilities = MakeExpectedCapabilities({
             .axisCapabilities = {
-                {.type = EAxis::X, .isMappedToPhysicalControllerElement = true},
+                {.type = EAxis::X, .isMappedToPhysicalControllerElement = true, .isMappedToForceFeedbackActuator = true},
                 {.type = EAxis::Y, .isMappedToPhysicalControllerElement = true},
                 {.type = EAxis::Z, .isMappedToPhysicalControllerElement = true},
                 {.type = EAxis::RotZ, .isMappedToPhysicalControllerElement = true}
@@ -670,10 +673,11 @@ namespace XidiTest
         });
 
         Mapper::UElementMap clonedElementMap = Mapper::GetByName(L"ExtendedGamepad")->CloneElementMap();
+        Mapper::UForceFeedbackActuatorMap clonedForceFeedbackActuatorMap = Mapper::GetByName(L"ExtendedGamepad")->GetForceFeedbackActuatorMap();
         clonedElementMap.named.triggerLT = nullptr;
         clonedElementMap.named.triggerRT = nullptr;
 
-        const Mapper mapper(std::move(clonedElementMap.named));
+        const Mapper mapper(std::move(clonedElementMap.named), clonedForceFeedbackActuatorMap.named);
         const SCapabilities kActualCapabilities = mapper.GetCapabilities();
         TEST_ASSERT(kActualCapabilities == kExpectedCapabilities);
     }
@@ -684,7 +688,7 @@ namespace XidiTest
     {
         constexpr SCapabilities kExpectedCapabilities = MakeExpectedCapabilities({
             .axisCapabilities = {
-                {.type = EAxis::X, .isMappedToPhysicalControllerElement = true},
+                {.type = EAxis::X, .isMappedToPhysicalControllerElement = true, .isMappedToForceFeedbackActuator = true},
                 {.type = EAxis::Y, .isMappedToPhysicalControllerElement = true},
                 {.type = EAxis::Z, .isMappedToPhysicalControllerElement = true},
                 {.type = EAxis::RotX, .isMappedToPhysicalControllerElement = true},
@@ -697,12 +701,13 @@ namespace XidiTest
         });
 
         Mapper::UElementMap clonedElementMap = Mapper::GetByName(L"XInputNative")->CloneElementMap();
+        Mapper::UForceFeedbackActuatorMap clonedForceFeedbackActuatorMap = Mapper::GetByName(L"XInputNative")->GetForceFeedbackActuatorMap();
         clonedElementMap.named.dpadUp = nullptr;
         clonedElementMap.named.dpadDown = nullptr;
         clonedElementMap.named.dpadLeft = nullptr;
         clonedElementMap.named.dpadRight = nullptr;
 
-        const Mapper mapper(std::move(clonedElementMap.named));
+        const Mapper mapper(std::move(clonedElementMap.named), clonedForceFeedbackActuatorMap.named);
         const SCapabilities kActualCapabilities = mapper.GetCapabilities();
         TEST_ASSERT(kActualCapabilities == kExpectedCapabilities);
     }
@@ -713,7 +718,7 @@ namespace XidiTest
     {
         constexpr SCapabilities kExpectedCapabilities = MakeExpectedCapabilities({
             .axisCapabilities = {
-                {.type = EAxis::X, .isMappedToPhysicalControllerElement = true},
+                {.type = EAxis::X, .isMappedToPhysicalControllerElement = true, .isMappedToForceFeedbackActuator = true},
                 {.type = EAxis::Y, .isMappedToPhysicalControllerElement = true},
                 {.type = EAxis::RotX, .isMappedToPhysicalControllerElement = true},
                 {.type = EAxis::RotY, .isMappedToPhysicalControllerElement = true}
@@ -725,10 +730,11 @@ namespace XidiTest
 
         
         Mapper::UElementMap clonedElementMap = Mapper::GetByName(L"XInputSharedTriggers")->CloneElementMap();
+        Mapper::UForceFeedbackActuatorMap clonedForceFeedbackActuatorMap = Mapper::GetByName(L"XInputSharedTriggers")->GetForceFeedbackActuatorMap();
         clonedElementMap.named.triggerLT = nullptr;
         clonedElementMap.named.triggerRT = nullptr; 
 
-        const Mapper mapper(std::move(clonedElementMap.named));
+        const Mapper mapper(std::move(clonedElementMap.named), clonedForceFeedbackActuatorMap.named);
         const SCapabilities kActualCapabilities = mapper.GetCapabilities();
         TEST_ASSERT(kActualCapabilities == kExpectedCapabilities);
     }

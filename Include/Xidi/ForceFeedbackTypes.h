@@ -41,16 +41,6 @@ namespace Xidi
                 Spherical
             };
 
-            /// Enumerates the force feedback actuators present on physical controllers.
-            enum class EPhysicalActuator : uint8_t
-            {
-                LeftMotor,                                                  ///< Left motor (low-frequency rumble)
-                RightMotor,                                                 ///< Right motor (high-frequency rumble)
-                LeftImpulseTrigger,                                         ///< Left impulse trigger (embedded in LT)
-                RightImpulseTrigger,                                        ///< Right impulse trigger (embedded in RT)
-                Count                                                       ///< Sentinel value, total number of enumerators
-            };
-
 
             // -------- CONSTANTS ------------------------------------------ //
 

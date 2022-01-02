@@ -84,7 +84,8 @@ namespace Xidi
         {
             Both,                                                           ///< Specifies that the entire axis should be used, both positive and negative.
             Positive,                                                       ///< Specifies that only the positive part of the axis should be used.
-            Negative                                                        ///< Specifies that only the negative part of the axis should be used.
+            Negative,                                                       ///< Specifies that only the negative part of the axis should be used.
+            Count                                                           ///< Sentinel value, total number of enumerators.
         };
 
         /// Enumerates all supported buttons.
@@ -133,6 +134,16 @@ namespace Xidi
             Button,
             Pov,
             WholeController
+        };
+
+        /// Enumerates the force feedback actuators present on physical controllers.
+        enum class EForceFeedbackActuator : uint8_t
+        {
+            LeftMotor,                                                      ///< Left motor (low-frequency rumble)
+            RightMotor,                                                     ///< Right motor (high-frequency rumble)
+            LeftImpulseTrigger,                                             ///< Left impulse trigger (embedded in LT)
+            RightImpulseTrigger,                                            ///< Right impulse trigger (embedded in RT)
+            Count                                                           ///< Sentinel value, total number of enumerators
         };
 
         /// Identifier for an element of a virtual controller's state.
@@ -235,6 +246,21 @@ namespace Xidi
                 return -1;
             }
 
+            /// Computes and returns the number of axes that support force feedback.
+            /// @return Number of axes mapped to force feedback actuators.
+            constexpr inline int ForceFeedbackAxisCount(void) const
+            {
+                int numForceFeedbackAxes = 0;
+
+                for (int i = 0; i < numAxes; ++i)
+                {
+                    if (true == axisCapabilities[i].isMappedToForceFeedbackActuator)
+                        numForceFeedbackAxes += 1;
+                }
+
+                return numForceFeedbackAxes;
+            }
+
             /// Checks if this capabilities object specifies that the controller has an axis of the specified type.
             /// @param [in] axis Axis type for which to query.
             /// @return `true` if the axis is present, `false` otherwise.
@@ -254,6 +280,19 @@ namespace Xidi
         static_assert(sizeof(SCapabilities) <= 8, "Data structure size constraint violation.");
         static_assert((uint8_t)EAxis::Count <= 0b111, "Number of axes does not fit into 3 bits.");
         static_assert((uint8_t)EButton::Count <= 0b11111, "Number of buttons does not fit into 5 bits.");
+
+        /// Describes a force feedback actuator element on a virtual controller.
+        /// A force feedback actuator can be mapped to an axis and a direction mode on that axis.
+        /// The information is used to determine what source of information is used to send output to a physical force feedback actuator.
+        struct SForceFeedbackActuatorElement
+        {
+            bool valid : 1;                                                 ///< Whether or not this actuator element is valid. If not, the associated physical actuator is considered disabled. This field is a size optimization over using an optional wrapper type.
+            EAxis axis : 3;                                                 ///< Source virtual force feedback axis from which the physical actuator should obtain its state data.
+            EAxisDirection direction : 3;                                   ///< Direction mode associated with the virtual force feedback axis.
+        };
+        static_assert(sizeof(SForceFeedbackActuatorElement) == 1, "Data structure size constraint violation.");
+        static_assert((uint8_t)EAxis::Count <= 0b111, "Highest-valued axis type identifier does not fit into 3 bits.");
+        static_assert((uint8_t)EAxisDirection::Count <= 0b111, "Highest-valued axis direction mode does not fit into 3 bits.");
 
         /// Holds POV direction, which is presented both as an array of separate components and as a single aggregated integer view.
         union UPovDirection

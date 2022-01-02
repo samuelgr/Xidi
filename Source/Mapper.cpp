@@ -159,8 +159,9 @@ namespace Xidi
         /// Number of buttons is determined by looking at the highest button number to which element mappers contribute.
         /// Presence or absence of a POV is determined by whether or not any element mappers contribute to a POV direction, even if not all POV directions have a contribution.
         /// @param [in] elements Per-element controller map.
+        /// @param [in] forceFeedbackActuators Per-element force feedback actuator map.
         /// @return Virtual controller capabilities as derived from the per-element map in aggregate.
-        static SCapabilities DeriveCapabilitiesFromElementMap(const Mapper::UElementMap& elements)
+        static SCapabilities DeriveCapabilitiesFromElementMap(const Mapper::UElementMap& elements, Mapper::UForceFeedbackActuatorMap forceFeedbackActuators)
         {
             SCapabilities capabilities;
             ZeroMemory(&capabilities, sizeof(capabilities));
@@ -206,6 +207,15 @@ namespace Xidi
                             break;
                         }
                     }
+                }
+            }
+
+            for (int i = 0; i < _countof(forceFeedbackActuators.all); ++i)
+            {
+                if (true == forceFeedbackActuators.all[i].valid)
+                {
+                    axesPresent.insert((int)forceFeedbackActuators.all[i].axis);
+                    axesMappedToForceFeedbackActuator.insert((int)forceFeedbackActuators.all[i].axis);
                 }
             }
 
@@ -261,7 +271,7 @@ namespace Xidi
 
         // --------
 
-        Mapper::Mapper(const std::wstring_view name, SElementMap&& elements) : elements(std::move(elements)), capabilities(DeriveCapabilitiesFromElementMap(this->elements)), name(name)
+        Mapper::Mapper(const std::wstring_view name, SElementMap&& elements, SForceFeedbackActuatorMap forceFeedbackActuators) : elements(std::move(elements)), forceFeedbackActuators(forceFeedbackActuators), capabilities(DeriveCapabilitiesFromElementMap(this->elements, forceFeedbackActuators)), name(name)
         {
             if (false == name.empty())
                 MapperRegistry::GetInstance().RegisterMapper(name, this);
@@ -269,7 +279,7 @@ namespace Xidi
 
         // --------
 
-        Mapper::Mapper(SElementMap&& elements) : Mapper(L"", std::move(elements))
+        Mapper::Mapper(SElementMap&& elements, SForceFeedbackActuatorMap forceFeedbackActuators) : Mapper(L"", std::move(elements), forceFeedbackActuators)
         {
             // Nothing to do here.
         }
