@@ -9,6 +9,7 @@
  *   Unit tests for functionality common to all force feedback effects.
  *****************************************************************************/
 
+#include "ControllerTypes.h"
 #include "ForceFeedbackEffect.h"
 #include "ForceFeedbackParameters.h"
 #include "ForceFeedbackTypes.h"
@@ -18,6 +19,7 @@
 namespace XidiTest
 {
     using namespace ::Xidi::Controller::ForceFeedback;
+    using ::Xidi::Controller::EAxis;
 
 
     // -------- INTERNAL CONSTANTS ----------------------------------------- //
@@ -61,6 +63,7 @@ namespace XidiTest
     TEST_CASE(ForceFeedbackEffect_NominalEffect_Magnitude)
     {
         TestEffect effect;
+        effect.InitializeDefaultAssociatedAxes();
         effect.InitializeDefaultDirection();
         effect.SetDuration(kTestEffectDuration);
 
@@ -76,8 +79,13 @@ namespace XidiTest
         TEST_ASSERT(false == effect.HasDirection());
         TEST_ASSERT(false == effect.HasDuration());
 
+        effect.InitializeDefaultAssociatedAxes();
+        TEST_ASSERT(true == effect.HasAssociatedAxes());
+        TEST_ASSERT(false == effect.HasCompleteDirection());
+
         effect.InitializeDefaultDirection();
         TEST_ASSERT(true == effect.HasDirection());
+        TEST_ASSERT(true == effect.HasCompleteDirection());
 
         effect.SetDuration(kTestEffectDuration);
         TEST_ASSERT(true == effect.HasDuration());
@@ -95,6 +103,7 @@ namespace XidiTest
     TEST_CASE(ForceFeedbackEffect_EffectWithStartDelay_Magnitude)
     {
         TestEffect effect;
+        effect.InitializeDefaultAssociatedAxes();
         effect.InitializeDefaultDirection();
         effect.SetDuration(kTestEffectDuration);
         effect.SetStartDelay(kTestEffectStartDelay);
@@ -111,6 +120,7 @@ namespace XidiTest
     TEST_CASE(ForceFeedbackEffect_EffectWithStartDelay_Parameters)
     {
         TestEffect effect;
+        effect.InitializeDefaultAssociatedAxes();
         effect.InitializeDefaultDirection();
         effect.SetDuration(kTestEffectDuration);
         effect.SetStartDelay(kTestEffectStartDelay);
@@ -130,6 +140,7 @@ namespace XidiTest
     TEST_CASE(ForceFeedbackEffect_EffectWithSamplePeriod_Magnitude)
     {
         TestEffect effect;
+        effect.InitializeDefaultAssociatedAxes();
         effect.InitializeDefaultDirection();
         effect.SetDuration(kTestEffectDuration);
         effect.SetSamplePeriod(kTestEffectSamplePeriod);
@@ -149,6 +160,7 @@ namespace XidiTest
     TEST_CASE(ForceFeedbackEffect_EffectWithSamplePeriod_Parameters)
     {
         TestEffect effect;
+        effect.InitializeDefaultAssociatedAxes();
         effect.InitializeDefaultDirection();
         effect.SetDuration(kTestEffectDuration);
         effect.SetSamplePeriod(kTestEffectSamplePeriod);
@@ -168,6 +180,7 @@ namespace XidiTest
     TEST_CASE(ForceFeedbackEffect_EffectWithGain_Magnitude)
     {
         TestEffect effect;
+        effect.InitializeDefaultAssociatedAxes();
         effect.InitializeDefaultDirection();
         effect.SetDuration(kTestEffectDuration);
         effect.SetGain(kTestEffectGain);
@@ -181,6 +194,7 @@ namespace XidiTest
     TEST_CASE(ForceFeedbackEffect_EffectWithGain_Parameters)
     {
         TestEffect effect;
+        effect.InitializeDefaultAssociatedAxes();
         effect.InitializeDefaultDirection();
         effect.SetDuration(kTestEffectDuration);
         effect.SetGain(kTestEffectGain);
@@ -200,6 +214,7 @@ namespace XidiTest
     TEST_CASE(ForceFeedbackEffect_EffectWithTrivialEnvelope_Magnitude)
     {
         TestEffect effect;
+        effect.InitializeDefaultAssociatedAxes();
         effect.InitializeDefaultDirection();
         effect.SetDuration(kTestEffectDuration);
         effect.SetEnvelope(kTestTrivialEnvelope);
@@ -213,6 +228,7 @@ namespace XidiTest
     TEST_CASE(ForceFeedbackEffect_EffectWithTrivialEnvelope_Parameters)
     {
         TestEffect effect;
+        effect.InitializeDefaultAssociatedAxes();
         effect.InitializeDefaultDirection();
         effect.SetDuration(kTestEffectDuration);
         effect.SetEnvelope(kTestTrivialEnvelope);
@@ -237,6 +253,7 @@ namespace XidiTest
         constexpr TEffectValue kSustainLevel = kTestEffectDuration / 2;
 
         TestEffect effect;
+        effect.InitializeDefaultAssociatedAxes();
         effect.InitializeDefaultDirection();
         effect.SetDuration(kTestEffectDuration);
         effect.SetEnvelope(kTestEnvelope);
@@ -254,6 +271,7 @@ namespace XidiTest
         constexpr TEffectValue kSustainLevel = kTestEffectDuration / 2;
 
         TestEffect effect;
+        effect.InitializeDefaultAssociatedAxes();
         effect.InitializeDefaultDirection();
         effect.SetDuration(kTestEffectDuration);
         effect.SetEnvelope(kTestEnvelope);
@@ -269,6 +287,7 @@ namespace XidiTest
         constexpr TEffectValue kSustainLevel = kTestEffectDuration;
 
         TestEffect effect;
+        effect.InitializeDefaultAssociatedAxes();
         effect.InitializeDefaultDirection();
         effect.SetDuration(kTestEffectDuration);
         effect.SetEnvelope(kTestEnvelope);
@@ -317,7 +336,36 @@ namespace XidiTest
         TEST_ASSERT(false == effect.IsCompletelyDefined());
         TEST_ASSERT(true == effect.SetDuration(kTestEffectDuration));
         TEST_ASSERT(false == effect.IsCompletelyDefined());
+        TEST_ASSERT(true == effect.InitializeDefaultAssociatedAxes());
+        TEST_ASSERT(false == effect.IsCompletelyDefined());
         TEST_ASSERT(true == effect.InitializeDefaultDirection());
         TEST_ASSERT(true == effect.IsCompletelyDefined());
+    }
+
+    // Creates an effect with direction and associated axes using one axis.
+    // Verifies that it can correctly convert a raw (unordered) magnitude component vector into a globally-understood (ordered) magnitude component vector.
+    TEST_CASE(ForceFeedbackEffect_OrderMagnitudeComponents)
+    {
+        constexpr EAxis kTestAxes[] = {EAxis::X, EAxis::Y, EAxis::Z, EAxis::RotX, EAxis::RotY, EAxis::RotZ};
+        
+        constexpr TMagnitudeComponents kTestMagnitudeComponents = {55, 66, 77, 88};
+        constexpr auto kExpectedComponentValue = kTestMagnitudeComponents[0];
+
+        for (const auto kTestAxis : kTestAxes)
+        {
+            TestEffect effect;
+            
+            const TEffectValue kCartesianCoordinates[] = {1};
+            TEST_ASSERT(true == effect.Direction().SetDirectionUsingCartesian(kCartesianCoordinates, _countof(kCartesianCoordinates)));
+
+            const SAssociatedAxes kAssociatedAxes = {.count = 1, .type = {kTestAxis}};
+            TEST_ASSERT(true == effect.SetAssociatedAxes(kAssociatedAxes));
+
+            TOrderedMagnitudeComponents expectedOrderedMagnitudeComponents = {};
+            expectedOrderedMagnitudeComponents[(int)kTestAxis] = kExpectedComponentValue;
+
+            TOrderedMagnitudeComponents actualOrderedMagnitudeComponents = effect.OrderMagnitudeComponents(kTestMagnitudeComponents);
+            TEST_ASSERT(actualOrderedMagnitudeComponents == expectedOrderedMagnitudeComponents);
+        }
     }
 }

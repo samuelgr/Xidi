@@ -12,6 +12,8 @@
 
 #pragma once
 
+#include "ControllerTypes.h"
+
 #include <array>
 #include <cstdint>
 
@@ -30,8 +32,13 @@ namespace Xidi
             /// Type used for all values used in internal effect-related computations.
             typedef float TEffectValue;
 
-            /// Represents the magnitude of a force broken down into its per-axis components.
-            typedef std::array<TEffectValue, 4> TMagnitudeComponents;
+            /// Represents the magnitude of a force broken down into its per-axis components, one per element per axis associated with the force feedback effect.
+            typedef std::array<TEffectValue, (int)EForceFeedbackActuator::Count> TMagnitudeComponents;
+
+            /// Represents the magnitude of a force broken down into its per-axis components using a universal ordering scheme of one element per possible virtual controller axis.
+            /// Many of the elements in this array will be 0 for virtual controller axes not associated with the force feedback effect.
+            /// This is just a reordering of #TMagnitudeComponents in a way that does not depend on the number or types of axes actually associated with the force feedback effect.
+            typedef std::array<TEffectValue, (int)EAxis::Count> TOrderedMagnitudeComponents;
 
             /// Enumerates the different types of supported coordinate systems that can be used to represent force feedback effect directions.
             enum class ECoordinateSystem : uint8_t
@@ -48,7 +55,7 @@ namespace Xidi
             inline constexpr int kEffectAxesMinimumNumber = 1;
 
             /// Maximum number of axes to which a force feedback can be applied.
-            inline constexpr int kEffectAxesMaximumNumber = std::tuple_size_v<TMagnitudeComponents>;
+            inline constexpr int kEffectAxesMaximumNumber = (int)EForceFeedbackActuator::Count;
 
             /// Minimum allowed value for an angle. Represents 0 degrees.
             inline constexpr TEffectValue kEffectAngleMinimum = 0;
@@ -76,6 +83,23 @@ namespace Xidi
             /// Zero value for an effect's output magnitude.
             /// This value is intended to signify that there is no force generated at all.
             inline constexpr TEffectValue kEffectForceMagnitudeZero = 0;
+
+
+            // -------- OPERATORS ------------------------------------------ //
+
+            /// Addition operator for globally-ordered magnitude component vectors.
+            /// @param [in] vectorA First vector to add.
+            /// @param [in] vectorB Second vector to add.
+            /// @return Sum of the two magnitude component vectors, which is computed using element-by-element addition.
+            constexpr inline TOrderedMagnitudeComponents operator+(const TOrderedMagnitudeComponents& vectorA, const TOrderedMagnitudeComponents& vectorB)
+            {
+                TOrderedMagnitudeComponents vectorResult = {};
+
+                for (size_t i = 0; i < vectorA.size(); ++i)
+                    vectorResult[i] = vectorA[i] + vectorB[i];
+
+                return vectorResult;
+            }
         }
     }
 }

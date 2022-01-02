@@ -109,11 +109,33 @@ namespace Xidi
                     return commonParameters.direction.ComputeMagnitudeComponents(ComputeMagnitude(time));
                 }
 
+                /// Computes the magnitude component vector of the force that this effect should generate at the given time using a globally-understood ordering scheme for the components.
+                /// @param [in] time Time for which the magnitude is being requested relative to when the application requested the effect be started.
+                /// @return Ordered magnitude component vector that corresponds to the given time, assuming the effect is completely defined (i.e. parameters are all set), and any other value otherwise.
+                inline TOrderedMagnitudeComponents ComputeOrderedMagnitudeComponents(TEffectTimeMs time) const
+                {
+                    return OrderMagnitudeComponents(ComputeMagnitudeComponents(time));
+                }
+
                 /// Provides access to the direction vector associated with this force feedback effect.
                 /// @return Mutable reference to the direction vector object.
                 inline DirectionVector& Direction(void)
                 {
                     return commonParameters.direction;
+                }
+
+                /// Checks if there are valid axes associated with this force feedback effect.
+                /// @return `true` if so, `false` otherwise.
+                inline bool HasAssociatedAxes(void) const
+                {
+                    return commonParameters.associatedAxes.has_value();
+                }
+
+                /// Checks if the direction and associated axes are complete and consistent.
+                /// @return `true` if so, `false` otherwise.
+                inline bool HasCompleteDirection(void) const
+                {
+                    return (HasAssociatedAxes() && HasDirection() && (commonParameters.associatedAxes.value().count >= commonParameters.direction.GetNumAxes()));
                 }
 
                 /// Checks if the direction vector associated with this force feedback effect has a direction set.
@@ -130,13 +152,21 @@ namespace Xidi
                     return commonParameters.duration.has_value();
                 }
 
+                /// Initializes the axes associated with this force feedback effect to a simple default of the X axis.
+                /// @return `true` if the associated axis initialization operation succeeded, `false` otherwise.
+                inline bool InitializeDefaultAssociatedAxes(void)
+                {
+                    static constexpr SAssociatedAxes kDefaultAssociatedAxes = {.count = 1, .type = {EAxis::X}};
+                    return SetAssociatedAxes(kDefaultAssociatedAxes);
+                }
+
                 /// Initializes the direction vector associated with this force feedback effect to a simple default of one axis in the positive direction.
                 /// The Cartesian coordinate system is used.
                 /// Primarily useful for testing.
                 /// @return `true` if the direction initialization operation succeeded, `false` otherwise.
                 inline bool InitializeDefaultDirection(void)
                 {
-                    static constexpr TEffectValue kDefaultCartesianCoordinates[] = { 1 };
+                    static const TEffectValue kDefaultCartesianCoordinates[] = {1};
                     return commonParameters.direction.SetDirectionUsingCartesian(kDefaultCartesianCoordinates, _countof(kDefaultCartesianCoordinates));
                 }
 
@@ -145,7 +175,7 @@ namespace Xidi
                 /// @return `true` if all parameters have been specified for this effect, `false` otherwise.
                 inline bool IsCompletelyDefined(void) const
                 {
-                    return (HasDirection() && HasDuration() && IsTypeSpecificEffectCompletelyDefined());
+                    return (HasCompleteDirection() && HasDuration() && IsTypeSpecificEffectCompletelyDefined());
                 }
 
                 /// Retrieves and returns this effect's duration parameter.
@@ -189,6 +219,37 @@ namespace Xidi
                 inline TEffectTimeMs GetTotalTime(void) const
                 {
                     return commonParameters.duration.value_or(0) + commonParameters.startDelay;
+                }
+
+                /// Orders the elements in a magnitude component vector using a globally-understood ordering scheme for the components.
+                /// Exposed primarily for testing.
+                /// @param [in] unorderedMagnitudeComponents Raw magnitude component vector, such as that produced by #ComputeMagnitudeComponents.
+                /// @return Ordered magnitude component vector that corresponds to the unordered magnitude component vector provided as input assuming this effect is completely defined, and any other value otherwise.
+                inline TOrderedMagnitudeComponents OrderMagnitudeComponents(TMagnitudeComponents unorderedMagnitudeComponents) const
+                {
+                    const SAssociatedAxes& kAssociatedAxes = commonParameters.associatedAxes.value();
+
+                    TOrderedMagnitudeComponents orderedMagnitudeComponents = {};
+
+                    // Compare with the number of axes in the direction vector because it is allowed to be less, but not greater, than the number of axes in the associated axis array.
+                    for (int i = 0; i < commonParameters.direction.GetNumAxes(); ++i)
+                        orderedMagnitudeComponents[(int)kAssociatedAxes.type[i]] = unorderedMagnitudeComponents[i];
+
+                    return orderedMagnitudeComponents;
+                }
+
+                /// Updates this effect's associated axes.
+                /// @param [in] newValue New parameter value.
+                /// @return `true` if successful, `false` otherwise. This method will fail if the new parameter value is invalid.
+                inline bool SetAssociatedAxes(SAssociatedAxes newValue)
+                {
+                    if ((newValue.count >= kEffectAxesMinimumNumber) && (newValue.count <= kEffectAxesMaximumNumber))
+                    {
+                        commonParameters.associatedAxes = newValue;
+                        return true;
+                    }
+
+                    return false;
                 }
 
                 /// Updates this effect's duration parameter.

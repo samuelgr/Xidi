@@ -363,7 +363,7 @@ namespace Xidi
             /// Retrieves and returns the capabilities of this virtual controller.
             /// Controller capabilities act as metadata that are used internally and can be presented to applications.
             /// @return Read-only capabilities data structure reference.
-            inline const SCapabilities GetCapabilities(void) const
+            inline SCapabilities GetCapabilities(void) const
             {
                 return mapper.GetCapabilities();
             }

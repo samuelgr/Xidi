@@ -12,6 +12,7 @@
 
 #pragma once
 
+#include "ControllerTypes.h"
 #include "ForceFeedbackTypes.h"
 
 #include <array>
@@ -177,6 +178,13 @@ namespace Xidi
                 constexpr inline bool operator==(const SEnvelope& other) const = default;
             };
 
+            /// Structure for holding the identifiers for axes associated with a force feedback effect.
+            struct SAssociatedAxes
+            {
+                int count = 0;                                              ///< Number of associated axes.
+                std::array<EAxis, kEffectAxesMaximumNumber> type = {};      ///< Axis type, one element per axis.
+            };
+
             /// Structure for holding parameters common to all force feedback effects.
             struct SCommonParameters
             {
@@ -212,8 +220,12 @@ namespace Xidi
                 std::optional<SEnvelope> envelope = kDefaultEnvelope;
 
                 /// Vector that specifies the direction of the force feedback effect. By default this vector does not specify a direction.
-                /// Setting a direction is mandatory and can be accomplished by calling the methods offered by this object.
+                /// Setting a direction is mandatory.
                 DirectionVector direction;
+
+                /// Association of direction components with virtual controller axes.
+                /// Setting associated axes is mandatory, and there must be at least as many associated axes as there are direction vector components.
+                std::optional<SAssociatedAxes> associatedAxes = std::nullopt;
 
                 /// Simple check for equality.
                 /// Primarily useful during testing.
