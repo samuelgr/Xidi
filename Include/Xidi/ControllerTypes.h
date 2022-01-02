@@ -171,11 +171,27 @@ namespace Xidi
         };
         static_assert(sizeof(SElementIdentifier) <= 4, "Data structure size constraint violation.");
 
+        /// Capabilities of a single Xidi virtual controller axis.
+        /// Identifies the axis type enumerator and contains other information about how the axis can behave as part of a virtual controller.
+        struct SAxisCapabilities
+        {
+            EAxis type : 3;                                                 ///< Type of axis.
+            bool isMappedToForceFeedbackActuator : 1;                       ///< Whether or not the axis is mapped to a force feedback actuator.
+
+            /// Simple check for equality.
+            /// Primarily useful during testing.
+            /// @param [in] other Object with which to compare.
+            /// @return `true` if this object is equal to the other object, `false` otherwise.
+            constexpr inline bool operator==(const SAxisCapabilities& other) const = default;
+        };
+        static_assert(sizeof(SAxisCapabilities) == sizeof(EAxis), "Data structure size constraint violation.");
+        static_assert((uint8_t)EAxis::Count <= 0b111, "Highest-valued axis type identifier does not fit into 3 bits.");
+
         /// Capabilities of a Xidi virtual controller.
         /// Filled in by looking at a mapper and used during operations like EnumObjects to tell the application about the virtual controller's components.
         struct SCapabilities
         {
-            EAxis axisType[(int)EAxis::Count];                              ///< Type of each axis present. When the controller is presented to the application, all the axes on it are presented with contiguous indices. This array is used to map from DirectInput axis index to internal axis index.
+            SAxisCapabilities axisCapabilities[(int)EAxis::Count];          ///< Capability information for each axis present. When the controller is presented to the application, all the axes on it are presented with contiguous indices. This array is used to map from DirectInput axis index to internal axis index.
             struct
             {
                 uint8_t numAxes : 3;                                        ///< Number of axes in the virtual controller, also the number of elements of the axis type array that are valid.
@@ -192,7 +208,7 @@ namespace Xidi
                 return ((other.numAxes == numAxes)
                     && (other.numButtons == numButtons)
                     && (other.hasPov == hasPov)
-                    && std::equal(other.axisType, &other.axisType[numAxes], axisType, &axisType[numAxes]));
+                    && std::equal(other.axisCapabilities, &other.axisCapabilities[numAxes], axisCapabilities, &axisCapabilities[numAxes]));
             }
 
             /// Appends an axis to the list of axis types in this capabilities object.
@@ -200,7 +216,7 @@ namespace Xidi
             /// @param [in] axis Axis to append to the list of present axes.
             constexpr inline void AppendAxis(EAxis axis)
             {
-                axisType[numAxes] = axis;
+                axisCapabilities[numAxes] = {.type = axis};
                 numAxes += 1;
             }
 
@@ -211,7 +227,7 @@ namespace Xidi
             {
                 for (int i = 0; i < numAxes; ++i)
                 {
-                    if (axisType[i] == axis)
+                    if (axisCapabilities[i].type == axis)
                         return i;
                 }
 

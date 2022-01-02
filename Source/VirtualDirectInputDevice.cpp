@@ -526,7 +526,7 @@ namespace Xidi
                 {
                 case DIDFT_ABSAXIS:
                     if ((kIndex < (unsigned int)Controller::EAxis::Count) && (kIndex < (unsigned int)controller->GetCapabilities().numAxes))
-                        return Controller::SElementIdentifier({.type = Controller::EElementType::Axis, .axis = controller->GetCapabilities().axisType[kIndex]});
+                        return Controller::SElementIdentifier({.type = Controller::EElementType::Axis, .axis = controller->GetCapabilities().axisCapabilities[kIndex].type});
                     break;
 
                 case DIDFT_PSHBUTTON:
@@ -696,7 +696,7 @@ namespace Xidi
             {
                 for (int i = 0; i < controllerCapabilities.numAxes; ++i)
                 {
-                    const Controller::EAxis kAxis = controllerCapabilities.axisType[i];
+                    const Controller::EAxis kAxis = controllerCapabilities.axisCapabilities[i].type;
                     const Controller::SElementIdentifier kAxisIdentifier = {.type = Controller::EElementType::Axis, .axis = kAxis};
                     const TOffset kAxisOffset = ((true == IsApplicationDataFormatSet()) ? dataFormat->GetOffsetForElement(kAxisIdentifier).value_or(DataFormat::kInvalidOffsetValue) : NativeOffsetForElement(kAxisIdentifier));
 

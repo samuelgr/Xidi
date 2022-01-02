@@ -74,7 +74,7 @@ namespace Xidi
         DataFormatBuildHelper(const Controller::SCapabilities controllerCapabilities, TOffset dataPacketSize) : availableAxes(), availableButtons(), availablePov(), usedByteOffsets(dataPacketSize)
         {
             for (int i = 0; i < controllerCapabilities.numAxes; ++i)
-                availableAxes.insert((int)controllerCapabilities.axisType[i]);
+                availableAxes.insert((int)controllerCapabilities.axisCapabilities[i].type);
 
             for (int i = 0; i < controllerCapabilities.numButtons; ++i)
                 availableButtons.insert(i);
@@ -491,8 +491,8 @@ namespace Xidi
                         const int kRequestedInstanceIndex = DIDFT_GETINSTANCE(objectFormatSpec.dwType);
                         if (kWildcardInstanceIndex == kRequestedInstanceIndex)
                             maybeSelectedElement = buildHelper.GetNextAvailableOfType(Controller::EElementType::Axis);
-                        else if ((kRequestedInstanceIndex >= 0) && (kRequestedInstanceIndex < _countof(controllerCapabilities.axisType)))
-                            maybeSelectedElement = buildHelper.GetSpecificElement({.type = Controller::EElementType::Axis, .axis = controllerCapabilities.axisType[kRequestedInstanceIndex]});
+                        else if ((kRequestedInstanceIndex >= 0) && (kRequestedInstanceIndex < _countof(controllerCapabilities.axisCapabilities)))
+                            maybeSelectedElement = buildHelper.GetSpecificElement({.type = Controller::EElementType::Axis, .axis = controllerCapabilities.axisCapabilities[kRequestedInstanceIndex].type});
                     }
                 } while (false);
 

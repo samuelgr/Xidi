@@ -170,7 +170,7 @@ namespace Xidi
 
             for (int i = 0; i < controllerCapabilities.numAxes; ++i)
             {
-                const EAxis axis = controllerCapabilities.axisType[i];
+                const EAxis axis = controllerCapabilities.axisCapabilities[i].type;
                 controllerState.axis[(int)axis] = TransformAxisValue(controllerState.axis[(int)axis], properties.axis[(int)axis]);
             }
         }

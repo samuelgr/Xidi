@@ -399,7 +399,7 @@ namespace XidiTest
     TEST_CASE(Mapper_Capabilities_MultipleAxes)
     {
         constexpr SCapabilities kExpectedCapabilities = MakeExpectedCapabilities({
-            .axisType = {EAxis::Y, EAxis::RotX},
+            .axisCapabilities = {{.type = EAxis::Y}, {.type = EAxis::RotX}},
             .numAxes = 2,
             .numButtons = 0,
             .hasPov = false
@@ -465,7 +465,7 @@ namespace XidiTest
     {
         constexpr EAxis kTestAxis = EAxis::Z;
         constexpr SCapabilities kExpectedCapabilities = MakeExpectedCapabilities({
-            .axisType = {kTestAxis},
+            .axisCapabilities = {{.type = kTestAxis}},
             .numAxes = 1,
             .numButtons = 0,
             .hasPov = true
@@ -487,7 +487,7 @@ namespace XidiTest
     TEST_CASE(Mapper_Capabilities_StandardGamepad)
     {
         constexpr SCapabilities kExpectedCapabilities = MakeExpectedCapabilities({
-            .axisType = {EAxis::X, EAxis::Y, EAxis::Z, EAxis::RotZ},
+            .axisCapabilities = {{.type = EAxis::X}, {.type = EAxis::Y}, {.type = EAxis::Z}, {.type = EAxis::RotZ}},
             .numAxes = 4,
             .numButtons = 12,
             .hasPov = true
@@ -504,7 +504,7 @@ namespace XidiTest
     TEST_CASE(Mapper_Capabilities_DigitalGamepad)
     {
         constexpr SCapabilities kExpectedCapabilities = MakeExpectedCapabilities({
-            .axisType = {EAxis::X, EAxis::Y, EAxis::Z, EAxis::RotZ},
+            .axisCapabilities = {{.type = EAxis::X}, {.type = EAxis::Y}, {.type = EAxis::Z}, {.type = EAxis::RotZ}},
             .numAxes = 4,
             .numButtons = 12,
             .hasPov = false
@@ -521,7 +521,7 @@ namespace XidiTest
     TEST_CASE(Mapper_Capabilities_ExtendedGamepad)
     {
         constexpr SCapabilities kExpectedCapabilities = MakeExpectedCapabilities({
-            .axisType = {EAxis::X, EAxis::Y, EAxis::Z, EAxis::RotX, EAxis::RotY, EAxis::RotZ},
+            .axisCapabilities = {{.type = EAxis::X}, {.type = EAxis::Y}, {.type = EAxis::Z}, {.type = EAxis::RotX}, {.type = EAxis::RotY}, {.type = EAxis::RotZ}},
             .numAxes = 6,
             .numButtons = 10,
             .hasPov = true
@@ -538,7 +538,7 @@ namespace XidiTest
     TEST_CASE(Mapper_Capabilities_XInputNative)
     {
         constexpr SCapabilities kExpectedCapabilities = MakeExpectedCapabilities({
-            .axisType = {EAxis::X, EAxis::Y, EAxis::Z, EAxis::RotX, EAxis::RotY, EAxis::RotZ},
+            .axisCapabilities = {{.type = EAxis::X}, {.type = EAxis::Y}, {.type = EAxis::Z}, {.type = EAxis::RotX}, {.type = EAxis::RotY}, {.type = EAxis::RotZ}},
             .numAxes = 6,
             .numButtons = 10,
             .hasPov = true
@@ -555,7 +555,7 @@ namespace XidiTest
     TEST_CASE(Mapper_Capabilities_XInputSharedTriggers)
     {
         constexpr SCapabilities kExpectedCapabilities = MakeExpectedCapabilities({
-            .axisType = {EAxis::X, EAxis::Y, EAxis::Z, EAxis::RotX, EAxis::RotY},
+            .axisCapabilities = {{.type = EAxis::X}, {.type = EAxis::Y}, {.type = EAxis::Z}, {.type = EAxis::RotX}, {.type = EAxis::RotY}},
             .numAxes = 5,
             .numButtons = 10,
             .hasPov = true
@@ -577,7 +577,7 @@ namespace XidiTest
     TEST_CASE(Mapper_Clone_StandardGamepad)
     {
         constexpr SCapabilities kExpectedCapabilities = MakeExpectedCapabilities({
-            .axisType = {EAxis::Z, EAxis::RotZ},
+            .axisCapabilities = {{.type = EAxis::Z}, {.type = EAxis::RotZ}},
             .numAxes = 2,
             .numButtons = 12,
             .hasPov = true
@@ -597,7 +597,7 @@ namespace XidiTest
     TEST_CASE(Mapper_Clone_DigitalGamepad)
     {
         constexpr SCapabilities kExpectedCapabilities = MakeExpectedCapabilities({
-            .axisType = {EAxis::X, EAxis::Y},
+            .axisCapabilities = {{.type = EAxis::X}, {.type = EAxis::Y}},
             .numAxes = 2,
             .numButtons = 12,
             .hasPov = false
@@ -617,7 +617,7 @@ namespace XidiTest
     TEST_CASE(Mapper_Clone_ExtendedGamepad)
     {
         constexpr SCapabilities kExpectedCapabilities = MakeExpectedCapabilities({
-            .axisType = {EAxis::X, EAxis::Y, EAxis::Z, EAxis::RotZ},
+            .axisCapabilities = {{.type = EAxis::X}, {.type = EAxis::Y}, {.type = EAxis::Z}, {.type = EAxis::RotZ}},
             .numAxes = 4,
             .numButtons = 10,
             .hasPov = true
@@ -637,7 +637,7 @@ namespace XidiTest
     TEST_CASE(Mapper_Clone_XInputNative)
     {
         constexpr SCapabilities kExpectedCapabilities = MakeExpectedCapabilities({
-            .axisType = {EAxis::X, EAxis::Y, EAxis::Z, EAxis::RotX, EAxis::RotY, EAxis::RotZ},
+            .axisCapabilities = {{.type = EAxis::X}, {.type = EAxis::Y}, {.type = EAxis::Z}, {.type = EAxis::RotX}, {.type = EAxis::RotY}, {.type = EAxis::RotZ}},
             .numAxes = 6,
             .numButtons = 10,
             .hasPov = false
@@ -659,7 +659,7 @@ namespace XidiTest
     TEST_CASE(Mapper_Clone_XInputSharedTriggers)
     {
         constexpr SCapabilities kExpectedCapabilities = MakeExpectedCapabilities({
-            .axisType = {EAxis::X, EAxis::Y, EAxis::RotX, EAxis::RotY},
+            .axisCapabilities = {{.type = EAxis::X}, {.type = EAxis::Y}, {.type = EAxis::RotX}, {.type = EAxis::RotY}},
             .numAxes = 4,
             .numButtons = 10,
             .hasPov = true
