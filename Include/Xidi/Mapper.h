@@ -307,8 +307,9 @@ namespace Xidi
             /// Maps from virtual force feedback effect magnitude component to physical force feedback actuator values.
             /// Does not apply any properties configured by the application, such as gain.
             /// @param [in] virtualEffectComponents Virtual force feedback vector expressed as a magnitude component vector.
+            /// @param [in] gain Gain modifier to apply as a scalar multiplier on all the physical actuator values.
             /// @return Physical force feedback vector expressed as a per-actuator component vector.
-            ForceFeedback::SPhysicalActuatorComponents MapForceFeedbackVirtualToPhysical(ForceFeedback::TOrderedMagnitudeComponents virtualEffectComponents) const;
+            ForceFeedback::SPhysicalActuatorComponents MapForceFeedbackVirtualToPhysical(ForceFeedback::TOrderedMagnitudeComponents virtualEffectComponents, ForceFeedback::TEffectValue gain = ForceFeedback::kEffectModifierMaximum) const;
 
             /// Maps from physical controller state to virtual controller state.
             /// Does not apply any properties configured by the application, such as deadzone and range.

@@ -40,10 +40,12 @@ namespace XidiTest
     /// Computes the expected physical actuator value given an input virtual actuator value.
     /// @param [in] virtualValue Virtual actuator value for which a translation to physical is desired.
     /// @return Translated physical actuator value.
-    static TPhysicalActuatorValue ForceFeedbackActuatorValueVirtualToPhysical(TEffectValue virtualValue)
+    static TPhysicalActuatorValue ForceFeedbackActuatorValueVirtualToPhysical(TEffectValue virtualValue, TEffectValue gain = ForceFeedback::kEffectForceMagnitudeMaximum)
     {
         constexpr double kScalingFactor = (std::numeric_limits<TPhysicalActuatorValue>::max() / 10000.0);
-        const long kPhysicalValue = std::lround(std::abs(virtualValue * kScalingFactor));
+        const double kGainMultiplier = gain / 10000.0;
+
+        const long kPhysicalValue = std::lround(kGainMultiplier * std::abs(virtualValue * kScalingFactor));
 
         if (kPhysicalValue >= std::numeric_limits<TPhysicalActuatorValue>::max())
             return (TPhysicalActuatorValue)std::numeric_limits<TPhysicalActuatorValue>::max();
@@ -945,7 +947,6 @@ namespace XidiTest
     }
 
     // Saturation test in which the input magnitude vector is at extreme values and needs to be saturated.
-    // Only a single force feedback actuator is used for the sake of simplicity.
     TEST_CASE(Mapper_ForceFeedback_Saturation)
     {
         constexpr TOrderedMagnitudeComponents kTestMagnitudeVectors[] = {
@@ -969,6 +970,65 @@ namespace XidiTest
         {
             const SPhysicalActuatorComponents kActualActuatorComponents = mapper.MapForceFeedbackVirtualToPhysical(kTestMagnitudeVector);
             TEST_ASSERT(kActualActuatorComponents == kExpectedActuatorComponents);
+        }
+    }
+
+    // Gain test in which the input magnitude vector is modified by a gain property.
+    TEST_CASE(Mapper_ForceFeedback_Gain)
+    {
+        constexpr TOrderedMagnitudeComponents kTestMagnitudeVector = {-1000};
+
+        constexpr Mapper::SForceFeedbackActuatorMap kTestActuatorMap = {
+            .leftMotor = {.isPresent = true, .axis = EAxis::X, .direction = EAxisDirection::Both}
+        };
+
+        constexpr TEffectValue kTestGainValues[] = {10000, 7500, 5000, 2500, 1000};
+
+        const Mapper mapper({}, kTestActuatorMap);
+
+        for (const auto kTestGainValue : kTestGainValues)
+        {
+            const SPhysicalActuatorComponents kExpectedActuatorComponents = {
+                .leftMotor = ForceFeedbackActuatorValueVirtualToPhysical(kTestMagnitudeVector[0], kTestGainValue)
+            };
+
+            const SPhysicalActuatorComponents kActualActuatorComponents = mapper.MapForceFeedbackVirtualToPhysical(kTestMagnitudeVector, kTestGainValue);
+            TEST_ASSERT(kActualActuatorComponents == kExpectedActuatorComponents);
+        }
+    }
+
+    // Simultaneous gain and saturation test in which the input magnitude vector is at extreme values and needs to be saturated while simultaneously being modified by a gain property.
+    TEST_CASE(Mapper_ForceFeedback_SaturationAndGain)
+    {
+        constexpr TOrderedMagnitudeComponents kTestMagnitudeVectors[] = {
+            {ForceFeedback::kEffectForceMagnitudeMinimum},
+            {ForceFeedback::kEffectForceMagnitudeMaximum},
+            {ForceFeedback::kEffectForceMagnitudeMinimum * 200},
+            {ForceFeedback::kEffectForceMagnitudeMaximum * 200}
+        };
+
+        constexpr TEffectValue kTestGainValues[] = {5000, 2500, 1000};
+
+        constexpr Mapper::SForceFeedbackActuatorMap kTestActuatorMap = {
+            .leftMotor = {.isPresent = true, .axis = EAxis::X, .direction = EAxisDirection::Both}
+        };
+
+        const Mapper mapper({}, kTestActuatorMap);
+
+        for (const auto kTestGainValue : kTestGainValues)
+        {
+            const TEffectValue kTestGainMultiplier = kTestGainValue / 10000;
+            const TEffectValue kExpectedActuatorValue = (TEffectValue)std::numeric_limits<TPhysicalActuatorValue>::max() * kTestGainMultiplier;
+
+            const SPhysicalActuatorComponents kExpectedActuatorComponents = {
+                .leftMotor = (TPhysicalActuatorValue)std::lround(kExpectedActuatorValue)
+            };
+
+            for (const auto& kTestMagnitudeVector : kTestMagnitudeVectors)
+            {
+                const SPhysicalActuatorComponents kActualActuatorComponents = mapper.MapForceFeedbackVirtualToPhysical(kTestMagnitudeVector, kTestGainValue);
+                TEST_ASSERT(kActualActuatorComponents == kExpectedActuatorComponents);
+            }
         }
     }
 }

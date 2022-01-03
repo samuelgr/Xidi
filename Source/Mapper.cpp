@@ -261,14 +261,13 @@ namespace Xidi
         /// Computes the physical force feedback actuator value for the specified actuator given a vector of magnitude components.
         /// @param [in] virtualEffectComponents Virtual force feedback vector expressed as a magnitude component vector.
         /// @param [in] actuatorElement Physical force feedback actuator element for which an actuator value is desired.
+        /// @param [in] gain Gain modifier to apply as a scalar multiplier on the physical actuator value.
         /// @return Physical force feedback actuator value that can be sent directly to the actuator itself.
-        static inline ForceFeedback::TPhysicalActuatorValue ForceFeedbackActuatorValue(ForceFeedback::TOrderedMagnitudeComponents virtualEffectComponents, ForceFeedback::SActuatorElement actuatorElement)
+        static inline ForceFeedback::TPhysicalActuatorValue ForceFeedbackActuatorValue(ForceFeedback::TOrderedMagnitudeComponents virtualEffectComponents, ForceFeedback::SActuatorElement actuatorElement, ForceFeedback::TEffectValue gain)
         {
             if (false == actuatorElement.isPresent)
                 return 0;
-
-            constexpr ForceFeedback::TEffectValue kVirtualMagnitudeZeroPoint = 0.5 * (ForceFeedback::kEffectForceMagnitudeMaximum + ForceFeedback::kEffectForceMagnitudeMinimum);
-            if (kVirtualMagnitudeZeroPoint == virtualEffectComponents[(int)actuatorElement.axis])
+            if (ForceFeedback::kEffectForceMagnitudeZero == virtualEffectComponents[(int)actuatorElement.axis])
                 return 0;
 
             const bool kActuatorDirectionIsNegative = std::signbit(virtualEffectComponents[(int)actuatorElement.axis]);
@@ -278,13 +277,14 @@ namespace Xidi
                 return 0;
 
             constexpr ForceFeedback::TEffectValue kPhysicalActuatorRange = (ForceFeedback::TEffectValue)(std::numeric_limits<ForceFeedback::TPhysicalActuatorValue>::max() - std::numeric_limits<ForceFeedback::TPhysicalActuatorValue>::min());
-            constexpr ForceFeedback::TEffectValue kVirtualMagnitudeRange = ForceFeedback::kEffectForceMagnitudeMaximum - kVirtualMagnitudeZeroPoint;
-            constexpr double kScalingFactor = (double)kPhysicalActuatorRange / (double)kVirtualMagnitudeRange;
+            constexpr ForceFeedback::TEffectValue kVirtualMagnitudeRange = ForceFeedback::kEffectForceMagnitudeMaximum - ForceFeedback::kEffectForceMagnitudeZero;
+            constexpr ForceFeedback::TEffectValue kScalingFactor = kPhysicalActuatorRange / kVirtualMagnitudeRange;
+            
+            const ForceFeedback::TEffectValue kGainMultiplier = gain / ForceFeedback::kEffectModifierMaximum;
+            const ForceFeedback::TEffectValue kVirtualActuatorStrengthMax = (ForceFeedback::kEffectForceMagnitudeMaximum - ForceFeedback::kEffectForceMagnitudeZero) * kGainMultiplier;
 
-            const ForceFeedback::TEffectValue kVirtualActuatorStrength = std::abs(virtualEffectComponents[(int)actuatorElement.axis] - kVirtualMagnitudeZeroPoint);
-            const long kPhysicalActuatorStrength = std::lround((double)kVirtualActuatorStrength * kScalingFactor);
-            if (kPhysicalActuatorStrength >= std::numeric_limits<ForceFeedback::TPhysicalActuatorValue>::max())
-                return std::numeric_limits<ForceFeedback::TPhysicalActuatorValue>::max();
+            const ForceFeedback::TEffectValue kVirtualActuatorStrength = std::min(kVirtualActuatorStrengthMax, kGainMultiplier * std::abs(virtualEffectComponents[(int)actuatorElement.axis] - ForceFeedback::kEffectForceMagnitudeZero));
+            const long kPhysicalActuatorStrength = std::lround(kVirtualActuatorStrength * kScalingFactor);
 
             return (ForceFeedback::TPhysicalActuatorValue)kPhysicalActuatorStrength;
         }
@@ -469,13 +469,13 @@ namespace Xidi
         // -------- INSTANCE METHODS --------------------------------------- //
         // See "Mapper.h" for documentation.
 
-        ForceFeedback::SPhysicalActuatorComponents Mapper::MapForceFeedbackVirtualToPhysical(ForceFeedback::TOrderedMagnitudeComponents virtualEffectComponents) const
+        ForceFeedback::SPhysicalActuatorComponents Mapper::MapForceFeedbackVirtualToPhysical(ForceFeedback::TOrderedMagnitudeComponents virtualEffectComponents, ForceFeedback::TEffectValue gain) const
         {
             return {
-                .leftMotor = ForceFeedbackActuatorValue(virtualEffectComponents, forceFeedbackActuators.named.leftMotor),
-                .rightMotor = ForceFeedbackActuatorValue(virtualEffectComponents, forceFeedbackActuators.named.rightMotor),
-                .leftImpulseTrigger = ForceFeedbackActuatorValue(virtualEffectComponents, forceFeedbackActuators.named.leftImpulseTrigger),
-                .rightImpulseTrigger = ForceFeedbackActuatorValue(virtualEffectComponents, forceFeedbackActuators.named.rightImpulseTrigger)
+                .leftMotor = ForceFeedbackActuatorValue(virtualEffectComponents, forceFeedbackActuators.named.leftMotor, gain),
+                .rightMotor = ForceFeedbackActuatorValue(virtualEffectComponents, forceFeedbackActuators.named.rightMotor, gain),
+                .leftImpulseTrigger = ForceFeedbackActuatorValue(virtualEffectComponents, forceFeedbackActuators.named.leftImpulseTrigger, gain),
+                .rightImpulseTrigger = ForceFeedbackActuatorValue(virtualEffectComponents, forceFeedbackActuators.named.rightImpulseTrigger, gain)
             };
         }
 
