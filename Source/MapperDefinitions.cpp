@@ -49,8 +49,8 @@ namespace Xidi
                     .buttonRS = std::make_unique<ButtonMapper>(EButton::B12)
                 },
                 {
-                    .leftMotor = {.valid = true, .axis = EAxis::X, .direction = EAxisDirection::Both},
-                    .rightMotor = {.valid = true, .axis = EAxis::X, .direction = EAxisDirection::Both},
+                    .leftMotor = {.isPresent = true, .axis = EAxis::X, .direction = EAxisDirection::Both},
+                    .rightMotor = {.isPresent = true, .axis = EAxis::X, .direction = EAxisDirection::Both},
                 }
             ),
 
@@ -79,8 +79,8 @@ namespace Xidi
                     .buttonRS = std::make_unique<ButtonMapper>(EButton::B12)
                 },
                 {
-                    .leftMotor = {.valid = true, .axis = EAxis::X, .direction = EAxisDirection::Both},
-                    .rightMotor = {.valid = true, .axis = EAxis::X, .direction = EAxisDirection::Both},
+                    .leftMotor = {.isPresent = true, .axis = EAxis::X, .direction = EAxisDirection::Both},
+                    .rightMotor = {.isPresent = true, .axis = EAxis::X, .direction = EAxisDirection::Both},
                 }
             ),
 
@@ -109,8 +109,8 @@ namespace Xidi
                     .buttonRS = std::make_unique<ButtonMapper>(EButton::B10)
                 },
                 {
-                    .leftMotor = {.valid = true, .axis = EAxis::X, .direction = EAxisDirection::Both},
-                    .rightMotor = {.valid = true, .axis = EAxis::X, .direction = EAxisDirection::Both},
+                    .leftMotor = {.isPresent = true, .axis = EAxis::X, .direction = EAxisDirection::Both},
+                    .rightMotor = {.isPresent = true, .axis = EAxis::X, .direction = EAxisDirection::Both},
                 }
             ),
 
@@ -139,8 +139,8 @@ namespace Xidi
                     .buttonRS = std::make_unique<ButtonMapper>(EButton::B10)
                 },
                 {
-                    .leftMotor = {.valid = true, .axis = EAxis::X, .direction = EAxisDirection::Both},
-                    .rightMotor = {.valid = true, .axis = EAxis::X, .direction = EAxisDirection::Both},
+                    .leftMotor = {.isPresent = true, .axis = EAxis::X, .direction = EAxisDirection::Both},
+                    .rightMotor = {.isPresent = true, .axis = EAxis::X, .direction = EAxisDirection::Both},
                 }
             ),
 
@@ -169,8 +169,8 @@ namespace Xidi
                     .buttonRS = std::make_unique<ButtonMapper>(EButton::B10)
                 },
                 {
-                    .leftMotor = {.valid = true, .axis = EAxis::X, .direction = EAxisDirection::Both},
-                    .rightMotor = {.valid = true, .axis = EAxis::X, .direction = EAxisDirection::Both},
+                    .leftMotor = {.isPresent = true, .axis = EAxis::X, .direction = EAxisDirection::Both},
+                    .rightMotor = {.isPresent = true, .axis = EAxis::X, .direction = EAxisDirection::Both},
                 }
             )
         };

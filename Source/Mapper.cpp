@@ -14,6 +14,7 @@
 #include "ApiWindows.h"
 #include "ControllerTypes.h"
 #include "ElementMapper.h"
+#include "ForceFeedbackTypes.h"
 #include "Globals.h"
 #include "Mapper.h"
 #include "Message.h"
@@ -23,6 +24,7 @@
 #include "Configuration.h"
 #endif
 
+#include <limits>
 #include <map>
 #include <mutex>
 #include <set>
@@ -212,7 +214,7 @@ namespace Xidi
 
             for (int i = 0; i < _countof(forceFeedbackActuators.all); ++i)
             {
-                if (true == forceFeedbackActuators.all[i].valid)
+                if (true == forceFeedbackActuators.all[i].isPresent)
                 {
                     axesPresent.insert((int)forceFeedbackActuators.all[i].axis);
                     axesMappedToForceFeedbackActuator.insert((int)forceFeedbackActuators.all[i].axis);
@@ -254,6 +256,30 @@ namespace Xidi
         static inline int16_t FilterAndInvertAnalogStickValue(int16_t analogValue)
         {
             return -FilterAnalogStickValue(analogValue);
+        }
+
+        /// Computes the physical force feedback actuator value for the specified actuator given a vector of magnitude components.
+        /// @param [in] virtualEffectComponents Virtual force feedback vector expressed as a magnitude component vector.
+        /// @param [in] actuatorElement Physical force feedback actuator element for which an actuator value is desired.
+        /// @return Physical force feedback actuator value.
+        static inline ForceFeedback::TPhysicalActuatorValue ForceFeedbackActuatorValue(ForceFeedback::TOrderedMagnitudeComponents virtualEffectComponents, SForceFeedbackActuatorElement actuatorElement)
+        {
+            if (false == actuatorElement.isPresent)
+                return 0;
+
+            const bool kActuatorDirectionIsNegative = std::signbit(virtualEffectComponents[(int)actuatorElement.axis]);
+            if ((EAxisDirection::Positive == actuatorElement.direction) && (true == kActuatorDirectionIsNegative))
+                return 0;
+
+            static constexpr double kPhysicalActuatorRange = std::numeric_limits<ForceFeedback::TPhysicalActuatorValue>::max() - std::numeric_limits<ForceFeedback::TPhysicalActuatorValue>::min();
+            static constexpr double kVirtualMagnitudeRange = 0.5 * (ForceFeedback::kEffectForceMagnitudeMaximum - ForceFeedback::kEffectForceMagnitudeMinimum);
+            static constexpr double kScalingFactor = kPhysicalActuatorRange / kVirtualMagnitudeRange;
+
+            const long kActuatorStrength = std::abs(std::lround((double)virtualEffectComponents[(int)actuatorElement.axis] * kScalingFactor));
+            if (kActuatorStrength >= std::numeric_limits<ForceFeedback::TPhysicalActuatorValue>::max())
+                return std::numeric_limits<ForceFeedback::TPhysicalActuatorValue>::max();
+
+            return (ForceFeedback::TPhysicalActuatorValue)kActuatorStrength;
         }
 
 
@@ -438,11 +464,12 @@ namespace Xidi
 
         ForceFeedback::SPhysicalActuatorComponents Mapper::MapForceFeedbackVirtualToPhysical(ForceFeedback::TOrderedMagnitudeComponents virtualEffectComponents) const
         {
-            ForceFeedback::SPhysicalActuatorComponents physicalActuatorComponents = {};
-
-            // TODO
-
-            return physicalActuatorComponents;
+            return {
+                .leftMotor = ForceFeedbackActuatorValue(virtualEffectComponents, forceFeedbackActuators.named.leftMotor),
+                .rightMotor = ForceFeedbackActuatorValue(virtualEffectComponents, forceFeedbackActuators.named.rightMotor),
+                .leftImpulseTrigger = ForceFeedbackActuatorValue(virtualEffectComponents, forceFeedbackActuators.named.leftImpulseTrigger),
+                .rightImpulseTrigger = ForceFeedbackActuatorValue(virtualEffectComponents, forceFeedbackActuators.named.rightImpulseTrigger)
+            };
         }
 
         SState Mapper::MapStatePhysicalToVirtual(XINPUT_GAMEPAD physicalState) const

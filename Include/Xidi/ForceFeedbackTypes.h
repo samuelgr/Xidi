@@ -66,10 +66,10 @@ namespace Xidi
             /// Field names correspond to the names of enumerators in #EActuator.
             struct SPhysicalActuatorComponents
             {
-                TPhysicalActuatorValue LeftMotor;
-                TPhysicalActuatorValue RightMotor;
-                TPhysicalActuatorValue LeftImpulseTrigger;
-                TPhysicalActuatorValue RightImpulseTrigger;
+                TPhysicalActuatorValue leftMotor;
+                TPhysicalActuatorValue rightMotor;
+                TPhysicalActuatorValue leftImpulseTrigger;
+                TPhysicalActuatorValue rightImpulseTrigger;
             };
 
 

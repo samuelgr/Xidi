@@ -276,7 +276,7 @@ namespace Xidi
         /// The information is used to determine what source of information is used to send output to a physical force feedback actuator.
         struct SForceFeedbackActuatorElement
         {
-            bool valid : 1;                                                 ///< Whether or not this actuator element is valid. If not, the associated physical actuator is considered disabled. This field is a size optimization over using an optional wrapper type.
+            bool isPresent : 1;                                             ///< Whether or not the associated physical force feedback actuator is present in the mapping.
             EAxis axis : 3;                                                 ///< Source virtual force feedback axis from which the physical actuator should obtain its state data.
             EAxisDirection direction : 3;                                   ///< Direction mode associated with the virtual force feedback axis.
         };
