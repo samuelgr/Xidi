@@ -11,6 +11,7 @@
 
 #include "ApiWindows.h"
 #include "ControllerTypes.h"
+#include "ForceFeedbackTypes.h"
 #include "Mapper.h"
 #include "Message.h"
 #include "PhysicalController.h"
@@ -352,10 +353,11 @@ namespace Xidi
 
         bool VirtualController::SetForceFeedbackGain(uint32_t ffGain)
         {
-            if ((ffGain >= kFfGainMin) && (ffGain <= kFfGainMax))
+            const ForceFeedback::TEffectValue newFfGain = (ForceFeedback::TEffectValue)ffGain;
+            if ((newFfGain >= kFfGainMin) && (newFfGain <= kFfGainMax))
             {
                 auto lock = Lock();
-                properties.device.SetFfGain(ffGain);
+                properties.device.SetFfGain(newFfGain);
                 return true;
             }
 

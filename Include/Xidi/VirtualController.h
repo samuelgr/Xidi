@@ -12,6 +12,7 @@
 #pragma once
 
 #include "ControllerTypes.h"
+#include "ForceFeedbackTypes.h"
 #include "Mapper.h"
 #include "PhysicalController.h"
 #include "StateChangeEventBuffer.h"
@@ -215,24 +216,21 @@ namespace Xidi
                     SetSaturation(kAxisSaturationDefault);
                 }
 
-                /// Simple check for equality by low-level memory comparison.
+                /// Simple check for equality.
                 /// Primarily useful during testing.
                 /// @param [in] other Object with which to compare.
                 /// @return `true` if this object is equal to the other object, `false` otherwise.
-                inline bool operator==(const SAxisProperties& other) const
-                {
-                    return (0 == memcmp(this, &other, sizeof(*this)));
-                }
+                inline bool operator==(const SAxisProperties& other) const = default;
             };
 
             /// Properties that apply to the whole device.
             struct SDeviceProperties
             {
-                uint32_t ffGain;                                            ///< Force feedback gain. Not currently used due to lack of force feedback support, but exists for compliance with application interface expectations.
+                ForceFeedback::TEffectValue ffGain;                         ///< Force feedback gain.
 
                 /// Sets the force feedback gain. Performs no error checking.
                 /// @param [in] newFfGain New force feedback gain value.
-                constexpr inline void SetFfGain(uint32_t newFfGain)
+                constexpr inline void SetFfGain(ForceFeedback::TEffectValue newFfGain)
                 {
                     ffGain = newFfGain;
                 }
@@ -244,31 +242,25 @@ namespace Xidi
                     SetFfGain(kFfGainDefault);
                 }
 
-                /// Simple check for equality by low-level memory comparison.
+                /// Simple check for equality.
                 /// Primarily useful during testing.
                 /// @param [in] other Object with which to compare.
                 /// @return `true` if this object is equal to the other object, `false` otherwise.
-                inline bool operator==(const SDeviceProperties& other) const
-                {
-                    return (0 == memcmp(this, &other, sizeof(*this)));
-                }
+                inline bool operator==(const SDeviceProperties& other) const = default;
             };
 
             /// Complete properties data structure.
             /// Holds all per-element and device-wide properties.
             struct SProperties
             {
-                SAxisProperties axis[(int)EAxis::Count];        ///< Axis properties, one element per possible axis.
+                SAxisProperties axis[(int)EAxis::Count];                    ///< Axis properties, one element per possible axis.
                 SDeviceProperties device;                                   ///< Device-wide properties.
 
-                /// Simple check for equality by low-level memory comparison.
+                /// Simple check for equality.
                 /// Primarily useful during testing.
                 /// @param [in] other Object with which to compare.
                 /// @return `true` if this object is equal to the other object, `false` otherwise.
-                inline bool operator==(const SProperties& other) const
-                {
-                    return (0 == memcmp(this, &other, sizeof(*this)));
-                }
+                inline bool operator==(const SProperties& other) const = default;
             };
 
 
@@ -420,7 +412,7 @@ namespace Xidi
             /// @return Force feedback gain property value.
             inline uint32_t GetForceFeedbackGain(void) const
             {
-                return properties.device.ffGain;
+                return (uint32_t)properties.device.ffGain;
             }
 
             /// Retrieves and returns this controller's identifier.
