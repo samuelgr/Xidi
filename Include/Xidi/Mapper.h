@@ -16,6 +16,7 @@
 #include "ApiWindows.h"
 #include "ControllerTypes.h"
 #include "ElementMapper.h"
+#include "ForceFeedbackTypes.h"
 
 #include <memory>
 #include <string_view>
@@ -81,7 +82,7 @@ namespace Xidi
 
             /// XInput force feedback actuator mappers, one per force feedback actuator.
             /// For force feedback actuators that are not used, the `valid` bit is set to 0.
-            /// Names correspond to the enumerators in the #EForceFeedbackActuator enumeration.
+            /// Names correspond to the enumerators in the #ForceFeedback::EActuator enumeration.
             struct SForceFeedbackActuatorMap
             {
                 SForceFeedbackActuatorElement leftMotor;
@@ -148,7 +149,7 @@ namespace Xidi
             union UForceFeedbackActuatorMap
             {
                 SForceFeedbackActuatorMap named;
-                SForceFeedbackActuatorElement all[(int)EForceFeedbackActuator::Count];
+                SForceFeedbackActuatorElement all[(int)ForceFeedback::EActuator::Count];
 
                 /// Default constructor.
                 /// Delegates to the underlying force feedback actuator map.
@@ -303,11 +304,17 @@ namespace Xidi
                 return name;
             }
 
-            /// Initializes and fills in the specified virtual controller state data structure object using the specified XInput controller state information.
-            /// Does not apply any properties configured by the application, such as deadzone and range. All values produced use standard XInput settings.
-            /// @param [out] controllerState Controller state object to be filled.
-            /// @param [in] xinputState XInput controller state from which to read.
-            void MapXInputState(SState& controllerState, XINPUT_GAMEPAD xinputState) const;
+            /// Maps from virtual force feedback effect magnitude component to physical force feedback actuator values.
+            /// Does not apply any properties configured by the application, such as gain.
+            /// @param [in] virtualEffectComponents Virtual force feedback vector expressed as a magnitude component vector.
+            /// @return Physical force feedback vector expressed as a per-actuator component vector.
+            ForceFeedback::SPhysicalActuatorComponents MapForceFeedbackVirtualToPhysical(ForceFeedback::TOrderedMagnitudeComponents virtualEffectComponents) const;
+
+            /// Maps from physical controller state to virtual controller state.
+            /// Does not apply any properties configured by the application, such as deadzone and range.
+            /// @param [in] physicalState Physical controller state from which to read.
+            /// @return Controller state object that was filled as a result of the mapping.
+            SState MapStatePhysicalToVirtual(XINPUT_GAMEPAD physicalState) const;
         };
     }
 }

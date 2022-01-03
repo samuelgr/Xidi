@@ -136,16 +136,6 @@ namespace Xidi
             WholeController
         };
 
-        /// Enumerates the force feedback actuators present on physical controllers.
-        enum class EForceFeedbackActuator : uint8_t
-        {
-            LeftMotor,                                                      ///< Left motor (low-frequency rumble)
-            RightMotor,                                                     ///< Right motor (high-frequency rumble)
-            LeftImpulseTrigger,                                             ///< Left impulse trigger (embedded in LT)
-            RightImpulseTrigger,                                            ///< Right impulse trigger (embedded in RT)
-            Count                                                           ///< Sentinel value, total number of enumerators
-        };
-
         /// Identifier for an element of a virtual controller's state.
         /// Specifies both element type and index. Valid member of the union is based on the indicated type.
         struct SElementIdentifier
