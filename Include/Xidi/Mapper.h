@@ -85,10 +85,10 @@ namespace Xidi
             /// Names correspond to the enumerators in the #ForceFeedback::EActuator enumeration.
             struct SForceFeedbackActuatorMap
             {
-                SForceFeedbackActuatorElement leftMotor;
-                SForceFeedbackActuatorElement rightMotor;
-                SForceFeedbackActuatorElement leftImpulseTrigger;
-                SForceFeedbackActuatorElement rightImpulseTrigger;
+                ForceFeedback::SActuatorElement leftMotor;
+                ForceFeedback::SActuatorElement rightMotor;
+                ForceFeedback::SActuatorElement leftImpulseTrigger;
+                ForceFeedback::SActuatorElement rightImpulseTrigger;
             };
             static_assert(sizeof(SForceFeedbackActuatorMap) <= 4, "Data structure size constraint violation.");
 
@@ -149,7 +149,7 @@ namespace Xidi
             union UForceFeedbackActuatorMap
             {
                 SForceFeedbackActuatorMap named;
-                SForceFeedbackActuatorElement all[(int)ForceFeedback::EActuator::Count];
+                ForceFeedback::SActuatorElement all[(int)ForceFeedback::EActuator::Count];
 
                 /// Default constructor.
                 /// Delegates to the underlying force feedback actuator map.

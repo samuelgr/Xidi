@@ -61,6 +61,19 @@ namespace Xidi
             /// This is just a reordering of #TMagnitudeComponents in a way that does not depend on the number or types of axes actually associated with the force feedback effect.
             typedef std::array<TEffectValue, (int)EAxis::Count> TOrderedMagnitudeComponents;
 
+            /// Describes a force feedback actuator element on a virtual controller.
+            /// A force feedback actuator can be mapped to an axis and a direction mode on that axis.
+            /// The information is used to determine what source of information is used to send output to a physical force feedback actuator.
+            struct SActuatorElement
+            {
+                bool isPresent : 1;                                         ///< Whether or not the associated physical force feedback actuator is present in the mapping.
+                EAxis axis : 3;                                             ///< Source virtual force feedback axis from which the physical actuator should obtain its state data.
+                EAxisDirection direction : 3;                               ///< Direction mode associated with the virtual force feedback axis.
+            };
+            static_assert(sizeof(SActuatorElement) == 1, "Data structure size constraint violation.");
+            static_assert((uint8_t)EAxis::Count <= 0b111, "Highest-valued axis type identifier does not fit into 3 bits.");
+            static_assert((uint8_t)EAxisDirection::Count <= 0b111, "Highest-valued axis direction mode does not fit into 3 bits.");
+
             /// Represents the magnitude of a force as can be sent to physical force feedback actuators.
             /// One element exists per possible physical force feedback actuator.
             /// Field names correspond to the names of enumerators in #EActuator.
@@ -70,6 +83,12 @@ namespace Xidi
                 TPhysicalActuatorValue rightMotor;
                 TPhysicalActuatorValue leftImpulseTrigger;
                 TPhysicalActuatorValue rightImpulseTrigger;
+
+                /// Simple check for equality.
+                /// Primarily useful during testing.
+                /// @param [in] other Object with which to compare.
+                /// @return `true` if this object is equal to the other object, `false` otherwise.
+                constexpr inline bool operator==(const SPhysicalActuatorComponents& other) const = default;
             };
 
 

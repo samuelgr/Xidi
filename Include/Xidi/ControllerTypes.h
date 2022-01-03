@@ -271,19 +271,6 @@ namespace Xidi
         static_assert((uint8_t)EAxis::Count <= 0b111, "Number of axes does not fit into 3 bits.");
         static_assert((uint8_t)EButton::Count <= 0b11111, "Number of buttons does not fit into 5 bits.");
 
-        /// Describes a force feedback actuator element on a virtual controller.
-        /// A force feedback actuator can be mapped to an axis and a direction mode on that axis.
-        /// The information is used to determine what source of information is used to send output to a physical force feedback actuator.
-        struct SForceFeedbackActuatorElement
-        {
-            bool isPresent : 1;                                             ///< Whether or not the associated physical force feedback actuator is present in the mapping.
-            EAxis axis : 3;                                                 ///< Source virtual force feedback axis from which the physical actuator should obtain its state data.
-            EAxisDirection direction : 3;                                   ///< Direction mode associated with the virtual force feedback axis.
-        };
-        static_assert(sizeof(SForceFeedbackActuatorElement) == 1, "Data structure size constraint violation.");
-        static_assert((uint8_t)EAxis::Count <= 0b111, "Highest-valued axis type identifier does not fit into 3 bits.");
-        static_assert((uint8_t)EAxisDirection::Count <= 0b111, "Highest-valued axis direction mode does not fit into 3 bits.");
-
         /// Holds POV direction, which is presented both as an array of separate components and as a single aggregated integer view.
         union UPovDirection
         {

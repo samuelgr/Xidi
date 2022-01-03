@@ -261,25 +261,32 @@ namespace Xidi
         /// Computes the physical force feedback actuator value for the specified actuator given a vector of magnitude components.
         /// @param [in] virtualEffectComponents Virtual force feedback vector expressed as a magnitude component vector.
         /// @param [in] actuatorElement Physical force feedback actuator element for which an actuator value is desired.
-        /// @return Physical force feedback actuator value.
-        static inline ForceFeedback::TPhysicalActuatorValue ForceFeedbackActuatorValue(ForceFeedback::TOrderedMagnitudeComponents virtualEffectComponents, SForceFeedbackActuatorElement actuatorElement)
+        /// @return Physical force feedback actuator value that can be sent directly to the actuator itself.
+        static inline ForceFeedback::TPhysicalActuatorValue ForceFeedbackActuatorValue(ForceFeedback::TOrderedMagnitudeComponents virtualEffectComponents, ForceFeedback::SActuatorElement actuatorElement)
         {
             if (false == actuatorElement.isPresent)
+                return 0;
+
+            constexpr ForceFeedback::TEffectValue kVirtualMagnitudeZeroPoint = 0.5 * (ForceFeedback::kEffectForceMagnitudeMaximum + ForceFeedback::kEffectForceMagnitudeMinimum);
+            if (kVirtualMagnitudeZeroPoint == virtualEffectComponents[(int)actuatorElement.axis])
                 return 0;
 
             const bool kActuatorDirectionIsNegative = std::signbit(virtualEffectComponents[(int)actuatorElement.axis]);
             if ((EAxisDirection::Positive == actuatorElement.direction) && (true == kActuatorDirectionIsNegative))
                 return 0;
+            if ((EAxisDirection::Negative == actuatorElement.direction) && (false == kActuatorDirectionIsNegative))
+                return 0;
 
-            static constexpr double kPhysicalActuatorRange = std::numeric_limits<ForceFeedback::TPhysicalActuatorValue>::max() - std::numeric_limits<ForceFeedback::TPhysicalActuatorValue>::min();
-            static constexpr double kVirtualMagnitudeRange = 0.5 * (ForceFeedback::kEffectForceMagnitudeMaximum - ForceFeedback::kEffectForceMagnitudeMinimum);
-            static constexpr double kScalingFactor = kPhysicalActuatorRange / kVirtualMagnitudeRange;
+            constexpr ForceFeedback::TEffectValue kPhysicalActuatorRange = (ForceFeedback::TEffectValue)(std::numeric_limits<ForceFeedback::TPhysicalActuatorValue>::max() - std::numeric_limits<ForceFeedback::TPhysicalActuatorValue>::min());
+            constexpr ForceFeedback::TEffectValue kVirtualMagnitudeRange = ForceFeedback::kEffectForceMagnitudeMaximum - kVirtualMagnitudeZeroPoint;
+            constexpr double kScalingFactor = (double)kPhysicalActuatorRange / (double)kVirtualMagnitudeRange;
 
-            const long kActuatorStrength = std::abs(std::lround((double)virtualEffectComponents[(int)actuatorElement.axis] * kScalingFactor));
-            if (kActuatorStrength >= std::numeric_limits<ForceFeedback::TPhysicalActuatorValue>::max())
+            const ForceFeedback::TEffectValue kVirtualActuatorStrength = std::abs(virtualEffectComponents[(int)actuatorElement.axis] - kVirtualMagnitudeZeroPoint);
+            const long kPhysicalActuatorStrength = std::lround((double)kVirtualActuatorStrength * kScalingFactor);
+            if (kPhysicalActuatorStrength >= std::numeric_limits<ForceFeedback::TPhysicalActuatorValue>::max())
                 return std::numeric_limits<ForceFeedback::TPhysicalActuatorValue>::max();
 
-            return (ForceFeedback::TPhysicalActuatorValue)kActuatorStrength;
+            return (ForceFeedback::TPhysicalActuatorValue)kPhysicalActuatorStrength;
         }
 
 

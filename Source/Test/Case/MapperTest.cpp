@@ -13,11 +13,14 @@
 #include "ApiWindows.h"
 #include "ControllerTypes.h"
 #include "ElementMapper.h"
+#include "ForceFeedbackTypes.h"
 #include "Mapper.h"
 #include "MockElementMapper.h"
 #include "TestCase.h"
 
 #include <cstdint>
+#include <cstdlib>
+#include <limits>
 #include <memory>
 #include <utility>
 #include <xinput.h>
@@ -26,9 +29,28 @@
 namespace XidiTest
 {
     using namespace ::Xidi::Controller;
+    using ::Xidi::Controller::ForceFeedback::SPhysicalActuatorComponents;
+    using ::Xidi::Controller::ForceFeedback::TOrderedMagnitudeComponents;
+    using ::Xidi::Controller::ForceFeedback::TEffectValue;
+    using ::Xidi::Controller::ForceFeedback::TPhysicalActuatorValue;
 
 
     // -------- INTERNAL FUNCTIONS ----------------------------------------- //
+
+    /// Computes the expected physical actuator value given an input virtual actuator value.
+    /// @param [in] virtualValue Virtual actuator value for which a translation to physical is desired.
+    /// @return Translated physical actuator value.
+    static TPhysicalActuatorValue ForceFeedbackActuatorValueVirtualToPhysical(TEffectValue virtualValue)
+    {
+        constexpr double kScalingFactor = (std::numeric_limits<TPhysicalActuatorValue>::max() / 10000.0);
+        const long kPhysicalValue = std::lround(std::abs(virtualValue * kScalingFactor));
+
+        if (kPhysicalValue >= std::numeric_limits<TPhysicalActuatorValue>::max())
+            return (TPhysicalActuatorValue)std::numeric_limits<TPhysicalActuatorValue>::max();
+
+        return (TPhysicalActuatorValue)kPhysicalValue;
+    }
+    
 
     /// Generates and returns the minimal representation of a virtual controller's capabilities.
     /// @return Minimal capabilities structure.
@@ -341,7 +363,7 @@ namespace XidiTest
             .numAxes = 0,
             .numButtons = 0,
             .hasPov = false
-            });
+        });
 
         const Mapper* mapper = Mapper::GetNull();
 
@@ -478,6 +500,27 @@ namespace XidiTest
                     SElementIdentifier({.type = EElementType::Pov})))
         });
 
+        const SCapabilities kActualCapabilities = mapper.GetCapabilities();
+        TEST_ASSERT(kActualCapabilities == kExpectedCapabilities);
+    }
+
+    // Mapper that is empty except for defining force feedback actuators on an axis.
+    // Virtual controller should show that this axis exists but only for force feedback and not for physical controller element input.
+    TEST_CASE(Mapper_Capabilities_ForceFeedbackOnly)
+    {
+        constexpr EAxis kTestAxis = EAxis::Z;
+        constexpr SCapabilities kExpectedCapabilities = MakeExpectedCapabilities({
+            .axisCapabilities = {{.type = kTestAxis, .isMappedToPhysicalControllerElement = false, .isMappedToForceFeedbackActuator = true}},
+            .numAxes = 1,
+            .numButtons = 0,
+            .hasPov = false
+        });
+
+        constexpr Mapper::SForceFeedbackActuatorMap kTestActuatorMap = {
+            .rightMotor = {.isPresent = true, .axis = kTestAxis, .direction = EAxisDirection::Negative},
+        };
+
+        const Mapper mapper({}, kTestActuatorMap);
         const SCapabilities kActualCapabilities = mapper.GetCapabilities();
         TEST_ASSERT(kActualCapabilities == kExpectedCapabilities);
     }
@@ -848,5 +891,84 @@ namespace XidiTest
             .sThumbRY = kExtremeNegativeInputValue
         });
         TEST_ASSERT(actualState == expectedState);
+    }
+
+
+    // The following sequence of tests, which together comprise the ForceFeedback suite, verify that a mapper correctly produces physical force feedback actuator values given a virtual magnitude vector and an actuator mapping table.
+
+    // Nominal case of some actuators mapped and using axes with the default of both directions.
+    TEST_CASE(Mapper_ForceFeedback_Nominal)
+    {
+        constexpr TOrderedMagnitudeComponents kTestMagnitudeVector = {1111, -2222, 3333, -4444, 5555, -6666};
+
+        constexpr Mapper::SForceFeedbackActuatorMap kTestActuatorMap = {
+            .leftMotor = {.isPresent = true, .axis = EAxis::X, .direction = EAxisDirection::Both},
+            .rightMotor = {.isPresent = true, .axis = EAxis::Y, .direction = EAxisDirection::Both},
+            .leftImpulseTrigger = {.isPresent = false},
+            .rightImpulseTrigger = {.isPresent = true, .axis = EAxis::RotZ, .direction = EAxisDirection::Both}
+        };
+
+        const SPhysicalActuatorComponents kExpectedActuatorComponents = {
+            .leftMotor = ForceFeedbackActuatorValueVirtualToPhysical(kTestMagnitudeVector[(int)EAxis::X]),
+            .rightMotor = ForceFeedbackActuatorValueVirtualToPhysical(kTestMagnitudeVector[(int)EAxis::Y]),
+            .rightImpulseTrigger = ForceFeedbackActuatorValueVirtualToPhysical(kTestMagnitudeVector[(int)EAxis::RotZ])
+        };
+
+        const Mapper mapper({}, kTestActuatorMap);
+
+        const SPhysicalActuatorComponents kActualActuatorComponents = mapper.MapForceFeedbackVirtualToPhysical(kTestMagnitudeVector);
+        TEST_ASSERT(kActualActuatorComponents == kExpectedActuatorComponents);
+    }
+
+    // Slightly more complex case of some actuators mapped and in all cases using only a single axis direction.
+    TEST_CASE(Mapper_ForceFeedback_Unidirectional)
+    {
+        constexpr TOrderedMagnitudeComponents kTestMagnitudeVector = {1111, -2222, 3333, -4444, 5555, -6666};
+
+        constexpr Mapper::SForceFeedbackActuatorMap kTestActuatorMap = {
+            .leftMotor = {.isPresent = true, .axis = EAxis::X, .direction = EAxisDirection::Positive},
+            .rightMotor = {.isPresent = true, .axis = EAxis::Y, .direction = EAxisDirection::Positive},
+            .leftImpulseTrigger = {.isPresent = false},
+            .rightImpulseTrigger = {.isPresent = true, .axis = EAxis::RotZ, .direction = EAxisDirection::Negative}
+        };
+
+        const SPhysicalActuatorComponents kExpectedActuatorComponents = {
+            .leftMotor = ((kTestMagnitudeVector[(int)EAxis::X] > 0) ? ForceFeedbackActuatorValueVirtualToPhysical(kTestMagnitudeVector[(int)EAxis::X]) : (TPhysicalActuatorValue)0),
+            .rightMotor = ((kTestMagnitudeVector[(int)EAxis::Y] > 0) ? ForceFeedbackActuatorValueVirtualToPhysical(kTestMagnitudeVector[(int)EAxis::Y]) : (TPhysicalActuatorValue)0),
+            .rightImpulseTrigger = ((kTestMagnitudeVector[(int)EAxis::RotZ] < 0) ? ForceFeedbackActuatorValueVirtualToPhysical(kTestMagnitudeVector[(int)EAxis::RotZ]) : (TPhysicalActuatorValue)0)
+        };
+
+        const Mapper mapper({}, kTestActuatorMap);
+
+        const SPhysicalActuatorComponents kActualActuatorComponents = mapper.MapForceFeedbackVirtualToPhysical(kTestMagnitudeVector);
+        TEST_ASSERT(kActualActuatorComponents == kExpectedActuatorComponents);
+    }
+
+    // Saturation test in which the input magnitude vector is at extreme values and needs to be saturated.
+    // Only a single force feedback actuator is used for the sake of simplicity.
+    TEST_CASE(Mapper_ForceFeedback_Saturation)
+    {
+        constexpr TOrderedMagnitudeComponents kTestMagnitudeVectors[] = {
+            {ForceFeedback::kEffectForceMagnitudeMinimum},
+            {ForceFeedback::kEffectForceMagnitudeMaximum},
+            {ForceFeedback::kEffectForceMagnitudeMinimum * 200},
+            {ForceFeedback::kEffectForceMagnitudeMaximum * 200}
+        };
+
+        constexpr Mapper::SForceFeedbackActuatorMap kTestActuatorMap = {
+            .leftMotor = {.isPresent = true, .axis = EAxis::X, .direction = EAxisDirection::Both}
+        };
+
+        const Mapper mapper({}, kTestActuatorMap);
+
+        const SPhysicalActuatorComponents kExpectedActuatorComponents = {
+            .leftMotor = std::numeric_limits<TPhysicalActuatorValue>::max()
+        };
+
+        for (const auto& kTestMagnitudeVector : kTestMagnitudeVectors)
+        {
+            const SPhysicalActuatorComponents kActualActuatorComponents = mapper.MapForceFeedbackVirtualToPhysical(kTestMagnitudeVector);
+            TEST_ASSERT(kActualActuatorComponents == kExpectedActuatorComponents);
+        }
     }
 }
