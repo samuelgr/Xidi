@@ -9,9 +9,9 @@
  *   Implementation of a complete virtual controller.
  *****************************************************************************/
 
-#include "ApiWindows.h"
 #include "ControllerTypes.h"
 #include "ForceFeedbackTypes.h"
+#include "ImportApiWinMM.h"
 #include "Mapper.h"
 #include "Message.h"
 #include "PhysicalController.h"
@@ -76,8 +76,7 @@ namespace Xidi
         {
             if (true == eventBuffer.IsEnabled())
             {
-                // DirectInput event buffer timestamps are allowed to overflow every ~50 days.
-                const uint32_t kTimestamp = GetTickCount();
+                const uint32_t kTimestamp = ImportApiWinMM::timeGetTime();
 
                 for (unsigned int i = 0; i < _countof(oldState.axis); ++i)
                 {

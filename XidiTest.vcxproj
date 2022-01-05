@@ -92,7 +92,7 @@
     <ClCompile>
       <WarningLevel>Level3</WarningLevel>
       <SDLCheck>true</SDLCheck>
-      <PreprocessorDefinitions>XIDI_SKIP_CONFIG;DIRECTINPUT_VERSION=0x0800;WIN32;_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>XIDI_SKIP_API;XIDI_SKIP_CONFIG;DIRECTINPUT_VERSION=0x0800;WIN32;_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
       <LanguageStandard>stdcpplatest</LanguageStandard>
       <LanguageStandard_C>stdc17</LanguageStandard_C>
@@ -120,7 +120,7 @@
       <WarningLevel>Level3</WarningLevel>
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <SDLCheck>true</SDLCheck>
-      <PreprocessorDefinitions>XIDI_SKIP_CONFIG;DIRECTINPUT_VERSION=0x0800;WIN32;NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>XIDI_SKIP_API;XIDI_SKIP_CONFIG;DIRECTINPUT_VERSION=0x0800;WIN32;NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
       <LanguageStandard>stdcpplatest</LanguageStandard>
       <LanguageStandard_C>stdc17</LanguageStandard_C>
@@ -149,7 +149,7 @@
     <ClCompile>
       <WarningLevel>Level3</WarningLevel>
       <SDLCheck>true</SDLCheck>
-      <PreprocessorDefinitions>XIDI_SKIP_CONFIG;DIRECTINPUT_VERSION=0x0800;_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>XIDI_SKIP_API;XIDI_SKIP_CONFIG;DIRECTINPUT_VERSION=0x0800;_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
       <LanguageStandard>stdcpplatest</LanguageStandard>
       <LanguageStandard_C>stdc17</LanguageStandard_C>
@@ -178,7 +178,7 @@
       <WarningLevel>Level3</WarningLevel>
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <SDLCheck>true</SDLCheck>
-      <PreprocessorDefinitions>XIDI_SKIP_CONFIG;DIRECTINPUT_VERSION=0x0800;NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>XIDI_SKIP_API;XIDI_SKIP_CONFIG;DIRECTINPUT_VERSION=0x0800;NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
       <LanguageStandard>stdcpplatest</LanguageStandard>
       <LanguageStandard_C>stdc17</LanguageStandard_C>
@@ -210,10 +210,12 @@
     <ClInclude Include="Include\Xidi\ControllerTypes.h" />
     <ClInclude Include="Include\Xidi\DataFormat.h" />
     <ClInclude Include="Include\Xidi\ElementMapper.h" />
+    <ClInclude Include="Include\Xidi\ForceFeedbackDeviceBuffer.h" />
     <ClInclude Include="Include\Xidi\ForceFeedbackEffect.h" />
     <ClInclude Include="Include\Xidi\ForceFeedbackParameters.h" />
     <ClInclude Include="Include\Xidi\ForceFeedbackTypes.h" />
     <ClInclude Include="Include\Xidi\Globals.h" />
+    <ClInclude Include="Include\Xidi\ImportApiWinMM.h" />
     <ClInclude Include="Include\Xidi\Keyboard.h" />
     <ClInclude Include="Include\Xidi\Mapper.h" />
     <ClInclude Include="Include\Xidi\MapperBuilder.h" />
@@ -240,9 +242,11 @@
     <ClCompile Include="Source\ControllerIdentification.cpp" />
     <ClCompile Include="Source\DataFormat.cpp" />
     <ClCompile Include="Source\ElementMapper.cpp" />
+    <ClCompile Include="Source\ForceFeedbackDeviceBuffer.cpp" />
     <ClCompile Include="Source\ForceFeedbackEffect.cpp" />
     <ClCompile Include="Source\ForceFeedbackParameters.cpp" />
     <ClCompile Include="Source\Globals.cpp" />
+    <ClCompile Include="Source\ImportApiWinMM.cpp" />
     <ClCompile Include="Source\Mapper.cpp" />
     <ClCompile Include="Source\MapperBuilder.cpp" />
     <ClCompile Include="Source\MapperDefinitions.cpp" />
