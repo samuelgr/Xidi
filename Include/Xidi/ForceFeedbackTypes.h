@@ -44,6 +44,9 @@ namespace Xidi
                 Count                                                       ///< Sentinel value, total number of enumerators
             };
 
+            /// Type used for identifying effects.
+            typedef uint64_t TEffectIdentifier;
+
             /// Type used for keeping track of time, in milliseconds, as it relates to force feedback effects.
             typedef uint32_t TEffectTimeMs;
 

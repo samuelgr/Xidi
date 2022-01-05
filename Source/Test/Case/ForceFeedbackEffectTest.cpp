@@ -49,6 +49,11 @@ namespace XidiTest
     public:
         // -------- CONCRETE INSTANCE METHODS ------------------------------ //
 
+        std::unique_ptr<Effect> Clone(void) const override
+        {
+            return std::make_unique<TestEffect>(*this);
+        }
+
         TEffectValue ComputeRawMagnitude(TEffectTimeMs rawTime) const override
         {
             return (TEffectValue)rawTime;
@@ -367,5 +372,59 @@ namespace XidiTest
             TOrderedMagnitudeComponents actualOrderedMagnitudeComponents = effect.OrderMagnitudeComponents(kTestMagnitudeComponents);
             TEST_ASSERT(actualOrderedMagnitudeComponents == expectedOrderedMagnitudeComponents);
         }
+    }
+
+    // Verifies that a cloned effect is equivalent to its origin effect.
+    TEST_CASE(ForceFeedbackEffect_Clone)
+    {
+        TestEffect effect;
+        TEST_ASSERT(true == effect.SetAssociatedAxes({.count = 2, .type = {EAxis::Z, EAxis::RotZ}}));
+        TEST_ASSERT(true == effect.SetDuration(123));
+        TEST_ASSERT(true == effect.SetStartDelay(456));
+        TEST_ASSERT(true == effect.SetSamplePeriod(7890));
+        TEST_ASSERT(true == effect.SetGain(5566));
+        TEST_ASSERT(true == effect.SetEnvelope({.attackTime = 1, .attackLevel = 2, .fadeTime = 3, .fadeLevel = 4}));
+
+        std::unique_ptr<Effect> clonedEffect = effect.Clone();
+        TEST_ASSERT(clonedEffect->Identifier() == effect.Identifier());
+        TEST_ASSERT(clonedEffect->CommonParameters() == effect.CommonParameters());
+    }
+
+    // Verifies that two effect objects with the same identifier can successfully complete a parameter synchronization operation.
+    TEST_CASE(ForceFeedbackEffect_SyncParameters_SameIdentifier)
+    {
+        TestEffect effect;
+        std::unique_ptr<Effect> clonedEffect = effect.Clone();
+
+        TEST_ASSERT(true == effect.SetAssociatedAxes({.count = 2, .type = {EAxis::Z, EAxis::RotZ}}));
+        TEST_ASSERT(true == effect.SetDuration(123));
+        TEST_ASSERT(true == effect.SetStartDelay(456));
+        TEST_ASSERT(true == effect.SetSamplePeriod(7890));
+        TEST_ASSERT(true == effect.SetGain(5566));
+        TEST_ASSERT(true == effect.SetEnvelope({.attackTime = 1, .attackLevel = 2, .fadeTime = 3, .fadeLevel = 4}));
+
+        TEST_ASSERT(true == clonedEffect->SyncParametersFrom(effect));
+        TEST_ASSERT(clonedEffect->Identifier() == effect.Identifier());
+        TEST_ASSERT(clonedEffect->CommonParameters() == effect.CommonParameters());
+    }
+
+    // Verifies that two effect objects with different identifiers will not complete a parameter synchronization operation.
+    // The failed synchronization operation should result in no changes to the attempted destination effect's parameters.
+    TEST_CASE(ForceFeedbackEffect_SyncParameters_DifferentIdentifier)
+    {
+        TestEffect effect;
+        std::unique_ptr<Effect> clonedEffect = effect.Clone();
+
+        TestEffect effect2;
+        TEST_ASSERT(true == effect2.SetAssociatedAxes({.count = 2, .type = {EAxis::Z, EAxis::RotZ}}));
+        TEST_ASSERT(true == effect2.SetDuration(123));
+        TEST_ASSERT(true == effect2.SetStartDelay(456));
+        TEST_ASSERT(true == effect2.SetSamplePeriod(7890));
+        TEST_ASSERT(true == effect2.SetGain(5566));
+        TEST_ASSERT(true == effect2.SetEnvelope({.attackTime = 1, .attackLevel = 2, .fadeTime = 3, .fadeLevel = 4}));
+
+        TEST_ASSERT(false == effect.SyncParametersFrom(effect2));
+        TEST_ASSERT(clonedEffect->Identifier() == effect.Identifier());
+        TEST_ASSERT(clonedEffect->CommonParameters() == effect.CommonParameters());
     }
 }

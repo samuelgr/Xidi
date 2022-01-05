@@ -15,7 +15,7 @@
 #include "ForceFeedbackParameters.h"
 #include "ForceFeedbackTypes.h"
 
-#include <cstdint>
+#include <memory>
 #include <optional>
 
 
@@ -32,28 +32,31 @@ namespace Xidi
             private:
                 // -------- INSTANCE VARIABLES ----------------------------- //
 
+                /// Effect identifier.
+                /// Effect objects of the same type can exist in multiple instances based on the idea of an effect object existing both in software and in a physical device buffer.
+                /// In software, effect parameters can change and then they will need to be synchronized with the physical device buffer's version of the effect.
+                /// An effect identifier being the same between two different instances means they are eligible for such synchronization because they are semantically supposed to refer to the same effect.
+                const TEffectIdentifier id;
+
                 /// Holds parameters common to all effects.
                 SCommonParameters commonParameters;
-
-                /// Alternative representation of the gain as a fraction to be multiplied by the final magnitude.
-                /// Stored as a slight performance optimization to avoid a division operation each time magnitude is computed.
-                TEffectValue gainFraction = SCommonParameters::kDefaultGain / kEffectModifierRelativeDenominator;
-
-                /// Alternative representation of the sample period to be used directly by computations.
-                /// Avoids a computation-time conditional by providing a value that can be used without checking for equality with 0.
-                /// The default sample period is 1, meaning update the magnitude at the finest granularity possible.
-                TEffectTimeMs samplePeriodForComputations = (0 == SCommonParameters::kDefaultSamplePeriod) ? 1 : SCommonParameters::kDefaultSamplePeriod;
 
 
             public:
                 // -------- CONSTRUCTION AND DESTRUCTION ------------------- //
 
+                /// Default constructor.
+                Effect(void);
+
                 /// Default destructor.
                 virtual ~Effect(void) = default;
 
 
-            protected:
                 // -------- ABSTRACT INSTANCE METHODS ---------------------- //
+
+                /// Allocates, constructs, and returns a pointer to a copy of this force feedback effect.
+                /// @return Smart pointer to a copy of this force feedback effect.
+                virtual std::unique_ptr<Effect> Clone(void) const = 0;
 
                 /// Internal implementation of calculations for computing the magnitude of a force feedback effect at a given time.
                 /// Subclasses must implement this method and in general should not need any access to the common parameters.
@@ -74,8 +77,17 @@ namespace Xidi
                     return true;
                 }
 
+                /// Synchronizes the type-specific parameters in this effect with those in the supplied source effect.
+                /// This is accomplished by copying the parameter values from the source effect.
+                /// The default implementation does nothing, but subclasses that use type-specific parameters should override this method.
+                /// No error-checking is required of subclasses.
+                /// @param [in] source Source effect object from which type-specific parameters should be synchronized.
+                virtual void SyncTypeSpecificParametersFrom(const Effect& source)
+                {
+                    // Nothing to do here.
+                }
 
-            public:
+
                 // -------- INSTANCE METHODS ------------------------------- //
 
                 /// Applies the envelope parameter to transform the specified sustain level value at a given time.
@@ -90,6 +102,14 @@ namespace Xidi
                 inline void ClearEnvelope(void)
                 {
                     commonParameters.envelope = std::nullopt;
+                }
+
+                /// Retrieves and returns a read-only reference to the entire common parameters record associated with this effect.
+                /// Intended to be used by tests.
+                /// @return Read-only reference to common parameters data structure.
+                inline const SCommonParameters& CommonParameters(void)
+                {
+                    return commonParameters;
                 }
 
                 /// Computes the magnitude of the force that this effect should generate at the given time.
@@ -124,58 +144,11 @@ namespace Xidi
                     return commonParameters.direction;
                 }
 
-                /// Checks if there are valid axes associated with this force feedback effect.
-                /// @return `true` if so, `false` otherwise.
-                inline bool HasAssociatedAxes(void) const
+                /// Retrieves and returns this effect's associated axes as a read-only reference.
+                /// @return Associated axis data structure, if it exists.
+                inline const std::optional<SAssociatedAxes>& GetAssociatedAxes(void) const
                 {
-                    return commonParameters.associatedAxes.has_value();
-                }
-
-                /// Checks if the direction and associated axes are complete and consistent.
-                /// @return `true` if so, `false` otherwise.
-                inline bool HasCompleteDirection(void) const
-                {
-                    return (HasAssociatedAxes() && HasDirection() && (commonParameters.associatedAxes.value().count >= commonParameters.direction.GetNumAxes()));
-                }
-
-                /// Checks if the direction vector associated with this force feedback effect has a direction set.
-                /// @return `true` if so, `false` otherwise.
-                inline bool HasDirection(void) const
-                {
-                    return commonParameters.direction.HasDirection();
-                }
-
-                /// Checks if this force feedback effect has a duration set.
-                /// @return `true` if so, `false` otherwise.
-                inline bool HasDuration(void) const
-                {
-                    return commonParameters.duration.has_value();
-                }
-
-                /// Initializes the axes associated with this force feedback effect to a simple default of the X axis.
-                /// @return `true` if the associated axis initialization operation succeeded, `false` otherwise.
-                inline bool InitializeDefaultAssociatedAxes(void)
-                {
-                    static constexpr SAssociatedAxes kDefaultAssociatedAxes = {.count = 1, .type = {EAxis::X}};
-                    return SetAssociatedAxes(kDefaultAssociatedAxes);
-                }
-
-                /// Initializes the direction vector associated with this force feedback effect to a simple default of one axis in the positive direction.
-                /// The Cartesian coordinate system is used.
-                /// Primarily useful for testing.
-                /// @return `true` if the direction initialization operation succeeded, `false` otherwise.
-                inline bool InitializeDefaultDirection(void)
-                {
-                    static const TEffectValue kDefaultCartesianCoordinates[] = {1};
-                    return commonParameters.direction.SetDirectionUsingCartesian(kDefaultCartesianCoordinates, _countof(kDefaultCartesianCoordinates));
-                }
-
-                /// Verifies that all required parameters have been specified for this effect.
-                /// If this method returns `true` then the effect is ready to be played.
-                /// @return `true` if all parameters have been specified for this effect, `false` otherwise.
-                inline bool IsCompletelyDefined(void) const
-                {
-                    return (HasCompleteDirection() && HasDuration() && IsTypeSpecificEffectCompletelyDefined());
+                    return commonParameters.associatedAxes;
                 }
 
                 /// Retrieves and returns this effect's duration parameter.
@@ -219,6 +192,67 @@ namespace Xidi
                 inline TEffectTimeMs GetTotalTime(void) const
                 {
                     return commonParameters.duration.value_or(0) + commonParameters.startDelay;
+                }
+
+                /// Checks if there are valid axes associated with this force feedback effect.
+                /// @return `true` if so, `false` otherwise.
+                inline bool HasAssociatedAxes(void) const
+                {
+                    return commonParameters.associatedAxes.has_value();
+                }
+
+                /// Checks if the direction and associated axes are complete and consistent.
+                /// @return `true` if so, `false` otherwise.
+                inline bool HasCompleteDirection(void) const
+                {
+                    return (HasAssociatedAxes() && HasDirection() && (commonParameters.associatedAxes.value().count >= commonParameters.direction.GetNumAxes()));
+                }
+
+                /// Checks if the direction vector associated with this force feedback effect has a direction set.
+                /// @return `true` if so, `false` otherwise.
+                inline bool HasDirection(void) const
+                {
+                    return commonParameters.direction.HasDirection();
+                }
+
+                /// Checks if this force feedback effect has a duration set.
+                /// @return `true` if so, `false` otherwise.
+                inline bool HasDuration(void) const
+                {
+                    return commonParameters.duration.has_value();
+                }
+
+                /// Retrieves and returns this effect's identifier.
+                /// @return This effect's identifier.
+                inline TEffectIdentifier Identifier(void) const
+                {
+                    return id;
+                }
+                
+                /// Initializes the axes associated with this force feedback effect to a simple default of the X axis.
+                /// @return `true` if the associated axis initialization operation succeeded, `false` otherwise.
+                inline bool InitializeDefaultAssociatedAxes(void)
+                {
+                    static constexpr SAssociatedAxes kDefaultAssociatedAxes = {.count = 1, .type = {EAxis::X}};
+                    return SetAssociatedAxes(kDefaultAssociatedAxes);
+                }
+
+                /// Initializes the direction vector associated with this force feedback effect to a simple default of one axis in the positive direction.
+                /// The Cartesian coordinate system is used.
+                /// Primarily useful for testing.
+                /// @return `true` if the direction initialization operation succeeded, `false` otherwise.
+                inline bool InitializeDefaultDirection(void)
+                {
+                    static const TEffectValue kDefaultCartesianCoordinates[] = {1};
+                    return commonParameters.direction.SetDirectionUsingCartesian(kDefaultCartesianCoordinates, _countof(kDefaultCartesianCoordinates));
+                }
+
+                /// Verifies that all required parameters have been specified for this effect.
+                /// If this method returns `true` then the effect is ready to be played.
+                /// @return `true` if all parameters have been specified for this effect, `false` otherwise.
+                inline bool IsCompletelyDefined(void) const
+                {
+                    return (HasCompleteDirection() && HasDuration() && IsTypeSpecificEffectCompletelyDefined());
                 }
 
                 /// Orders the elements in a magnitude component vector using a globally-understood ordering scheme for the components.
@@ -282,13 +316,7 @@ namespace Xidi
                 /// @return `true` if successful, `false` otherwise. This method will fail if the new parameter value is invalid.
                 inline bool SetSamplePeriod(TEffectTimeMs newValue)
                 {
-                    commonParameters.samplePeriod = newValue;
-
-                    if (0 == newValue)
-                        samplePeriodForComputations = 1;
-                    else
-                        samplePeriodForComputations = newValue;
-
+                    commonParameters.SetSamplePeriod(newValue);
                     return true;
                 }
 
@@ -299,8 +327,7 @@ namespace Xidi
                 {
                     if ((newValue >= kEffectModifierMinimum) && (newValue <= kEffectModifierMaximum))
                     {
-                        commonParameters.gain = newValue;
-                        gainFraction = (newValue / kEffectModifierRelativeDenominator);
+                        commonParameters.SetGain(newValue);
                         return true;
                     }
 
@@ -321,6 +348,22 @@ namespace Xidi
                     commonParameters.envelope = newValue;
                     return true;
                 }
+
+                /// Synchronizes the parameters in this effect with those in the supplied source effect by copying the parameter values from the source effect.
+                /// This is only possible if this effect and the other effect share the same identifier.
+                /// @param [in] source Source effect object from which parameters should be synchronized.
+                /// @return `true` if successful, `false` otherwise. This method will fail if the source effect's identifier does not match that of this effect.
+                inline bool SyncParametersFrom(const Effect& other)
+                {
+                    if (other.id == id)
+                    {
+                        commonParameters = other.commonParameters;
+                        SyncTypeSpecificParametersFrom(other);
+                        return true;
+                    }
+
+                    return false;
+                }
             };
 
             /// Intermediate abstract class for all effects that define their own type-specific parameters.
@@ -336,7 +379,7 @@ namespace Xidi
                 std::optional<TypeSpecificParameterType> typeSpecificParameters = std::nullopt;
 
 
-            protected:
+            public:
                 // -------- CONCRETE INSTANCE METHODS ---------------------- //
 
                 /// Validates that the contents of the supplied type-specific parameters are valid.
@@ -357,8 +400,15 @@ namespace Xidi
                     return typeSpecificParameters.has_value();
                 }
 
+                /// Default implementation of synchronizing type-specific parameters from the supplied source.
+                /// No error checking is required here because the superclass takes care of that.
+                /// @param [in] source Source effect object from which type-specific parameters should be synchronized.
+                void SyncTypeSpecificParametersFrom(const Effect& source) override
+                {
+                    typeSpecificParameters = ((const EffectWithTypeSpecificParameters&)source).typeSpecificParameters;
+                }
 
-            public:
+
                 // -------- INSTANCE METHODS ------------------------------- //
 
                 /// Clears this effect's type-specific parameters.
@@ -392,16 +442,24 @@ namespace Xidi
             /// Holds all type-specific parameters for constant force effects.
             struct SConstantForceParameters
             {
-                TEffectValue magnitude;                                         ///< Magnitude of the constant force, which must fall within the allowed magnitude range.
+                /// Magnitude of the constant force, which must fall within the allowed magnitude range.
+                TEffectValue magnitude;
+
+                /// Simple check for equality.
+                /// Primarily useful during testing.
+                /// @param [in] other Object with which to compare.
+                /// @return `true` if this object is equal to the other object, `false` otherwise.
+                constexpr inline bool operator==(const SConstantForceParameters& other) const = default;
             };
 
             /// Implements a force feedback effect based on a force of constant magnitude.
             class ConstantForceEffect : public EffectWithTypeSpecificParameters<SConstantForceParameters>
             {
-            protected:
+            public:
                 // -------- CONCRETE INSTANCE METHODS ---------------------- //
 
                 bool AreTypeSpecificParametersValid(const SConstantForceParameters& newTypeSpecificParameters) const override;
+                std::unique_ptr<Effect> Clone(void) const override;
                 TEffectValue ComputeRawMagnitude(TEffectTimeMs rawTime) const override;
             };
         }

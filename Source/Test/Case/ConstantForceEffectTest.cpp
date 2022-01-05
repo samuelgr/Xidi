@@ -187,4 +187,38 @@ namespace XidiTest
         TEST_ASSERT(true == effect.InitializeDefaultAssociatedAxes());
         TEST_ASSERT(true == effect.IsCompletelyDefined());
     }
+
+    // Verifies that a cloned effect is equivalent to its origin effect.
+    TEST_CASE(ConstantForceEffect_Clone)
+    {
+        ConstantForceEffect effect;
+        TEST_ASSERT(true == effect.SetEnvelope({.attackTime = 100, .attackLevel = 200, .fadeTime = 300, .fadeLevel = 400}));
+        TEST_ASSERT(true == effect.SetTypeSpecificParameters({.magnitude = 5678}));
+
+        std::unique_ptr<Effect> clonedEffect = effect.Clone();
+        ConstantForceEffect* clonedTypedEffect = dynamic_cast<ConstantForceEffect*>(clonedEffect.get());
+        TEST_ASSERT(nullptr != clonedTypedEffect);
+
+        TEST_ASSERT(clonedTypedEffect->Identifier() == effect.Identifier());
+        TEST_ASSERT(clonedTypedEffect->CommonParameters() == effect.CommonParameters());
+        TEST_ASSERT(clonedTypedEffect->GetTypeSpecificParameters() == effect.GetTypeSpecificParameters());
+    }
+
+    // Verifies that two effect objects with the same identifier can successfully complete a parameter synchronization operation.
+    TEST_CASE(ForceFeedbackEffect_SyncParameters)
+    {
+        ConstantForceEffect effect;
+        std::unique_ptr<Effect> clonedEffect = effect.Clone();
+
+        TEST_ASSERT(true == effect.SetEnvelope({.attackTime = 100, .attackLevel = 200, .fadeTime = 300, .fadeLevel = 400}));
+        TEST_ASSERT(true == effect.SetTypeSpecificParameters({.magnitude = 5678}));
+
+        TEST_ASSERT(true == clonedEffect->SyncParametersFrom(effect));
+        TEST_ASSERT(clonedEffect->Identifier() == effect.Identifier());
+        TEST_ASSERT(clonedEffect->CommonParameters() == effect.CommonParameters());
+
+        ConstantForceEffect* clonedTypedEffect = dynamic_cast<ConstantForceEffect*>(clonedEffect.get());
+        TEST_ASSERT(nullptr != clonedTypedEffect);
+        TEST_ASSERT(clonedTypedEffect->GetTypeSpecificParameters() == effect.GetTypeSpecificParameters());
+    }
 }

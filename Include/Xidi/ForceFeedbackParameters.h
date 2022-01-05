@@ -183,6 +183,12 @@ namespace Xidi
             {
                 int count = 0;                                              ///< Number of associated axes.
                 std::array<EAxis, kEffectAxesMaximumNumber> type = {};      ///< Axis type, one element per axis.
+
+                /// Simple check for equality.
+                /// Primarily useful during testing.
+                /// @param [in] other Object with which to compare.
+                /// @return `true` if this object is equal to the other object, `false` otherwise.
+                constexpr inline bool operator==(const SAssociatedAxes& other) const = default;
             };
 
             /// Structure for holding parameters common to all force feedback effects.
@@ -211,9 +217,17 @@ namespace Xidi
                 /// A value of 0 means to use the default sample period.
                 TEffectTimeMs samplePeriod = kDefaultSamplePeriod;
 
+                /// Alternative representation of the sample period to be used directly by computations.
+                /// Avoids a computation-time conditional by providing a value that can be used without checking for equality with 0.
+                TEffectTimeMs samplePeriodForComputations = (0 == kDefaultSamplePeriod) ? 1 : kDefaultSamplePeriod;
+
                 /// Overall adjustment to the magnitude of a force feedback effect.
                 /// This modifier acts as a per-effect "volume control" knob.
                 TEffectValue gain = kDefaultGain;
+
+                /// Alternative representation of the gain as a fraction to be multiplied by the final magnitude.
+                /// Stored as a slight performance optimization to avoid a division operation each time magnitude is computed.
+                TEffectValue gainFraction = kDefaultGain / kEffectModifierRelativeDenominator;
 
                 /// Optional envelope to be applied as a transformation to this effect.
                 /// If not present then no envelope is applied when this effect's force magnitude is computed.
@@ -232,6 +246,27 @@ namespace Xidi
                 /// @param [in] other Object with which to compare.
                 /// @return `true` if this object is equal to the other object, `false` otherwise.
                 constexpr inline bool operator==(const SCommonParameters& other) const = default;
+
+                /// Updates the sample period parameter and ensures both representations are consistent.
+                /// A value of 0 means to use the default sample period, which for internal calculation purposes is equivalent to passing in a value of 1.
+                /// @param [in] newSamplePeriod New sample period value.
+                inline void SetSamplePeriod(TEffectTimeMs newSamplePeriod)
+                {
+                    samplePeriod = newSamplePeriod;
+
+                    if (0 == newSamplePeriod)
+                        samplePeriodForComputations = 1;
+                    else
+                        samplePeriodForComputations = newSamplePeriod;
+                }
+
+                /// Updates the gain parameter and ensures both representations are consistent.
+                /// @param [in] newGain New gain value.
+                inline void SetGain(TEffectValue newGain)
+                {
+                    gain = newGain;
+                    gainFraction = (newGain / kEffectModifierRelativeDenominator);
+                }
             };
         }
     }

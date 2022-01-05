@@ -11,6 +11,8 @@
 
 #include "ForceFeedbackEffect.h"
 
+#include <atomic>
+#include <memory>
 #include <optional>
 
 
@@ -20,12 +22,34 @@ namespace Xidi
     {
         namespace ForceFeedback
         {
+            // -------- INTERNAL VARIABLES --------------------------------- //
+
+            /// Holds the next available value for a force feedback effect identifier.
+            static std::atomic<TEffectIdentifier> nextEffectIdentifier = 0;
+
+
+            // -------- CONSTRUCTION AND DESTRUCTION ----------------------- //
+            // See "ForceFeedbackEffect.h" for documentation.
+
+            Effect::Effect(void) : id(nextEffectIdentifier++), commonParameters()
+            {
+                // Nothing to do here.
+            }
+
+
             // -------- CONCRETE INSTANCE METHODS -------------------------- //
             // See "ForceFeedbackEffect.h" for documentation.
 
             bool ConstantForceEffect::AreTypeSpecificParametersValid(const SConstantForceParameters& newTypeSpecificParameters) const
             {
                 return ((newTypeSpecificParameters.magnitude >= kEffectForceMagnitudeMinimum) && (newTypeSpecificParameters.magnitude <= kEffectForceMagnitudeMaximum));
+            }
+
+            // --------
+
+            std::unique_ptr<Effect> ConstantForceEffect::Clone(void) const
+            {
+                return std::make_unique<ConstantForceEffect>(*this);
             }
 
             // --------
@@ -75,8 +99,8 @@ namespace Xidi
                     return kEffectForceMagnitudeZero;
 
                 const TEffectTimeMs playbackTime = time - commonParameters.startDelay;
-                const TEffectTimeMs rawTime = playbackTime - (playbackTime % samplePeriodForComputations);
-                return ComputeRawMagnitude(rawTime) * gainFraction;
+                const TEffectTimeMs rawTime = playbackTime - (playbackTime % commonParameters.samplePeriodForComputations);
+                return ComputeRawMagnitude(rawTime) * commonParameters.gainFraction;
             }
         }
     }
