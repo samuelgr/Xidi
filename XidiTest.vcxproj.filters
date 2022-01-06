@@ -105,7 +105,7 @@
     <ClInclude Include="Include\Xidi\ForceFeedbackTypes.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="Include\Xidi\ForceFeedbackDeviceBuffer.h">
+    <ClInclude Include="Include\Xidi\ForceFeedbackDevice.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="Include\Xidi\ImportApiWinMM.h">
@@ -239,13 +239,13 @@
     <ClCompile Include="Source\VirtualDirectInputEffect.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="Source\ForceFeedbackDeviceBuffer.cpp">
+    <ClCompile Include="Source\ForceFeedbackDevice.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="Source\ImportApiWinMM.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="Source\Test\Case\ForceFeedbackDeviceBufferTest.cpp">
+    <ClCompile Include="Source\Test\Case\ForceFeedbackDeviceTest.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

@@ -12,7 +12,7 @@
 #pragma once
 
 #include "ControllerTypes.h"
-#include "ForceFeedbackDeviceBuffer.h"
+#include "ForceFeedbackDevice.h"
 #include "ForceFeedbackTypes.h"
 #include "Mapper.h"
 #include "StateChangeEventBuffer.h"
@@ -308,7 +308,7 @@ namespace Xidi
             /// Pointer to the physical device force feedback buffer.
             /// Valid only if this virtual controller object is registered for force feedback, `nullptr` all other times.
             /// Only one virtual controller can ever be registered with a specific physical controller for force feedback.
-            ForceFeedback::DeviceBuffer* physicalControllerForceFeedbackBuffer;
+            ForceFeedback::Device* physicalControllerForceFeedbackBuffer;
 
 
         public:
@@ -363,7 +363,7 @@ namespace Xidi
 
             /// Allows access to the force feedback device buffer on the physical controller associated with this virtual controller.
             /// @return Pointer to the buffer if this controller is registered with the physical controller, `nullptr` otherwise.
-            inline ForceFeedback::DeviceBuffer* ForceFeedbackGetDeviceBuffer(void) const
+            inline ForceFeedback::Device* ForceFeedbackGetDevice(void) const
             {
                 return physicalControllerForceFeedbackBuffer;
             }

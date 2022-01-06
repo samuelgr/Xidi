@@ -5,12 +5,12 @@
  * Authored by Samuel Grossman
  * Copyright (c) 2016-2021
  *************************************************************************//**
- * @file ForceFeedbackDeviceBuffer.cpp
+ * @file ForceFeedbackBuffer.cpp
  *   Implementation of functionality related to emulating force feedback
- *   effect buffers on physical controller devices.
+ *   systems on physical controller devices.
  *****************************************************************************/
 
-#include "ForceFeedbackDeviceBuffer.h"
+#include "ForceFeedbackDevice.h"
 #include "ForceFeedbackEffect.h"
 #include "ForceFeedbackTypes.h"
 #include "ImportApiWinMM.h"
@@ -38,25 +38,25 @@ namespace Xidi
 
 
             // -------- CONSTRUCTION AND DESTRUCTION ----------------------- //
-            // See "ForceFeedbackDeviceBuffer.h" for documentation.
+            // See "ForceFeedbackDevice.h" for documentation.
 
-            DeviceBuffer::DeviceBuffer(void) : DeviceBuffer(ImportApiWinMM::timeGetTime())
+            Device::Device(void) : Device(ImportApiWinMM::timeGetTime())
             {
                 // Nothing to do here.
             }
 
             // --------
 
-            DeviceBuffer::DeviceBuffer(TEffectTimeMs timestampBase) : bufferMutex(), readyEffects(), playingEffects(), stateEffectsAreMuted(), stateEffectsArePaused(), timestampBase(timestampBase), timestampRelativeLastPlay()
+            Device::Device(TEffectTimeMs timestampBase) : bufferMutex(), readyEffects(), playingEffects(), stateEffectsAreMuted(), stateEffectsArePaused(), timestampBase(timestampBase), timestampRelativeLastPlay()
             {
                 // Nothing to do here.
             }
 
 
             // -------- INSTANCE METHODS ----------------------------------- //
-            // See "ForceFeedbackDeviceBuffer.h" for documentation.
+            // See "ForceFeedbackDevice.h" for documentation.
 
-            bool DeviceBuffer::AddOrUpdateEffect(const Effect& effect)
+            bool Device::AddOrUpdateEffect(const Effect& effect)
             {
                 std::unique_lock lock(bufferMutex);
 
@@ -78,7 +78,7 @@ namespace Xidi
 
             // --------
 
-            bool DeviceBuffer::IsEffectPlaying(TEffectIdentifier id)
+            bool Device::IsEffectPlaying(TEffectIdentifier id)
             {
                 std::shared_lock lock(bufferMutex);
 
@@ -92,7 +92,7 @@ namespace Xidi
 
             // --------
 
-            TOrderedMagnitudeComponents DeviceBuffer::PlayEffects(std::optional<TEffectTimeMs> timestamp)
+            TOrderedMagnitudeComponents Device::PlayEffects(std::optional<TEffectTimeMs> timestamp)
             {
                 std::unique_lock lock(bufferMutex);
 
@@ -158,7 +158,7 @@ namespace Xidi
             
             // --------
 
-            bool DeviceBuffer::StartEffect(TEffectIdentifier id, unsigned int numIterations, std::optional<TEffectTimeMs> timestamp)
+            bool Device::StartEffect(TEffectIdentifier id, unsigned int numIterations, std::optional<TEffectTimeMs> timestamp)
             {
                 if (0 == numIterations)
                     return true;
@@ -177,7 +177,7 @@ namespace Xidi
 
             // --------
 
-            void DeviceBuffer::StopAllEffects(void)
+            void Device::StopAllEffects(void)
             {
                 std::unique_lock lock(bufferMutex);
 
@@ -187,7 +187,7 @@ namespace Xidi
 
             // --------
 
-            bool DeviceBuffer::StopEffect(TEffectIdentifier id)
+            bool Device::StopEffect(TEffectIdentifier id)
             {
                 std::unique_lock lock(bufferMutex);
 
@@ -200,7 +200,7 @@ namespace Xidi
 
             // --------
 
-            bool DeviceBuffer::RemoveEffect(TEffectIdentifier id)
+            bool Device::RemoveEffect(TEffectIdentifier id)
             {
                 std::unique_lock lock(bufferMutex);
 

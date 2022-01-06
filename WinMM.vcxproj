@@ -29,7 +29,7 @@
     <ClInclude Include="Include\Xidi\DataFormat.h" />
     <ClInclude Include="Include\Xidi\ElementMapper.h" />
     <ClInclude Include="Include\Xidi\ExportApiWinMM.h" />
-    <ClInclude Include="Include\Xidi\ForceFeedbackDeviceBuffer.h" />
+    <ClInclude Include="Include\Xidi\ForceFeedbackDevice.h" />
     <ClInclude Include="Include\Xidi\ForceFeedbackEffect.h" />
     <ClInclude Include="Include\Xidi\ForceFeedbackParameters.h" />
     <ClInclude Include="Include\Xidi\ForceFeedbackTypes.h" />
@@ -61,7 +61,7 @@
     <ClCompile Include="Source\DataFormat.cpp" />
     <ClCompile Include="Source\ElementMapper.cpp" />
     <ClCompile Include="Source\ExportApiWinMM.cpp" />
-    <ClCompile Include="Source\ForceFeedbackDeviceBuffer.cpp" />
+    <ClCompile Include="Source\ForceFeedbackDevice.cpp" />
     <ClCompile Include="Source\ForceFeedbackEffect.cpp" />
     <ClCompile Include="Source\ForceFeedbackParameters.cpp" />
     <ClCompile Include="Source\Globals.cpp" />

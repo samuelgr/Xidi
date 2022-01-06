@@ -5,9 +5,9 @@
  * Authored by Samuel Grossman
  * Copyright (c) 2016-2021
  *************************************************************************//**
- * @file ForceFeedbackDeviceBuffer.h
- *   Interface declaration for objects that model force feedback effect
- *   buffers on physical controller devices.
+ * @file ForceFeedbackDevice.h
+ *   Interface declaration for objects that model the force feedback systems
+ *   on physical controller devices.
  *****************************************************************************/
 
 #pragma once
@@ -26,9 +26,10 @@ namespace Xidi
     {
         namespace ForceFeedback
         {
-            /// Emulates a hardware buffer that would normally hold force feedback effects on a physical device.
+            /// Emulates a force feedback system that would normally reside on a physical device.
+            /// Includes buffers for storage and all effect playback logic.
             /// Concurrency-safe, but not safe to be constructed during dynamic initialization.
-            class DeviceBuffer
+            class Device
             {
             public:
                 // -------- CONSTANTS -------------------------------------- //
@@ -79,11 +80,11 @@ namespace Xidi
                 // -------- CONSTRUCTION AND DESTRUCTION ------------------- //
 
                 /// Default constructor.
-                DeviceBuffer(void);
+                Device(void);
 
                 /// Initialization constructor.
                 /// Allows a base timestamp to be provided, which should only ever be done during testing.
-                DeviceBuffer(TEffectTimeMs timestampBase);
+                Device(TEffectTimeMs timestampBase);
 
 
                 // -------- INSTANCE METHODS ------------------------------- //

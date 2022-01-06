@@ -210,7 +210,7 @@
     <ClInclude Include="Include\Xidi\ControllerTypes.h" />
     <ClInclude Include="Include\Xidi\DataFormat.h" />
     <ClInclude Include="Include\Xidi\ElementMapper.h" />
-    <ClInclude Include="Include\Xidi\ForceFeedbackDeviceBuffer.h" />
+    <ClInclude Include="Include\Xidi\ForceFeedbackDevice.h" />
     <ClInclude Include="Include\Xidi\ForceFeedbackEffect.h" />
     <ClInclude Include="Include\Xidi\ForceFeedbackParameters.h" />
     <ClInclude Include="Include\Xidi\ForceFeedbackTypes.h" />
@@ -243,7 +243,7 @@
     <ClCompile Include="Source\ControllerIdentification.cpp" />
     <ClCompile Include="Source\DataFormat.cpp" />
     <ClCompile Include="Source\ElementMapper.cpp" />
-    <ClCompile Include="Source\ForceFeedbackDeviceBuffer.cpp" />
+    <ClCompile Include="Source\ForceFeedbackDevice.cpp" />
     <ClCompile Include="Source\ForceFeedbackEffect.cpp" />
     <ClCompile Include="Source\ForceFeedbackParameters.cpp" />
     <ClCompile Include="Source\Globals.cpp" />
@@ -262,7 +262,7 @@
     <ClCompile Include="Source\Test\Case\ConstantForceEffectTest.cpp" />
     <ClCompile Include="Source\Test\Case\DataFormatTest.cpp" />
     <ClCompile Include="Source\Test\Case\DigitalAxisMapperTest.cpp" />
-    <ClCompile Include="Source\Test\Case\ForceFeedbackDeviceBufferTest.cpp" />
+    <ClCompile Include="Source\Test\Case\ForceFeedbackDeviceTest.cpp" />
     <ClCompile Include="Source\Test\Case\ForceFeedbackDirectionVectorTest.cpp" />
     <ClCompile Include="Source\Test\Case\ForceFeedbackEffectTest.cpp" />
     <ClCompile Include="Source\Test\Case\InvertMapperTest.cpp" />

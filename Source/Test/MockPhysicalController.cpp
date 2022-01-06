@@ -11,7 +11,7 @@
  *****************************************************************************/
 
 #include "ApiWindows.h"
-#include "ForceFeedbackDeviceBuffer.h"
+#include "ForceFeedbackDevice.h"
 #include "MockPhysicalController.h"
 #include "PhysicalController.h"
 #include "TestCase.h"
@@ -130,7 +130,7 @@ namespace Xidi
 
         // --------
 
-        ForceFeedback::DeviceBuffer* PhysicalControllerForceFeedbackRegister(TControllerIdentifier controllerIdentifier, const VirtualController* virtualController)
+        ForceFeedback::Device* PhysicalControllerForceFeedbackRegister(TControllerIdentifier controllerIdentifier, const VirtualController* virtualController)
         {
             return nullptr;
         }

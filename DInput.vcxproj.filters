@@ -108,7 +108,7 @@
     <ClInclude Include="Include\Xidi\ValueOrError.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="Include\Xidi\ForceFeedbackDeviceBuffer.h">
+    <ClInclude Include="Include\Xidi\ForceFeedbackDevice.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="Include\Xidi\ForceFeedbackEffect.h">
@@ -203,7 +203,7 @@
     <ClCompile Include="Source\MapperParser.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="Source\ForceFeedbackDeviceBuffer.cpp">
+    <ClCompile Include="Source\ForceFeedbackDevice.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="Source\ForceFeedbackEffect.cpp">

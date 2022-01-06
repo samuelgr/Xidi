@@ -12,7 +12,7 @@
 
 #include "ApiWindows.h"
 #include "ControllerTypes.h"
-#include "ForceFeedbackDeviceBuffer.h"
+#include "ForceFeedbackDevice.h"
 #include "ImportApiWinMM.h"
 #include "Message.h"
 #include "PhysicalController.h"
@@ -48,7 +48,7 @@ namespace Xidi
 
         /// Per-controller force feedback device buffer objects.
         /// These objects are not safe for dynamic initialization, so they are initialized later by pointer.
-        static ForceFeedback::DeviceBuffer* physicalControllerForceFeedbackBuffer;
+        static ForceFeedback::Device* physicalControllerForceFeedbackBuffer;
 
         /// Pointers to the virtual controller objects registered for force feedback with each physical controller.
         static const VirtualController* physicalControllerForceFeedbackRegistration[kPhysicalControllerCount];
@@ -204,7 +204,7 @@ namespace Xidi
                     Message::OutputFormatted(Message::ESeverity::Info, L"Initialized the physical controller state polling thread. Desired polling period is %u ms.", kPhysicalPollingPeriodMilliseconds);
 
                     // Allocate the force feedback device buffers, then create and start the force feedback threads.
-                    physicalControllerForceFeedbackBuffer = new ForceFeedback::DeviceBuffer[kPhysicalControllerCount];
+                    physicalControllerForceFeedbackBuffer = new ForceFeedback::Device[kPhysicalControllerCount];
                     for (auto controllerIdentifier = 0; controllerIdentifier < _countof(physicalControllerForceFeedbackThread); ++controllerIdentifier)
                     {
                         physicalControllerForceFeedbackThread[controllerIdentifier] = std::thread(ForceFeedbackActuateEffects, controllerIdentifier);
@@ -238,7 +238,7 @@ namespace Xidi
 
         // --------
 
-        ForceFeedback::DeviceBuffer* PhysicalControllerForceFeedbackRegister(TControllerIdentifier controllerIdentifier, const VirtualController* virtualController)
+        ForceFeedback::Device* PhysicalControllerForceFeedbackRegister(TControllerIdentifier controllerIdentifier, const VirtualController* virtualController)
         {
             Initialize();
 

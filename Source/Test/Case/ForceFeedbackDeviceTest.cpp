@@ -5,11 +5,11 @@
  * Authored by Samuel Grossman
  * Copyright (c) 2016-2021
  *************************************************************************//**
- * @file ForceFeedbackDeviceBufferTest.cpp
- *   Unit tests for force feedback device buffer objects.
+ * @file ForceFeedbackDeviceTest.cpp
+ *   Unit tests for force feedback device objects.
  *****************************************************************************/
 
-#include "ForceFeedbackDeviceBuffer.h"
+#include "ForceFeedbackDevice.h"
 #include "ForceFeedbackTypes.h"
 #include "MockForceFeedbackEffect.h"
 #include "TestCase.h"
@@ -36,9 +36,9 @@ namespace XidiTest
     /// A base timestamp is always supplied to make tests completely deterministic.
     /// @param [in] timestampBase Base timestamp to use instead of the default.
     /// @return Properly-initialized device buffer object.
-    static DeviceBuffer MakeTestDeviceBuffer(TEffectTimeMs timestampBase = kDefaultTimestampBase)
+    static Device MakeTestDevice(TEffectTimeMs timestampBase = kDefaultTimestampBase)
     {
-        return DeviceBuffer(timestampBase);
+        return Device(timestampBase);
     }
     
     /// Initializes a mock effect object using defaults for mandatory parameters.
@@ -63,203 +63,203 @@ namespace XidiTest
     // Simple situation in which a single effect exists for playback.
     // Verifies that the correct magnitude vector is retrieved at each time.
     // At the end the effect is removed, which is expected to leave the device buffer empty.
-    TEST_CASE(ForceFeedbackDeviceBuffer_SingleEffect_Nominal)
+    TEST_CASE(ForceFeedbackDevice_SingleEffect_Nominal)
     {
         constexpr TEffectTimeMs kTestEffectDuration = 100;
 
-        DeviceBuffer deviceBuffer = MakeTestDeviceBuffer();
+        Device Device = MakeTestDevice();
 
         MockEffect effect = MakeTestEffect(kTestEffectDuration);
 
-        TEST_ASSERT(true == deviceBuffer.AddOrUpdateEffect(effect));
-        TEST_ASSERT(true == deviceBuffer.IsEffectOnDevice(effect.Identifier()));
-        TEST_ASSERT(false == deviceBuffer.IsEffectPlaying(effect.Identifier()));
+        TEST_ASSERT(true == Device.AddOrUpdateEffect(effect));
+        TEST_ASSERT(true == Device.IsEffectOnDevice(effect.Identifier()));
+        TEST_ASSERT(false == Device.IsEffectPlaying(effect.Identifier()));
 
-        TEST_ASSERT(true == deviceBuffer.StartEffect(effect.Identifier(), 1, kDefaultTimestampBase));
+        TEST_ASSERT(true == Device.StartEffect(effect.Identifier(), 1, kDefaultTimestampBase));
 
         // Final iteration is one past the playback duration. Effect should not be playing once the loop finishes.
         for (TEffectTimeMs t = 0; t <= kTestEffectDuration; ++t)
         {
-            TEST_ASSERT(true == deviceBuffer.IsEffectOnDevice(effect.Identifier()));
-            TEST_ASSERT(true == deviceBuffer.IsEffectPlaying(effect.Identifier()));
+            TEST_ASSERT(true == Device.IsEffectOnDevice(effect.Identifier()));
+            TEST_ASSERT(true == Device.IsEffectPlaying(effect.Identifier()));
 
             const TOrderedMagnitudeComponents kExpectedMagnitudeComponents = effect.ComputeOrderedMagnitudeComponents(t);
-            const TOrderedMagnitudeComponents kActualMagnitudeComponents = deviceBuffer.PlayEffects(t);
+            const TOrderedMagnitudeComponents kActualMagnitudeComponents = Device.PlayEffects(t);
             TEST_ASSERT(kActualMagnitudeComponents == kExpectedMagnitudeComponents);
         }
 
-        TEST_ASSERT(true == deviceBuffer.IsEffectOnDevice(effect.Identifier()));
-        TEST_ASSERT(false == deviceBuffer.IsEffectPlaying(effect.Identifier()));
+        TEST_ASSERT(true == Device.IsEffectOnDevice(effect.Identifier()));
+        TEST_ASSERT(false == Device.IsEffectPlaying(effect.Identifier()));
 
-        TEST_ASSERT(true == deviceBuffer.RemoveEffect(effect.Identifier()));
-        TEST_ASSERT(false == deviceBuffer.IsEffectOnDevice(effect.Identifier()));
+        TEST_ASSERT(true == Device.RemoveEffect(effect.Identifier()));
+        TEST_ASSERT(false == Device.IsEffectOnDevice(effect.Identifier()));
     }
 
     // Same simple test as above but this time the timestamps the buffer receives from the system experience an overflow.
     // This should in no way affect the output produced.
-    TEST_CASE(ForceFeedbackDeviceBuffer_SingleEffect_TimestampOverflow)
+    TEST_CASE(ForceFeedbackDevice_SingleEffect_TimestampOverflow)
     {
         constexpr TEffectTimeMs kTestEffectDuration = 100;
         constexpr TEffectTimeMs kTestTimestampBase = std::numeric_limits<TEffectTimeMs>::max() - (kTestEffectDuration / 4);
 
-        DeviceBuffer deviceBuffer = MakeTestDeviceBuffer(kTestTimestampBase);
+        Device Device = MakeTestDevice(kTestTimestampBase);
 
         MockEffect effect = MakeTestEffect(kTestEffectDuration);
 
-        TEST_ASSERT(true == deviceBuffer.AddOrUpdateEffect(effect));
-        TEST_ASSERT(true == deviceBuffer.IsEffectOnDevice(effect.Identifier()));
-        TEST_ASSERT(false == deviceBuffer.IsEffectPlaying(effect.Identifier()));
+        TEST_ASSERT(true == Device.AddOrUpdateEffect(effect));
+        TEST_ASSERT(true == Device.IsEffectOnDevice(effect.Identifier()));
+        TEST_ASSERT(false == Device.IsEffectPlaying(effect.Identifier()));
 
-        TEST_ASSERT(true == deviceBuffer.StartEffect(effect.Identifier(), 1, kTestTimestampBase));
+        TEST_ASSERT(true == Device.StartEffect(effect.Identifier(), 1, kTestTimestampBase));
 
         // Final iteration is one past the playback duration. Effect should not be playing once the loop finishes.
         for (TEffectTimeMs t = 0; t <= kTestEffectDuration; ++t)
         {
-            TEST_ASSERT(true == deviceBuffer.IsEffectOnDevice(effect.Identifier()));
-            TEST_ASSERT(true == deviceBuffer.IsEffectPlaying(effect.Identifier()));
+            TEST_ASSERT(true == Device.IsEffectOnDevice(effect.Identifier()));
+            TEST_ASSERT(true == Device.IsEffectPlaying(effect.Identifier()));
 
             const TOrderedMagnitudeComponents kExpectedMagnitudeComponents = effect.ComputeOrderedMagnitudeComponents(t);
 
             const TEffectTimeMs kPlayEffectsTime = (TEffectTimeMs)(((uint64_t)t + (uint64_t)kTestTimestampBase) & (uint64_t)std::numeric_limits<TEffectTimeMs>::max());
-            const TOrderedMagnitudeComponents kActualMagnitudeComponents = deviceBuffer.PlayEffects(kPlayEffectsTime);
+            const TOrderedMagnitudeComponents kActualMagnitudeComponents = Device.PlayEffects(kPlayEffectsTime);
             TEST_ASSERT(kActualMagnitudeComponents == kExpectedMagnitudeComponents);
         }
 
-        TEST_ASSERT(true == deviceBuffer.IsEffectOnDevice(effect.Identifier()));
-        TEST_ASSERT(false == deviceBuffer.IsEffectPlaying(effect.Identifier()));
+        TEST_ASSERT(true == Device.IsEffectOnDevice(effect.Identifier()));
+        TEST_ASSERT(false == Device.IsEffectPlaying(effect.Identifier()));
     }
 
     // A single effect exists for playback but is muted halfway through.
     // It should produce no output but its clock should continue to advance.
-    TEST_CASE(ForceFeedbackDeviceBuffer_SingleEffect_Mute)
+    TEST_CASE(ForceFeedbackDevice_SingleEffect_Mute)
     {
         constexpr TEffectTimeMs kTestEffectDuration = 100;
 
-        DeviceBuffer deviceBuffer = MakeTestDeviceBuffer();
+        Device Device = MakeTestDevice();
 
         MockEffect effect = MakeTestEffect(kTestEffectDuration);
 
-        TEST_ASSERT(true == deviceBuffer.AddOrUpdateEffect(effect));
-        TEST_ASSERT(true == deviceBuffer.IsEffectOnDevice(effect.Identifier()));
-        TEST_ASSERT(false == deviceBuffer.IsEffectPlaying(effect.Identifier()));
+        TEST_ASSERT(true == Device.AddOrUpdateEffect(effect));
+        TEST_ASSERT(true == Device.IsEffectOnDevice(effect.Identifier()));
+        TEST_ASSERT(false == Device.IsEffectPlaying(effect.Identifier()));
 
-        TEST_ASSERT(true == deviceBuffer.StartEffect(effect.Identifier(), 1, kDefaultTimestampBase));
+        TEST_ASSERT(true == Device.StartEffect(effect.Identifier(), 1, kDefaultTimestampBase));
 
         for (TEffectTimeMs t = 0; t < kTestEffectDuration / 2; ++t)
         {
-            TEST_ASSERT(true == deviceBuffer.IsEffectOnDevice(effect.Identifier()));
-            TEST_ASSERT(true == deviceBuffer.IsEffectPlaying(effect.Identifier()));
+            TEST_ASSERT(true == Device.IsEffectOnDevice(effect.Identifier()));
+            TEST_ASSERT(true == Device.IsEffectPlaying(effect.Identifier()));
 
             const TOrderedMagnitudeComponents kExpectedMagnitudeComponents = effect.ComputeOrderedMagnitudeComponents(t);
-            const TOrderedMagnitudeComponents kActualMagnitudeComponents = deviceBuffer.PlayEffects(t);
+            const TOrderedMagnitudeComponents kActualMagnitudeComponents = Device.PlayEffects(t);
             TEST_ASSERT(kActualMagnitudeComponents == kExpectedMagnitudeComponents);
         }
 
-        TEST_ASSERT(false == deviceBuffer.GetMutedState());
-        deviceBuffer.SetMutedState(true);
-        TEST_ASSERT(true == deviceBuffer.GetMutedState());
+        TEST_ASSERT(false == Device.GetMutedState());
+        Device.SetMutedState(true);
+        TEST_ASSERT(true == Device.GetMutedState());
         
         for (TEffectTimeMs t = kTestEffectDuration / 2; t <= kTestEffectDuration; ++t)
         {
-            TEST_ASSERT(true == deviceBuffer.IsEffectOnDevice(effect.Identifier()));
-            TEST_ASSERT(true == deviceBuffer.IsEffectPlaying(effect.Identifier()));
+            TEST_ASSERT(true == Device.IsEffectOnDevice(effect.Identifier()));
+            TEST_ASSERT(true == Device.IsEffectPlaying(effect.Identifier()));
 
             const TOrderedMagnitudeComponents kExpectedMagnitudeComponents = {};
-            const TOrderedMagnitudeComponents kActualMagnitudeComponents = deviceBuffer.PlayEffects(t);
+            const TOrderedMagnitudeComponents kActualMagnitudeComponents = Device.PlayEffects(t);
             TEST_ASSERT(kActualMagnitudeComponents == kExpectedMagnitudeComponents);
         }
 
-        TEST_ASSERT(true == deviceBuffer.IsEffectOnDevice(effect.Identifier()));
-        TEST_ASSERT(false == deviceBuffer.IsEffectPlaying(effect.Identifier()));
+        TEST_ASSERT(true == Device.IsEffectOnDevice(effect.Identifier()));
+        TEST_ASSERT(false == Device.IsEffectPlaying(effect.Identifier()));
     }
 
     // A single effect exists for playback but is paused and resumed.
     // It should pick up right where it left off after being resumed.
-    TEST_CASE(ForceFeedbackDeviceBuffer_SingleEffect_Pause)
+    TEST_CASE(ForceFeedbackDevice_SingleEffect_Pause)
     {
         constexpr TEffectTimeMs kTestEffectDuration = 100;
         constexpr TEffectTimeMs kTestEffectPauseDuration = 5000;
 
-        DeviceBuffer deviceBuffer = MakeTestDeviceBuffer();
+        Device Device = MakeTestDevice();
 
         MockEffect effect = MakeTestEffect(kTestEffectDuration);
 
-        TEST_ASSERT(true == deviceBuffer.AddOrUpdateEffect(effect));
-        TEST_ASSERT(true == deviceBuffer.IsEffectOnDevice(effect.Identifier()));
-        TEST_ASSERT(false == deviceBuffer.IsEffectPlaying(effect.Identifier()));
+        TEST_ASSERT(true == Device.AddOrUpdateEffect(effect));
+        TEST_ASSERT(true == Device.IsEffectOnDevice(effect.Identifier()));
+        TEST_ASSERT(false == Device.IsEffectPlaying(effect.Identifier()));
 
-        TEST_ASSERT(true == deviceBuffer.StartEffect(effect.Identifier(), 1, kDefaultTimestampBase));
+        TEST_ASSERT(true == Device.StartEffect(effect.Identifier(), 1, kDefaultTimestampBase));
 
         for (TEffectTimeMs t = 0; t < kTestEffectDuration / 2; ++t)
         {
-            TEST_ASSERT(true == deviceBuffer.IsEffectOnDevice(effect.Identifier()));
-            TEST_ASSERT(true == deviceBuffer.IsEffectPlaying(effect.Identifier()));
+            TEST_ASSERT(true == Device.IsEffectOnDevice(effect.Identifier()));
+            TEST_ASSERT(true == Device.IsEffectPlaying(effect.Identifier()));
 
             const TOrderedMagnitudeComponents kExpectedMagnitudeComponents = effect.ComputeOrderedMagnitudeComponents(t);
-            const TOrderedMagnitudeComponents kActualMagnitudeComponents = deviceBuffer.PlayEffects(t);
+            const TOrderedMagnitudeComponents kActualMagnitudeComponents = Device.PlayEffects(t);
             TEST_ASSERT(kActualMagnitudeComponents == kExpectedMagnitudeComponents);
         }
 
-        TEST_ASSERT(false == deviceBuffer.GetPauseState());
-        deviceBuffer.SetPauseState(true);
-        TEST_ASSERT(true == deviceBuffer.GetPauseState());
+        TEST_ASSERT(false == Device.GetPauseState());
+        Device.SetPauseState(true);
+        TEST_ASSERT(true == Device.GetPauseState());
 
         for (TEffectTimeMs t = 0; t < kTestEffectPauseDuration; ++t)
         {
-            TEST_ASSERT(true == deviceBuffer.IsEffectOnDevice(effect.Identifier()));
-            TEST_ASSERT(true == deviceBuffer.IsEffectPlaying(effect.Identifier()));
+            TEST_ASSERT(true == Device.IsEffectOnDevice(effect.Identifier()));
+            TEST_ASSERT(true == Device.IsEffectPlaying(effect.Identifier()));
 
             const TOrderedMagnitudeComponents kExpectedMagnitudeComponents = {};
-            const TOrderedMagnitudeComponents kActualMagnitudeComponents = deviceBuffer.PlayEffects((kTestEffectDuration / 2) + t);
+            const TOrderedMagnitudeComponents kActualMagnitudeComponents = Device.PlayEffects((kTestEffectDuration / 2) + t);
         }
 
-        TEST_ASSERT(true == deviceBuffer.IsEffectOnDevice(effect.Identifier()));
-        TEST_ASSERT(true == deviceBuffer.IsEffectPlaying(effect.Identifier()));
+        TEST_ASSERT(true == Device.IsEffectOnDevice(effect.Identifier()));
+        TEST_ASSERT(true == Device.IsEffectPlaying(effect.Identifier()));
 
-        TEST_ASSERT(true == deviceBuffer.GetPauseState());
-        deviceBuffer.SetPauseState(false);
-        TEST_ASSERT(false == deviceBuffer.GetPauseState());
+        TEST_ASSERT(true == Device.GetPauseState());
+        Device.SetPauseState(false);
+        TEST_ASSERT(false == Device.GetPauseState());
 
         for (TEffectTimeMs t = 0; t <= kTestEffectDuration / 2; ++t)
         {
-            TEST_ASSERT(true == deviceBuffer.IsEffectOnDevice(effect.Identifier()));
-            TEST_ASSERT(true == deviceBuffer.IsEffectPlaying(effect.Identifier()));
+            TEST_ASSERT(true == Device.IsEffectOnDevice(effect.Identifier()));
+            TEST_ASSERT(true == Device.IsEffectPlaying(effect.Identifier()));
 
             const TOrderedMagnitudeComponents kExpectedMagnitudeComponents = effect.ComputeOrderedMagnitudeComponents((kTestEffectDuration / 2) + t);
-            const TOrderedMagnitudeComponents kActualMagnitudeComponents = deviceBuffer.PlayEffects((kTestEffectDuration / 2) + kTestEffectPauseDuration + t);
+            const TOrderedMagnitudeComponents kActualMagnitudeComponents = Device.PlayEffects((kTestEffectDuration / 2) + kTestEffectPauseDuration + t);
             TEST_ASSERT(kActualMagnitudeComponents == kExpectedMagnitudeComponents);
         }
 
-        TEST_ASSERT(true == deviceBuffer.IsEffectOnDevice(effect.Identifier()));
-        TEST_ASSERT(false == deviceBuffer.IsEffectPlaying(effect.Identifier()));
+        TEST_ASSERT(true == Device.IsEffectOnDevice(effect.Identifier()));
+        TEST_ASSERT(false == Device.IsEffectPlaying(effect.Identifier()));
     }
 
     // A single effect exists for playback but has a start delay.
     // Verifies that the start delay is honored and the correct magnitude vector is retrieved at each time.
-    TEST_CASE(ForceFeedbackDeviceBuffer_SingleEffect_StartDelay)
+    TEST_CASE(ForceFeedbackDevice_SingleEffect_StartDelay)
     {
         constexpr TEffectTimeMs kTestEffectDuration = 100;
         constexpr TEffectTimeMs kTestEffectStartDelay = 150;
 
-        DeviceBuffer deviceBuffer = MakeTestDeviceBuffer();
+        Device Device = MakeTestDevice();
 
         MockEffect effect = MakeTestEffect(kTestEffectDuration);
         TEST_ASSERT(true == effect.SetStartDelay(kTestEffectStartDelay));
 
-        TEST_ASSERT(true == deviceBuffer.AddOrUpdateEffect(effect));
-        TEST_ASSERT(true == deviceBuffer.IsEffectOnDevice(effect.Identifier()));
-        TEST_ASSERT(false == deviceBuffer.IsEffectPlaying(effect.Identifier()));
+        TEST_ASSERT(true == Device.AddOrUpdateEffect(effect));
+        TEST_ASSERT(true == Device.IsEffectOnDevice(effect.Identifier()));
+        TEST_ASSERT(false == Device.IsEffectPlaying(effect.Identifier()));
 
-        TEST_ASSERT(true == deviceBuffer.StartEffect(effect.Identifier(), 1, kDefaultTimestampBase));
+        TEST_ASSERT(true == Device.StartEffect(effect.Identifier(), 1, kDefaultTimestampBase));
 
         // Effect is ready to go but not "playing" during the start delay period.
         for (TEffectTimeMs t = 0; t <= kTestEffectStartDelay; ++t)
         {
-            TEST_ASSERT(true == deviceBuffer.IsEffectOnDevice(effect.Identifier()));
-            TEST_ASSERT(false == deviceBuffer.IsEffectPlaying(effect.Identifier()));
+            TEST_ASSERT(true == Device.IsEffectOnDevice(effect.Identifier()));
+            TEST_ASSERT(false == Device.IsEffectPlaying(effect.Identifier()));
 
             const TOrderedMagnitudeComponents kExpectedMagnitudeComponents = {};
-            const TOrderedMagnitudeComponents kActualMagnitudeComponents = deviceBuffer.PlayEffects(t);
+            const TOrderedMagnitudeComponents kActualMagnitudeComponents = Device.PlayEffects(t);
             TEST_ASSERT(kActualMagnitudeComponents == kExpectedMagnitudeComponents);
         }
 
@@ -267,161 +267,161 @@ namespace XidiTest
         // Final iteration is one past the playback duration. Effect should not be playing once the loop finishes.
         for (TEffectTimeMs t = 1; t <= kTestEffectDuration; ++t)
         {
-            TEST_ASSERT(true == deviceBuffer.IsEffectOnDevice(effect.Identifier()));
-            TEST_ASSERT(true == deviceBuffer.IsEffectPlaying(effect.Identifier()));
+            TEST_ASSERT(true == Device.IsEffectOnDevice(effect.Identifier()));
+            TEST_ASSERT(true == Device.IsEffectPlaying(effect.Identifier()));
 
             const TOrderedMagnitudeComponents kExpectedMagnitudeComponents = effect.ComputeOrderedMagnitudeComponents(t);
-            const TOrderedMagnitudeComponents kActualMagnitudeComponents = deviceBuffer.PlayEffects(t + kTestEffectStartDelay);
+            const TOrderedMagnitudeComponents kActualMagnitudeComponents = Device.PlayEffects(t + kTestEffectStartDelay);
             TEST_ASSERT(kActualMagnitudeComponents == kExpectedMagnitudeComponents);
         }
 
-        TEST_ASSERT(true == deviceBuffer.IsEffectOnDevice(effect.Identifier()));
-        TEST_ASSERT(false == deviceBuffer.IsEffectPlaying(effect.Identifier()));
+        TEST_ASSERT(true == Device.IsEffectOnDevice(effect.Identifier()));
+        TEST_ASSERT(false == Device.IsEffectPlaying(effect.Identifier()));
     }
 
     // A single effect is started and then stopped some time before the duration has elapsed.
-    TEST_CASE(ForceFeedbackDeviceBuffer_SingleEffect_StartAndStop)
+    TEST_CASE(ForceFeedbackDevice_SingleEffect_StartAndStop)
     {
         constexpr TEffectTimeMs kTestEffectDuration = 100;
 
-        DeviceBuffer deviceBuffer = MakeTestDeviceBuffer();
+        Device Device = MakeTestDevice();
 
         MockEffect effect = MakeTestEffect(kTestEffectDuration);
 
-        TEST_ASSERT(true == deviceBuffer.AddOrUpdateEffect(effect));
-        TEST_ASSERT(true == deviceBuffer.StartEffect(effect.Identifier(), 1, kDefaultTimestampBase));
+        TEST_ASSERT(true == Device.AddOrUpdateEffect(effect));
+        TEST_ASSERT(true == Device.StartEffect(effect.Identifier(), 1, kDefaultTimestampBase));
 
         for (TEffectTimeMs t = 0; t < (kTestEffectDuration / 4); ++t)
         {
-            TEST_ASSERT(true == deviceBuffer.IsEffectOnDevice(effect.Identifier()));
-            TEST_ASSERT(true == deviceBuffer.IsEffectPlaying(effect.Identifier()));
+            TEST_ASSERT(true == Device.IsEffectOnDevice(effect.Identifier()));
+            TEST_ASSERT(true == Device.IsEffectPlaying(effect.Identifier()));
 
             const TOrderedMagnitudeComponents kExpectedMagnitudeComponents = effect.ComputeOrderedMagnitudeComponents(t);
-            const TOrderedMagnitudeComponents kActualMagnitudeComponents = deviceBuffer.PlayEffects(t);
+            const TOrderedMagnitudeComponents kActualMagnitudeComponents = Device.PlayEffects(t);
             TEST_ASSERT(kActualMagnitudeComponents == kExpectedMagnitudeComponents);
         }
 
-        TEST_ASSERT(true == deviceBuffer.StopEffect(effect.Identifier()));
-        TEST_ASSERT(true == deviceBuffer.IsEffectOnDevice(effect.Identifier()));
-        TEST_ASSERT(false == deviceBuffer.IsEffectPlaying(effect.Identifier()));
+        TEST_ASSERT(true == Device.StopEffect(effect.Identifier()));
+        TEST_ASSERT(true == Device.IsEffectOnDevice(effect.Identifier()));
+        TEST_ASSERT(false == Device.IsEffectPlaying(effect.Identifier()));
 
         const TOrderedMagnitudeComponents kExpectedMagnitudeComponents = {};
-        const TOrderedMagnitudeComponents kActualMagnitudeComponents = deviceBuffer.PlayEffects(kTestEffectDuration / 4);
+        const TOrderedMagnitudeComponents kActualMagnitudeComponents = Device.PlayEffects(kTestEffectDuration / 4);
         TEST_ASSERT(kActualMagnitudeComponents == kExpectedMagnitudeComponents);
     }
 
     // A single effect is started and then stopped some time before the duration has elapsed.
     // This time, the stop request is based on stopping all playing effects, not a specific one.
-    TEST_CASE(ForceFeedbackDeviceBuffer_SingleEffect_StartAndStopAll)
+    TEST_CASE(ForceFeedbackDevice_SingleEffect_StartAndStopAll)
     {
         constexpr TEffectTimeMs kTestEffectDuration = 100;
 
-        DeviceBuffer deviceBuffer = MakeTestDeviceBuffer();
+        Device Device = MakeTestDevice();
 
         MockEffect effect = MakeTestEffect(kTestEffectDuration);
 
-        TEST_ASSERT(true == deviceBuffer.AddOrUpdateEffect(effect));
-        TEST_ASSERT(true == deviceBuffer.StartEffect(effect.Identifier(), 1, kDefaultTimestampBase));
+        TEST_ASSERT(true == Device.AddOrUpdateEffect(effect));
+        TEST_ASSERT(true == Device.StartEffect(effect.Identifier(), 1, kDefaultTimestampBase));
 
         for (TEffectTimeMs t = 0; t < (kTestEffectDuration / 4); ++t)
         {
-            TEST_ASSERT(true == deviceBuffer.IsEffectOnDevice(effect.Identifier()));
-            TEST_ASSERT(true == deviceBuffer.IsEffectPlaying(effect.Identifier()));
+            TEST_ASSERT(true == Device.IsEffectOnDevice(effect.Identifier()));
+            TEST_ASSERT(true == Device.IsEffectPlaying(effect.Identifier()));
 
             const TOrderedMagnitudeComponents kExpectedMagnitudeComponents = effect.ComputeOrderedMagnitudeComponents(t);
-            const TOrderedMagnitudeComponents kActualMagnitudeComponents = deviceBuffer.PlayEffects(t);
+            const TOrderedMagnitudeComponents kActualMagnitudeComponents = Device.PlayEffects(t);
             TEST_ASSERT(kActualMagnitudeComponents == kExpectedMagnitudeComponents);
         }
 
-        deviceBuffer.StopAllEffects();
-        TEST_ASSERT(true == deviceBuffer.IsEffectOnDevice(effect.Identifier()));
-        TEST_ASSERT(false == deviceBuffer.IsEffectPlaying(effect.Identifier()));
+        Device.StopAllEffects();
+        TEST_ASSERT(true == Device.IsEffectOnDevice(effect.Identifier()));
+        TEST_ASSERT(false == Device.IsEffectPlaying(effect.Identifier()));
 
         const TOrderedMagnitudeComponents kExpectedMagnitudeComponents = {};
-        const TOrderedMagnitudeComponents kActualMagnitudeComponents = deviceBuffer.PlayEffects(kTestEffectDuration / 4);
+        const TOrderedMagnitudeComponents kActualMagnitudeComponents = Device.PlayEffects(kTestEffectDuration / 4);
         TEST_ASSERT(kActualMagnitudeComponents == kExpectedMagnitudeComponents);
     }
 
     // A single effect is started and then stopped some time before the duration has elapsed.
     // This time, the stop request is based on clearing out all effects in the buffer.
-    TEST_CASE(ForceFeedbackDeviceBuffer_SingleEffect_StartAndClear)
+    TEST_CASE(ForceFeedbackDevice_SingleEffect_StartAndClear)
     {
         constexpr TEffectTimeMs kTestEffectDuration = 100;
 
-        DeviceBuffer deviceBuffer = MakeTestDeviceBuffer();
+        Device Device = MakeTestDevice();
 
         MockEffect effect = MakeTestEffect(kTestEffectDuration);
 
-        TEST_ASSERT(true == deviceBuffer.AddOrUpdateEffect(effect));
-        TEST_ASSERT(true == deviceBuffer.StartEffect(effect.Identifier(), 1, kDefaultTimestampBase));
+        TEST_ASSERT(true == Device.AddOrUpdateEffect(effect));
+        TEST_ASSERT(true == Device.StartEffect(effect.Identifier(), 1, kDefaultTimestampBase));
 
         for (TEffectTimeMs t = 0; t < (kTestEffectDuration / 4); ++t)
         {
-            TEST_ASSERT(true == deviceBuffer.IsEffectOnDevice(effect.Identifier()));
-            TEST_ASSERT(true == deviceBuffer.IsEffectPlaying(effect.Identifier()));
+            TEST_ASSERT(true == Device.IsEffectOnDevice(effect.Identifier()));
+            TEST_ASSERT(true == Device.IsEffectPlaying(effect.Identifier()));
 
             const TOrderedMagnitudeComponents kExpectedMagnitudeComponents = effect.ComputeOrderedMagnitudeComponents(t);
-            const TOrderedMagnitudeComponents kActualMagnitudeComponents = deviceBuffer.PlayEffects(t);
+            const TOrderedMagnitudeComponents kActualMagnitudeComponents = Device.PlayEffects(t);
             TEST_ASSERT(kActualMagnitudeComponents == kExpectedMagnitudeComponents);
         }
 
-        deviceBuffer.Clear();
-        TEST_ASSERT(false == deviceBuffer.IsEffectOnDevice(effect.Identifier()));
-        TEST_ASSERT(false == deviceBuffer.IsEffectPlaying(effect.Identifier()));
+        Device.Clear();
+        TEST_ASSERT(false == Device.IsEffectOnDevice(effect.Identifier()));
+        TEST_ASSERT(false == Device.IsEffectPlaying(effect.Identifier()));
 
         const TOrderedMagnitudeComponents kExpectedMagnitudeComponents = {};
-        const TOrderedMagnitudeComponents kActualMagnitudeComponents = deviceBuffer.PlayEffects(kTestEffectDuration / 4);
+        const TOrderedMagnitudeComponents kActualMagnitudeComponents = Device.PlayEffects(kTestEffectDuration / 4);
         TEST_ASSERT(kActualMagnitudeComponents == kExpectedMagnitudeComponents);
     }
 
     // A single effect is started and then its duration is shortened sometime before the effect stops on its own.
     // This should cause the effect to stop playing.
-    TEST_CASE(ForceFeedbackDeviceBuffer_SingleEffect_StartAndShorten)
+    TEST_CASE(ForceFeedbackDevice_SingleEffect_StartAndShorten)
     {
         constexpr TEffectTimeMs kTestEffectDuration = 100;
 
-        DeviceBuffer deviceBuffer = MakeTestDeviceBuffer();
+        Device Device = MakeTestDevice();
 
         MockEffect effect = MakeTestEffect(kTestEffectDuration);
 
-        TEST_ASSERT(true == deviceBuffer.AddOrUpdateEffect(effect));
-        TEST_ASSERT(true == deviceBuffer.StartEffect(effect.Identifier(), 1, kDefaultTimestampBase));
+        TEST_ASSERT(true == Device.AddOrUpdateEffect(effect));
+        TEST_ASSERT(true == Device.StartEffect(effect.Identifier(), 1, kDefaultTimestampBase));
 
         for (TEffectTimeMs t = 0; t < (kTestEffectDuration / 4); ++t)
         {
-            TEST_ASSERT(true == deviceBuffer.IsEffectOnDevice(effect.Identifier()));
-            TEST_ASSERT(true == deviceBuffer.IsEffectPlaying(effect.Identifier()));
+            TEST_ASSERT(true == Device.IsEffectOnDevice(effect.Identifier()));
+            TEST_ASSERT(true == Device.IsEffectPlaying(effect.Identifier()));
 
             const TOrderedMagnitudeComponents kExpectedMagnitudeComponents = effect.ComputeOrderedMagnitudeComponents(t);
-            const TOrderedMagnitudeComponents kActualMagnitudeComponents = deviceBuffer.PlayEffects(t);
+            const TOrderedMagnitudeComponents kActualMagnitudeComponents = Device.PlayEffects(t);
             TEST_ASSERT(kActualMagnitudeComponents == kExpectedMagnitudeComponents);
         }
 
         TEST_ASSERT(true == effect.SetDuration(kTestEffectDuration / 4));
-        TEST_ASSERT(true == deviceBuffer.AddOrUpdateEffect(effect));
+        TEST_ASSERT(true == Device.AddOrUpdateEffect(effect));
 
         // At this point the effect is still playing.
         // Next time a magnitude is requested, at half-duration, it will be stopped and the magnitude should be 0.
         const TOrderedMagnitudeComponents kExpectedMagnitudeComponents = {};
-        const TOrderedMagnitudeComponents kActualMagnitudeComponents = deviceBuffer.PlayEffects(kTestEffectDuration / 4);
+        const TOrderedMagnitudeComponents kActualMagnitudeComponents = Device.PlayEffects(kTestEffectDuration / 4);
         TEST_ASSERT(kActualMagnitudeComponents == kExpectedMagnitudeComponents);
-        TEST_ASSERT(true == deviceBuffer.IsEffectOnDevice(effect.Identifier()));
-        TEST_ASSERT(false == deviceBuffer.IsEffectPlaying(effect.Identifier()));
+        TEST_ASSERT(true == Device.IsEffectOnDevice(effect.Identifier()));
+        TEST_ASSERT(false == Device.IsEffectPlaying(effect.Identifier()));
     }
 
     // A single effect is started with multiple iterations.
     // Verifies that the correct magnitude vector is retrieved at each time.
-    TEST_CASE(ForceFeedbackDeviceBuffer_SingleEffect_MultipleIterations)
+    TEST_CASE(ForceFeedbackDevice_SingleEffect_MultipleIterations)
     {
         constexpr TEffectTimeMs kTestEffectDuration = 100;
         constexpr unsigned int kTestNumIterations = 5;
 
-        DeviceBuffer deviceBuffer = MakeTestDeviceBuffer();
+        Device Device = MakeTestDevice();
 
         MockEffect effect = MakeTestEffect(kTestEffectDuration);
 
-        TEST_ASSERT(true == deviceBuffer.AddOrUpdateEffect(effect));
-        TEST_ASSERT(true == deviceBuffer.StartEffect(effect.Identifier(), kTestNumIterations, kDefaultTimestampBase));
+        TEST_ASSERT(true == Device.AddOrUpdateEffect(effect));
+        TEST_ASSERT(true == Device.StartEffect(effect.Identifier(), kTestNumIterations, kDefaultTimestampBase));
 
         for (unsigned int i = 0; i < kTestNumIterations; ++i)
         {
@@ -429,11 +429,11 @@ namespace XidiTest
 
             for (TEffectTimeMs t = 0; t < kTestEffectDuration; ++t)
             {
-                TEST_ASSERT(true == deviceBuffer.IsEffectOnDevice(effect.Identifier()));
-                TEST_ASSERT(true == deviceBuffer.IsEffectPlaying(effect.Identifier()));
+                TEST_ASSERT(true == Device.IsEffectOnDevice(effect.Identifier()));
+                TEST_ASSERT(true == Device.IsEffectPlaying(effect.Identifier()));
 
                 const TOrderedMagnitudeComponents kExpectedMagnitudeComponents = effect.ComputeOrderedMagnitudeComponents(t);
-                const TOrderedMagnitudeComponents kActualMagnitudeComponents = deviceBuffer.PlayEffects(t + kTimeBase);
+                const TOrderedMagnitudeComponents kActualMagnitudeComponents = Device.PlayEffects(t + kTimeBase);
                 TEST_ASSERT(kActualMagnitudeComponents == kExpectedMagnitudeComponents);
             }
         }
@@ -441,36 +441,36 @@ namespace XidiTest
         // At this point the effect is still playing.
         // However, it should stop next time a magnitude is requested.
         const TOrderedMagnitudeComponents kExpectedMagnitudeComponents = {};
-        const TOrderedMagnitudeComponents kActualMagnitudeComponents = deviceBuffer.PlayEffects(kTestEffectDuration * kTestNumIterations);
+        const TOrderedMagnitudeComponents kActualMagnitudeComponents = Device.PlayEffects(kTestEffectDuration * kTestNumIterations);
         TEST_ASSERT(kActualMagnitudeComponents == kExpectedMagnitudeComponents);
-        TEST_ASSERT(true == deviceBuffer.IsEffectOnDevice(effect.Identifier()));
-        TEST_ASSERT(false == deviceBuffer.IsEffectPlaying(effect.Identifier()));
+        TEST_ASSERT(true == Device.IsEffectOnDevice(effect.Identifier()));
+        TEST_ASSERT(false == Device.IsEffectPlaying(effect.Identifier()));
     }
 
     // A single effect is started with multiple iterations and a start delay.
     // Verifies that the correct magnitude vector is retrieved at each time.
-    TEST_CASE(ForceFeedbackDeviceBuffer_SingleEffect_MultipleIterationsStartDelay)
+    TEST_CASE(ForceFeedbackDevice_SingleEffect_MultipleIterationsStartDelay)
     {
         constexpr TEffectTimeMs kTestEffectDuration = 100;
         constexpr TEffectTimeMs kTestEffectStartDelay = 150;
         constexpr unsigned int kTestNumIterations = 5;
 
-        DeviceBuffer deviceBuffer = MakeTestDeviceBuffer();
+        Device Device = MakeTestDevice();
 
         MockEffect effect = MakeTestEffect(kTestEffectDuration);
         TEST_ASSERT(true == effect.SetStartDelay(kTestEffectStartDelay));
 
-        TEST_ASSERT(true == deviceBuffer.AddOrUpdateEffect(effect));
-        TEST_ASSERT(true == deviceBuffer.StartEffect(effect.Identifier(), kTestNumIterations, kDefaultTimestampBase));
+        TEST_ASSERT(true == Device.AddOrUpdateEffect(effect));
+        TEST_ASSERT(true == Device.StartEffect(effect.Identifier(), kTestNumIterations, kDefaultTimestampBase));
 
         // Effect is ready to go but not "playing" during the start delay period.
         for (TEffectTimeMs t = 0; t <= kTestEffectStartDelay; ++t)
         {
-            TEST_ASSERT(true == deviceBuffer.IsEffectOnDevice(effect.Identifier()));
-            TEST_ASSERT(false == deviceBuffer.IsEffectPlaying(effect.Identifier()));
+            TEST_ASSERT(true == Device.IsEffectOnDevice(effect.Identifier()));
+            TEST_ASSERT(false == Device.IsEffectPlaying(effect.Identifier()));
 
             const TOrderedMagnitudeComponents kExpectedMagnitudeComponents = {};
-            const TOrderedMagnitudeComponents kActualMagnitudeComponents = deviceBuffer.PlayEffects(t);
+            const TOrderedMagnitudeComponents kActualMagnitudeComponents = Device.PlayEffects(t);
             TEST_ASSERT(kActualMagnitudeComponents == kExpectedMagnitudeComponents);
         }
 
@@ -481,11 +481,11 @@ namespace XidiTest
 
             for (TEffectTimeMs t = 0; t < kTestEffectDuration; ++t)
             {
-                TEST_ASSERT(true == deviceBuffer.IsEffectOnDevice(effect.Identifier()));
-                TEST_ASSERT(true == deviceBuffer.IsEffectPlaying(effect.Identifier()));
+                TEST_ASSERT(true == Device.IsEffectOnDevice(effect.Identifier()));
+                TEST_ASSERT(true == Device.IsEffectPlaying(effect.Identifier()));
 
                 const TOrderedMagnitudeComponents kExpectedMagnitudeComponents = effect.ComputeOrderedMagnitudeComponents(t);
-                const TOrderedMagnitudeComponents kActualMagnitudeComponents = deviceBuffer.PlayEffects(t + kTimeBase);
+                const TOrderedMagnitudeComponents kActualMagnitudeComponents = Device.PlayEffects(t + kTimeBase);
                 TEST_ASSERT(kActualMagnitudeComponents == kExpectedMagnitudeComponents);
             }
         }
@@ -493,28 +493,28 @@ namespace XidiTest
         // At this point the effect is still playing.
         // However, it should stop next time a magnitude is requested.
         const TOrderedMagnitudeComponents kExpectedMagnitudeComponents = {};
-        const TOrderedMagnitudeComponents kActualMagnitudeComponents = deviceBuffer.PlayEffects((kTestEffectDuration * kTestNumIterations) + kTestEffectStartDelay);
+        const TOrderedMagnitudeComponents kActualMagnitudeComponents = Device.PlayEffects((kTestEffectDuration * kTestNumIterations) + kTestEffectStartDelay);
         TEST_ASSERT(kActualMagnitudeComponents == kExpectedMagnitudeComponents);
-        TEST_ASSERT(true == deviceBuffer.IsEffectOnDevice(effect.Identifier()));
-        TEST_ASSERT(false == deviceBuffer.IsEffectPlaying(effect.Identifier()));
+        TEST_ASSERT(true == Device.IsEffectOnDevice(effect.Identifier()));
+        TEST_ASSERT(false == Device.IsEffectPlaying(effect.Identifier()));
     }
 
     // Simple situation in which multiple effects exist for playback.
     // Durations are all the same, so the only real difference is that the buffer must combine the magnitudes.
-    TEST_CASE(ForceFeedbackDeviceBuffer_MultipleEffects_Nominal)
+    TEST_CASE(ForceFeedbackDevice_MultipleEffects_Nominal)
     {
         constexpr TEffectTimeMs kTestEffectDuration = 100;
 
-        DeviceBuffer deviceBuffer = MakeTestDeviceBuffer();
+        Device Device = MakeTestDevice();
 
         MockEffect effects[] = {MakeTestEffect(kTestEffectDuration), MakeTestEffect(kTestEffectDuration), MakeTestEffect(kTestEffectDuration)};
 
         for (const MockEffect& effect : effects)
         {
-            TEST_ASSERT(true == deviceBuffer.AddOrUpdateEffect(effect));
-            TEST_ASSERT(true == deviceBuffer.IsEffectOnDevice(effect.Identifier()));
-            TEST_ASSERT(false == deviceBuffer.IsEffectPlaying(effect.Identifier()));
-            TEST_ASSERT(true == deviceBuffer.StartEffect(effect.Identifier(), 1, kDefaultTimestampBase));
+            TEST_ASSERT(true == Device.AddOrUpdateEffect(effect));
+            TEST_ASSERT(true == Device.IsEffectOnDevice(effect.Identifier()));
+            TEST_ASSERT(false == Device.IsEffectPlaying(effect.Identifier()));
+            TEST_ASSERT(true == Device.StartEffect(effect.Identifier(), 1, kDefaultTimestampBase));
         }
 
         for (TEffectTimeMs t = 0; t <= kTestEffectDuration; ++t)
@@ -523,41 +523,41 @@ namespace XidiTest
 
             for (const MockEffect& effect : effects)
             {
-                TEST_ASSERT(true == deviceBuffer.IsEffectOnDevice(effect.Identifier()));
-                TEST_ASSERT(true == deviceBuffer.IsEffectPlaying(effect.Identifier()));
+                TEST_ASSERT(true == Device.IsEffectOnDevice(effect.Identifier()));
+                TEST_ASSERT(true == Device.IsEffectPlaying(effect.Identifier()));
                 expectedMagnitudeComponents += effect.ComputeOrderedMagnitudeComponents(t);
             }
 
-            const TOrderedMagnitudeComponents kActualMagnitudeComponents = deviceBuffer.PlayEffects(t);
+            const TOrderedMagnitudeComponents kActualMagnitudeComponents = Device.PlayEffects(t);
             TEST_ASSERT(kActualMagnitudeComponents == expectedMagnitudeComponents);
         }
 
         for (const MockEffect& effect : effects)
         {
-            TEST_ASSERT(true == deviceBuffer.IsEffectOnDevice(effect.Identifier()));
-            TEST_ASSERT(false == deviceBuffer.IsEffectPlaying(effect.Identifier()));
+            TEST_ASSERT(true == Device.IsEffectOnDevice(effect.Identifier()));
+            TEST_ASSERT(false == Device.IsEffectPlaying(effect.Identifier()));
 
-            TEST_ASSERT(true == deviceBuffer.RemoveEffect(effect.Identifier()));
-            TEST_ASSERT(false == deviceBuffer.IsEffectOnDevice(effect.Identifier()));
+            TEST_ASSERT(true == Device.RemoveEffect(effect.Identifier()));
+            TEST_ASSERT(false == Device.IsEffectOnDevice(effect.Identifier()));
         }
     }
 
     // Simple situation in which multiple effects exist for playback.
     // Durations are all different this time.
-    TEST_CASE(ForceFeedbackDeviceBuffer_MultipleEffects_DifferentDurations)
+    TEST_CASE(ForceFeedbackDevice_MultipleEffects_DifferentDurations)
     {
         constexpr TEffectTimeMs kTestEffectDuration = 100;
 
-        DeviceBuffer deviceBuffer = MakeTestDeviceBuffer();
+        Device Device = MakeTestDevice();
 
         MockEffect effects[] = {MakeTestEffect(kTestEffectDuration), MakeTestEffect(kTestEffectDuration / 2), MakeTestEffect(kTestEffectDuration / 3)};
 
         for (const MockEffect& effect : effects)
         {
-            TEST_ASSERT(true == deviceBuffer.AddOrUpdateEffect(effect));
-            TEST_ASSERT(true == deviceBuffer.IsEffectOnDevice(effect.Identifier()));
-            TEST_ASSERT(false == deviceBuffer.IsEffectPlaying(effect.Identifier()));
-            TEST_ASSERT(true == deviceBuffer.StartEffect(effect.Identifier(), 1, kDefaultTimestampBase));
+            TEST_ASSERT(true == Device.AddOrUpdateEffect(effect));
+            TEST_ASSERT(true == Device.IsEffectOnDevice(effect.Identifier()));
+            TEST_ASSERT(false == Device.IsEffectPlaying(effect.Identifier()));
+            TEST_ASSERT(true == Device.StartEffect(effect.Identifier(), 1, kDefaultTimestampBase));
         }
 
         for (TEffectTimeMs t = 0; t <= kTestEffectDuration; ++t)
@@ -567,25 +567,25 @@ namespace XidiTest
             for (const MockEffect& effect : effects)
                 expectedMagnitudeComponents += effect.ComputeOrderedMagnitudeComponents(t);
 
-            const TOrderedMagnitudeComponents kActualMagnitudeComponents = deviceBuffer.PlayEffects(t);
+            const TOrderedMagnitudeComponents kActualMagnitudeComponents = Device.PlayEffects(t);
             TEST_ASSERT(kActualMagnitudeComponents == expectedMagnitudeComponents);
         }
 
         for (const MockEffect& effect : effects)
         {
-            TEST_ASSERT(true == deviceBuffer.IsEffectOnDevice(effect.Identifier()));
-            TEST_ASSERT(false == deviceBuffer.IsEffectPlaying(effect.Identifier()));
+            TEST_ASSERT(true == Device.IsEffectOnDevice(effect.Identifier()));
+            TEST_ASSERT(false == Device.IsEffectPlaying(effect.Identifier()));
         }
     }
 
     // Simple situation in which multiple effects exist for playback.
     // Durations and start delays are all different this time.
-    TEST_CASE(ForceFeedbackDeviceBuffer_MultipleEffects_DifferentDurationsAndStartDelays)
+    TEST_CASE(ForceFeedbackDevice_MultipleEffects_DifferentDurationsAndStartDelays)
     {
         constexpr TEffectTimeMs kTestEffectDuration = 100;
         constexpr TEffectTimeMs kTestEffectStartDelay = 150;
 
-        DeviceBuffer deviceBuffer = MakeTestDeviceBuffer();
+        Device Device = MakeTestDevice();
 
         MockEffect effects[] = {MakeTestEffect(kTestEffectDuration), MakeTestEffect(kTestEffectDuration / 2), MakeTestEffect(kTestEffectDuration / 3)};
 
@@ -594,10 +594,10 @@ namespace XidiTest
         
         for (MockEffect& effect : effects)
         {
-            TEST_ASSERT(true == deviceBuffer.AddOrUpdateEffect(effect));
-            TEST_ASSERT(true == deviceBuffer.IsEffectOnDevice(effect.Identifier()));
-            TEST_ASSERT(false == deviceBuffer.IsEffectPlaying(effect.Identifier()));
-            TEST_ASSERT(true == deviceBuffer.StartEffect(effect.Identifier(), 1, kDefaultTimestampBase));
+            TEST_ASSERT(true == Device.AddOrUpdateEffect(effect));
+            TEST_ASSERT(true == Device.IsEffectOnDevice(effect.Identifier()));
+            TEST_ASSERT(false == Device.IsEffectPlaying(effect.Identifier()));
+            TEST_ASSERT(true == Device.StartEffect(effect.Identifier(), 1, kDefaultTimestampBase));
         }
 
         for (TEffectTimeMs t = 0; t <= (kTestEffectDuration + kTestEffectStartDelay); ++t)
@@ -610,14 +610,14 @@ namespace XidiTest
                     expectedMagnitudeComponents += effect.ComputeOrderedMagnitudeComponents(t - effect.GetStartDelay());
             }
 
-            const TOrderedMagnitudeComponents kActualMagnitudeComponents = deviceBuffer.PlayEffects(t);
+            const TOrderedMagnitudeComponents kActualMagnitudeComponents = Device.PlayEffects(t);
             TEST_ASSERT(kActualMagnitudeComponents == expectedMagnitudeComponents);
         }
 
         for (const MockEffect& effect : effects)
         {
-            TEST_ASSERT(true == deviceBuffer.IsEffectOnDevice(effect.Identifier()));
-            TEST_ASSERT(false == deviceBuffer.IsEffectPlaying(effect.Identifier()));
+            TEST_ASSERT(true == Device.IsEffectOnDevice(effect.Identifier()));
+            TEST_ASSERT(false == Device.IsEffectPlaying(effect.Identifier()));
         }
     }
 }

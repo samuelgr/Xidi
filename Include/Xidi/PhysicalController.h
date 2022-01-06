@@ -14,7 +14,7 @@
 
 #include "ApiWindows.h"
 #include "ControllerTypes.h"
-#include "ForceFeedbackDeviceBuffer.h"
+#include "ForceFeedbackDevice.h"
 #include "VirtualController.h"
 
 #include <stop_token>
@@ -46,7 +46,7 @@ namespace Xidi
         /// @param [in] controllerIdentifier Identifier of the physical controller of interest.
         /// @param [in] virtualController Pointer to the virtual controller of interest.
         /// @return Pointer to the device buffer object if successful, `nullptr` otherwise. This function will fail if another object is already registered with the specified virtual controller or if the parameters are invalid.
-        ForceFeedback::DeviceBuffer* PhysicalControllerForceFeedbackRegister(TControllerIdentifier controllerIdentifier, const VirtualController* virtualController);
+        ForceFeedback::Device* PhysicalControllerForceFeedbackRegister(TControllerIdentifier controllerIdentifier, const VirtualController* virtualController);
 
         /// Unregisters the specified virtual controller for force feedback if it is currently registered with the specified physical controller.
         /// Concurrency-safe.
