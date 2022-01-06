@@ -14,37 +14,23 @@
 
 #include "ApiWindows.h"
 #include "ControllerTypes.h"
+#include "ForceFeedbackDeviceBuffer.h"
+#include "VirtualController.h"
 
 #include <stop_token>
-#include <xinput.h>
 
 
 namespace Xidi
 {
     namespace Controller
     {
-        // -------- TYPE DEFINITIONS --------------------------------------- //
+        // -------- CONSTANTS ---------------------------------------------- //
 
-        /// Structure used for holding physical controller state data.
-        struct SPhysicalState
-        {
-            DWORD errorCode;                                                ///< Error code resulting from the last attempt to poll the physical controller.
-            XINPUT_STATE state;                                             ///< State data from the last attempt to poll the physical controller.
+        /// Number of milliseconds to wait between polling attempts.
+        inline constexpr DWORD kPhysicalPollingPeriodMilliseconds = 5;
 
-            /// Simple equality check to detect physical state changes.
-            /// @param [in] other Object with which to compare.
-            /// @return `true` if this object is equal to the other object, `false` otherwise.
-            constexpr inline bool operator==(const SPhysicalState& other) const
-            {
-                if (errorCode != other.errorCode)
-                    return false;
-
-                if ((errorCode == 0) && (state.dwPacketNumber != other.state.dwPacketNumber))
-                    return false;
-
-                return true;
-            }
-        };
+        /// Number of milliseconds to wait between force feedback actuation passes.
+        inline constexpr DWORD kPhysicalForceFeedbackPeriodMilliseconds = 5;
 
 
         // -------- FUNCTIONS ---------------------------------------------- //
@@ -54,6 +40,19 @@ namespace Xidi
         /// @param [in] controllerIdentifier Identifier of the physical controller of interest.
         /// @return Physical controller state data.
         SPhysicalState GetCurrentPhysicalControllerState(TControllerIdentifier controllerIdentifier);
+
+        /// Attempts to register the specified virtual controller for force feedback with the specified physical controller.
+        /// Concurrency-safe.
+        /// @param [in] controllerIdentifier Identifier of the physical controller of interest.
+        /// @param [in] virtualController Pointer to the virtual controller of interest.
+        /// @return Pointer to the device buffer object if successful, `nullptr` otherwise. This function will fail if another object is already registered with the specified virtual controller or if the parameters are invalid.
+        ForceFeedback::DeviceBuffer* PhysicalControllerForceFeedbackRegister(TControllerIdentifier controllerIdentifier, const VirtualController* virtualController);
+
+        /// Unregisters the specified virtual controller for force feedback if it is currently registered with the specified physical controller.
+        /// Concurrency-safe.
+        /// @param [in] controllerIdentifier Identifier of the physical controller of interest.
+        /// @param [in] virtualController Pointer to the virtual controller of interest.
+        void PhysicalControllerForceFeedbackUnregister(TControllerIdentifier controllerIdentifier, const VirtualController* virtualController);
 
         /// Waits for the specified physical controller's state to change. When it does, retrieves and returns the new state.
         /// Intended to be invoked by background worker threads associated with virtual controller objects.

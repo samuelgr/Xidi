@@ -27,7 +27,7 @@ namespace Xidi
         namespace ForceFeedback
         {
             /// Emulates a hardware buffer that would normally hold force feedback effects on a physical device.
-            /// Concurrency-safe.
+            /// Concurrency-safe, but not safe to be constructed during dynamic initialization.
             class DeviceBuffer
             {
             public:

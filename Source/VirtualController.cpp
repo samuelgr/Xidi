@@ -140,7 +140,7 @@ namespace Xidi
         // -------- CONSTRUCTION AND DESTRUCTION --------------------------- //
         // See "VirtualController.h" for documentation.
 
-        VirtualController::VirtualController(TControllerIdentifier controllerId, const Mapper& mapper) : kControllerIdentifier(controllerId), controllerMutex(), eventBuffer(), eventFilter(), mapper(mapper), properties(), stateRaw(), stateProcessed(), stateChangeEventHandle(NULL), physicalControllerMonitor(), physicalControllerMonitorStop()
+        VirtualController::VirtualController(TControllerIdentifier controllerId, const Mapper& mapper) : kControllerIdentifier(controllerId), controllerMutex(), eventBuffer(), eventFilter(), mapper(mapper), properties(), stateRaw(), stateProcessed(), stateChangeEventHandle(NULL), physicalControllerMonitor(), physicalControllerMonitorStop(), physicalControllerForceFeedbackBuffer()
         {
             const SPhysicalState initialState = GetCurrentPhysicalControllerState(kControllerIdentifier);
             
@@ -154,6 +154,8 @@ namespace Xidi
 
         VirtualController::~VirtualController(void)
         {           
+            ForceFeedbackUnregister();
+            
             physicalControllerMonitorStop.request_stop();
             physicalControllerMonitor.join();
 
@@ -173,6 +175,35 @@ namespace Xidi
                 const EAxis axis = controllerCapabilities.axisCapabilities[i].type;
                 controllerState.axis[(int)axis] = TransformAxisValue(controllerState.axis[(int)axis], properties.axis[(int)axis]);
             }
+        }
+
+        // --------
+
+        bool VirtualController::ForceFeedbackIsRegistered(void) const
+        {
+            return (nullptr != physicalControllerForceFeedbackBuffer);
+        }
+
+        // --------
+
+        bool VirtualController::ForceFeedbackRegister(void)
+        {
+            auto lock = Lock();
+
+            if (nullptr == physicalControllerForceFeedbackBuffer)
+                physicalControllerForceFeedbackBuffer = PhysicalControllerForceFeedbackRegister(kControllerIdentifier, this);
+
+            return ForceFeedbackIsRegistered();
+        }
+
+        // --------
+
+        void VirtualController::ForceFeedbackUnregister(void)
+        {
+            auto lock = Lock();
+
+            PhysicalControllerForceFeedbackUnregister(kControllerIdentifier, this);
+            physicalControllerForceFeedbackBuffer = nullptr;
         }
 
         // --------

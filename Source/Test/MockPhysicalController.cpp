@@ -11,9 +11,11 @@
  *****************************************************************************/
 
 #include "ApiWindows.h"
+#include "ForceFeedbackDeviceBuffer.h"
 #include "MockPhysicalController.h"
 #include "PhysicalController.h"
 #include "TestCase.h"
+#include "VirtualController.h"
 
 #include <vector>
 #include <shared_mutex>
@@ -28,7 +30,7 @@ namespace XidiTest
     // -------- INTERNAL CONSTANTS ----------------------------------------- //
 
     /// Default physical state to return when no other physical states are specified.
-    static constexpr SPhysicalState kDefaultPhysicalState = { .errorCode = ERROR_SUCCESS, .state = {} };
+    static constexpr SPhysicalState kDefaultPhysicalState = {.errorCode = ERROR_SUCCESS, .state = {}};
 
 
     // -------- INTERNAL VARIABLES ----------------------------------------- //
@@ -124,6 +126,20 @@ namespace Xidi
                 return mockPhysicalController[controllerIdentifier]->GetCurrentPhysicalState();
             else
                 return kDefaultPhysicalState;
+        }
+
+        // --------
+
+        ForceFeedback::DeviceBuffer* PhysicalControllerForceFeedbackRegister(TControllerIdentifier controllerIdentifier, const VirtualController* virtualController)
+        {
+            return nullptr;
+        }
+
+        // --------
+
+        void PhysicalControllerForceFeedbackUnregister(TControllerIdentifier controllerIdentifier, const VirtualController* virtualController)
+        {
+            // Nothing to do here.
         }
 
         // --------

@@ -309,5 +309,26 @@ namespace Xidi
             }
         };
         static_assert(sizeof(SState) <= 32, "Data structure size constraint violation.");
+
+        /// Structure used for holding physical controller state data.
+        struct SPhysicalState
+        {
+            DWORD errorCode;                                                ///< Error code resulting from the last attempt to poll the physical controller.
+            XINPUT_STATE state;                                             ///< State data from the last attempt to poll the physical controller.
+
+            /// Simple equality check to detect physical state changes.
+            /// @param [in] other Object with which to compare.
+            /// @return `true` if this object is equal to the other object, `false` otherwise.
+            constexpr inline bool operator==(const SPhysicalState& other) const
+            {
+                if (errorCode != other.errorCode)
+                    return false;
+
+                if ((errorCode == 0) && (state.dwPacketNumber != other.state.dwPacketNumber))
+                    return false;
+
+                return true;
+            }
+        };
     }
 }

@@ -12,9 +12,9 @@
 #pragma once
 
 #include "ControllerTypes.h"
+#include "ForceFeedbackDeviceBuffer.h"
 #include "ForceFeedbackTypes.h"
 #include "Mapper.h"
-#include "PhysicalController.h"
 #include "StateChangeEventBuffer.h"
 
 #include <bitset>
@@ -305,6 +305,11 @@ namespace Xidi
             /// Used to indicate that the physical controller monitor thread should stop running.
             std::stop_source physicalControllerMonitorStop;
 
+            /// Pointer to the physical device force feedback buffer.
+            /// Valid only if this virtual controller object is registered for force feedback, `nullptr` all other times.
+            /// Only one virtual controller can ever be registered with a specific physical controller for force feedback.
+            ForceFeedback::DeviceBuffer* physicalControllerForceFeedbackBuffer;
+
 
         public:
             // -------- CONSTRUCTION AND DESTRUCTION ----------------------- //
@@ -313,8 +318,12 @@ namespace Xidi
             /// Requires a complete set of metadata for describing the virtual controller to be created.
             VirtualController(TControllerIdentifier controllerId, const Mapper& mapper);
 
+            /// Copy constructor.
+            /// Should never be invoked.
+            VirtualController(const VirtualController& other) = delete;
+
             /// Default destructor.
-            /// Cleans up and terminates the background monitoring thread.
+            /// Cleans up and terminates the background monitoring thread, and unregisters this controller for force feedback.
             ~VirtualController(void);
 
 
@@ -351,6 +360,29 @@ namespace Xidi
             {
                 eventFilter.RemoveAll();
             }
+
+            /// Determines if this object is registered for force feedback operations with its associated physical controller.
+            /// @return `true` if so, `false` if not.
+            bool ForceFeedbackIsRegistered(void) const;
+
+            /// Maps from virtual force feedback effect magnitude component to physical force feedback actuator values.
+            /// Simply delegates to the associated mapper object.
+            /// @param [in] virtualEffectComponents Virtual force feedback vector expressed as a magnitude component vector.
+            /// @return Physical force feedback vector expressed as a per-actuator component vector.
+            inline ForceFeedback::SPhysicalActuatorComponents ForceFeedbackMapVirtualToPhysical(ForceFeedback::TOrderedMagnitudeComponents virtualMagnitudeComponents) const
+            {
+                return mapper.MapForceFeedbackVirtualToPhysical(virtualMagnitudeComponents, properties.device.ffGain);
+            }
+
+            /// Attempts to registers this object for force feedback operations with its associated physical controller.
+            /// Only one virtual controller object can ever be registered for force feedback operations at any given time.
+            /// This is conceptually equivalent to acquiring a device in "exclusive" mode.
+            /// Registration is co-operative, meaning that this operation will fail if another object is already registered.
+            /// @return `true` if this object was already registered or is now successfully registered, `false` otherwise.
+            bool ForceFeedbackRegister(void);
+
+            /// Unregisters this object for force feedback operations with its associated physical controller.
+            void ForceFeedbackUnregister(void);
 
             /// Retrieves and returns the capabilities of this virtual controller.
             /// Controller capabilities act as metadata that are used internally and can be presented to applications.
