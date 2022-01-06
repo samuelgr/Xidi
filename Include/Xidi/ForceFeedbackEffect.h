@@ -186,14 +186,6 @@ namespace Xidi
                     return commonParameters.envelope;
                 }
 
-                /// Computes and returns this effect's total time.
-                /// Includes both duration and any start delay.
-                /// @return Effect's total time.
-                inline TEffectTimeMs GetTotalTime(void) const
-                {
-                    return commonParameters.duration.value_or(0) + commonParameters.startDelay;
-                }
-
                 /// Checks if there are valid axes associated with this force feedback effect.
                 /// @return `true` if so, `false` otherwise.
                 inline bool HasAssociatedAxes(void) const

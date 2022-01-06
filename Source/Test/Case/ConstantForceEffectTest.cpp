@@ -72,28 +72,6 @@ namespace XidiTest
         }
     }
 
-    // Creates a constant force effect with a specific magnitude and applies a start delay. Ensures the start delay is handled correctly.
-    // No other properties are specified.
-    TEST_CASE(ConstantForceEffect_ComputeMagnitude_StartDelay)
-    {
-        constexpr TEffectValue kTestMagnitude = 2500;
-        constexpr TEffectTimeMs kTestStartDelay = 50;
-
-        ConstantForceEffect effect;
-        effect.InitializeDefaultAssociatedAxes();
-        effect.InitializeDefaultDirection();
-        effect.SetDuration(kTestEffectDuration);
-        effect.SetTypeSpecificParameters({.magnitude = kTestMagnitude});
-
-        effect.SetStartDelay(kTestStartDelay);
-
-        for (TEffectTimeMs t = 0; t < kTestStartDelay; ++t)
-            TEST_ASSERT(kEffectForceMagnitudeZero == effect.ComputeMagnitude(t));
-
-        for (TEffectTimeMs t = kTestStartDelay; t < (kTestStartDelay + kTestEffectDuration); ++t)
-            TEST_ASSERT(kTestMagnitude == effect.ComputeMagnitude(t));
-    }
-
     // Creates a constant force effect with a positive magnitude and applies an envelope transformation.
     // No other properties are specified.
     TEST_CASE(ConstantForceEffect_ComputeMagnitude_EnvelopePositive)

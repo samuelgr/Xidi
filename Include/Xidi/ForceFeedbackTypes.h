@@ -133,17 +133,26 @@ namespace Xidi
 
             // -------- OPERATORS ------------------------------------------ //
 
+            /// Addition-assignment operator for globally-ordered magnitude component vectors.
+            /// @param [in] vectorLeft Vector on the left side of the assignment.
+            /// @param [in] vectorRight Vector on the right side of the assignment.
+            /// @return Reference to the vector on the left side of the assignment, which is updated with the result of the addition.
+            constexpr inline TOrderedMagnitudeComponents& operator+=(TOrderedMagnitudeComponents& vectorLeft, const TOrderedMagnitudeComponents& vectorRight)
+            {
+                for (size_t i = 0; i < vectorLeft.size(); ++i)
+                    vectorLeft[i] = vectorLeft[i] + vectorRight[i];
+
+                return vectorLeft;
+            }
+
             /// Addition operator for globally-ordered magnitude component vectors.
             /// @param [in] vectorA First vector to add.
             /// @param [in] vectorB Second vector to add.
             /// @return Sum of the two magnitude component vectors, which is computed using element-by-element addition.
             constexpr inline TOrderedMagnitudeComponents operator+(const TOrderedMagnitudeComponents& vectorA, const TOrderedMagnitudeComponents& vectorB)
             {
-                TOrderedMagnitudeComponents vectorResult = {};
-
-                for (size_t i = 0; i < vectorA.size(); ++i)
-                    vectorResult[i] = vectorA[i] + vectorB[i];
-
+                TOrderedMagnitudeComponents vectorResult = vectorA;
+                vectorResult += vectorB;
                 return vectorResult;
             }
         }

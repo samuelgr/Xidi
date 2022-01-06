@@ -95,11 +95,10 @@ namespace Xidi
 
             TEffectValue Effect::ComputeMagnitude(TEffectTimeMs time) const
             {
-                if ((time < commonParameters.startDelay) || (time >= (commonParameters.startDelay + commonParameters.duration.value_or(0))))
+                if (time >= commonParameters.duration.value_or(0))
                     return kEffectForceMagnitudeZero;
 
-                const TEffectTimeMs playbackTime = time - commonParameters.startDelay;
-                const TEffectTimeMs rawTime = playbackTime - (playbackTime % commonParameters.samplePeriodForComputations);
+                const TEffectTimeMs rawTime = time - (time % commonParameters.samplePeriodForComputations);
                 return ComputeRawMagnitude(rawTime) * commonParameters.gainFraction;
             }
         }

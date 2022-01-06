@@ -222,6 +222,7 @@
     <ClInclude Include="Include\Xidi\Message.h" />
     <ClInclude Include="Include\Xidi\MapperParser.h" />
     <ClInclude Include="Include\Xidi\PhysicalController.h" />
+    <ClInclude Include="Include\Xidi\Test\MockForceFeedbackEffect.h" />
     <ClInclude Include="Include\Xidi\ValueOrError.h" />
     <ClInclude Include="Include\Xidi\StateChangeEventBuffer.h" />
     <ClInclude Include="Include\Xidi\Strings.h" />
@@ -261,6 +262,7 @@
     <ClCompile Include="Source\Test\Case\ConstantForceEffectTest.cpp" />
     <ClCompile Include="Source\Test\Case\DataFormatTest.cpp" />
     <ClCompile Include="Source\Test\Case\DigitalAxisMapperTest.cpp" />
+    <ClCompile Include="Source\Test\Case\ForceFeedbackDeviceBufferTest.cpp" />
     <ClCompile Include="Source\Test\Case\ForceFeedbackDirectionVectorTest.cpp" />
     <ClCompile Include="Source\Test\Case\ForceFeedbackEffectTest.cpp" />
     <ClCompile Include="Source\Test\Case\InvertMapperTest.cpp" />

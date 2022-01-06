@@ -111,6 +111,9 @@
     <ClInclude Include="Include\Xidi\ImportApiWinMM.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="Include\Xidi\Test\MockForceFeedbackEffect.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Source\Test\Harness.cpp">
@@ -240,6 +243,9 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="Source\ImportApiWinMM.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\Test\Case\ForceFeedbackDeviceBufferTest.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

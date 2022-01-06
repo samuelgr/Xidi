@@ -60,6 +60,24 @@ namespace Xidi
                 /// Holds all force feedback effects that are currently playing on the device.
                 std::map<TEffectIdentifier, SEffectData> playingEffects;
 
+                /// Base timestamp, set at object creation and never changes.
+                /// Used to establish a way of transforming system uptime to relative time elapsed since object creation.
+                const TEffectTimeMs timestampBase;
+
+                /// Caches the relative timestamp of the last playback operation.
+                TEffectTimeMs timestampRelativeLastPlay;
+
+
+            public:
+                // -------- CONSTRUCTION AND DESTRUCTION ------------------- //
+
+                /// Default constructor.
+                DeviceBuffer(void);
+
+                /// Initialization constructor.
+                /// Allows a base timestamp to be provided, which should only ever be done during testing.
+                DeviceBuffer(TEffectTimeMs timestampBase);
+
 
                 // -------- INSTANCE METHODS ------------------------------- //
 
@@ -76,11 +94,6 @@ namespace Xidi
                     readyEffects.clear();
                     playingEffects.clear();
                 }
-                
-                /// Computes the magnitude components for all of the effects that are currently playing.
-                /// Any effects that are completed are automatically stopped.
-                /// @return Magnitude components that result from playing all of the effects at the current time.
-                TOrderedMagnitudeComponents GetPlayingEffectsMagnitude(void);
 
                 /// Determines if the identified effect is loaded into the device buffer.
                 /// @param [in] id Identifier of the effect of interest.
@@ -94,34 +107,28 @@ namespace Xidi
                 /// Determines if the identified effect is loaded into the device buffer and currently playing.
                 /// @param [in] id Identifier of the effect of interest.
                 /// @return `true` if so, `false` if not.
-                inline bool IsEffectPlaying(TEffectIdentifier id)
-                {
-                    std::shared_lock lock(bufferMutex);
-                    return playingEffects.contains(id);
-                }
+                bool IsEffectPlaying(TEffectIdentifier id);
 
-                /// Determines if the identified effect is loaded into the device buffer but not currently playing.
-                /// @param [in] id Identifier of the effect of interest.
-                /// @return `true` if so, `false` if not.
-                inline bool IsEffectReady(TEffectIdentifier id)
-                {
-                    std::shared_lock lock(bufferMutex);
-                    return readyEffects.contains(id);
-                }
+                /// Computes the magnitude components for all of the effects that are currently playing.
+                /// Any effects that are completed are automatically stopped.
+                /// @param [in] timestamp Effective relative timestamp for the playback operation. Generally should not be passed (which would mean use the current time), but exposed for testing.
+                /// @return Magnitude components that result from playing all of the effects at the current time.
+                TOrderedMagnitudeComponents PlayEffects(std::optional<TEffectTimeMs> timestamp = std::nullopt);
 
                 /// Starts playing the identified effect. If the effect is already playing, it is restarted from the beginning.
                 /// @param [in] id Identifier of the effect of interest.
                 /// @param [in] numIterations Number of times to repeat the effect.
+                /// @param [in] timestamp Starting relative timestamp to associate with the effect. Generally should not be passed (which would mean use the current time), but exposed for testing.
                 /// @return `true` on success, `false` on failure. This method will fail if the identified effect does not exist in the device buffer.
-                bool StartPlayingEffect(TEffectIdentifier id, unsigned int numIterations);
+                bool StartEffect(TEffectIdentifier id, unsigned int numIterations, std::optional<TEffectTimeMs> timestamp = std::nullopt);
 
                 /// Stops playing all effects that are currently playing.
-                void StopPlayingAllEffects(void);
+                void StopAllEffects(void);
 
                 /// Stops playing the identified effect if it is currently playing.
                 /// @param [in] od Identifier of the effect of interest.
                 /// @return `true` on success, `false` on failure. This method will fail if the identified effect is not currently playing.
-                bool StopPlayingEffect(TEffectIdentifier id);
+                bool StopEffect(TEffectIdentifier id);
 
                 /// Removes the identified effect from the device buffer. It is automatically stopped if it is currently playing.
                 /// @param [in] id Identifier of the effect of interest.

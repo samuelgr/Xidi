@@ -13,6 +13,7 @@
 #include "ForceFeedbackEffect.h"
 #include "ForceFeedbackParameters.h"
 #include "ForceFeedbackTypes.h"
+#include "MockForceFeedbackEffect.h"
 #include "TestCase.h"
 
 
@@ -41,33 +42,13 @@ namespace XidiTest
     static constexpr SEnvelope kTestTrivialEnvelope = {.attackTime = 0, .attackLevel = 1000, .fadeTime = 0, .fadeLevel = 2500};
 
 
-    // -------- INTERNAL TYPES --------------------------------------------- //
-
-    /// Simple test force feedback effect that returns the raw time as its computed magnitude.
-    class TestEffect : public Effect
-    {
-    public:
-        // -------- CONCRETE INSTANCE METHODS ------------------------------ //
-
-        std::unique_ptr<Effect> Clone(void) const override
-        {
-            return std::make_unique<TestEffect>(*this);
-        }
-
-        TEffectValue ComputeRawMagnitude(TEffectTimeMs rawTime) const override
-        {
-            return (TEffectValue)rawTime;
-        }
-    };
-
-
     // -------- TEST CASES ------------------------------------------------- //
 
     // Creates a simple test effect with no properties other than duration.
     // Verifies that it returns the correct computed magnitude at all times throughout its duration.
     TEST_CASE(ForceFeedbackEffect_NominalEffect_Magnitude)
     {
-        TestEffect effect;
+        MockEffect effect;
         effect.InitializeDefaultAssociatedAxes();
         effect.InitializeDefaultDirection();
         effect.SetDuration(kTestEffectDuration);
@@ -80,7 +61,7 @@ namespace XidiTest
     // Verifies that it returns the correct values for all of its common properties.
     TEST_CASE(ForceFeedbackEffect_NominalEffect_Parameters)
     {
-        TestEffect effect;
+        MockEffect effect;
         TEST_ASSERT(false == effect.HasDirection());
         TEST_ASSERT(false == effect.HasDuration());
 
@@ -95,7 +76,6 @@ namespace XidiTest
         effect.SetDuration(kTestEffectDuration);
         TEST_ASSERT(true == effect.HasDuration());
         TEST_ASSERT(kTestEffectDuration == effect.GetDuration().value());
-        TEST_ASSERT(kTestEffectDuration == effect.GetTotalTime());
 
         TEST_ASSERT(SCommonParameters::kDefaultStartDelay == effect.GetStartDelay());
         TEST_ASSERT(SCommonParameters::kDefaultSamplePeriod == effect.GetSamplePeriod());
@@ -105,26 +85,24 @@ namespace XidiTest
 
     // Creates a test effect with a start delay.
     // Verifies that it returns the correct computed magnitude at all times throughout its duration.
+    // Start delay handling is not implemented by the effect itself and therefore should not affect the output magnitude it produces.
     TEST_CASE(ForceFeedbackEffect_EffectWithStartDelay_Magnitude)
     {
-        TestEffect effect;
+        MockEffect effect;
         effect.InitializeDefaultAssociatedAxes();
         effect.InitializeDefaultDirection();
         effect.SetDuration(kTestEffectDuration);
         effect.SetStartDelay(kTestEffectStartDelay);
 
-        for (TEffectTimeMs t = 0; t < kTestEffectStartDelay; ++t)
-            TEST_ASSERT(kEffectForceMagnitudeZero == effect.ComputeMagnitude(t));
-
-        for (TEffectTimeMs t = kTestEffectStartDelay; t < (kTestEffectDuration + kTestEffectStartDelay); ++t)
-            TEST_ASSERT(t - kTestEffectStartDelay == effect.ComputeMagnitude(t));
+        for (TEffectTimeMs t = 0; t < kTestEffectDuration; ++t)
+            TEST_ASSERT(t == effect.ComputeMagnitude(t));
     }
 
     // Creates a test effect with a start delay.
     // Verifies that it returns the correct values for all of its common properties.
     TEST_CASE(ForceFeedbackEffect_EffectWithStartDelay_Parameters)
     {
-        TestEffect effect;
+        MockEffect effect;
         effect.InitializeDefaultAssociatedAxes();
         effect.InitializeDefaultDirection();
         effect.SetDuration(kTestEffectDuration);
@@ -132,7 +110,6 @@ namespace XidiTest
 
         TEST_ASSERT(true == effect.HasDuration());
         TEST_ASSERT(kTestEffectDuration == effect.GetDuration().value());
-        TEST_ASSERT(kTestEffectDuration + kTestEffectStartDelay == effect.GetTotalTime());
 
         TEST_ASSERT(kTestEffectStartDelay == effect.GetStartDelay());
         TEST_ASSERT(SCommonParameters::kDefaultSamplePeriod == effect.GetSamplePeriod());
@@ -144,7 +121,7 @@ namespace XidiTest
     // Verifies that it returns the correct computed magnitude at all times throughout its duration.
     TEST_CASE(ForceFeedbackEffect_EffectWithSamplePeriod_Magnitude)
     {
-        TestEffect effect;
+        MockEffect effect;
         effect.InitializeDefaultAssociatedAxes();
         effect.InitializeDefaultDirection();
         effect.SetDuration(kTestEffectDuration);
@@ -164,7 +141,7 @@ namespace XidiTest
     // Verifies that it returns the correct values for all of its common properties.
     TEST_CASE(ForceFeedbackEffect_EffectWithSamplePeriod_Parameters)
     {
-        TestEffect effect;
+        MockEffect effect;
         effect.InitializeDefaultAssociatedAxes();
         effect.InitializeDefaultDirection();
         effect.SetDuration(kTestEffectDuration);
@@ -172,7 +149,6 @@ namespace XidiTest
 
         TEST_ASSERT(true == effect.HasDuration());
         TEST_ASSERT(kTestEffectDuration == effect.GetDuration().value());
-        TEST_ASSERT(kTestEffectDuration == effect.GetTotalTime());
 
         TEST_ASSERT(SCommonParameters::kDefaultStartDelay == effect.GetStartDelay());
         TEST_ASSERT(kTestEffectSamplePeriod == effect.GetSamplePeriod());
@@ -184,7 +160,7 @@ namespace XidiTest
     // Verifies that it returns the correct computed magnitude at all times throughout its duration.
     TEST_CASE(ForceFeedbackEffect_EffectWithGain_Magnitude)
     {
-        TestEffect effect;
+        MockEffect effect;
         effect.InitializeDefaultAssociatedAxes();
         effect.InitializeDefaultDirection();
         effect.SetDuration(kTestEffectDuration);
@@ -198,7 +174,7 @@ namespace XidiTest
     // Verifies that it returns the correct values for all of its common properties.
     TEST_CASE(ForceFeedbackEffect_EffectWithGain_Parameters)
     {
-        TestEffect effect;
+        MockEffect effect;
         effect.InitializeDefaultAssociatedAxes();
         effect.InitializeDefaultDirection();
         effect.SetDuration(kTestEffectDuration);
@@ -206,7 +182,6 @@ namespace XidiTest
 
         TEST_ASSERT(true == effect.HasDuration());
         TEST_ASSERT(kTestEffectDuration == effect.GetDuration().value());
-        TEST_ASSERT(kTestEffectDuration== effect.GetTotalTime());
 
         TEST_ASSERT(SCommonParameters::kDefaultStartDelay == effect.GetStartDelay());
         TEST_ASSERT(SCommonParameters::kDefaultSamplePeriod == effect.GetSamplePeriod());
@@ -218,7 +193,7 @@ namespace XidiTest
     // Verifies that it returns the correct computed magnitude at all times throughout its duration.
     TEST_CASE(ForceFeedbackEffect_EffectWithTrivialEnvelope_Magnitude)
     {
-        TestEffect effect;
+        MockEffect effect;
         effect.InitializeDefaultAssociatedAxes();
         effect.InitializeDefaultDirection();
         effect.SetDuration(kTestEffectDuration);
@@ -232,7 +207,7 @@ namespace XidiTest
     // Verifies that it returns the correct values for all of its common properties.
     TEST_CASE(ForceFeedbackEffect_EffectWithTrivialEnvelope_Parameters)
     {
-        TestEffect effect;
+        MockEffect effect;
         effect.InitializeDefaultAssociatedAxes();
         effect.InitializeDefaultDirection();
         effect.SetDuration(kTestEffectDuration);
@@ -240,7 +215,6 @@ namespace XidiTest
 
         TEST_ASSERT(true == effect.HasDuration());
         TEST_ASSERT(kTestEffectDuration == effect.GetDuration().value());
-        TEST_ASSERT(kTestEffectDuration == effect.GetTotalTime());
 
         TEST_ASSERT(SCommonParameters::kDefaultStartDelay == effect.GetStartDelay());
         TEST_ASSERT(SCommonParameters::kDefaultSamplePeriod == effect.GetSamplePeriod());
@@ -257,7 +231,7 @@ namespace XidiTest
         constexpr SEnvelope kTestEnvelope = {.attackTime = kTestEffectDuration / 2, .attackLevel = kEffectForceMagnitudeZero, .fadeTime = kTestEffectDuration / 2, .fadeLevel = kTestEffectDuration};
         constexpr TEffectValue kSustainLevel = kTestEffectDuration / 2;
 
-        TestEffect effect;
+        MockEffect effect;
         effect.InitializeDefaultAssociatedAxes();
         effect.InitializeDefaultDirection();
         effect.SetDuration(kTestEffectDuration);
@@ -275,7 +249,7 @@ namespace XidiTest
         constexpr SEnvelope kTestEnvelope = {.attackTime = kTestEffectDuration / 2, .attackLevel = kTestEffectDuration, .fadeTime = kTestEffectDuration / 2, .fadeLevel = kEffectForceMagnitudeZero};
         constexpr TEffectValue kSustainLevel = kTestEffectDuration / 2;
 
-        TestEffect effect;
+        MockEffect effect;
         effect.InitializeDefaultAssociatedAxes();
         effect.InitializeDefaultDirection();
         effect.SetDuration(kTestEffectDuration);
@@ -291,7 +265,7 @@ namespace XidiTest
         constexpr SEnvelope kTestEnvelope = {.attackTime = kTestEffectDuration / 4, .attackLevel = kEffectForceMagnitudeZero, .fadeTime = kTestEffectDuration / 4, .fadeLevel = kEffectForceMagnitudeZero};
         constexpr TEffectValue kSustainLevel = kTestEffectDuration;
 
-        TestEffect effect;
+        MockEffect effect;
         effect.InitializeDefaultAssociatedAxes();
         effect.InitializeDefaultDirection();
         effect.SetDuration(kTestEffectDuration);
@@ -316,7 +290,7 @@ namespace XidiTest
     // Creates an effect and submits invalid parameters. Verifies that they are all rejected.
     TEST_CASE(ForceFeedbackEffect_InvalidParameters)
     {
-        TestEffect effect;
+        MockEffect effect;
         
         TEST_ASSERT(false == effect.SetDuration(0));
         TEST_ASSERT(false == effect.HasDuration());
@@ -336,7 +310,7 @@ namespace XidiTest
     // Only a duration is required. All other parameters are optional.
     TEST_CASE(ForceFeedbackEffect_IsCompletelyDefined)
     {
-        TestEffect effect;
+        MockEffect effect;
 
         TEST_ASSERT(false == effect.IsCompletelyDefined());
         TEST_ASSERT(true == effect.SetDuration(kTestEffectDuration));
@@ -358,7 +332,7 @@ namespace XidiTest
 
         for (const auto kTestAxis : kTestAxes)
         {
-            TestEffect effect;
+            MockEffect effect;
             
             const TEffectValue kCartesianCoordinates[] = {1};
             TEST_ASSERT(true == effect.Direction().SetDirectionUsingCartesian(kCartesianCoordinates, _countof(kCartesianCoordinates)));
@@ -377,7 +351,7 @@ namespace XidiTest
     // Verifies that a cloned effect is equivalent to its origin effect.
     TEST_CASE(ForceFeedbackEffect_Clone)
     {
-        TestEffect effect;
+        MockEffect effect;
         TEST_ASSERT(true == effect.SetAssociatedAxes({.count = 2, .type = {EAxis::Z, EAxis::RotZ}}));
         TEST_ASSERT(true == effect.SetDuration(123));
         TEST_ASSERT(true == effect.SetStartDelay(456));
@@ -393,7 +367,7 @@ namespace XidiTest
     // Verifies that two effect objects with the same identifier can successfully complete a parameter synchronization operation.
     TEST_CASE(ForceFeedbackEffect_SyncParameters_SameIdentifier)
     {
-        TestEffect effect;
+        MockEffect effect;
         std::unique_ptr<Effect> clonedEffect = effect.Clone();
 
         TEST_ASSERT(true == effect.SetAssociatedAxes({.count = 2, .type = {EAxis::Z, EAxis::RotZ}}));
@@ -412,10 +386,10 @@ namespace XidiTest
     // The failed synchronization operation should result in no changes to the attempted destination effect's parameters.
     TEST_CASE(ForceFeedbackEffect_SyncParameters_DifferentIdentifier)
     {
-        TestEffect effect;
+        MockEffect effect;
         std::unique_ptr<Effect> clonedEffect = effect.Clone();
 
-        TestEffect effect2;
+        MockEffect effect2;
         TEST_ASSERT(true == effect2.SetAssociatedAxes({.count = 2, .type = {EAxis::Z, EAxis::RotZ}}));
         TEST_ASSERT(true == effect2.SetDuration(123));
         TEST_ASSERT(true == effect2.SetStartDelay(456));
