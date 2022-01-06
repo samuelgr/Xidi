@@ -129,7 +129,112 @@ namespace XidiTest
         TEST_ASSERT(false == deviceBuffer.IsEffectPlaying(effect.Identifier()));
     }
 
-    // Slightly more complex situation in which a single effect exists for playback but has a start delay.
+    // A single effect exists for playback but is muted halfway through.
+    // It should produce no output but its clock should continue to advance.
+    TEST_CASE(ForceFeedbackDeviceBuffer_SingleEffect_Mute)
+    {
+        constexpr TEffectTimeMs kTestEffectDuration = 100;
+
+        DeviceBuffer deviceBuffer = MakeTestDeviceBuffer();
+
+        MockEffect effect = MakeTestEffect(kTestEffectDuration);
+
+        TEST_ASSERT(true == deviceBuffer.AddOrUpdateEffect(effect));
+        TEST_ASSERT(true == deviceBuffer.IsEffectOnDevice(effect.Identifier()));
+        TEST_ASSERT(false == deviceBuffer.IsEffectPlaying(effect.Identifier()));
+
+        TEST_ASSERT(true == deviceBuffer.StartEffect(effect.Identifier(), 1, kDefaultTimestampBase));
+
+        for (TEffectTimeMs t = 0; t < kTestEffectDuration / 2; ++t)
+        {
+            TEST_ASSERT(true == deviceBuffer.IsEffectOnDevice(effect.Identifier()));
+            TEST_ASSERT(true == deviceBuffer.IsEffectPlaying(effect.Identifier()));
+
+            const TOrderedMagnitudeComponents kExpectedMagnitudeComponents = effect.ComputeOrderedMagnitudeComponents(t);
+            const TOrderedMagnitudeComponents kActualMagnitudeComponents = deviceBuffer.PlayEffects(t);
+            TEST_ASSERT(kActualMagnitudeComponents == kExpectedMagnitudeComponents);
+        }
+
+        TEST_ASSERT(false == deviceBuffer.GetMutedState());
+        deviceBuffer.SetMutedState(true);
+        TEST_ASSERT(true == deviceBuffer.GetMutedState());
+        
+        for (TEffectTimeMs t = kTestEffectDuration / 2; t <= kTestEffectDuration; ++t)
+        {
+            TEST_ASSERT(true == deviceBuffer.IsEffectOnDevice(effect.Identifier()));
+            TEST_ASSERT(true == deviceBuffer.IsEffectPlaying(effect.Identifier()));
+
+            const TOrderedMagnitudeComponents kExpectedMagnitudeComponents = {};
+            const TOrderedMagnitudeComponents kActualMagnitudeComponents = deviceBuffer.PlayEffects(t);
+            TEST_ASSERT(kActualMagnitudeComponents == kExpectedMagnitudeComponents);
+        }
+
+        TEST_ASSERT(true == deviceBuffer.IsEffectOnDevice(effect.Identifier()));
+        TEST_ASSERT(false == deviceBuffer.IsEffectPlaying(effect.Identifier()));
+    }
+
+    // A single effect exists for playback but is paused and resumed.
+    // It should pick up right where it left off after being resumed.
+    TEST_CASE(ForceFeedbackDeviceBuffer_SingleEffect_Pause)
+    {
+        constexpr TEffectTimeMs kTestEffectDuration = 100;
+        constexpr TEffectTimeMs kTestEffectPauseDuration = 5000;
+
+        DeviceBuffer deviceBuffer = MakeTestDeviceBuffer();
+
+        MockEffect effect = MakeTestEffect(kTestEffectDuration);
+
+        TEST_ASSERT(true == deviceBuffer.AddOrUpdateEffect(effect));
+        TEST_ASSERT(true == deviceBuffer.IsEffectOnDevice(effect.Identifier()));
+        TEST_ASSERT(false == deviceBuffer.IsEffectPlaying(effect.Identifier()));
+
+        TEST_ASSERT(true == deviceBuffer.StartEffect(effect.Identifier(), 1, kDefaultTimestampBase));
+
+        for (TEffectTimeMs t = 0; t < kTestEffectDuration / 2; ++t)
+        {
+            TEST_ASSERT(true == deviceBuffer.IsEffectOnDevice(effect.Identifier()));
+            TEST_ASSERT(true == deviceBuffer.IsEffectPlaying(effect.Identifier()));
+
+            const TOrderedMagnitudeComponents kExpectedMagnitudeComponents = effect.ComputeOrderedMagnitudeComponents(t);
+            const TOrderedMagnitudeComponents kActualMagnitudeComponents = deviceBuffer.PlayEffects(t);
+            TEST_ASSERT(kActualMagnitudeComponents == kExpectedMagnitudeComponents);
+        }
+
+        TEST_ASSERT(false == deviceBuffer.GetPauseState());
+        deviceBuffer.SetPauseState(true);
+        TEST_ASSERT(true == deviceBuffer.GetPauseState());
+
+        for (TEffectTimeMs t = 0; t < kTestEffectPauseDuration; ++t)
+        {
+            TEST_ASSERT(true == deviceBuffer.IsEffectOnDevice(effect.Identifier()));
+            TEST_ASSERT(true == deviceBuffer.IsEffectPlaying(effect.Identifier()));
+
+            const TOrderedMagnitudeComponents kExpectedMagnitudeComponents = {};
+            const TOrderedMagnitudeComponents kActualMagnitudeComponents = deviceBuffer.PlayEffects((kTestEffectDuration / 2) + t);
+        }
+
+        TEST_ASSERT(true == deviceBuffer.IsEffectOnDevice(effect.Identifier()));
+        TEST_ASSERT(true == deviceBuffer.IsEffectPlaying(effect.Identifier()));
+
+        TEST_ASSERT(true == deviceBuffer.GetPauseState());
+        deviceBuffer.SetPauseState(false);
+        TEST_ASSERT(false == deviceBuffer.GetPauseState());
+
+        for (TEffectTimeMs t = 0; t <= kTestEffectDuration / 2; ++t)
+        {
+            TEST_ASSERT(true == deviceBuffer.IsEffectOnDevice(effect.Identifier()));
+            TEST_ASSERT(true == deviceBuffer.IsEffectPlaying(effect.Identifier()));
+
+            const TOrderedMagnitudeComponents kExpectedMagnitudeComponents = effect.ComputeOrderedMagnitudeComponents((kTestEffectDuration / 2) + t);
+            const TOrderedMagnitudeComponents kActualMagnitudeComponents = deviceBuffer.PlayEffects((kTestEffectDuration / 2) + kTestEffectPauseDuration + t);
+            TEST_ASSERT(kActualMagnitudeComponents == kExpectedMagnitudeComponents);
+        }
+
+        TEST_ASSERT(true == deviceBuffer.IsEffectOnDevice(effect.Identifier()));
+        TEST_ASSERT(false == deviceBuffer.IsEffectPlaying(effect.Identifier()));
+    }
+
+    // A single effect exists for playback but has a start delay.
     // Verifies that the start delay is honored and the correct magnitude vector is retrieved at each time.
     TEST_CASE(ForceFeedbackDeviceBuffer_SingleEffect_StartDelay)
     {

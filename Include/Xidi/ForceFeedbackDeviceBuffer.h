@@ -60,9 +60,16 @@ namespace Xidi
                 /// Holds all force feedback effects that are currently playing on the device.
                 std::map<TEffectIdentifier, SEffectData> playingEffects;
 
-                /// Base timestamp, set at object creation and never changes.
-                /// Used to establish a way of transforming system uptime to relative time elapsed since object creation.
-                const TEffectTimeMs timestampBase;
+                /// Indicates whether or not the force feedback effects are muted or not.
+                /// If so, no effects produce any output but time can advance.
+                bool stateEffectsAreMuted;
+
+                /// Indicates whether playback of force feedback effects is paused or not.
+                /// If so, no effects produce any output and time stops.
+                bool stateEffectsArePaused;
+
+                /// Base timestamp, used to establish a way of transforming system uptime to relative time elapsed since object creation.
+                TEffectTimeMs timestampBase;
 
                 /// Caches the relative timestamp of the last playback operation.
                 TEffectTimeMs timestampRelativeLastPlay;
@@ -87,12 +94,30 @@ namespace Xidi
                 /// @return `true` on success, `false` on failure. This method will fail if too many effects already exist in the device buffer.
                 bool AddOrUpdateEffect(const Effect& effect);
 
-                /// Clears all effects from this buffer.
+                /// Clears all effects from this buffer and resets any paused or muted states that might have been set.
                 inline void Clear(void)
                 {
                     std::unique_lock lock(bufferMutex);
                     readyEffects.clear();
                     playingEffects.clear();
+                    stateEffectsAreMuted = false;
+                    stateEffectsArePaused = false;
+                }
+
+                /// Determines if the force feedback system's output state is muted.
+                /// @return `true` if so, `false` otherwise.
+                inline bool GetMutedState(void)
+                {
+                    std::shared_lock lock(bufferMutex);
+                    return stateEffectsAreMuted;
+                }
+
+                /// Determines if the force feedback system is currently paused.
+                /// @return `true` if so, `false` otherwise.
+                inline bool GetPauseState(void)
+                {
+                    std::shared_lock lock(bufferMutex);
+                    return stateEffectsArePaused;
                 }
 
                 /// Determines if the identified effect is loaded into the device buffer.
@@ -114,6 +139,24 @@ namespace Xidi
                 /// @param [in] timestamp Effective relative timestamp for the playback operation. Generally should not be passed (which would mean use the current time), but exposed for testing.
                 /// @return Magnitude components that result from playing all of the effects at the current time.
                 TOrderedMagnitudeComponents PlayEffects(std::optional<TEffectTimeMs> timestamp = std::nullopt);
+
+                /// Sets the force feedback system's muted state.
+                /// In muted state effects play but no output is actually produced.
+                /// @param [in] muted `true` if effects should be muted, `false` otherwise.
+                inline void SetMutedState(bool muted)
+                {
+                    std::unique_lock lock(bufferMutex);
+                    stateEffectsAreMuted = muted;
+                }
+
+                /// Sets the force feedback system's paused state.
+                /// In paused state the effects do not play and their clocks do not advance towards their duration.
+                /// @param [in] paused `true` if effects should be paused, `false` otherwise.
+                inline void SetPauseState(bool paused)
+                {
+                    std::unique_lock lock(bufferMutex);
+                    stateEffectsArePaused = paused;
+                }
 
                 /// Starts playing the identified effect. If the effect is already playing, it is restarted from the beginning.
                 /// @param [in] id Identifier of the effect of interest.

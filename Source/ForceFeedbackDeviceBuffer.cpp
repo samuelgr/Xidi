@@ -47,7 +47,7 @@ namespace Xidi
 
             // --------
 
-            DeviceBuffer::DeviceBuffer(TEffectTimeMs timestampBase) : bufferMutex(), readyEffects(), playingEffects(), timestampBase(timestampBase), timestampRelativeLastPlay()
+            DeviceBuffer::DeviceBuffer(TEffectTimeMs timestampBase) : bufferMutex(), readyEffects(), playingEffects(), stateEffectsAreMuted(), stateEffectsArePaused(), timestampBase(timestampBase), timestampRelativeLastPlay()
             {
                 // Nothing to do here.
             }
@@ -97,6 +97,13 @@ namespace Xidi
                 std::unique_lock lock(bufferMutex);
 
                 const TEffectTimeMs kRelativeTimestampPlayback = RelativeTimestamp(timestampBase, timestamp);
+
+                if (true == stateEffectsArePaused)
+                {
+                    timestampBase += (kRelativeTimestampPlayback - timestampRelativeLastPlay);
+                    return {};
+                }
+
                 timestampRelativeLastPlay = kRelativeTimestampPlayback;
 
                 TOrderedMagnitudeComponents playbackResult = {};
@@ -120,7 +127,9 @@ namespace Xidi
                             {
                                 effectData.numIterationsLeft -= 1;
                                 effectData.startTime = kRelativeTimestampPlayback;
-                                playbackResult += effectData.effect->ComputeOrderedMagnitudeComponents(0);
+
+                                if (false == stateEffectsAreMuted)
+                                    playbackResult += effectData.effect->ComputeOrderedMagnitudeComponents(0);
                             }
                             else
                             {
@@ -136,7 +145,8 @@ namespace Xidi
                         {
                             // Effect is currently playing.
                             // This is as simple as computing its magnitude components and adding them to the result.
-                            playbackResult += effectData.effect->ComputeOrderedMagnitudeComponents(kEffectPlayTime);
+                            if (false == stateEffectsAreMuted)
+                                playbackResult += effectData.effect->ComputeOrderedMagnitudeComponents(kEffectPlayTime);
                         }
                     }
 
