@@ -179,13 +179,6 @@ namespace Xidi
 
         // --------
 
-        bool VirtualController::ForceFeedbackIsRegistered(void) const
-        {
-            return (nullptr != physicalControllerForceFeedbackBuffer);
-        }
-
-        // --------
-
         bool VirtualController::ForceFeedbackRegister(void)
         {
             auto lock = Lock();

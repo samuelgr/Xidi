@@ -72,6 +72,13 @@ namespace Xidi
 #endif
     };
 
+    /// Enumerates possible access modes for DirectInput devices.
+    enum class ECooperativeLevel
+    {
+        Shared,                                                             ///< Shared mode, also known as non-exclusive mode. Any number of shared mode acquisitions are allowed to the same physical device, even if another acquisition already exists in exclusive mode.
+        Exclusive                                                           ///< Exclusive mode. Only a single acquisition in exclusive mode is permitted per physical device.
+    };
+
     /// Inherits from whatever IDirectInputDevice version is appropriate.
     /// @tparam charMode Selects between ASCII ("A" suffix) and Unicode ("W") suffix versions of types and interfaces.
     template <ECharMode charMode> class VirtualDirectInputDevice : public DirectInputDeviceType<charMode>
@@ -81,6 +88,11 @@ namespace Xidi
 
         /// Virtual controller with which to interface.
         std::unique_ptr<Controller::VirtualController> controller;
+
+        /// Cooperative level that defines the desired level of access to the underlying physical device.
+        /// Shared by default, but applications can request exclusive mode.
+        /// Force feedback requires that an applicaton acquire the device in exclusive mode.
+        ECooperativeLevel cooperativeLevel;
 
         /// Data format specification for communicating with the DirectInput application.
         std::unique_ptr<DataFormat> dataFormat;
@@ -94,6 +106,9 @@ namespace Xidi
         /// Initialization constructor.
         /// @param [in] controller Virtual controller object to associate with this object.
         VirtualDirectInputDevice(std::unique_ptr<Controller::VirtualController>&& controller);
+
+        /// Default destructor.
+        ~VirtualDirectInputDevice(void);
 
 
         // -------- INSTANCE METHODS ----------------------------------------------- //

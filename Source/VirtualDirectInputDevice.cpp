@@ -487,9 +487,16 @@ namespace Xidi
     // -------- CONSTRUCTION AND DESTRUCTION ------------------------------- //
     // See "VirtualDirectInputDevice.h" for documentation.
 
-    template <ECharMode charMode> VirtualDirectInputDevice<charMode>::VirtualDirectInputDevice(std::unique_ptr<Controller::VirtualController>&& controller) : controller(std::move(controller)), dataFormat(), refCount(1)
+    template <ECharMode charMode> VirtualDirectInputDevice<charMode>::VirtualDirectInputDevice(std::unique_ptr<Controller::VirtualController>&& controller) : controller(std::move(controller)), cooperativeLevel(ECooperativeLevel::Shared), dataFormat(), refCount(1)
     {
         // Nothing to do here.
+    }
+
+    // --------
+
+    template <ECharMode charMode> VirtualDirectInputDevice<charMode>::~VirtualDirectInputDevice(void)
+    {
+        controller->ForceFeedbackUnregister();
     }
 
 
@@ -633,13 +640,33 @@ namespace Xidi
     template <ECharMode charMode> HRESULT VirtualDirectInputDevice<charMode>::Acquire(void)
     {
         static constexpr Message::ESeverity kMethodSeverity = Message::ESeverity::Info;
-        
-        // Controller acquisition is a no-op for Xidi virtual controllers.
-        // However, DirectInput documentation requires that the application data format already be set.
-        if (false == IsApplicationDataFormatSet())
-            LOG_INVOCATION_AND_RETURN(DIERR_INVALIDPARAM, kMethodSeverity);
 
-        LOG_INVOCATION_AND_RETURN(DI_OK, kMethodSeverity);
+        // DirectInput documentation requires that the application data format already be set before a device can be acquired.
+        if (false == IsApplicationDataFormatSet())
+            LOG_INVOCATION_AND_RETURN(DIERR_INVALIDPARAM, Message::ESeverity::Warning);
+
+        switch (cooperativeLevel)
+        {
+        case ECooperativeLevel::Exclusive:
+            // In exclusive mode, the virtual controller takes exclusive control over the physical controller's force feedback buffer.
+            // Acquisition is modeled as registering successfully for such control.
+
+            Message::OutputFormatted(kMethodSeverity, L"Acquiring Xidi virtual controller %u in exclusive mode.", (1 + controller->GetIdentifier()));
+
+            if (true == controller->ForceFeedbackIsRegistered())
+                LOG_INVOCATION_AND_RETURN(S_FALSE, kMethodSeverity);
+
+            if (true == controller->ForceFeedbackRegister())
+                LOG_INVOCATION_AND_RETURN(DI_OK, kMethodSeverity);
+
+            // Getting to this point means another object has already acquired exclusive access to the physical device.
+            // DirectInput would normally enforce mutual exclusion between multiple applications, whereas Xidi only does so between multiple objects within the same application.
+            LOG_INVOCATION_AND_RETURN(DIERR_OTHERAPPHASPRIO, Message::ESeverity::Warning);
+
+        default:
+            // No other cooperative level requires any action on Xidi's part for the acquisition to succeed.
+            LOG_INVOCATION_AND_RETURN(DI_OK, kMethodSeverity);
+        }
     }
 
     // ---------
@@ -1105,8 +1132,14 @@ namespace Xidi
 
     template <ECharMode charMode> HRESULT VirtualDirectInputDevice<charMode>::SetCooperativeLevel(HWND hwnd, DWORD dwFlags)
     {
-        // Presently this is a no-op.
         static constexpr Message::ESeverity kMethodSeverity = Message::ESeverity::Info;
+
+        // The only piece of information Xidi needs from the cooperative level is whether shared or exclusive mode is desired.
+        if (0 != (dwFlags & DISCL_EXCLUSIVE))
+            cooperativeLevel = ECooperativeLevel::Exclusive;
+        else
+            cooperativeLevel = ECooperativeLevel::Shared;
+
         LOG_INVOCATION_AND_RETURN(DI_OK, kMethodSeverity);
     }
 
@@ -1242,8 +1275,11 @@ namespace Xidi
 
     template <ECharMode charMode> HRESULT VirtualDirectInputDevice<charMode>::Unacquire(void)
     {
-        // Controller acquisition is a no-op for Xidi virtual controllers.
         static constexpr Message::ESeverity kMethodSeverity = Message::ESeverity::Info;
+
+        // The only possible state that would need to be undone when unacquiring a device is relinquishing control over the physical device's force feedback buffer.
+        controller->ForceFeedbackUnregister();
+
         LOG_INVOCATION_AND_RETURN(DI_OK, kMethodSeverity);
     }
 

@@ -361,9 +361,19 @@ namespace Xidi
                 eventFilter.RemoveAll();
             }
 
+            /// Allows access to the force feedback device buffer on the physical controller associated with this virtual controller.
+            /// @return Pointer to the buffer if this controller is registered with the physical controller, `nullptr` otherwise.
+            inline ForceFeedback::DeviceBuffer* ForceFeedbackGetDeviceBuffer(void) const
+            {
+                return physicalControllerForceFeedbackBuffer;
+            }
+
             /// Determines if this object is registered for force feedback operations with its associated physical controller.
             /// @return `true` if so, `false` if not.
-            bool ForceFeedbackIsRegistered(void) const;
+            inline bool ForceFeedbackIsRegistered(void) const
+            {
+                return (nullptr != physicalControllerForceFeedbackBuffer);
+            }
 
             /// Maps from virtual force feedback effect magnitude component to physical force feedback actuator values.
             /// Simply delegates to the associated mapper object.
