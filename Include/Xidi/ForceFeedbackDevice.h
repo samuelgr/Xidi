@@ -53,7 +53,7 @@ namespace Xidi
                 // -------- INSTANCE VARIABLES ----------------------------- //
 
                 /// Enforces proper concurrency control for this object.
-                std::shared_mutex bufferMutex;
+                std::shared_mutex mutex;
 
                 /// Holds all force feedback effects that are available on the device but not playing.
                 std::map<TEffectIdentifier, SEffectData> readyEffects;
@@ -95,30 +95,60 @@ namespace Xidi
                 /// @return `true` on success, `false` on failure. This method will fail if too many effects already exist in the device buffer.
                 bool AddOrUpdateEffect(const Effect& effect);
 
-                /// Clears all effects from this buffer and resets any paused or muted states that might have been set.
+                /// Clears all effects from this device and resets any paused or muted states that might have been set.
                 inline void Clear(void)
                 {
-                    std::unique_lock lock(bufferMutex);
+                    std::unique_lock lock(mutex);
                     readyEffects.clear();
                     playingEffects.clear();
                     stateEffectsAreMuted = false;
                     stateEffectsArePaused = false;
                 }
 
+                /// Retrieves and returns the number of effects that exist in the device buffer and are currently playing.
+                /// For the purposes of this method call, effects are considered playing even if the device is paused and even if the effects are in their start delay period.
+                /// @return Number of effects on the device that are currently playing.
+                inline unsigned int GetCountPlayingEffects(void)
+                {
+                    std::shared_lock lock(mutex);
+                    return (unsigned int)playingEffects.size();
+                }
+
+                /// Retrieves and returns the total number of effects that exist in the device buffer.
+                /// @return Total number of effects on the device.
+                inline unsigned int GetCountTotalEffects(void)
+                {
+                    std::shared_lock lock(mutex);
+                    return (unsigned int)(playingEffects.size() + readyEffects.size());
+                }
+
+                /// Determines if the device is empty or not.
+                /// The device is empty if no effects exist within its buffers.
+                /// @return `true` if so, `false` if not.
+                inline bool IsDeviceEmpty(void)
+                {
+                    return (0 == GetCountTotalEffects());
+                }
+
                 /// Determines if the force feedback system's output state is muted.
                 /// @return `true` if so, `false` otherwise.
-                inline bool GetMutedState(void)
+                inline bool IsDeviceOutputMuted(void)
                 {
-                    std::shared_lock lock(bufferMutex);
                     return stateEffectsAreMuted;
                 }
 
                 /// Determines if the force feedback system is currently paused.
                 /// @return `true` if so, `false` otherwise.
-                inline bool GetPauseState(void)
+                inline bool IsDeviceOutputPaused(void)
                 {
-                    std::shared_lock lock(bufferMutex);
                     return stateEffectsArePaused;
+                }
+
+                /// Determines if the device is playing any effects or not.
+                /// @return `true` if so, `false` if not.
+                inline bool IsDevicePlayingAnyEffects(void)
+                {
+                    return (0 == GetCountPlayingEffects());
                 }
 
                 /// Determines if the identified effect is loaded into the device buffer.
@@ -126,7 +156,7 @@ namespace Xidi
                 /// @return `true` if so, `false` if not.
                 inline bool IsEffectOnDevice(TEffectIdentifier id)
                 {
-                    std::shared_lock lock(bufferMutex);
+                    std::shared_lock lock(mutex);
                     return (readyEffects.contains(id) || playingEffects.contains(id));
                 }
 
@@ -146,7 +176,7 @@ namespace Xidi
                 /// @param [in] muted `true` if effects should be muted, `false` otherwise.
                 inline void SetMutedState(bool muted)
                 {
-                    std::unique_lock lock(bufferMutex);
+                    std::unique_lock lock(mutex);
                     stateEffectsAreMuted = muted;
                 }
 
@@ -155,7 +185,7 @@ namespace Xidi
                 /// @param [in] paused `true` if effects should be paused, `false` otherwise.
                 inline void SetPauseState(bool paused)
                 {
-                    std::unique_lock lock(bufferMutex);
+                    std::unique_lock lock(mutex);
                     stateEffectsArePaused = paused;
                 }
 

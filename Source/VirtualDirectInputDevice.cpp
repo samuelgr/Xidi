@@ -15,6 +15,7 @@
 #include "ControllerIdentification.h"
 #include "ControllerTypes.h"
 #include "DataFormat.h"
+#include "ForceFeedbackDevice.h"
 #include "Message.h"
 #include "Strings.h"
 #include "VirtualController.h"
@@ -957,7 +958,46 @@ namespace Xidi
     template <ECharMode charMode> HRESULT VirtualDirectInputDevice<charMode>::GetForceFeedbackState(LPDWORD pdwOut)
     {
         static constexpr Message::ESeverity kMethodSeverity = Message::ESeverity::Info;
-        LOG_INVOCATION_AND_RETURN(DIERR_UNSUPPORTED, kMethodSeverity);
+
+        if (nullptr == pdwOut)
+            LOG_INVOCATION_AND_RETURN(DIERR_INVALIDPARAM, kMethodSeverity);
+
+        if (false == controller->ForceFeedbackIsRegistered())
+            LOG_INVOCATION_AND_RETURN(DIERR_NOTEXCLUSIVEACQUIRED, kMethodSeverity);
+
+        Controller::ForceFeedback::Device& forceFeedbackDevice = *controller->ForceFeedbackGetDevice();
+        DWORD forceFeedbackDeviceState = DIGFFS_POWERON;
+
+        if (true == forceFeedbackDevice.IsDeviceOutputMuted())
+            forceFeedbackDeviceState |= DIGFFS_ACTUATORSOFF;
+        else
+            forceFeedbackDeviceState |= DIGFFS_ACTUATORSON;
+
+        const bool kDeviceIsEmpty = forceFeedbackDevice.IsDeviceEmpty();
+        const bool kDeviceIsPaused = forceFeedbackDevice.IsDeviceOutputPaused();
+
+        if (true == kDeviceIsEmpty)
+        {
+            // If the device is empty it could also be paused.
+
+            forceFeedbackDeviceState |= DIGFFS_EMPTY;
+
+            if (true == kDeviceIsPaused)
+                forceFeedbackDeviceState |= DIGFFS_PAUSED;
+        }
+        else
+        {
+            // If the device is not empty, then it could either be playing effects, stopped (playing no effects), or paused (whether or not effects are playing is irrelevant).
+            // DirectInput documentation defines "stopped" state as being mutually exclusive with "paused" state, with the latter taking priority.
+
+            if (true == kDeviceIsPaused)
+                forceFeedbackDeviceState |= DIGFFS_PAUSED;
+            else if (false == forceFeedbackDevice.IsDevicePlayingAnyEffects())
+                forceFeedbackDeviceState |= DIGFFS_STOPPED;
+        }
+
+        *pdwOut = forceFeedbackDeviceState;
+        LOG_INVOCATION_AND_RETURN(DI_OK, kMethodSeverity);
     }
 
     // ---------
@@ -1125,7 +1165,43 @@ namespace Xidi
     template <ECharMode charMode> HRESULT VirtualDirectInputDevice<charMode>::SendForceFeedbackCommand(DWORD dwFlags)
     {
         static constexpr Message::ESeverity kMethodSeverity = Message::ESeverity::Info;
-        LOG_INVOCATION_AND_RETURN(DIERR_UNSUPPORTED, kMethodSeverity);
+
+        if (false == controller->ForceFeedbackIsRegistered())
+            LOG_INVOCATION_AND_RETURN(DIERR_NOTEXCLUSIVEACQUIRED, kMethodSeverity);
+
+        Controller::ForceFeedback::Device& forceFeedbackDevice = *controller->ForceFeedbackGetDevice();
+
+        switch (dwFlags)
+        {
+        case DISFFC_CONTINUE:
+            forceFeedbackDevice.SetPauseState(false);
+            break;
+
+        case DISFFC_PAUSE:
+            forceFeedbackDevice.SetPauseState(true);
+            break;
+
+        case DISFFC_RESET:
+            forceFeedbackDevice.Clear();
+            break;
+
+        case DISFFC_SETACTUATORSOFF:
+            forceFeedbackDevice.SetMutedState(true);
+            break;
+
+        case DISFFC_SETACTUATORSON:
+            forceFeedbackDevice.SetMutedState(false);
+            break;
+
+        case DISFFC_STOPALL:
+            forceFeedbackDevice.StopAllEffects();
+            break;
+
+        default:
+            LOG_INVOCATION_AND_RETURN(DIERR_INVALIDPARAM, kMethodSeverity);
+        }
+
+        LOG_INVOCATION_AND_RETURN(DI_OK, kMethodSeverity);
     }
 
     // ---------

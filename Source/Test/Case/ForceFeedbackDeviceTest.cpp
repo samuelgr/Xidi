@@ -155,9 +155,9 @@ namespace XidiTest
             TEST_ASSERT(kActualMagnitudeComponents == kExpectedMagnitudeComponents);
         }
 
-        TEST_ASSERT(false == Device.GetMutedState());
+        TEST_ASSERT(false == Device.IsDeviceOutputMuted());
         Device.SetMutedState(true);
-        TEST_ASSERT(true == Device.GetMutedState());
+        TEST_ASSERT(true == Device.IsDeviceOutputMuted());
         
         for (TEffectTimeMs t = kTestEffectDuration / 2; t <= kTestEffectDuration; ++t)
         {
@@ -200,9 +200,9 @@ namespace XidiTest
             TEST_ASSERT(kActualMagnitudeComponents == kExpectedMagnitudeComponents);
         }
 
-        TEST_ASSERT(false == Device.GetPauseState());
+        TEST_ASSERT(false == Device.IsDeviceOutputPaused());
         Device.SetPauseState(true);
-        TEST_ASSERT(true == Device.GetPauseState());
+        TEST_ASSERT(true == Device.IsDeviceOutputPaused());
 
         for (TEffectTimeMs t = 0; t < kTestEffectPauseDuration; ++t)
         {
@@ -216,9 +216,9 @@ namespace XidiTest
         TEST_ASSERT(true == Device.IsEffectOnDevice(effect.Identifier()));
         TEST_ASSERT(true == Device.IsEffectPlaying(effect.Identifier()));
 
-        TEST_ASSERT(true == Device.GetPauseState());
+        TEST_ASSERT(true == Device.IsDeviceOutputPaused());
         Device.SetPauseState(false);
-        TEST_ASSERT(false == Device.GetPauseState());
+        TEST_ASSERT(false == Device.IsDeviceOutputPaused());
 
         for (TEffectTimeMs t = 0; t <= kTestEffectDuration / 2; ++t)
         {

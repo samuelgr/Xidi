@@ -47,7 +47,7 @@ namespace Xidi
 
             // --------
 
-            Device::Device(TEffectTimeMs timestampBase) : bufferMutex(), readyEffects(), playingEffects(), stateEffectsAreMuted(), stateEffectsArePaused(), timestampBase(timestampBase), timestampRelativeLastPlay()
+            Device::Device(TEffectTimeMs timestampBase) : mutex(), readyEffects(), playingEffects(), stateEffectsAreMuted(), stateEffectsArePaused(), timestampBase(timestampBase), timestampRelativeLastPlay()
             {
                 // Nothing to do here.
             }
@@ -58,7 +58,7 @@ namespace Xidi
 
             bool Device::AddOrUpdateEffect(const Effect& effect)
             {
-                std::unique_lock lock(bufferMutex);
+                std::unique_lock lock(mutex);
 
                 auto playingEffectIter = playingEffects.find(effect.Identifier());
                 if (playingEffects.end() != playingEffectIter)
@@ -80,7 +80,7 @@ namespace Xidi
 
             bool Device::IsEffectPlaying(TEffectIdentifier id)
             {
-                std::shared_lock lock(bufferMutex);
+                std::shared_lock lock(mutex);
 
                 auto playingEffectIter = playingEffects.find(id);
                 if (playingEffects.end() == playingEffectIter)
@@ -94,7 +94,7 @@ namespace Xidi
 
             TOrderedMagnitudeComponents Device::PlayEffects(std::optional<TEffectTimeMs> timestamp)
             {
-                std::unique_lock lock(bufferMutex);
+                std::unique_lock lock(mutex);
 
                 const TEffectTimeMs kRelativeTimestampPlayback = RelativeTimestamp(timestampBase, timestamp);
 
@@ -163,7 +163,7 @@ namespace Xidi
                 if (0 == numIterations)
                     return true;
                 
-                std::unique_lock lock(bufferMutex);
+                std::unique_lock lock(mutex);
 
                 auto readyEffectIter = readyEffects.find(id);
                 if (readyEffects.end() == readyEffectIter)
@@ -179,7 +179,7 @@ namespace Xidi
 
             void Device::StopAllEffects(void)
             {
-                std::unique_lock lock(bufferMutex);
+                std::unique_lock lock(mutex);
 
                 while (false == playingEffects.empty())
                     readyEffects.insert(playingEffects.extract(playingEffects.cbegin()));
@@ -189,7 +189,7 @@ namespace Xidi
 
             bool Device::StopEffect(TEffectIdentifier id)
             {
-                std::unique_lock lock(bufferMutex);
+                std::unique_lock lock(mutex);
 
                 auto playingEffectIter = playingEffects.find(id);
                 if (playingEffects.end() == playingEffectIter)
@@ -202,7 +202,7 @@ namespace Xidi
 
             bool Device::RemoveEffect(TEffectIdentifier id)
             {
-                std::unique_lock lock(bufferMutex);
+                std::unique_lock lock(mutex);
 
                 if (0 != readyEffects.erase(id))
                     return true;
