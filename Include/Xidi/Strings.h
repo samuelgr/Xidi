@@ -34,6 +34,14 @@
 #define XIDI_BUTTON_NAME_FORMAT             "Button %u"
 #define XIDI_POV_NAME                       "POV"
 #define XIDI_WHOLE_CONTROLLER_NAME          "Whole Controller"
+#define XIDI_EFFECT_NAME_CONSTANT_FORCE     "Constant Force"
+#define XIDI_EFFECT_NAME_RAMP_FORCE         "Ramp Force"
+#define XIDI_EFFECT_NAME_SQUARE             "Square Wave"
+#define XIDI_EFFECT_NAME_SINE               "Sine Wave"
+#define XIDI_EFFECT_NAME_TRIANGLE           "Triangle Wave"
+#define XIDI_EFFECT_NAME_SAWTOOTH_UP        "Sawtooth Up"
+#define XIDI_EFFECT_NAME_SAWTOOTH_DOWN      "Sawtooth Down"
+#define XIDI_EFFECT_NAME_CUSTOM_FORCE       "Custom Force"
 
 
 namespace Xidi

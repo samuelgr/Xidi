@@ -58,11 +58,6 @@
 #define LOG_PROPERTY_INVOCATION_DIPROPRANGE_AND_RETURN(result, severity, rguidprop, ppropval)   LOG_PROPERTY_INVOCATION_AND_RETURN(result, severity, rguidprop, L", value = { lMin = %ld, lMax = %ld }", ((LPDIPROPRANGE)ppropval)->lMin, ((LPDIPROPRANGE)ppropval)->lMax)
 
 
-
-/// Produces and returns a human-readable string from a given DirectInput property GUID.
-#define DI_PROPERTY_STRING(rguid, diprop) if (&diprop == &rguid) return _CRT_WIDE(#diprop);
-
-
 namespace Xidi
 {
     // -------- INTERNAL FUNCTIONS ----------------------------------------- //
@@ -89,6 +84,39 @@ namespace Xidi
         default:
             return GUID_Unknown;
         }
+    }
+
+    /// Returns a human-readable string that represents the specified force feedback effect GUID.
+    /// @param [in] rguidEffect GUID to check.
+    /// @return String representation of the GUID's semantics.
+    static const wchar_t* ForceFeedbackEffectGuidString(REFGUID rguidEffect)
+    {
+        if (rguidEffect == GUID_ConstantForce)
+            return L"ConstantForce";
+        if (rguidEffect == GUID_RampForce)
+            return L"RampForce";
+        if (rguidEffect == GUID_Square)
+            return L"Square";
+        if (rguidEffect == GUID_Sine)
+            return L"Sine";
+        if (rguidEffect == GUID_Triangle)
+            return L"Triangle";
+        if (rguidEffect == GUID_SawtoothUp)
+            return L"SawtoothUp";
+        if (rguidEffect == GUID_SawtoothDown)
+            return L"SawtoothDown";
+        if (rguidEffect == GUID_Spring)
+            return L"Spring";
+        if (rguidEffect == GUID_Damper)
+            return L"Damper";
+        if (rguidEffect == GUID_Inertia)
+            return L"Inertia";
+        if (rguidEffect == GUID_Friction)
+            return L"Friction";
+        if (rguidEffect == GUID_CustomForce)
+            return L"CustomForce";
+
+        return L"(unknown)";
     }
 
     /// Returns a string representation of the way in which a controller element is identified.
@@ -343,7 +371,7 @@ namespace Xidi
         }
     }
 
-    /// Fills the specified buffer with a friendly string representation of the specified controller element, specialized for ASCII.
+    /// Fills the specified buffer with a friendly string representation of the specified controller element, specialized for Unicode.
     /// @param [in] element Controller element for which a string is desired.
     /// @param [out] buf Buffer to be filled with the string.
     /// @param [in] bufcount Buffer size in number of characters.
@@ -392,6 +420,90 @@ namespace Xidi
         }
     }
 
+    /// Fills the specified buffer with a friendly string representation of the specified force feedback effect.
+    /// Default version does nothing.
+    /// @tparam CharType String character type, either `char` or `wchar_t`.
+    /// @param [in] rguidEffect Reference to the GUID that identifies the force feedback effect.
+    /// @param [out] buf Buffer to be filled with the string.
+    /// @param [in] bufcount Buffer size in number of characters.
+    template <typename CharType> static void ForceFeedbackEffectToString(REFGUID rguidEffect, CharType* buf, int bufcount)
+    {
+        // Nothing to do here.
+    }
+
+    /// Fills the specified buffer with a friendly string representation of the specified force feedback effect, specialized for ASCII.
+    /// @param [in] rguidEffect Reference to the GUID that identifies the force feedback effect.
+    /// @param [out] buf Buffer to be filled with the string.
+    /// @param [in] bufcount Buffer size in number of characters.
+    template <> static void ForceFeedbackEffectToString<char>(REFGUID rguidEffect, char* buf, int bufcount)
+    {
+        if (rguidEffect == GUID_ConstantForce)
+            strncpy_s(buf, bufcount, XIDI_EFFECT_NAME_CONSTANT_FORCE, _countof(XIDI_EFFECT_NAME_CONSTANT_FORCE));
+        if (rguidEffect == GUID_RampForce)
+            strncpy_s(buf, bufcount, XIDI_EFFECT_NAME_RAMP_FORCE, _countof(XIDI_EFFECT_NAME_RAMP_FORCE));
+        if (rguidEffect == GUID_Square)
+            strncpy_s(buf, bufcount, XIDI_EFFECT_NAME_SQUARE, _countof(XIDI_EFFECT_NAME_SQUARE));
+        if (rguidEffect == GUID_Sine)
+            strncpy_s(buf, bufcount, XIDI_EFFECT_NAME_SINE, _countof(XIDI_EFFECT_NAME_SINE));
+        if (rguidEffect == GUID_Triangle)
+            strncpy_s(buf, bufcount, XIDI_EFFECT_NAME_TRIANGLE, _countof(XIDI_EFFECT_NAME_TRIANGLE));
+        if (rguidEffect == GUID_SawtoothUp)
+            strncpy_s(buf, bufcount, XIDI_EFFECT_NAME_SAWTOOTH_UP, _countof(XIDI_EFFECT_NAME_SAWTOOTH_UP));
+        if (rguidEffect == GUID_SawtoothDown)
+            strncpy_s(buf, bufcount, XIDI_EFFECT_NAME_SAWTOOTH_DOWN, _countof(XIDI_EFFECT_NAME_SAWTOOTH_DOWN));
+        if (rguidEffect == GUID_CustomForce)
+            strncpy_s(buf, bufcount, XIDI_EFFECT_NAME_CUSTOM_FORCE, _countof(XIDI_EFFECT_NAME_CUSTOM_FORCE));
+    }
+
+    /// Fills the specified buffer with a friendly string representation of the specified force feedback effect, specialized for Unicode.
+    /// @param [in] rguidEffect Reference to the GUID that identifies the force feedback effect.
+    /// @param [out] buf Buffer to be filled with the string.
+    /// @param [in] bufcount Buffer size in number of characters.
+    template <> static void ForceFeedbackEffectToString<wchar_t>(REFGUID rguidEffect, wchar_t* buf, int bufcount)
+    {
+        if (rguidEffect == GUID_ConstantForce)
+            wcsncpy_s(buf, bufcount, _CRT_WIDE(XIDI_EFFECT_NAME_CONSTANT_FORCE), _countof(_CRT_WIDE(XIDI_EFFECT_NAME_CONSTANT_FORCE)));
+        if (rguidEffect == GUID_RampForce)
+            wcsncpy_s(buf, bufcount, _CRT_WIDE(XIDI_EFFECT_NAME_RAMP_FORCE), _countof(_CRT_WIDE(XIDI_EFFECT_NAME_RAMP_FORCE)));
+        if (rguidEffect == GUID_Square)
+            wcsncpy_s(buf, bufcount, _CRT_WIDE(XIDI_EFFECT_NAME_SQUARE), _countof(_CRT_WIDE(XIDI_EFFECT_NAME_SQUARE)));
+        if (rguidEffect == GUID_Sine)
+            wcsncpy_s(buf, bufcount, _CRT_WIDE(XIDI_EFFECT_NAME_SINE), _countof(_CRT_WIDE(XIDI_EFFECT_NAME_SINE)));
+        if (rguidEffect == GUID_Triangle)
+            wcsncpy_s(buf, bufcount, _CRT_WIDE(XIDI_EFFECT_NAME_TRIANGLE), _countof(_CRT_WIDE(XIDI_EFFECT_NAME_TRIANGLE)));
+        if (rguidEffect == GUID_SawtoothUp)
+            wcsncpy_s(buf, bufcount, _CRT_WIDE(XIDI_EFFECT_NAME_SAWTOOTH_UP), _countof(_CRT_WIDE(XIDI_EFFECT_NAME_SAWTOOTH_UP)));
+        if (rguidEffect == GUID_SawtoothDown)
+            wcsncpy_s(buf, bufcount, _CRT_WIDE(XIDI_EFFECT_NAME_SAWTOOTH_DOWN), _countof(_CRT_WIDE(XIDI_EFFECT_NAME_SAWTOOTH_DOWN)));
+        if (rguidEffect == GUID_CustomForce)
+            wcsncpy_s(buf, bufcount, _CRT_WIDE(XIDI_EFFECT_NAME_CUSTOM_FORCE), _countof(_CRT_WIDE(XIDI_EFFECT_NAME_CUSTOM_FORCE)));
+    }
+
+    /// Retrieves the force feedback effect type, given a force feedback effect GUID.
+    /// @param [in] rguidEffect Reference to the GUID that identifies the force feedback effect.
+    /// @return DirectInput effect type constant that corresponds to the GUID, if it is recognized.
+    static std::optional<DWORD> ForceFeedbackEffectType(REFGUID rguidEffect)
+    {
+        if (rguidEffect == GUID_ConstantForce)
+            return DIEFT_CONSTANTFORCE;
+        if (rguidEffect == GUID_RampForce)
+            return DIEFT_RAMPFORCE;
+        if (rguidEffect == GUID_Square)
+            return DIEFT_PERIODIC;
+        if (rguidEffect == GUID_Sine)
+            return DIEFT_PERIODIC;
+        if (rguidEffect == GUID_Triangle)
+            return DIEFT_PERIODIC;
+        if (rguidEffect == GUID_SawtoothUp)
+            return DIEFT_PERIODIC;
+        if (rguidEffect == GUID_SawtoothDown)
+            return DIEFT_PERIODIC;
+        if (rguidEffect == GUID_CustomForce)
+            return DIEFT_CUSTOMFORCE;
+
+        return std::nullopt;
+    }
+
     /// Computes the offset in a virtual controller's "native" data packet.
     /// For application information only. Cannot be used to identify objects.
     /// Application is presented with the image of a native data packet that stores axes first, then buttons (one byte per button), then POV.
@@ -435,6 +547,27 @@ namespace Xidi
         default:
             return 0;
         }
+    }
+
+    /// Fills the specified force feedback effect information structure with information about the specified force feedback effect.
+    /// Size member is not touched, so the caller is responsible for ensuring it is filled correctly.
+    /// GUID member must already be initialized to identify the desired effect.
+    /// Type member must already be initialized to the correct constant value that corresponds to the pre-filled GUID member.
+    /// @tparam charMode Selects between ASCII ("A" suffix) and Unicode ("W") suffix versions of types and interfaces.
+    /// @param effectInfo [in, out] Structure to be filled with force feedback effect information, pre-filled with GUID and type.
+    template <ECharMode charMode> static void FillForceFeedbackEffectInfo(typename DirectInputDeviceType<charMode>::EffectInfoType* effectInfo)
+    {
+        // All effects support envelope parameters, both attack and fade.
+        constexpr DWORD kEffectTypeExtraFlags = (DIEFT_FFATTACK | DIEFT_FFFADE);
+        effectInfo->dwEffType |= kEffectTypeExtraFlags;
+
+        // All effects support these parameters, and they can be changed on-the-fly while effects are playing.
+        constexpr DWORD kEffectSupportedParameters = (DIEP_AXES | DIEP_DIRECTION | DIEP_DURATION | DIEP_ENVELOPE | DIEP_GAIN | DIEP_SAMPLEPERIOD | DIEP_STARTDELAY | DIEP_TYPESPECIFICPARAMS);
+        effectInfo->dwStaticParams = kEffectSupportedParameters;
+        effectInfo->dwDynamicParams = kEffectSupportedParameters;
+
+        // Last step is to fill in the friendly name.
+        ForceFeedbackEffectToString(effectInfo->guid, effectInfo->tszName, _countof(effectInfo->tszName));
     }
 
     /// Fills the specified object instance information structure with information about the specified controller element.
@@ -640,7 +773,7 @@ namespace Xidi
 
     template <ECharMode charMode> HRESULT VirtualDirectInputDevice<charMode>::Acquire(void)
     {
-        static constexpr Message::ESeverity kMethodSeverity = Message::ESeverity::Info;
+        constexpr Message::ESeverity kMethodSeverity = Message::ESeverity::Info;
 
         // DirectInput documentation requires that the application data format already be set before a device can be acquired.
         if (false == IsApplicationDataFormatSet())
@@ -674,7 +807,7 @@ namespace Xidi
 
     template <ECharMode charMode> HRESULT VirtualDirectInputDevice<charMode>::CreateEffect(REFGUID rguid, LPCDIEFFECT lpeff, LPDIRECTINPUTEFFECT* ppdeff, LPUNKNOWN punkOuter)
     {
-        static constexpr Message::ESeverity kMethodSeverity = Message::ESeverity::Info;
+        constexpr Message::ESeverity kMethodSeverity = Message::ESeverity::Info;
         LOG_INVOCATION_AND_RETURN(DIERR_UNSUPPORTED, kMethodSeverity);
     }
 
@@ -682,7 +815,7 @@ namespace Xidi
 
     template <ECharMode charMode> HRESULT VirtualDirectInputDevice<charMode>::EnumCreatedEffectObjects(LPDIENUMCREATEDEFFECTOBJECTSCALLBACK lpCallback, LPVOID pvRef, DWORD fl)
     {
-        static constexpr Message::ESeverity kMethodSeverity = Message::ESeverity::Info;
+        constexpr Message::ESeverity kMethodSeverity = Message::ESeverity::Info;
         LOG_INVOCATION_AND_RETURN(DIERR_UNSUPPORTED, kMethodSeverity);
     }
 
@@ -690,15 +823,111 @@ namespace Xidi
 
     template <ECharMode charMode> HRESULT VirtualDirectInputDevice<charMode>::EnumEffects(DirectInputDeviceType<charMode>::EnumEffectsCallbackType lpCallback, LPVOID pvRef, DWORD dwEffType)
     {
-        static constexpr Message::ESeverity kMethodSeverity = Message::ESeverity::Info;
-        LOG_INVOCATION_AND_RETURN(DIERR_UNSUPPORTED, kMethodSeverity);
+        constexpr Message::ESeverity kMethodSeverity = Message::ESeverity::Info;
+
+        if (nullptr == lpCallback)
+            LOG_INVOCATION_AND_RETURN(DIERR_INVALIDPARAM, kMethodSeverity);
+
+        const bool kWillEnumerateConstantForce = ((DIEFT_ALL == dwEffType) || (0 != (dwEffType & DIEFT_CONSTANTFORCE)));
+        const bool kWillEnumerateRampForce = ((DIEFT_ALL == dwEffType) || (0 != (dwEffType & DIEFT_RAMPFORCE)));
+        const bool kWillEnumeratePeriodic = ((DIEFT_ALL == dwEffType) || (0 != (dwEffType & DIEFT_PERIODIC)));
+        const bool kWillEnumerateCustomForce = ((DIEFT_ALL == dwEffType) || (0 != (dwEffType & DIEFT_CUSTOMFORCE)));
+
+        if ((true == kWillEnumerateConstantForce) || (true == kWillEnumerateCustomForce) || (true == kWillEnumeratePeriodic) || (true == kWillEnumerateRampForce))
+        {
+            std::unique_ptr<DirectInputDeviceType<charMode>::EffectInfoType> effectDescriptor = std::make_unique<DirectInputDeviceType<charMode>::EffectInfoType>();
+
+            if (true == kWillEnumerateConstantForce)
+            {
+                const GUID* kEffectGuids[] = {&GUID_ConstantForce};
+                for (const auto kEffectGuid : kEffectGuids)
+                {
+                    *effectDescriptor = {.dwSize = sizeof(*effectDescriptor), .guid = *kEffectGuid, .dwEffType = ForceFeedbackEffectType(*kEffectGuid).value()};
+                    FillForceFeedbackEffectInfo<charMode>(effectDescriptor.get());
+                    switch (lpCallback(effectDescriptor.get(), pvRef))
+                    {
+                    case DIENUM_CONTINUE:
+                        break;
+                    case DIENUM_STOP:
+                        LOG_INVOCATION_AND_RETURN(DI_OK, kMethodSeverity);
+                    default:
+                        LOG_INVOCATION_AND_RETURN(DIERR_INVALIDPARAM, kMethodSeverity);
+                    }
+                }
+            }
+
+            if (true == kWillEnumerateRampForce)
+            {
+#if 0
+                const GUID* kEffectGuids[] = {&GUID_RampForce};
+                for (const auto kEffectGuid : kEffectGuids)
+                {
+                    *effectDescriptor = {.dwSize = sizeof(*effectDescriptor), .guid = *kEffectGuid, .dwEffType = ForceFeedbackEffectType(*kEffectGuid).value()};
+                    FillForceFeedbackEffectInfo<charMode>(effectDescriptor.get());
+                    switch (lpCallback(effectDescriptor.get(), pvRef))
+                    {
+                    case DIENUM_CONTINUE:
+                        break;
+                    case DIENUM_STOP:
+                        LOG_INVOCATION_AND_RETURN(DI_OK, kMethodSeverity);
+                    default:
+                        LOG_INVOCATION_AND_RETURN(DIERR_INVALIDPARAM, kMethodSeverity);
+                    }
+                }
+#endif
+            }
+
+            if (true == kWillEnumeratePeriodic)
+            {
+#if 0
+                const GUID* kEffectGuids[] = {&GUID_Square, &GUID_Sine, &GUID_Triangle, &GUID_SawtoothUp, &GUID_SawtoothDown};
+                for (const auto kEffectGuid : kEffectGuids)
+                {
+                    *effectDescriptor = {.dwSize = sizeof(*effectDescriptor), .guid = *kEffectGuid, .dwEffType = ForceFeedbackEffectType(*kEffectGuid).value()};
+                    FillForceFeedbackEffectInfo<charMode>(effectDescriptor.get());
+                    switch (lpCallback(effectDescriptor.get(), pvRef))
+                    {
+                    case DIENUM_CONTINUE:
+                        break;
+                    case DIENUM_STOP:
+                        LOG_INVOCATION_AND_RETURN(DI_OK, kMethodSeverity);
+                    default:
+                        LOG_INVOCATION_AND_RETURN(DIERR_INVALIDPARAM, kMethodSeverity);
+                    }
+                }
+#endif
+            }
+
+            if (true == kWillEnumerateCustomForce)
+            {
+#if 0
+                const GUID* kEffectGuids[] = {&GUID_CustomForce};
+                for (const auto kEffectGuid : kEffectGuids)
+                {
+                    *effectDescriptor = {.dwSize = sizeof(*effectDescriptor), .guid = *kEffectGuid, .dwEffType = ForceFeedbackEffectType(*kEffectGuid).value()};
+                    FillForceFeedbackEffectInfo<charMode>(effectDescriptor.get());
+                    switch (lpCallback(effectDescriptor.get(), pvRef))
+                    {
+                    case DIENUM_CONTINUE:
+                        break;
+                    case DIENUM_STOP:
+                        LOG_INVOCATION_AND_RETURN(DI_OK, kMethodSeverity);
+                    default:
+                        LOG_INVOCATION_AND_RETURN(DIERR_INVALIDPARAM, kMethodSeverity);
+                    }
+                }
+#endif
+            }
+        }
+
+        LOG_INVOCATION_AND_RETURN(DI_OK, kMethodSeverity);
     }
 
     // ---------
 
     template <ECharMode charMode> HRESULT VirtualDirectInputDevice<charMode>::EnumEffectsInFile(DirectInputDeviceType<charMode>::ConstStringType lptszFileName, LPDIENUMEFFECTSINFILECALLBACK pec, LPVOID pvRef, DWORD dwFlags)
     {
-        static constexpr Message::ESeverity kMethodSeverity = Message::ESeverity::Info;
+        constexpr Message::ESeverity kMethodSeverity = Message::ESeverity::Info;
         LOG_INVOCATION_AND_RETURN(DIERR_UNSUPPORTED, kMethodSeverity);
     }
 
@@ -706,21 +935,21 @@ namespace Xidi
 
     template <ECharMode charMode> HRESULT VirtualDirectInputDevice<charMode>::EnumObjects(DirectInputDeviceType<charMode>::EnumObjectsCallbackType lpCallback, LPVOID pvRef, DWORD dwFlags)
     {
-        static constexpr Message::ESeverity kMethodSeverity = Message::ESeverity::Info;
-
-        const bool willEnumerateAxes = ((DIDFT_ALL == dwFlags) || (0 != (dwFlags & DIDFT_ABSAXIS)));
-        const bool willEnumerateButtons = ((DIDFT_ALL == dwFlags) || (0 != (dwFlags & DIDFT_PSHBUTTON)));
-        const bool willEnumeratePov = ((DIDFT_ALL == dwFlags) || (0 != (dwFlags & DIDFT_POV)));
+        constexpr Message::ESeverity kMethodSeverity = Message::ESeverity::Info;
 
         if (nullptr == lpCallback)
             LOG_INVOCATION_AND_RETURN(DIERR_INVALIDPARAM, kMethodSeverity);
 
-        if ((true == willEnumerateAxes) || (true == willEnumerateButtons) || (true == willEnumeratePov))
+        const bool kWillEnumerateAxes = ((DIDFT_ALL == dwFlags) || (0 != (dwFlags & DIDFT_ABSAXIS)));
+        const bool kWillEnumerateButtons = ((DIDFT_ALL == dwFlags) || (0 != (dwFlags & DIDFT_PSHBUTTON)));
+        const bool kWillEnumeratePov = ((DIDFT_ALL == dwFlags) || (0 != (dwFlags & DIDFT_POV)));
+
+        if ((true == kWillEnumerateAxes) || (true == kWillEnumerateButtons) || (true == kWillEnumeratePov))
         {
             std::unique_ptr<DirectInputDeviceType<charMode>::DeviceObjectInstanceType> objectDescriptor = std::make_unique<DirectInputDeviceType<charMode>::DeviceObjectInstanceType>();
             const Controller::SCapabilities controllerCapabilities = controller->GetCapabilities();
 
-            if (true == willEnumerateAxes)
+            if (true == kWillEnumerateAxes)
             {
                 for (int i = 0; i < controllerCapabilities.numAxes; ++i)
                 {
@@ -742,7 +971,7 @@ namespace Xidi
                 }
             }
 
-            if (true == willEnumerateButtons)
+            if (true == kWillEnumerateButtons)
             {
                 for (int i = 0; i < controllerCapabilities.numButtons; ++i)
                 {
@@ -764,7 +993,7 @@ namespace Xidi
                 }
             }
 
-            if (true == willEnumeratePov)
+            if (true == kWillEnumeratePov)
             {
                 if (true == controllerCapabilities.hasPov)
                 {
@@ -793,7 +1022,7 @@ namespace Xidi
 
     template <ECharMode charMode> HRESULT VirtualDirectInputDevice<charMode>::Escape(LPDIEFFESCAPE pesc)
     {
-        static constexpr Message::ESeverity kMethodSeverity = Message::ESeverity::Info;
+        constexpr Message::ESeverity kMethodSeverity = Message::ESeverity::Info;
         LOG_INVOCATION_AND_RETURN(DIERR_UNSUPPORTED, kMethodSeverity);
     }
 
@@ -801,7 +1030,7 @@ namespace Xidi
 
     template <ECharMode charMode> HRESULT VirtualDirectInputDevice<charMode>::GetCapabilities(LPDIDEVCAPS lpDIDevCaps)
     {
-        static constexpr Message::ESeverity kMethodSeverity = Message::ESeverity::Info;
+        constexpr Message::ESeverity kMethodSeverity = Message::ESeverity::Info;
 
         if (nullptr == lpDIDevCaps)
             LOG_INVOCATION_AND_RETURN(E_POINTER, kMethodSeverity);
@@ -838,8 +1067,8 @@ namespace Xidi
 
     template <ECharMode charMode> HRESULT VirtualDirectInputDevice<charMode>::GetDeviceData(DWORD cbObjectData, LPDIDEVICEOBJECTDATA rgdod, LPDWORD pdwInOut, DWORD dwFlags)
     {
-        static constexpr Message::ESeverity kMethodSeverity = Message::ESeverity::SuperDebug;
-        static constexpr Message::ESeverity kMethodSeverityForError = Message::ESeverity::Info;
+        constexpr Message::ESeverity kMethodSeverity = Message::ESeverity::SuperDebug;
+        constexpr Message::ESeverity kMethodSeverityForError = Message::ESeverity::Info;
 
         // DIDEVICEOBJECTDATA and DIDEVICEOBJECTDATA_DX3 are defined identically for all DirectInput versions below 8.
         // There is therefore no need to differentiate, as the distinction between "dinput" and "dinput8" takes care of it.
@@ -907,7 +1136,7 @@ namespace Xidi
 
     template <ECharMode charMode> HRESULT VirtualDirectInputDevice<charMode>::GetDeviceInfo(DirectInputDeviceType<charMode>::DeviceInstanceType* pdidi)
     {
-        static constexpr Message::ESeverity kMethodSeverity = Message::ESeverity::Info;
+        constexpr Message::ESeverity kMethodSeverity = Message::ESeverity::Info;
 
         if (nullptr == pdidi)
             LOG_INVOCATION_AND_RETURN(E_POINTER, kMethodSeverity);
@@ -930,8 +1159,8 @@ namespace Xidi
 
     template <ECharMode charMode> HRESULT VirtualDirectInputDevice<charMode>::GetDeviceState(DWORD cbData, LPVOID lpvData)
     {
-        static constexpr Message::ESeverity kMethodSeverity = Message::ESeverity::SuperDebug;
-        static constexpr Message::ESeverity kMethodSeverityForError = Message::ESeverity::Info;
+        constexpr Message::ESeverity kMethodSeverity = Message::ESeverity::SuperDebug;
+        constexpr Message::ESeverity kMethodSeverityForError = Message::ESeverity::Info;
 
         if ((nullptr == lpvData) || (false == IsApplicationDataFormatSet()) || (cbData < dataFormat->GetPacketSizeBytes()))
             LOG_INVOCATION_AND_RETURN(DIERR_INVALIDPARAM, kMethodSeverityForError);
@@ -949,15 +1178,30 @@ namespace Xidi
 
     template <ECharMode charMode> HRESULT VirtualDirectInputDevice<charMode>::GetEffectInfo(DirectInputDeviceType<charMode>::EffectInfoType* pdei, REFGUID rguid)
     {
-        static constexpr Message::ESeverity kMethodSeverity = Message::ESeverity::Info;
-        LOG_INVOCATION_AND_RETURN(DIERR_UNSUPPORTED, kMethodSeverity);
+        constexpr Message::ESeverity kMethodSeverity = Message::ESeverity::Info;
+
+        if (nullptr == pdei)
+            LOG_INVOCATION_AND_RETURN(E_POINTER, kMethodSeverity);
+
+        if (sizeof(*pdei) != pdei->dwSize)
+            LOG_INVOCATION_AND_RETURN(DIERR_INVALIDPARAM, kMethodSeverity);
+
+        const std::optional<DWORD> kMaybeEffectType = ForceFeedbackEffectType(rguid);
+        if (false == kMaybeEffectType.has_value())
+            LOG_INVOCATION_AND_RETURN(DIERR_INVALIDPARAM, kMethodSeverity);
+
+        const DWORD kEffectType = kMaybeEffectType.value();
+        *pdei = {.dwSize = sizeof(*pdei), .guid = rguid, .dwEffType = kEffectType};
+        FillForceFeedbackEffectInfo<charMode>(pdei);
+
+        LOG_INVOCATION_AND_RETURN(DI_OK, kMethodSeverity);
     }
 
     // ---------
 
     template <ECharMode charMode> HRESULT VirtualDirectInputDevice<charMode>::GetForceFeedbackState(LPDWORD pdwOut)
     {
-        static constexpr Message::ESeverity kMethodSeverity = Message::ESeverity::Info;
+        constexpr Message::ESeverity kMethodSeverity = Message::ESeverity::Info;
 
         if (nullptr == pdwOut)
             LOG_INVOCATION_AND_RETURN(DIERR_INVALIDPARAM, kMethodSeverity);
@@ -1004,7 +1248,7 @@ namespace Xidi
 
     template <ECharMode charMode> HRESULT VirtualDirectInputDevice<charMode>::GetObjectInfo(DirectInputDeviceType<charMode>::DeviceObjectInstanceType* pdidoi, DWORD dwObj, DWORD dwHow)
     {
-        static constexpr Message::ESeverity kMethodSeverity = Message::ESeverity::Info;
+        constexpr Message::ESeverity kMethodSeverity = Message::ESeverity::Info;
         
         if (nullptr == pdidoi)
             LOG_INVOCATION_AND_RETURN(E_POINTER, kMethodSeverity);
@@ -1035,7 +1279,7 @@ namespace Xidi
 
     template <ECharMode charMode> HRESULT VirtualDirectInputDevice<charMode>::GetProperty(REFGUID rguidProp, LPDIPROPHEADER pdiph)
     {
-        static constexpr Message::ESeverity kMethodSeverity = Message::ESeverity::Info;
+        constexpr Message::ESeverity kMethodSeverity = Message::ESeverity::Info;
 
         DumpPropertyRequest(rguidProp, pdiph, false);
 
@@ -1132,7 +1376,7 @@ namespace Xidi
         // Not required for Xidi virtual controllers as they are implemented now.
         // However, this method is needed for creating IDirectInputDevice objects via COM.
 
-        static constexpr Message::ESeverity kMethodSeverity = Message::ESeverity::Info;
+        constexpr Message::ESeverity kMethodSeverity = Message::ESeverity::Info;
         LOG_INVOCATION_AND_RETURN(DI_OK, kMethodSeverity);
     }
 
@@ -1140,7 +1384,7 @@ namespace Xidi
 
     template <ECharMode charMode> HRESULT VirtualDirectInputDevice<charMode>::Poll(void)
     {
-        static constexpr Message::ESeverity kMethodSeverity = Message::ESeverity::SuperDebug;
+        constexpr Message::ESeverity kMethodSeverity = Message::ESeverity::SuperDebug;
         LOG_INVOCATION_AND_RETURN(DI_NOEFFECT, kMethodSeverity);
     }
 
@@ -1148,7 +1392,7 @@ namespace Xidi
 
     template <ECharMode charMode> HRESULT VirtualDirectInputDevice<charMode>::RunControlPanel(HWND hwndOwner, DWORD dwFlags)
     {
-        static constexpr Message::ESeverity kMethodSeverity = Message::ESeverity::Info;
+        constexpr Message::ESeverity kMethodSeverity = Message::ESeverity::Info;
         LOG_INVOCATION_AND_RETURN(DIERR_UNSUPPORTED, kMethodSeverity);
     }
 
@@ -1156,7 +1400,7 @@ namespace Xidi
 
     template <ECharMode charMode> HRESULT VirtualDirectInputDevice<charMode>::SendDeviceData(DWORD cbObjectData, LPCDIDEVICEOBJECTDATA rgdod, LPDWORD pdwInOut, DWORD fl)
     {
-        static constexpr Message::ESeverity kMethodSeverity = Message::ESeverity::Info;
+        constexpr Message::ESeverity kMethodSeverity = Message::ESeverity::Info;
         LOG_INVOCATION_AND_RETURN(DIERR_UNSUPPORTED, kMethodSeverity);
     }
 
@@ -1164,7 +1408,7 @@ namespace Xidi
 
     template <ECharMode charMode> HRESULT VirtualDirectInputDevice<charMode>::SendForceFeedbackCommand(DWORD dwFlags)
     {
-        static constexpr Message::ESeverity kMethodSeverity = Message::ESeverity::Info;
+        constexpr Message::ESeverity kMethodSeverity = Message::ESeverity::Info;
 
         if (false == controller->ForceFeedbackIsRegistered())
             LOG_INVOCATION_AND_RETURN(DIERR_NOTEXCLUSIVEACQUIRED, kMethodSeverity);
@@ -1208,7 +1452,7 @@ namespace Xidi
 
     template <ECharMode charMode> HRESULT VirtualDirectInputDevice<charMode>::SetCooperativeLevel(HWND hwnd, DWORD dwFlags)
     {
-        static constexpr Message::ESeverity kMethodSeverity = Message::ESeverity::Info;
+        constexpr Message::ESeverity kMethodSeverity = Message::ESeverity::Info;
 
         // The only piece of information Xidi needs from the cooperative level is whether shared or exclusive mode is desired.
         if (0 != (dwFlags & DISCL_EXCLUSIVE))
@@ -1223,7 +1467,7 @@ namespace Xidi
 
     template <ECharMode charMode> HRESULT VirtualDirectInputDevice<charMode>::SetDataFormat(LPCDIDATAFORMAT lpdf)
     {
-        static constexpr Message::ESeverity kMethodSeverity = Message::ESeverity::Info;
+        constexpr Message::ESeverity kMethodSeverity = Message::ESeverity::Info;
 
         if (nullptr == lpdf)
             LOG_INVOCATION_AND_RETURN(DIERR_INVALIDPARAM, kMethodSeverity);
@@ -1266,7 +1510,7 @@ namespace Xidi
 
     template <ECharMode charMode> HRESULT VirtualDirectInputDevice<charMode>::SetEventNotification(HANDLE hEvent)
     {
-        static constexpr Message::ESeverity kMethodSeverity = Message::ESeverity::Info;
+        constexpr Message::ESeverity kMethodSeverity = Message::ESeverity::Info;
 
         if (INVALID_HANDLE_VALUE == hEvent)
             LOG_INVOCATION_AND_RETURN(DIERR_INVALIDPARAM, kMethodSeverity);
@@ -1282,7 +1526,7 @@ namespace Xidi
 
     template <ECharMode charMode> HRESULT VirtualDirectInputDevice<charMode>::SetProperty(REFGUID rguidProp, LPCDIPROPHEADER pdiph)
     {
-        static constexpr Message::ESeverity kMethodSeverity = Message::ESeverity::Info;
+        constexpr Message::ESeverity kMethodSeverity = Message::ESeverity::Info;
 
         DumpPropertyRequest(rguidProp, pdiph, true);
         
@@ -1351,7 +1595,7 @@ namespace Xidi
 
     template <ECharMode charMode> HRESULT VirtualDirectInputDevice<charMode>::Unacquire(void)
     {
-        static constexpr Message::ESeverity kMethodSeverity = Message::ESeverity::Info;
+        constexpr Message::ESeverity kMethodSeverity = Message::ESeverity::Info;
 
         // The only possible state that would need to be undone when unacquiring a device is relinquishing control over the physical device's force feedback buffer.
         controller->ForceFeedbackUnregister();
@@ -1363,7 +1607,7 @@ namespace Xidi
 
     template <ECharMode charMode> HRESULT VirtualDirectInputDevice<charMode>::WriteEffectToFile(DirectInputDeviceType<charMode>::ConstStringType lptszFileName, DWORD dwEntries, LPDIFILEEFFECT rgDiFileEft, DWORD dwFlags)
     {
-        static constexpr Message::ESeverity kMethodSeverity = Message::ESeverity::Info;
+        constexpr Message::ESeverity kMethodSeverity = Message::ESeverity::Info;
         LOG_INVOCATION_AND_RETURN(DIERR_UNSUPPORTED, kMethodSeverity);
     }
 
@@ -1374,7 +1618,7 @@ namespace Xidi
 
     template <ECharMode charMode> HRESULT VirtualDirectInputDevice<charMode>::BuildActionMap(DirectInputDeviceType<charMode>::ActionFormatType* lpdiaf, DirectInputDeviceType<charMode>::ConstStringType lpszUserName, DWORD dwFlags)
     {
-        static constexpr Message::ESeverity kMethodSeverity = Message::ESeverity::Info;
+        constexpr Message::ESeverity kMethodSeverity = Message::ESeverity::Info;
         LOG_INVOCATION_AND_RETURN(DIERR_UNSUPPORTED, kMethodSeverity);
     }
 
@@ -1382,7 +1626,7 @@ namespace Xidi
 
     template <ECharMode charMode> HRESULT VirtualDirectInputDevice<charMode>::GetImageInfo(DirectInputDeviceType<charMode>::DeviceImageInfoHeaderType* lpdiDevImageInfoHeader)
     {
-        static constexpr Message::ESeverity kMethodSeverity = Message::ESeverity::Info;
+        constexpr Message::ESeverity kMethodSeverity = Message::ESeverity::Info;
         LOG_INVOCATION_AND_RETURN(DIERR_UNSUPPORTED, kMethodSeverity);
     }
 
@@ -1390,7 +1634,7 @@ namespace Xidi
 
     template <ECharMode charMode> HRESULT VirtualDirectInputDevice<charMode>::SetActionMap(DirectInputDeviceType<charMode>::ActionFormatType* lpdiActionFormat, DirectInputDeviceType<charMode>::ConstStringType lptszUserName, DWORD dwFlags)
     {
-        static constexpr Message::ESeverity kMethodSeverity = Message::ESeverity::Info;
+        constexpr Message::ESeverity kMethodSeverity = Message::ESeverity::Info;
         LOG_INVOCATION_AND_RETURN(DIERR_UNSUPPORTED, kMethodSeverity);
     }
 #endif
