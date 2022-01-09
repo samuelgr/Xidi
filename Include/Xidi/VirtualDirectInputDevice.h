@@ -19,6 +19,7 @@
 #include <atomic>
 #include <memory>
 #include <optional>
+#include <shared_mutex>
 
 
 namespace Xidi
@@ -97,6 +98,13 @@ namespace Xidi
         /// Data format specification for communicating with the DirectInput application.
         std::unique_ptr<DataFormat> dataFormat;
 
+        /// Mutex for guarding concurrent accesses to data structures related to force feedback effects.
+        std::shared_mutex effectMutex;
+
+        /// Registry of all force feedback effect objects created by this object.
+        /// Deliberately not type-safe to avoid a circular dependency between header files.
+        std::set<void*> effectRegistry;
+
         /// Reference count.
         std::atomic<unsigned long> refCount;
 
@@ -112,6 +120,24 @@ namespace Xidi
 
 
         // -------- INSTANCE METHODS ----------------------------------------------- //
+
+        /// Registers a force feedback effect by adding it to the effect registry.
+        /// Intended to be invoked automaticaly as effects are constructed.
+        /// @param [in] effect Address of the effect object to register.
+        inline void ForceFeedbackEffectRegister(void* effect)
+        {
+            std::unique_lock lock(effectMutex);
+            effectRegistry.insert(effect);
+        }
+
+        /// Unregisters a force feedback effect by removing it from the effect registry.
+        /// Intended to be invoked automaticaly as effects are destroyed.
+        /// @param [in] effect Address of the effect object to unregister.
+        inline void ForceFeedbackEffectUnregister(void* effect)
+        {
+            std::unique_lock lock(effectMutex);
+            effectRegistry.erase(effect);
+        }
 
         /// Retrieves a reference to the underlying virtual controller object.
         /// Returned reference remains valid only as long as this object exists.

@@ -26,6 +26,7 @@
 #include <cstdio>
 #include <cstring>
 #include <memory>
+#include <mutex>
 #include <optional>
 
 
@@ -648,7 +649,7 @@ namespace Xidi
     // -------- CONSTRUCTION AND DESTRUCTION ------------------------------- //
     // See "VirtualDirectInputDevice.h" for documentation.
 
-    template <ECharMode charMode> VirtualDirectInputDevice<charMode>::VirtualDirectInputDevice(std::unique_ptr<Controller::VirtualController>&& controller) : controller(std::move(controller)), cooperativeLevel(ECooperativeLevel::Shared), dataFormat(), refCount(1)
+    template <ECharMode charMode> VirtualDirectInputDevice<charMode>::VirtualDirectInputDevice(std::unique_ptr<Controller::VirtualController>&& controller) : controller(std::move(controller)), cooperativeLevel(ECooperativeLevel::Shared), dataFormat(), effectMutex(), effectRegistry(), refCount(1)
     {
         // Nothing to do here.
     }
@@ -882,6 +883,25 @@ namespace Xidi
     template <ECharMode charMode> HRESULT VirtualDirectInputDevice<charMode>::EnumCreatedEffectObjects(LPDIENUMCREATEDEFFECTOBJECTSCALLBACK lpCallback, LPVOID pvRef, DWORD fl)
     {
         constexpr Message::ESeverity kMethodSeverity = Message::ESeverity::Info;
+
+        if ((nullptr == lpCallback) || (0 != fl))
+            LOG_INVOCATION_AND_RETURN(DIERR_INVALIDPARAM, kMethodSeverity);
+
+        std::shared_lock lock(effectMutex);
+
+        for (auto effect : effectRegistry)
+        {
+            switch (lpCallback((LPDIRECTINPUTEFFECT)effect, pvRef))
+            {
+            case DIENUM_CONTINUE:
+                break;
+            case DIENUM_STOP:
+                LOG_INVOCATION_AND_RETURN(DI_OK, kMethodSeverity);
+            default:
+                LOG_INVOCATION_AND_RETURN(DIERR_INVALIDPARAM, kMethodSeverity);
+            }
+        }
+
         LOG_INVOCATION_AND_RETURN(DIERR_UNSUPPORTED, kMethodSeverity);
     }
 

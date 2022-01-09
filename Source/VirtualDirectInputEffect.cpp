@@ -10,6 +10,7 @@
  *   feedback effects that are associated with virtual controllers.
  *****************************************************************************/
 
+#include "ForceFeedbackDevice.h"
 #include "ForceFeedbackEffect.h"
 #include "VirtualDirectInputDevice.h"
 #include "VirtualDirectInputEffect.h"
@@ -20,16 +21,18 @@ namespace Xidi
     // -------- CONSTRUCTION AND DESTRUCTION ------------------------------- //
     // See "VirtualDirectInputEffect.h" for documentation.
 
-    template <ECharMode charMode> VirtualDirectInputEffect<charMode>::VirtualDirectInputEffect(VirtualDirectInputDevice<charMode>* associatedDevice, std::unique_ptr<Controller::ForceFeedback::Effect>&& effect, const GUID& effectGuid) : associatedDevice(associatedDevice), effect(std::move(effect)), effectGuid(effectGuid), refCount(1)
+    template <ECharMode charMode> VirtualDirectInputEffect<charMode>::VirtualDirectInputEffect(VirtualDirectInputDevice<charMode>& associatedDevice, std::unique_ptr<Controller::ForceFeedback::Effect>&& effect, const GUID& effectGuid) : associatedDevice(associatedDevice), effect(std::move(effect)), effectGuid(effectGuid), refCount(1)
     {
-        // Nothing to do here.
+        associatedDevice.AddRef();
+        associatedDevice.ForceFeedbackEffectRegister((void*)this);
     }
 
     // --------
 
     template <ECharMode charMode> VirtualDirectInputEffect<charMode>::~VirtualDirectInputEffect(void)
     {
-        // Nothing to do here.
+        associatedDevice.ForceFeedbackEffectUnregister((void*)this);
+        associatedDevice.Release();
     }
 
 

@@ -30,7 +30,7 @@ namespace Xidi
         // -------- INSTANCE VARIABLES --------------------------------------------- //
 
         /// Associated DirectInput device object.
-        VirtualDirectInputDevice<charMode>* associatedDevice;
+        VirtualDirectInputDevice<charMode>& associatedDevice;
 
         /// Underlying force feedback effect object.
         std::unique_ptr<Controller::ForceFeedback::Effect> effect;
@@ -49,7 +49,7 @@ namespace Xidi
         /// @param [in] associatedDevice DirectInput device object with which to associate this effect.
         /// @param [in] effect Underlying force feedback effect object.
         /// @param [in] effectGuid GUID that identifies this effect.
-        VirtualDirectInputEffect(VirtualDirectInputDevice<charMode>* associatedDevice, std::unique_ptr<Controller::ForceFeedback::Effect>&& effect, const GUID& effectGuid);
+        VirtualDirectInputEffect(VirtualDirectInputDevice<charMode>& associatedDevice, std::unique_ptr<Controller::ForceFeedback::Effect>&& effect, const GUID& effectGuid);
 
         /// Default destructor.
         virtual ~VirtualDirectInputEffect(void);
