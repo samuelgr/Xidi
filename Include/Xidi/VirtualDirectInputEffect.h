@@ -14,23 +14,67 @@
 
 #include "ApiDirectInput.h"
 #include "ForceFeedbackEffect.h"
+#include "VirtualDirectInputDevice.h"
 
 #include <atomic>
+#include <memory>
 
 
 namespace Xidi
 {
     /// Concrete implementation of the DirectInput force feedback effect interface.
-    class VirtualDirectInputEffect : public IDirectInputEffect
+    /// @tparam charMode Selects between ASCII ("A" suffix) and Unicode ("W") suffix versions of types and interfaces.
+    template <ECharMode charMode> class VirtualDirectInputEffect : public IDirectInputEffect
     {
     private:
         // -------- INSTANCE VARIABLES --------------------------------------------- //
+
+        /// Associated DirectInput device object.
+        VirtualDirectInputDevice<charMode>* associatedDevice;
+
+        /// Underlying force feedback effect object.
+        std::unique_ptr<Controller::ForceFeedback::Effect> effect;
+
+        /// GUID that identifies this effect.
+        const GUID& effectGuid;
 
         /// Reference count.
         std::atomic<unsigned long> refCount;
 
 
     public:
+        // -------- CONSTRUCTION AND DESTRUCTION ----------------------------------- //
+
+        /// Initialization constructor.
+        /// @param [in] associatedDevice DirectInput device object with which to associate this effect.
+        /// @param [in] effect Underlying force feedback effect object.
+        /// @param [in] effectGuid GUID that identifies this effect.
+        VirtualDirectInputEffect(VirtualDirectInputDevice<charMode>* associatedDevice, std::unique_ptr<Controller::ForceFeedback::Effect>&& effect, const GUID& effectGuid);
+
+        /// Default destructor.
+        virtual ~VirtualDirectInputEffect(void);
+
+
+        // -------- CONCRETE INSTANCE METHODS -------------------------------------- //
+
+        /// Retrieves type-specific effect parameters.
+        /// Can be overridden by subclasses. The default implementation indicates no type-specific parameter data and returns success.
+        /// Parameters and return values are as with the #SetParameters method.
+        virtual HRESULT GetTypeSpecificParameters(LPDIEFFECT peff)
+        {
+            peff->cbTypeSpecificParams = 0;
+            return DI_OK;
+        }
+
+        /// Sets type-specific effect parameters.
+        /// Can be overridden by subclasses. The default implementation does nothing and returns success.
+        /// Parameters and return values are as with the #SetParameters method.
+        virtual HRESULT SetTypeSpecificParameters(LPCDIEFFECT peff)
+        {
+            return DI_OK;
+        }
+
+
         // -------- METHODS: IUnknown ---------------------------------------------- //
         HRESULT STDMETHODCALLTYPE QueryInterface(REFIID riid, LPVOID* ppvObj) override;
         ULONG STDMETHODCALLTYPE AddRef(void) override;

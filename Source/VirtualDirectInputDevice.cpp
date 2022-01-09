@@ -20,6 +20,7 @@
 #include "Strings.h"
 #include "VirtualController.h"
 #include "VirtualDirectInputDevice.h"
+#include "VirtualDirectInputEffect.h"
 
 #include <atomic>
 #include <cstdio>
@@ -420,6 +421,32 @@ namespace Xidi
         }
     }
 
+    /// Allocates and constructs a new DirectInput force feedback effect object for the specified GUID.
+    /// @tparam charMode Selects between ASCII ("A" suffix) and Unicode ("W") suffix versions of types and interfaces.
+    /// @param [in] rguidEffect Reference to the GUID that identifies the force feedback effect.
+    /// @return Smart pointer to the newly-constructed object, or `nullptr` if the GUID is not supported.
+    template <ECharMode charMode> static std::unique_ptr<VirtualDirectInputEffect<charMode>> ForceFeedbackEffectCreateObject(REFGUID rguidEffect)
+    {
+        if (rguidEffect == GUID_ConstantForce)
+            return nullptr;
+        if (rguidEffect == GUID_RampForce)
+            return nullptr;
+        if (rguidEffect == GUID_Square)
+            return nullptr;
+        if (rguidEffect == GUID_Sine)
+            return nullptr;
+        if (rguidEffect == GUID_Triangle)
+            return nullptr;
+        if (rguidEffect == GUID_SawtoothUp)
+            return nullptr;
+        if (rguidEffect == GUID_SawtoothDown)
+            return nullptr;
+        if (rguidEffect == GUID_CustomForce)
+            return nullptr;
+
+        return nullptr;
+    }
+
     /// Fills the specified buffer with a friendly string representation of the specified force feedback effect.
     /// Default version does nothing.
     /// @tparam CharType String character type, either `char` or `wchar_t`.
@@ -808,6 +835,10 @@ namespace Xidi
     template <ECharMode charMode> HRESULT VirtualDirectInputDevice<charMode>::CreateEffect(REFGUID rguid, LPCDIEFFECT lpeff, LPDIRECTINPUTEFFECT* ppdeff, LPUNKNOWN punkOuter)
     {
         constexpr Message::ESeverity kMethodSeverity = Message::ESeverity::Info;
+
+        if (nullptr != punkOuter)
+            Message::Output(Message::ESeverity::Warning, L"Application requested COM aggregation, which is not implemented, while creating a force feedback effect.");
+
         LOG_INVOCATION_AND_RETURN(DIERR_UNSUPPORTED, kMethodSeverity);
     }
 

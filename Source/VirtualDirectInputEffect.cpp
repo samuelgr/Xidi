@@ -11,15 +11,32 @@
  *****************************************************************************/
 
 #include "ForceFeedbackEffect.h"
+#include "VirtualDirectInputDevice.h"
 #include "VirtualDirectInputEffect.h"
 
 
 namespace Xidi
 {
+    // -------- CONSTRUCTION AND DESTRUCTION ------------------------------- //
+    // See "VirtualDirectInputEffect.h" for documentation.
+
+    template <ECharMode charMode> VirtualDirectInputEffect<charMode>::VirtualDirectInputEffect(VirtualDirectInputDevice<charMode>* associatedDevice, std::unique_ptr<Controller::ForceFeedback::Effect>&& effect, const GUID& effectGuid) : associatedDevice(associatedDevice), effect(std::move(effect)), effectGuid(effectGuid), refCount(1)
+    {
+        // Nothing to do here.
+    }
+
+    // --------
+
+    template <ECharMode charMode> VirtualDirectInputEffect<charMode>::~VirtualDirectInputEffect(void)
+    {
+        // Nothing to do here.
+    }
+
+
     // -------- METHODS: IUnknown ------------------------------------------ //
     // See IUnknown documentation for more information.
 
-    HRESULT VirtualDirectInputEffect::QueryInterface(REFIID riid, LPVOID* ppvObj)
+    template <ECharMode charMode> HRESULT VirtualDirectInputEffect<charMode>::QueryInterface(REFIID riid, LPVOID* ppvObj)
     {
         if (nullptr == ppvObj)
             return E_POINTER;
@@ -41,14 +58,14 @@ namespace Xidi
 
     // --------
 
-    ULONG VirtualDirectInputEffect::AddRef(void)
+    template <ECharMode charMode> ULONG VirtualDirectInputEffect<charMode>::AddRef(void)
     {
         return ++refCount;
     }
 
     // --------
 
-    ULONG VirtualDirectInputEffect::Release(void)
+    template <ECharMode charMode> ULONG VirtualDirectInputEffect<charMode>::Release(void)
     {
         const unsigned long numRemainingRefs = --refCount;
 
@@ -62,71 +79,82 @@ namespace Xidi
     // -------- METHODS: IDirectInputEffect -------------------------------- //
     // See DirectInput documentation for more information.
 
-    HRESULT VirtualDirectInputEffect::Initialize(HINSTANCE hinst, DWORD dwVersion, REFGUID rguid)
+    template <ECharMode charMode> HRESULT VirtualDirectInputEffect<charMode>::Initialize(HINSTANCE hinst, DWORD dwVersion, REFGUID rguid)
     {
         return E_NOTIMPL;
     }
 
     // --------
 
-    HRESULT VirtualDirectInputEffect::GetEffectGuid(LPGUID pguid)
+    template <ECharMode charMode> HRESULT VirtualDirectInputEffect<charMode>::GetEffectGuid(LPGUID pguid)
+    {
+        if (nullptr == pguid)
+            return DIERR_INVALIDPARAM;
+
+        *pguid = effectGuid;
+        return DI_OK;
+    }
+
+    // --------
+
+    template <ECharMode charMode> HRESULT VirtualDirectInputEffect<charMode>::GetParameters(LPDIEFFECT peff, DWORD dwFlags)
     {
         return E_NOTIMPL;
     }
 
     // --------
 
-    HRESULT VirtualDirectInputEffect::GetParameters(LPDIEFFECT peff, DWORD dwFlags)
+    template <ECharMode charMode> HRESULT VirtualDirectInputEffect<charMode>::SetParameters(LPCDIEFFECT peff, DWORD dwFlags)
     {
         return E_NOTIMPL;
     }
 
     // --------
 
-    HRESULT VirtualDirectInputEffect::SetParameters(LPCDIEFFECT peff, DWORD dwFlags)
+    template <ECharMode charMode> HRESULT VirtualDirectInputEffect<charMode>::Start(DWORD dwIterations, DWORD dwFlags)
     {
         return E_NOTIMPL;
     }
 
     // --------
 
-    HRESULT VirtualDirectInputEffect::Start(DWORD dwIterations, DWORD dwFlags)
+    template <ECharMode charMode> HRESULT VirtualDirectInputEffect<charMode>::Stop(void)
     {
         return E_NOTIMPL;
     }
 
     // --------
 
-    HRESULT VirtualDirectInputEffect::Stop(void)
+    template <ECharMode charMode> HRESULT VirtualDirectInputEffect<charMode>::GetEffectStatus(LPDWORD pdwFlags)
     {
         return E_NOTIMPL;
     }
 
     // --------
 
-    HRESULT VirtualDirectInputEffect::GetEffectStatus(LPDWORD pdwFlags)
+    template <ECharMode charMode> HRESULT VirtualDirectInputEffect<charMode>::Download(void)
     {
         return E_NOTIMPL;
     }
 
     // --------
 
-    HRESULT VirtualDirectInputEffect::Download(void)
+    template <ECharMode charMode> HRESULT VirtualDirectInputEffect<charMode>::Unload(void)
     {
         return E_NOTIMPL;
     }
 
     // --------
 
-    HRESULT VirtualDirectInputEffect::Unload(void)
+    template <ECharMode charMode> HRESULT VirtualDirectInputEffect<charMode>::Escape(LPDIEFFESCAPE pesc)
     {
         return E_NOTIMPL;
     }
 
-    // --------
 
-    HRESULT VirtualDirectInputEffect::Escape(LPDIEFFESCAPE pesc)
-    {
-        return E_NOTIMPL;
-    }
+    // -------- EXPLICIT TEMPLATE INSTANTIATION ---------------------------- //
+    // Instantiates both the ASCII and Unicode versions of this class.
+
+    template class VirtualDirectInputEffect<ECharMode::A>;
+    template class VirtualDirectInputEffect<ECharMode::W>;
 }
