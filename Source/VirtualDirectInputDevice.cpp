@@ -839,7 +839,42 @@ namespace Xidi
         if (nullptr != punkOuter)
             Message::Output(Message::ESeverity::Warning, L"Application requested COM aggregation, which is not implemented, while creating a force feedback effect.");
 
-        LOG_INVOCATION_AND_RETURN(DIERR_UNSUPPORTED, kMethodSeverity);
+        std::unique_ptr<VirtualDirectInputEffect<charMode>> newEffect = ForceFeedbackEffectCreateObject<charMode>(rguid);
+        if (nullptr == newEffect)
+            LOG_INVOCATION_AND_RETURN(DIERR_INVALIDPARAM, kMethodSeverity);
+
+        if (nullptr != lpeff)
+        {
+            // If parameters are provided they need to be complete.
+            // This method does not provide any way of specifying flags to restrict the parameters that are set.
+            // However, for compatibility with older versions of DirectInput 5 it is necessary to check the structure size here to avoid having the method read past the end of the valid parameter buffer.
+            const DWORD kParameterFlags = ((sizeof(DIEFFECT_DX5) == lpeff->dwSize) ? DIEP_ALLPARAMS_DX5 : DIEP_ALLPARAMS);
+            switch (newEffect->SetParameters(lpeff, kParameterFlags | DIEP_NODOWNLOAD))
+            {
+            case DI_DOWNLOADSKIPPED:
+                break;
+
+            default:
+                LOG_INVOCATION_AND_RETURN(DIERR_INVALIDPARAM, kMethodSeverity);
+            }
+
+            // Success of this method does not depend on whether or not a download completed successfully.
+            // If it failed because the device is full, then the effect can still exist even if it is not physically on the device.
+            // Likewise, if the device is not exclusively acquired, then the device just needs to be acquired before the effect can be downloaded.
+            switch (newEffect->Download())
+            {
+            case DI_OK:
+            case DIERR_DEVICEFULL:
+            case DIERR_NOTEXCLUSIVEACQUIRED:
+                break;
+
+            default:
+                LOG_INVOCATION_AND_RETURN(DIERR_INVALIDPARAM, kMethodSeverity);
+            }
+        }
+
+        *ppdeff = newEffect.release();
+        LOG_INVOCATION_AND_RETURN(DI_OK, kMethodSeverity);
     }
 
     // ---------
