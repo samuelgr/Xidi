@@ -240,6 +240,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Source\ApiDirectInput.cpp" />
+    <ClCompile Include="Source\ApiGUID.cpp" />
     <ClCompile Include="Source\ControllerIdentification.cpp" />
     <ClCompile Include="Source\DataFormat.cpp" />
     <ClCompile Include="Source\ElementMapper.cpp" />

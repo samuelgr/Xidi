@@ -10,6 +10,7 @@
  *****************************************************************************/
 
 #include "ApiDirectInput.h"
+#include "ApiGUID.h"
 #include "ApiWindows.h"
 #include "ControllerIdentification.h"
 #include "ControllerTypes.h"
@@ -1106,5 +1107,191 @@ namespace XidiTest
 
         // Physical Range (read-only)
         TEST_ASSERT(FAILED(diController.GetProperty(DIPROP_PHYSICALRANGE, nullptr)));
+    }
+
+
+    // The following sequence of tests, which together comprise the EffectInfo suite, exercise the DirectInputDevice interface methods EnumEffects and GetEffectInfo.
+    // Different filters are applied for each test case.
+
+    // Enumerates all effects and verifies correct common information is provided, like type flags and parameter support.
+    TEST_CASE(VirtualDirectInputDevice_EffectInfo_EnumAll)
+    {
+        const std::set<GUID> kExpectedSeenGuids = {GUID_ConstantForce, GUID_RampForce, GUID_Square, GUID_Sine, GUID_Triangle, GUID_SawtoothUp, GUID_SawtoothDown, GUID_CustomForce};
+        std::set<GUID> actualSeenGuids;
+
+        constexpr DWORD kExpectedEffectTypeFlags = (DIEFT_FFATTACK | DIEFT_FFFADE);
+        constexpr DWORD kExpectedEffectParams = (DIEP_AXES | DIEP_DIRECTION | DIEP_DURATION | DIEP_ENVELOPE | DIEP_GAIN | DIEP_SAMPLEPERIOD | DIEP_STARTDELAY | DIEP_TYPESPECIFICPARAMS);
+
+        VirtualDirectInputDevice<ECharMode::W> diController(CreateTestVirtualController());
+        TEST_ASSERT(DI_OK == diController.EnumEffects([](LPCDIEFFECTINFO pdei, LPVOID pvRef) -> BOOL
+            {
+                std::set<GUID>& seenGuids = *((std::set<GUID>*)pvRef);
+
+                TEST_ASSERT((nullptr != pdei) && (nullptr != pvRef));
+                TEST_ASSERT(sizeof(*pdei) == pdei->dwSize);
+
+                TEST_ASSERT(kExpectedEffectTypeFlags == (pdei->dwEffType & kExpectedEffectTypeFlags));
+                TEST_ASSERT(kExpectedEffectParams == (pdei->dwStaticParams & kExpectedEffectParams));
+                TEST_ASSERT(kExpectedEffectParams == (pdei->dwDynamicParams & kExpectedEffectParams));
+
+                TEST_ASSERT(false == seenGuids.contains(pdei->guid));
+                seenGuids.insert(pdei->guid);
+
+                return DIENUM_CONTINUE;
+            },
+            (LPVOID)&actualSeenGuids, DIEFT_ALL)
+        );
+
+        TEST_ASSERT(actualSeenGuids == kExpectedSeenGuids);
+    }
+
+    // Enumerates all effects and verifies information is identical to that provided by the GetEffectInfo method.
+    TEST_CASE(VirtualDirectInputDevice_EffectInfo_GetInfoAll)
+    {
+        VirtualDirectInputDevice<ECharMode::W> diController(CreateTestVirtualController());
+        TEST_ASSERT(DI_OK == diController.EnumEffects([](LPCDIEFFECTINFO pdei, LPVOID pvRef) -> BOOL
+            {
+                VirtualDirectInputDevice<ECharMode::W>& diController = *((VirtualDirectInputDevice<ECharMode::W>*)pvRef);
+                TEST_ASSERT((nullptr != pdei) && (nullptr != pvRef));
+
+                DIEFFECTINFO effectInfo = {.dwSize = sizeof(DIEFFECTINFO)};
+                TEST_ASSERT(DI_OK == diController.GetEffectInfo(&effectInfo, pdei->guid));
+                TEST_ASSERT(0 == memcmp(&effectInfo, pdei, sizeof(effectInfo)));
+
+                return DIENUM_CONTINUE;
+            },
+            (LPVOID)&diController, DIEFT_ALL)
+        );
+    }
+
+    // Enumerates constant force effects only and verifies correct information is provided.
+    TEST_CASE(VirtualDirectInputDevice_EffectInfo_EnumConstantForce)
+    {
+        const std::set<GUID> kExpectedSeenGuids = {GUID_ConstantForce};
+        std::set<GUID> actualSeenGuids;
+
+        constexpr DWORD kExpectedEffectType = DIEFT_CONSTANTFORCE;
+
+        VirtualDirectInputDevice<ECharMode::W> diController(CreateTestVirtualController());
+        TEST_ASSERT(DI_OK == diController.EnumEffects([](LPCDIEFFECTINFO pdei, LPVOID pvRef) -> BOOL
+            {
+                std::set<GUID>& seenGuids = *((std::set<GUID>*)pvRef);
+
+                TEST_ASSERT((nullptr != pdei) && (nullptr != pvRef));
+                TEST_ASSERT(sizeof(*pdei) == pdei->dwSize);
+
+                TEST_ASSERT(kExpectedEffectType == DIEFT_GETTYPE(pdei->dwEffType));
+
+                TEST_ASSERT(false == seenGuids.contains(pdei->guid));
+                seenGuids.insert(pdei->guid);
+
+                return DIENUM_CONTINUE;
+            },
+            (LPVOID)&actualSeenGuids, kExpectedEffectType)
+        );
+
+        TEST_ASSERT(actualSeenGuids == kExpectedSeenGuids);
+    }
+
+    // Enumerates ramp force effects only and verifies correct information is provided.
+    TEST_CASE(VirtualDirectInputDevice_EffectInfo_EnumRampForce)
+    {
+        const std::set<GUID> kExpectedSeenGuids = {GUID_RampForce};
+        std::set<GUID> actualSeenGuids;
+
+        constexpr DWORD kExpectedEffectType = DIEFT_RAMPFORCE;
+
+        VirtualDirectInputDevice<ECharMode::W> diController(CreateTestVirtualController());
+        TEST_ASSERT(DI_OK == diController.EnumEffects([](LPCDIEFFECTINFO pdei, LPVOID pvRef) -> BOOL
+            {
+                std::set<GUID>& seenGuids = *((std::set<GUID>*)pvRef);
+
+                TEST_ASSERT((nullptr != pdei) && (nullptr != pvRef));
+                TEST_ASSERT(sizeof(*pdei) == pdei->dwSize);
+
+                TEST_ASSERT(kExpectedEffectType == DIEFT_GETTYPE(pdei->dwEffType));
+
+                TEST_ASSERT(false == seenGuids.contains(pdei->guid));
+                seenGuids.insert(pdei->guid);
+
+                return DIENUM_CONTINUE;
+            },
+            (LPVOID)&actualSeenGuids, kExpectedEffectType)
+        );
+
+        TEST_ASSERT(actualSeenGuids == kExpectedSeenGuids);
+    }
+
+    // Enumerates periodic force effects only and verifies correct information is provided.
+    TEST_CASE(VirtualDirectInputDevice_EffectInfo_EnumPeriodic)
+    {
+        const std::set<GUID> kExpectedSeenGuids = {GUID_Square, GUID_Sine, GUID_Triangle, GUID_SawtoothUp, GUID_SawtoothDown};
+        std::set<GUID> actualSeenGuids;
+
+        constexpr DWORD kExpectedEffectType = DIEFT_PERIODIC;
+
+        VirtualDirectInputDevice<ECharMode::W> diController(CreateTestVirtualController());
+        TEST_ASSERT(DI_OK == diController.EnumEffects([](LPCDIEFFECTINFO pdei, LPVOID pvRef) -> BOOL
+            {
+                std::set<GUID>& seenGuids = *((std::set<GUID>*)pvRef);
+
+                TEST_ASSERT((nullptr != pdei) && (nullptr != pvRef));
+                TEST_ASSERT(sizeof(*pdei) == pdei->dwSize);
+
+                TEST_ASSERT(kExpectedEffectType == DIEFT_GETTYPE(pdei->dwEffType));
+
+                TEST_ASSERT(false == seenGuids.contains(pdei->guid));
+                seenGuids.insert(pdei->guid);
+
+                return DIENUM_CONTINUE;
+            },
+            (LPVOID)&actualSeenGuids, kExpectedEffectType)
+        );
+
+        TEST_ASSERT(actualSeenGuids == kExpectedSeenGuids);
+    }
+
+    // Enumerates custom force effects only and verifies correct information is provided.
+    TEST_CASE(VirtualDirectInputDevice_EffectInfo_EnumCustomForce)
+    {
+        const std::set<GUID> kExpectedSeenGuids = {GUID_CustomForce};
+        std::set<GUID> actualSeenGuids;
+
+        constexpr DWORD kExpectedEffectType = DIEFT_CUSTOMFORCE;
+
+        VirtualDirectInputDevice<ECharMode::W> diController(CreateTestVirtualController());
+        TEST_ASSERT(DI_OK == diController.EnumEffects([](LPCDIEFFECTINFO pdei, LPVOID pvRef) -> BOOL
+            {
+                std::set<GUID>& seenGuids = *((std::set<GUID>*)pvRef);
+
+                TEST_ASSERT((nullptr != pdei) && (nullptr != pvRef));
+                TEST_ASSERT(sizeof(*pdei) == pdei->dwSize);
+
+                TEST_ASSERT(kExpectedEffectType == DIEFT_GETTYPE(pdei->dwEffType));
+
+                TEST_ASSERT(false == seenGuids.contains(pdei->guid));
+                seenGuids.insert(pdei->guid);
+
+                return DIENUM_CONTINUE;
+            },
+            (LPVOID)&actualSeenGuids, kExpectedEffectType)
+        );
+
+        TEST_ASSERT(actualSeenGuids == kExpectedSeenGuids);
+    }
+    
+    // Attempts to enumerate unsupported types of effects, which should result in no calls to the enumeration callback.
+    TEST_CASE(VirtualDirectInputDevice_EffectInfo_EnumNone)
+    {
+        constexpr DWORD kExpectedEffectType = DIEFT_STARTDELAY;
+
+        VirtualDirectInputDevice<ECharMode::W> diController(CreateTestVirtualController());
+        TEST_ASSERT(DI_OK == diController.EnumEffects([](LPCDIEFFECTINFO pdei, LPVOID pvRef) -> BOOL
+            {
+                TEST_FAILED_BECAUSE(L"Unexpected invocation of enumeration function.");
+                return DIENUM_CONTINUE;
+            },
+            nullptr, kExpectedEffectType)
+        );
     }
 }

@@ -828,10 +828,10 @@ namespace Xidi
         if (nullptr == lpCallback)
             LOG_INVOCATION_AND_RETURN(DIERR_INVALIDPARAM, kMethodSeverity);
 
-        const bool kWillEnumerateConstantForce = ((DIEFT_ALL == dwEffType) || (0 != (dwEffType & DIEFT_CONSTANTFORCE)));
-        const bool kWillEnumerateRampForce = ((DIEFT_ALL == dwEffType) || (0 != (dwEffType & DIEFT_RAMPFORCE)));
-        const bool kWillEnumeratePeriodic = ((DIEFT_ALL == dwEffType) || (0 != (dwEffType & DIEFT_PERIODIC)));
-        const bool kWillEnumerateCustomForce = ((DIEFT_ALL == dwEffType) || (0 != (dwEffType & DIEFT_CUSTOMFORCE)));
+        const bool kWillEnumerateConstantForce = ((DIEFT_ALL == dwEffType) || (DIEFT_CONSTANTFORCE == DIEFT_GETTYPE(dwEffType)));
+        const bool kWillEnumerateRampForce = ((DIEFT_ALL == dwEffType) || (DIEFT_RAMPFORCE == DIEFT_GETTYPE(dwEffType)));
+        const bool kWillEnumeratePeriodic = ((DIEFT_ALL == dwEffType) || (DIEFT_PERIODIC == DIEFT_GETTYPE(dwEffType)));
+        const bool kWillEnumerateCustomForce = ((DIEFT_ALL == dwEffType) || (DIEFT_CUSTOMFORCE == DIEFT_GETTYPE(dwEffType)));
 
         if ((true == kWillEnumerateConstantForce) || (true == kWillEnumerateCustomForce) || (true == kWillEnumeratePeriodic) || (true == kWillEnumerateRampForce))
         {
@@ -858,7 +858,6 @@ namespace Xidi
 
             if (true == kWillEnumerateRampForce)
             {
-#if 0
                 const GUID* kEffectGuids[] = {&GUID_RampForce};
                 for (const auto kEffectGuid : kEffectGuids)
                 {
@@ -874,12 +873,10 @@ namespace Xidi
                         LOG_INVOCATION_AND_RETURN(DIERR_INVALIDPARAM, kMethodSeverity);
                     }
                 }
-#endif
             }
 
             if (true == kWillEnumeratePeriodic)
             {
-#if 0
                 const GUID* kEffectGuids[] = {&GUID_Square, &GUID_Sine, &GUID_Triangle, &GUID_SawtoothUp, &GUID_SawtoothDown};
                 for (const auto kEffectGuid : kEffectGuids)
                 {
@@ -895,12 +892,10 @@ namespace Xidi
                         LOG_INVOCATION_AND_RETURN(DIERR_INVALIDPARAM, kMethodSeverity);
                     }
                 }
-#endif
             }
 
             if (true == kWillEnumerateCustomForce)
             {
-#if 0
                 const GUID* kEffectGuids[] = {&GUID_CustomForce};
                 for (const auto kEffectGuid : kEffectGuids)
                 {
@@ -916,7 +911,6 @@ namespace Xidi
                         LOG_INVOCATION_AND_RETURN(DIERR_INVALIDPARAM, kMethodSeverity);
                     }
                 }
-#endif
             }
         }
 
