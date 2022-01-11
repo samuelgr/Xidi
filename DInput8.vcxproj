@@ -50,6 +50,7 @@
     <ClInclude Include="Include\Xidi\ValueOrError.h" />
     <ClInclude Include="Include\Xidi\VirtualController.h" />
     <ClInclude Include="Include\Xidi\VirtualDirectInputDevice.h" />
+    <ClInclude Include="Include\Xidi\VirtualDirectInputEffect.h" />
     <ClInclude Include="Include\Xidi\WrapperIDirectInput.h" />
     <ClInclude Include="Include\Xidi\XidiConfigReader.h" />
     <ClInclude Include="Resources\DInput8.h" />
@@ -81,6 +82,7 @@
     <ClCompile Include="Source\ControllerIdentification.cpp" />
     <ClCompile Include="Source\ImportApiDirectInput.cpp" />
     <ClCompile Include="Source\VirtualController.cpp" />
+    <ClCompile Include="Source\VirtualDirectInputEffect.cpp" />
     <ClCompile Include="Source\WrapperIDirectInput.cpp" />
     <ClCompile Include="Source\ExportApiDirectInput.cpp" />
     <ClCompile Include="Source\DllMain.cpp" />

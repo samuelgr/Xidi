@@ -22,7 +22,8 @@
 
 namespace Xidi
 {
-    /// Concrete implementation of the DirectInput force feedback effect interface.
+    /// Generic base implementation of the DirectInput force feedback effect interface.
+    /// Suitable for use with force feedback effects that do not have any type-specific parameters.
     /// @tparam charMode Selects between ASCII ("A" suffix) and Unicode ("W") suffix versions of types and interfaces.
     template <ECharMode charMode> class VirtualDirectInputEffect : public IDirectInputEffect
     {
@@ -42,17 +43,29 @@ namespace Xidi
         std::atomic<unsigned long> refCount;
 
 
-    public:
+    protected:
         // -------- CONSTRUCTION AND DESTRUCTION ----------------------------------- //
 
         /// Initialization constructor.
         /// @param [in] associatedDevice DirectInput device object with which to associate this effect.
-        /// @param [in] effect Underlying force feedback effect object.
+        /// @param [in] effect Underlying force feedback effect object, which is cloned when this object is constructed.
         /// @param [in] effectGuid GUID that identifies this effect.
-        VirtualDirectInputEffect(VirtualDirectInputDevice<charMode>& associatedDevice, std::unique_ptr<Controller::ForceFeedback::Effect>&& effect, const GUID& effectGuid);
+        VirtualDirectInputEffect(VirtualDirectInputDevice<charMode>& associatedDevice, const Controller::ForceFeedback::Effect& effect, const GUID& effectGuid);
 
+    public:
         /// Default destructor.
         virtual ~VirtualDirectInputEffect(void);
+
+
+        // -------- INSTANCE METHODS ----------------------------------------------- //
+
+        /// Retrieves a reference to the underlying effect.
+        /// Intended for internal use but additionally exposed for testing.
+        /// @return Reference to the underlying effect object.
+        inline Controller::ForceFeedback::Effect& UnderlyingEffect(void)
+        {
+            return *effect;
+        }
 
 
         // -------- CONCRETE INSTANCE METHODS -------------------------------------- //
@@ -60,24 +73,24 @@ namespace Xidi
         /// Retrieves type-specific effect parameters.
         /// Can be overridden by subclasses. The default implementation indicates no type-specific parameter data and returns success.
         /// @param [in, out] peff Effect structure into which type-specific data should be placed.
-        /// @return Either `DI_OK` or `DIERR_MOREDATA` depending if the type-specific parameter buffer is large enough.
+        /// @return `DI_OK`, `DIERR_INVALIDPARAM`, or `DIERR_MOREDATA` depending on the contents of the input structure.
         virtual HRESULT GetTypeSpecificParameters(LPDIEFFECT peff)
         {
             peff->cbTypeSpecificParams = 0;
             return DI_OK;
         }
 
-        /// Sets type-specific effect parameters.
+        /// Clones the underlying effect, updates the clone's type-specific effect parameters, and returns the result.
         /// Can be overridden by subclasses. The default implementation does nothing and returns success.
         /// @param [in] peff Structure containing type-specific effect parameter data.
-        /// @param [out] effect Effect to be updated.
-        /// @return Either `DI_OK` or `DIERR_INVALIDPARAM` based on the result of the operation. Parameters are invalid if the size in the input structure is wrong or if a semantic validity check fails.
-        virtual HRESULT SetTypeSpecificParameters(LPCDIEFFECT peff, Controller::ForceFeedback::Effect& effect)
+        /// @return Either a copy of the effect with type-specific parameters updated or `nullptr` if the parameters are invalid. Parameters are invalid if the size in the input structure is wrong or if a semantic validity check fails.
+        virtual std::unique_ptr<Controller::ForceFeedback::Effect> CloneAndSetTypeSpecificParameters(LPCDIEFFECT peff)
         {
-            return DI_OK;
+            return effect->Clone();
         }
 
 
+    public:
         // -------- METHODS: IUnknown ---------------------------------------------- //
         HRESULT STDMETHODCALLTYPE QueryInterface(REFIID riid, LPVOID* ppvObj) override;
         ULONG STDMETHODCALLTYPE AddRef(void) override;
@@ -94,5 +107,121 @@ namespace Xidi
         HRESULT STDMETHODCALLTYPE Download(void) override;
         HRESULT STDMETHODCALLTYPE Unload(void) override;
         HRESULT STDMETHODCALLTYPE Escape(LPDIEFFESCAPE pesc) override;
+    };
+
+    /// Template for DirectInput force feedback effect objects that have type-specific parameters.
+    /// @tparam charMode Selects between ASCII ("A" suffix) and Unicode ("W") suffix versions of types and interfaces.
+    /// @tparam DirectInputTypeSpecificParameterType Type used by DirectInput to represent type-specific parameters.
+    /// @tparam TypeSpecificParameterType Internal type used to represent type-specific parameters.
+    template <ECharMode charMode, typename DirectInputTypeSpecificParameterType, typename TypeSpecificParameterType> class VirtualDirectInputEffectWithTypeSpecificParameters : public VirtualDirectInputEffect<charMode>
+    {
+    protected:
+        // -------- CONSTRUCTION AND DESTRUCTION ----------------------------------- //
+
+        /// Initialization constructor.
+        /// @param [in] associatedDevice DirectInput device object with which to associate this effect.
+        /// @param [in] effect Underlying force feedback effect object.
+        /// @param [in] effectGuid GUID that identifies this effect.
+        inline VirtualDirectInputEffectWithTypeSpecificParameters(VirtualDirectInputDevice<charMode>& associatedDevice, const Controller::ForceFeedback::EffectWithTypeSpecificParameters<TypeSpecificParameterType>& effect, const GUID& effectGuid) : VirtualDirectInputEffect<charMode>(associatedDevice, effect, effectGuid)
+        {
+            // Nothing to do here.
+        }
+
+
+        // -------- INSTANCE METHODS ----------------------------------------------- //
+
+        /// Type-casts and returns a reference to the underlying effect.
+        /// No run-time checks are performed, but the type-cast operation is safe based on the types allowed for the initialization constructor parameters.
+        /// @return Type-casted reference to the underlying effect.
+        inline Controller::ForceFeedback::EffectWithTypeSpecificParameters<TypeSpecificParameterType>& TypedUnderlyingEffect(void)
+        {
+            return static_cast<Controller::ForceFeedback::EffectWithTypeSpecificParameters<TypeSpecificParameterType>&>(VirtualDirectInputEffect<charMode>::UnderlyingEffect());
+        }
+
+
+        // -------- ABSTRACT INSTANCE METHODS -------------------------------------- //
+
+        /// Converts from the DirectInput type-specific parameter type to the internal type-specific parameter type.
+        /// Performs no error-checking.
+        /// @param [in] diTypeSpecificParams Type-specific parameters in DirectInput format.
+        /// @return Results of the conversion.
+        virtual TypeSpecificParameterType ConvertFromDirectInput(const DirectInputTypeSpecificParameterType& diTypeSpecificParams) const = 0;
+
+        /// Converts from the internal type-specific parameter type to the DirectInput type-specific parameter type.
+        /// Performs no error-checking.
+        /// @param [in] typeSpecificParams Type-specific parameters in internal format.
+        /// @return Results of the conversion.
+        virtual DirectInputTypeSpecificParameterType ConvertToDirectInput(const TypeSpecificParameterType& typeSpecificParams) const = 0;
+
+
+        // -------- CONCRETE INSTANCE METHODS -------------------------------------- //
+
+        HRESULT GetTypeSpecificParameters(LPDIEFFECT peff) override
+        {
+            if (peff->cbTypeSpecificParams < sizeof(DirectInputTypeSpecificParameterType))
+            {
+                peff->cbTypeSpecificParams = sizeof(DirectInputTypeSpecificParameterType);
+                return DIERR_MOREDATA;
+            }
+
+            if (nullptr == peff->lpvTypeSpecificParams)
+                return DIERR_INVALIDPARAM;
+
+            if (false == TypedUnderlyingEffect().HasTypeSpecificParameters())
+                return DIERR_INVALIDPARAM;
+
+            peff->cbTypeSpecificParams = sizeof(DirectInputTypeSpecificParameterType);
+            *(DirectInputTypeSpecificParameterType*)peff->lpvTypeSpecificParams = ConvertToDirectInput(TypedUnderlyingEffect().GetTypeSpecificParameters().value());
+            return DI_OK;
+        }
+
+        std::unique_ptr<Controller::ForceFeedback::Effect> CloneAndSetTypeSpecificParameters(LPCDIEFFECT peff)
+        {
+            if (peff->cbTypeSpecificParams < sizeof(DirectInputTypeSpecificParameterType))
+                return nullptr;
+
+            if (nullptr == peff->lpvTypeSpecificParams)
+                return nullptr;
+
+            const DirectInputTypeSpecificParameterType& kDirectInputTypeSpecificParams = *((DirectInputTypeSpecificParameterType*)peff->lpvTypeSpecificParams);
+            const TypeSpecificParameterType kTypeSpecificParameters = ConvertFromDirectInput(kDirectInputTypeSpecificParams);
+
+            if (false == TypedUnderlyingEffect().AreTypeSpecificParametersValid(kTypeSpecificParameters))
+                return nullptr;
+
+            std::unique_ptr<Controller::ForceFeedback::Effect> updatedEffect = TypedUnderlyingEffect().Clone();
+            ((Controller::ForceFeedback::EffectWithTypeSpecificParameters<TypeSpecificParameterType>*)updatedEffect.get())->SetTypeSpecificParameters(kTypeSpecificParameters);
+
+            return std::move(updatedEffect);
+        }
+    };
+
+    /// Concrete DirectInput force feedback effect object type for constant force effects.
+    /// @tparam charMode Selects between ASCII ("A" suffix) and Unicode ("W") suffix versions of types and interfaces.
+    template <ECharMode charMode> class ConstantForceDirectInputEffect : public VirtualDirectInputEffectWithTypeSpecificParameters<charMode, DICONSTANTFORCE, Controller::ForceFeedback::SConstantForceParameters>
+    {
+    public:
+        // -------- CONSTRUCTION AND DESTRUCTION ----------------------------------- //
+
+        /// Initialization constructor.
+        /// Simply delegates to the base class.
+        inline ConstantForceDirectInputEffect(VirtualDirectInputDevice<charMode>& associatedDevice, const Controller::ForceFeedback::ConstantForceEffect& effect, const GUID& effectGuid) : VirtualDirectInputEffectWithTypeSpecificParameters<charMode, DICONSTANTFORCE, Controller::ForceFeedback::SConstantForceParameters>(associatedDevice, effect, effectGuid)
+        {
+            // Nothing to do here.
+        }
+
+
+    protected:
+        // -------- CONCRETE INSTANCE METHODS -------------------------------------- //
+
+        Controller::ForceFeedback::SConstantForceParameters ConvertFromDirectInput(const DICONSTANTFORCE& diTypeSpecificParams) const override
+        {
+            return {.magnitude = (Controller::ForceFeedback::TEffectValue)diTypeSpecificParams.lMagnitude};
+        }
+
+        DICONSTANTFORCE ConvertToDirectInput(const Controller::ForceFeedback::SConstantForceParameters& typeSpecificParams) const override
+        {
+            return {.lMagnitude = (LONG)typeSpecificParams.magnitude};
+        }
     };
 }

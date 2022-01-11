@@ -426,10 +426,10 @@ namespace Xidi
     /// @tparam charMode Selects between ASCII ("A" suffix) and Unicode ("W") suffix versions of types and interfaces.
     /// @param [in] rguidEffect Reference to the GUID that identifies the force feedback effect.
     /// @return Smart pointer to the newly-constructed object, or `nullptr` if the GUID is not supported.
-    template <ECharMode charMode> static std::unique_ptr<VirtualDirectInputEffect<charMode>> ForceFeedbackEffectCreateObject(REFGUID rguidEffect)
+    template <ECharMode charMode> static std::unique_ptr<VirtualDirectInputEffect<charMode>> ForceFeedbackEffectCreateObject(REFGUID rguidEffect, VirtualDirectInputDevice<charMode>& associatedDevice)
     {
         if (rguidEffect == GUID_ConstantForce)
-            return nullptr;
+            return std::make_unique<ConstantForceDirectInputEffect<charMode>>(associatedDevice, Controller::ForceFeedback::ConstantForceEffect(), rguidEffect);
         if (rguidEffect == GUID_RampForce)
             return nullptr;
         if (rguidEffect == GUID_Square)
@@ -840,7 +840,7 @@ namespace Xidi
         if (nullptr != punkOuter)
             Message::Output(Message::ESeverity::Warning, L"Application requested COM aggregation, which is not implemented, while creating a force feedback effect.");
 
-        std::unique_ptr<VirtualDirectInputEffect<charMode>> newEffect = ForceFeedbackEffectCreateObject<charMode>(rguid);
+        std::unique_ptr<VirtualDirectInputEffect<charMode>> newEffect = ForceFeedbackEffectCreateObject<charMode>(rguid, *this);
         if (nullptr == newEffect)
             LOG_INVOCATION_AND_RETURN(DIERR_INVALIDPARAM, kMethodSeverity);
 

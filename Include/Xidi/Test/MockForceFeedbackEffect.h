@@ -31,6 +31,7 @@ namespace XidiTest
             return std::make_unique<MockEffect>(*this);
         }
 
+    protected:
         TEffectValue ComputeRawMagnitude(TEffectTimeMs rawTime) const override
         {
             return (TEffectValue)rawTime;

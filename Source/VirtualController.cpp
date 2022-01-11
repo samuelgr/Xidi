@@ -153,9 +153,9 @@ namespace Xidi
         // --------
 
         VirtualController::~VirtualController(void)
-        {           
+        {
             ForceFeedbackUnregister();
-            
+
             physicalControllerMonitorStop.request_stop();
             physicalControllerMonitor.join();
 

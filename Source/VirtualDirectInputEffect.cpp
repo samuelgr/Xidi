@@ -110,7 +110,7 @@ namespace Xidi
     // -------- CONSTRUCTION AND DESTRUCTION ------------------------------- //
     // See "VirtualDirectInputEffect.h" for documentation.
 
-    template <ECharMode charMode> VirtualDirectInputEffect<charMode>::VirtualDirectInputEffect(VirtualDirectInputDevice<charMode>& associatedDevice, std::unique_ptr<Controller::ForceFeedback::Effect>&& effect, const GUID& effectGuid) : associatedDevice(associatedDevice), effect(std::move(effect)), effectGuid(effectGuid), refCount(1)
+    template <ECharMode charMode> VirtualDirectInputEffect<charMode>::VirtualDirectInputEffect(VirtualDirectInputDevice<charMode>& associatedDevice, const Controller::ForceFeedback::Effect& effect, const GUID& effectGuid) : associatedDevice(associatedDevice), effect(effect.Clone()), effectGuid(effectGuid), refCount(1)
     {
         associatedDevice.AddRef();
         associatedDevice.ForceFeedbackEffectRegister((void*)this);
@@ -388,10 +388,6 @@ namespace Xidi
     {
         constexpr Message::ESeverity kMethodSeverity = Message::ESeverity::Info;
 
-        // This cloned effect will receive all the parameter updates and will be synced back to the original effect once all parameter values are accepted.
-        // Doing this means that an invalid value for a parameter means the original effect remains untouched.
-        std::unique_ptr<Controller::ForceFeedback::Effect> updatedEffect = effect->Clone();
-
         if (nullptr == peff)
             LOG_INVOCATION_AND_RETURN(DIERR_INVALIDPARAM, kMethodSeverity);
 
@@ -407,6 +403,24 @@ namespace Xidi
 
         default:
             LOG_INVOCATION_AND_RETURN(DIERR_INVALIDPARAM, kMethodSeverity);
+        }
+
+        // This cloned effect will receive all the parameter updates and will be synced back to the original effect once all parameter values are accepted.
+        // Doing this means that an invalid value for a parameter means the original effect remains untouched.
+        std::unique_ptr<Controller::ForceFeedback::Effect> updatedEffect;
+
+        if (0 != (dwFlags & DIEP_TYPESPECIFICPARAMS))
+        {
+            if (nullptr == peff->lpvTypeSpecificParams)
+                LOG_INVOCATION_AND_RETURN(DIERR_INVALIDPARAM, kMethodSeverity);
+
+            updatedEffect = CloneAndSetTypeSpecificParameters(peff);
+            if (nullptr == updatedEffect)
+                LOG_INVOCATION_AND_RETURN(DIERR_INVALIDPARAM, kMethodSeverity);
+        }
+        else
+        {
+            updatedEffect = effect->Clone();
         }
 
         switch (peff->dwSize)
@@ -551,16 +565,6 @@ namespace Xidi
         {
             if (false == updatedEffect->SetSamplePeriod((Controller::ForceFeedback::TEffectTimeMs)peff->dwSamplePeriod))
                 LOG_INVOCATION_AND_RETURN(DIERR_INVALIDPARAM, kMethodSeverity);
-        }
-
-        if (0 != (dwFlags & DIEP_TYPESPECIFICPARAMS))
-        {
-            if (nullptr == peff->lpvTypeSpecificParams)
-                LOG_INVOCATION_AND_RETURN(DIERR_INVALIDPARAM, kMethodSeverity);
-
-            const HRESULT kTypeSpecificParameterResult = SetTypeSpecificParameters(peff, *updatedEffect);
-            if (DI_OK != kTypeSpecificParameterResult)
-                LOG_INVOCATION_AND_RETURN(kTypeSpecificParameterResult, kMethodSeverity);
         }
 
         // Final sync operation is expected to succeed.

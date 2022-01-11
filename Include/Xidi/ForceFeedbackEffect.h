@@ -58,6 +58,7 @@ namespace Xidi
                 /// @return Smart pointer to a copy of this force feedback effect.
                 virtual std::unique_ptr<Effect> Clone(void) const = 0;
 
+            protected:
                 /// Internal implementation of calculations for computing the magnitude of a force feedback effect at a given time.
                 /// Subclasses must implement this method and in general should not need any access to the common parameters.
                 /// For performance reasons this method need not check for any errors and is allowed to return an indistinguishably invalid value, or even throw an exception, if the effect is ill-defined.
@@ -88,6 +89,7 @@ namespace Xidi
                 }
 
 
+            public:
                 // -------- INSTANCE METHODS ------------------------------- //
 
                 /// Applies the envelope parameter to transform the specified sustain level value at a given time.
@@ -391,6 +393,7 @@ namespace Xidi
                     return true;
                 }
 
+            protected:
                 /// Default implementation of checking that this type-specific event is completely defined, which simply verifies that type-specific parameters exist.
                 /// Subclasses that define more complex type-specific parameters or need to do other checks can override this method.
                 /// @return `true` if all type-specific parameters are valid and have been defined, `false` otherwise.
@@ -408,6 +411,7 @@ namespace Xidi
                 }
 
 
+            public:
                 // -------- INSTANCE METHODS ------------------------------- //
 
                 /// Clears this effect's type-specific parameters.
@@ -421,6 +425,13 @@ namespace Xidi
                 inline const std::optional<TypeSpecificParameterType>& GetTypeSpecificParameters(void) const
                 {
                     return typeSpecificParameters;
+                }
+
+                /// Checks if this object has type-specific parameters set.
+                /// @return `true` if so, `false` otherwise.
+                inline bool HasTypeSpecificParameters(void) const
+                {
+                    return typeSpecificParameters.has_value();
                 }
 
                 /// Updates this effect's type-specific parameters.
@@ -459,6 +470,8 @@ namespace Xidi
 
                 bool AreTypeSpecificParametersValid(const SConstantForceParameters& newTypeSpecificParameters) const override;
                 std::unique_ptr<Effect> Clone(void) const override;
+
+            protected:
                 TEffectValue ComputeRawMagnitude(TEffectTimeMs rawTime) const override;
             };
         }
