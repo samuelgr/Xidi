@@ -47,7 +47,7 @@ namespace XidiTest
     // -------- CONSTRUCTION AND DESTRUCTION ------------------------------- //
     // See "MockPhysicalController.h" for documentation.
 
-    MockPhysicalController::MockPhysicalController(TControllerIdentifier controllerIdentifier, const SPhysicalState* mockPhysicalStates, size_t mockPhysicalStateCount) : kControllerIdentifier(controllerIdentifier), kMockPhysicalStates(mockPhysicalStates), kMockPhysicalStateCount(mockPhysicalStateCount), currentPhysicalStateIndex(0), advanceRequested(false)
+    MockPhysicalController::MockPhysicalController(TControllerIdentifier controllerIdentifier, const SPhysicalState* mockPhysicalStates, size_t mockPhysicalStateCount) : kControllerIdentifier(controllerIdentifier), kMockPhysicalStates(mockPhysicalStates), kMockPhysicalStateCount(mockPhysicalStateCount), currentPhysicalStateIndex(0), advanceRequested(false), forceFeedbackDevice(0), forceFeedbackRegistration()
     {
         if (controllerIdentifier >= kPhysicalControllerCount)
             TEST_FAILED_BECAUSE(L"%s: Invalid controller identifier (%u).", __FUNCTIONW__, controllerIdentifier);
@@ -132,6 +132,20 @@ namespace Xidi
 
         ForceFeedback::Device* PhysicalControllerForceFeedbackRegister(TControllerIdentifier controllerIdentifier, const VirtualController* virtualController)
         {
+            if (controllerIdentifier >= kPhysicalControllerCount)
+                TEST_FAILED_BECAUSE(L"%s: Invalid controller identifier (%u).", __FUNCTIONW__, controllerIdentifier);
+
+            std::unique_lock lock(mockPhysicalStateGuard[controllerIdentifier]);
+
+            if (nullptr != mockPhysicalController[controllerIdentifier])
+            {
+                if (nullptr == mockPhysicalController[controllerIdentifier]->GetForceFeedbackRegistration())
+                {
+                    mockPhysicalController[controllerIdentifier]->SetForceFeedbackRegistration(virtualController);
+                    return &mockPhysicalController[controllerIdentifier]->GetForceFeedbackDevice();
+                }
+            }
+
             return nullptr;
         }
 
@@ -139,7 +153,16 @@ namespace Xidi
 
         void PhysicalControllerForceFeedbackUnregister(TControllerIdentifier controllerIdentifier, const VirtualController* virtualController)
         {
-            // Nothing to do here.
+            if (controllerIdentifier >= kPhysicalControllerCount)
+                TEST_FAILED_BECAUSE(L"%s: Invalid controller identifier (%u).", __FUNCTIONW__, controllerIdentifier);
+
+            std::unique_lock lock(mockPhysicalStateGuard[controllerIdentifier]);
+
+            if (nullptr != mockPhysicalController[controllerIdentifier])
+            {
+                if (virtualController == mockPhysicalController[controllerIdentifier]->GetForceFeedbackRegistration())
+                    mockPhysicalController[controllerIdentifier]->SetForceFeedbackRegistration(nullptr);
+            }
         }
 
         // --------

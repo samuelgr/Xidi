@@ -12,7 +12,9 @@
 
 #pragma once
 
+#include "ForceFeedbackDevice.h"
 #include "PhysicalController.h"
+#include "VirtualController.h"
 
 #include <cstddef>
 
@@ -50,6 +52,13 @@ namespace XidiTest
         /// Flag which specifies whether or not the next wait-for-state-change operation should result in an advancement of the reported physical state to the next element in the physical state array.
         bool advanceRequested;
 
+        /// Force feedback device associated with the physical controller.
+        /// Initialized to use a base timestamp of 0.
+        ForceFeedback::Device forceFeedbackDevice;
+
+        /// Virtual controller registered for force feedback.
+        const VirtualController* forceFeedbackRegistration;
+
 
     public:
         // -------- CONSTRUCTION AND DESTRUCTION ----------------------- //
@@ -72,6 +81,20 @@ namespace XidiTest
         /// @return Current physical state being reported to the test cases that request it.
         SPhysicalState GetCurrentPhysicalState(void) const;
 
+        /// Provides access to the force feedback device object.
+        /// @return Reference to the force feedback device object.
+        inline ForceFeedback::Device& GetForceFeedbackDevice(void)
+        {
+            return forceFeedbackDevice;
+        }
+
+        /// Provides access to the virtual controller object that is registered for force feedback.
+        /// @return Pointer to the registered virtual controller, or `nullptr` if no virtual controller is registered.
+        inline const VirtualController* GetForceFeedbackRegistration(void) const
+        {
+            return forceFeedbackRegistration;
+        }
+
         /// Retrieves and returns whether or not an advancement to the next physical state has been requested.
         /// @return `true` if so, `false` if not.
         inline bool IsAdvanceStateRequested(void) const
@@ -82,5 +105,13 @@ namespace XidiTest
         /// Requests an advancement to the next physical state.
         /// Test will fail due to a test implementation issue if attempting to advance past the end of the physical state array.
         void RequestAdvancePhysicalState(void);
+
+        /// Sets the virtual controller that is registered for force feedback.
+        /// Passing `nullptr` clears the registration entirely.
+        /// @param [in] controllerToRegister Pointer to the virtual controller object that should be registered for force feedback.
+        inline void SetForceFeedbackRegistration(const VirtualController* controllerToRegister)
+        {
+            forceFeedbackRegistration = controllerToRegister;
+        }
     };
 }

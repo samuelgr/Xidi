@@ -12,6 +12,7 @@
 #include "ApiWindows.h"
 #include "ControllerTypes.h"
 #include "ElementMapper.h"
+#include "ForceFeedbackDevice.h"
 #include "MockPhysicalController.h"
 #include "StateChangeEventBuffer.h"
 #include "TestCase.h"
@@ -798,5 +799,95 @@ namespace XidiTest
             physicalController.RequestAdvancePhysicalState();
             TEST_ASSERT(WAIT_TIMEOUT == WaitForSingleObject(kStateChangeEvent, kTestStateChangeEventTimeoutMilliseconds));
         }
+    }
+
+
+    // The following sequence of tests, which together comprise the ForceFeedback suite, verify that force feedback registration and unregistration is handled successfully.
+
+    // Verifies that a single virtual controller can register and unregister successfully, and this changes the device pointer it returns.
+    TEST_CASE(VirtualController_ForceFeedback_Nominal)
+    {
+        constexpr TControllerIdentifier kControllerIndex = 1;
+        constexpr SPhysicalState kPhysicalState = {.errorCode = ERROR_SUCCESS, .state = {.dwPacketNumber = 1}};
+
+        MockPhysicalController physicalController(kControllerIndex, &kPhysicalState, 1);
+        const Controller::ForceFeedback::Device* const kForceFeedbackDeviceAddress = &physicalController.GetForceFeedbackDevice();
+
+        VirtualController controller(kControllerIndex, kTestMapper);
+
+        TEST_ASSERT(false == controller.ForceFeedbackIsRegistered());
+        TEST_ASSERT(nullptr == controller.ForceFeedbackGetDevice());
+        TEST_ASSERT(nullptr == physicalController.GetForceFeedbackRegistration());
+
+        TEST_ASSERT(true == controller.ForceFeedbackRegister());
+        TEST_ASSERT(kForceFeedbackDeviceAddress == controller.ForceFeedbackGetDevice());
+        TEST_ASSERT(&controller == physicalController.GetForceFeedbackRegistration());
+
+        controller.ForceFeedbackUnregister();
+        TEST_ASSERT(false == controller.ForceFeedbackIsRegistered());
+        TEST_ASSERT(nullptr == controller.ForceFeedbackGetDevice());
+        TEST_ASSERT(nullptr == physicalController.GetForceFeedbackRegistration());
+    }
+
+    // Verifies that only one virtual controller is allowed to register at a time, even with the same controller identifier.
+    TEST_CASE(VirtualController_ForceFeedback_MutualExclusion)
+    {
+        constexpr TControllerIdentifier kControllerIndex = 1;
+        constexpr SPhysicalState kPhysicalState = {.errorCode = ERROR_SUCCESS, .state = {.dwPacketNumber = 1}};
+
+        MockPhysicalController physicalController(kControllerIndex, &kPhysicalState, 1);
+        const Controller::ForceFeedback::Device* const kForceFeedbackDeviceAddress = &physicalController.GetForceFeedbackDevice();
+
+        VirtualController controller(kControllerIndex, kTestMapper);
+        VirtualController controller2(kControllerIndex, kTestMapper);
+
+        TEST_ASSERT(false == controller.ForceFeedbackIsRegistered());
+        TEST_ASSERT(false == controller2.ForceFeedbackIsRegistered());
+
+        TEST_ASSERT(true == controller.ForceFeedbackRegister());
+        TEST_ASSERT(true == controller.ForceFeedbackIsRegistered());
+        TEST_ASSERT(false == controller2.ForceFeedbackRegister());
+        TEST_ASSERT(false == controller2.ForceFeedbackIsRegistered());
+
+        controller.ForceFeedbackUnregister();
+        TEST_ASSERT(false == controller.ForceFeedbackIsRegistered());
+
+        TEST_ASSERT(true == controller2.ForceFeedbackRegister());
+        TEST_ASSERT(true == controller2.ForceFeedbackIsRegistered());
+    }
+
+    // Verifies that registration is idempotent. Calling the registration method should continually return success if the controller is registered.
+    TEST_CASE(VirtualController_ForceFeedback_Idempotent)
+    {
+        constexpr TControllerIdentifier kControllerIndex = 1;
+        constexpr SPhysicalState kPhysicalState = {.errorCode = ERROR_SUCCESS, .state = {.dwPacketNumber = 1}};
+
+        MockPhysicalController physicalController(kControllerIndex, &kPhysicalState, 1);
+        const Controller::ForceFeedback::Device* const kForceFeedbackDeviceAddress = &physicalController.GetForceFeedbackDevice();
+
+        VirtualController controller(kControllerIndex, kTestMapper);
+
+        for (int i = 0; i < 100; ++i)
+            TEST_ASSERT(true == controller.ForceFeedbackRegister());
+
+        TEST_ASSERT(kForceFeedbackDeviceAddress == controller.ForceFeedbackGetDevice());
+        TEST_ASSERT(&controller == physicalController.GetForceFeedbackRegistration());
+    }
+
+    // Verifies that virtual controllers automatically unregister themselves upon destruction.
+    TEST_CASE(VirtualController_ForceFeedback_UnregisterOnDestruction)
+    {
+        constexpr TControllerIdentifier kControllerIndex = 1;
+        constexpr SPhysicalState kPhysicalState = {.errorCode = ERROR_SUCCESS, .state = {.dwPacketNumber = 1}};
+
+        MockPhysicalController physicalController(kControllerIndex, &kPhysicalState, 1);
+        const Controller::ForceFeedback::Device* const kForceFeedbackDeviceAddress = &physicalController.GetForceFeedbackDevice();
+
+        VirtualController* controller = new VirtualController(kControllerIndex, kTestMapper);
+        TEST_ASSERT(true == controller->ForceFeedbackRegister());
+        TEST_ASSERT(controller == physicalController.GetForceFeedbackRegistration());
+
+        delete controller;
+        TEST_ASSERT(nullptr == physicalController.GetForceFeedbackRegistration());
     }
 }
