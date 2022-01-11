@@ -214,6 +214,13 @@ namespace Xidi
                     return commonParameters.duration.has_value();
                 }
 
+                /// Checks if this force feedback effect has an envelope.
+                /// @return `true` if so, `false` otherwise.
+                inline bool HasEnvelope(void) const
+                {
+                    return commonParameters.envelope.has_value();
+                }
+
                 /// Retrieves and returns this effect's identifier.
                 /// @return This effect's identifier.
                 inline TEffectIdentifier Identifier(void) const
