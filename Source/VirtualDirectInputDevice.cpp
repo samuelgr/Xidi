@@ -649,7 +649,7 @@ namespace Xidi
     // -------- CONSTRUCTION AND DESTRUCTION ------------------------------- //
     // See "VirtualDirectInputDevice.h" for documentation.
 
-    template <ECharMode charMode> VirtualDirectInputDevice<charMode>::VirtualDirectInputDevice(std::unique_ptr<Controller::VirtualController>&& controller) : controller(std::move(controller)), cooperativeLevel(ECooperativeLevel::Shared), dataFormat(), effectMutex(), effectRegistry(), refCount(1)
+    template <ECharMode charMode> VirtualDirectInputDevice<charMode>::VirtualDirectInputDevice(std::unique_ptr<Controller::VirtualController>&& controller) : controller(std::move(controller)), cooperativeLevel(ECooperativeLevel::Shared), dataFormat(), effectRegistry(), refCount(1)
     {
         // Nothing to do here.
     }
@@ -887,11 +887,13 @@ namespace Xidi
         if ((nullptr == lpCallback) || (0 != fl))
             LOG_INVOCATION_AND_RETURN(DIERR_INVALIDPARAM, kMethodSeverity);
 
-        std::shared_lock lock(effectMutex);
-
-        for (auto effect : effectRegistry)
+        // The loop needs to be structured this way because applications are allowed to destroy the specific effect that is passed in to the callback function during the callback function invocation.
+        // Destroying a container element invalidates its iterator, so at all times it is necessary to maintain a valid iterator for the effect after the one being passed into the callback function.
+        auto nextEffectIter = effectRegistry.begin();
+        while (nextEffectIter != effectRegistry.end())
         {
-            switch (lpCallback((LPDIRECTINPUTEFFECT)effect, pvRef))
+            auto currentEffectIter = nextEffectIter++;
+            switch (lpCallback((LPDIRECTINPUTEFFECT)(*currentEffectIter), pvRef))
             {
             case DIENUM_CONTINUE:
                 break;

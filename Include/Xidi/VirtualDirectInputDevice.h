@@ -19,7 +19,6 @@
 #include <atomic>
 #include <memory>
 #include <optional>
-#include <shared_mutex>
 
 
 namespace Xidi
@@ -98,9 +97,6 @@ namespace Xidi
         /// Data format specification for communicating with the DirectInput application.
         std::unique_ptr<DataFormat> dataFormat;
 
-        /// Mutex for guarding concurrent accesses to data structures related to force feedback effects.
-        std::shared_mutex effectMutex;
-
         /// Registry of all force feedback effect objects created by this object.
         /// Deliberately not type-safe to avoid a circular dependency between header files.
         std::set<void*> effectRegistry;
@@ -126,7 +122,6 @@ namespace Xidi
         /// @param [in] effect Address of the effect object to register.
         inline void ForceFeedbackEffectRegister(void* effect)
         {
-            std::unique_lock lock(effectMutex);
             effectRegistry.insert(effect);
         }
 
@@ -135,7 +130,6 @@ namespace Xidi
         /// @param [in] effect Address of the effect object to unregister.
         inline void ForceFeedbackEffectUnregister(void* effect)
         {
-            std::unique_lock lock(effectMutex);
             effectRegistry.erase(effect);
         }
 
