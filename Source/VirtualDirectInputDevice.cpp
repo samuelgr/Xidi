@@ -28,6 +28,7 @@
 #include <memory>
 #include <mutex>
 #include <optional>
+#include <unordered_map>
 
 
 // -------- MACROS --------------------------------------------------------- //
@@ -62,6 +63,13 @@
 
 namespace Xidi
 {
+    // -------- INTERNAL TYPES --------------------------------------------- //
+
+    /// Alias for a pointer to a function that, when invoked, constructs a force feedback effect object using the specified GUID type and associated virtual DirectInput device.
+    /// @tparam charMode Selects between ASCII ("A" suffix) and Unicode ("W") suffix versions of types and interfaces.
+    template <ECharMode charMode> using TForceFeedbackEffectCreatorFunc = std::unique_ptr<VirtualDirectInputEffect<charMode>>(*)(REFGUID, VirtualDirectInputDevice<charMode>&);
+
+
     // -------- INTERNAL FUNCTIONS ----------------------------------------- //
 
     /// Converts from axis type enumerator to axis type GUID.
@@ -422,30 +430,41 @@ namespace Xidi
         }
     }
 
+    /// Holds a registry of functions that construct real force feedback effect objects by GUID and retrieves pointers to those functions, assuming the GUID identifies a force feedback effect object that can be constructed.
+    /// @tparam charMode Selects between ASCII ("A" suffix) and Unicode ("W") suffix versions of types and interfaces.
+    /// @param [in] rguidEffect Reference to the GUID that identifies the force feedback effect.
+    /// @return Pointer to the creation function for the specified GUID if it exists, `nullptr` otherwise.
+    template <ECharMode charMode> static TForceFeedbackEffectCreatorFunc<charMode> ForceFeedbackEffectObjectCreator(REFGUID rguidEffect)
+    {
+        // This registry acts as the single knowledge center on which GUIDs can be constructed into force feedback effect objects and how to do it.
+        // Presence or absence of a GUID in this registry determines whether GUIDs are presented during enumeration or are recognized by calls to device interface methods that use force feedback effect GUIDs.
+        static const std::unordered_map<GUID, TForceFeedbackEffectCreatorFunc<charMode>> kForceFeedbackEffectObjectCreators = {
+            {
+                GUID_ConstantForce,
+                [](REFGUID rguidEffect, VirtualDirectInputDevice<charMode>& associatedDevice) -> std::unique_ptr<VirtualDirectInputEffect<charMode>> {
+                    return std::make_unique<ConstantForceDirectInputEffect<charMode>>(associatedDevice, Controller::ForceFeedback::ConstantForceEffect(), rguidEffect);
+                }
+            }
+        };
+
+        auto forceFeedbackEffectObjectCreatorIt = kForceFeedbackEffectObjectCreators.find(rguidEffect);
+        if (kForceFeedbackEffectObjectCreators.cend() == forceFeedbackEffectObjectCreatorIt)
+            return nullptr;
+
+        return forceFeedbackEffectObjectCreatorIt->second;
+    }
+
     /// Allocates and constructs a new DirectInput force feedback effect object for the specified GUID.
     /// @tparam charMode Selects between ASCII ("A" suffix) and Unicode ("W") suffix versions of types and interfaces.
     /// @param [in] rguidEffect Reference to the GUID that identifies the force feedback effect.
     /// @return Smart pointer to the newly-constructed object, or `nullptr` if the GUID is not supported.
     template <ECharMode charMode> static std::unique_ptr<VirtualDirectInputEffect<charMode>> ForceFeedbackEffectCreateObject(REFGUID rguidEffect, VirtualDirectInputDevice<charMode>& associatedDevice)
     {
-        if (rguidEffect == GUID_ConstantForce)
-            return std::make_unique<ConstantForceDirectInputEffect<charMode>>(associatedDevice, Controller::ForceFeedback::ConstantForceEffect(), rguidEffect);
-        if (rguidEffect == GUID_RampForce)
-            return nullptr;
-        if (rguidEffect == GUID_Square)
-            return nullptr;
-        if (rguidEffect == GUID_Sine)
-            return nullptr;
-        if (rguidEffect == GUID_Triangle)
-            return nullptr;
-        if (rguidEffect == GUID_SawtoothUp)
-            return nullptr;
-        if (rguidEffect == GUID_SawtoothDown)
-            return nullptr;
-        if (rguidEffect == GUID_CustomForce)
+        TForceFeedbackEffectCreatorFunc<charMode> forceFeedbackObjectCreator = ForceFeedbackEffectObjectCreator<charMode>(rguidEffect);
+        if (nullptr == forceFeedbackObjectCreator)
             return nullptr;
 
-        return nullptr;
+        return forceFeedbackObjectCreator(rguidEffect, associatedDevice);
     }
 
     /// Fills the specified buffer with a friendly string representation of the specified force feedback effect.
@@ -659,6 +678,15 @@ namespace Xidi
     template <ECharMode charMode> VirtualDirectInputDevice<charMode>::~VirtualDirectInputDevice(void)
     {
         controller->ForceFeedbackUnregister();
+    }
+
+
+    // -------- CLASS METHODS ---------------------------------------------- //
+    // See "VirtualDirectInputDevice.h" for documentation.
+
+    template <ECharMode charMode> bool VirtualDirectInputDevice<charMode>::ForceFeedbackEffectCanCreateObject(REFGUID rguidEffect)
+    {
+        return (nullptr != ForceFeedbackEffectObjectCreator<charMode>(rguidEffect));
     }
 
 
@@ -904,7 +932,7 @@ namespace Xidi
             }
         }
 
-        LOG_INVOCATION_AND_RETURN(DIERR_UNSUPPORTED, kMethodSeverity);
+        LOG_INVOCATION_AND_RETURN(DI_OK, kMethodSeverity);
     }
 
     // ---------
@@ -930,6 +958,9 @@ namespace Xidi
                 const GUID* kEffectGuids[] = {&GUID_ConstantForce};
                 for (const auto kEffectGuid : kEffectGuids)
                 {
+                    if (false == ForceFeedbackEffectCanCreateObject(*kEffectGuid))
+                        continue;
+
                     *effectDescriptor = {.dwSize = sizeof(*effectDescriptor), .guid = *kEffectGuid, .dwEffType = ForceFeedbackEffectType(*kEffectGuid).value()};
                     FillForceFeedbackEffectInfo<charMode>(effectDescriptor.get());
                     switch (lpCallback(effectDescriptor.get(), pvRef))
@@ -949,6 +980,9 @@ namespace Xidi
                 const GUID* kEffectGuids[] = {&GUID_RampForce};
                 for (const auto kEffectGuid : kEffectGuids)
                 {
+                    if (false == ForceFeedbackEffectCanCreateObject(*kEffectGuid))
+                        continue;
+
                     *effectDescriptor = {.dwSize = sizeof(*effectDescriptor), .guid = *kEffectGuid, .dwEffType = ForceFeedbackEffectType(*kEffectGuid).value()};
                     FillForceFeedbackEffectInfo<charMode>(effectDescriptor.get());
                     switch (lpCallback(effectDescriptor.get(), pvRef))
@@ -968,6 +1002,9 @@ namespace Xidi
                 const GUID* kEffectGuids[] = {&GUID_Square, &GUID_Sine, &GUID_Triangle, &GUID_SawtoothUp, &GUID_SawtoothDown};
                 for (const auto kEffectGuid : kEffectGuids)
                 {
+                    if (false == ForceFeedbackEffectCanCreateObject(*kEffectGuid))
+                        continue;
+
                     *effectDescriptor = {.dwSize = sizeof(*effectDescriptor), .guid = *kEffectGuid, .dwEffType = ForceFeedbackEffectType(*kEffectGuid).value()};
                     FillForceFeedbackEffectInfo<charMode>(effectDescriptor.get());
                     switch (lpCallback(effectDescriptor.get(), pvRef))
@@ -987,6 +1024,9 @@ namespace Xidi
                 const GUID* kEffectGuids[] = {&GUID_CustomForce};
                 for (const auto kEffectGuid : kEffectGuids)
                 {
+                    if (false == ForceFeedbackEffectCanCreateObject(*kEffectGuid))
+                        continue;
+
                     *effectDescriptor = {.dwSize = sizeof(*effectDescriptor), .guid = *kEffectGuid, .dwEffType = ForceFeedbackEffectType(*kEffectGuid).value()};
                     FillForceFeedbackEffectInfo<charMode>(effectDescriptor.get());
                     switch (lpCallback(effectDescriptor.get(), pvRef))

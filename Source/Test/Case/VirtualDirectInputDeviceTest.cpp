@@ -18,6 +18,7 @@
 #include "Mapper.h"
 #include "TestCase.h"
 #include "VirtualDirectInputDevice.h"
+#include "VirtualDirectInputEffect.h"
 
 #include <cstdint>
 #include <cstring>
@@ -1110,14 +1111,45 @@ namespace XidiTest
     }
 
 
-    // The following sequence of tests, which together comprise the EffectInfo suite, exercise the DirectInputDevice interface methods EnumEffects and GetEffectInfo.
-    // Different filters are applied for each test case.
+    // The following sequence of tests, which together comprise the EffectInfo suite, exercise the DirectInputDevice interface methods that involve force feedback effects.
+    // Scopes are highly varied, so more details are provided with each test case.
+
+    // Verifies that the GUIDs known to be supported are actually supported and objects with those GUIDs can be created.
+    TEST_CASE(VirtualDirectInputDevice_ForceFeedbackEffect_CreateWithSupportedGuids)
+    {
+        const GUID kExpectedSupportedGuids[] = {GUID_ConstantForce};
+
+        for (const auto& kExpectedSupportedGuid : kExpectedSupportedGuids)
+        {
+            TEST_ASSERT(true == VirtualDirectInputDevice<ECharMode::A>::ForceFeedbackEffectCanCreateObject(kExpectedSupportedGuid));
+            TEST_ASSERT(true == VirtualDirectInputDevice<ECharMode::W>::ForceFeedbackEffectCanCreateObject(kExpectedSupportedGuid));
+        }
+
+        for (const auto& kExpectedSupportedGuid : kExpectedSupportedGuids)
+        {
+            VirtualDirectInputDevice<ECharMode::W> diController(CreateTestVirtualController());
+            IDirectInputEffect* createdEffect = nullptr;
+            
+            TEST_ASSERT(DI_OK == diController.CreateEffect(kExpectedSupportedGuid, nullptr, &createdEffect, nullptr));
+            TEST_ASSERT(nullptr != createdEffect);
+
+            GUID createdEffectGuid = {};
+            TEST_ASSERT(DI_OK == createdEffect->GetEffectGuid(&createdEffectGuid));
+            TEST_ASSERT(kExpectedSupportedGuid == createdEffectGuid);
+        }
+    }
 
     // Enumerates all effects and verifies correct common information is provided, like type flags and parameter support.
-    TEST_CASE(VirtualDirectInputDevice_EffectInfo_EnumAll)
+    TEST_CASE(VirtualDirectInputDevice_ForceFeedbackEffect_EnumAll)
     {
         const std::set<GUID> kExpectedSeenGuids = {GUID_ConstantForce, GUID_RampForce, GUID_Square, GUID_Sine, GUID_Triangle, GUID_SawtoothUp, GUID_SawtoothDown, GUID_CustomForce};
         std::set<GUID> actualSeenGuids;
+
+        for (const auto& kExpectedSeenGuid : kExpectedSeenGuids)
+        {
+            if (false == VirtualDirectInputDevice<ECharMode::W>::ForceFeedbackEffectCanCreateObject(kExpectedSeenGuid))
+                actualSeenGuids.insert(kExpectedSeenGuid);
+        }
 
         constexpr DWORD kExpectedEffectTypeFlags = (DIEFT_FFATTACK | DIEFT_FFFADE);
         constexpr DWORD kExpectedEffectParams = (DIEP_AXES | DIEP_DIRECTION | DIEP_DURATION | DIEP_ENVELOPE | DIEP_GAIN | DIEP_SAMPLEPERIOD | DIEP_STARTDELAY | DIEP_TYPESPECIFICPARAMS);
@@ -1146,7 +1178,7 @@ namespace XidiTest
     }
 
     // Enumerates all effects and verifies information is identical to that provided by the GetEffectInfo method.
-    TEST_CASE(VirtualDirectInputDevice_EffectInfo_GetInfoAll)
+    TEST_CASE(VirtualDirectInputDevice_ForceFeedbackEffect_GetInfoAll)
     {
         VirtualDirectInputDevice<ECharMode::W> diController(CreateTestVirtualController());
         TEST_ASSERT(DI_OK == diController.EnumEffects([](LPCDIEFFECTINFO pdei, LPVOID pvRef) -> BOOL
@@ -1165,10 +1197,16 @@ namespace XidiTest
     }
 
     // Enumerates constant force effects only and verifies correct information is provided.
-    TEST_CASE(VirtualDirectInputDevice_EffectInfo_EnumConstantForce)
+    TEST_CASE(VirtualDirectInputDevice_ForceFeedbackEffect_EnumConstantForce)
     {
         const std::set<GUID> kExpectedSeenGuids = {GUID_ConstantForce};
         std::set<GUID> actualSeenGuids;
+
+        for (const auto& kExpectedSeenGuid : kExpectedSeenGuids)
+        {
+            if (false == VirtualDirectInputDevice<ECharMode::W>::ForceFeedbackEffectCanCreateObject(kExpectedSeenGuid))
+                actualSeenGuids.insert(kExpectedSeenGuid);
+        }
 
         constexpr DWORD kExpectedEffectType = DIEFT_CONSTANTFORCE;
 
@@ -1194,10 +1232,16 @@ namespace XidiTest
     }
 
     // Enumerates ramp force effects only and verifies correct information is provided.
-    TEST_CASE(VirtualDirectInputDevice_EffectInfo_EnumRampForce)
+    TEST_CASE(VirtualDirectInputDevice_ForceFeedbackEffect_EnumRampForce)
     {
         const std::set<GUID> kExpectedSeenGuids = {GUID_RampForce};
         std::set<GUID> actualSeenGuids;
+
+        for (const auto& kExpectedSeenGuid : kExpectedSeenGuids)
+        {
+            if (false == VirtualDirectInputDevice<ECharMode::W>::ForceFeedbackEffectCanCreateObject(kExpectedSeenGuid))
+                actualSeenGuids.insert(kExpectedSeenGuid);
+        }
 
         constexpr DWORD kExpectedEffectType = DIEFT_RAMPFORCE;
 
@@ -1223,10 +1267,16 @@ namespace XidiTest
     }
 
     // Enumerates periodic force effects only and verifies correct information is provided.
-    TEST_CASE(VirtualDirectInputDevice_EffectInfo_EnumPeriodic)
+    TEST_CASE(VirtualDirectInputDevice_ForceFeedbackEffect_EnumPeriodic)
     {
         const std::set<GUID> kExpectedSeenGuids = {GUID_Square, GUID_Sine, GUID_Triangle, GUID_SawtoothUp, GUID_SawtoothDown};
         std::set<GUID> actualSeenGuids;
+
+        for (const auto& kExpectedSeenGuid : kExpectedSeenGuids)
+        {
+            if (false == VirtualDirectInputDevice<ECharMode::W>::ForceFeedbackEffectCanCreateObject(kExpectedSeenGuid))
+                actualSeenGuids.insert(kExpectedSeenGuid);
+        }
 
         constexpr DWORD kExpectedEffectType = DIEFT_PERIODIC;
 
@@ -1252,10 +1302,16 @@ namespace XidiTest
     }
 
     // Enumerates custom force effects only and verifies correct information is provided.
-    TEST_CASE(VirtualDirectInputDevice_EffectInfo_EnumCustomForce)
+    TEST_CASE(VirtualDirectInputDevice_ForceFeedbackEffect_EnumCustomForce)
     {
         const std::set<GUID> kExpectedSeenGuids = {GUID_CustomForce};
         std::set<GUID> actualSeenGuids;
+
+        for (const auto& kExpectedSeenGuid : kExpectedSeenGuids)
+        {
+            if (false == VirtualDirectInputDevice<ECharMode::W>::ForceFeedbackEffectCanCreateObject(kExpectedSeenGuid))
+                actualSeenGuids.insert(kExpectedSeenGuid);
+        }
 
         constexpr DWORD kExpectedEffectType = DIEFT_CUSTOMFORCE;
 
@@ -1279,9 +1335,9 @@ namespace XidiTest
 
         TEST_ASSERT(actualSeenGuids == kExpectedSeenGuids);
     }
-    
+
     // Attempts to enumerate unsupported types of effects, which should result in no calls to the enumeration callback.
-    TEST_CASE(VirtualDirectInputDevice_EffectInfo_EnumNone)
+    TEST_CASE(VirtualDirectInputDevice_ForceFeedbackEffect_EnumNone)
     {
         constexpr DWORD kExpectedEffectType = DIEFT_STARTDELAY;
 
@@ -1293,5 +1349,148 @@ namespace XidiTest
             },
             nullptr, kExpectedEffectType)
         );
+    }
+
+    // Creates several effects and attempts to enumerate them all.
+    TEST_CASE(VirtualDirectInputDevice_ForceFeedbackEffect_EnumCreated)
+    {
+        constexpr int kNumTestEffects = 10;
+        std::set<IDirectInputEffect*> expectedSeenEffects;
+        std::set<IDirectInputEffect*> actualSeenEffects;
+
+        const GUID kEffectGuid = GUID_ConstantForce;
+
+        VirtualDirectInputDevice<ECharMode::W> diController(CreateTestVirtualController());
+
+        for (int i = 0; i < kNumTestEffects; ++i)
+        {
+            IDirectInputEffect* testEffect = nullptr;
+            TEST_ASSERT(DI_OK == diController.CreateEffect(kEffectGuid, nullptr, &testEffect, nullptr));
+            TEST_ASSERT(nullptr != testEffect);
+
+            expectedSeenEffects.insert(testEffect);
+        }
+
+        TEST_ASSERT(DI_OK == diController.EnumCreatedEffectObjects([](LPDIRECTINPUTEFFECT peff, LPVOID pvRef) -> BOOL
+            {
+                std::set<IDirectInputEffect*>& seenEffects = *((std::set<IDirectInputEffect*>*)pvRef);
+                seenEffects.insert(peff);
+                return DIENUM_CONTINUE;
+            },
+            (LPVOID)&actualSeenEffects, 0));
+
+        TEST_ASSERT(actualSeenEffects == expectedSeenEffects);
+    }
+
+    // Creates several effects and attempts to enumerate them all, but stops enumeration after the first effect.
+    TEST_CASE(VirtualDirectInputDevice_ForceFeedbackEffect_EnumCreatedAndStop)
+    {
+        constexpr int kNumTestEffects = 10;
+        std::set<IDirectInputEffect*> expectedSeenEffects;
+        std::set<IDirectInputEffect*> actualSeenEffects;
+
+        const GUID kEffectGuid = GUID_ConstantForce;
+
+        VirtualDirectInputDevice<ECharMode::W> diController(CreateTestVirtualController());
+
+        for (int i = 0; i < kNumTestEffects; ++i)
+        {
+            IDirectInputEffect* testEffect = nullptr;
+            TEST_ASSERT(DI_OK == diController.CreateEffect(kEffectGuid, nullptr, &testEffect, nullptr));
+            TEST_ASSERT(nullptr != testEffect);
+
+            expectedSeenEffects.insert(testEffect);
+        }
+
+        TEST_ASSERT(DI_OK == diController.EnumCreatedEffectObjects([](LPDIRECTINPUTEFFECT peff, LPVOID pvRef) -> BOOL
+            {
+                std::set<IDirectInputEffect*>& seenEffects = *((std::set<IDirectInputEffect*>*)pvRef);
+
+                if (false == seenEffects.empty())
+                    TEST_FAILED_BECAUSE(L"Unexpected invocation of enumeration function.");
+
+                seenEffects.insert(peff);
+                return DIENUM_STOP;
+            },
+            (LPVOID)&actualSeenEffects, 0));
+
+        for (const auto& actualSeenEffect : actualSeenEffects)
+            TEST_ASSERT(true == expectedSeenEffects.contains(actualSeenEffect));
+    }
+
+    // Creates several effects, destroys some of them, and attempts to enumerate the remainder.
+    TEST_CASE(VirtualDirectInputDevice_ForceFeedbackEffect_DestroyThenEnumCreated)
+    {
+        constexpr int kNumTestEffects = 10;
+        std::set<IDirectInputEffect*> expectedSeenEffects;
+        std::set<IDirectInputEffect*> actualSeenEffects;
+
+        const GUID kEffectGuid = GUID_ConstantForce;
+
+        VirtualDirectInputDevice<ECharMode::W> diController(CreateTestVirtualController());
+
+        for (int i = 0; i < kNumTestEffects; ++i)
+        {
+            IDirectInputEffect* testEffect = nullptr;
+            TEST_ASSERT(DI_OK == diController.CreateEffect(kEffectGuid, nullptr, &testEffect, nullptr));
+            TEST_ASSERT(nullptr != testEffect);
+
+            if (0 == (i % 2))
+                expectedSeenEffects.insert(testEffect);
+            else
+                testEffect->Release();
+        }
+
+        TEST_ASSERT(DI_OK == diController.EnumCreatedEffectObjects([](LPDIRECTINPUTEFFECT peff, LPVOID pvRef) -> BOOL
+            {
+                std::set<IDirectInputEffect*>& seenEffects = *((std::set<IDirectInputEffect*>*)pvRef);
+                seenEffects.insert(peff);
+                return DIENUM_CONTINUE;
+            },
+            (LPVOID)&actualSeenEffects, 0));
+
+        TEST_ASSERT(actualSeenEffects == expectedSeenEffects);
+    }
+
+    // Creates several effects, attempts to enumerate them all, and destroys each during the enumeration callback.
+    // DirectInput documentation explicitly states that this behavior is permitted.
+    TEST_CASE(VirtualDirectInputDevice_ForceFeedbackEffect_EnumCreatedAndDestroy)
+    {
+        constexpr int kNumTestEffects = 10;
+        std::set<IDirectInputEffect*> expectedSeenEffects;
+        std::set<IDirectInputEffect*> actualSeenEffects;
+
+        const GUID kEffectGuid = GUID_ConstantForce;
+
+        VirtualDirectInputDevice<ECharMode::W> diController(CreateTestVirtualController());
+
+        for (int i = 0; i < kNumTestEffects; ++i)
+        {
+            IDirectInputEffect* testEffect = nullptr;
+            TEST_ASSERT(DI_OK == diController.CreateEffect(kEffectGuid, nullptr, &testEffect, nullptr));
+            TEST_ASSERT(nullptr != testEffect);
+
+            expectedSeenEffects.insert(testEffect);
+        }
+
+        TEST_ASSERT(DI_OK == diController.EnumCreatedEffectObjects([](LPDIRECTINPUTEFFECT peff, LPVOID pvRef) -> BOOL
+            {
+                std::set<IDirectInputEffect*>& seenEffects = *((std::set<IDirectInputEffect*>*)pvRef);
+                seenEffects.insert(peff);
+
+                peff->Release();
+
+                return DIENUM_CONTINUE;
+            },
+            (LPVOID)&actualSeenEffects, 0));
+
+        TEST_ASSERT(actualSeenEffects == expectedSeenEffects);
+
+        TEST_ASSERT(DI_OK == diController.EnumCreatedEffectObjects([](LPDIRECTINPUTEFFECT peff, LPVOID pvRef) -> BOOL
+            {
+                TEST_FAILED_BECAUSE(L"Unexpected invocation of enumeration function.");
+                return DIENUM_CONTINUE;
+            },
+            nullptr, 0));
     }
 }

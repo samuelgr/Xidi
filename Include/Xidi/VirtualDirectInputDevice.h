@@ -115,6 +115,15 @@ namespace Xidi
         ~VirtualDirectInputDevice(void);
 
 
+        // -------- CLASS METHODS -------------------------------------------------- //
+
+        /// Determines if the specified GUID is supported for creating a force feedback effect object.
+        /// @tparam charMode Selects between ASCII ("A" suffix) and Unicode ("W") suffix versions of types and interfaces.
+        /// @param [in] rguidEffect Reference to the GUID that identifies the force feedback effect.
+        /// @return `true` if the GUID is recognized and can be used to make a force feedback effect object, `false` otherwise.
+        static bool ForceFeedbackEffectCanCreateObject(REFGUID rguidEffect);
+
+
         // -------- INSTANCE METHODS ----------------------------------------------- //
 
         /// Registers a force feedback effect by adding it to the effect registry.
