@@ -5,8 +5,9 @@
  * Authored by Samuel Grossman
  * Copyright (c) 2016-2021
  *************************************************************************//**
- * @file VirtualControllerTest.cpp
- *   Unit tests for virtual controller objects.
+ * @file VirtualDirectInputDeviceTest.cpp
+ *   Unit tests for DirectInput interface objects that wrap virtual
+ *   controllers.
  *****************************************************************************/
 
 #include "ApiDirectInput.h"
@@ -64,34 +65,36 @@ namespace XidiTest
 
     /// Test mapper used throughout these test cases.
     /// Describes a layout with 4 axes, a POV, and 8 buttons.
-    static const Mapper kTestMapper({
-        .stickLeftX = std::make_unique<AxisMapper>(EAxis::X),
-        .stickLeftY = std::make_unique<AxisMapper>(EAxis::Y),
-        .stickRightX = std::make_unique<AxisMapper>(EAxis::RotX),
-        .stickRightY = std::make_unique<AxisMapper>(EAxis::RotY),
-        .dpadUp = std::make_unique<PovMapper>(EPovDirection::Up),
-        .dpadDown = std::make_unique<PovMapper>(EPovDirection::Down),
-        .dpadLeft = std::make_unique<PovMapper>(EPovDirection::Left),
-        .dpadRight = std::make_unique<PovMapper>(EPovDirection::Right),
-        .buttonA = std::make_unique<ButtonMapper>(EButton::B1),
-        .buttonB = std::make_unique<ButtonMapper>(EButton::B2),
-        .buttonX = std::make_unique<ButtonMapper>(EButton::B3),
-        .buttonY = std::make_unique<ButtonMapper>(EButton::B4),
-        .buttonLB = std::make_unique<ButtonMapper>(EButton::B5),
-        .buttonRB = std::make_unique<ButtonMapper>(EButton::B6),
-        .buttonBack = std::make_unique<ButtonMapper>(EButton::B7),
-        .buttonStart = std::make_unique<ButtonMapper>(EButton::B8)
-    });
+    static const Mapper kTestMapper(
+        {
+            .stickLeftX = std::make_unique<AxisMapper>(EAxis::X),
+            .stickLeftY = std::make_unique<AxisMapper>(EAxis::Y),
+            .stickRightX = std::make_unique<AxisMapper>(EAxis::RotX),
+            .stickRightY = std::make_unique<AxisMapper>(EAxis::RotY),
+            .dpadUp = std::make_unique<PovMapper>(EPovDirection::Up),
+            .dpadDown = std::make_unique<PovMapper>(EPovDirection::Down),
+            .dpadLeft = std::make_unique<PovMapper>(EPovDirection::Left),
+            .dpadRight = std::make_unique<PovMapper>(EPovDirection::Right),
+            .buttonA = std::make_unique<ButtonMapper>(EButton::B1),
+            .buttonB = std::make_unique<ButtonMapper>(EButton::B2),
+            .buttonX = std::make_unique<ButtonMapper>(EButton::B3),
+            .buttonY = std::make_unique<ButtonMapper>(EButton::B4),
+            .buttonLB = std::make_unique<ButtonMapper>(EButton::B5),
+            .buttonRB = std::make_unique<ButtonMapper>(EButton::B6),
+            .buttonBack = std::make_unique<ButtonMapper>(EButton::B7),
+            .buttonStart = std::make_unique<ButtonMapper>(EButton::B8)
+        }
+    );
 
     /// Object format specification for #STestDataPacket.
     static DIOBJECTDATAFORMAT testObjectFormatSpec[] = {
-        {.pguid = &GUID_XAxis,  .dwOfs = offsetof(STestDataPacket, axisX),      .dwType = DIDFT_AXIS   | DIDFT_ANYINSTANCE, .dwFlags = 0},
-        {.pguid = &GUID_YAxis,  .dwOfs = offsetof(STestDataPacket, axisY),      .dwType = DIDFT_AXIS   | DIDFT_ANYINSTANCE, .dwFlags = 0},
-        {.pguid = &GUID_POV,    .dwOfs = offsetof(STestDataPacket, pov),        .dwType = DIDFT_POV    | DIDFT_ANYINSTANCE, .dwFlags = 0},
-        {.pguid = &GUID_Button, .dwOfs = offsetof(STestDataPacket, button[0]),  .dwType = DIDFT_BUTTON | DIDFT_ANYINSTANCE, .dwFlags = 0},
-        {.pguid = &GUID_Button, .dwOfs = offsetof(STestDataPacket, button[1]),  .dwType = DIDFT_BUTTON | DIDFT_ANYINSTANCE, .dwFlags = 0},
-        {.pguid = &GUID_Button, .dwOfs = offsetof(STestDataPacket, button[2]),  .dwType = DIDFT_BUTTON | DIDFT_ANYINSTANCE, .dwFlags = 0},
-        {.pguid = &GUID_Button, .dwOfs = offsetof(STestDataPacket, button[3]),  .dwType = DIDFT_BUTTON | DIDFT_ANYINSTANCE, .dwFlags = 0}
+        {.pguid = &GUID_XAxis,  .dwOfs = offsetof(STestDataPacket, axisX),      .dwType = DIDFT_AXIS    | DIDFT_ANYINSTANCE,    .dwFlags = 0},
+        {.pguid = &GUID_YAxis,  .dwOfs = offsetof(STestDataPacket, axisY),      .dwType = DIDFT_AXIS    | DIDFT_ANYINSTANCE,    .dwFlags = 0},
+        {.pguid = &GUID_POV,    .dwOfs = offsetof(STestDataPacket, pov),        .dwType = DIDFT_POV     | DIDFT_ANYINSTANCE,    .dwFlags = 0},
+        {.pguid = &GUID_Button, .dwOfs = offsetof(STestDataPacket, button[0]),  .dwType = DIDFT_BUTTON  | DIDFT_ANYINSTANCE,    .dwFlags = 0},
+        {.pguid = &GUID_Button, .dwOfs = offsetof(STestDataPacket, button[1]),  .dwType = DIDFT_BUTTON  | DIDFT_ANYINSTANCE,    .dwFlags = 0},
+        {.pguid = &GUID_Button, .dwOfs = offsetof(STestDataPacket, button[2]),  .dwType = DIDFT_BUTTON  | DIDFT_ANYINSTANCE,    .dwFlags = 0},
+        {.pguid = &GUID_Button, .dwOfs = offsetof(STestDataPacket, button[3]),  .dwType = DIDFT_BUTTON  | DIDFT_ANYINSTANCE,    .dwFlags = 0}
     };
 
     /// Complete application data format specification for #STestDataPacket.
@@ -103,14 +106,6 @@ namespace XidiTest
         .dwNumObjs = _countof(testObjectFormatSpec),
         .rgodf = testObjectFormatSpec
     };
-
-
-    /// Creates and returns a virtual controller object that uses the test mapper at the top of this file and a mock XInput interface object, which can be optionally specified with expected calls.
-    /// @return Smart pointer to the new virtual controller object.
-    static inline std::unique_ptr<VirtualController> CreateTestVirtualController(void)
-    {
-        return std::make_unique<VirtualController>(kTestControllerIdentifier, kTestMapper);
-    }
 
 
     // -------- INTERNAL FUNCTIONS ----------------------------------------- //
@@ -138,6 +133,13 @@ namespace XidiTest
         }
 
         return lastSequence;
+    }
+
+    /// Creates and returns a virtual controller object that uses the test mapper at the top of this file.
+    /// @return Smart pointer to the new virtual controller object.
+    static inline std::unique_ptr<VirtualController> CreateTestVirtualController(void)
+    {
+        return std::make_unique<VirtualController>(kTestControllerIdentifier, kTestMapper);
     }
 
 
@@ -1194,6 +1196,14 @@ namespace XidiTest
             },
             (LPVOID)&diController, DIEFT_ALL)
         );
+    }
+
+    // Attempts to get information on an effect using an unsupported GUID. The attempted operation is expected to fail.
+    TEST_CASE(VirtualDirectInputDevice_ForceFeedbackEffect_GetInfoUnsupported)
+    {
+        VirtualDirectInputDevice<ECharMode::W> diController(CreateTestVirtualController());
+        DIEFFECTINFO effectInfo = {.dwSize = sizeof(DIEFFECTINFO)};
+        TEST_ASSERT(DI_OK != diController.GetEffectInfo(&effectInfo, {}));
     }
 
     // Enumerates constant force effects only and verifies correct information is provided.
