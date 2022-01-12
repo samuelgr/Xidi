@@ -251,6 +251,33 @@ namespace Xidi
                 return numForceFeedbackAxes;
             }
 
+            /// Determines if this capabilities object specifies a controller that has support for force feedback actuation.
+            /// @return `true` if any axis is mapped to a force feedback actuator, `false` otherwise.
+            constexpr inline bool ForceFeedbackIsSupported(void) const
+            {
+                for (int i = 0; i < numAxes; ++i)
+                {
+                    if (true == axisCapabilities[i].isMappedToForceFeedbackActuator)
+                        return true;
+                }
+
+                return false;
+            }
+
+            /// Determines if this capabilities object specifies that the controller has an axis of the specified type and that said axis supports force feedback.
+            /// @param [in] axis Axis type for which to query.
+            /// @return `true` if the axis is present and supports force feedback actuation, `false` otherwise.
+            constexpr inline bool ForceFeedbackIsSupportedForAxis(EAxis axis) const
+            {
+                for (int i = 0; i < numAxes; ++i)
+                {
+                    if (axisCapabilities[i].type == axis)
+                        return axisCapabilities[i].isMappedToForceFeedbackActuator;
+                }
+
+                return false;
+            }
+
             /// Checks if this capabilities object specifies that the controller has an axis of the specified type.
             /// @param [in] axis Axis type for which to query.
             /// @return `true` if the axis is present, `false` otherwise.

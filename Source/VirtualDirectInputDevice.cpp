@@ -865,6 +865,12 @@ namespace Xidi
     {
         constexpr Message::ESeverity kMethodSeverity = Message::ESeverity::Info;
 
+        if (false == controller->GetCapabilities().ForceFeedbackIsSupported())
+        {
+            Message::OutputFormatted(Message::ESeverity::Warning, L"Application is attempting to create an effect on Xidi virtual controller %u which does not support force feedback.", (1 + controller->GetIdentifier()));
+            LOG_INVOCATION_AND_RETURN(DIERR_INVALIDPARAM, kMethodSeverity);
+        }
+
         if (nullptr != punkOuter)
             Message::Output(Message::ESeverity::Warning, L"Application requested COM aggregation, which is not implemented, while creating a force feedback effect.");
 
@@ -912,6 +918,12 @@ namespace Xidi
     {
         constexpr Message::ESeverity kMethodSeverity = Message::ESeverity::Info;
 
+        if (false == controller->GetCapabilities().ForceFeedbackIsSupported())
+        {
+            Message::OutputFormatted(Message::ESeverity::Warning, L"Application is attempting to enumerate created effect objects on Xidi virtual controller %u which does not support force feedback.", (1 + controller->GetIdentifier()));
+            LOG_INVOCATION_AND_RETURN(DIERR_INVALIDPARAM, kMethodSeverity);
+        }
+
         if ((nullptr == lpCallback) || (0 != fl))
             LOG_INVOCATION_AND_RETURN(DIERR_INVALIDPARAM, kMethodSeverity);
 
@@ -943,6 +955,12 @@ namespace Xidi
 
         if (nullptr == lpCallback)
             LOG_INVOCATION_AND_RETURN(DIERR_INVALIDPARAM, kMethodSeverity);
+
+        if (false == controller->GetCapabilities().ForceFeedbackIsSupported())
+        {
+            Message::OutputFormatted(Message::ESeverity::Warning, L"Application is attempting to enumerate effects on Xidi virtual controller %u which does not support force feedback.", (1 + controller->GetIdentifier()));
+            LOG_INVOCATION_AND_RETURN(DIERR_INVALIDPARAM, kMethodSeverity);
+        }
 
         const bool kWillEnumerateConstantForce = ((DIEFT_ALL == dwEffType) || (DIEFT_CONSTANTFORCE == DIEFT_GETTYPE(dwEffType)));
         const bool kWillEnumerateRampForce = ((DIEFT_ALL == dwEffType) || (DIEFT_RAMPFORCE == DIEFT_GETTYPE(dwEffType)));
@@ -1302,8 +1320,14 @@ namespace Xidi
     {
         constexpr Message::ESeverity kMethodSeverity = Message::ESeverity::Info;
 
-        if (nullptr == pdei)
+        if (false == controller->GetCapabilities().ForceFeedbackIsSupported())
+        {
+            Message::OutputFormatted(Message::ESeverity::Warning, L"Application is attempting to get force feedback effect information on Xidi virtual controller %u which does not support force feedback.", (1 + controller->GetIdentifier()));
             LOG_INVOCATION_AND_RETURN(E_POINTER, kMethodSeverity);
+        }
+
+        if (nullptr == pdei)
+            LOG_INVOCATION_AND_RETURN(DIERR_INVALIDPARAM, kMethodSeverity);
 
         if (sizeof(*pdei) != pdei->dwSize)
             LOG_INVOCATION_AND_RETURN(DIERR_INVALIDPARAM, kMethodSeverity);
@@ -1324,6 +1348,12 @@ namespace Xidi
     template <ECharMode charMode> HRESULT VirtualDirectInputDevice<charMode>::GetForceFeedbackState(LPDWORD pdwOut)
     {
         constexpr Message::ESeverity kMethodSeverity = Message::ESeverity::Info;
+
+        if (false == controller->GetCapabilities().ForceFeedbackIsSupported())
+        {
+            Message::OutputFormatted(Message::ESeverity::Warning, L"Application is attempting to get force feedback state on Xidi virtual controller %u which does not support force feedback.", (1 + controller->GetIdentifier()));
+            LOG_INVOCATION_AND_RETURN(DIERR_INVALIDPARAM, kMethodSeverity);
+        }
 
         if (nullptr == pdwOut)
             LOG_INVOCATION_AND_RETURN(DIERR_INVALIDPARAM, kMethodSeverity);
@@ -1531,6 +1561,12 @@ namespace Xidi
     template <ECharMode charMode> HRESULT VirtualDirectInputDevice<charMode>::SendForceFeedbackCommand(DWORD dwFlags)
     {
         constexpr Message::ESeverity kMethodSeverity = Message::ESeverity::Info;
+
+        if (false == controller->GetCapabilities().ForceFeedbackIsSupported())
+        {
+            Message::OutputFormatted(Message::ESeverity::Warning, L"Application is attempting to send a force feedback command on Xidi virtual controller %u which does not support force feedback.", (1 + controller->GetIdentifier()));
+            LOG_INVOCATION_AND_RETURN(DIERR_INVALIDPARAM, kMethodSeverity);
+        }
 
         if (false == controller->ForceFeedbackIsRegistered())
             LOG_INVOCATION_AND_RETURN(DIERR_NOTEXCLUSIVEACQUIRED, kMethodSeverity);

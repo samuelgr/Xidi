@@ -33,6 +33,7 @@ namespace XidiTest
     using ::Xidi::Controller::AxisMapper;
     using ::Xidi::Controller::ButtonMapper;
     using ::Xidi::Controller::EAxis;
+    using ::Xidi::Controller::EAxisDirection;
     using ::Xidi::Controller::EButton;
     using ::Xidi::Controller::EElementType;
     using ::Xidi::Controller::EPovDirection;
@@ -64,7 +65,7 @@ namespace XidiTest
     static constexpr TControllerIdentifier kTestControllerIdentifier = 1;
 
     /// Test mapper used throughout these test cases.
-    /// Describes a layout with 4 axes, a POV, and 8 buttons.
+    /// Describes a layout with 4 axes, a POV, and 8 buttons, with force feedback actuators on the X and Y axes.
     static const Mapper kTestMapper(
         {
             .stickLeftX = std::make_unique<AxisMapper>(EAxis::X),
@@ -83,6 +84,10 @@ namespace XidiTest
             .buttonRB = std::make_unique<ButtonMapper>(EButton::B6),
             .buttonBack = std::make_unique<ButtonMapper>(EButton::B7),
             .buttonStart = std::make_unique<ButtonMapper>(EButton::B8)
+        },
+        {
+            .leftMotor = {.isPresent = true, .axis = EAxis::X, .direction = EAxisDirection::Both},
+            .rightMotor = {.isPresent = true, .axis = EAxis::Y, .direction = EAxisDirection::Both}
         }
     );
 
