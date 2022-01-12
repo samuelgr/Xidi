@@ -3,7 +3,7 @@
  *   DirectInput interface for XInput controllers.
  *****************************************************************************
  * Authored by Samuel Grossman
- * Copyright (c) 2016-2021
+ * Copyright (c) 2016-2022
  *************************************************************************//**
  * @file ForceFeedbackDevice.h
  *   Interface declaration for objects that model the force feedback systems

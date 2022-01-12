@@ -3,7 +3,7 @@
  *   DirectInput interface for XInput controllers.
  *****************************************************************************
  * Authored by Samuel Grossman
- * Copyright (c) 2016-2021
+ * Copyright (c) 2016-2022
  *************************************************************************//**
  * @file MockKeyboard.h
  *   Declaration of a mock version of the keyboard interface along with

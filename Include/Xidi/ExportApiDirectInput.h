@@ -3,7 +3,7 @@
  *   DirectInput interface for XInput controllers.
  *****************************************************************************
  * Authored by Samuel Grossman
- * Copyright (c) 2016-2021
+ * Copyright (c) 2016-2022
  *************************************************************************//**
  * @file ExportApiDirectInput.h
  *   Declaration of primary exported functions for the DirectInput

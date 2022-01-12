@@ -3,7 +3,7 @@
  *   DirectInput interface for XInput controllers.
  *****************************************************************************
  * Authored by Samuel Grossman
- * Copyright (c) 2016-2021
+ * Copyright (c) 2016-2022
  *************************************************************************//**
  * @file MapperTest.cpp
  *   Unit tests for entire controller layout mapper objects.

@@ -6,7 +6,7 @@ rem | Xidi
 rem |   DirectInput interface for XInput controllers.
 rem +--------------------------------------------------------------------------
 rem | Authored by Samuel Grossman
-rem | Copyright (c) 2016-2021
+rem | Copyright (c) 2016-2022
 rem +--------------------------------------------------------------------------
 rem | GitVersionInfo.bat
 rem |   Script for extracting version information from Git. Executed
