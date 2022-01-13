@@ -27,12 +27,6 @@ namespace Xidi
 {
     namespace Keyboard
     {
-        // -------- INTERNAL CONSTANTS ------------------------------------- //
-
-        /// Number of milliseconds to wait between physical keyboard update attempts.
-        static constexpr DWORD kUpdatePeriodMilliseconds = 10;
-
-
         // -------- INTERNAL TYPES ----------------------------------------- //
 
         /// Type used to represent the state of an entire virtual keyboard.
@@ -142,16 +136,6 @@ namespace Xidi
 
         // -------- INTERNAL FUNCTIONS ------------------------------------- //
 
-        /// Determines if this process has input focus based on whether or not a window it owns is at the foreground.
-        /// @return `true` if so, `false` if not.
-        static inline bool DoesCurrentProcessHaveInputFocus(void)
-        {
-            DWORD foregroundProcess = 0;
-            GetWindowThreadProcessId(GetForegroundWindow(), &foregroundProcess);
-
-            return (Globals::GetCurrentProcessId() == foregroundProcess);
-        }
-        
         /// Generates the proper flags indicating how the scan code should be interpreted for the given keyboard key.
         /// @param [in] key Keyboard key identifier.
         /// @return Flags indicating how the scan code corresponding to the identified key should be interpreted.
@@ -188,7 +172,7 @@ namespace Xidi
 
             while (true)
             {
-                Sleep(kUpdatePeriodMilliseconds);
+                Sleep(kKeyboardUpdatePeriodMilliseconds);
 
                 do
                 {
@@ -218,7 +202,7 @@ namespace Xidi
 
                 if (keyboardEvents.size() > 0)
                 {
-                    if (true == DoesCurrentProcessHaveInputFocus())
+                    if (true == Globals::DoesCurrentProcessHaveInputFocus())
                         SendInput((UINT)keyboardEvents.size(), keyboardEvents.data(), (int)sizeof(INPUT));
                 }
 
@@ -234,7 +218,7 @@ namespace Xidi
             std::call_once(initFlag, []() -> void
                 {
                     physicalKeyboardUpdateThread = std::thread(UpdatePhysicalKeyboardState);
-                    Message::OutputFormatted(Message::ESeverity::Info, L"Initialized the keyboard event thread. Desired update period is %u ms.", kUpdatePeriodMilliseconds);
+                    Message::OutputFormatted(Message::ESeverity::Info, L"Initialized the keyboard event thread. Desired update period is %u ms.", kKeyboardUpdatePeriodMilliseconds);
                 }
             );
         }

@@ -27,10 +27,10 @@ namespace Xidi
         // -------- CONSTANTS ---------------------------------------------- //
 
         /// Number of milliseconds to wait between polling attempts.
-        inline constexpr DWORD kPhysicalPollingPeriodMilliseconds = 5;
+        inline constexpr unsigned int kPhysicalPollingPeriodMilliseconds = 5;
 
         /// Number of milliseconds to wait between force feedback actuation passes.
-        inline constexpr DWORD kPhysicalForceFeedbackPeriodMilliseconds = 5;
+        inline constexpr unsigned int kPhysicalForceFeedbackPeriodMilliseconds = 5;
 
 
         // -------- FUNCTIONS ---------------------------------------------- //

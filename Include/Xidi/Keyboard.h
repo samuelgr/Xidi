@@ -19,6 +19,9 @@ namespace Xidi
     {
         // -------- CONSTANTS ---------------------------------------------- //
 
+        /// Number of milliseconds to wait between physical keyboard update attempts.
+        inline constexpr unsigned int kKeyboardUpdatePeriodMilliseconds = 10;
+
         /// Number of keyboard keys that exist in total on a virtual keyboard.
         /// Value taken from DirectInput documentation, which indicates keyboard state is reported as an array of 256 bytes.
         inline constexpr unsigned int kVirtualKeyboardKeyCount = 256;

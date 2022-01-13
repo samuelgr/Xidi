@@ -62,6 +62,10 @@ namespace Xidi
         const Configuration::ConfigurationData& GetConfigurationData(void);
 #endif
         
+        /// Determines if this process has input focus based on whether or not a window it owns is at the foreground.
+        /// @return `true` if so, `false` if not.
+        bool DoesCurrentProcessHaveInputFocus(void);
+
         /// Retrieves a pseudohandle to the current process.
         /// @return Current process pseudohandle.
         HANDLE GetCurrentProcessHandle(void);

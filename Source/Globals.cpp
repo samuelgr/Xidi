@@ -153,6 +153,16 @@ namespace Xidi
         // -------- FUNCTIONS ---------------------------------------------- //
         // See "Globals.h" for documentation.
 
+        bool DoesCurrentProcessHaveInputFocus(void)
+        {
+            DWORD foregroundProcess = 0;
+            GetWindowThreadProcessId(GetForegroundWindow(), &foregroundProcess);
+
+            return (GetCurrentProcessId() == foregroundProcess);
+        }
+
+        // --------
+
 #ifndef XIDI_SKIP_CONFIG
         const Configuration::ConfigurationData& GetConfigurationData(void)
         {

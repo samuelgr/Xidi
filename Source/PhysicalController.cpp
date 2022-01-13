@@ -13,12 +13,14 @@
 #include "ApiWindows.h"
 #include "ControllerTypes.h"
 #include "ForceFeedbackDevice.h"
+#include "Globals.h"
 #include "ImportApiWinMM.h"
 #include "Message.h"
 #include "PhysicalController.h"
 #include "VirtualController.h"
 
 #include <condition_variable>
+#include <cstdint>
 #include <shared_mutex>
 #include <stop_token>
 #include <thread>
@@ -29,6 +31,36 @@ namespace Xidi
 {
     namespace Controller
     {
+        // -------- INTERNAL TYPES ----------------------------------------- //
+
+        /// Dual view of physical force feedback actuator values.
+        /// Used for quick comparison, given how small the XInput structure is.
+        union UForceFeedbackVibration
+        {
+            XINPUT_VIBRATION named;
+            uint32_t all;
+
+            static_assert(sizeof(named) == sizeof(all), "Vibration data structure field mismatch.");
+
+            /// Default constructor.
+            /// Zero-initializes the entire structure in aggregate.
+            constexpr inline UForceFeedbackVibration(void) : all()
+            {
+                // Nothing to do here.
+            }
+
+            /// Equality check. Compares the entire structure in aggregate.
+            /// @param [in] other Object with which to compare.
+            /// @return `true` if this object is equal to the other object, `false` otherwise.
+            constexpr inline bool operator==(const UForceFeedbackVibration& other) const
+            {
+                return (all == other.all);
+            }
+        };
+        static_assert(sizeof(UForceFeedbackVibration) == sizeof(XINPUT_VIBRATION), "Data structure size constraint violation.");
+
+
+
         // -------- INTERNAL VARIABLES ------------------------------------- //
 
         /// State data for each of the possible physical controllers.
@@ -68,24 +100,39 @@ namespace Xidi
         {
             constexpr ForceFeedback::TOrderedMagnitudeComponents kVirtualMagnitudeVectorZero = {};
 
+            UForceFeedbackVibration previousPhysicalActuatorValues;
+            UForceFeedbackVibration currentPhysicalActuatorValues;
+
             while (true)
             {
                 Sleep(kPhysicalForceFeedbackPeriodMilliseconds);
 
-                ForceFeedback::SPhysicalActuatorComponents physicalActuatorVector = {};
-                ForceFeedback::TOrderedMagnitudeComponents virtualMagnitudeVector = physicalControllerForceFeedbackBuffer[controllerIdentifier].PlayEffects();
-
-                if (kVirtualMagnitudeVectorZero != virtualMagnitudeVector)
+                if (true == Globals::DoesCurrentProcessHaveInputFocus())
                 {
-                    std::unique_lock lock(physicalControllerForceFeedbackMutex[controllerIdentifier]);
+                    ForceFeedback::SPhysicalActuatorComponents physicalActuatorVector = {};
+                    ForceFeedback::TOrderedMagnitudeComponents virtualMagnitudeVector = physicalControllerForceFeedbackBuffer[controllerIdentifier].PlayEffects();
 
-                    if (nullptr != physicalControllerForceFeedbackRegistration[controllerIdentifier])
-                        physicalActuatorVector = physicalControllerForceFeedbackRegistration[controllerIdentifier]->ForceFeedbackMapVirtualToPhysical(virtualMagnitudeVector);
+                    if (kVirtualMagnitudeVectorZero != virtualMagnitudeVector)
+                    {
+                        std::unique_lock lock(physicalControllerForceFeedbackMutex[controllerIdentifier]);
+
+                        if (nullptr != physicalControllerForceFeedbackRegistration[controllerIdentifier])
+                            physicalActuatorVector = physicalControllerForceFeedbackRegistration[controllerIdentifier]->ForceFeedbackMapVirtualToPhysical(virtualMagnitudeVector);
+                    }
+
+                    // Currently the impulse trigger values are ignored.
+                    currentPhysicalActuatorValues.named = {.wLeftMotorSpeed = physicalActuatorVector.leftMotor, .wRightMotorSpeed = physicalActuatorVector.rightMotor};
+                }
+                else
+                {
+                    currentPhysicalActuatorValues.all = 0;
                 }
 
-                // Currently the impulse trigger values are ignored.
-                XINPUT_VIBRATION physicalActuatorValues = {.wLeftMotorSpeed = physicalActuatorVector.leftMotor, .wRightMotorSpeed = physicalActuatorVector.rightMotor};
-                XInputSetState(controllerIdentifier, &physicalActuatorValues);
+                if (previousPhysicalActuatorValues != currentPhysicalActuatorValues)
+                {
+                    XInputSetState(controllerIdentifier, &currentPhysicalActuatorValues.named);
+                    previousPhysicalActuatorValues = currentPhysicalActuatorValues;
+                }
             }
         }
 
