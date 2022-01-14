@@ -322,115 +322,6 @@ namespace Xidi
             Message::Output(kDumpSeverity, L"End dump of property request.");
         }
     }
-    
-    /// Fills the specified buffer with a friendly string representation of the specified controller element.
-    /// Default version does nothing.
-    /// @tparam CharType String character type, either `char` or `wchar_t`.
-    /// @param [in] element Controller element for which a string is desired.
-    /// @param [out] buf Buffer to be filled with the string.
-    /// @param [in] bufcount Buffer size in number of characters.
-    template <typename CharType> static void ElementToString(Controller::SElementIdentifier element, CharType* buf, int bufcount)
-    {
-        // Nothing to do here.
-    }
-
-    /// Fills the specified buffer with a friendly string representation of the specified controller element, specialized for ASCII.
-    /// @param [in] element Controller element for which a string is desired.
-    /// @param [out] buf Buffer to be filled with the string.
-    /// @param [in] bufcount Buffer size in number of characters.
-    template <> static void ElementToString<char>(Controller::SElementIdentifier element, char* buf, int bufcount)
-    {
-        switch (element.type)
-        {
-        case Controller::EElementType::Axis:
-            switch (element.axis)
-            {
-            case Controller::EAxis::X:
-                strncpy_s(buf, bufcount, XIDI_AXIS_NAME_X, _countof(XIDI_AXIS_NAME_X));
-                break;
-            case Controller::EAxis::Y:
-                strncpy_s(buf, bufcount, XIDI_AXIS_NAME_Y, _countof(XIDI_AXIS_NAME_Y));
-                break;
-            case Controller::EAxis::Z:
-                strncpy_s(buf, bufcount, XIDI_AXIS_NAME_Z, _countof(XIDI_AXIS_NAME_Z));
-                break;
-            case Controller::EAxis::RotX:
-                strncpy_s(buf, bufcount, XIDI_AXIS_NAME_RX, _countof(XIDI_AXIS_NAME_RX));
-                break;
-            case Controller::EAxis::RotY:
-                strncpy_s(buf, bufcount, XIDI_AXIS_NAME_RY, _countof(XIDI_AXIS_NAME_RY));
-                break;
-            case Controller::EAxis::RotZ:
-                strncpy_s(buf, bufcount, XIDI_AXIS_NAME_RZ, _countof(XIDI_AXIS_NAME_RZ));
-                break;
-            default:
-                strncpy_s(buf, bufcount, XIDI_AXIS_NAME_UNKNOWN, _countof(XIDI_AXIS_NAME_UNKNOWN));
-                break;
-            }
-            break;
-
-        case Controller::EElementType::Button:
-            sprintf_s(buf, bufcount, XIDI_BUTTON_NAME_FORMAT, (1 + (unsigned int)element.button));
-            break;
-
-        case Controller::EElementType::Pov:
-            strncpy_s(buf, bufcount, XIDI_POV_NAME, _countof(XIDI_POV_NAME));
-            break;
-
-        case Controller::EElementType::WholeController:
-            strncpy_s(buf, bufcount, XIDI_WHOLE_CONTROLLER_NAME, _countof(XIDI_WHOLE_CONTROLLER_NAME));
-            break;
-        }
-    }
-
-    /// Fills the specified buffer with a friendly string representation of the specified controller element, specialized for Unicode.
-    /// @param [in] element Controller element for which a string is desired.
-    /// @param [out] buf Buffer to be filled with the string.
-    /// @param [in] bufcount Buffer size in number of characters.
-    template <> static void ElementToString<wchar_t>(Controller::SElementIdentifier element, wchar_t* buf, int bufcount)
-    {
-        switch (element.type)
-        {
-        case Controller::EElementType::Axis:
-            switch (element.axis)
-            {
-            case Controller::EAxis::X:
-                wcsncpy_s(buf, bufcount, _CRT_WIDE(XIDI_AXIS_NAME_X), _countof(_CRT_WIDE(XIDI_AXIS_NAME_X)));
-                break;
-            case Controller::EAxis::Y:
-                wcsncpy_s(buf, bufcount, _CRT_WIDE(XIDI_AXIS_NAME_Y), _countof(_CRT_WIDE(XIDI_AXIS_NAME_Y)));
-                break;
-            case Controller::EAxis::Z:
-                wcsncpy_s(buf, bufcount, _CRT_WIDE(XIDI_AXIS_NAME_Z), _countof(_CRT_WIDE(XIDI_AXIS_NAME_Z)));
-                break;
-            case Controller::EAxis::RotX:
-                wcsncpy_s(buf, bufcount, _CRT_WIDE(XIDI_AXIS_NAME_RX), _countof(_CRT_WIDE(XIDI_AXIS_NAME_RX)));
-                break;
-            case Controller::EAxis::RotY:
-                wcsncpy_s(buf, bufcount, _CRT_WIDE(XIDI_AXIS_NAME_RY), _countof(_CRT_WIDE(XIDI_AXIS_NAME_RY)));
-                break;
-            case Controller::EAxis::RotZ:
-                wcsncpy_s(buf, bufcount, _CRT_WIDE(XIDI_AXIS_NAME_RZ), _countof(_CRT_WIDE(XIDI_AXIS_NAME_RZ)));
-                break;
-            default:
-                wcsncpy_s(buf, bufcount, _CRT_WIDE(XIDI_AXIS_NAME_UNKNOWN), _countof(_CRT_WIDE(XIDI_AXIS_NAME_UNKNOWN)));
-                break;
-            }
-            break;
-
-        case Controller::EElementType::Button:
-            swprintf_s(buf, bufcount, _CRT_WIDE(XIDI_BUTTON_NAME_FORMAT), (1 + (unsigned int)element.button));
-            break;
-
-        case Controller::EElementType::Pov:
-            wcsncpy_s(buf, bufcount, _CRT_WIDE(XIDI_POV_NAME), _countof(_CRT_WIDE(XIDI_POV_NAME)));
-            break;
-
-        case Controller::EElementType::WholeController:
-            wcsncpy_s(buf, bufcount, _CRT_WIDE(XIDI_WHOLE_CONTROLLER_NAME), _countof(_CRT_WIDE(XIDI_WHOLE_CONTROLLER_NAME)));
-            break;
-        }
-    }
 
     /// Holds a registry of functions that construct real force feedback effect objects by GUID and retrieves pointers to those functions, assuming the GUID identifies a force feedback effect object that can be constructed.
     /// @tparam charMode Selects between ASCII ("A" suffix) and Unicode ("W") suffix versions of types and interfaces.
@@ -644,7 +535,7 @@ namespace Xidi
         
         objectInfo->dwOfs = offset;
         objectInfo->dwType = GetObjectId(controllerCapabilities, controllerElement);
-        ElementToString(controllerElement, objectInfo->tszName, _countof(objectInfo->tszName));
+        VirtualDirectInputDevice<charMode>::ElementToString(controllerElement, objectInfo->tszName, _countof(objectInfo->tszName));
 
         switch (controllerElement.type)
         {
@@ -696,6 +587,100 @@ namespace Xidi
 
     // -------- CLASS METHODS ---------------------------------------------- //
     // See "VirtualDirectInputDevice.h" for documentation.
+
+    template <> void VirtualDirectInputDevice<ECharMode::A>::ElementToString(Controller::SElementIdentifier element, LPSTR buf, int bufcount)
+    {
+        switch (element.type)
+        {
+        case Controller::EElementType::Axis:
+            switch (element.axis)
+            {
+            case Controller::EAxis::X:
+                strncpy_s(buf, bufcount, XIDI_AXIS_NAME_X, _countof(XIDI_AXIS_NAME_X));
+                break;
+            case Controller::EAxis::Y:
+                strncpy_s(buf, bufcount, XIDI_AXIS_NAME_Y, _countof(XIDI_AXIS_NAME_Y));
+                break;
+            case Controller::EAxis::Z:
+                strncpy_s(buf, bufcount, XIDI_AXIS_NAME_Z, _countof(XIDI_AXIS_NAME_Z));
+                break;
+            case Controller::EAxis::RotX:
+                strncpy_s(buf, bufcount, XIDI_AXIS_NAME_RX, _countof(XIDI_AXIS_NAME_RX));
+                break;
+            case Controller::EAxis::RotY:
+                strncpy_s(buf, bufcount, XIDI_AXIS_NAME_RY, _countof(XIDI_AXIS_NAME_RY));
+                break;
+            case Controller::EAxis::RotZ:
+                strncpy_s(buf, bufcount, XIDI_AXIS_NAME_RZ, _countof(XIDI_AXIS_NAME_RZ));
+                break;
+            default:
+                strncpy_s(buf, bufcount, XIDI_AXIS_NAME_UNKNOWN, _countof(XIDI_AXIS_NAME_UNKNOWN));
+                break;
+            }
+            break;
+
+        case Controller::EElementType::Button:
+            sprintf_s(buf, bufcount, XIDI_BUTTON_NAME_FORMAT, (1 + (unsigned int)element.button));
+            break;
+
+        case Controller::EElementType::Pov:
+            strncpy_s(buf, bufcount, XIDI_POV_NAME, _countof(XIDI_POV_NAME));
+            break;
+
+        case Controller::EElementType::WholeController:
+            strncpy_s(buf, bufcount, XIDI_WHOLE_CONTROLLER_NAME, _countof(XIDI_WHOLE_CONTROLLER_NAME));
+            break;
+        }
+    }
+
+    // --------
+
+    template <> void VirtualDirectInputDevice<ECharMode::W>::ElementToString(Controller::SElementIdentifier element, LPWSTR buf, int bufcount)
+    {
+        switch (element.type)
+        {
+        case Controller::EElementType::Axis:
+            switch (element.axis)
+            {
+            case Controller::EAxis::X:
+                wcsncpy_s(buf, bufcount, _CRT_WIDE(XIDI_AXIS_NAME_X), _countof(_CRT_WIDE(XIDI_AXIS_NAME_X)));
+                break;
+            case Controller::EAxis::Y:
+                wcsncpy_s(buf, bufcount, _CRT_WIDE(XIDI_AXIS_NAME_Y), _countof(_CRT_WIDE(XIDI_AXIS_NAME_Y)));
+                break;
+            case Controller::EAxis::Z:
+                wcsncpy_s(buf, bufcount, _CRT_WIDE(XIDI_AXIS_NAME_Z), _countof(_CRT_WIDE(XIDI_AXIS_NAME_Z)));
+                break;
+            case Controller::EAxis::RotX:
+                wcsncpy_s(buf, bufcount, _CRT_WIDE(XIDI_AXIS_NAME_RX), _countof(_CRT_WIDE(XIDI_AXIS_NAME_RX)));
+                break;
+            case Controller::EAxis::RotY:
+                wcsncpy_s(buf, bufcount, _CRT_WIDE(XIDI_AXIS_NAME_RY), _countof(_CRT_WIDE(XIDI_AXIS_NAME_RY)));
+                break;
+            case Controller::EAxis::RotZ:
+                wcsncpy_s(buf, bufcount, _CRT_WIDE(XIDI_AXIS_NAME_RZ), _countof(_CRT_WIDE(XIDI_AXIS_NAME_RZ)));
+                break;
+            default:
+                wcsncpy_s(buf, bufcount, _CRT_WIDE(XIDI_AXIS_NAME_UNKNOWN), _countof(_CRT_WIDE(XIDI_AXIS_NAME_UNKNOWN)));
+                break;
+            }
+            break;
+
+        case Controller::EElementType::Button:
+            swprintf_s(buf, bufcount, _CRT_WIDE(XIDI_BUTTON_NAME_FORMAT), (1 + (unsigned int)element.button));
+            break;
+
+        case Controller::EElementType::Pov:
+            wcsncpy_s(buf, bufcount, _CRT_WIDE(XIDI_POV_NAME), _countof(_CRT_WIDE(XIDI_POV_NAME)));
+            break;
+
+        case Controller::EElementType::WholeController:
+            wcsncpy_s(buf, bufcount, _CRT_WIDE(XIDI_WHOLE_CONTROLLER_NAME), _countof(_CRT_WIDE(XIDI_WHOLE_CONTROLLER_NAME)));
+            break;
+        }
+    }
+
+    // --------
 
     template <ECharMode charMode> bool VirtualDirectInputDevice<charMode>::ForceFeedbackEffectCanCreateObject(REFGUID rguidEffect)
     {
@@ -899,7 +884,7 @@ namespace Xidi
             // This method does not provide any way of specifying flags to restrict the parameters that are set.
             // However, for compatibility with older versions of DirectInput 5 it is necessary to check the structure size here to avoid having the method read past the end of the valid parameter buffer.
             const DWORD kParameterFlags = ((sizeof(DIEFFECT_DX5) == lpeff->dwSize) ? DIEP_ALLPARAMS_DX5 : DIEP_ALLPARAMS);
-            switch (newEffect->SetParameters(lpeff, kParameterFlags | DIEP_NODOWNLOAD))
+            switch (newEffect->SetParametersInternal(lpeff, kParameterFlags | DIEP_NODOWNLOAD))
             {
             case DI_DOWNLOADSKIPPED:
                 break;
@@ -911,7 +896,7 @@ namespace Xidi
             // Success of this method does not depend on whether or not a download completed successfully.
             // If it failed because the device is full, then the effect can still exist even if it is not physically on the device.
             // Likewise, if the device is not exclusively acquired, then the device just needs to be acquired before the effect can be downloaded.
-            switch (newEffect->Download())
+            switch (newEffect->DownloadInternal())
             {
             case DI_OK:
             case DIERR_DEVICEFULL:
@@ -1618,30 +1603,37 @@ namespace Xidi
         switch (dwFlags)
         {
         case DISFFC_CONTINUE:
+            Message::Output(Message::ESeverity::Debug, L"Sending force feedback command DISFFC_CONTINUE.");
             forceFeedbackDevice.SetPauseState(false);
             break;
 
         case DISFFC_PAUSE:
+            Message::Output(Message::ESeverity::Debug, L"Sending force feedback command DISFFC_PAUSE.");
             forceFeedbackDevice.SetPauseState(true);
             break;
 
         case DISFFC_RESET:
+            Message::Output(Message::ESeverity::Debug, L"Sending force feedback command DISFFC_RESET.");
             forceFeedbackDevice.Clear();
             break;
 
         case DISFFC_SETACTUATORSOFF:
+            Message::Output(Message::ESeverity::Debug, L"Sending force feedback command DISFFC_SETACTUATORSOFF.");
             forceFeedbackDevice.SetMutedState(true);
             break;
 
         case DISFFC_SETACTUATORSON:
+            Message::Output(Message::ESeverity::Debug, L"Sending force feedback command DISFFC_SETACTUATORSON.");
             forceFeedbackDevice.SetMutedState(false);
             break;
 
         case DISFFC_STOPALL:
+            Message::Output(Message::ESeverity::Debug, L"Sending force feedback command DISFFC_STOPALL.");
             forceFeedbackDevice.StopAllEffects();
             break;
 
         default:
+            Message::Output(Message::ESeverity::Debug, L"Sending force feedback command (unknown).");
             LOG_INVOCATION_AND_RETURN(DIERR_UNSUPPORTED, kMethodSeverity);
         }
 

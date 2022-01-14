@@ -69,6 +69,16 @@ namespace Xidi
             return *effect;
         }
 
+        /// Internal implementation of downloading an effect.
+        /// See DirectInput documentation for parameter and return type information.
+        HRESULT DownloadInternal(void);
+
+        /// Dumps the contents of the provided effect parameter structure to the log.
+        /// Intended for internal use.
+        /// @param [in] peff Pointer to the effect structure to dump.
+        /// @param [in] dwFlags Flags that specify which members are valid.
+        void DumpEffectParameters(LPCDIEFFECT peff, DWORD dwFlags) const;
+
         /// Internal implementation of setting an effect's parameters.
         /// Adds a timestamp parameter and serves as an entry point for tests that set effect parameters.
         /// See DirectInput documentation for parameter and return information.
@@ -80,7 +90,13 @@ namespace Xidi
         HRESULT StartInternal(DWORD dwIterations, DWORD dwFlags, std::optional<Controller::ForceFeedback::TEffectTimeMs> timestamp = std::nullopt);
 
 
+    protected:
         // -------- CONCRETE INSTANCE METHODS -------------------------------------- //
+
+        /// Dumps the type-specific parameters contained in the provided effect parameter structure to the log.
+        /// Intended for internal use.
+        /// @param [in] peff Pointer to the effect structure to dump.
+        virtual void DumpTypeSpecificParameters(LPCDIEFFECT peff) const;
 
         /// Retrieves type-specific effect parameters.
         /// Can be overridden by subclasses. The default implementation indicates no type-specific parameter data and returns success.
@@ -235,5 +251,7 @@ namespace Xidi
         {
             return {.lMagnitude = (LONG)typeSpecificParams.magnitude};
         }
+
+        void DumpTypeSpecificParameters(LPCDIEFFECT peff) const override;
     };
 }

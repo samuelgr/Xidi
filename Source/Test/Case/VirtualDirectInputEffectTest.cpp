@@ -465,7 +465,7 @@ namespace XidiTest
         MockEffectWithTypeSpecificParameters& ffEffect = (MockEffectWithTypeSpecificParameters&)diEffect->UnderlyingEffect();
 
         constexpr TEffectValue kDuration = 1000;
-        constexpr DIEFFECT kParameters = {.dwSize = sizeof(DIEFFECT), .dwDuration = (DWORD)kDuration};
+        constexpr DIEFFECT kParameters = {.dwSize = sizeof(DIEFFECT), .dwDuration = (DWORD)kDuration * 1000};
         TEST_ASSERT(DI_DOWNLOADSKIPPED == diEffect->SetParametersInternal(&kParameters, (DIEP_DURATION | DIEP_NODOWNLOAD)));
 
         TEST_ASSERT(true == ffEffect.HasDuration());
@@ -482,7 +482,7 @@ namespace XidiTest
         MockEffectWithTypeSpecificParameters& ffEffect = (MockEffectWithTypeSpecificParameters&)diEffect->UnderlyingEffect();
 
         constexpr SEnvelope kEnvelope = {.attackTime = 111, .attackLevel = 222, .fadeTime = 333, .fadeLevel = 444};
-        DIENVELOPE diEnvelope = {.dwSize = sizeof(DIENVELOPE), .dwAttackLevel = (DWORD)kEnvelope.attackLevel, .dwAttackTime = (DWORD)kEnvelope.attackTime, .dwFadeLevel = (DWORD)kEnvelope.fadeLevel, .dwFadeTime = (DWORD)kEnvelope.fadeTime};
+        DIENVELOPE diEnvelope = {.dwSize = sizeof(DIENVELOPE), .dwAttackLevel = (DWORD)kEnvelope.attackLevel, .dwAttackTime = (DWORD)kEnvelope.attackTime * 1000, .dwFadeLevel = (DWORD)kEnvelope.fadeLevel, .dwFadeTime = (DWORD)kEnvelope.fadeTime * 1000};
         const DIEFFECT kParameters = {.dwSize = sizeof(DIEFFECT), .lpEnvelope = &diEnvelope};
         TEST_ASSERT(DI_DOWNLOADSKIPPED == diEffect->SetParametersInternal(&kParameters, (DIEP_ENVELOPE | DIEP_NODOWNLOAD)));
 
@@ -520,7 +520,7 @@ namespace XidiTest
         MockEffectWithTypeSpecificParameters& ffEffect = (MockEffectWithTypeSpecificParameters&)diEffect->UnderlyingEffect();
 
         constexpr TEffectTimeMs kSamplePeriod = 10000;
-        constexpr DIEFFECT kParameters = {.dwSize = sizeof(DIEFFECT), .dwSamplePeriod = (DWORD)kSamplePeriod};
+        constexpr DIEFFECT kParameters = {.dwSize = sizeof(DIEFFECT), .dwSamplePeriod = (DWORD)kSamplePeriod * 1000};
         TEST_ASSERT(DI_DOWNLOADSKIPPED == diEffect->SetParametersInternal(&kParameters, (DIEP_SAMPLEPERIOD | DIEP_NODOWNLOAD)));
         TEST_ASSERT(kSamplePeriod == ffEffect.GetSamplePeriod());
     }
@@ -534,8 +534,8 @@ namespace XidiTest
 
         MockEffectWithTypeSpecificParameters& ffEffect = (MockEffectWithTypeSpecificParameters&)diEffect->UnderlyingEffect();
 
-        constexpr TEffectTimeMs kStartDelay = 5000000;
-        constexpr DIEFFECT kParameters = {.dwSize = sizeof(DIEFFECT), .dwStartDelay = (DWORD)kStartDelay};
+        constexpr TEffectTimeMs kStartDelay = 50000;
+        constexpr DIEFFECT kParameters = {.dwSize = sizeof(DIEFFECT), .dwStartDelay = (DWORD)kStartDelay * 1000};
         TEST_ASSERT(DI_DOWNLOADSKIPPED == diEffect->SetParametersInternal(&kParameters, (DIEP_STARTDELAY | DIEP_NODOWNLOAD)));
         TEST_ASSERT(kStartDelay == ffEffect.GetStartDelay());
     }

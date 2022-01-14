@@ -15,6 +15,7 @@
 #include "ForceFeedbackParameters.h"
 #include "ForceFeedbackTypes.h"
 #include "Message.h"
+#include "TemporaryBuffer.h"
 #include "VirtualDirectInputDevice.h"
 #include "VirtualDirectInputEffect.h"
 
@@ -22,6 +23,7 @@
 #include <cstddef>
 #include <memory>
 #include <optional>
+#include <string>
 
 
 // -------- MACROS --------------------------------------------------------- //
@@ -38,6 +40,12 @@
 
 namespace Xidi
 {
+    // -------- INTERNAL CONSTANTS ----------------------------------------- //
+
+    /// Severity to use for dumping the contents of structures to the log.
+    static constexpr Message::ESeverity kDumpSeverity = Message::ESeverity::Debug;
+
+
     // -------- INTERNAL FUNCTIONS ----------------------------------------- //
 
     /// Internal implementation of downloading a force feedback effect to a force feedback device.
@@ -54,6 +62,106 @@ namespace Xidi
             return DIERR_DEVICEFULL;
 
         return DI_OK;
+    }
+
+    /// Parses the specified flags, which would normally be passed to SetParameters, and extracts individual strings for each flag that is present.
+    /// @param [in] dwFlags Flags to parse.
+    /// @return String representation of the flags that are set.
+    static std::wstring ParameterTopLevelFlagsToString(DWORD dwFlags)
+    {
+        std::wstringstream flagsstream;
+
+        if (0 != (dwFlags & DIEP_NODOWNLOAD))
+            flagsstream << L" | DIEP_NODOWNLOAD";
+        if (0 != (dwFlags & DIEP_NORESTART))
+            flagsstream << L" | DIEP_NORESTART";
+        if (0 != (dwFlags & DIEP_START))
+            flagsstream << L" | DIEP_START";
+
+        if (DIEP_ALLPARAMS == (dwFlags & DIEP_ALLPARAMS))
+        {
+            flagsstream << L" | DIEP_ALLPARAMS";
+        }
+        else if (DIEP_ALLPARAMS_DX5 == (dwFlags & DIEP_ALLPARAMS_DX5))
+        {
+            flagsstream << L" | DIEP_ALLPARAMS_DX5";
+        }
+        else
+        {
+            if (0 != (dwFlags & DIEP_AXES))
+                flagsstream << L" | DIEP_AXES";
+            if (0 != (dwFlags & DIEP_DIRECTION))
+                flagsstream << L" | DIEP_DIRECTION";
+            if (0 != (dwFlags & DIEP_DURATION))
+                flagsstream << L" | DIEP_DURATION";
+            if (0 != (dwFlags & DIEP_ENVELOPE))
+                flagsstream << L" | DIEP_ENVELOPE";
+            if (0 != (dwFlags & DIEP_GAIN))
+                flagsstream << L" | DIEP_GAIN";
+            if (0 != (dwFlags & DIEP_SAMPLEPERIOD))
+                flagsstream << L" | DIEP_SAMPLEPERIOD";
+            if (0 != (dwFlags & DIEP_STARTDELAY))
+                flagsstream << L" | DIEP_STARTDELAY";
+            if (0 != (dwFlags & DIEP_TRIGGERBUTTON))
+                flagsstream << L" | DIEP_TRIGGERBUTTON";
+            if (0 != (dwFlags & DIEP_TRIGGERREPEATINTERVAL))
+                flagsstream << L" | DIEP_TRIGGERREPEATINTERVAL";
+            if (0 != (dwFlags & DIEP_TYPESPECIFICPARAMS))
+                flagsstream << L" | DIEP_TYPESPECIFICPARAMS";
+        }
+
+        std::wstring flagsstring = flagsstream.str();
+
+        if (true == flagsstring.empty())
+            return L"none";
+
+        flagsstring.erase(0, (_countof(L" | ") - 1));
+        return flagsstring;
+    }
+
+    /// Attempts to recognize the size of a parameter structure and returns a string representing what was recognized.
+    /// @param [in] dwSize Size of the structure, as extracted from the relevant field.
+    /// @return String representation of the recognized structure.
+    static const wchar_t* ParameterStructSizeToString(DWORD dwSize)
+    {
+        switch (dwSize)
+        {
+        case sizeof(DIEFFECT):
+            return L"sizeof(DIEFFECT)";
+
+        case sizeof(DIEFFECT_DX5):
+            return L"sizeof(DIEFFECT_DX5)";
+
+        default:
+            return L"unknown";
+        }
+    }
+
+    /// Parses the specified flags, which would normally be present inside the dwFlags member of DIEFFECT, and extracts individual strings for each flag that is present.
+    /// @param [in] dwFlags Flags to parse.
+    /// @return String representation of the flags that are set.
+    static const std::wstring ParameterStructFlagsToString(DWORD dwFlags)
+    {
+        std::wstringstream flagsstream;
+
+        if (0 != (dwFlags & DIEFF_CARTESIAN))
+            flagsstream << L" | DIEFF_CARTESIAN";
+        if (0 != (dwFlags & DIEFF_POLAR))
+            flagsstream << L" | DIEFF_POLAR";
+        if (0 != (dwFlags & DIEFF_SPHERICAL))
+            flagsstream << L" | DIEFF_SPHERICAL";
+        if (0 != (dwFlags & DIEFF_OBJECTIDS))
+            flagsstream << L" | DIEFF_OBJECTIDS";
+        if (0 != (dwFlags & DIEFF_OBJECTOFFSETS))
+            flagsstream << L" | DIEFF_OBJECTOFFSETS";
+
+        std::wstring flagsstring = flagsstream.str();
+
+        if (true == flagsstring.empty())
+            return L"none";
+
+        flagsstring.erase(0, (_countof(L" | ") - 1));
+        return flagsstring;
     }
 
     /// Selects the coordinate system that should be used to represent the coordinates set in the specified direction vector, subject to the specified flags.
@@ -127,11 +235,154 @@ namespace Xidi
     // -------- INSTANCE METHODS ------------------------------------------- //
     // See "VirtualDirectInputEffect.h" for documentation.
 
+    template <ECharMode charMode> HRESULT VirtualDirectInputEffect<charMode>::DownloadInternal(void)
+    {
+        Controller::ForceFeedback::Device* const forceFeedbackDevice = associatedDevice.GetVirtualController().ForceFeedbackGetDevice();
+        if (nullptr == forceFeedbackDevice)
+            return DIERR_NOTEXCLUSIVEACQUIRED;
+
+        return DownloadEffectToDevice(*effect, *forceFeedbackDevice);
+    }
+
+    // --------
+
+    template <ECharMode charMode> void VirtualDirectInputEffect<charMode>::DumpEffectParameters(LPCDIEFFECT peff, DWORD dwFlags) const
+    {
+        if (Message::WillOutputMessageOfSeverity(kDumpSeverity))
+        {
+            Message::Output(kDumpSeverity, L"Begin dump of effect parameters.");
+
+            Message::Output(kDumpSeverity, L"  Control:");
+            Message::OutputFormatted(kDumpSeverity, L"    flags = 0x%08x (%s)", dwFlags, ParameterTopLevelFlagsToString(dwFlags).c_str());
+
+            Message::Output(kDumpSeverity, L"  Basics:");
+            if (nullptr == peff)
+            {
+                Message::Output(kDumpSeverity, L"    (nullptr)");
+            }
+            else
+            {
+                Message::OutputFormatted(kDumpSeverity, L"    dwSize = %u (%s)", peff->dwSize, ParameterStructSizeToString(peff->dwSize));
+                Message::OutputFormatted(kDumpSeverity, L"    dwFlags = 0x%08x (%s)", peff->dwFlags, ParameterStructFlagsToString(peff->dwFlags).c_str());
+
+                if (0 != (dwFlags & DIEP_DURATION))
+                    Message::OutputFormatted(kDumpSeverity, L"    dwDuration = %u", peff->dwDuration);
+
+                if (0 != (dwFlags & DIEP_SAMPLEPERIOD))
+                    Message::OutputFormatted(kDumpSeverity, L"    dwSamplePeriod = %u", peff->dwSamplePeriod);
+
+                if (0 != (dwFlags & DIEP_GAIN))
+                    Message::OutputFormatted(kDumpSeverity, L"    dwGain = %u", peff->dwGain);
+
+                if (0 != (dwFlags & DIEP_STARTDELAY))
+                    Message::OutputFormatted(kDumpSeverity, L"    dwStartDelay = %u", peff->dwStartDelay);
+
+                if (0 != (dwFlags & DIEP_TRIGGERBUTTON))
+                    Message::OutputFormatted(kDumpSeverity, L"    dwTriggerButton = %u", peff->dwTriggerButton);
+
+                if (0 != (dwFlags & DIEP_TRIGGERREPEATINTERVAL))
+                    Message::OutputFormatted(kDumpSeverity, L"    dwTriggerRepeatInterval = %u", peff->dwTriggerRepeatInterval);
+
+                if (0 != (dwFlags & DIEP_AXES))
+                {
+                    Message::Output(kDumpSeverity, L"  Axes:");
+                    Message::OutputFormatted(kDumpSeverity, L"    cAxes = %u", peff->cAxes);
+
+                    if (nullptr == peff->rgdwAxes)
+                    {
+                        Message::Output(kDumpSeverity, L"    rgdxAxes = (nullptr)");
+                    }
+                    else
+                    {
+                        for (DWORD i = 0; i < peff->cAxes; ++i)
+                        {
+                            std::optional<Controller::SElementIdentifier> maybeAxisElement = std::nullopt;
+
+                            switch (peff->dwFlags & (DIEFF_OBJECTIDS | DIEFF_OBJECTOFFSETS))
+                            {
+                            case DIEFF_OBJECTIDS:
+                                maybeAxisElement = associatedDevice.IdentifyElement(peff->rgdwAxes[i], DIPH_BYID);
+                                break;
+
+                            case DIEFF_OBJECTOFFSETS:
+                                maybeAxisElement = associatedDevice.IdentifyElement(peff->rgdwAxes[i], DIPH_BYOFFSET);
+                                break;
+                            }
+
+                            if (true == maybeAxisElement.has_value())
+                            {
+                                TemporaryBuffer<wchar_t> axisElementString;
+                                VirtualDirectInputDevice<ECharMode::W>::ElementToString(maybeAxisElement.value(), axisElementString, axisElementString.Count());
+                                Message::OutputFormatted(kDumpSeverity, L"    rgdwAxes[%2u] = 0x%04x (%s)", i, peff->rgdwAxes[i], (wchar_t*)axisElementString);
+                            }
+                            else
+                            {
+                                Message::OutputFormatted(kDumpSeverity, L"    rgdwAxes[%2u] = 0x%04x (unable to identify)", i, peff->rgdwAxes[i]);
+                            }
+                        }
+                    }
+                }
+
+                if (0 != (dwFlags & DIEP_DIRECTION))
+                {
+                    Message::Output(kDumpSeverity, L"  Direction:");
+                    Message::OutputFormatted(kDumpSeverity, L"    cAxes = %u", peff->cAxes);
+
+                    if (nullptr == peff->rglDirection)
+                    {
+                        Message::Output(kDumpSeverity, L"    rglDirection = (nullptr)");
+                    }
+                    else
+                    {
+                        for (DWORD i = 0; i < peff->cAxes; ++i)
+                        {
+                            Message::OutputFormatted(kDumpSeverity, L"    rglDirection[%2u] = %u", i, peff->rglDirection[i]);
+                        }
+                    }
+                }
+
+                if (0 != (dwFlags & DIEP_ENVELOPE))
+                {
+                    Message::Output(kDumpSeverity, L"  Envelope:");
+                    if (nullptr == peff->lpEnvelope)
+                    {
+                        Message::Output(kDumpSeverity, L"    (nullptr)");
+                    }
+                    else
+                    {
+                        const DIENVELOPE* const envelope = (const DIENVELOPE*)peff->lpEnvelope;
+                        Message::OutputFormatted(kDumpSeverity, L"    lpEnvelope->dwSize = %u (%s)", envelope->dwSize, ((sizeof(DIENVELOPE) == envelope->dwSize) ? L"sizeof(DIENVELOPE)" : L"unknown"));
+                        Message::OutputFormatted(kDumpSeverity, L"    lpEnvelope->dwAttackLevel = %u", envelope->dwAttackLevel);
+                        Message::OutputFormatted(kDumpSeverity, L"    lpEnvelope->dwAttackTime = %u", envelope->dwAttackTime);
+                        Message::OutputFormatted(kDumpSeverity, L"    lpEnvelope->dwFadeLevel = %u", envelope->dwFadeLevel);
+                        Message::OutputFormatted(kDumpSeverity, L"    lpEnvelope->dwFadeTime = %u", envelope->dwFadeTime);
+                    }
+                }
+
+                if (0 != (dwFlags & DIEP_TYPESPECIFICPARAMS))
+                {
+                    Message::Output(kDumpSeverity, L"  Type-Specific:");
+
+                    if (nullptr == peff->lpvTypeSpecificParams)
+                        Message::Output(kDumpSeverity, L"    (nullptr)");
+                    else
+                        DumpTypeSpecificParameters(peff);
+                }
+            }
+
+            Message::Output(kDumpSeverity, L"End dump of effect parameters.");
+        }
+    }
+
+    // --------
+
     template <ECharMode charMode> HRESULT VirtualDirectInputEffect<charMode>::SetParametersInternal(LPCDIEFFECT peff, DWORD dwFlags, std::optional<Controller::ForceFeedback::TEffectTimeMs> timestamp)
     {
+        DumpEffectParameters(peff, dwFlags);
+
         if (nullptr == peff)
             return DIERR_INVALIDPARAM;
-
+        
         // These flags control the behavior of this method if all parameters are updated successfully.
         // Per DirectInput documentation, at most one of them is allowed to be passed.
         switch (dwFlags & (DIEP_NODOWNLOAD | DIEP_NORESTART | DIEP_START))
@@ -170,7 +421,7 @@ namespace Xidi
                 // These parameters are present in the new version of the structure but not in the old.
                 if (0 != (dwFlags & DIEP_STARTDELAY))
                 {
-                    if (false == updatedEffect->SetStartDelay((Controller::ForceFeedback::TEffectTimeMs)peff->dwStartDelay))
+                    if (false == updatedEffect->SetStartDelay((Controller::ForceFeedback::TEffectTimeMs)(peff->dwStartDelay / 1000)))
                         return DIERR_INVALIDPARAM;
                 }
                 break;
@@ -272,7 +523,7 @@ namespace Xidi
 
         if (0 != (dwFlags & DIEP_DURATION))
         {
-            if (false == updatedEffect->SetDuration((Controller::ForceFeedback::TEffectTimeMs)peff->dwDuration))
+            if (false == updatedEffect->SetDuration((Controller::ForceFeedback::TEffectTimeMs)(peff->dwDuration / 1000)))
                 return DIERR_INVALIDPARAM;
         }
 
@@ -288,9 +539,9 @@ namespace Xidi
                     return DIERR_INVALIDPARAM;
 
                 const Controller::ForceFeedback::SEnvelope kNewEnvelope = {
-                    .attackTime = (Controller::ForceFeedback::TEffectTimeMs)peff->lpEnvelope->dwAttackTime,
+                    .attackTime = (Controller::ForceFeedback::TEffectTimeMs)(peff->lpEnvelope->dwAttackTime / 1000),
                     .attackLevel = (Controller::ForceFeedback::TEffectValue)peff->lpEnvelope->dwAttackLevel,
-                    .fadeTime = (Controller::ForceFeedback::TEffectTimeMs)peff->lpEnvelope->dwFadeTime,
+                    .fadeTime = (Controller::ForceFeedback::TEffectTimeMs)(peff->lpEnvelope->dwFadeTime / 1000),
                     .fadeLevel = (Controller::ForceFeedback::TEffectValue)peff->lpEnvelope->dwFadeLevel
                 };
 
@@ -307,7 +558,7 @@ namespace Xidi
 
         if (0 != (dwFlags & DIEP_SAMPLEPERIOD))
         {
-            if (false == updatedEffect->SetSamplePeriod((Controller::ForceFeedback::TEffectTimeMs)peff->dwSamplePeriod))
+            if (false == updatedEffect->SetSamplePeriod((Controller::ForceFeedback::TEffectTimeMs)(peff->dwSamplePeriod / 1000)))
                 return DIERR_INVALIDPARAM;
         }
 
@@ -410,6 +661,32 @@ namespace Xidi
     }
 
 
+    // -------- CONCRETE INSTANCE METHODS ---------------------------------- //
+    // See "VirtualDirectInputEffect.h" for documentation.
+
+    template <ECharMode charMode> void VirtualDirectInputEffect<charMode>::DumpTypeSpecificParameters(LPCDIEFFECT peff) const
+    {
+        Message::OutputFormatted(kDumpSeverity, L"    cbTypeSpecificParams = %u (unknown)", peff->cbTypeSpecificParams);
+        Message::OutputFormatted(kDumpSeverity, L"    lpvTypeSpecificParams = (%s)", ((nullptr == peff->lpvTypeSpecificParams) ? L"nullptr" : L"present"));
+    }
+
+    // --------
+
+    template <ECharMode charMode> void ConstantForceDirectInputEffect<charMode>::DumpTypeSpecificParameters(LPCDIEFFECT peff) const
+    {
+        if (sizeof(DICONSTANTFORCE) == peff->cbTypeSpecificParams)
+        {
+            const DICONSTANTFORCE* const typeSpecificParams = (const DICONSTANTFORCE*)peff->lpvTypeSpecificParams;
+            Message::OutputFormatted(kDumpSeverity, L"    cbTypeSpecificParams = %u (sizeof(DICONSTANTFORCE))", peff->cbTypeSpecificParams);
+            Message::OutputFormatted(kDumpSeverity, L"    lpvTypeSpecificParams->lMagnitude = %ld", typeSpecificParams->lMagnitude);
+        }
+        else
+        {
+            VirtualDirectInputEffect<charMode>::DumpTypeSpecificParameters(peff);
+        }
+    }
+
+
     // -------- METHODS: IUnknown ------------------------------------------ //
     // See IUnknown documentation for more information.
 
@@ -492,7 +769,7 @@ namespace Xidi
             case sizeof(DIEFFECT) :
                 // These parameters are present in the new version of the structure but not in the old.
                 if (0 != (dwFlags & DIEP_STARTDELAY))
-                    peff->dwStartDelay = (DWORD)effect->GetStartDelay();
+                    peff->dwStartDelay = (DWORD)(effect->GetStartDelay() * 1000);
                 break;
 
             case sizeof(DIEFFECT_DX5):
@@ -627,7 +904,7 @@ namespace Xidi
             if (false == effect->HasDuration())
                 LOG_INVOCATION_AND_RETURN(DIERR_INVALIDPARAM, kMethodSeverity);
 
-            peff->dwDuration = (DWORD)effect->GetDuration().value();
+            peff->dwDuration = (DWORD)(effect->GetDuration().value() * 1000);
         }
 
         if (0 != (dwFlags & DIEP_ENVELOPE))
@@ -644,9 +921,9 @@ namespace Xidi
 
                 const Controller::ForceFeedback::SEnvelope kEnvelope = effect->GetEnvelope().value();
                 peff->lpEnvelope->dwAttackLevel = (DWORD)kEnvelope.attackLevel;
-                peff->lpEnvelope->dwAttackTime = (DWORD)kEnvelope.attackTime;
+                peff->lpEnvelope->dwAttackTime = (DWORD)(kEnvelope.attackTime * 1000);
                 peff->lpEnvelope->dwFadeLevel = (DWORD)kEnvelope.fadeLevel;
-                peff->lpEnvelope->dwFadeTime = (DWORD)kEnvelope.fadeTime;
+                peff->lpEnvelope->dwFadeTime = (DWORD)(kEnvelope.fadeTime * 1000);
             }
         }
 
@@ -654,7 +931,7 @@ namespace Xidi
             peff->dwGain = (DWORD)effect->GetGain();
 
         if (0 != (dwFlags & DIEP_SAMPLEPERIOD))
-            peff->dwSamplePeriod = (DWORD)effect->GetSamplePeriod();
+            peff->dwSamplePeriod = (DWORD)(effect->GetSamplePeriod() * 1000);
 
         if (0 != (dwFlags & DIEP_STARTDELAY))
             peff->dwStartDelay = (DWORD)effect->GetStartDelay();
@@ -723,13 +1000,7 @@ namespace Xidi
     template <ECharMode charMode> HRESULT VirtualDirectInputEffect<charMode>::Download(void)
     {
         constexpr Message::ESeverity kMethodSeverity = Message::ESeverity::Info;
-
-        Controller::ForceFeedback::Device* const forceFeedbackDevice = associatedDevice.GetVirtualController().ForceFeedbackGetDevice();
-        if (nullptr == forceFeedbackDevice)
-            LOG_INVOCATION_AND_RETURN(DIERR_NOTEXCLUSIVEACQUIRED, kMethodSeverity);
-
-        const HRESULT kDownloadResult = DownloadEffectToDevice(*effect, *forceFeedbackDevice);
-        LOG_INVOCATION_AND_RETURN(kDownloadResult, kMethodSeverity);
+        LOG_INVOCATION_AND_RETURN(DownloadInternal(), kMethodSeverity);
     }
 
     // --------
@@ -756,8 +1027,10 @@ namespace Xidi
 
 
     // -------- EXPLICIT TEMPLATE INSTANTIATION ---------------------------- //
-    // Instantiates both the ASCII and Unicode versions of this class.
+    // Instantiates both the ASCII and Unicode versions of all needed classes.
 
     template class VirtualDirectInputEffect<ECharMode::A>;
     template class VirtualDirectInputEffect<ECharMode::W>;
+    template class ConstantForceDirectInputEffect<ECharMode::A>;
+    template class ConstantForceDirectInputEffect<ECharMode::W>;
 }

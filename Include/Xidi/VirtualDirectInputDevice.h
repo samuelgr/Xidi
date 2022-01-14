@@ -26,6 +26,7 @@ namespace Xidi
     /// Helper types for differentiating between Unicode and ASCII interface versions.
     template <ECharMode charMode> struct DirectInputDeviceType
     {
+        typedef LPTSTR StringType;
         typedef LPCTSTR ConstStringType;
         typedef DIDEVICEINSTANCE DeviceInstanceType;
         typedef DIDEVICEINSTANCE_DX3 DeviceInstanceCompatType;
@@ -42,6 +43,7 @@ namespace Xidi
 
     template <> struct DirectInputDeviceType<ECharMode::A> : public LatestIDirectInputDeviceA
     {
+        typedef LPSTR StringType;
         typedef LPCSTR ConstStringType;
         typedef DIDEVICEINSTANCEA DeviceInstanceType;
         typedef DIDEVICEINSTANCE_DX3A DeviceInstanceCompatType;
@@ -58,6 +60,7 @@ namespace Xidi
 
     template <> struct DirectInputDeviceType<ECharMode::W> : public LatestIDirectInputDeviceW
     {
+        typedef LPWSTR StringType;
         typedef LPCWSTR ConstStringType;
         typedef DIDEVICEINSTANCEW DeviceInstanceType;
         typedef DIDEVICEINSTANCE_DX3W DeviceInstanceCompatType;
@@ -116,6 +119,13 @@ namespace Xidi
 
 
         // -------- CLASS METHODS -------------------------------------------------- //
+
+        /// Fills the specified buffer with a friendly string representation of the specified controller element.
+        /// Intended for internal use, primarily for log message generation.
+        /// @param [in] element Controller element for which a string is desired.
+        /// @param [out] buf Buffer to be filled with the string.
+        /// @param [in] bufcount Buffer size in number of characters.
+        static void ElementToString(Controller::SElementIdentifier element, DirectInputDeviceType<charMode>::StringType buf, int bufcount);
 
         /// Determines if the specified GUID is supported for creating a force feedback effect object.
         /// @tparam charMode Selects between ASCII ("A" suffix) and Unicode ("W") suffix versions of types and interfaces.
