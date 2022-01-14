@@ -124,6 +124,49 @@ namespace Xidi
         associatedDevice.Release();
     }
 
+    // -------- INSTANCE METHODS ------------------------------------------- //
+    // See "VirtualDirectInputEffect.h" for documentation.
+
+    template <ECharMode charMode> HRESULT VirtualDirectInputEffect<charMode>::StartPlayback(DWORD dwIterations, DWORD dwFlags, std::optional<Controller::ForceFeedback::TEffectTimeMs> timestamp)
+    {
+        if (0 == dwIterations)
+            return DIERR_INVALIDPARAM;
+
+        Controller::ForceFeedback::Device* const forceFeedbackDevice = associatedDevice.GetVirtualController().ForceFeedbackGetDevice();
+        if (nullptr == forceFeedbackDevice)
+            return DIERR_NOTEXCLUSIVEACQUIRED;
+
+        if (0 != (dwFlags & DIES_NODOWNLOAD))
+        {
+            // The download operation was skipped by the caller.
+            // If the effect does not already exist on the device then the effect cannot be played.
+            if (false == forceFeedbackDevice->IsEffectOnDevice(effect->Identifier()))
+                return DIERR_INVALIDPARAM;
+        }
+        else
+        {
+            // The download operation was not skipped by the caller.
+            // If the effect exists on the device its parameters will get updated, otherwise the effect will be downloaded.
+            // If for some reason the download attempt fails then the effect cannot be played.
+            const HRESULT kDownloadResult = DownloadEffectToDevice(*effect, *forceFeedbackDevice);
+            if (DI_OK != kDownloadResult)
+                return kDownloadResult;
+        }
+
+        if (0 != (dwFlags & DIES_SOLO))
+            forceFeedbackDevice->StopAllEffects();
+        else
+            forceFeedbackDevice->StopEffect(effect->Identifier());
+
+        if (false == forceFeedbackDevice->StartEffect(effect->Identifier(), (unsigned int)dwIterations, timestamp))
+        {
+            Message::OutputFormatted(Message::ESeverity::Error, L"Internal error while starting a force feedback effect associated with Xidi virtual controller %u.", (1 + associatedDevice.GetVirtualController().GetIdentifier()));
+            return DIERR_GENERIC;
+        }
+
+        return DI_OK;
+    }
+
 
     // -------- METHODS: IUnknown ------------------------------------------ //
     // See IUnknown documentation for more information.
@@ -628,43 +671,7 @@ namespace Xidi
     template <ECharMode charMode> HRESULT VirtualDirectInputEffect<charMode>::Start(DWORD dwIterations, DWORD dwFlags)
     {
         constexpr Message::ESeverity kMethodSeverity = Message::ESeverity::Info;
-
-        if (0 == dwIterations)
-            LOG_INVOCATION_AND_RETURN(DIERR_INVALIDPARAM, kMethodSeverity);
-
-        Controller::ForceFeedback::Device* const forceFeedbackDevice = associatedDevice.GetVirtualController().ForceFeedbackGetDevice();
-        if (nullptr == forceFeedbackDevice)
-            LOG_INVOCATION_AND_RETURN(DIERR_NOTEXCLUSIVEACQUIRED, kMethodSeverity);
-
-        if (0 != (dwFlags & DIES_NODOWNLOAD))
-        {
-            // The download operation was skipped by the caller.
-            // If the effect does not already exist on the device then the effect cannot be played.
-            if (false == forceFeedbackDevice->IsEffectOnDevice(effect->Identifier()))
-                LOG_INVOCATION_AND_RETURN(DIERR_INVALIDPARAM, kMethodSeverity);
-        }
-        else
-        {
-            // The download operation was not skipped by the caller.
-            // If the effect exists on the device its parameters will get updated, otherwise the effect will be downloaded.
-            // If for some reason the download attempt fails then the effect cannot be played.
-            const HRESULT kDownloadResult = DownloadEffectToDevice(*effect, *forceFeedbackDevice);
-            if (DI_OK != kDownloadResult)
-                LOG_INVOCATION_AND_RETURN(kDownloadResult, kMethodSeverity);
-        }
-
-        if (0 != (dwFlags & DIES_SOLO))
-            forceFeedbackDevice->StopAllEffects();
-        else
-            forceFeedbackDevice->StopEffect(effect->Identifier());
-
-        if (false == forceFeedbackDevice->StartEffect(effect->Identifier(), (unsigned int)dwIterations))
-        {
-            Message::OutputFormatted(Message::ESeverity::Error, L"Internal error while starting a force feedback effect associated with Xidi virtual controller %u.", (1 + associatedDevice.GetVirtualController().GetIdentifier()));
-            LOG_INVOCATION_AND_RETURN(DIERR_GENERIC, kMethodSeverity);
-        }
-
-        LOG_INVOCATION_AND_RETURN(DI_OK, kMethodSeverity);
+        LOG_INVOCATION_AND_RETURN(StartPlayback(dwIterations, dwFlags), kMethodSeverity);
     }
 
     // --------

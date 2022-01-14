@@ -67,6 +67,9 @@ namespace XidiTest
         /// Requires specification of controller identifier and all applicable physical states.
         MockPhysicalController(TControllerIdentifier controllerIdentifier, const SPhysicalState* mockPhysicalStates, size_t mockPhysicalStateCount);
 
+        /// Copy constructor. Should never be invoked.
+        MockPhysicalController(const MockPhysicalController& other) = delete;
+
         /// Default destructor.
         ~MockPhysicalController(void);
 
@@ -93,6 +96,13 @@ namespace XidiTest
         inline const VirtualController* GetForceFeedbackRegistration(void) const
         {
             return forceFeedbackRegistration;
+        }
+
+        /// Retrieves and returns the controller identifier associated with this object.
+        /// @return Associated controller identifier.
+        inline TControllerIdentifier GetControllerIdentifier(void) const
+        {
+            return kControllerIdentifier;
         }
 
         /// Retrieves and returns whether or not an advancement to the next physical state has been requested.
