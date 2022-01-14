@@ -12,7 +12,9 @@
 
 #include "ApiDirectInput.h"
 #include "ControllerIdentification.h"
+#include "ControllerTypes.h"
 #include "Globals.h"
+#include "Mapper.h"
 #include "TemporaryBuffer.h"
 
 #include <memory>
@@ -23,6 +25,18 @@
 namespace Xidi
 {
     // -------- INTERNAL FUNCTIONS ----------------------------------------- //
+
+    /// Determines if the specified controller supports force feedback.
+    /// @param [in] controllerId Identifier of the controller of interest.
+    /// @return `true` if so, `false` otherwise.
+    static inline bool DoesControllerSupportForceFeedback(DWORD controllerId)
+    {
+        const Controller::Mapper* const mapper = Controller::Mapper::GetConfigured((Controller::TControllerIdentifier)controllerId);
+        if (nullptr == mapper)
+            return false;
+
+        return mapper->GetCapabilities().ForceFeedbackIsSupported();
+    }
 
     /// Extracts and returns the instance index from a Xidi virtual controller's GUID.
     /// Does not verify that the supplied GUID actually represents an XInput instance GUID.
@@ -88,12 +102,15 @@ namespace Xidi
 
     // ---------
 
-    template <typename DeviceInstanceType> BOOL EnumerateVirtualControllers(BOOL(FAR PASCAL* lpCallback)(const DeviceInstanceType*, LPVOID), LPVOID pvRef)
+    template <typename DeviceInstanceType> BOOL EnumerateVirtualControllers(BOOL(FAR PASCAL* lpCallback)(const DeviceInstanceType*, LPVOID), LPVOID pvRef, bool forceFeedbackRequired)
     {
         std::unique_ptr<DeviceInstanceType> instanceInfo = std::make_unique<DeviceInstanceType>();
 
         for (DWORD idx = 0; idx < XUSER_MAX_COUNT; ++idx)
         {
+            if ((true == forceFeedbackRequired) && (false == DoesControllerSupportForceFeedback(idx)))
+                continue;
+
             *instanceInfo = {.dwSize = sizeof(*instanceInfo)};
             FillVirtualControllerInfo(*instanceInfo, idx);
 
@@ -104,8 +121,8 @@ namespace Xidi
         return DIENUM_CONTINUE;
     }
 
-    template BOOL EnumerateVirtualControllers(LPDIENUMDEVICESCALLBACKA, LPVOID);
-    template BOOL EnumerateVirtualControllers(LPDIENUMDEVICESCALLBACKW, LPVOID);
+    template BOOL EnumerateVirtualControllers(LPDIENUMDEVICESCALLBACKA, LPVOID, bool);
+    template BOOL EnumerateVirtualControllers(LPDIENUMDEVICESCALLBACKW, LPVOID, bool);
 
     // ---------
 
@@ -120,8 +137,12 @@ namespace Xidi
         // DirectInput versions 5 and higher include extra members in this structure, and this is indicated on input using the size member of the structure.
         if (instanceInfo.dwSize > offsetof(DeviceInstanceType, tszProductName) + sizeof(DeviceInstanceType::tszProductName))
         {
+            if (true == DoesControllerSupportForceFeedback(controllerId))
+                instanceInfo.guidFFDriver = kVirtualControllerForceFeedbackDriverGuid;
+            else
+                instanceInfo.guidFFDriver = {};
+
             // These fields are zeroed out because Xidi does not currently offer any of the functionality they represent.
-            instanceInfo.guidFFDriver = {};
             instanceInfo.wUsagePage = 0;
             instanceInfo.wUsage = 0;
         }

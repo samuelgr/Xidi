@@ -23,10 +23,13 @@ namespace Xidi
     // -------- CONSTANTS -------------------------------------------------- //
 
     /// Product GUID for Xidi virtual controllers.
-    inline constexpr GUID kVirtualControllerProductGuid = { 0xffffffff, 0x0000, 0x0000, { 0x00, 0x00, 0x00, 0x00, 'X', 'I', 'D', 'I' } };
+    inline constexpr GUID kVirtualControllerProductGuid = {0xffffffff, 0x0000, 0x0000, {0x00, 0x00, 0x00, 0x00, 'X', 'I', 'D', 'I'}};
 
     /// Instance base GUID for Xidi virtual controllers from which instance GUIDs per controller may be derived by using the controller identifier..
-    inline constexpr GUID kVirtualControllerInstanceBaseGuid = { 0xffffffff, 0x0000, 0x0000, { 'X', 'I', 'D', 'I', 0x00, 0x00, 0x00, 0x00 } };
+    inline constexpr GUID kVirtualControllerInstanceBaseGuid = {0xffffffff, 0x0000, 0x0000, {'X', 'I', 'D', 'I', 0x00, 0x00, 0x00, 0x00}};
+
+    /// Force feedback driver GUID for Xidi virtual controllers.
+    inline constexpr GUID kVirtualControllerForceFeedbackDriverGuid = {0xffffffff, 0x0000, 0x0000, {'F', 'F', 'D', 0x00, 'X', 'I', 'D', 'I'}};
 
 
     // -------- FUNCTIONS -------------------------------------------------- //
@@ -48,8 +51,9 @@ namespace Xidi
     /// @tparam DeviceInstanceType Either DIDEVICEINSTANCEA or DIDEVICEINSTANCEW depending on whether ASCII or Unicode is desired.
     /// @param [in] lpCallback Application-supplied callback function. Refer to DirectInput documentation for more.
     /// @param [in] pvRef Application-supplied parameter. Refer to DirectInput documentation for more.
+    /// @param [in] forceFeedbackRequired If `true` then the enumeration is limited to virtual controllers that have mappers that support force feedback.
     /// @return `DIENUM_CONTINUE` or `DIENUM_STOP` depending on what the application's callback returned.
-    template <typename DeviceInstanceType> BOOL EnumerateVirtualControllers(BOOL(FAR PASCAL* lpCallback)(const DeviceInstanceType*, LPVOID), LPVOID pvRef);
+    template <typename DeviceInstanceType> BOOL EnumerateVirtualControllers(BOOL(FAR PASCAL* lpCallback)(const DeviceInstanceType*, LPVOID), LPVOID pvRef, bool forceFeedbackRequired);
 
     /// Fills a DirectInput device information structure with information about the virtual controller at the specified index.
     /// On input, the size field is expected to be initialized. Since multiple structure versions exist, it is used to determine which members to fill in.

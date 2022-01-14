@@ -209,6 +209,8 @@ namespace Xidi
         const DWORD gameControllerDevClass = DIDEVTYPE_JOYSTICK;
 #endif
 
+        const bool kForceFeedbackControllersOnly = (0 != (dwFlags & DIEDFL_FORCEFEEDBACK));
+
         SEnumDevicesCallbackInfo<charMode> callbackInfo;
         callbackInfo.instance = this;
         callbackInfo.lpCallback = lpCallback;
@@ -234,7 +236,7 @@ namespace Xidi
             {
                 Message::Output(Message::ESeverity::Debug, L"Enumerate: System has XInput devices, so Xidi virtual controllers are being presented to the application before other controllers.");
 
-                callbackInfo.callbackReturnCode = EnumerateVirtualControllers(lpCallback, pvRef);
+                callbackInfo.callbackReturnCode = EnumerateVirtualControllers(lpCallback, pvRef, kForceFeedbackControllersOnly);
 
                 if (DIENUM_CONTINUE != callbackInfo.callbackReturnCode)
                 {
@@ -260,7 +262,7 @@ namespace Xidi
             {
                 Message::Output(Message::ESeverity::Debug, L"Enumerate: System has no XInput devices, so Xidi virtual controllers are being presented to the application after other controllers.");
 
-                callbackInfo.callbackReturnCode = EnumerateVirtualControllers(lpCallback, pvRef);
+                callbackInfo.callbackReturnCode = EnumerateVirtualControllers(lpCallback, pvRef, kForceFeedbackControllersOnly);
 
                 if (DIENUM_CONTINUE != callbackInfo.callbackReturnCode)
                 {
