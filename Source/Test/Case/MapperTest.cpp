@@ -533,7 +533,7 @@ namespace XidiTest
         constexpr SCapabilities kExpectedCapabilities = MakeExpectedCapabilities({
             .axisCapabilities = {
                 {.type = EAxis::X, .isMappedToPhysicalControllerElement = true, .isMappedToForceFeedbackActuator = true},
-                {.type = EAxis::Y, .isMappedToPhysicalControllerElement = true},
+                {.type = EAxis::Y, .isMappedToPhysicalControllerElement = true, .isMappedToForceFeedbackActuator = true},
                 {.type = EAxis::Z, .isMappedToPhysicalControllerElement = true},
                 {.type = EAxis::RotZ, .isMappedToPhysicalControllerElement = true}
             },
@@ -555,7 +555,7 @@ namespace XidiTest
         constexpr SCapabilities kExpectedCapabilities = MakeExpectedCapabilities({
             .axisCapabilities = {
                 {.type = EAxis::X, .isMappedToPhysicalControllerElement = true, .isMappedToForceFeedbackActuator = true},
-                {.type = EAxis::Y, .isMappedToPhysicalControllerElement = true},
+                {.type = EAxis::Y, .isMappedToPhysicalControllerElement = true, .isMappedToForceFeedbackActuator = true},
                 {.type = EAxis::Z, .isMappedToPhysicalControllerElement = true},
                 {.type = EAxis::RotZ, .isMappedToPhysicalControllerElement = true}
             },
@@ -577,7 +577,7 @@ namespace XidiTest
         constexpr SCapabilities kExpectedCapabilities = MakeExpectedCapabilities({
             .axisCapabilities = {
                 {.type = EAxis::X, .isMappedToPhysicalControllerElement = true, .isMappedToForceFeedbackActuator = true},
-                {.type = EAxis::Y, .isMappedToPhysicalControllerElement = true},
+                {.type = EAxis::Y, .isMappedToPhysicalControllerElement = true, .isMappedToForceFeedbackActuator = true},
                 {.type = EAxis::Z, .isMappedToPhysicalControllerElement = true},
                 {.type = EAxis::RotX, .isMappedToPhysicalControllerElement = true},
                 {.type = EAxis::RotY, .isMappedToPhysicalControllerElement = true},
@@ -601,7 +601,7 @@ namespace XidiTest
         constexpr SCapabilities kExpectedCapabilities = MakeExpectedCapabilities({
             .axisCapabilities = {
                 {.type = EAxis::X, .isMappedToPhysicalControllerElement = true, .isMappedToForceFeedbackActuator = true},
-                {.type = EAxis::Y, .isMappedToPhysicalControllerElement = true},
+                {.type = EAxis::Y, .isMappedToPhysicalControllerElement = true, .isMappedToForceFeedbackActuator = true},
                 {.type = EAxis::Z, .isMappedToPhysicalControllerElement = true},
                 {.type = EAxis::RotX, .isMappedToPhysicalControllerElement = true},
                 {.type = EAxis::RotY, .isMappedToPhysicalControllerElement = true},
@@ -625,7 +625,7 @@ namespace XidiTest
         constexpr SCapabilities kExpectedCapabilities = MakeExpectedCapabilities({
             .axisCapabilities = {
                 {.type = EAxis::X, .isMappedToPhysicalControllerElement = true, .isMappedToForceFeedbackActuator = true},
-                {.type = EAxis::Y, .isMappedToPhysicalControllerElement = true},
+                {.type = EAxis::Y, .isMappedToPhysicalControllerElement = true, .isMappedToForceFeedbackActuator = true},
                 {.type = EAxis::Z, .isMappedToPhysicalControllerElement = true},
                 {.type = EAxis::RotX, .isMappedToPhysicalControllerElement = true},
                 {.type = EAxis::RotY, .isMappedToPhysicalControllerElement = true}
@@ -653,10 +653,11 @@ namespace XidiTest
         constexpr SCapabilities kExpectedCapabilities = MakeExpectedCapabilities({
             .axisCapabilities = {
                 {.type = EAxis::X, .isMappedToPhysicalControllerElement = false, .isMappedToForceFeedbackActuator = true},
+                {.type = EAxis::Y, .isMappedToPhysicalControllerElement = false, .isMappedToForceFeedbackActuator = true},
                 {.type = EAxis::Z, .isMappedToPhysicalControllerElement = true},
                 {.type = EAxis::RotZ, .isMappedToPhysicalControllerElement = true}
             },
-            .numAxes = 3,
+            .numAxes = 4,
             .numButtons = 12,
             .hasPov = true
         });
@@ -678,7 +679,7 @@ namespace XidiTest
         constexpr SCapabilities kExpectedCapabilities = MakeExpectedCapabilities({
             .axisCapabilities = {
                 {.type = EAxis::X, .isMappedToPhysicalControllerElement = true, .isMappedToForceFeedbackActuator = true},
-                {.type = EAxis::Y, .isMappedToPhysicalControllerElement = true}
+                {.type = EAxis::Y, .isMappedToPhysicalControllerElement = true, .isMappedToForceFeedbackActuator = true}
             },
             .numAxes = 2,
             .numButtons = 12,
@@ -702,7 +703,7 @@ namespace XidiTest
         constexpr SCapabilities kExpectedCapabilities = MakeExpectedCapabilities({
             .axisCapabilities = {
                 {.type = EAxis::X, .isMappedToPhysicalControllerElement = true, .isMappedToForceFeedbackActuator = true},
-                {.type = EAxis::Y, .isMappedToPhysicalControllerElement = true},
+                {.type = EAxis::Y, .isMappedToPhysicalControllerElement = true, .isMappedToForceFeedbackActuator = true},
                 {.type = EAxis::Z, .isMappedToPhysicalControllerElement = true},
                 {.type = EAxis::RotZ, .isMappedToPhysicalControllerElement = true}
             },
@@ -728,7 +729,7 @@ namespace XidiTest
         constexpr SCapabilities kExpectedCapabilities = MakeExpectedCapabilities({
             .axisCapabilities = {
                 {.type = EAxis::X, .isMappedToPhysicalControllerElement = true, .isMappedToForceFeedbackActuator = true},
-                {.type = EAxis::Y, .isMappedToPhysicalControllerElement = true},
+                {.type = EAxis::Y, .isMappedToPhysicalControllerElement = true, .isMappedToForceFeedbackActuator = true},
                 {.type = EAxis::Z, .isMappedToPhysicalControllerElement = true},
                 {.type = EAxis::RotX, .isMappedToPhysicalControllerElement = true},
                 {.type = EAxis::RotY, .isMappedToPhysicalControllerElement = true},
@@ -758,7 +759,7 @@ namespace XidiTest
         constexpr SCapabilities kExpectedCapabilities = MakeExpectedCapabilities({
             .axisCapabilities = {
                 {.type = EAxis::X, .isMappedToPhysicalControllerElement = true, .isMappedToForceFeedbackActuator = true},
-                {.type = EAxis::Y, .isMappedToPhysicalControllerElement = true},
+                {.type = EAxis::Y, .isMappedToPhysicalControllerElement = true, .isMappedToForceFeedbackActuator = true},
                 {.type = EAxis::RotX, .isMappedToPhysicalControllerElement = true},
                 {.type = EAxis::RotY, .isMappedToPhysicalControllerElement = true}
             },

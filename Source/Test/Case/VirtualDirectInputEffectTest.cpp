@@ -399,7 +399,7 @@ namespace XidiTest
         MockEffectWithTypeSpecificParameters& ffEffect = (MockEffectWithTypeSpecificParameters&)diEffect->UnderlyingEffect();
 
         LONG directionCartesian[] = {1, 1};
-        const DIEFFECT kParameters = {.dwSize = sizeof(DIEFFECT), .dwFlags = DIEFF_CARTESIAN, .cAxes = _countof(directionCartesian), .rglDirection = directionCartesian };
+        const DIEFFECT kParameters = {.dwSize = sizeof(DIEFFECT), .dwFlags = DIEFF_CARTESIAN, .cAxes = 2, .rglDirection = directionCartesian };
         TEST_ASSERT(DI_DOWNLOADSKIPPED == diEffect->SetParametersInternal(&kParameters, (DIEP_DIRECTION | DIEP_NODOWNLOAD)));
 
         TEST_ASSERT(true == ffEffect.HasDirection());
@@ -421,7 +421,7 @@ namespace XidiTest
         MockEffectWithTypeSpecificParameters& ffEffect = (MockEffectWithTypeSpecificParameters&)diEffect->UnderlyingEffect();
 
         LONG directionPolar[] = {4500};
-        const DIEFFECT kParameters = {.dwSize = sizeof(DIEFFECT), .dwFlags = DIEFF_POLAR, .cAxes = _countof(directionPolar), .rglDirection = directionPolar};
+        const DIEFFECT kParameters = {.dwSize = sizeof(DIEFFECT), .dwFlags = DIEFF_POLAR, .cAxes = 2, .rglDirection = directionPolar};
         TEST_ASSERT(DI_DOWNLOADSKIPPED == diEffect->SetParametersInternal(&kParameters, (DIEP_DIRECTION | DIEP_NODOWNLOAD)));
 
         TEST_ASSERT(true == ffEffect.HasDirection());
@@ -443,7 +443,7 @@ namespace XidiTest
         MockEffectWithTypeSpecificParameters& ffEffect = (MockEffectWithTypeSpecificParameters&)diEffect->UnderlyingEffect();
 
         LONG directionSpherical[] = {13500};
-        const DIEFFECT kParameters = {.dwSize = sizeof(DIEFFECT), .dwFlags = DIEFF_SPHERICAL, .cAxes = _countof(directionSpherical), .rglDirection = directionSpherical};
+        const DIEFFECT kParameters = {.dwSize = sizeof(DIEFFECT), .dwFlags = DIEFF_SPHERICAL, .cAxes = 2, .rglDirection = directionSpherical};
         TEST_ASSERT(DI_DOWNLOADSKIPPED == diEffect->SetParametersInternal(&kParameters, (DIEP_DIRECTION | DIEP_NODOWNLOAD)));
 
         TEST_ASSERT(true == ffEffect.HasDirection());

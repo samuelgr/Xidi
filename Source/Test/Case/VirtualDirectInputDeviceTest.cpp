@@ -66,8 +66,31 @@ namespace XidiTest
     static constexpr TControllerIdentifier kTestControllerIdentifier = 1;
 
     /// Test mapper used throughout these test cases.
-    /// Describes a layout with 4 axes, a POV, and 8 buttons, with force feedback actuators on the X and Y axes.
+    /// Describes a layout with 4 axes, a POV, and 8 buttons.
     static const Mapper kTestMapper(
+        {
+            .stickLeftX = std::make_unique<AxisMapper>(EAxis::X),
+            .stickLeftY = std::make_unique<AxisMapper>(EAxis::Y),
+            .stickRightX = std::make_unique<AxisMapper>(EAxis::RotX),
+            .stickRightY = std::make_unique<AxisMapper>(EAxis::RotY),
+            .dpadUp = std::make_unique<PovMapper>(EPovDirection::Up),
+            .dpadDown = std::make_unique<PovMapper>(EPovDirection::Down),
+            .dpadLeft = std::make_unique<PovMapper>(EPovDirection::Left),
+            .dpadRight = std::make_unique<PovMapper>(EPovDirection::Right),
+            .buttonA = std::make_unique<ButtonMapper>(EButton::B1),
+            .buttonB = std::make_unique<ButtonMapper>(EButton::B2),
+            .buttonX = std::make_unique<ButtonMapper>(EButton::B3),
+            .buttonY = std::make_unique<ButtonMapper>(EButton::B4),
+            .buttonLB = std::make_unique<ButtonMapper>(EButton::B5),
+            .buttonRB = std::make_unique<ButtonMapper>(EButton::B6),
+            .buttonBack = std::make_unique<ButtonMapper>(EButton::B7),
+            .buttonStart = std::make_unique<ButtonMapper>(EButton::B8)
+        }
+    );
+
+    /// Test mapper used throughout these test cases.
+    /// Describes a layout with 4 axes, a POV, and 8 buttons, with force feedback actuators on the X and Y axes.
+    static const Mapper kTestMapperWithForceFeedback(
         {
             .stickLeftX = std::make_unique<AxisMapper>(EAxis::X),
             .stickLeftY = std::make_unique<AxisMapper>(EAxis::Y),
@@ -90,7 +113,7 @@ namespace XidiTest
             .leftMotor = {.isPresent = true, .axis = EAxis::X, .direction = EAxisDirection::Both},
             .rightMotor = {.isPresent = true, .axis = EAxis::Y, .direction = EAxisDirection::Both}
         }
-    );
+        );
 
     /// Object format specification for #STestDataPacket.
     static DIOBJECTDATAFORMAT testObjectFormatSpec[] = {
@@ -1136,7 +1159,7 @@ namespace XidiTest
 
         for (const auto& kExpectedSupportedGuid : kExpectedSupportedGuids)
         {
-            VirtualDirectInputDevice<ECharMode::W> diController(CreateTestVirtualController());
+            VirtualDirectInputDevice<ECharMode::W> diController(CreateTestVirtualController(kTestMapperWithForceFeedback));
             IDirectInputEffect* createdEffect = nullptr;
             
             TEST_ASSERT(DI_OK == diController.CreateEffect(kExpectedSupportedGuid, nullptr, &createdEffect, nullptr));
@@ -1157,7 +1180,7 @@ namespace XidiTest
         MockPhysicalController physicalController(kTestControllerIdentifier, &kPhysicalState, 1);
         Controller::ForceFeedback::Device* const forceFeedbackDevice = &physicalController.GetForceFeedbackDevice();
 
-        VirtualDirectInputDevice<ECharMode::W> diController(CreateTestVirtualController());
+        VirtualDirectInputDevice<ECharMode::W> diController(CreateTestVirtualController(kTestMapperWithForceFeedback));
         TEST_ASSERT(DI_OK == diController.SetDataFormat(&kTestFormatSpec));
         TEST_ASSERT(DI_OK == diController.SetCooperativeLevel(nullptr, DISCL_EXCLUSIVE | DISCL_FOREGROUND));
         TEST_ASSERT(DI_OK == diController.Acquire());
@@ -1191,7 +1214,7 @@ namespace XidiTest
         MockPhysicalController physicalController(kTestControllerIdentifier, &kPhysicalState, 1);
         Controller::ForceFeedback::Device* const forceFeedbackDevice = &physicalController.GetForceFeedbackDevice();
 
-        VirtualDirectInputDevice<ECharMode::W> diController(CreateTestVirtualController());
+        VirtualDirectInputDevice<ECharMode::W> diController(CreateTestVirtualController(kTestMapperWithForceFeedback));
         TEST_ASSERT(DI_OK == diController.SetDataFormat(&kTestFormatSpec));
         TEST_ASSERT(DI_OK == diController.SetCooperativeLevel(nullptr, DISCL_NONEXCLUSIVE | DISCL_FOREGROUND));
         TEST_ASSERT(DI_OK == diController.Acquire());
@@ -1231,7 +1254,7 @@ namespace XidiTest
         constexpr DWORD kExpectedEffectTypeFlags = (DIEFT_FFATTACK | DIEFT_FFFADE);
         constexpr DWORD kExpectedEffectParams = (DIEP_AXES | DIEP_DIRECTION | DIEP_DURATION | DIEP_ENVELOPE | DIEP_GAIN | DIEP_SAMPLEPERIOD | DIEP_STARTDELAY | DIEP_TYPESPECIFICPARAMS);
 
-        VirtualDirectInputDevice<ECharMode::W> diController(CreateTestVirtualController());
+        VirtualDirectInputDevice<ECharMode::W> diController(CreateTestVirtualController(kTestMapperWithForceFeedback));
         TEST_ASSERT(DI_OK == diController.EnumEffects([](LPCDIEFFECTINFO pdei, LPVOID pvRef) -> BOOL
             {
                 std::set<GUID>& seenGuids = *((std::set<GUID>*)pvRef);
@@ -1257,7 +1280,7 @@ namespace XidiTest
     // Enumerates all effects and verifies information is identical to that provided by the GetEffectInfo method.
     TEST_CASE(VirtualDirectInputDevice_ForceFeedback_GetInfoAll)
     {
-        VirtualDirectInputDevice<ECharMode::W> diController(CreateTestVirtualController());
+        VirtualDirectInputDevice<ECharMode::W> diController(CreateTestVirtualController(kTestMapperWithForceFeedback));
         TEST_ASSERT(DI_OK == diController.EnumEffects([](LPCDIEFFECTINFO pdei, LPVOID pvRef) -> BOOL
             {
                 VirtualDirectInputDevice<ECharMode::W>& diController = *((VirtualDirectInputDevice<ECharMode::W>*)pvRef);
@@ -1276,7 +1299,7 @@ namespace XidiTest
     // Attempts to get information on an effect using an unsupported GUID. The attempted operation is expected to fail.
     TEST_CASE(VirtualDirectInputDevice_ForceFeedback_GetInfoUnsupported)
     {
-        VirtualDirectInputDevice<ECharMode::W> diController(CreateTestVirtualController());
+        VirtualDirectInputDevice<ECharMode::W> diController(CreateTestVirtualController(kTestMapperWithForceFeedback));
         DIEFFECTINFO effectInfo = {.dwSize = sizeof(DIEFFECTINFO)};
         TEST_ASSERT(DI_OK != diController.GetEffectInfo(&effectInfo, {}));
     }
@@ -1295,7 +1318,7 @@ namespace XidiTest
 
         constexpr DWORD kExpectedEffectType = DIEFT_CONSTANTFORCE;
 
-        VirtualDirectInputDevice<ECharMode::W> diController(CreateTestVirtualController());
+        VirtualDirectInputDevice<ECharMode::W> diController(CreateTestVirtualController(kTestMapperWithForceFeedback));
         TEST_ASSERT(DI_OK == diController.EnumEffects([](LPCDIEFFECTINFO pdei, LPVOID pvRef) -> BOOL
             {
                 std::set<GUID>& seenGuids = *((std::set<GUID>*)pvRef);
@@ -1330,7 +1353,7 @@ namespace XidiTest
 
         constexpr DWORD kExpectedEffectType = DIEFT_RAMPFORCE;
 
-        VirtualDirectInputDevice<ECharMode::W> diController(CreateTestVirtualController());
+        VirtualDirectInputDevice<ECharMode::W> diController(CreateTestVirtualController(kTestMapperWithForceFeedback));
         TEST_ASSERT(DI_OK == diController.EnumEffects([](LPCDIEFFECTINFO pdei, LPVOID pvRef) -> BOOL
             {
                 std::set<GUID>& seenGuids = *((std::set<GUID>*)pvRef);
@@ -1365,7 +1388,7 @@ namespace XidiTest
 
         constexpr DWORD kExpectedEffectType = DIEFT_PERIODIC;
 
-        VirtualDirectInputDevice<ECharMode::W> diController(CreateTestVirtualController());
+        VirtualDirectInputDevice<ECharMode::W> diController(CreateTestVirtualController(kTestMapperWithForceFeedback));
         TEST_ASSERT(DI_OK == diController.EnumEffects([](LPCDIEFFECTINFO pdei, LPVOID pvRef) -> BOOL
             {
                 std::set<GUID>& seenGuids = *((std::set<GUID>*)pvRef);
@@ -1400,7 +1423,7 @@ namespace XidiTest
 
         constexpr DWORD kExpectedEffectType = DIEFT_CUSTOMFORCE;
 
-        VirtualDirectInputDevice<ECharMode::W> diController(CreateTestVirtualController());
+        VirtualDirectInputDevice<ECharMode::W> diController(CreateTestVirtualController(kTestMapperWithForceFeedback));
         TEST_ASSERT(DI_OK == diController.EnumEffects([](LPCDIEFFECTINFO pdei, LPVOID pvRef) -> BOOL
             {
                 std::set<GUID>& seenGuids = *((std::set<GUID>*)pvRef);
@@ -1426,7 +1449,7 @@ namespace XidiTest
     {
         constexpr DWORD kExpectedEffectType = DIEFT_STARTDELAY;
 
-        VirtualDirectInputDevice<ECharMode::W> diController(CreateTestVirtualController());
+        VirtualDirectInputDevice<ECharMode::W> diController(CreateTestVirtualController(kTestMapperWithForceFeedback));
         TEST_ASSERT(DI_OK == diController.EnumEffects([](LPCDIEFFECTINFO pdei, LPVOID pvRef) -> BOOL
             {
                 TEST_FAILED_BECAUSE(L"Unexpected invocation of the EnumEffects enumeration function.");
@@ -1445,7 +1468,7 @@ namespace XidiTest
 
         const GUID kEffectGuid = GUID_ConstantForce;
 
-        VirtualDirectInputDevice<ECharMode::W> diController(CreateTestVirtualController());
+        VirtualDirectInputDevice<ECharMode::W> diController(CreateTestVirtualController(kTestMapperWithForceFeedback));
 
         for (int i = 0; i < kNumTestEffects; ++i)
         {
@@ -1476,7 +1499,7 @@ namespace XidiTest
 
         const GUID kEffectGuid = GUID_ConstantForce;
 
-        VirtualDirectInputDevice<ECharMode::W> diController(CreateTestVirtualController());
+        VirtualDirectInputDevice<ECharMode::W> diController(CreateTestVirtualController(kTestMapperWithForceFeedback));
 
         for (int i = 0; i < kNumTestEffects; ++i)
         {
@@ -1512,7 +1535,7 @@ namespace XidiTest
 
         const GUID kEffectGuid = GUID_ConstantForce;
 
-        VirtualDirectInputDevice<ECharMode::W> diController(CreateTestVirtualController());
+        VirtualDirectInputDevice<ECharMode::W> diController(CreateTestVirtualController(kTestMapperWithForceFeedback));
 
         for (int i = 0; i < kNumTestEffects; ++i)
         {
@@ -1547,7 +1570,7 @@ namespace XidiTest
 
         const GUID kEffectGuid = GUID_ConstantForce;
 
-        VirtualDirectInputDevice<ECharMode::W> diController(CreateTestVirtualController());
+        VirtualDirectInputDevice<ECharMode::W> diController(CreateTestVirtualController(kTestMapperWithForceFeedback));
 
         for (int i = 0; i < kNumTestEffects; ++i)
         {
@@ -1587,7 +1610,7 @@ namespace XidiTest
         MockPhysicalController physicalController(kTestControllerIdentifier, &kPhysicalState, 1);
         Controller::ForceFeedback::Device* const forceFeedbackDevice = &physicalController.GetForceFeedbackDevice();
 
-        VirtualDirectInputDevice<ECharMode::W> diController(CreateTestVirtualController());
+        VirtualDirectInputDevice<ECharMode::W> diController(CreateTestVirtualController(kTestMapperWithForceFeedback));
         TEST_ASSERT(DI_OK == diController.SetDataFormat(&kTestFormatSpec));
 
         // Non-exclusive acquisition.
@@ -1612,7 +1635,7 @@ namespace XidiTest
         MockPhysicalController physicalController(kTestControllerIdentifier, &kPhysicalState, 1);
         Controller::ForceFeedback::Device* const forceFeedbackDevice = &physicalController.GetForceFeedbackDevice();
 
-        VirtualDirectInputDevice<ECharMode::W> diController(CreateTestVirtualController());
+        VirtualDirectInputDevice<ECharMode::W> diController(CreateTestVirtualController(kTestMapperWithForceFeedback));
         TEST_ASSERT(DI_OK == diController.SetDataFormat(&kTestFormatSpec));
 
         DWORD ffState = 0;
@@ -1675,10 +1698,7 @@ namespace XidiTest
     // Expected return codes are not specifically documented but were obtained by manual experimentation.
     TEST_CASE(VirtualDirectInputDevice_ForceFeedback_BehaviorWhenNotSupported)
     {
-        const Mapper kTestMapperNoForceFeedback(kTestMapper.CloneElementMap().named);
-        TEST_ASSERT(false == kTestMapperNoForceFeedback.GetCapabilities().ForceFeedbackIsSupported());
-
-        VirtualDirectInputDevice<ECharMode::W> diController(CreateTestVirtualController(kTestMapperNoForceFeedback));
+        VirtualDirectInputDevice<ECharMode::W> diController(CreateTestVirtualController());
 
         // EnumEffects should return success but not enumerate anything.
         TEST_ASSERT(DI_OK == diController.EnumEffects([](LPCDIEFFECTINFO pdei, LPVOID pvRef) -> BOOL

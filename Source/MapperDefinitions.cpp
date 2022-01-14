@@ -50,7 +50,7 @@ namespace Xidi
                 },
                 {
                     .leftMotor = {.isPresent = true, .axis = EAxis::X, .direction = EAxisDirection::Both},
-                    .rightMotor = {.isPresent = true, .axis = EAxis::X, .direction = EAxisDirection::Both},
+                    .rightMotor = {.isPresent = true, .axis = EAxis::Y, .direction = EAxisDirection::Both},
                 }
             ),
 
@@ -80,7 +80,7 @@ namespace Xidi
                 },
                 {
                     .leftMotor = {.isPresent = true, .axis = EAxis::X, .direction = EAxisDirection::Both},
-                    .rightMotor = {.isPresent = true, .axis = EAxis::X, .direction = EAxisDirection::Both},
+                    .rightMotor = {.isPresent = true, .axis = EAxis::Y, .direction = EAxisDirection::Both},
                 }
             ),
 
@@ -110,7 +110,7 @@ namespace Xidi
                 },
                 {
                     .leftMotor = {.isPresent = true, .axis = EAxis::X, .direction = EAxisDirection::Both},
-                    .rightMotor = {.isPresent = true, .axis = EAxis::X, .direction = EAxisDirection::Both},
+                    .rightMotor = {.isPresent = true, .axis = EAxis::Y, .direction = EAxisDirection::Both},
                 }
             ),
 
@@ -140,7 +140,7 @@ namespace Xidi
                 },
                 {
                     .leftMotor = {.isPresent = true, .axis = EAxis::X, .direction = EAxisDirection::Both},
-                    .rightMotor = {.isPresent = true, .axis = EAxis::X, .direction = EAxisDirection::Both},
+                    .rightMotor = {.isPresent = true, .axis = EAxis::Y, .direction = EAxisDirection::Both},
                 }
             ),
 
@@ -170,7 +170,7 @@ namespace Xidi
                 },
                 {
                     .leftMotor = {.isPresent = true, .axis = EAxis::X, .direction = EAxisDirection::Both},
-                    .rightMotor = {.isPresent = true, .axis = EAxis::X, .direction = EAxisDirection::Both},
+                    .rightMotor = {.isPresent = true, .axis = EAxis::Y, .direction = EAxisDirection::Both},
                 }
             )
         };

@@ -254,11 +254,11 @@ namespace Xidi
                 break;
 
             case DIEFF_POLAR:
-                coordinateSetResult = updatedEffect->Direction().SetDirectionUsingPolar(coordinates, numCoordinates);
+                coordinateSetResult = updatedEffect->Direction().SetDirectionUsingPolar(coordinates, numCoordinates - 1);
                 break;
 
             case DIEFF_SPHERICAL:
-                coordinateSetResult = updatedEffect->Direction().SetDirectionUsingSpherical(coordinates, numCoordinates);
+                coordinateSetResult = updatedEffect->Direction().SetDirectionUsingSpherical(coordinates, numCoordinates - 1);
                 break;
 
             default:

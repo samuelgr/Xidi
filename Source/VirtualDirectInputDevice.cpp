@@ -16,7 +16,9 @@
 #include "ControllerTypes.h"
 #include "DataFormat.h"
 #include "ForceFeedbackDevice.h"
+#include "ForceFeedbackTypes.h"
 #include "Message.h"
+#include "PhysicalController.h"
 #include "Strings.h"
 #include "VirtualController.h"
 #include "VirtualDirectInputDevice.h"
@@ -626,6 +628,20 @@ namespace Xidi
     /// @param objectInfo [out] Structure to be filled with instance information.
     template <ECharMode charMode> static void FillObjectInstanceInfo(Controller::SCapabilities controllerCapabilities, Controller::SElementIdentifier controllerElement, TOffset offset, typename DirectInputDeviceType<charMode>::DeviceObjectInstanceType* objectInfo)
     {
+        // DirectInput versions 5 and higher include extra members in this structure, and this is indicated on input using the size member of the structure.
+        if (objectInfo->dwSize > sizeof(DirectInputDeviceType<charMode>::DeviceObjectInstanceCompatType))
+        {
+            objectInfo->dwFFMaxForce = 0;
+            objectInfo->dwFFForceResolution = 0;
+            objectInfo->wCollectionNumber = 0;
+            objectInfo->wDesignatorIndex = 0;
+            objectInfo->wUsagePage = 0;
+            objectInfo->wUsage = 0;
+            objectInfo->dwDimension = 0;
+            objectInfo->wExponent = 0;
+            objectInfo->wReportId = 0;
+        }
+        
         objectInfo->dwOfs = offset;
         objectInfo->dwType = GetObjectId(controllerCapabilities, controllerElement);
         ElementToString(controllerElement, objectInfo->tszName, _countof(objectInfo->tszName));
@@ -635,6 +651,18 @@ namespace Xidi
         case Controller::EElementType::Axis:
             objectInfo->guidType = AxisTypeGuid(controllerElement.axis);
             objectInfo->dwFlags = DIDOI_ASPECTPOSITION;
+
+            if (controllerCapabilities.ForceFeedbackIsSupportedForAxis(controllerElement.axis))
+            {
+                objectInfo->dwType |= DIDFT_FFACTUATOR;
+                objectInfo->dwFlags |= DIDOI_FFACTUATOR;
+
+                if (objectInfo->dwSize > sizeof(DirectInputDeviceType<charMode>::DeviceObjectInstanceCompatType))
+                {
+                    objectInfo->dwFFMaxForce = (DWORD)Controller::ForceFeedback::kEffectForceMagnitudeMaximum;
+                    objectInfo->dwFFForceResolution = 1;
+                }
+            }
             break;
 
         case Controller::EElementType::Button:
@@ -646,21 +674,6 @@ namespace Xidi
             objectInfo->guidType = GUID_POV;
             objectInfo->dwFlags = 0;
             break;
-        }
-
-        // DirectInput versions 5 and higher include extra members in this structure, and this is indicated on input using the size member of the structure.
-        if (objectInfo->dwSize > sizeof(DirectInputDeviceType<charMode>::DeviceObjectInstanceCompatType))
-        {
-            // These fields are zeroed out because Xidi does not currently offer any of the functionality they represent.
-            objectInfo->dwFFMaxForce = 0;
-            objectInfo->dwFFForceResolution = 0;
-            objectInfo->wCollectionNumber = 0;
-            objectInfo->wDesignatorIndex = 0;
-            objectInfo->wUsagePage = 0;
-            objectInfo->wUsage = 0;
-            objectInfo->dwDimension = 0;
-            objectInfo->wExponent = 0;
-            objectInfo->wReportId = 0;
         }
     }
 
@@ -874,6 +887,8 @@ namespace Xidi
         if (nullptr != punkOuter)
             Message::Output(Message::ESeverity::Warning, L"Application requested COM aggregation, which is not implemented, while creating a force feedback effect.");
 
+        Message::OutputFormatted(Message::ESeverity::Debug, L"Creating effect with GUID %s.", ForceFeedbackEffectGuidString(rguid));
+
         std::unique_ptr<VirtualDirectInputEffect<charMode>> newEffect = ForceFeedbackEffectCreateObject<charMode>(rguid, *this);
         if (nullptr == newEffect)
             LOG_INVOCATION_AND_RETURN(DIERR_INVALIDPARAM, kMethodSeverity);
@@ -1080,9 +1095,15 @@ namespace Xidi
         if (nullptr == lpCallback)
             LOG_INVOCATION_AND_RETURN(DIERR_INVALIDPARAM, kMethodSeverity);
 
+        // Force feedback effect triggers are not supported, so no objects will match.
+        const bool kForceFeedbackEffectTriggersOnly = (0 != (dwFlags & DIDFT_FFEFFECTTRIGGER));
+        if (true == kForceFeedbackEffectTriggersOnly)
+            LOG_INVOCATION_AND_RETURN(DI_OK, kMethodSeverity);
+
+        const bool kForceFeedbackActuatorsOnly = (0 != (dwFlags & DIDFT_FFACTUATOR));
         const bool kWillEnumerateAxes = ((DIDFT_ALL == dwFlags) || (0 != (dwFlags & DIDFT_ABSAXIS)));
-        const bool kWillEnumerateButtons = ((DIDFT_ALL == dwFlags) || (0 != (dwFlags & DIDFT_PSHBUTTON)));
-        const bool kWillEnumeratePov = ((DIDFT_ALL == dwFlags) || (0 != (dwFlags & DIDFT_POV)));
+        const bool kWillEnumerateButtons = ((false == kForceFeedbackActuatorsOnly) && ((DIDFT_ALL == dwFlags) || (0 != (dwFlags & DIDFT_PSHBUTTON))));
+        const bool kWillEnumeratePov = ((false == kForceFeedbackActuatorsOnly) && ((DIDFT_ALL == dwFlags) || (0 != (dwFlags & DIDFT_POV))));
 
         if ((true == kWillEnumerateAxes) || (true == kWillEnumerateButtons) || (true == kWillEnumeratePov))
         {
@@ -1093,6 +1114,9 @@ namespace Xidi
             {
                 for (int i = 0; i < controllerCapabilities.numAxes; ++i)
                 {
+                    if ((true == kForceFeedbackActuatorsOnly) && (false == controllerCapabilities.axisCapabilities[i].isMappedToForceFeedbackActuator))
+                        continue;
+
                     const Controller::EAxis kAxis = controllerCapabilities.axisCapabilities[i].type;
                     const Controller::SElementIdentifier kAxisIdentifier = {.type = Controller::EElementType::Axis, .axis = kAxis};
                     const TOffset kAxisOffset = ((true == IsApplicationDataFormatSet()) ? dataFormat->GetOffsetForElement(kAxisIdentifier).value_or(DataFormat::kInvalidOffsetValue) : NativeOffsetForElement(kAxisIdentifier));
@@ -1174,21 +1198,39 @@ namespace Xidi
 
         if (nullptr == lpDIDevCaps)
             LOG_INVOCATION_AND_RETURN(E_POINTER, kMethodSeverity);
+
+        const bool kForceFeedbackIsSupported = GetVirtualController().GetCapabilities().ForceFeedbackIsSupported();
         
         switch (lpDIDevCaps->dwSize)
         {
             case (sizeof(DIDEVCAPS)):
-                // Force feedback information, only present in the latest version of the structure.
-                lpDIDevCaps->dwFFSamplePeriod = 0;
-                lpDIDevCaps->dwFFMinTimeResolution = 0;
+                // Hardware information, only present in the latest version of the structure.
                 lpDIDevCaps->dwFirmwareRevision = 0;
                 lpDIDevCaps->dwHardwareRevision = 0;
-                lpDIDevCaps->dwFFDriverVersion = 0;
+                
+                // Force feedback information, only present in the latest version of the structure.
+                if (true == kForceFeedbackIsSupported)
+                {
+                    lpDIDevCaps->dwFFSamplePeriod = Controller::kPhysicalForceFeedbackPeriodMilliseconds * 1000;
+                    lpDIDevCaps->dwFFMinTimeResolution = 1000;
+                    lpDIDevCaps->dwFFDriverVersion = 1;
+                }
+                else
+                {
+                    lpDIDevCaps->dwFFSamplePeriod = 0;
+                    lpDIDevCaps->dwFFMinTimeResolution = 0;
+                    lpDIDevCaps->dwFFDriverVersion = 0;
+                }
+                [[fallthrough]];
 
             case (sizeof(DIDEVCAPS_DX3)):
                 // Top-level controller information is common to all virtual controllers.
                 lpDIDevCaps->dwFlags = DIDC_ATTACHED | DIDC_EMULATED;
                 lpDIDevCaps->dwDevType = DINPUT_DEVTYPE_XINPUT_GAMEPAD;
+
+                // Additional flags must be specified for force feedback axes.
+                if (true == kForceFeedbackIsSupported)
+                    lpDIDevCaps->dwFlags |= (DIDC_FORCEFEEDBACK | DIDC_FFFADE | DIDC_FFATTACK | DIDC_STARTDELAY);
                 
                 // Information about controller layout comes from controller capabilities.
                 lpDIDevCaps->dwAxes = controller->GetCapabilities().numAxes;
