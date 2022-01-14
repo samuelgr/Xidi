@@ -130,9 +130,6 @@ namespace Xidi
         /// Virtual keyboard state snapshots are maintained by the thread that periodically updates physical keyboard state.
         static StateContributionTracker keyboardTracker;
 
-        /// Background thread for updating the physical keyboard status by reading the virtual keyboard status snapshots.
-        static std::thread physicalKeyboardUpdateThread;
-
 
         // -------- INTERNAL FUNCTIONS ------------------------------------- //
 
@@ -217,7 +214,7 @@ namespace Xidi
             static std::once_flag initFlag;
             std::call_once(initFlag, []() -> void
                 {
-                    physicalKeyboardUpdateThread = std::thread(UpdatePhysicalKeyboardState);
+                    std::thread(UpdatePhysicalKeyboardState).detach();
                     Message::OutputFormatted(Message::ESeverity::Info, L"Initialized the keyboard event thread. Desired update period is %u ms.", kKeyboardUpdatePeriodMilliseconds);
                 }
             );

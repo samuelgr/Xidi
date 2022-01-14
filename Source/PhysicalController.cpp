@@ -72,12 +72,6 @@ namespace Xidi
         /// Mutex objects for protecting against concurrent accesses to the shared physical controller state data structure.
         static std::shared_mutex physicalControllerStateMutex[kPhysicalControllerCount];
 
-        /// Thread handle for the internal polling thread.
-        static std::thread pollingThread;
-
-        /// Thread handle for the internal status monitoring threads.
-        static std::thread monitoringStatusThread[kPhysicalControllerCount];
-
         /// Per-controller force feedback device buffer objects.
         /// These objects are not safe for dynamic initialization, so they are initialized later by pointer.
         static ForceFeedback::Device* physicalControllerForceFeedbackBuffer;
@@ -87,9 +81,6 @@ namespace Xidi
 
         /// Mutex objects for protecting against concurrent accesses to the physical controller force feedback registration data.
         static std::mutex physicalControllerForceFeedbackMutex[kPhysicalControllerCount];
-
-        /// Thread handle for the internal force feedback actuation threads.
-        static std::thread physicalControllerForceFeedbackThread[kPhysicalControllerCount];
 
 
         // -------- INTERNAL FUNCTIONS ------------------------------------- //
@@ -247,23 +238,23 @@ namespace Xidi
                     }
 
                     // Create and start the polling thread.
-                    pollingThread = std::thread(PollForPhysicalControllerStateChanges);
+                    std::thread(PollForPhysicalControllerStateChanges).detach();
                     Message::OutputFormatted(Message::ESeverity::Info, L"Initialized the physical controller state polling thread. Desired polling period is %u ms.", kPhysicalPollingPeriodMilliseconds);
 
                     // Allocate the force feedback device buffers, then create and start the force feedback threads.
                     physicalControllerForceFeedbackBuffer = new ForceFeedback::Device[kPhysicalControllerCount];
-                    for (auto controllerIdentifier = 0; controllerIdentifier < _countof(physicalControllerForceFeedbackThread); ++controllerIdentifier)
+                    for (auto controllerIdentifier = 0; controllerIdentifier < kPhysicalControllerCount; ++controllerIdentifier)
                     {
-                        physicalControllerForceFeedbackThread[controllerIdentifier] = std::thread(ForceFeedbackActuateEffects, controllerIdentifier);
+                        std::thread(ForceFeedbackActuateEffects, controllerIdentifier).detach();
                         Message::OutputFormatted(Message::ESeverity::Info, L"Initialized the physical controller force feedback actuation thread for controller %u. Desired actuation period is %u ms.", (unsigned int)(1 + controllerIdentifier), kPhysicalForceFeedbackPeriodMilliseconds);
                     }
 
                     // No point monitoring physical controllers for hardware status changes if none of the messages will actually be delivered as output.
                     if (Message::WillOutputMessageOfSeverity(Message::ESeverity::Warning))
                     {
-                        for (auto controllerIdentifier = 0; controllerIdentifier < _countof(monitoringStatusThread); ++controllerIdentifier)
+                        for (auto controllerIdentifier = 0; controllerIdentifier < kPhysicalControllerCount; ++controllerIdentifier)
                         {
-                            monitoringStatusThread[controllerIdentifier] = std::thread(MonitorPhysicalControllerStatus, controllerIdentifier);
+                            std::thread(MonitorPhysicalControllerStatus, controllerIdentifier).detach();
                             Message::OutputFormatted(Message::ESeverity::Info, L"Initialized the physical controller hardware status monitoring thread for controller %u.", (unsigned int)(1 + controllerIdentifier));
                         }
                     }
