@@ -212,6 +212,7 @@
     <ClInclude Include="Include\Xidi\ElementMapper.h" />
     <ClInclude Include="Include\Xidi\ForceFeedbackDevice.h" />
     <ClInclude Include="Include\Xidi\ForceFeedbackEffect.h" />
+    <ClInclude Include="Include\Xidi\ForceFeedbackMath.h" />
     <ClInclude Include="Include\Xidi\ForceFeedbackParameters.h" />
     <ClInclude Include="Include\Xidi\ForceFeedbackTypes.h" />
     <ClInclude Include="Include\Xidi\Globals.h" />
@@ -271,6 +272,7 @@
     <ClCompile Include="Source\Test\Case\MapperBuilderTest.cpp" />
     <ClCompile Include="Source\Test\Case\MapperTest.cpp" />
     <ClCompile Include="Source\Test\Case\MapperParserTest.cpp" />
+    <ClCompile Include="Source\Test\Case\PeriodicEffectTest.cpp" />
     <ClCompile Include="Source\Test\Case\PovMapperTest.cpp" />
     <ClCompile Include="Source\Test\Case\SplitMapperTest.cpp" />
     <ClCompile Include="Source\Test\Case\StateChangeEventBufferTest.cpp" />

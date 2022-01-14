@@ -687,6 +687,25 @@ namespace Xidi
         }
     }
 
+    // --------
+
+    template <ECharMode charMode> void PeriodicDirectInputEffect<charMode>::DumpTypeSpecificParameters(LPCDIEFFECT peff) const
+    {
+        if (sizeof(DIPERIODIC) == peff->cbTypeSpecificParams)
+        {
+            const DIPERIODIC* const typeSpecificParams = (const DIPERIODIC*)peff->lpvTypeSpecificParams;
+            Message::OutputFormatted(kDumpSeverity, L"    cbTypeSpecificParams = %u (sizeof(DIPERIODIC))", peff->cbTypeSpecificParams);
+            Message::OutputFormatted(kDumpSeverity, L"    lpvTypeSpecificParams->dwMagnitude = %u", typeSpecificParams->dwMagnitude);
+            Message::OutputFormatted(kDumpSeverity, L"    lpvTypeSpecificParams->lOffset = %ld", typeSpecificParams->lOffset);
+            Message::OutputFormatted(kDumpSeverity, L"    lpvTypeSpecificParams->dwPhase = %u", typeSpecificParams->dwPhase);
+            Message::OutputFormatted(kDumpSeverity, L"    lpvTypeSpecificParams->dwPeriod = %u", typeSpecificParams->dwPeriod);
+        }
+        else
+        {
+            VirtualDirectInputEffect<charMode>::DumpTypeSpecificParameters(peff);
+        }
+    }
+
 
     // -------- METHODS: IUnknown ------------------------------------------ //
     // See IUnknown documentation for more information.
@@ -1034,4 +1053,6 @@ namespace Xidi
     template class VirtualDirectInputEffect<ECharMode::W>;
     template class ConstantForceDirectInputEffect<ECharMode::A>;
     template class ConstantForceDirectInputEffect<ECharMode::W>;
+    template class PeriodicDirectInputEffect<ECharMode::A>;
+    template class PeriodicDirectInputEffect<ECharMode::W>;
 }

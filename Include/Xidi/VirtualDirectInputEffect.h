@@ -281,4 +281,45 @@ namespace Xidi
 
         void DumpTypeSpecificParameters(LPCDIEFFECT peff) const override;
     };
+
+    /// Concrete DirectInput force feedback effect object type for periodic effects effects.
+    /// @tparam charMode Selects between ASCII ("A" suffix) and Unicode ("W") suffix versions of types and interfaces.
+    template <ECharMode charMode> class PeriodicDirectInputEffect : public VirtualDirectInputEffectWithTypeSpecificParameters<charMode, DIPERIODIC, Controller::ForceFeedback::SPeriodicParameters>
+    {
+    public:
+        // -------- CONSTRUCTION AND DESTRUCTION ----------------------------------- //
+
+        /// Initialization constructor.
+        /// Simply delegates to the base class.
+        inline PeriodicDirectInputEffect(VirtualDirectInputDevice<charMode>& associatedDevice, const Controller::ForceFeedback::PeriodicEffect& effect, const GUID& effectGuid) : VirtualDirectInputEffectWithTypeSpecificParameters<charMode, DIPERIODIC, Controller::ForceFeedback::SPeriodicParameters>(associatedDevice, effect, effectGuid)
+        {
+            // Nothing to do here.
+        }
+
+
+    protected:
+        // -------- CONCRETE INSTANCE METHODS -------------------------------------- //
+
+        Controller::ForceFeedback::SPeriodicParameters ConvertFromDirectInput(const DIPERIODIC& diTypeSpecificParams) const override
+        {
+            return {
+                .amplitude = (Controller::ForceFeedback::TEffectValue)diTypeSpecificParams.dwMagnitude,
+                .offset = (Controller::ForceFeedback::TEffectValue)diTypeSpecificParams.lOffset,
+                .phase = (Controller::ForceFeedback::TEffectValue)diTypeSpecificParams.dwPhase,
+                .period = (Controller::ForceFeedback::TEffectTimeMs)diTypeSpecificParams.dwPeriod / 1000
+            };
+        }
+
+        DIPERIODIC ConvertToDirectInput(const Controller::ForceFeedback::SPeriodicParameters& typeSpecificParams) const override
+        {
+            return {
+                .dwMagnitude = (DWORD)typeSpecificParams.amplitude,
+                .lOffset = (LONG)typeSpecificParams.offset,
+                .dwPhase = (DWORD)typeSpecificParams.phase,
+                .dwPeriod = (DWORD)typeSpecificParams.period * 1000
+            };
+        }
+
+        void DumpTypeSpecificParameters(LPCDIEFFECT peff) const override;
+    };
 }

@@ -474,6 +474,68 @@ namespace Xidi
             protected:
                 TEffectValue ComputeRawMagnitude(TEffectTimeMs rawTime) const override;
             };
+
+            /// Holds all type-specific parameters for periodic effects.
+            struct SPeriodicParameters
+            {
+                /// Amplitude of the periodic effect, which must be non-negative and within the allowed magnitude range.
+                TEffectValue amplitude;
+
+                /// Relative baseline for the amplitude. Typically this is zero, but a non-zero value here can shift the periodic effect up or down. Must be within the allowed magnitude range.
+                TEffectValue offset;
+
+                /// Position in the cycle at which the effect starts, measured in hundredths of degrees. Must be within the allowed angle range.
+                TEffectValue phase;
+
+                /// Time length of the cycle of the effect.
+                TEffectTimeMs period;
+
+                /// Simple check for equality.
+                /// Primarily useful during testing.
+                /// @param [in] other Object with which to compare.
+                /// @return `true` if this object is equal to the other object, `false` otherwise.
+                constexpr inline bool operator==(const SPeriodicParameters& other) const = default;
+            };
+
+            /// Abstract base class for periodic force feedback effects.
+            class PeriodicEffect : public EffectWithTypeSpecificParameters<SPeriodicParameters>
+            {
+            public:
+                // -------- INSTANCE METHODS ------------------------------- //
+
+                /// Computes the current phase point within the waveform at the specified time.
+                /// Intended for internal use but exposed for testing.
+                /// @param [in] rawTime Time for which the phase point is being requested.
+                /// @return Current phase point, expressed as an angle measured in hundredths of degrees.
+                TEffectValue ComputePhase(TEffectTimeMs rawTime) const;
+
+
+                // -------- ABSTRACT INSTANCE METHODS ---------------------- //
+
+                /// Computes the amplutide proportion for the given phase.
+                /// This method is intended to return a value between -1.0 and 1.0 inclusive that defines the waveform of the periodic effect.
+                /// @param [in] phase Current point in the phase of the waveform for which an amplitude proportion is desired.
+                /// @return Value between -1.0 and 1.0 indicating the behavior of the waveform at the specified point in the phase.
+                virtual TEffectValue WaveformAmplitude(TEffectValue phase) const = 0;
+
+
+                // -------- CONCRETE INSTANCE METHODS ---------------------- //
+
+                bool AreTypeSpecificParametersValid(const SPeriodicParameters& newTypeSpecificParameters) const override;
+
+            protected:
+                TEffectValue ComputeRawMagnitude(TEffectTimeMs rawTime) const override;
+            };
+
+            /// Concrete implementation of a periodic effect for sine waves.
+            class SineWaveEffect : public PeriodicEffect
+            {
+            public:
+                // -------- CONCRETE INSTANCE METHODS ---------------------- //
+
+                TEffectValue WaveformAmplitude(TEffectValue phase) const override;
+                std::unique_ptr<Effect> Clone(void) const override;
+            };
         }
     }
 }

@@ -401,4 +401,61 @@ namespace XidiTest
         TEST_ASSERT(clonedEffect->Identifier() == effect.Identifier());
         TEST_ASSERT(clonedEffect->CommonParameters() == effect.CommonParameters());
     }
+
+    // Creates a force effect with type-specific parameters and verifies that it reports correct information for whether or not it is completely defined.
+    // Duration and type-specific parameters are required. All others are optional.
+    TEST_CASE(ForceFeedbackEffect_TypeSpecificParameters_IsCompletelyDefined)
+    {
+        MockEffectWithTypeSpecificParameters effect;
+
+        TEST_ASSERT(false == effect.IsCompletelyDefined());
+        TEST_ASSERT(true == effect.SetDuration(kTestEffectDuration));
+        TEST_ASSERT(true == effect.InitializeDefaultDirection());
+        TEST_ASSERT(false == effect.IsCompletelyDefined());
+        TEST_ASSERT(true == effect.SetTypeSpecificParameters({.valid = true}));
+        TEST_ASSERT(false == effect.IsCompletelyDefined());
+        TEST_ASSERT(true == effect.InitializeDefaultAssociatedAxes());
+        TEST_ASSERT(true == effect.IsCompletelyDefined());
+    }
+
+    // Verifies that a cloned effect is equivalent to its origin effect even in the presence of type-specific parameters.
+    TEST_CASE(ForceFeedbackEffect_TypeSpecificParameters_Clone)
+    {
+        MockEffectWithTypeSpecificParameters effect;
+        TEST_ASSERT(true == effect.SetEnvelope({.attackTime = 100, .attackLevel = 200, .fadeTime = 300, .fadeLevel = 400}));
+        TEST_ASSERT(true == effect.SetTypeSpecificParameters({.valid = true, .param1 = 11, .param2 = 234}));
+
+        std::unique_ptr<Effect> clonedEffect = effect.Clone();
+        MockEffectWithTypeSpecificParameters* clonedTypedEffect = dynamic_cast<MockEffectWithTypeSpecificParameters*>(clonedEffect.get());
+        TEST_ASSERT(nullptr != clonedTypedEffect);
+
+        TEST_ASSERT(clonedTypedEffect->Identifier() == effect.Identifier());
+        TEST_ASSERT(clonedTypedEffect->CommonParameters() == effect.CommonParameters());
+        TEST_ASSERT(clonedTypedEffect->GetTypeSpecificParameters() == effect.GetTypeSpecificParameters());
+    }
+
+    // Verifies that two effect objects with the same identifier can successfully complete a parameter synchronization operation even in the presence of type-specific parameters.
+    TEST_CASE(ForceFeedbackEffect_TypeSpecificParameters_SyncParameters)
+    {
+        MockEffectWithTypeSpecificParameters effect;
+        std::unique_ptr<Effect> clonedEffect = effect.Clone();
+
+        TEST_ASSERT(true == effect.SetEnvelope({.attackTime = 100, .attackLevel = 200, .fadeTime = 300, .fadeLevel = 400}));
+        TEST_ASSERT(true == effect.SetTypeSpecificParameters({ .valid = true, .param1 = 11, .param2 = 234 }));
+
+        TEST_ASSERT(true == clonedEffect->SyncParametersFrom(effect));
+        TEST_ASSERT(clonedEffect->Identifier() == effect.Identifier());
+        TEST_ASSERT(clonedEffect->CommonParameters() == effect.CommonParameters());
+
+        MockEffectWithTypeSpecificParameters* clonedTypedEffect = dynamic_cast<MockEffectWithTypeSpecificParameters*>(clonedEffect.get());
+        TEST_ASSERT(nullptr != clonedTypedEffect);
+        TEST_ASSERT(clonedTypedEffect->GetTypeSpecificParameters() == effect.GetTypeSpecificParameters());
+    }
+
+    // Creates a force effect and submits invalid type-specific parameters. Verifies that they are rejected.
+    TEST_CASE(ForceFeedbackEffect_TypeSpecificParameters_Invalid)
+    {
+        MockEffectWithTypeSpecificParameters effect;
+        TEST_ASSERT(false == effect.SetTypeSpecificParameters({.valid = false}));
+    }
 }

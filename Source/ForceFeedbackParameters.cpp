@@ -10,6 +10,7 @@
  *   to all force feedback effects.
  *****************************************************************************/
 
+#include "ForceFeedbackMath.h"
 #include "ForceFeedbackParameters.h"
 #include "ForceFeedbackTypes.h"
 
@@ -24,75 +25,7 @@ namespace Xidi
     {
         namespace ForceFeedback
         {
-            // -------- INTERNAL CONSTANTS --------------------------------- //
-
-            /// Precision to which internal trigonometric and other mathematic operations should be rounded.
-            /// Helps with avoiding imprecision error when using conversions between degrees and radians, which happens internally.
-            /// The value used is equal to 1/64, also known as 2e-6.
-            static constexpr TEffectValue kMathRoundingPrecision = 0.015625;
-
-
             // -------- INTERNAL FUNCTIONS --------------------------------- //
-
-            /// Converts the supplied angle from hundredths of degrees to radians.
-            /// @param [in] Angle to convert.
-            /// @return Converted angle in radians.
-            constexpr inline TEffectValue DegreeHundredthsToRadians(TEffectValue angle)
-            {
-                constexpr TEffectValue kConversionFactor = std::numbers::pi_v<TEffectValue> / 18000;
-                return angle * kConversionFactor;
-            }
-
-            /// Converts the supplied angle from radians to hundredths of degrees.
-            /// @param [in] Angle to convert.
-            /// @return Converted angle in hundredths of degrees.
-            constexpr inline TEffectValue RadiansToDegreeHundredths(TEffectValue angle)
-            {
-                constexpr TEffectValue kConversionFactor = 18000 / std::numbers::pi_v<TEffectValue>;
-                return angle * kConversionFactor;
-            }
-
-            /// Rounds the supplied value to the nearest multiple of another supplied value.
-            /// @param [in] value Value to be rounded.
-            /// @param [in] roundToMultiple Desired multiple of the input to which the input should be rounded.
-            /// @return Input rounded to the nearest multiple of the desired value.
-            inline TEffectValue NearestMultiple(TEffectValue value, TEffectValue roundToMultiple)
-            {
-                return std::nearbyint(value / roundToMultiple) * roundToMultiple;
-            }
-
-            /// Computes the cosine of the supplied angle, which is measured in hundredths of degrees.
-            /// Rounds the result to the nearest multiple of the constant at the top of this file.
-            /// @param [in] angle Angle whose cosine is to be computed.
-            /// @return Cosine of the input angle.
-            static inline TEffectValue TrigonometryCosine(TEffectValue angle)
-            {
-                return NearestMultiple(std::cos(DegreeHundredthsToRadians(angle)), kMathRoundingPrecision);
-            }
-
-            /// Computes the sine of the supplied angle, which is measured in hundredths of degrees.
-            /// Rounds the result to the nearest multiple of the constant at the top of this file.
-            /// @param [in] angle Angle whose sine is to be computed.
-            /// @return Sine of the input angle.
-            static inline TEffectValue TrigonometrySine(TEffectValue angle)
-            {
-                return NearestMultiple(std::sin(DegreeHundredthsToRadians(angle)), kMathRoundingPrecision);
-            }
-
-            /// Computes the inverse tangent of the ratio if the supplied parameters.
-            /// Rounds the result to the nearest multiple of the constant at the top of this file.
-            /// @param [in] numerator Numerator of the ratio.
-            /// @param [in] denominator Denominator of the ratio.
-            /// @return Inverse tangent in hundredths of degrees of the numerator divided by the denominator.
-            static inline TEffectValue TrigonometryArcTanOfRatio(TEffectValue numerator, TEffectValue denominator)
-            {
-                const TEffectValue kRawAngle = NearestMultiple(RadiansToDegreeHundredths(std::atan2(numerator, denominator)), kMathRoundingPrecision);
-
-                if (kRawAngle < 0)
-                    return kRawAngle + 36000;
-                else
-                    return kRawAngle;
-            }
 
             /// Checks if the supplied angle value is valid, meaning it is within the allowed range.
             /// @param [in] angle Angle to be checked.
