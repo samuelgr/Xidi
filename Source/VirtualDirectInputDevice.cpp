@@ -920,6 +920,8 @@ namespace Xidi
             }
         }
 
+        Message::OutputFormatted(kMethodSeverity, L"Created a force feedback effect and assigned it an identifier of %llu.", (unsigned long long)newEffect->UnderlyingEffect().Identifier());
+
         *ppdeff = newEffect.release();
         LOG_INVOCATION_AND_RETURN(DI_OK, kMethodSeverity);
     }

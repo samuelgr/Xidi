@@ -34,7 +34,7 @@
     do \
     { \
         const HRESULT kResult = (result); \
-        Message::OutputFormatted(severity, L"Invoked %s on a force feedback effect associated with Xidi virtual controller %u, result = 0x%08x.", __FUNCTIONW__ L"()", (1 + associatedDevice.GetVirtualController().GetIdentifier()), kResult); \
+        Message::OutputFormatted(severity, L"Invoked %s on force feedback effect with identifier %llu associated with Xidi virtual controller %u, result = 0x%08x.", __FUNCTIONW__ L"()", (unsigned long long)UnderlyingEffect().Identifier(), (1 + associatedDevice.GetVirtualController().GetIdentifier()), kResult); \
         return kResult; \
     } while (false)
 
@@ -495,13 +495,29 @@ namespace Xidi
             Controller::ForceFeedback::TEffectValue coordinates[Controller::ForceFeedback::kEffectAxesMaximumNumber] = {};
             int numCoordinates = peff->cAxes;
 
+            bool coordinatesAreAllZero = true;
             for (int i = 0; i < numCoordinates; ++i)
+            {
                 coordinates[i] = (Controller::ForceFeedback::TEffectValue)peff->rglDirection[i];
+
+                if (0 != coordinates[i])
+                    coordinatesAreAllZero = false;
+            }
 
             bool coordinateSetResult = false;
             switch (peff->dwFlags & (DIEFF_CARTESIAN | DIEFF_POLAR | DIEFF_SPHERICAL))
             {
             case DIEFF_CARTESIAN:
+                if (true == coordinatesAreAllZero)
+                {
+                    // Some applications send in a direction vector containing all zero coordinates. This means the application does not care at all about direction.
+                    // However, Xidi requires that a direction be set. Therefore, if the application does not care about direction, then it is assumed that the force is spread equally on all axes.
+                    // This transformation applies only to Cartesian coordinates because all-zero values are meaningful for polar and spherical coordinates.
+
+                    for (int i = 0; i < numCoordinates; ++i)
+                        coordinates[i] = 1;
+                }
+
                 coordinateSetResult = updatedEffect->Direction().SetDirectionUsingCartesian(coordinates, numCoordinates);
                 break;
 
