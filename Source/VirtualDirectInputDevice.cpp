@@ -1099,7 +1099,7 @@ namespace Xidi
             {
                 for (int i = 0; i < controllerCapabilities.numAxes; ++i)
                 {
-                    if ((true == kForceFeedbackActuatorsOnly) && (false == controllerCapabilities.axisCapabilities[i].isMappedToForceFeedbackActuator))
+                    if ((true == kForceFeedbackActuatorsOnly) && (false == controllerCapabilities.axisCapabilities[i].supportsForceFeedback))
                         continue;
 
                     const Controller::EAxis kAxis = controllerCapabilities.axisCapabilities[i].type;
@@ -1196,8 +1196,8 @@ namespace Xidi
                 // Force feedback information, only present in the latest version of the structure.
                 if (true == kForceFeedbackIsSupported)
                 {
-                    lpDIDevCaps->dwFFSamplePeriod = Controller::kPhysicalForceFeedbackPeriodMilliseconds * 1000;
-                    lpDIDevCaps->dwFFMinTimeResolution = 1000;
+                    lpDIDevCaps->dwFFSamplePeriod = VirtualDirectInputEffect<charMode>::ConvertTimeToDirectInput(Controller::kPhysicalForceFeedbackPeriodMilliseconds);
+                    lpDIDevCaps->dwFFMinTimeResolution = VirtualDirectInputEffect<charMode>::ConvertTimeToDirectInput(1);
                     lpDIDevCaps->dwFFDriverVersion = 1;
                 }
                 else

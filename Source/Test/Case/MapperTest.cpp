@@ -59,8 +59,9 @@ namespace XidiTest
     static consteval SCapabilities MinimalCapabilities(void)
     {
         SCapabilities minCapabilities = {.numButtons = Mapper::kMinNumButtons, .hasPov = Mapper::kIsPovRequired};
-        for (auto requiredAxis : Mapper::kRequiredAxes)
-            minCapabilities.AppendAxis({.type = (EAxis)((int)requiredAxis)});
+
+        for (auto requiredAxis : Mapper::kRequiredAxes | Mapper::kRequiredForceFeedbackAxes)
+            minCapabilities.AppendAxis({.type = (EAxis)((int)requiredAxis), .supportsForceFeedback = Mapper::kRequiredForceFeedbackAxes.contains(requiredAxis)});
 
         return minCapabilities;
     }
@@ -77,8 +78,10 @@ namespace XidiTest
         SCapabilities expectedCapabilities = {.numButtons = std::max(kMinCapabilities.numButtons, baseExpectedCapabilities.numButtons), .hasPov = (kMinCapabilities.hasPov || baseExpectedCapabilities.hasPov)};
         for (int i = 0; i < (int)EAxis::Count; ++i)
         {
+            const bool kSupportsForceFeedback = (baseExpectedCapabilities.ForceFeedbackIsSupportedForAxis((EAxis)i) || kMinCapabilities.ForceFeedbackIsSupportedForAxis((EAxis)i));
+
             if (baseExpectedCapabilities.HasAxis((EAxis)i))
-                expectedCapabilities.AppendAxis(baseExpectedCapabilities.axisCapabilities[baseExpectedCapabilities.FindAxis((EAxis)i)]);
+                expectedCapabilities.AppendAxis({.type = baseExpectedCapabilities.axisCapabilities[baseExpectedCapabilities.FindAxis((EAxis)i)].type, .supportsForceFeedback = kSupportsForceFeedback});
             else if (kMinCapabilities.HasAxis((EAxis)i))
                 expectedCapabilities.AppendAxis(kMinCapabilities.axisCapabilities[kMinCapabilities.FindAxis((EAxis)i)]);
         }
@@ -420,8 +423,8 @@ namespace XidiTest
     {
         constexpr SCapabilities kExpectedCapabilities = MakeExpectedCapabilities({
             .axisCapabilities = {
-                {.type = EAxis::Y, .isMappedToPhysicalControllerElement = true},
-                {.type = EAxis::RotX, .isMappedToPhysicalControllerElement = true}
+                {.type = EAxis::Y},
+                {.type = EAxis::RotX}
             },
             .numAxes = 2,
             .numButtons = 0,
@@ -488,7 +491,7 @@ namespace XidiTest
     {
         constexpr EAxis kTestAxis = EAxis::Z;
         constexpr SCapabilities kExpectedCapabilities = MakeExpectedCapabilities({
-            .axisCapabilities = {{.type = kTestAxis, .isMappedToPhysicalControllerElement = true}},
+            .axisCapabilities = {{.type = kTestAxis}},
             .numAxes = 1,
             .numButtons = 0,
             .hasPov = true
@@ -512,7 +515,7 @@ namespace XidiTest
     {
         constexpr EAxis kTestAxis = EAxis::Z;
         constexpr SCapabilities kExpectedCapabilities = MakeExpectedCapabilities({
-            .axisCapabilities = {{.type = kTestAxis, .isMappedToPhysicalControllerElement = false, .isMappedToForceFeedbackActuator = true}},
+            .axisCapabilities = {{.type = kTestAxis, .supportsForceFeedback = true}},
             .numAxes = 1,
             .numButtons = 0,
             .hasPov = false
@@ -532,10 +535,10 @@ namespace XidiTest
     {
         constexpr SCapabilities kExpectedCapabilities = MakeExpectedCapabilities({
             .axisCapabilities = {
-                {.type = EAxis::X, .isMappedToPhysicalControllerElement = true, .isMappedToForceFeedbackActuator = true},
-                {.type = EAxis::Y, .isMappedToPhysicalControllerElement = true, .isMappedToForceFeedbackActuator = true},
-                {.type = EAxis::Z, .isMappedToPhysicalControllerElement = true},
-                {.type = EAxis::RotZ, .isMappedToPhysicalControllerElement = true}
+                {.type = EAxis::X, .supportsForceFeedback = true},
+                {.type = EAxis::Y, .supportsForceFeedback = true},
+                {.type = EAxis::Z},
+                {.type = EAxis::RotZ}
             },
             .numAxes = 4,
             .numButtons = 12,
@@ -554,10 +557,10 @@ namespace XidiTest
     {
         constexpr SCapabilities kExpectedCapabilities = MakeExpectedCapabilities({
             .axisCapabilities = {
-                {.type = EAxis::X, .isMappedToPhysicalControllerElement = true, .isMappedToForceFeedbackActuator = true},
-                {.type = EAxis::Y, .isMappedToPhysicalControllerElement = true, .isMappedToForceFeedbackActuator = true},
-                {.type = EAxis::Z, .isMappedToPhysicalControllerElement = true},
-                {.type = EAxis::RotZ, .isMappedToPhysicalControllerElement = true}
+                {.type = EAxis::X, .supportsForceFeedback = true},
+                {.type = EAxis::Y, .supportsForceFeedback = true},
+                {.type = EAxis::Z},
+                {.type = EAxis::RotZ}
             },
             .numAxes = 4,
             .numButtons = 12,
@@ -576,12 +579,12 @@ namespace XidiTest
     {
         constexpr SCapabilities kExpectedCapabilities = MakeExpectedCapabilities({
             .axisCapabilities = {
-                {.type = EAxis::X, .isMappedToPhysicalControllerElement = true, .isMappedToForceFeedbackActuator = true},
-                {.type = EAxis::Y, .isMappedToPhysicalControllerElement = true, .isMappedToForceFeedbackActuator = true},
-                {.type = EAxis::Z, .isMappedToPhysicalControllerElement = true},
-                {.type = EAxis::RotX, .isMappedToPhysicalControllerElement = true},
-                {.type = EAxis::RotY, .isMappedToPhysicalControllerElement = true},
-                {.type = EAxis::RotZ, .isMappedToPhysicalControllerElement = true}
+                {.type = EAxis::X, .supportsForceFeedback = true},
+                {.type = EAxis::Y, .supportsForceFeedback = true},
+                {.type = EAxis::Z},
+                {.type = EAxis::RotX},
+                {.type = EAxis::RotY},
+                {.type = EAxis::RotZ}
             },
             .numAxes = 6,
             .numButtons = 10,
@@ -600,12 +603,12 @@ namespace XidiTest
     {
         constexpr SCapabilities kExpectedCapabilities = MakeExpectedCapabilities({
             .axisCapabilities = {
-                {.type = EAxis::X, .isMappedToPhysicalControllerElement = true, .isMappedToForceFeedbackActuator = true},
-                {.type = EAxis::Y, .isMappedToPhysicalControllerElement = true, .isMappedToForceFeedbackActuator = true},
-                {.type = EAxis::Z, .isMappedToPhysicalControllerElement = true},
-                {.type = EAxis::RotX, .isMappedToPhysicalControllerElement = true},
-                {.type = EAxis::RotY, .isMappedToPhysicalControllerElement = true},
-                {.type = EAxis::RotZ, .isMappedToPhysicalControllerElement = true}
+                {.type = EAxis::X, .supportsForceFeedback = true},
+                {.type = EAxis::Y, .supportsForceFeedback = true},
+                {.type = EAxis::Z},
+                {.type = EAxis::RotX},
+                {.type = EAxis::RotY},
+                {.type = EAxis::RotZ}
             },
             .numAxes = 6,
             .numButtons = 10,
@@ -624,11 +627,11 @@ namespace XidiTest
     {
         constexpr SCapabilities kExpectedCapabilities = MakeExpectedCapabilities({
             .axisCapabilities = {
-                {.type = EAxis::X, .isMappedToPhysicalControllerElement = true, .isMappedToForceFeedbackActuator = true},
-                {.type = EAxis::Y, .isMappedToPhysicalControllerElement = true, .isMappedToForceFeedbackActuator = true},
-                {.type = EAxis::Z, .isMappedToPhysicalControllerElement = true},
-                {.type = EAxis::RotX, .isMappedToPhysicalControllerElement = true},
-                {.type = EAxis::RotY, .isMappedToPhysicalControllerElement = true}
+                {.type = EAxis::X, .supportsForceFeedback = true},
+                {.type = EAxis::Y, .supportsForceFeedback = true},
+                {.type = EAxis::Z},
+                {.type = EAxis::RotX},
+                {.type = EAxis::RotY}
             },
             .numAxes = 5,
             .numButtons = 10,
@@ -652,10 +655,10 @@ namespace XidiTest
     {
         constexpr SCapabilities kExpectedCapabilities = MakeExpectedCapabilities({
             .axisCapabilities = {
-                {.type = EAxis::X, .isMappedToPhysicalControllerElement = false, .isMappedToForceFeedbackActuator = true},
-                {.type = EAxis::Y, .isMappedToPhysicalControllerElement = false, .isMappedToForceFeedbackActuator = true},
-                {.type = EAxis::Z, .isMappedToPhysicalControllerElement = true},
-                {.type = EAxis::RotZ, .isMappedToPhysicalControllerElement = true}
+                {.type = EAxis::X, .supportsForceFeedback = true},
+                {.type = EAxis::Y, .supportsForceFeedback = true},
+                {.type = EAxis::Z},
+                {.type = EAxis::RotZ}
             },
             .numAxes = 4,
             .numButtons = 12,
@@ -678,8 +681,8 @@ namespace XidiTest
     {
         constexpr SCapabilities kExpectedCapabilities = MakeExpectedCapabilities({
             .axisCapabilities = {
-                {.type = EAxis::X, .isMappedToPhysicalControllerElement = true, .isMappedToForceFeedbackActuator = true},
-                {.type = EAxis::Y, .isMappedToPhysicalControllerElement = true, .isMappedToForceFeedbackActuator = true}
+                {.type = EAxis::X, .supportsForceFeedback = true},
+                {.type = EAxis::Y, .supportsForceFeedback = true}
             },
             .numAxes = 2,
             .numButtons = 12,
@@ -702,10 +705,10 @@ namespace XidiTest
     {
         constexpr SCapabilities kExpectedCapabilities = MakeExpectedCapabilities({
             .axisCapabilities = {
-                {.type = EAxis::X, .isMappedToPhysicalControllerElement = true, .isMappedToForceFeedbackActuator = true},
-                {.type = EAxis::Y, .isMappedToPhysicalControllerElement = true, .isMappedToForceFeedbackActuator = true},
-                {.type = EAxis::Z, .isMappedToPhysicalControllerElement = true},
-                {.type = EAxis::RotZ, .isMappedToPhysicalControllerElement = true}
+                {.type = EAxis::X, .supportsForceFeedback = true},
+                {.type = EAxis::Y, .supportsForceFeedback = true},
+                {.type = EAxis::Z},
+                {.type = EAxis::RotZ}
             },
             .numAxes = 4,
             .numButtons = 10,
@@ -728,12 +731,12 @@ namespace XidiTest
     {
         constexpr SCapabilities kExpectedCapabilities = MakeExpectedCapabilities({
             .axisCapabilities = {
-                {.type = EAxis::X, .isMappedToPhysicalControllerElement = true, .isMappedToForceFeedbackActuator = true},
-                {.type = EAxis::Y, .isMappedToPhysicalControllerElement = true, .isMappedToForceFeedbackActuator = true},
-                {.type = EAxis::Z, .isMappedToPhysicalControllerElement = true},
-                {.type = EAxis::RotX, .isMappedToPhysicalControllerElement = true},
-                {.type = EAxis::RotY, .isMappedToPhysicalControllerElement = true},
-                {.type = EAxis::RotZ, .isMappedToPhysicalControllerElement = true}
+                {.type = EAxis::X, .supportsForceFeedback = true},
+                {.type = EAxis::Y, .supportsForceFeedback = true},
+                {.type = EAxis::Z},
+                {.type = EAxis::RotX},
+                {.type = EAxis::RotY},
+                {.type = EAxis::RotZ}
             },
             .numAxes = 6,
             .numButtons = 10,
@@ -758,10 +761,10 @@ namespace XidiTest
     {
         constexpr SCapabilities kExpectedCapabilities = MakeExpectedCapabilities({
             .axisCapabilities = {
-                {.type = EAxis::X, .isMappedToPhysicalControllerElement = true, .isMappedToForceFeedbackActuator = true},
-                {.type = EAxis::Y, .isMappedToPhysicalControllerElement = true, .isMappedToForceFeedbackActuator = true},
-                {.type = EAxis::RotX, .isMappedToPhysicalControllerElement = true},
-                {.type = EAxis::RotY, .isMappedToPhysicalControllerElement = true}
+                {.type = EAxis::X, .supportsForceFeedback = true},
+                {.type = EAxis::Y, .supportsForceFeedback = true},
+                {.type = EAxis::RotX},
+                {.type = EAxis::RotY}
             },
             .numAxes = 4,
             .numButtons = 10,

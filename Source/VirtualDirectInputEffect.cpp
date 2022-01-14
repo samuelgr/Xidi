@@ -23,6 +23,7 @@
 #include <cstddef>
 #include <memory>
 #include <optional>
+#include <sstream>
 #include <string>
 
 
@@ -421,7 +422,7 @@ namespace Xidi
                 // These parameters are present in the new version of the structure but not in the old.
                 if (0 != (dwFlags & DIEP_STARTDELAY))
                 {
-                    if (false == updatedEffect->SetStartDelay((Controller::ForceFeedback::TEffectTimeMs)(peff->dwStartDelay / 1000)))
+                    if (false == updatedEffect->SetStartDelay(ConvertTimeFromDirectInput(peff->dwStartDelay)))
                         return DIERR_INVALIDPARAM;
                 }
                 break;
@@ -523,7 +524,7 @@ namespace Xidi
 
         if (0 != (dwFlags & DIEP_DURATION))
         {
-            if (false == updatedEffect->SetDuration((Controller::ForceFeedback::TEffectTimeMs)(peff->dwDuration / 1000)))
+            if (false == updatedEffect->SetDuration(ConvertTimeFromDirectInput(peff->dwDuration)))
                 return DIERR_INVALIDPARAM;
         }
 
@@ -539,9 +540,9 @@ namespace Xidi
                     return DIERR_INVALIDPARAM;
 
                 const Controller::ForceFeedback::SEnvelope kNewEnvelope = {
-                    .attackTime = (Controller::ForceFeedback::TEffectTimeMs)(peff->lpEnvelope->dwAttackTime / 1000),
+                    .attackTime = ConvertTimeFromDirectInput(peff->lpEnvelope->dwAttackTime),
                     .attackLevel = (Controller::ForceFeedback::TEffectValue)peff->lpEnvelope->dwAttackLevel,
-                    .fadeTime = (Controller::ForceFeedback::TEffectTimeMs)(peff->lpEnvelope->dwFadeTime / 1000),
+                    .fadeTime = ConvertTimeFromDirectInput(peff->lpEnvelope->dwFadeTime),
                     .fadeLevel = (Controller::ForceFeedback::TEffectValue)peff->lpEnvelope->dwFadeLevel
                 };
 
@@ -558,7 +559,7 @@ namespace Xidi
 
         if (0 != (dwFlags & DIEP_SAMPLEPERIOD))
         {
-            if (false == updatedEffect->SetSamplePeriod((Controller::ForceFeedback::TEffectTimeMs)(peff->dwSamplePeriod / 1000)))
+            if (false == updatedEffect->SetSamplePeriod(ConvertTimeFromDirectInput(peff->dwSamplePeriod)))
                 return DIERR_INVALIDPARAM;
         }
 
@@ -769,7 +770,7 @@ namespace Xidi
             case sizeof(DIEFFECT) :
                 // These parameters are present in the new version of the structure but not in the old.
                 if (0 != (dwFlags & DIEP_STARTDELAY))
-                    peff->dwStartDelay = (DWORD)(effect->GetStartDelay() * 1000);
+                    peff->dwStartDelay = ConvertTimeToDirectInput(effect->GetStartDelay());
                 break;
 
             case sizeof(DIEFFECT_DX5):
@@ -904,7 +905,7 @@ namespace Xidi
             if (false == effect->HasDuration())
                 LOG_INVOCATION_AND_RETURN(DIERR_INVALIDPARAM, kMethodSeverity);
 
-            peff->dwDuration = (DWORD)(effect->GetDuration().value() * 1000);
+            peff->dwDuration = ConvertTimeToDirectInput(effect->GetDuration().value());
         }
 
         if (0 != (dwFlags & DIEP_ENVELOPE))
@@ -921,9 +922,9 @@ namespace Xidi
 
                 const Controller::ForceFeedback::SEnvelope kEnvelope = effect->GetEnvelope().value();
                 peff->lpEnvelope->dwAttackLevel = (DWORD)kEnvelope.attackLevel;
-                peff->lpEnvelope->dwAttackTime = (DWORD)(kEnvelope.attackTime * 1000);
+                peff->lpEnvelope->dwAttackTime = ConvertTimeToDirectInput(kEnvelope.attackTime);
                 peff->lpEnvelope->dwFadeLevel = (DWORD)kEnvelope.fadeLevel;
-                peff->lpEnvelope->dwFadeTime = (DWORD)(kEnvelope.fadeTime * 1000);
+                peff->lpEnvelope->dwFadeTime = ConvertTimeToDirectInput(kEnvelope.fadeTime);
             }
         }
 
@@ -931,10 +932,10 @@ namespace Xidi
             peff->dwGain = (DWORD)effect->GetGain();
 
         if (0 != (dwFlags & DIEP_SAMPLEPERIOD))
-            peff->dwSamplePeriod = (DWORD)(effect->GetSamplePeriod() * 1000);
+            peff->dwSamplePeriod = ConvertTimeToDirectInput(effect->GetSamplePeriod());
 
         if (0 != (dwFlags & DIEP_STARTDELAY))
-            peff->dwStartDelay = (DWORD)effect->GetStartDelay();
+            peff->dwStartDelay = ConvertTimeToDirectInput(effect->GetStartDelay());
 
         HRESULT typeSpecificParameterResult = DI_OK;
         if (0 != (dwFlags & DIEP_TYPESPECIFICPARAMS))

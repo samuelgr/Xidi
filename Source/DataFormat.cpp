@@ -219,30 +219,6 @@ namespace Xidi
         return std::nullopt;
     }
 
-    /// Returns a string representing the specified axis type.
-    /// @param [in] axis Axis type for which a string is requested.
-    /// @return String representation of the axis type.
-    static const wchar_t* AxisTypeString(Controller::EAxis axis)
-    {
-        switch (axis)
-        {
-        case Controller::EAxis::X:
-            return L"X";
-        case Controller::EAxis::Y:
-            return L"Y";
-        case Controller::EAxis::Z:
-            return L"Z";
-        case Controller::EAxis::RotX:
-            return L"RotX";
-        case Controller::EAxis::RotY:
-            return L"RotY";
-        case Controller::EAxis::RotZ:
-            return L"RotZ";
-        }
-
-        return L"(unrecognized axis)";
-    }
-
     /// Returns a string representing the specified data format flags value.
     /// @param [in] dwFlags Flags from the data format specification structure.
     /// @return String representation of the flag value.
@@ -498,7 +474,7 @@ namespace Xidi
 
                 // For debugging.
                 if (true == maybeSelectedElement.has_value())
-                    Message::OutputFormatted(Message::ESeverity::Debug, L"Object at index %d: Selected %s axis for offset %u.", (int)i, AxisTypeString(maybeSelectedElement.value().axis), objectFormatSpec.dwOfs);
+                    Message::OutputFormatted(Message::ESeverity::Debug, L"Object at index %d: Selected %s axis for offset %u.", (int)i, Strings::AxisTypeString(maybeSelectedElement.value().axis), objectFormatSpec.dwOfs);
 
                 break;
 

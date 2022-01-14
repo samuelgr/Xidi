@@ -45,6 +45,10 @@ namespace Xidi
             /// If no element mappers contribute to these axes then they will be continually reported as being in a neutral position.
             static constexpr BitSetEnum<EAxis> kRequiredAxes = {(int)EAxis::X, (int)EAxis::Y};
 
+            /// Set of axes that must be present on all virtual controllers and support force feedback.
+            /// If not mapped to a physical actuator, these axes will ignore all force feedback output.
+            static constexpr BitSetEnum<EAxis> kRequiredForceFeedbackAxes = kRequiredAxes;
+
             /// Minimum number of buttons that must be present on all virtual controllers.
             static constexpr int kMinNumButtons = 2;
 

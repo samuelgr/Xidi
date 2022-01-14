@@ -177,8 +177,7 @@ namespace Xidi
         struct SAxisCapabilities
         {
             EAxis type : 3;                                                 ///< Type of axis.
-            bool isMappedToPhysicalControllerElement : 1;                   ///< Whether or not the axis is mapped to a physical controller element for receiving input.
-            bool isMappedToForceFeedbackActuator : 1;                       ///< Whether or not the axis is mapped to a force feedback actuator for sending output.
+            bool supportsForceFeedback : 1;                                 ///< Whether or not the axis supports force feedback.
 
             /// Simple check for equality.
             /// Primarily useful during testing.
@@ -244,7 +243,7 @@ namespace Xidi
 
                 for (int i = 0; i < numAxes; ++i)
                 {
-                    if (true == axisCapabilities[i].isMappedToForceFeedbackActuator)
+                    if (true == axisCapabilities[i].supportsForceFeedback)
                         numForceFeedbackAxes += 1;
                 }
 
@@ -257,7 +256,7 @@ namespace Xidi
             {
                 for (int i = 0; i < numAxes; ++i)
                 {
-                    if (true == axisCapabilities[i].isMappedToForceFeedbackActuator)
+                    if (true == axisCapabilities[i].supportsForceFeedback)
                         return true;
                 }
 
@@ -272,7 +271,7 @@ namespace Xidi
                 for (int i = 0; i < numAxes; ++i)
                 {
                     if (axisCapabilities[i].type == axis)
-                        return axisCapabilities[i].isMappedToForceFeedbackActuator;
+                        return axisCapabilities[i].supportsForceFeedback;
                 }
 
                 return false;

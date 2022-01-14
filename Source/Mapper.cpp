@@ -80,14 +80,24 @@ namespace Xidi
 
                 if (Message::WillOutputMessageOfSeverity(kDumpSeverity))
                 {
-                    Message::Output(kDumpSeverity, L"Dump of all known mappers...");
+                    Message::Output(kDumpSeverity, L"Begin dump of all known mappers.");
                     
                     for (const auto& knownMapper : knownMappers)
                     {
                         const std::wstring_view kKnownMapperName = knownMapper.first;
                         const SCapabilities kKnownMapperCapabilities = knownMapper.second->GetCapabilities();
-                        Message::OutputFormatted(kDumpSeverity, L"    %-24s { numAxes = %u, numButtons = %u, hasPov = %s }", kKnownMapperName.data(), (unsigned int)kKnownMapperCapabilities.numAxes, (unsigned int)kKnownMapperCapabilities.numButtons, ((true == kKnownMapperCapabilities.hasPov) ? L"true" : L"false"));
+
+                        Message::OutputFormatted(kDumpSeverity, L"  %s:", kKnownMapperName.data());
+                        
+                        Message::OutputFormatted(kDumpSeverity, L"    numAxes = %u", (unsigned int)kKnownMapperCapabilities.numAxes);
+                        for (unsigned int i = 0; i < kKnownMapperCapabilities.numAxes; ++i)
+                            Message::OutputFormatted(kDumpSeverity, L"      axisCapabilities[%u] = { type = %s, supportsForceFeedback = %s }", i, Strings::AxisTypeString(kKnownMapperCapabilities.axisCapabilities[i].type), ((true == kKnownMapperCapabilities.axisCapabilities[i].supportsForceFeedback) ? L"true" : L"false"));
+
+                        Message::OutputFormatted(kDumpSeverity, L"    numButtons = %u", (unsigned int)kKnownMapperCapabilities.numButtons);
+                        Message::OutputFormatted(kDumpSeverity, L"    hasPov = %s", ((true == kKnownMapperCapabilities.hasPov) ? L"true" : L"false"));
                     }
+
+                    Message::Output(kDumpSeverity, L"End dump of all known mappers.");
                 }
             }
             
@@ -169,8 +179,7 @@ namespace Xidi
             ZeroMemory(&capabilities, sizeof(capabilities));
 
             BitSetEnum<EAxis> axesPresent = Mapper::kRequiredAxes;
-            BitSetEnum<EAxis> axesMappedToPhysicalControllerElement;
-            BitSetEnum<EAxis> axesMappedToForceFeedbackActuator;
+            BitSetEnum<EAxis> axesForceFeedback = Mapper::kRequiredForceFeedbackAxes;
 
             int highestButtonSeen = Mapper::kMinNumButtons - 1;
             bool povPresent = Mapper::kIsPovRequired;
@@ -190,10 +199,7 @@ namespace Xidi
                         {
                         case EElementType::Axis:
                             if ((int)targetElement.axis < (int)EAxis::Count)
-                            {
                                 axesPresent.insert((int)targetElement.axis);
-                                axesMappedToPhysicalControllerElement.insert((int)targetElement.axis);
-                            }
                             break;
 
                         case EElementType::Button:
@@ -217,7 +223,7 @@ namespace Xidi
                 if (true == forceFeedbackActuators.all[i].isPresent)
                 {
                     axesPresent.insert((int)forceFeedbackActuators.all[i].axis);
-                    axesMappedToForceFeedbackActuator.insert((int)forceFeedbackActuators.all[i].axis);
+                    axesForceFeedback.insert((int)forceFeedbackActuators.all[i].axis);
                 }
             }
 
@@ -225,8 +231,7 @@ namespace Xidi
                 capabilities.AppendAxis(
                     {
                         .type = (EAxis)((int)axisPresent),
-                        .isMappedToPhysicalControllerElement = axesMappedToPhysicalControllerElement.contains(axisPresent),
-                        .isMappedToForceFeedbackActuator = axesMappedToForceFeedbackActuator.contains(axisPresent)
+                        .supportsForceFeedback = axesForceFeedback.contains(axisPresent)
                     }
                 );
 

@@ -29,6 +29,14 @@ namespace Xidi
     /// @tparam charMode Selects between ASCII ("A" suffix) and Unicode ("W") suffix versions of types and interfaces.
     template <ECharMode charMode> class VirtualDirectInputEffect : public IDirectInputEffect
     {
+        // -------- CONSTANTS ------------------------------------------------------ //
+    public:
+
+        /// Scaling factor for converting between DirectInput force feedback effect time units and internal Xidi force feedback time units.
+        /// DirectInput expresses all times using microseconds, whereas Xidi uses milliseconds.
+        static constexpr DWORD kTimeScalingFactor = 1000;
+
+
     private:
         // -------- INSTANCE VARIABLES --------------------------------------------- //
 
@@ -57,6 +65,25 @@ namespace Xidi
     public:
         /// Default destructor.
         virtual ~VirtualDirectInputEffect(void);
+
+
+        // -------- CLASS METHODS -------------------------------------------------- //
+
+        /// Converts the specified time interval, represented in DirectInput units, to internal Xidi time units.
+        /// @param [in] diTime Amount of time, represented using DirectInput units.
+        /// @return Amount of time, represented using internal Xidi units.
+        static inline Controller::ForceFeedback::TEffectTimeMs ConvertTimeFromDirectInput(DWORD diTime)
+        {
+            return (Controller::ForceFeedback::TEffectTimeMs)(diTime / kTimeScalingFactor);
+        }
+
+        /// Converts the specified time interval, represented in internal Xidi time units, to DirectInput time units.
+        /// @param [in] effectTime Amount of time, represented using internal Xidi units.
+        /// @return Amount of time, represented using DirectInput units.
+        static inline DWORD ConvertTimeToDirectInput(Controller::ForceFeedback::TEffectTimeMs effectTime)
+        {
+            return (DWORD)effectTime * kTimeScalingFactor;
+        }
 
 
         // -------- INSTANCE METHODS ----------------------------------------------- //

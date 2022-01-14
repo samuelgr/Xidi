@@ -154,6 +154,11 @@ namespace Xidi
 
         // -------- FUNCTIONS ---------------------------------------------- //
 
+        /// Returns a string representing the specified axis type.
+        /// @param [in] axis Axis type for which a string is requested.
+        /// @return String representation of the axis type.
+        const wchar_t* AxisTypeString(Controller::EAxis axis);
+
         /// Formats a string and returns the result in a newly-allocated null-terminated temporary buffer.
         /// @param [in] format Format string, possibly with format specifiers which must be matched with the arguments that follow.
         /// @return Resulting string after all formatting is applied.

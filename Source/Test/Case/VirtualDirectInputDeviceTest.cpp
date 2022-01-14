@@ -221,7 +221,7 @@ namespace XidiTest
                 TEST_ASSERT(sizeof(*lpddoi) == lpddoi->dwSize);
                 TEST_ASSERT(DataFormat::kInvalidOffsetValue != lpddoi->dwOfs);
                 TEST_ASSERT(DIDFT_GETTYPE(lpddoi->dwType) == DIDFT_ABSAXIS);
-                TEST_ASSERT((DIDOI_ASPECTPOSITION) == lpddoi->dwFlags);
+                TEST_ASSERT(0 != (lpddoi->dwFlags & DIDOI_ASPECTPOSITION));
 
                 EAxis seenAxis;
                 if (GUID_XAxis == lpddoi->guidType)
@@ -448,11 +448,11 @@ namespace XidiTest
 
         const DIDEVCAPS kExpectedCapabilities = {
             .dwSize = sizeof(DIDEVCAPS),
-            .dwFlags = (DIDC_ATTACHED | DIDC_EMULATED),
+            .dwFlags = (DIDC_ATTACHED | DIDC_EMULATED | DIDC_FORCEFEEDBACK | DIDC_FFFADE | DIDC_FFATTACK | DIDC_STARTDELAY),
             .dwDevType = DINPUT_DEVTYPE_XINPUT_GAMEPAD,
             .dwAxes = kTestMapper.GetCapabilities().numAxes,
             .dwButtons = kTestMapper.GetCapabilities().numButtons,
-            .dwPOVs = (DWORD)((true == kTestMapper.GetCapabilities().hasPov) ? 1 : 0)
+            .dwPOVs = (DWORD)((true == kTestMapper.GetCapabilities().hasPov) ? 1 : 0),
         };
 
         DIDEVCAPS actualCapabilities;
@@ -460,7 +460,13 @@ namespace XidiTest
         actualCapabilities.dwSize = sizeof(DIDEVCAPS);
 
         TEST_ASSERT(DI_OK == diController.GetCapabilities(&actualCapabilities));
-        TEST_ASSERT(0 == memcmp(&actualCapabilities, &kExpectedCapabilities, sizeof(kExpectedCapabilities)));
+        TEST_ASSERT(0 == memcmp(&actualCapabilities, &kExpectedCapabilities, sizeof(DIDEVCAPS_DX3)));
+
+        TEST_ASSERT(0 != actualCapabilities.dwFFMinTimeResolution);
+        TEST_ASSERT(0 == (actualCapabilities.dwFFMinTimeResolution % VirtualDirectInputEffect<ECharMode::W>::kTimeScalingFactor));
+
+        TEST_ASSERT(0 != actualCapabilities.dwFFSamplePeriod);
+        TEST_ASSERT(0 == (actualCapabilities.dwFFSamplePeriod % VirtualDirectInputEffect<ECharMode::W>::kTimeScalingFactor));
     }
 
     // Same as above, except the structure is an older version which is supported for compatibility.
@@ -474,7 +480,7 @@ namespace XidiTest
         FillMemory(&expectedCapabilities, sizeof(expectedCapabilities), kPoisonByte);
         *((DIDEVCAPS_DX3*)&expectedCapabilities) = {
             .dwSize = sizeof(DIDEVCAPS_DX3),
-            .dwFlags = (DIDC_ATTACHED | DIDC_EMULATED),
+            .dwFlags = (DIDC_ATTACHED | DIDC_EMULATED | DIDC_FORCEFEEDBACK | DIDC_FFFADE | DIDC_FFATTACK | DIDC_STARTDELAY),
             .dwDevType = DINPUT_DEVTYPE_XINPUT_GAMEPAD,
             .dwAxes = kTestMapper.GetCapabilities().numAxes,
             .dwButtons = kTestMapper.GetCapabilities().numButtons,
@@ -1691,34 +1697,5 @@ namespace XidiTest
         TEST_ASSERT(false == forceFeedbackDevice->IsDeviceOutputMuted());
         TEST_ASSERT(DI_OK == diController.GetForceFeedbackState(&ffState));
         TEST_ASSERT(kDefaultFfState == ffState);
-    }
-
-    // Exercises all force feedback interface methods when a mapper is used that does not support force feedback by virtue of defining no actuators.
-    // Verifies that the return codes are all correct and match what DirectInput actually does.
-    // Expected return codes are not specifically documented but were obtained by manual experimentation.
-    TEST_CASE(VirtualDirectInputDevice_ForceFeedback_BehaviorWhenNotSupported)
-    {
-        VirtualDirectInputDevice<ECharMode::W> diController(CreateTestVirtualController());
-
-        // EnumEffects should return success but not enumerate anything.
-        TEST_ASSERT(DI_OK == diController.EnumEffects([](LPCDIEFFECTINFO pdei, LPVOID pvRef) -> BOOL
-            {
-                TEST_FAILED_BECAUSE(L"Unexpected invocation of the EnumEffects enumeration function.");
-                return DIENUM_CONTINUE;
-            },
-            nullptr, DIEFT_ALL)
-        );
-
-        // GetEffectInfo should indicate invalid parameter.
-        DIEFFECTINFO effectInfo = {};
-        TEST_ASSERT(DIERR_INVALIDPARAM == diController.GetEffectInfo(&effectInfo, GUID_ConstantForce));
-
-        // CreateEffect, GetForceFeedbackState, and SendForceFeedbackCommand should all indicate the operation is not implemented.
-        IDirectInputEffect* effect = nullptr;
-        TEST_ASSERT(DIERR_UNSUPPORTED == diController.CreateEffect(GUID_ConstantForce, nullptr, &effect, nullptr));
-        
-        DWORD ffState = 0;
-        TEST_ASSERT(DIERR_UNSUPPORTED == diController.GetForceFeedbackState(&ffState));
-        TEST_ASSERT(DIERR_UNSUPPORTED == diController.SendForceFeedbackCommand(DISFFC_RESET));
     }
 }

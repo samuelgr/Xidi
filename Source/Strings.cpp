@@ -396,6 +396,29 @@ namespace Xidi
         // -------- FUNCTIONS ---------------------------------------------- //
         // See "Strings.h" for documentation.
 
+        const wchar_t* AxisTypeString(Controller::EAxis axis)
+        {
+            switch (axis)
+            {
+            case Controller::EAxis::X:
+                return L"X";
+            case Controller::EAxis::Y:
+                return L"Y";
+            case Controller::EAxis::Z:
+                return L"Z";
+            case Controller::EAxis::RotX:
+                return L"RotX";
+            case Controller::EAxis::RotY:
+                return L"RotY";
+            case Controller::EAxis::RotZ:
+                return L"RotZ";
+            }
+
+            return L"?";
+        }
+
+        // --------
+
         TemporaryBuffer<wchar_t> FormatString(_Printf_format_string_ const wchar_t* format, ...)
         {
             TemporaryBuffer<wchar_t> buf;
