@@ -536,6 +536,16 @@ namespace Xidi
                 TEffectValue WaveformAmplitude(TEffectValue phase) const override;
                 std::unique_ptr<Effect> Clone(void) const override;
             };
+
+            /// Concrete implementation of a periodic effect for square waves.
+            class SquareWaveEffect : public PeriodicEffect
+            {
+            public:
+                // -------- CONCRETE INSTANCE METHODS ---------------------- //
+
+                TEffectValue WaveformAmplitude(TEffectValue phase) const override;
+                std::unique_ptr<Effect> Clone(void) const override;
+            };
         }
     }
 }

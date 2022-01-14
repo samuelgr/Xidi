@@ -81,9 +81,26 @@ namespace Xidi
 
             // --------
 
+            std::unique_ptr<Effect> SquareWaveEffect::Clone(void) const
+            {
+                return std::make_unique<SquareWaveEffect>(*this);
+            }
+
+            // --------
+
             TEffectValue SineWaveEffect::WaveformAmplitude(TEffectValue phase) const
             {
                 return TrigonometrySine(phase);
+            }
+
+            // --------
+
+            TEffectValue SquareWaveEffect::WaveformAmplitude(TEffectValue phase) const
+            {
+                if (phase < 18000)
+                    return 1;
+                else
+                    return -1;
             }
 
             // --------

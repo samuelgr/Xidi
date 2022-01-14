@@ -1155,7 +1155,7 @@ namespace XidiTest
     // Verifies that the GUIDs known to be supported are actually supported and objects with those GUIDs can be created.
     TEST_CASE(VirtualDirectInputDevice_ForceFeedback_CreateWithSupportedGuids)
     {
-        const GUID kExpectedSupportedGuids[] = {GUID_ConstantForce};
+        const GUID kExpectedSupportedGuids[] = {GUID_ConstantForce, GUID_Square, GUID_Sine};
 
         for (const auto& kExpectedSupportedGuid : kExpectedSupportedGuids)
         {
