@@ -17,6 +17,7 @@
 #include "ControllerTypes.h"
 #include "DataFormat.h"
 #include "Mapper.h"
+#include "MockPhysicalController.h"
 #include "TestCase.h"
 #include "VirtualDirectInputDevice.h"
 #include "VirtualDirectInputEffect.h"
@@ -140,11 +141,12 @@ namespace XidiTest
         return lastSequence;
     }
 
-    /// Creates and returns a virtual controller object that uses the test mapper at the top of this file.
+    /// Creates and returns a virtual controller object that by default uses the test mapper at the top of this file.
+    /// @param [in] mapper Read-only reference to the mapper object to use, defaults to the test mapper at the top of this file.
     /// @return Smart pointer to the new virtual controller object.
-    static inline std::unique_ptr<VirtualController> CreateTestVirtualController(void)
+    static inline std::unique_ptr<VirtualController> CreateTestVirtualController(const Mapper& mapper = kTestMapper)
     {
-        return std::make_unique<VirtualController>(kTestControllerIdentifier, kTestMapper);
+        return std::make_unique<VirtualController>(kTestControllerIdentifier, mapper);
     }
 
 
@@ -1118,11 +1120,11 @@ namespace XidiTest
     }
 
 
-    // The following sequence of tests, which together comprise the EffectInfo suite, exercise the DirectInputDevice interface methods that involve force feedback effects.
+    // The following sequence of tests, which together comprise the ForceFeedback suite, exercise the DirectInputDevice interface methods that involve force feedback.
     // Scopes are highly varied, so more details are provided with each test case.
 
     // Verifies that the GUIDs known to be supported are actually supported and objects with those GUIDs can be created.
-    TEST_CASE(VirtualDirectInputDevice_ForceFeedbackEffect_CreateWithSupportedGuids)
+    TEST_CASE(VirtualDirectInputDevice_ForceFeedback_CreateWithSupportedGuids)
     {
         const GUID kExpectedSupportedGuids[] = {GUID_ConstantForce};
 
@@ -1147,7 +1149,7 @@ namespace XidiTest
     }
 
     // Enumerates all effects and verifies correct common information is provided, like type flags and parameter support.
-    TEST_CASE(VirtualDirectInputDevice_ForceFeedbackEffect_EnumAll)
+    TEST_CASE(VirtualDirectInputDevice_ForceFeedback_EnumAll)
     {
         const std::set<GUID> kExpectedSeenGuids = {GUID_ConstantForce, GUID_RampForce, GUID_Square, GUID_Sine, GUID_Triangle, GUID_SawtoothUp, GUID_SawtoothDown, GUID_CustomForce};
         std::set<GUID> actualSeenGuids;
@@ -1185,7 +1187,7 @@ namespace XidiTest
     }
 
     // Enumerates all effects and verifies information is identical to that provided by the GetEffectInfo method.
-    TEST_CASE(VirtualDirectInputDevice_ForceFeedbackEffect_GetInfoAll)
+    TEST_CASE(VirtualDirectInputDevice_ForceFeedback_GetInfoAll)
     {
         VirtualDirectInputDevice<ECharMode::W> diController(CreateTestVirtualController());
         TEST_ASSERT(DI_OK == diController.EnumEffects([](LPCDIEFFECTINFO pdei, LPVOID pvRef) -> BOOL
@@ -1204,7 +1206,7 @@ namespace XidiTest
     }
 
     // Attempts to get information on an effect using an unsupported GUID. The attempted operation is expected to fail.
-    TEST_CASE(VirtualDirectInputDevice_ForceFeedbackEffect_GetInfoUnsupported)
+    TEST_CASE(VirtualDirectInputDevice_ForceFeedback_GetInfoUnsupported)
     {
         VirtualDirectInputDevice<ECharMode::W> diController(CreateTestVirtualController());
         DIEFFECTINFO effectInfo = {.dwSize = sizeof(DIEFFECTINFO)};
@@ -1212,7 +1214,7 @@ namespace XidiTest
     }
 
     // Enumerates constant force effects only and verifies correct information is provided.
-    TEST_CASE(VirtualDirectInputDevice_ForceFeedbackEffect_EnumConstantForce)
+    TEST_CASE(VirtualDirectInputDevice_ForceFeedback_EnumConstantForce)
     {
         const std::set<GUID> kExpectedSeenGuids = {GUID_ConstantForce};
         std::set<GUID> actualSeenGuids;
@@ -1247,7 +1249,7 @@ namespace XidiTest
     }
 
     // Enumerates ramp force effects only and verifies correct information is provided.
-    TEST_CASE(VirtualDirectInputDevice_ForceFeedbackEffect_EnumRampForce)
+    TEST_CASE(VirtualDirectInputDevice_ForceFeedback_EnumRampForce)
     {
         const std::set<GUID> kExpectedSeenGuids = {GUID_RampForce};
         std::set<GUID> actualSeenGuids;
@@ -1282,7 +1284,7 @@ namespace XidiTest
     }
 
     // Enumerates periodic force effects only and verifies correct information is provided.
-    TEST_CASE(VirtualDirectInputDevice_ForceFeedbackEffect_EnumPeriodic)
+    TEST_CASE(VirtualDirectInputDevice_ForceFeedback_EnumPeriodic)
     {
         const std::set<GUID> kExpectedSeenGuids = {GUID_Square, GUID_Sine, GUID_Triangle, GUID_SawtoothUp, GUID_SawtoothDown};
         std::set<GUID> actualSeenGuids;
@@ -1317,7 +1319,7 @@ namespace XidiTest
     }
 
     // Enumerates custom force effects only and verifies correct information is provided.
-    TEST_CASE(VirtualDirectInputDevice_ForceFeedbackEffect_EnumCustomForce)
+    TEST_CASE(VirtualDirectInputDevice_ForceFeedback_EnumCustomForce)
     {
         const std::set<GUID> kExpectedSeenGuids = {GUID_CustomForce};
         std::set<GUID> actualSeenGuids;
@@ -1352,14 +1354,14 @@ namespace XidiTest
     }
 
     // Attempts to enumerate unsupported types of effects, which should result in no calls to the enumeration callback.
-    TEST_CASE(VirtualDirectInputDevice_ForceFeedbackEffect_EnumNone)
+    TEST_CASE(VirtualDirectInputDevice_ForceFeedback_EnumNone)
     {
         constexpr DWORD kExpectedEffectType = DIEFT_STARTDELAY;
 
         VirtualDirectInputDevice<ECharMode::W> diController(CreateTestVirtualController());
         TEST_ASSERT(DI_OK == diController.EnumEffects([](LPCDIEFFECTINFO pdei, LPVOID pvRef) -> BOOL
             {
-                TEST_FAILED_BECAUSE(L"Unexpected invocation of enumeration function.");
+                TEST_FAILED_BECAUSE(L"Unexpected invocation of the EnumEffects enumeration function.");
                 return DIENUM_CONTINUE;
             },
             nullptr, kExpectedEffectType)
@@ -1367,7 +1369,7 @@ namespace XidiTest
     }
 
     // Creates several effects and attempts to enumerate them all.
-    TEST_CASE(VirtualDirectInputDevice_ForceFeedbackEffect_EnumCreated)
+    TEST_CASE(VirtualDirectInputDevice_ForceFeedback_EnumCreated)
     {
         constexpr int kNumTestEffects = 10;
         std::set<IDirectInputEffect*> expectedSeenEffects;
@@ -1398,7 +1400,7 @@ namespace XidiTest
     }
 
     // Creates several effects and attempts to enumerate them all, but stops enumeration after the first effect.
-    TEST_CASE(VirtualDirectInputDevice_ForceFeedbackEffect_EnumCreatedAndStop)
+    TEST_CASE(VirtualDirectInputDevice_ForceFeedback_EnumCreatedAndStop)
     {
         constexpr int kNumTestEffects = 10;
         std::set<IDirectInputEffect*> expectedSeenEffects;
@@ -1422,7 +1424,7 @@ namespace XidiTest
                 std::set<IDirectInputEffect*>& seenEffects = *((std::set<IDirectInputEffect*>*)pvRef);
 
                 if (false == seenEffects.empty())
-                    TEST_FAILED_BECAUSE(L"Unexpected invocation of enumeration function.");
+                    TEST_FAILED_BECAUSE(L"Unexpected invocation of the EnumCreatedEffectObjects enumeration function.");
 
                 seenEffects.insert(peff);
                 return DIENUM_STOP;
@@ -1434,7 +1436,7 @@ namespace XidiTest
     }
 
     // Creates several effects, destroys some of them, and attempts to enumerate the remainder.
-    TEST_CASE(VirtualDirectInputDevice_ForceFeedbackEffect_DestroyThenEnumCreated)
+    TEST_CASE(VirtualDirectInputDevice_ForceFeedback_DestroyThenEnumCreated)
     {
         constexpr int kNumTestEffects = 10;
         std::set<IDirectInputEffect*> expectedSeenEffects;
@@ -1469,7 +1471,7 @@ namespace XidiTest
 
     // Creates several effects, attempts to enumerate them all, and destroys each during the enumeration callback.
     // DirectInput documentation explicitly states that this behavior is permitted.
-    TEST_CASE(VirtualDirectInputDevice_ForceFeedbackEffect_EnumCreatedAndDestroy)
+    TEST_CASE(VirtualDirectInputDevice_ForceFeedback_EnumCreatedAndDestroy)
     {
         constexpr int kNumTestEffects = 10;
         std::set<IDirectInputEffect*> expectedSeenEffects;
@@ -1503,9 +1505,132 @@ namespace XidiTest
 
         TEST_ASSERT(DI_OK == diController.EnumCreatedEffectObjects([](LPDIRECTINPUTEFFECT peff, LPVOID pvRef) -> BOOL
             {
-                TEST_FAILED_BECAUSE(L"Unexpected invocation of enumeration function.");
+                TEST_FAILED_BECAUSE(L"Unexpected invocation of the EnumCreatedEffectObjects enumeration function.");
                 return DIENUM_CONTINUE;
             },
             nullptr, 0));
+    }
+
+    // Exercises device acquisition in exclusive mode.
+    TEST_CASE(VirtualDirectInputDevice_ForceFeedback_AcquireExclusively)
+    {
+        constexpr SPhysicalState kPhysicalState = {.errorCode = ERROR_SUCCESS, .state = {.dwPacketNumber = 1}};
+
+        MockPhysicalController physicalController(kTestControllerIdentifier, &kPhysicalState, 1);
+        Controller::ForceFeedback::Device* const forceFeedbackDevice = &physicalController.GetForceFeedbackDevice();
+
+        VirtualDirectInputDevice<ECharMode::W> diController(CreateTestVirtualController());
+        TEST_ASSERT(DI_OK == diController.SetDataFormat(&kTestFormatSpec));
+
+        // Non-exclusive acquisition.
+        // Should not cause a force feedback registration operation.
+        TEST_ASSERT(DI_OK == diController.Acquire());
+        TEST_ASSERT(false == diController.GetVirtualController().ForceFeedbackIsRegistered());
+
+        // Exclusive acquisition.
+        // Expected to cause the virtual controller to register with its physical controller for force feedback.
+        TEST_ASSERT(DI_OK == diController.Unacquire());
+        TEST_ASSERT(DI_OK == diController.SetCooperativeLevel(nullptr, DISCL_EXCLUSIVE | DISCL_FOREGROUND));
+        TEST_ASSERT(DI_OK == diController.Acquire());
+        TEST_ASSERT(true == diController.GetVirtualController().ForceFeedbackIsRegistered());
+        TEST_ASSERT(forceFeedbackDevice == diController.GetVirtualController().ForceFeedbackGetDevice());
+    }
+
+    // Exercises GetForceFeedbackState and SendForceFeedbackCommand with various parameters and expected state changes for the force feedback device.
+    TEST_CASE(VirtualDirectInputDevice_ForceFeedback_DeviceControl)
+    {
+        constexpr SPhysicalState kPhysicalState = {.errorCode = ERROR_SUCCESS, .state = {.dwPacketNumber = 1}};
+
+        MockPhysicalController physicalController(kTestControllerIdentifier, &kPhysicalState, 1);
+        Controller::ForceFeedback::Device* const forceFeedbackDevice = &physicalController.GetForceFeedbackDevice();
+
+        VirtualDirectInputDevice<ECharMode::W> diController(CreateTestVirtualController());
+        TEST_ASSERT(DI_OK == diController.SetDataFormat(&kTestFormatSpec));
+
+        DWORD ffState = 0;
+        constexpr DWORD kDefaultFfState = (DIGFFS_POWERON | DIGFFS_ACTUATORSON | DIGFFS_EMPTY);
+
+        // Non-exclusive acquisition.
+        // Accessing or changing device state should fail.
+        TEST_ASSERT(DI_OK == diController.Acquire());
+
+        TEST_ASSERT(DIERR_NOTEXCLUSIVEACQUIRED == diController.GetForceFeedbackState(&ffState));
+        TEST_ASSERT(0 == ffState);
+        TEST_ASSERT(DIERR_NOTEXCLUSIVEACQUIRED == diController.SendForceFeedbackCommand(DISFFC_RESET));
+
+        // Exclusive acquisition.
+        // Accessing or changing device state should succeed.
+        TEST_ASSERT(DI_OK == diController.Unacquire());
+        TEST_ASSERT(DI_OK == diController.SetCooperativeLevel(nullptr, DISCL_EXCLUSIVE | DISCL_FOREGROUND));
+        TEST_ASSERT(DI_OK == diController.Acquire());
+
+        // Device should be in default state, neither paused nor muted.
+        TEST_ASSERT(false == forceFeedbackDevice->IsDeviceOutputPaused());
+        TEST_ASSERT(false == forceFeedbackDevice->IsDeviceOutputMuted());
+        TEST_ASSERT(DI_OK == diController.GetForceFeedbackState(&ffState));
+        TEST_ASSERT(kDefaultFfState == ffState);
+
+        // Pause the device. It should end up in paused state.
+        constexpr DWORD kPausedFfState = (DIGFFS_POWERON | DIGFFS_ACTUATORSON | DIGFFS_EMPTY | DIGFFS_PAUSED);
+        TEST_ASSERT(DI_OK == diController.SendForceFeedbackCommand(DISFFC_PAUSE));
+        TEST_ASSERT(true == forceFeedbackDevice->IsDeviceOutputPaused());
+        TEST_ASSERT(false == forceFeedbackDevice->IsDeviceOutputMuted());
+        TEST_ASSERT(DI_OK == diController.GetForceFeedbackState(&ffState));
+        TEST_ASSERT(kPausedFfState == ffState);
+
+        // Mute the device. It should end up in paused and muted state.
+        constexpr DWORD kMutedAndPausedFfState = (DIGFFS_POWERON | DIGFFS_ACTUATORSOFF | DIGFFS_EMPTY | DIGFFS_PAUSED);
+        TEST_ASSERT(DI_OK == diController.SendForceFeedbackCommand(DISFFC_SETACTUATORSOFF));
+        TEST_ASSERT(true == forceFeedbackDevice->IsDeviceOutputPaused());
+        TEST_ASSERT(true == forceFeedbackDevice->IsDeviceOutputMuted());
+        TEST_ASSERT(DI_OK == diController.GetForceFeedbackState(&ffState));
+        TEST_ASSERT(kMutedAndPausedFfState == ffState);
+
+        // Resume the device. It should end up in muted state.
+        constexpr DWORD kMutedFfState = (DIGFFS_POWERON | DIGFFS_ACTUATORSOFF | DIGFFS_EMPTY);
+        TEST_ASSERT(DI_OK == diController.SendForceFeedbackCommand(DISFFC_CONTINUE));
+        TEST_ASSERT(false == forceFeedbackDevice->IsDeviceOutputPaused());
+        TEST_ASSERT(true == forceFeedbackDevice->IsDeviceOutputMuted());
+        TEST_ASSERT(DI_OK == diController.GetForceFeedbackState(&ffState));
+        TEST_ASSERT(kMutedFfState == ffState);
+
+        // Reset the device. It should end up in default state.
+        TEST_ASSERT(DI_OK == diController.SendForceFeedbackCommand(DISFFC_RESET));
+        TEST_ASSERT(false == forceFeedbackDevice->IsDeviceOutputPaused());
+        TEST_ASSERT(false == forceFeedbackDevice->IsDeviceOutputMuted());
+        TEST_ASSERT(DI_OK == diController.GetForceFeedbackState(&ffState));
+        TEST_ASSERT(kDefaultFfState == ffState);
+    }
+
+    // Exercises all force feedback interface methods when a mapper is used that does not support force feedback by virtue of defining no actuators.
+    // Verifies that the return codes are all correct and match what DirectInput actually does.
+    // Expected return codes are not specifically documented but were obtained by manual experimentation.
+    TEST_CASE(VirtualDirectInputDevice_ForceFeedback_BehaviorWhenNotSupported)
+    {
+        const Mapper kTestMapperNoForceFeedback(kTestMapper.CloneElementMap().named);
+        TEST_ASSERT(false == kTestMapperNoForceFeedback.GetCapabilities().ForceFeedbackIsSupported());
+
+        VirtualDirectInputDevice<ECharMode::W> diController(CreateTestVirtualController(kTestMapperNoForceFeedback));
+
+        // EnumEffects should return success but not enumerate anything.
+        TEST_ASSERT(DI_OK == diController.EnumEffects([](LPCDIEFFECTINFO pdei, LPVOID pvRef) -> BOOL
+            {
+                TEST_FAILED_BECAUSE(L"Unexpected invocation of the EnumEffects enumeration function.");
+                return DIENUM_CONTINUE;
+            },
+            nullptr, DIEFT_ALL)
+        );
+
+        // GetEffectInfo should indicate invalid parameter.
+        DIEFFECTINFO effectInfo = {};
+        TEST_ASSERT(DIERR_INVALIDPARAM == diController.GetEffectInfo(&effectInfo, GUID_ConstantForce));
+
+        // CreateEffect, GetForceFeedbackState, and SendForceFeedbackCommand should all indicate the operation is not implemented.
+        IDirectInputEffect* effect = nullptr;
+        TEST_ASSERT(DIERR_UNSUPPORTED == diController.CreateEffect(GUID_ConstantForce, nullptr, &effect, nullptr));
+        
+        DWORD ffState = 0;
+        TEST_ASSERT(DIERR_UNSUPPORTED == diController.GetForceFeedbackState(&ffState));
+        TEST_ASSERT(DIERR_UNSUPPORTED == diController.SendForceFeedbackCommand(DISFFC_RESET));
     }
 }

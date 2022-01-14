@@ -868,7 +868,7 @@ namespace Xidi
         if (false == controller->GetCapabilities().ForceFeedbackIsSupported())
         {
             Message::OutputFormatted(Message::ESeverity::Warning, L"Application is attempting to create an effect on Xidi virtual controller %u which does not support force feedback.", (1 + controller->GetIdentifier()));
-            LOG_INVOCATION_AND_RETURN(DIERR_INVALIDPARAM, kMethodSeverity);
+            LOG_INVOCATION_AND_RETURN(DIERR_UNSUPPORTED, kMethodSeverity);
         }
 
         if (nullptr != punkOuter)
@@ -918,14 +918,14 @@ namespace Xidi
     {
         constexpr Message::ESeverity kMethodSeverity = Message::ESeverity::Info;
 
+        if ((nullptr == lpCallback) || (0 != fl))
+            LOG_INVOCATION_AND_RETURN(DIERR_INVALIDPARAM, kMethodSeverity);
+
         if (false == controller->GetCapabilities().ForceFeedbackIsSupported())
         {
             Message::OutputFormatted(Message::ESeverity::Warning, L"Application is attempting to enumerate created effect objects on Xidi virtual controller %u which does not support force feedback.", (1 + controller->GetIdentifier()));
-            LOG_INVOCATION_AND_RETURN(DIERR_INVALIDPARAM, kMethodSeverity);
+            LOG_INVOCATION_AND_RETURN(DI_OK, kMethodSeverity);
         }
-
-        if ((nullptr == lpCallback) || (0 != fl))
-            LOG_INVOCATION_AND_RETURN(DIERR_INVALIDPARAM, kMethodSeverity);
 
         // The loop needs to be structured this way because applications are allowed to destroy the specific effect that is passed in to the callback function during the callback function invocation.
         // Destroying a container element invalidates its iterator, so at all times it is necessary to maintain a valid iterator for the effect after the one being passed into the callback function.
@@ -959,7 +959,7 @@ namespace Xidi
         if (false == controller->GetCapabilities().ForceFeedbackIsSupported())
         {
             Message::OutputFormatted(Message::ESeverity::Warning, L"Application is attempting to enumerate effects on Xidi virtual controller %u which does not support force feedback.", (1 + controller->GetIdentifier()));
-            LOG_INVOCATION_AND_RETURN(DIERR_INVALIDPARAM, kMethodSeverity);
+            LOG_INVOCATION_AND_RETURN(DI_OK, kMethodSeverity);
         }
 
         const bool kWillEnumerateConstantForce = ((DIEFT_ALL == dwEffType) || (DIEFT_CONSTANTFORCE == DIEFT_GETTYPE(dwEffType)));
@@ -976,19 +976,19 @@ namespace Xidi
                 const GUID* kEffectGuids[] = {&GUID_ConstantForce};
                 for (const auto kEffectGuid : kEffectGuids)
                 {
-                    if (false == ForceFeedbackEffectCanCreateObject(*kEffectGuid))
-                        continue;
-
-                    *effectDescriptor = {.dwSize = sizeof(*effectDescriptor), .guid = *kEffectGuid, .dwEffType = ForceFeedbackEffectType(*kEffectGuid).value()};
-                    FillForceFeedbackEffectInfo<charMode>(effectDescriptor.get());
-                    switch (lpCallback(effectDescriptor.get(), pvRef))
+                    if (true == ForceFeedbackEffectCanCreateObject(*kEffectGuid))
                     {
-                    case DIENUM_CONTINUE:
-                        break;
-                    case DIENUM_STOP:
-                        LOG_INVOCATION_AND_RETURN(DI_OK, kMethodSeverity);
-                    default:
-                        LOG_INVOCATION_AND_RETURN(DIERR_INVALIDPARAM, kMethodSeverity);
+                        *effectDescriptor = {.dwSize = sizeof(*effectDescriptor), .guid = *kEffectGuid, .dwEffType = ForceFeedbackEffectType(*kEffectGuid).value()};
+                        FillForceFeedbackEffectInfo<charMode>(effectDescriptor.get());
+                        switch (lpCallback(effectDescriptor.get(), pvRef))
+                        {
+                        case DIENUM_CONTINUE:
+                            break;
+                        case DIENUM_STOP:
+                            LOG_INVOCATION_AND_RETURN(DI_OK, kMethodSeverity);
+                        default:
+                            LOG_INVOCATION_AND_RETURN(DIERR_INVALIDPARAM, kMethodSeverity);
+                        }
                     }
                 }
             }
@@ -998,19 +998,19 @@ namespace Xidi
                 const GUID* kEffectGuids[] = {&GUID_RampForce};
                 for (const auto kEffectGuid : kEffectGuids)
                 {
-                    if (false == ForceFeedbackEffectCanCreateObject(*kEffectGuid))
-                        continue;
-
-                    *effectDescriptor = {.dwSize = sizeof(*effectDescriptor), .guid = *kEffectGuid, .dwEffType = ForceFeedbackEffectType(*kEffectGuid).value()};
-                    FillForceFeedbackEffectInfo<charMode>(effectDescriptor.get());
-                    switch (lpCallback(effectDescriptor.get(), pvRef))
+                    if (true == ForceFeedbackEffectCanCreateObject(*kEffectGuid))
                     {
-                    case DIENUM_CONTINUE:
-                        break;
-                    case DIENUM_STOP:
-                        LOG_INVOCATION_AND_RETURN(DI_OK, kMethodSeverity);
-                    default:
-                        LOG_INVOCATION_AND_RETURN(DIERR_INVALIDPARAM, kMethodSeverity);
+                        *effectDescriptor = {.dwSize = sizeof(*effectDescriptor), .guid = *kEffectGuid, .dwEffType = ForceFeedbackEffectType(*kEffectGuid).value()};
+                        FillForceFeedbackEffectInfo<charMode>(effectDescriptor.get());
+                        switch (lpCallback(effectDescriptor.get(), pvRef))
+                        {
+                        case DIENUM_CONTINUE:
+                            break;
+                        case DIENUM_STOP:
+                            LOG_INVOCATION_AND_RETURN(DI_OK, kMethodSeverity);
+                        default:
+                            LOG_INVOCATION_AND_RETURN(DIERR_INVALIDPARAM, kMethodSeverity);
+                        }
                     }
                 }
             }
@@ -1020,19 +1020,19 @@ namespace Xidi
                 const GUID* kEffectGuids[] = {&GUID_Square, &GUID_Sine, &GUID_Triangle, &GUID_SawtoothUp, &GUID_SawtoothDown};
                 for (const auto kEffectGuid : kEffectGuids)
                 {
-                    if (false == ForceFeedbackEffectCanCreateObject(*kEffectGuid))
-                        continue;
-
-                    *effectDescriptor = {.dwSize = sizeof(*effectDescriptor), .guid = *kEffectGuid, .dwEffType = ForceFeedbackEffectType(*kEffectGuid).value()};
-                    FillForceFeedbackEffectInfo<charMode>(effectDescriptor.get());
-                    switch (lpCallback(effectDescriptor.get(), pvRef))
+                    if (true == ForceFeedbackEffectCanCreateObject(*kEffectGuid))
                     {
-                    case DIENUM_CONTINUE:
-                        break;
-                    case DIENUM_STOP:
-                        LOG_INVOCATION_AND_RETURN(DI_OK, kMethodSeverity);
-                    default:
-                        LOG_INVOCATION_AND_RETURN(DIERR_INVALIDPARAM, kMethodSeverity);
+                        *effectDescriptor = {.dwSize = sizeof(*effectDescriptor), .guid = *kEffectGuid, .dwEffType = ForceFeedbackEffectType(*kEffectGuid).value()};
+                        FillForceFeedbackEffectInfo<charMode>(effectDescriptor.get());
+                        switch (lpCallback(effectDescriptor.get(), pvRef))
+                        {
+                        case DIENUM_CONTINUE:
+                            break;
+                        case DIENUM_STOP:
+                            LOG_INVOCATION_AND_RETURN(DI_OK, kMethodSeverity);
+                        default:
+                            LOG_INVOCATION_AND_RETURN(DIERR_INVALIDPARAM, kMethodSeverity);
+                        }
                     }
                 }
             }
@@ -1042,19 +1042,19 @@ namespace Xidi
                 const GUID* kEffectGuids[] = {&GUID_CustomForce};
                 for (const auto kEffectGuid : kEffectGuids)
                 {
-                    if (false == ForceFeedbackEffectCanCreateObject(*kEffectGuid))
-                        continue;
-
-                    *effectDescriptor = {.dwSize = sizeof(*effectDescriptor), .guid = *kEffectGuid, .dwEffType = ForceFeedbackEffectType(*kEffectGuid).value()};
-                    FillForceFeedbackEffectInfo<charMode>(effectDescriptor.get());
-                    switch (lpCallback(effectDescriptor.get(), pvRef))
+                    if (true == ForceFeedbackEffectCanCreateObject(*kEffectGuid))
                     {
-                    case DIENUM_CONTINUE:
-                        break;
-                    case DIENUM_STOP:
-                        LOG_INVOCATION_AND_RETURN(DI_OK, kMethodSeverity);
-                    default:
-                        LOG_INVOCATION_AND_RETURN(DIERR_INVALIDPARAM, kMethodSeverity);
+                        *effectDescriptor = {.dwSize = sizeof(*effectDescriptor), .guid = *kEffectGuid, .dwEffType = ForceFeedbackEffectType(*kEffectGuid).value()};
+                        FillForceFeedbackEffectInfo<charMode>(effectDescriptor.get());
+                        switch (lpCallback(effectDescriptor.get(), pvRef))
+                        {
+                        case DIENUM_CONTINUE:
+                            break;
+                        case DIENUM_STOP:
+                            LOG_INVOCATION_AND_RETURN(DI_OK, kMethodSeverity);
+                        default:
+                            LOG_INVOCATION_AND_RETURN(DIERR_INVALIDPARAM, kMethodSeverity);
+                        }
                     }
                 }
             }
@@ -1323,7 +1323,7 @@ namespace Xidi
         if (false == controller->GetCapabilities().ForceFeedbackIsSupported())
         {
             Message::OutputFormatted(Message::ESeverity::Warning, L"Application is attempting to get force feedback effect information on Xidi virtual controller %u which does not support force feedback.", (1 + controller->GetIdentifier()));
-            LOG_INVOCATION_AND_RETURN(E_POINTER, kMethodSeverity);
+            LOG_INVOCATION_AND_RETURN(DIERR_INVALIDPARAM, kMethodSeverity);
         }
 
         if (nullptr == pdei)
@@ -1352,7 +1352,7 @@ namespace Xidi
         if (false == controller->GetCapabilities().ForceFeedbackIsSupported())
         {
             Message::OutputFormatted(Message::ESeverity::Warning, L"Application is attempting to get force feedback state on Xidi virtual controller %u which does not support force feedback.", (1 + controller->GetIdentifier()));
-            LOG_INVOCATION_AND_RETURN(DIERR_INVALIDPARAM, kMethodSeverity);
+            LOG_INVOCATION_AND_RETURN(DIERR_UNSUPPORTED, kMethodSeverity);
         }
 
         if (nullptr == pdwOut)
@@ -1565,7 +1565,7 @@ namespace Xidi
         if (false == controller->GetCapabilities().ForceFeedbackIsSupported())
         {
             Message::OutputFormatted(Message::ESeverity::Warning, L"Application is attempting to send a force feedback command on Xidi virtual controller %u which does not support force feedback.", (1 + controller->GetIdentifier()));
-            LOG_INVOCATION_AND_RETURN(DIERR_INVALIDPARAM, kMethodSeverity);
+            LOG_INVOCATION_AND_RETURN(DIERR_UNSUPPORTED, kMethodSeverity);
         }
 
         if (false == controller->ForceFeedbackIsRegistered())
@@ -1600,7 +1600,7 @@ namespace Xidi
             break;
 
         default:
-            LOG_INVOCATION_AND_RETURN(DIERR_INVALIDPARAM, kMethodSeverity);
+            LOG_INVOCATION_AND_RETURN(DIERR_UNSUPPORTED, kMethodSeverity);
         }
 
         LOG_INVOCATION_AND_RETURN(DI_OK, kMethodSeverity);
