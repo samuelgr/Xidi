@@ -1148,6 +1148,74 @@ namespace XidiTest
         }
     }
 
+    // Acquires a device in exclusive mode, creates an effect using a known GUID, and sets the effect's parameters at creation time.
+    // The effect should automatically be downloaded.
+    TEST_CASE(VirtualDirectInputDevice_ForceFeedback_CreateAndDownload)
+    {
+        constexpr SPhysicalState kPhysicalState = {.errorCode = ERROR_SUCCESS, .state = {.dwPacketNumber = 1}};
+
+        MockPhysicalController physicalController(kTestControllerIdentifier, &kPhysicalState, 1);
+        Controller::ForceFeedback::Device* const forceFeedbackDevice = &physicalController.GetForceFeedbackDevice();
+
+        VirtualDirectInputDevice<ECharMode::W> diController(CreateTestVirtualController());
+        TEST_ASSERT(DI_OK == diController.SetDataFormat(&kTestFormatSpec));
+        TEST_ASSERT(DI_OK == diController.SetCooperativeLevel(nullptr, DISCL_EXCLUSIVE | DISCL_FOREGROUND));
+        TEST_ASSERT(DI_OK == diController.Acquire());
+
+        DWORD axes[] = {offsetof(STestDataPacket, axisX), offsetof(STestDataPacket, axisY)};
+        LONG directionCartesian[] = {1, 1};
+        DICONSTANTFORCE constantForceParams = {.lMagnitude = 5000};
+
+        const DIEFFECT kParameters = {
+            .dwSize = sizeof(DIEFFECT),
+            .dwFlags = (DIEFF_CARTESIAN | DIEFF_OBJECTOFFSETS),
+            .dwDuration = 1000000,
+            .cAxes = 2,
+            .rgdwAxes = axes,
+            .rglDirection = directionCartesian,
+            .cbTypeSpecificParams = sizeof(DICONSTANTFORCE),
+            .lpvTypeSpecificParams = (LPVOID)&constantForceParams
+        };
+
+        VirtualDirectInputEffect<ECharMode::W>* diEffect = nullptr;
+        TEST_ASSERT(DI_OK == diController.CreateEffect(GUID_ConstantForce, &kParameters, (LPDIRECTINPUTEFFECT*)&diEffect, nullptr));
+        TEST_ASSERT(true == forceFeedbackDevice->IsEffectOnDevice(diEffect->UnderlyingEffect().Identifier()));
+    }
+
+    // Acquires a device in non-exclusive mode, creates an effect using a known GUID, and sets the effect's parameters at creation time.
+    // The effect should be created but not downloaded.
+    TEST_CASE(VirtualDirectInputDevice_ForceFeedback_CreateWithoutDownload)
+    {
+        constexpr SPhysicalState kPhysicalState = {.errorCode = ERROR_SUCCESS, .state = {.dwPacketNumber = 1}};
+
+        MockPhysicalController physicalController(kTestControllerIdentifier, &kPhysicalState, 1);
+        Controller::ForceFeedback::Device* const forceFeedbackDevice = &physicalController.GetForceFeedbackDevice();
+
+        VirtualDirectInputDevice<ECharMode::W> diController(CreateTestVirtualController());
+        TEST_ASSERT(DI_OK == diController.SetDataFormat(&kTestFormatSpec));
+        TEST_ASSERT(DI_OK == diController.SetCooperativeLevel(nullptr, DISCL_NONEXCLUSIVE | DISCL_FOREGROUND));
+        TEST_ASSERT(DI_OK == diController.Acquire());
+
+        DWORD axes[] = {offsetof(STestDataPacket, axisX), offsetof(STestDataPacket, axisY)};
+        LONG directionCartesian[] = {1, 1};
+        DICONSTANTFORCE constantForceParams = {.lMagnitude = 5000};
+
+        const DIEFFECT kParameters = {
+            .dwSize = sizeof(DIEFFECT),
+            .dwFlags = (DIEFF_CARTESIAN | DIEFF_OBJECTOFFSETS),
+            .dwDuration = 1000000,
+            .cAxes = 2,
+            .rgdwAxes = axes,
+            .rglDirection = directionCartesian,
+            .cbTypeSpecificParams = sizeof(DICONSTANTFORCE),
+            .lpvTypeSpecificParams = (LPVOID)&constantForceParams
+        };
+
+        VirtualDirectInputEffect<ECharMode::W>* diEffect = nullptr;
+        TEST_ASSERT(DI_OK == diController.CreateEffect(GUID_ConstantForce, &kParameters, (LPDIRECTINPUTEFFECT*)&diEffect, nullptr));
+        TEST_ASSERT(false == forceFeedbackDevice->IsEffectOnDevice(diEffect->UnderlyingEffect().Identifier()));
+    }
+
     // Enumerates all effects and verifies correct common information is provided, like type flags and parameter support.
     TEST_CASE(VirtualDirectInputDevice_ForceFeedback_EnumAll)
     {

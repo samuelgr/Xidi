@@ -69,13 +69,15 @@ namespace Xidi
             return *effect;
         }
 
+        /// Internal implementation of setting an effect's parameters.
+        /// Adds a timestamp parameter and serves as an entry point for tests that set effect parameters.
+        /// See DirectInput documentation for parameter and return information.
+        HRESULT SetParametersInternal(LPCDIEFFECT peff, DWORD dwFlags, std::optional<Controller::ForceFeedback::TEffectTimeMs> timestamp = std::nullopt);
+
         /// Internal implementation of starting an effect's playback.
         /// Adds an timestamp parameter and serves as an entry point for tests that start effect playback.
-        /// @param [in] dwIterations Number of iterations, similar to the corresponding interface method.
-        /// @param [in] dwFlags Flags, similar to the corresponding interface method.
-        /// @param [in] timestamp Optional timestamp to associate with the effect's playback starting, which is forwarded to the force feedback device.
-        /// @return Result of the operation, similar to the corresponding interface method.
-        HRESULT StartPlayback(DWORD dwIterations, DWORD dwFlags, std::optional<Controller::ForceFeedback::TEffectTimeMs> timestamp = std::nullopt);
+        /// See DirectInput documentation for parameter and return information.
+        HRESULT StartInternal(DWORD dwIterations, DWORD dwFlags, std::optional<Controller::ForceFeedback::TEffectTimeMs> timestamp = std::nullopt);
 
 
         // -------- CONCRETE INSTANCE METHODS -------------------------------------- //

@@ -36,6 +36,10 @@ namespace XidiTest
     using ::Xidi::Controller::SPhysicalState;
     using ::Xidi::Controller::TControllerIdentifier;
     using ::Xidi::Controller::VirtualController;
+    using ::Xidi::Controller::ForceFeedback::SAssociatedAxes;
+    using ::Xidi::Controller::ForceFeedback::SEnvelope;
+    using ::Xidi::Controller::ForceFeedback::TEffectTimeMs;
+    using ::Xidi::Controller::ForceFeedback::TEffectValue;
 
 
     // -------- INTERNAL TYPES --------------------------------------------- //
@@ -69,11 +73,11 @@ namespace XidiTest
     };
 
     /// Data packet structure definition used throughout these test cases.
-    /// Deliberately contains spots for fewer elements than the test mapper defines so that some controller elements are left without offsets.
     struct STestDataPacket
     {
         TAxisValue axisX;
         TAxisValue axisY;
+        TAxisValue axisZ;
         EPovValue pov;
         TButtonValue button[4];
     };
@@ -89,11 +93,12 @@ namespace XidiTest
     static constexpr TControllerIdentifier kTestControllerIdentifier = 0;
 
     /// Test mapper used throughout these test cases.
-    /// Describes a layout with 2 axes, a POV, and 4 buttons, with force feedback actuators on the X and Y axes.
+    /// Describes a layout with 3 axes, a POV, and 4 buttons, with force feedback actuators on the X and Y axes.
     static const Mapper kTestMapper(
         {
             .stickLeftX = std::make_unique<AxisMapper>(EAxis::X),
             .stickLeftY = std::make_unique<AxisMapper>(EAxis::Y),
+            .stickRightX = std::make_unique<AxisMapper>(EAxis::Z),
             .dpadUp = std::make_unique<PovMapper>(EPovDirection::Up),
             .dpadDown = std::make_unique<PovMapper>(EPovDirection::Down),
             .dpadLeft = std::make_unique<PovMapper>(EPovDirection::Left),
@@ -113,6 +118,7 @@ namespace XidiTest
     static DIOBJECTDATAFORMAT testObjectFormatSpec[] = {
         {.pguid = &GUID_XAxis,  .dwOfs = offsetof(STestDataPacket, axisX),      .dwType = DIDFT_AXIS    | DIDFT_ANYINSTANCE,    .dwFlags = 0},
         {.pguid = &GUID_YAxis,  .dwOfs = offsetof(STestDataPacket, axisY),      .dwType = DIDFT_AXIS    | DIDFT_ANYINSTANCE,    .dwFlags = 0},
+        {.pguid = &GUID_ZAxis,  .dwOfs = offsetof(STestDataPacket, axisZ),      .dwType = DIDFT_AXIS    | DIDFT_ANYINSTANCE,    .dwFlags = 0},
         {.pguid = &GUID_POV,    .dwOfs = offsetof(STestDataPacket, pov),        .dwType = DIDFT_POV     | DIDFT_ANYINSTANCE,    .dwFlags = 0},
         {.pguid = &GUID_Button, .dwOfs = offsetof(STestDataPacket, button[0]),  .dwType = DIDFT_BUTTON  | DIDFT_ANYINSTANCE,    .dwFlags = 0},
         {.pguid = &GUID_Button, .dwOfs = offsetof(STestDataPacket, button[1]),  .dwType = DIDFT_BUTTON  | DIDFT_ANYINSTANCE,    .dwFlags = 0},
@@ -179,6 +185,18 @@ namespace XidiTest
         return std::make_unique<TestVirtualDirectInputEffect>(associatedDevice, MockEffectWithTypeSpecificParameters(), effectGuid);
     }
 
+    /// Computes the DirectInput object identifier for an axis.
+    /// @param [in] axis Axis for which an object ID is desired.
+    /// @param [in] mapper Read-only reference to the mapper object to use, defaults to the test mapper at the top of this file.
+    /// @return Object identifier for the desired axis.
+    static inline DWORD ObjectIdForAxis(EAxis axis, const Mapper& mapper = kTestMapper)
+    {
+        if (false == mapper.GetCapabilities().HasAxis(axis))
+            TEST_FAILED_BECAUSE("Mapper does not contain the axis for which an object ID was requested.");
+
+        return (DIDFT_ABSAXIS | DIDFT_MAKEINSTANCE((int)mapper.GetCapabilities().FindAxis(axis)));
+    }
+
 
     // -------- TEST CASES ------------------------------------------------- //
 
@@ -229,7 +247,7 @@ namespace XidiTest
         TEST_ASSERT(false == ffDevice.IsEffectPlaying(ffEffect.Identifier()));
 
         // Starting the effect should mark it as playing.
-        TEST_ASSERT(DI_OK == diEffect->StartPlayback(1, 0, 0));
+        TEST_ASSERT(DI_OK == diEffect->StartInternal(1, 0, 0));
         TEST_ASSERT(true == ffDevice.IsEffectOnDevice(ffEffect.Identifier()));
         TEST_ASSERT(true == ffDevice.IsEffectPlaying(ffEffect.Identifier()));
 
@@ -241,5 +259,408 @@ namespace XidiTest
         // Unloading the effect should remove it from the device.
         TEST_ASSERT(DI_OK == diEffect->Unload());
         TEST_ASSERT(false == ffDevice.IsEffectOnDevice(ffEffect.Identifier()));
+    }
+
+    // Plays an effect and verifies its status is reported correctly.
+    TEST_CASE(VirtualDirectInputEffect_GetEffectStatus)
+    {
+        auto physicalController = CreateMockPhysicalController();
+        auto& ffDevice = physicalController->GetForceFeedbackDevice();
+
+        auto diDevice = CreateAndAcquireTestDirectInputDevice(*physicalController);
+        auto diEffect = CreateTestDirectInputEffect(*diDevice);
+
+        MockEffectWithTypeSpecificParameters& ffEffect = (MockEffectWithTypeSpecificParameters&)diEffect->UnderlyingEffect();
+        ffEffect.InitializeDefaultAssociatedAxes();
+        ffEffect.InitializeDefaultDirection();
+        ffEffect.SetDuration(100);
+        ffEffect.SetTypeSpecificParameters({.valid = true});
+
+        DWORD effectStatus = 0;
+
+        TEST_ASSERT(DI_OK == diEffect->GetEffectStatus(&effectStatus));
+        TEST_ASSERT(0 == (effectStatus & DIEGES_PLAYING));
+
+        TEST_ASSERT(DI_OK == diEffect->Download());
+        TEST_ASSERT(DI_OK == diEffect->GetEffectStatus(&effectStatus));
+        TEST_ASSERT(0 == (effectStatus & DIEGES_PLAYING));
+
+        TEST_ASSERT(DI_OK == diEffect->StartInternal(1, 0, 0));
+        TEST_ASSERT(DI_OK == diEffect->GetEffectStatus(&effectStatus));
+        TEST_ASSERT(DIEGES_PLAYING == (effectStatus & DIEGES_PLAYING));
+
+        TEST_ASSERT(DI_OK == diEffect->Stop());
+        TEST_ASSERT(DI_OK == diEffect->GetEffectStatus(&effectStatus));
+        TEST_ASSERT(0 == (effectStatus & DIEGES_PLAYING));
+    }
+
+    // Plays an effect and unloads it while it is playing.
+    TEST_CASE(VirtualDirectInputEffect_UnloadIsStop)
+    {
+        auto physicalController = CreateMockPhysicalController();
+        auto& ffDevice = physicalController->GetForceFeedbackDevice();
+
+        auto diDevice = CreateAndAcquireTestDirectInputDevice(*physicalController);
+        auto diEffect = CreateTestDirectInputEffect(*diDevice);
+        
+        MockEffectWithTypeSpecificParameters& ffEffect = (MockEffectWithTypeSpecificParameters&)diEffect->UnderlyingEffect();
+        ffEffect.InitializeDefaultAssociatedAxes();
+        ffEffect.InitializeDefaultDirection();
+        ffEffect.SetDuration(100);
+        ffEffect.SetTypeSpecificParameters({.valid = true});
+
+        TEST_ASSERT(DI_OK == diEffect->Download());
+        TEST_ASSERT(DI_OK == diEffect->StartInternal(1, 0, 0));
+
+        TEST_ASSERT(DI_OK == diEffect->Unload());
+        TEST_ASSERT(false == ffDevice.IsEffectPlaying(ffEffect.Identifier()));
+        TEST_ASSERT(false == ffDevice.IsEffectOnDevice(ffEffect.Identifier()));
+    }
+
+
+    // The following sequence of tests, which together comprise the SetParameters suite, exercises the SetParameters method for changing the parameters of an effect.
+    // Scopes are highly varied, so more details are provided with each test case.
+
+    // Associated axes, identified by offset into the application's data packet.
+    TEST_CASE(VirtualDirectInputEffect_SetParameters_AssociatedAxesByOffset)
+    {
+        auto physicalController = CreateMockPhysicalController();
+        auto diDevice = CreateAndAcquireTestDirectInputDevice(*physicalController);
+        auto diEffect = CreateTestDirectInputEffect(*diDevice);
+
+        MockEffectWithTypeSpecificParameters& ffEffect = (MockEffectWithTypeSpecificParameters&)diEffect->UnderlyingEffect();
+
+        DWORD axes[] = {offsetof(STestDataPacket, axisX), offsetof(STestDataPacket, axisY)};
+        const DIEFFECT kParameters = {.dwSize = sizeof(DIEFFECT), .dwFlags = DIEFF_OBJECTOFFSETS, .cAxes = _countof(axes), .rgdwAxes = axes};
+        TEST_ASSERT(DI_DOWNLOADSKIPPED == diEffect->SetParametersInternal(&kParameters, (DIEP_AXES | DIEP_NODOWNLOAD)));
+
+        TEST_ASSERT(true == ffEffect.HasAssociatedAxes());
+        constexpr SAssociatedAxes kExpectedAssociatedAxes = {.count = _countof(axes), .type = {EAxis::X, EAxis::Y}};
+        const SAssociatedAxes kActualAssociatedAxes = ffEffect.GetAssociatedAxes().value();
+        TEST_ASSERT(kActualAssociatedAxes == kExpectedAssociatedAxes);
+    }
+
+    // Associated axes, identified by object ID.
+    TEST_CASE(VirtualDirectInputEffect_SetParameters_AssociatedAxesByObjectId)
+    {
+        auto physicalController = CreateMockPhysicalController();
+        auto diDevice = CreateAndAcquireTestDirectInputDevice(*physicalController);
+        auto diEffect = CreateTestDirectInputEffect(*diDevice);
+
+        MockEffectWithTypeSpecificParameters& ffEffect = (MockEffectWithTypeSpecificParameters&)diEffect->UnderlyingEffect();
+
+        DWORD axes[] = {ObjectIdForAxis(EAxis::X), ObjectIdForAxis(EAxis::Y)};
+        const DIEFFECT kParameters = {.dwSize = sizeof(DIEFFECT), .dwFlags = DIEFF_OBJECTIDS, .cAxes = _countof(axes), .rgdwAxes = axes};
+        TEST_ASSERT(DI_DOWNLOADSKIPPED == diEffect->SetParametersInternal(&kParameters, (DIEP_AXES | DIEP_NODOWNLOAD)));
+
+        TEST_ASSERT(true == ffEffect.HasAssociatedAxes());
+        constexpr SAssociatedAxes kExpectedAssociatedAxes = {.count = _countof(axes), .type = {EAxis::X, EAxis::Y}};
+        const SAssociatedAxes kActualAssociatedAxes = ffEffect.GetAssociatedAxes().value();
+        TEST_ASSERT(kActualAssociatedAxes == kExpectedAssociatedAxes);
+    }
+
+    // Associated axes, without any identification method specified. This should fail.
+    TEST_CASE(VirtualDirectInputEffect_SetParameters_AssociatedAxesByNothing)
+    {
+        auto physicalController = CreateMockPhysicalController();
+        auto diDevice = CreateAndAcquireTestDirectInputDevice(*physicalController);
+        auto diEffect = CreateTestDirectInputEffect(*diDevice);
+
+        MockEffectWithTypeSpecificParameters& ffEffect = (MockEffectWithTypeSpecificParameters&)diEffect->UnderlyingEffect();
+
+        DWORD axes[] = {offsetof(STestDataPacket, axisX), offsetof(STestDataPacket, axisY)};
+        const DIEFFECT kParameters = {.dwSize = sizeof(DIEFFECT), .dwFlags = 0, .cAxes = _countof(axes), .rgdwAxes = axes};
+        TEST_ASSERT(DIERR_INVALIDPARAM == diEffect->SetParametersInternal(&kParameters, (DIEP_AXES | DIEP_NODOWNLOAD)));
+        TEST_ASSERT(false == ffEffect.HasAssociatedAxes());
+    }
+
+    // Associated axes, but one of the axes specified does not support force feedback. This should fail.
+    TEST_CASE(VirtualDirectInputEffect_SetParameters_AssociatedAxesWithUnsupportedAxis)
+    {
+        auto physicalController = CreateMockPhysicalController();
+        auto diDevice = CreateAndAcquireTestDirectInputDevice(*physicalController);
+        auto diEffect = CreateTestDirectInputEffect(*diDevice);
+
+        MockEffectWithTypeSpecificParameters& ffEffect = (MockEffectWithTypeSpecificParameters&)diEffect->UnderlyingEffect();
+
+        DWORD axes[] = {offsetof(STestDataPacket, axisZ)};
+        const DIEFFECT kParameters = {.dwSize = sizeof(DIEFFECT), .dwFlags = DIEFF_OBJECTOFFSETS, .cAxes = _countof(axes), .rgdwAxes = axes};
+        TEST_ASSERT(DIERR_INVALIDPARAM == diEffect->SetParametersInternal(&kParameters, (DIEP_AXES | DIEP_NODOWNLOAD)));
+        TEST_ASSERT(false == ffEffect.HasAssociatedAxes());
+    }
+
+    // Direction, using Cartesian coordinates with a 2-axis effect.
+    TEST_CASE(VirtualDirectInputEffect_SetParameters_DirectionCartesian)
+    {
+        auto physicalController = CreateMockPhysicalController();
+        auto diDevice = CreateAndAcquireTestDirectInputDevice(*physicalController);
+        auto diEffect = CreateTestDirectInputEffect(*diDevice);
+
+        MockEffectWithTypeSpecificParameters& ffEffect = (MockEffectWithTypeSpecificParameters&)diEffect->UnderlyingEffect();
+
+        LONG directionCartesian[] = {1, 1};
+        const DIEFFECT kParameters = {.dwSize = sizeof(DIEFFECT), .dwFlags = DIEFF_CARTESIAN, .cAxes = _countof(directionCartesian), .rglDirection = directionCartesian };
+        TEST_ASSERT(DI_DOWNLOADSKIPPED == diEffect->SetParametersInternal(&kParameters, (DIEP_DIRECTION | DIEP_NODOWNLOAD)));
+
+        TEST_ASSERT(true == ffEffect.HasDirection());
+        TEST_ASSERT(2 == ffEffect.Direction().GetNumAxes());
+        
+        const std::array<TEffectValue, Controller::ForceFeedback::kEffectAxesMaximumNumber> kExpectedCoordinates = {(TEffectValue)directionCartesian[0], (TEffectValue)directionCartesian[1]};
+        std::array<TEffectValue, Controller::ForceFeedback::kEffectAxesMaximumNumber> actualCoordinates = {};
+        TEST_ASSERT(_countof(directionCartesian) == ffEffect.Direction().GetCartesianCoordinates(&actualCoordinates[0], (int)actualCoordinates.size()));
+        TEST_ASSERT(actualCoordinates == kExpectedCoordinates);
+    }
+
+    // Direction, using polar coordinates with a 2-axis effect.
+    TEST_CASE(VirtualDirectInputEffect_SetParameters_DirectionPolar)
+    {
+        auto physicalController = CreateMockPhysicalController();
+        auto diDevice = CreateAndAcquireTestDirectInputDevice(*physicalController);
+        auto diEffect = CreateTestDirectInputEffect(*diDevice);
+
+        MockEffectWithTypeSpecificParameters& ffEffect = (MockEffectWithTypeSpecificParameters&)diEffect->UnderlyingEffect();
+
+        LONG directionPolar[] = {4500};
+        const DIEFFECT kParameters = {.dwSize = sizeof(DIEFFECT), .dwFlags = DIEFF_POLAR, .cAxes = _countof(directionPolar), .rglDirection = directionPolar};
+        TEST_ASSERT(DI_DOWNLOADSKIPPED == diEffect->SetParametersInternal(&kParameters, (DIEP_DIRECTION | DIEP_NODOWNLOAD)));
+
+        TEST_ASSERT(true == ffEffect.HasDirection());
+        TEST_ASSERT(2 == ffEffect.Direction().GetNumAxes());
+
+        const std::array<TEffectValue, Controller::ForceFeedback::kEffectAxesMaximumNumber> kExpectedCoordinates = {(TEffectValue)directionPolar[0]};
+        std::array<TEffectValue, Controller::ForceFeedback::kEffectAxesMaximumNumber> actualCoordinates = {};
+        TEST_ASSERT(_countof(directionPolar) == ffEffect.Direction().GetPolarCoordinates(&actualCoordinates[0], (int)actualCoordinates.size()));
+        TEST_ASSERT(actualCoordinates == kExpectedCoordinates);
+    }
+
+    // Direction, using spherical coordinates with a 2-axis effect.
+    TEST_CASE(VirtualDirectInputEffect_SetParameters_DirectionSpherical)
+    {
+        auto physicalController = CreateMockPhysicalController();
+        auto diDevice = CreateAndAcquireTestDirectInputDevice(*physicalController);
+        auto diEffect = CreateTestDirectInputEffect(*diDevice);
+
+        MockEffectWithTypeSpecificParameters& ffEffect = (MockEffectWithTypeSpecificParameters&)diEffect->UnderlyingEffect();
+
+        LONG directionSpherical[] = {13500};
+        const DIEFFECT kParameters = {.dwSize = sizeof(DIEFFECT), .dwFlags = DIEFF_SPHERICAL, .cAxes = _countof(directionSpherical), .rglDirection = directionSpherical};
+        TEST_ASSERT(DI_DOWNLOADSKIPPED == diEffect->SetParametersInternal(&kParameters, (DIEP_DIRECTION | DIEP_NODOWNLOAD)));
+
+        TEST_ASSERT(true == ffEffect.HasDirection());
+        TEST_ASSERT(2 == ffEffect.Direction().GetNumAxes());
+
+        const std::array<TEffectValue, Controller::ForceFeedback::kEffectAxesMaximumNumber> kExpectedCoordinates = {(TEffectValue)directionSpherical[0]};
+        std::array<TEffectValue, Controller::ForceFeedback::kEffectAxesMaximumNumber> actualCoordinates = {};
+        TEST_ASSERT(_countof(directionSpherical) == ffEffect.Direction().GetSphericalCoordinates(&actualCoordinates[0], (int)actualCoordinates.size()));
+        TEST_ASSERT(actualCoordinates == kExpectedCoordinates);
+    }
+
+    // Duration
+    TEST_CASE(VirtualDirectInputEffect_SetParameters_Duration)
+    {
+        auto physicalController = CreateMockPhysicalController();
+        auto diDevice = CreateAndAcquireTestDirectInputDevice(*physicalController);
+        auto diEffect = CreateTestDirectInputEffect(*diDevice);
+
+        MockEffectWithTypeSpecificParameters& ffEffect = (MockEffectWithTypeSpecificParameters&)diEffect->UnderlyingEffect();
+
+        constexpr TEffectValue kDuration = 1000;
+        constexpr DIEFFECT kParameters = {.dwSize = sizeof(DIEFFECT), .dwDuration = (DWORD)kDuration};
+        TEST_ASSERT(DI_DOWNLOADSKIPPED == diEffect->SetParametersInternal(&kParameters, (DIEP_DURATION | DIEP_NODOWNLOAD)));
+
+        TEST_ASSERT(true == ffEffect.HasDuration());
+        TEST_ASSERT(kDuration == ffEffect.GetDuration());
+    }
+
+    // Envelope, both setting and clearing
+    TEST_CASE(VirtualDirectInputEffect_SetParameters_Envelope)
+    {
+        auto physicalController = CreateMockPhysicalController();
+        auto diDevice = CreateAndAcquireTestDirectInputDevice(*physicalController);
+        auto diEffect = CreateTestDirectInputEffect(*diDevice);
+
+        MockEffectWithTypeSpecificParameters& ffEffect = (MockEffectWithTypeSpecificParameters&)diEffect->UnderlyingEffect();
+
+        constexpr SEnvelope kEnvelope = {.attackTime = 111, .attackLevel = 222, .fadeTime = 333, .fadeLevel = 444};
+        DIENVELOPE diEnvelope = {.dwSize = sizeof(DIENVELOPE), .dwAttackLevel = (DWORD)kEnvelope.attackLevel, .dwAttackTime = (DWORD)kEnvelope.attackTime, .dwFadeLevel = (DWORD)kEnvelope.fadeLevel, .dwFadeTime = (DWORD)kEnvelope.fadeTime};
+        const DIEFFECT kParameters = {.dwSize = sizeof(DIEFFECT), .lpEnvelope = &diEnvelope};
+        TEST_ASSERT(DI_DOWNLOADSKIPPED == diEffect->SetParametersInternal(&kParameters, (DIEP_ENVELOPE | DIEP_NODOWNLOAD)));
+
+        TEST_ASSERT(true == ffEffect.HasEnvelope());
+        TEST_ASSERT(kEnvelope == ffEffect.GetEnvelope());
+
+        const DIEFFECT kParametersClearEnvelope = {.dwSize = sizeof(DIEFFECT), .lpEnvelope = nullptr};
+        TEST_ASSERT(DI_DOWNLOADSKIPPED == diEffect->SetParametersInternal(&kParametersClearEnvelope, (DIEP_ENVELOPE | DIEP_NODOWNLOAD)));
+
+        TEST_ASSERT(false == ffEffect.HasEnvelope());
+    }
+
+    // Gain
+    TEST_CASE(VirtualDirectInputEffect_SetParameters_Gain)
+    {
+        auto physicalController = CreateMockPhysicalController();
+        auto diDevice = CreateAndAcquireTestDirectInputDevice(*physicalController);
+        auto diEffect = CreateTestDirectInputEffect(*diDevice);
+
+        MockEffectWithTypeSpecificParameters& ffEffect = (MockEffectWithTypeSpecificParameters&)diEffect->UnderlyingEffect();
+
+        constexpr TEffectValue kGain = 1000;
+        constexpr DIEFFECT kParameters = {.dwSize = sizeof(DIEFFECT), .dwGain = (DWORD)kGain};
+        TEST_ASSERT(DI_DOWNLOADSKIPPED == diEffect->SetParametersInternal(&kParameters, (DIEP_GAIN | DIEP_NODOWNLOAD)));
+        TEST_ASSERT(kGain == ffEffect.GetGain());
+    }
+
+    // Sample period
+    TEST_CASE(VirtualDirectInputEffect_SetParameters_SamplePeriod)
+    {
+        auto physicalController = CreateMockPhysicalController();
+        auto diDevice = CreateAndAcquireTestDirectInputDevice(*physicalController);
+        auto diEffect = CreateTestDirectInputEffect(*diDevice);
+
+        MockEffectWithTypeSpecificParameters& ffEffect = (MockEffectWithTypeSpecificParameters&)diEffect->UnderlyingEffect();
+
+        constexpr TEffectTimeMs kSamplePeriod = 10000;
+        constexpr DIEFFECT kParameters = {.dwSize = sizeof(DIEFFECT), .dwSamplePeriod = (DWORD)kSamplePeriod};
+        TEST_ASSERT(DI_DOWNLOADSKIPPED == diEffect->SetParametersInternal(&kParameters, (DIEP_SAMPLEPERIOD | DIEP_NODOWNLOAD)));
+        TEST_ASSERT(kSamplePeriod == ffEffect.GetSamplePeriod());
+    }
+
+    // Start delay
+    TEST_CASE(VirtualDirectInputEffect_SetParameters_StartDelay)
+    {
+        auto physicalController = CreateMockPhysicalController();
+        auto diDevice = CreateAndAcquireTestDirectInputDevice(*physicalController);
+        auto diEffect = CreateTestDirectInputEffect(*diDevice);
+
+        MockEffectWithTypeSpecificParameters& ffEffect = (MockEffectWithTypeSpecificParameters&)diEffect->UnderlyingEffect();
+
+        constexpr TEffectTimeMs kStartDelay = 5000000;
+        constexpr DIEFFECT kParameters = {.dwSize = sizeof(DIEFFECT), .dwStartDelay = (DWORD)kStartDelay};
+        TEST_ASSERT(DI_DOWNLOADSKIPPED == diEffect->SetParametersInternal(&kParameters, (DIEP_STARTDELAY | DIEP_NODOWNLOAD)));
+        TEST_ASSERT(kStartDelay == ffEffect.GetStartDelay());
+    }
+
+    // Specifies a complete set of parameters and automatically downloads, but does not start, the effect.
+    TEST_CASE(VirtualDirectInputEffect_SetParameters_CompleteAndDownload)
+    {
+        auto physicalController = CreateMockPhysicalController();
+        auto& ffDevice = physicalController->GetForceFeedbackDevice();
+
+        auto diDevice = CreateAndAcquireTestDirectInputDevice(*physicalController);
+        auto diEffect = CreateTestDirectInputEffect(*diDevice);
+
+        MockEffectWithTypeSpecificParameters& ffEffect = (MockEffectWithTypeSpecificParameters&)diEffect->UnderlyingEffect();
+
+        DWORD axes[] = {ObjectIdForAxis(EAxis::X), ObjectIdForAxis(EAxis::Y)};
+        LONG directionCartesian[] = {1, 1};
+        SMockTypeSpecificParameters typeSpecificParams = {.valid = true};
+
+        const DIEFFECT kParameters = {
+            .dwSize = sizeof(DIEFFECT),
+            .dwFlags = (DIEFF_CARTESIAN | DIEFF_OBJECTIDS),
+            .dwDuration = 1000000,
+            .cAxes = 2,
+            .rgdwAxes = axes,
+            .rglDirection = directionCartesian,
+            .cbTypeSpecificParams = sizeof(SMockTypeSpecificParameters),
+            .lpvTypeSpecificParams = (LPVOID)&typeSpecificParams
+        };
+
+        TEST_ASSERT(DI_OK == diEffect->SetParametersInternal(&kParameters, (DIEP_DURATION | DIEP_AXES | DIEP_DIRECTION | DIEP_TYPESPECIFICPARAMS), 0));
+        TEST_ASSERT(true == ffDevice.IsEffectOnDevice(ffEffect.Identifier()));
+        TEST_ASSERT(false == ffDevice.IsEffectPlaying(ffEffect.Identifier()));
+    }
+
+    // Specifies a complete set of parameters and automatically starts the effect.
+    TEST_CASE(VirtualDirectInputEffect_SetParameters_CompleteAndStart)
+    {
+        auto physicalController = CreateMockPhysicalController();
+        auto& ffDevice = physicalController->GetForceFeedbackDevice();
+
+        auto diDevice = CreateAndAcquireTestDirectInputDevice(*physicalController);
+        auto diEffect = CreateTestDirectInputEffect(*diDevice);
+
+        MockEffectWithTypeSpecificParameters& ffEffect = (MockEffectWithTypeSpecificParameters&)diEffect->UnderlyingEffect();
+
+        DWORD axes[] = {ObjectIdForAxis(EAxis::X), ObjectIdForAxis(EAxis::Y)};
+        LONG directionCartesian[] = {1, 1};
+        SMockTypeSpecificParameters typeSpecificParams = {.valid = true};
+
+        const DIEFFECT kParameters = {
+            .dwSize = sizeof(DIEFFECT),
+            .dwFlags = (DIEFF_CARTESIAN | DIEFF_OBJECTIDS),
+            .dwDuration = 1000000,
+            .cAxes = 2,
+            .rgdwAxes = axes,
+            .rglDirection = directionCartesian,
+            .cbTypeSpecificParams = sizeof(SMockTypeSpecificParameters),
+            .lpvTypeSpecificParams = (LPVOID)&typeSpecificParams
+        };
+
+        TEST_ASSERT(DI_OK == diEffect->SetParametersInternal(&kParameters, (DIEP_DURATION | DIEP_AXES | DIEP_DIRECTION | DIEP_TYPESPECIFICPARAMS | DIEP_START), 0));
+        TEST_ASSERT(true == ffDevice.IsEffectOnDevice(ffEffect.Identifier()));
+        TEST_ASSERT(true == ffDevice.IsEffectPlaying(ffEffect.Identifier()));
+    }
+
+    // Specifies an empty set of new parameters and with the download operation skipped, so nothing should happen.
+    TEST_CASE(VirtualDirectInputEffect_SetParameters_Empty)
+    {
+        constexpr DIEFFECT kEffectParameters = {.dwSize = sizeof(DIEFFECT)};
+
+        auto physicalController = CreateMockPhysicalController();
+        auto& ffDevice = physicalController->GetForceFeedbackDevice();
+
+        auto diDevice = CreateAndAcquireTestDirectInputDevice(*physicalController);
+        auto diEffect = CreateTestDirectInputEffect(*diDevice);
+
+        MockEffectWithTypeSpecificParameters& ffEffect = (MockEffectWithTypeSpecificParameters&)diEffect->UnderlyingEffect();
+        ffEffect.InitializeDefaultAssociatedAxes();
+        ffEffect.InitializeDefaultDirection();
+        ffEffect.SetDuration(100);
+        ffEffect.SetTypeSpecificParameters({.valid = true});
+
+        TEST_ASSERT(DI_DOWNLOADSKIPPED == diEffect->SetParametersInternal(&kEffectParameters, DIEP_NODOWNLOAD));
+        TEST_ASSERT(false == ffDevice.IsEffectOnDevice(ffEffect.Identifier()));
+    }
+
+    // Specifies an empty set of new parameters but with no flags, so the effect should be downloaded.
+    TEST_CASE(VirtualDirectInputEffect_SetParameters_DownloadOnly)
+    {
+        constexpr DIEFFECT kEffectParameters = {.dwSize = sizeof(DIEFFECT)};
+
+        auto physicalController = CreateMockPhysicalController();
+        auto& ffDevice = physicalController->GetForceFeedbackDevice();
+
+        auto diDevice = CreateAndAcquireTestDirectInputDevice(*physicalController);
+        auto diEffect = CreateTestDirectInputEffect(*diDevice);
+
+        MockEffectWithTypeSpecificParameters& ffEffect = (MockEffectWithTypeSpecificParameters&)diEffect->UnderlyingEffect();
+        ffEffect.InitializeDefaultAssociatedAxes();
+        ffEffect.InitializeDefaultDirection();
+        ffEffect.SetDuration(100);
+        ffEffect.SetTypeSpecificParameters({.valid = true});
+
+        TEST_ASSERT(DI_OK == diEffect->SetParametersInternal(&kEffectParameters, 0));
+        TEST_ASSERT(true == ffDevice.IsEffectOnDevice(ffEffect.Identifier()));
+    }
+
+    // Specifies too many behavior flags, so the operation should fail.
+    TEST_CASE(VirtualDirectInputEffect_SetParameters_TooManyBehaviorFlags)
+    {
+         constexpr DIEFFECT kEffectParameters = {.dwSize = sizeof(DIEFFECT)};
+
+        auto physicalController = CreateMockPhysicalController();
+        auto& ffDevice = physicalController->GetForceFeedbackDevice();
+
+        auto diDevice = CreateAndAcquireTestDirectInputDevice(*physicalController);
+        auto diEffect = CreateTestDirectInputEffect(*diDevice);
+
+        MockEffectWithTypeSpecificParameters& ffEffect = (MockEffectWithTypeSpecificParameters&)diEffect->UnderlyingEffect();
+        ffEffect.InitializeDefaultAssociatedAxes();
+        ffEffect.InitializeDefaultDirection();
+        ffEffect.SetDuration(100);
+        ffEffect.SetTypeSpecificParameters({.valid = true});
+
+        TEST_ASSERT(DIERR_INVALIDPARAM == diEffect->SetParametersInternal(&kEffectParameters, DIEP_NODOWNLOAD | DIEP_NORESTART | DIEP_START));
     }
 }
