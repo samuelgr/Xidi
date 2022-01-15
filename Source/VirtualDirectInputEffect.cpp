@@ -267,7 +267,12 @@ namespace Xidi
                 Message::OutputFormatted(kDumpSeverity, L"    dwFlags = 0x%08x (%s)", peff->dwFlags, ParameterStructFlagsToString(peff->dwFlags).c_str());
 
                 if (0 != (dwFlags & DIEP_DURATION))
-                    Message::OutputFormatted(kDumpSeverity, L"    dwDuration = %u", peff->dwDuration);
+                {
+                    if (INFINITE == peff->dwDuration)
+                        Message::OutputFormatted(kDumpSeverity, L"    dwDuration = %u (INFINITE)", peff->dwDuration);
+                    else
+                        Message::OutputFormatted(kDumpSeverity, L"    dwDuration = %u", peff->dwDuration);
+                }
 
                 if (0 != (dwFlags & DIEP_SAMPLEPERIOD))
                     Message::OutputFormatted(kDumpSeverity, L"    dwSamplePeriod = %u", peff->dwSamplePeriod);
