@@ -253,10 +253,11 @@ namespace Xidi
             }
             break;
 
+        case ((size_t)&DIPROP_AUTOCENTER):
         case ((size_t)&DIPROP_BUFFERSIZE):
         case ((size_t)&DIPROP_FFGAIN):
         case ((size_t)&DIPROP_JOYSTICKID):
-            // Buffer size, force feedback gain, and joystick ID all use DIPROPDWORD and are exclusively device-wide properties.
+            // Autocenter, buffer size, force feedback gain, and joystick ID all use DIPROPDWORD and are exclusively device-wide properties.
             if (DIPH_DEVICE != pdiph->dwHow)
             {
                 Message::OutputFormatted(Message::ESeverity::Warning, L"Rejected invalid property header for %s: Incorrect object identification method for this property (expected %s, got %s).", PropertyGuidString(rguidProp), IdentificationMethodString(DIPH_DEVICE), IdentificationMethodString(pdiph->dwHow));
@@ -1493,6 +1494,12 @@ namespace Xidi
             ((LPDIPROPDWORD)pdiph)->dwData = DIPROPAXISMODE_ABS;
             LOG_PROPERTY_INVOCATION_DIPROPDWORD_AND_RETURN(DI_OK, kMethodSeverity, rguidProp, pdiph);
 
+        case ((size_t)&DIPROP_AUTOCENTER):
+            if (Controller::EElementType::WholeController != element.type)
+                LOG_PROPERTY_INVOCATION_NO_VALUE_AND_RETURN(DIERR_INVALIDPARAM, kMethodSeverity, rguidProp);
+            ((LPDIPROPDWORD)pdiph)->dwData = DIPROPAUTOCENTER_OFF;
+            LOG_PROPERTY_INVOCATION_DIPROPDWORD_AND_RETURN(DI_OK, kMethodSeverity, rguidProp, pdiph);
+
         case ((size_t)&DIPROP_BUFFERSIZE):
             ((LPDIPROPDWORD)pdiph)->dwData = controller->GetEventBufferCapacity();
             LOG_PROPERTY_INVOCATION_DIPROPDWORD_AND_RETURN(DI_OK, kMethodSeverity, rguidProp, pdiph);
@@ -1749,7 +1756,13 @@ namespace Xidi
         {
         case ((size_t)&DIPROP_AXISMODE):
             if (DIPROPAXISMODE_ABS == ((LPDIPROPDWORD)pdiph)->dwData)
-                LOG_PROPERTY_INVOCATION_DIPROPDWORD_AND_RETURN(DI_PROPNOEFFECT, kMethodSeverity, rguidProp, pdiph);
+                LOG_PROPERTY_INVOCATION_DIPROPDWORD_AND_RETURN(DI_OK, kMethodSeverity, rguidProp, pdiph);
+            else
+                LOG_PROPERTY_INVOCATION_DIPROPDWORD_AND_RETURN(DIERR_UNSUPPORTED, kMethodSeverity, rguidProp, pdiph);
+
+        case ((size_t)&DIPROP_AUTOCENTER):
+            if (DIPROPAUTOCENTER_OFF == ((LPDIPROPDWORD)pdiph)->dwData)
+                LOG_PROPERTY_INVOCATION_DIPROPDWORD_AND_RETURN(DI_OK, kMethodSeverity, rguidProp, pdiph);
             else
                 LOG_PROPERTY_INVOCATION_DIPROPDWORD_AND_RETURN(DIERR_UNSUPPORTED, kMethodSeverity, rguidProp, pdiph);
 
