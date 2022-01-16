@@ -36,6 +36,10 @@ namespace Xidi
                 /// Number of axes represented by this direction vector.
                 int numAxes;
 
+                /// Whether or not this direction vector is omnidirectional.
+                /// If a direction vector is omnidirectional then, when computing per-component magnitudes given an input magnitude, the input magnitude is simply copied to all the components without transformation.
+                bool isOmnidirectional;
+
                 /// Coordinate system that was used to set the direction of this vector, once it is set.
                 std::optional<ECoordinateSystem> originalCoordinateSystem;
 
@@ -129,6 +133,13 @@ namespace Xidi
                     return originalCoordinateSystem.has_value();
                 }
 
+                /// Checks if this direction vector is in omnidirectional mode.
+                /// @return `true` if so, `false` otherwise.
+                inline bool IsOmnidirectional(void) const
+                {
+                    return isOmnidirectional;
+                }
+
                 /// Attempts to change the direction represented by this direction vector using Cartesian coordinates.
                 /// Number of axes is inferred based on the number of coordinates present.
                 /// @param [in] coordinates Pointer to a buffer holding the new Cartesian coordinates, one component per represented axis.
@@ -151,6 +162,12 @@ namespace Xidi
                 /// @param [in] numCoordinates Number of coordinates that should be read from the provided buffer.
                 /// @return `true` if the direction was updated successfully, `false` otherwise. This method will fail if the provided input parameters are invalid.
                 bool SetDirectionUsingSpherical(const TEffectValue* coordinates, int numCoordinates);
+
+                /// Sets this vector to omnidirectional mode with the specified number of axis and using the specified coordinate system as original.
+                /// Performs no error-checking. Intended for internal use but exposed for testing.
+                /// @param [in] numAxes Number of axes for which the components should be broadcast when in omnidirectional mode.
+                /// @param [in] originalCoordinateSystem Coordinate system to use as the original coordinate system for this direction vector.
+                void SetOmnidirectional(int numAxes, ECoordinateSystem originalCoordinateSystem);
             };
 
             /// Structure for representing an envelope that might be applied to an effect.

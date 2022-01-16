@@ -47,7 +47,7 @@ namespace Xidi
             // -------- CONSTRUCTION AND DESTRUCTION ----------------------- //
             // See "ForceFeedbackParameters.h" for documentation.
 
-            DirectionVector::DirectionVector(void) : numAxes(), originalCoordinateSystem(), cartesian(), polar(), spherical()
+            DirectionVector::DirectionVector(void) : numAxes(), isOmnidirectional(), originalCoordinateSystem(), cartesian(), polar(), spherical()
             {
                 // Nothing to do here.
             }
@@ -62,7 +62,15 @@ namespace Xidi
 
                 if (0 != magnitude)
                 {
-                    if (1 == numAxes)
+                    if (true == isOmnidirectional)
+                    {
+                        // For omni-directional forces, the magnitude is simply copied without transformation to all components.
+                        // All of the coordinate systems contain invalid values so they cannot be consulted directly.
+
+                        for (int i = 0; i < numAxes; ++i)
+                            magnitudeComponents[i] = magnitude;
+                    }
+                    else if (1 == numAxes)
                     {
                         // For single-axis forces, only the direction of the single Cartesian coordinate matters.
 
@@ -152,19 +160,29 @@ namespace Xidi
                 if (false == IsAxisCountValid(kNewNumAxes))
                     return false;
 
-                // Verify that the new vector actually has a direction.
-                // If all the components are 0 then the vector is invalid for representing a force feedback effect direction.
-                TEffectValue cartesianSum = 0;
-                for (int i = 0; i < numCoordinates; ++i)
-                    cartesianSum += abs(coordinates[i]);
-                if (0 == cartesianSum)
-                    return false;
+                // If all the components are 0 then direction is considered unimportant and the vector is marked as being omnidirectional.
+                bool cartesianDirectionIsNonZero = false;
+                for (int i = 0; i < kNewNumAxes; ++i)
+                {
+                    if (0 != coordinates[i])
+                    {
+                        cartesianDirectionIsNonZero = true;
+                        break;
+                    }
+                }
+
+                if (false == cartesianDirectionIsNonZero)
+                {
+                    SetOmnidirectional(kNewNumAxes, ECoordinateSystem::Cartesian);
+                    return true;
+                }
 
                 numAxes = kNewNumAxes;
+                isOmnidirectional = false;
                 originalCoordinateSystem = ECoordinateSystem::Cartesian;
 
                 // Set the Cartesian coordinate representation.
-                for (int i = 0; i < numCoordinates; ++i)
+                for (int i = 0; i < kNewNumAxes; ++i)
                     cartesian[i] = coordinates[i];
 
                 // Convert to polar if that makes sense.
@@ -207,6 +225,7 @@ namespace Xidi
                     return false;
 
                 numAxes = kNewNumAxes;
+                isOmnidirectional = false;
                 originalCoordinateSystem = ECoordinateSystem::Polar;
 
                 // Set the polar coordinate representation.
@@ -244,6 +263,7 @@ namespace Xidi
                 }
 
                 numAxes = kNewNumAxes;
+                isOmnidirectional = false;
                 originalCoordinateSystem = ECoordinateSystem::Spherical;
 
                 if (1 == numAxes)
@@ -271,6 +291,20 @@ namespace Xidi
                 }
 
                 return true;
+            }
+
+            // --------
+
+            void DirectionVector::SetOmnidirectional(int numAxes, ECoordinateSystem originalCoordinateSystem)
+            {
+                this->numAxes = numAxes;
+                this->originalCoordinateSystem = originalCoordinateSystem;
+
+                isOmnidirectional = true;
+
+                cartesian.fill(0);
+                polar = 0;
+                spherical.fill(0);
             }
         }
     }

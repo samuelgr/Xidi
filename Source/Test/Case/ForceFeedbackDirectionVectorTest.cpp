@@ -452,10 +452,7 @@ namespace XidiTest
         std::array<TEffectValue, kEffectAxesMaximumNumber + 1> inputCoordinates = {};
 
         // Various ways of sending invalid Cartesian coordinates.
-        // Either 0 coordinates are specified as the number of values or all coordinates are 0.
-        for (int i = 0; i <= (int)inputCoordinates.size(); ++i)
-            TEST_ASSERT(false == vector.SetDirectionUsingCartesian(&inputCoordinates[0], i));
-
+        // The only way for Cartesian coordinates to be invalid is to send in 0 coordinates.
         inputCoordinates = {1000};
         TEST_ASSERT(false == vector.SetDirectionUsingCartesian(&inputCoordinates[0], 0));
         inputCoordinates = {};
@@ -503,5 +500,40 @@ namespace XidiTest
 
         TEST_ASSERT(true == vector.SetDirectionUsingSpherical(kTestCoordinates, _countof(kTestCoordinates)));
         TEST_ASSERT(ECoordinateSystem::Spherical == vector.GetOriginalCoordinateSystem());
+    }
+
+    // Verifies that direction vector objects correctly enter omnidirectional mode and, when in this mode, broadcast force components without transformation.
+    TEST_CASE(ForceFeedbackDirectionVector_Omnidirectional)
+    {
+        constexpr TEffectValue kTestCoordinates[] = {0, 0, 0};
+
+        DirectionVector vector;
+        TEST_ASSERT(false == vector.HasDirection());
+
+        TEST_ASSERT(true == vector.SetDirectionUsingCartesian(kTestCoordinates, _countof(kTestCoordinates)));
+        TEST_ASSERT(true == vector.HasDirection());
+        TEST_ASSERT(true == vector.IsOmnidirectional());
+
+        constexpr TEffectValue kTestMagnitude = 5432;
+        constexpr TMagnitudeComponents kExpectedMagnitudeComponents = { kTestMagnitude, kTestMagnitude, kTestMagnitude };
+        const TMagnitudeComponents kActualMagnitudeComponents = vector.ComputeMagnitudeComponents(kTestMagnitude);
+        TEST_ASSERT(kActualMagnitudeComponents == kExpectedMagnitudeComponents);
+    }
+
+    // Verifies that direction vector objects exit omnidirectional mode once the direction is changed to something else.
+    TEST_CASE(ForceFeedbackDirectionVector_OmnidirectionalExit)
+    {
+        DirectionVector vector;
+        TEST_ASSERT(false == vector.HasDirection());
+
+        constexpr TEffectValue kTestCoordinatesOmnidirectional[] = {0, 0, 0};
+        TEST_ASSERT(true == vector.SetDirectionUsingCartesian(kTestCoordinatesOmnidirectional, _countof(kTestCoordinatesOmnidirectional)));
+        TEST_ASSERT(true == vector.HasDirection());
+        TEST_ASSERT(true == vector.IsOmnidirectional());
+
+        constexpr TEffectValue kTestCoordinatesUnidirectional[] = {1, 1, 1};
+        TEST_ASSERT(true == vector.SetDirectionUsingCartesian(kTestCoordinatesUnidirectional, _countof(kTestCoordinatesUnidirectional)));
+        TEST_ASSERT(true == vector.HasDirection());
+        TEST_ASSERT(false == vector.IsOmnidirectional());
     }
 }
