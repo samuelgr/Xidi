@@ -39,6 +39,18 @@ namespace XidiTest
     };
 
 
+    // -------- INTERNAL FUNCTIONS ----------------------------------------- //
+
+    /// Checks if two force feedback effect values are effectively equal, subject to very minor imprecision.
+    /// @param [in] valueA First of the two values to compare.
+    /// @param [in] valueB Second of the two values to compare.
+    /// @return `true` if the two values are essentially considered equivalent, `false` otherwise.
+    static bool TEffectValueEqual(TEffectValue valueA, TEffectValue valueB)
+    {
+        return ((std::max(valueA, valueB) - std::min(valueA, valueB)) < 0.00001);
+    }
+
+
     // -------- TEST CASES ------------------------------------------------- //
 
     // Verifies that a periodic effect can correctly compute its phase for various raw time inputs.
@@ -145,7 +157,7 @@ namespace XidiTest
         for (const auto kTest : kTestData)
         {
             const TEffectValue kActualWaveformAmplitude = effect.WaveformAmplitude(kTest.inputPhase);
-            TEST_ASSERT(kActualWaveformAmplitude == kTest.expectedWaveformAmplitude);
+            TEST_ASSERT(true == TEffectValueEqual(kActualWaveformAmplitude, kTest.expectedWaveformAmplitude));
         }
     }
 
@@ -170,7 +182,7 @@ namespace XidiTest
         for (const auto kTest : kTestData)
         {
             const TEffectValue kActualWaveformAmplitude = effect.WaveformAmplitude(kTest.inputPhase);
-            TEST_ASSERT(kActualWaveformAmplitude == kTest.expectedWaveformAmplitude);
+            TEST_ASSERT(true == TEffectValueEqual(kActualWaveformAmplitude, kTest.expectedWaveformAmplitude));
         }
     }
 
@@ -197,7 +209,7 @@ namespace XidiTest
         for (const auto kTest : kTestData)
         {
             const TEffectValue kActualWaveformAmplitude = effect.WaveformAmplitude(kTest.inputPhase);
-            TEST_ASSERT(kActualWaveformAmplitude == kTest.expectedWaveformAmplitude);
+            TEST_ASSERT(true == TEffectValueEqual(kActualWaveformAmplitude, kTest.expectedWaveformAmplitude));
         }
     }
 
@@ -222,7 +234,7 @@ namespace XidiTest
         for (const auto kTest : kTestData)
         {
             const TEffectValue kActualWaveformAmplitude = effect.WaveformAmplitude(kTest.inputPhase);
-            TEST_ASSERT(kActualWaveformAmplitude == kTest.expectedWaveformAmplitude);
+            TEST_ASSERT(true == TEffectValueEqual(kActualWaveformAmplitude, kTest.expectedWaveformAmplitude));
         }
     }
 
@@ -247,7 +259,7 @@ namespace XidiTest
         for (const auto kTest : kTestData)
         {
             const TEffectValue kActualWaveformAmplitude = effect.WaveformAmplitude(kTest.inputPhase);
-            TEST_ASSERT(kActualWaveformAmplitude == kTest.expectedWaveformAmplitude);
+            TEST_ASSERT(true == TEffectValueEqual(kActualWaveformAmplitude, kTest.expectedWaveformAmplitude));
         }
     }
 }
