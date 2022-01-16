@@ -274,6 +274,7 @@
     <ClCompile Include="Source\Test\Case\MapperParserTest.cpp" />
     <ClCompile Include="Source\Test\Case\PeriodicEffectTest.cpp" />
     <ClCompile Include="Source\Test\Case\PovMapperTest.cpp" />
+    <ClCompile Include="Source\Test\Case\RampForceEffectTest.cpp" />
     <ClCompile Include="Source\Test\Case\SplitMapperTest.cpp" />
     <ClCompile Include="Source\Test\Case\StateChangeEventBufferTest.cpp" />
     <ClCompile Include="Source\Test\Case\VirtualControllerTest.cpp" />

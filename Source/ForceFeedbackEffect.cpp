@@ -67,9 +67,29 @@ namespace Xidi
 
             // --------
 
+            bool RampForceEffect::AreTypeSpecificParametersValid(const SRampForceParameters& newTypeSpecificParameters) const
+            {
+                if ((newTypeSpecificParameters.magnitudeStart < kEffectForceMagnitudeMinimum) || (newTypeSpecificParameters.magnitudeStart > kEffectForceMagnitudeMaximum))
+                    return false;
+
+                if ((newTypeSpecificParameters.magnitudeEnd < kEffectForceMagnitudeMinimum) || (newTypeSpecificParameters.magnitudeEnd > kEffectForceMagnitudeMaximum))
+                    return false;
+
+                return true;
+            }
+
+            // --------
+
             std::unique_ptr<Effect> ConstantForceEffect::Clone(void) const
             {
                 return std::make_unique<ConstantForceEffect>(*this);
+            }
+
+            // --------
+
+            std::unique_ptr<Effect> RampForceEffect::Clone(void) const
+            {
+                return std::make_unique<RampForceEffect>(*this);
             }
 
             // --------
@@ -109,6 +129,57 @@ namespace Xidi
 
             // --------
 
+            TEffectValue PeriodicEffect::ComputePhase(TEffectTimeMs rawTime) const
+            {
+                const TEffectValue kRawTimeInPeriods = (TEffectValue)rawTime / (TEffectValue)GetTypeSpecificParameters().value().period;
+
+                TEffectValue currentPhase = std::round(((kRawTimeInPeriods - floorf(kRawTimeInPeriods)) * 36000) + GetTypeSpecificParameters().value().phase);
+                if (currentPhase >= 36000)
+                    currentPhase -= 36000;
+
+                return currentPhase;
+            }
+
+            // --------
+
+            TEffectValue ConstantForceEffect::ComputeRawMagnitude(TEffectTimeMs rawTime) const
+            {
+                const TEffectValue kMagnitude = GetTypeSpecificParameters().value().magnitude;
+
+                if (kMagnitude >= 0)
+                    return ApplyEnvelope(rawTime, kMagnitude);
+                else
+                    return -ApplyEnvelope(rawTime, -kMagnitude);
+            }
+
+            // --------
+
+            TEffectValue PeriodicEffect::ComputeRawMagnitude(TEffectTimeMs rawTime) const
+            {
+                const TEffectValue kModifiedAmplitude = ApplyEnvelope(rawTime, GetTypeSpecificParameters().value().amplitude);
+                const TEffectValue kRawMagnitude = (kModifiedAmplitude * WaveformAmplitude(ComputePhase(rawTime))) + GetTypeSpecificParameters().value().offset;
+
+                return std::min(kEffectForceMagnitudeMaximum, std::max(kEffectForceMagnitudeMinimum, kRawMagnitude));
+            }
+
+            // --------
+
+            TEffectValue RampForceEffect::ComputeRawMagnitude(TEffectTimeMs rawTime) const
+            {
+                const SRampForceParameters& rampParameters = GetTypeSpecificParameters().value();
+                const TEffectValue kSlope = (rampParameters.magnitudeEnd - rampParameters.magnitudeStart) / GetDuration().value();
+                const TEffectValue kIntercept = rampParameters.magnitudeStart;
+
+                const TEffectValue kMagnitude = ((rawTime * kSlope) + kIntercept);
+
+                if (kMagnitude >= 0)
+                    return ApplyEnvelope(rawTime, kMagnitude);
+                else
+                    return -ApplyEnvelope(rawTime, -kMagnitude);
+            }
+
+            // --------
+
             TEffectValue SawtoothDownEffect::WaveformAmplitude(TEffectValue phase) const
             {
                 // Per DirectInput documentation, sawtooth down waves start at +1 and descend all the way to -1, hitting it at the 360-degree point.
@@ -116,7 +187,7 @@ namespace Xidi
 
                 constexpr TEffectValue kSlope = -((TEffectValue)2 / (TEffectValue)36000);
                 constexpr TEffectValue kIntercept = 1;
-                
+
                 return (phase * kSlope) + kIntercept;
             }
 
@@ -174,41 +245,6 @@ namespace Xidi
 
                     return ((phase - 18000) * kSlope) + kIntercept;
                 }
-            }
-
-            // --------
-
-            TEffectValue PeriodicEffect::ComputePhase(TEffectTimeMs rawTime) const
-            {
-                const TEffectValue kRawTimeInPeriods = (TEffectValue)rawTime / (TEffectValue)GetTypeSpecificParameters().value().period;
-
-                TEffectValue currentPhase = std::round(((kRawTimeInPeriods - floorf(kRawTimeInPeriods)) * 36000) + GetTypeSpecificParameters().value().phase);
-                if (currentPhase >= 36000)
-                    currentPhase -= 36000;
-
-                return currentPhase;
-            }
-
-            // --------
-
-            TEffectValue ConstantForceEffect::ComputeRawMagnitude(TEffectTimeMs rawTime) const
-            {
-                const TEffectValue kMagnitude = GetTypeSpecificParameters().value().magnitude;
-
-                if (kMagnitude >= 0)
-                    return ApplyEnvelope(rawTime, kMagnitude);
-                else
-                    return -ApplyEnvelope(rawTime, -kMagnitude);
-            }
-
-            // --------
-
-            TEffectValue PeriodicEffect::ComputeRawMagnitude(TEffectTimeMs rawTime) const
-            {
-                const TEffectValue kModifiedAmplitude = ApplyEnvelope(rawTime, GetTypeSpecificParameters().value().amplitude);
-                const TEffectValue kRawMagnitude = (kModifiedAmplitude * WaveformAmplitude(ComputePhase(rawTime))) + GetTypeSpecificParameters().value().offset;
-
-                return std::min(kEffectForceMagnitudeMaximum, std::max(kEffectForceMagnitudeMinimum, kRawMagnitude));
             }
 
 

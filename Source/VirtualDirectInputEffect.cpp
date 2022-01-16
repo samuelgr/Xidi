@@ -716,6 +716,23 @@ namespace Xidi
         }
     }
 
+    // --------
+
+    template <ECharMode charMode> void RampForceDirectInputEffect<charMode>::DumpTypeSpecificParameters(LPCDIEFFECT peff) const
+    {
+        if (sizeof(DIRAMPFORCE) == peff->cbTypeSpecificParams)
+        {
+            const DIRAMPFORCE* const typeSpecificParams = (const DIRAMPFORCE*)peff->lpvTypeSpecificParams;
+            Message::OutputFormatted(kDumpSeverity, L"    cbTypeSpecificParams = %u (sizeof(DIRAMPFORCE))", peff->cbTypeSpecificParams);
+            Message::OutputFormatted(kDumpSeverity, L"    lpvTypeSpecificParams->lStart = %ld", typeSpecificParams->lStart);
+            Message::OutputFormatted(kDumpSeverity, L"    lpvTypeSpecificParams->lEnd = %ld", typeSpecificParams->lEnd);
+        }
+        else
+        {
+            VirtualDirectInputEffect<charMode>::DumpTypeSpecificParameters(peff);
+        }
+    }
+
 
     // -------- METHODS: IUnknown ------------------------------------------ //
     // See IUnknown documentation for more information.
@@ -1065,4 +1082,6 @@ namespace Xidi
     template class ConstantForceDirectInputEffect<ECharMode::W>;
     template class PeriodicDirectInputEffect<ECharMode::A>;
     template class PeriodicDirectInputEffect<ECharMode::W>;
+    template class RampForceDirectInputEffect<ECharMode::A>;
+    template class RampForceDirectInputEffect<ECharMode::W>;
 }

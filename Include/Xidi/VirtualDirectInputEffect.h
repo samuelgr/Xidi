@@ -322,4 +322,41 @@ namespace Xidi
 
         void DumpTypeSpecificParameters(LPCDIEFFECT peff) const override;
     };
+
+    /// Concrete DirectInput force feedback effect object type for ramp force effects.
+    /// @tparam charMode Selects between ASCII ("A" suffix) and Unicode ("W") suffix versions of types and interfaces.
+    template <ECharMode charMode> class RampForceDirectInputEffect : public VirtualDirectInputEffectWithTypeSpecificParameters<charMode, DIRAMPFORCE, Controller::ForceFeedback::SRampForceParameters>
+    {
+    public:
+        // -------- CONSTRUCTION AND DESTRUCTION ----------------------------------- //
+
+        /// Initialization constructor.
+        /// Simply delegates to the base class.
+        inline RampForceDirectInputEffect(VirtualDirectInputDevice<charMode>& associatedDevice, const Controller::ForceFeedback::RampForceEffect& effect, const GUID& effectGuid) : VirtualDirectInputEffectWithTypeSpecificParameters<charMode, DIRAMPFORCE, Controller::ForceFeedback::SRampForceParameters>(associatedDevice, effect, effectGuid)
+        {
+            // Nothing to do here.
+        }
+
+
+    protected:
+        // -------- CONCRETE INSTANCE METHODS -------------------------------------- //
+
+        Controller::ForceFeedback::SRampForceParameters ConvertFromDirectInput(const DIRAMPFORCE& diTypeSpecificParams) const override
+        {
+            return {
+                .magnitudeStart = (Controller::ForceFeedback::TEffectValue)diTypeSpecificParams.lStart,
+                .magnitudeEnd = (Controller::ForceFeedback::TEffectValue)diTypeSpecificParams.lEnd,
+            };
+        }
+
+        DIRAMPFORCE ConvertToDirectInput(const Controller::ForceFeedback::SRampForceParameters& typeSpecificParams) const override
+        {
+            return {
+                .lStart = (LONG)typeSpecificParams.magnitudeStart,
+                .lEnd = (LONG)typeSpecificParams.magnitudeEnd
+            };
+        }
+
+        void DumpTypeSpecificParameters(LPCDIEFFECT peff) const override;
+    };
 }

@@ -576,6 +576,35 @@ namespace Xidi
                 TEffectValue WaveformAmplitude(TEffectValue phase) const override;
                 std::unique_ptr<Effect> Clone(void) const override;
             };
+
+            /// Holds all type-specific parameters for ramp force effects.
+            struct SRampForceParameters
+            {
+                /// Starting magnitude, which must fall within the allowed magnitude range.
+                TEffectValue magnitudeStart;
+
+                /// Ending magnitude, which must fall within the allowed magnitude range.
+                TEffectValue magnitudeEnd;
+
+                /// Simple check for equality.
+                /// Primarily useful during testing.
+                /// @param [in] other Object with which to compare.
+                /// @return `true` if this object is equal to the other object, `false` otherwise.
+                constexpr inline bool operator==(const SRampForceParameters& other) const = default;
+            };
+
+            /// Implements a force feedback effect based on a force with a magnitude that changes linearly with time.
+            class RampForceEffect : public EffectWithTypeSpecificParameters<SRampForceParameters>
+            {
+            public:
+                // -------- CONCRETE INSTANCE METHODS ---------------------- //
+
+                bool AreTypeSpecificParametersValid(const SRampForceParameters& newTypeSpecificParameters) const override;
+                std::unique_ptr<Effect> Clone(void) const override;
+
+            protected:
+                TEffectValue ComputeRawMagnitude(TEffectTimeMs rawTime) const override;
+            };
         }
     }
 }

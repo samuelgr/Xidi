@@ -340,6 +340,12 @@ namespace Xidi
                 },
             },
             {
+                GUID_RampForce,
+                [](REFGUID rguidEffect, VirtualDirectInputDevice<charMode>& associatedDevice) -> std::unique_ptr<VirtualDirectInputEffect<charMode>> {
+                    return std::make_unique<RampForceDirectInputEffect<charMode>>(associatedDevice, Controller::ForceFeedback::RampForceEffect(), rguidEffect);
+                },
+            },
+            {
                 GUID_Square,
                 [](REFGUID rguidEffect, VirtualDirectInputDevice<charMode>& associatedDevice) -> std::unique_ptr<VirtualDirectInputEffect<charMode>> {
                     return std::make_unique<PeriodicDirectInputEffect<charMode>>(associatedDevice, Controller::ForceFeedback::SquareWaveEffect(), rguidEffect);
