@@ -350,6 +350,24 @@ namespace Xidi
                 [](REFGUID rguidEffect, VirtualDirectInputDevice<charMode>& associatedDevice) -> std::unique_ptr<VirtualDirectInputEffect<charMode>> {
                     return std::make_unique<PeriodicDirectInputEffect<charMode>>(associatedDevice, Controller::ForceFeedback::SineWaveEffect(), rguidEffect);
                 }
+            },
+            {
+                GUID_Triangle,
+                [](REFGUID rguidEffect, VirtualDirectInputDevice<charMode>& associatedDevice) -> std::unique_ptr<VirtualDirectInputEffect<charMode>> {
+                    return std::make_unique<PeriodicDirectInputEffect<charMode>>(associatedDevice, Controller::ForceFeedback::TriangleWaveEffect(), rguidEffect);
+                }
+            },
+            {
+                GUID_SawtoothUp,
+                [](REFGUID rguidEffect, VirtualDirectInputDevice<charMode>& associatedDevice) -> std::unique_ptr<VirtualDirectInputEffect<charMode>> {
+                    return std::make_unique<PeriodicDirectInputEffect<charMode>>(associatedDevice, Controller::ForceFeedback::SawtoothUpEffect(), rguidEffect);
+                }
+            },
+            {
+                GUID_SawtoothDown,
+                [](REFGUID rguidEffect, VirtualDirectInputDevice<charMode>& associatedDevice) -> std::unique_ptr<VirtualDirectInputEffect<charMode>> {
+                    return std::make_unique<PeriodicDirectInputEffect<charMode>>(associatedDevice, Controller::ForceFeedback::SawtoothDownEffect(), rguidEffect);
+                }
             }
         };
 
@@ -889,7 +907,7 @@ namespace Xidi
 
         std::unique_ptr<VirtualDirectInputEffect<charMode>> newEffect = ForceFeedbackEffectCreateObject<charMode>(rguid, *this);
         if (nullptr == newEffect)
-            LOG_INVOCATION_AND_RETURN(DIERR_INVALIDPARAM, kMethodSeverity);
+            LOG_INVOCATION_AND_RETURN(DIERR_DEVICENOTREG, kMethodSeverity);
 
         if (nullptr != lpeff)
         {

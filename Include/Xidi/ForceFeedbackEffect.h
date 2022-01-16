@@ -527,6 +527,26 @@ namespace Xidi
                 TEffectValue ComputeRawMagnitude(TEffectTimeMs rawTime) const override;
             };
 
+            /// Concrete implementation of a periodic effect for waves that follow a sawtooth pattern in the downwards direction.
+            class SawtoothDownEffect : public PeriodicEffect
+            {
+            public:
+                // -------- CONCRETE INSTANCE METHODS ---------------------- //
+
+                TEffectValue WaveformAmplitude(TEffectValue phase) const override;
+                std::unique_ptr<Effect> Clone(void) const override;
+            };
+
+            /// Concrete implementation of a periodic effect for waves that follow a sawtooth pattern in the upwards direction.
+            class SawtoothUpEffect : public PeriodicEffect
+            {
+            public:
+                // -------- CONCRETE INSTANCE METHODS ---------------------- //
+
+                TEffectValue WaveformAmplitude(TEffectValue phase) const override;
+                std::unique_ptr<Effect> Clone(void) const override;
+            };
+
             /// Concrete implementation of a periodic effect for sine waves.
             class SineWaveEffect : public PeriodicEffect
             {
@@ -539,6 +559,16 @@ namespace Xidi
 
             /// Concrete implementation of a periodic effect for square waves.
             class SquareWaveEffect : public PeriodicEffect
+            {
+            public:
+                // -------- CONCRETE INSTANCE METHODS ---------------------- //
+
+                TEffectValue WaveformAmplitude(TEffectValue phase) const override;
+                std::unique_ptr<Effect> Clone(void) const override;
+            };
+
+            /// Concrete implementation of a periodic effect for triangle waves.
+            class TriangleWaveEffect : public PeriodicEffect
             {
             public:
                 // -------- CONCRETE INSTANCE METHODS ---------------------- //

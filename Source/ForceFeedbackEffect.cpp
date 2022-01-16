@@ -74,6 +74,20 @@ namespace Xidi
 
             // --------
 
+            std::unique_ptr<Effect> SawtoothDownEffect::Clone(void) const
+            {
+                return std::make_unique<SawtoothDownEffect>(*this);
+            }
+
+            // --------
+
+            std::unique_ptr<Effect> SawtoothUpEffect::Clone(void) const
+            {
+                return std::make_unique<SawtoothUpEffect>(*this);
+            }
+
+            // --------
+
             std::unique_ptr<Effect> SineWaveEffect::Clone(void) const
             {
                 return std::make_unique<SineWaveEffect>(*this);
@@ -88,6 +102,39 @@ namespace Xidi
 
             // --------
 
+            std::unique_ptr<Effect> TriangleWaveEffect::Clone(void) const
+            {
+                return std::make_unique<TriangleWaveEffect>(*this);
+            }
+
+            // --------
+
+            TEffectValue SawtoothDownEffect::WaveformAmplitude(TEffectValue phase) const
+            {
+                // Per DirectInput documentation, sawtooth down waves start at +1 and descend all the way to -1, hitting it at the 360-degree point.
+                // See https://docs.microsoft.com/en-us/previous-versions/windows/desktop/ee418719%28v=vs.85%29 for more information.
+
+                constexpr TEffectValue kSlope = -((TEffectValue)2 / (TEffectValue)36000);
+                constexpr TEffectValue kIntercept = 1;
+                
+                return (phase * kSlope) + kIntercept;
+            }
+
+            // --------
+
+            TEffectValue SawtoothUpEffect::WaveformAmplitude(TEffectValue phase) const
+            {
+                // Per DirectInput documentation, sawtooth up waves start at -1 and ascend all the way to +1, hitting it at the 360-degree point.
+                // See https://docs.microsoft.com/en-us/previous-versions/windows/desktop/ee418719%28v=vs.85%29 for more information.
+
+                constexpr TEffectValue kSlope = ((TEffectValue)2 / (TEffectValue)36000);
+                constexpr TEffectValue kIntercept = -1;
+
+                return (phase * kSlope) + kIntercept;
+            }
+
+            // --------
+
             TEffectValue SineWaveEffect::WaveformAmplitude(TEffectValue phase) const
             {
                 return TrigonometrySine(phase);
@@ -97,10 +144,36 @@ namespace Xidi
 
             TEffectValue SquareWaveEffect::WaveformAmplitude(TEffectValue phase) const
             {
+                // Per DirectInput documentation, square waves are at +1 for the first half of the cycle and -1 for the second half of the cycle.
+                // See https://docs.microsoft.com/en-us/previous-versions/windows/desktop/ee418719%28v=vs.85%29 for more information.
+
                 if (phase < 18000)
                     return 1;
                 else
                     return -1;
+            }
+
+            // --------
+
+            TEffectValue TriangleWaveEffect::WaveformAmplitude(TEffectValue phase) const
+            {
+                // Per DirectInput documentation, triangle waves start at +1 and descend to -1, hitting it at the 180-degree point, then ascending back to +1 and hitting it at the 360-degree point.
+                // See https://docs.microsoft.com/en-us/previous-versions/windows/desktop/ee418719%28v=vs.85%29 for more information.
+
+                if (phase < 18000)
+                {
+                    constexpr TEffectValue kSlope = -((TEffectValue)2 / (TEffectValue)18000);
+                    constexpr TEffectValue kIntercept = 1;
+
+                    return (phase * kSlope) + kIntercept;
+                }
+                else
+                {
+                    constexpr TEffectValue kSlope = ((TEffectValue)2 / (TEffectValue)18000);
+                    constexpr TEffectValue kIntercept = -1;
+
+                    return ((phase - 18000) * kSlope) + kIntercept;
+                }
             }
 
             // --------
