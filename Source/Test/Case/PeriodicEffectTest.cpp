@@ -11,12 +11,11 @@
  *****************************************************************************/
 
 #include "ForceFeedbackEffect.h"
+#include "ForceFeedbackMath.h"
 #include "ForceFeedbackParameters.h"
 #include "ForceFeedbackTypes.h"
 #include "MockForceFeedbackEffect.h"
 #include "TestCase.h"
-
-#include <memory>
 
 
 namespace XidiTest
@@ -28,6 +27,16 @@ namespace XidiTest
 
     /// Common amplitude value used throughout test cases.
     static constexpr TEffectValue kTestEffectAmplitude = 5000;
+
+
+    // -------- INTERNAL TYPES --------------------------------------------- //
+
+    /// Test data record for waveform amplitude tests.
+    struct SWaveformAmplitudeTestData
+    {
+        TEffectValue inputPhase;                                            ///< Input provided to the effect object, expressed as a phase in degree hundredths.
+        TEffectValue expectedWaveformAmplitude;                             ///< Expected output from the waveform amplitude method.
+    };
 
 
     // -------- TEST CASES ------------------------------------------------- //
@@ -112,6 +121,133 @@ namespace XidiTest
             const TEffectValue kExpectedMagnitude = kTestEffectOffset + (kTestEffectAmplitude * kTestEffectEnvelopeMultiplier * effect.WaveformAmplitude(kTestEffectEvaluationTime));
             const TEffectValue kActualMagnitude = effect.ComputeMagnitude(kTestEffectEvaluationTime);
             TEST_ASSERT(kActualMagnitude == kExpectedMagnitude);
+        }
+    }
+
+    // Verifies correct waveform amplitude computations for various points in the waveform cycle.
+    // This test case is for sawtooth down effects.
+    TEST_CASE(PeriodicEffect_WaveformAmplitude_SawtoothDown)
+    {
+        constexpr SWaveformAmplitudeTestData kTestData[] = {
+            {.inputPhase = 0,       .expectedWaveformAmplitude = 1.0},
+            {.inputPhase = 4500,    .expectedWaveformAmplitude = 0.75},
+            {.inputPhase = 9000,    .expectedWaveformAmplitude = 0.5},
+            {.inputPhase = 13500,   .expectedWaveformAmplitude = 0.25},
+            {.inputPhase = 18000,   .expectedWaveformAmplitude = 0.0},
+            {.inputPhase = 22500,   .expectedWaveformAmplitude = -0.25},
+            {.inputPhase = 27000,   .expectedWaveformAmplitude = -0.5},
+            {.inputPhase = 31500,   .expectedWaveformAmplitude = -0.75},
+            {.inputPhase = 36000,   .expectedWaveformAmplitude = -1.0}
+        };
+
+        SawtoothDownEffect effect;
+
+        for (const auto kTest : kTestData)
+        {
+            const TEffectValue kActualWaveformAmplitude = effect.WaveformAmplitude(kTest.inputPhase);
+            TEST_ASSERT(kActualWaveformAmplitude == kTest.expectedWaveformAmplitude);
+        }
+    }
+
+    // Verifies correct waveform amplitude computations for various points in the waveform cycle.
+    // This test case is for sawtooth up effects.
+    TEST_CASE(PeriodicEffect_WaveformAmplitude_SawtoothUp)
+    {
+        constexpr SWaveformAmplitudeTestData kTestData[] = {
+            {.inputPhase = 0,       .expectedWaveformAmplitude = -1.0},
+            {.inputPhase = 4500,    .expectedWaveformAmplitude = -0.75},
+            {.inputPhase = 9000,    .expectedWaveformAmplitude = -0.5},
+            {.inputPhase = 13500,   .expectedWaveformAmplitude = -0.25},
+            {.inputPhase = 18000,   .expectedWaveformAmplitude = 0.0},
+            {.inputPhase = 22500,   .expectedWaveformAmplitude = 0.25},
+            {.inputPhase = 27000,   .expectedWaveformAmplitude = 0.5},
+            {.inputPhase = 31500,   .expectedWaveformAmplitude = 0.75},
+            {.inputPhase = 36000,   .expectedWaveformAmplitude = 1.0}
+        };
+
+        SawtoothUpEffect effect;
+
+        for (const auto kTest : kTestData)
+        {
+            const TEffectValue kActualWaveformAmplitude = effect.WaveformAmplitude(kTest.inputPhase);
+            TEST_ASSERT(kActualWaveformAmplitude == kTest.expectedWaveformAmplitude);
+        }
+    }
+
+    // Verifies correct waveform amplitude computations for various points in the waveform cycle.
+    // This test case is for sine wave effects.
+    TEST_CASE(PeriodicEffect_WaveformAmplitude_SineWave)
+    {
+        const TEffectValue kSin45 = TrigonometrySine(4500);
+
+        const SWaveformAmplitudeTestData kTestData[] = {
+            {.inputPhase = 0,       .expectedWaveformAmplitude = 0},
+            {.inputPhase = 4500,    .expectedWaveformAmplitude = kSin45},
+            {.inputPhase = 9000,    .expectedWaveformAmplitude = 1.0},
+            {.inputPhase = 13500,   .expectedWaveformAmplitude = kSin45},
+            {.inputPhase = 18000,   .expectedWaveformAmplitude = 0},
+            {.inputPhase = 22500,   .expectedWaveformAmplitude = -kSin45},
+            {.inputPhase = 27000,   .expectedWaveformAmplitude = -1.0},
+            {.inputPhase = 31500,   .expectedWaveformAmplitude = -kSin45},
+            {.inputPhase = 36000,   .expectedWaveformAmplitude = 0}
+        };
+
+        SineWaveEffect effect;
+
+        for (const auto kTest : kTestData)
+        {
+            const TEffectValue kActualWaveformAmplitude = effect.WaveformAmplitude(kTest.inputPhase);
+            TEST_ASSERT(kActualWaveformAmplitude == kTest.expectedWaveformAmplitude);
+        }
+    }
+
+    // Verifies correct waveform amplitude computations for various points in the waveform cycle.
+    // This test case is for square wave effects.
+    TEST_CASE(PeriodicEffect_WaveformAmplitude_SquareWave)
+    {
+        constexpr SWaveformAmplitudeTestData kTestData[] = {
+            {.inputPhase = 0,       .expectedWaveformAmplitude = 1.0},
+            {.inputPhase = 4500,    .expectedWaveformAmplitude = 1.0},
+            {.inputPhase = 9000,    .expectedWaveformAmplitude = 1.0},
+            {.inputPhase = 13500,   .expectedWaveformAmplitude = 1.0},
+            {.inputPhase = 18000,   .expectedWaveformAmplitude = -1.0},
+            {.inputPhase = 22500,   .expectedWaveformAmplitude = -1.0},
+            {.inputPhase = 27000,   .expectedWaveformAmplitude = -1.0},
+            {.inputPhase = 31500,   .expectedWaveformAmplitude = -1.0},
+            {.inputPhase = 35999,   .expectedWaveformAmplitude = -1.0},
+        };
+
+        SquareWaveEffect effect;
+
+        for (const auto kTest : kTestData)
+        {
+            const TEffectValue kActualWaveformAmplitude = effect.WaveformAmplitude(kTest.inputPhase);
+            TEST_ASSERT(kActualWaveformAmplitude == kTest.expectedWaveformAmplitude);
+        }
+    }
+
+    // Verifies correct waveform amplitude computations for various points in the waveform cycle.
+    // This test case is for triangle wave effects.
+    TEST_CASE(PeriodicEffect_WaveformAmplitude_TriangleWave)
+    {
+        constexpr SWaveformAmplitudeTestData kTestData[] = {
+            {.inputPhase = 0,       .expectedWaveformAmplitude = 1.0},
+            {.inputPhase = 4500,    .expectedWaveformAmplitude = 0.5},
+            {.inputPhase = 9000,    .expectedWaveformAmplitude = 0.0},
+            {.inputPhase = 13500,   .expectedWaveformAmplitude = -0.5},
+            {.inputPhase = 18000,   .expectedWaveformAmplitude = -1.0},
+            {.inputPhase = 22500,   .expectedWaveformAmplitude = -0.5},
+            {.inputPhase = 27000,   .expectedWaveformAmplitude = 0.0},
+            {.inputPhase = 31500,   .expectedWaveformAmplitude = 0.5},
+            {.inputPhase = 36000,   .expectedWaveformAmplitude = 1.0},
+        };
+
+        TriangleWaveEffect effect;
+
+        for (const auto kTest : kTestData)
+        {
+            const TEffectValue kActualWaveformAmplitude = effect.WaveformAmplitude(kTest.inputPhase);
+            TEST_ASSERT(kActualWaveformAmplitude == kTest.expectedWaveformAmplitude);
         }
     }
 }
