@@ -284,7 +284,12 @@ namespace Xidi
                     Message::OutputFormatted(kDumpSeverity, L"    dwStartDelay = %u", peff->dwStartDelay);
 
                 if (0 != (dwFlags & DIEP_TRIGGERBUTTON))
-                    Message::OutputFormatted(kDumpSeverity, L"    dwTriggerButton = %u", peff->dwTriggerButton);
+                {
+                    if (DIEB_NOTRIGGER == peff->dwTriggerButton)
+                        Message::OutputFormatted(kDumpSeverity, L"    dwTriggerButton = %u (DIEB_NOTRIGGER)", peff->dwTriggerButton);
+                    else
+                        Message::OutputFormatted(kDumpSeverity, L"    dwTriggerButton = %u", peff->dwTriggerButton);
+                }
 
                 if (0 != (dwFlags & DIEP_TRIGGERREPEATINTERVAL))
                     Message::OutputFormatted(kDumpSeverity, L"    dwTriggerRepeatInterval = %u", peff->dwTriggerRepeatInterval);
