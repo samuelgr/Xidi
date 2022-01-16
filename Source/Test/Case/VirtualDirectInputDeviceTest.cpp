@@ -386,6 +386,52 @@ namespace XidiTest
         );
     }
 
+    TEST_CASE(VirtualDirectInputDevice_EnumObjects_OnlyForceFeedbackActuators)
+    {
+        std::set<EAxis> expectedSeenAxes;
+        for (const auto axisCapability : kTestMapperWithForceFeedback.GetCapabilities().axisCapabilities)
+        {
+            if (true == axisCapability.supportsForceFeedback)
+                expectedSeenAxes.insert(axisCapability.type);
+        }
+        TEST_ASSERT(false == expectedSeenAxes.empty());
+
+        VirtualDirectInputDevice<ECharMode::W> diController(CreateTestVirtualController(kTestMapperWithForceFeedback));
+        TEST_ASSERT(DI_OK == diController.SetDataFormat(&kTestFormatSpec));
+
+        std::set<EAxis> actualSeenAxes;
+
+        TEST_ASSERT(DI_OK == diController.EnumObjects([](LPCDIDEVICEOBJECTINSTANCE lpddoi, LPVOID pvRef)->BOOL
+            {
+                std::set<EAxis>& actualSeenAxes = *((std::set<EAxis>*)pvRef);
+
+                EAxis seenAxis;
+                if (GUID_XAxis == lpddoi->guidType)
+                    seenAxis = EAxis::X;
+                else if (GUID_YAxis == lpddoi->guidType)
+                    seenAxis = EAxis::Y;
+                else if (GUID_ZAxis == lpddoi->guidType)
+                    seenAxis = EAxis::Z;
+                else if (GUID_RxAxis == lpddoi->guidType)
+                    seenAxis = EAxis::RotX;
+                else if (GUID_RyAxis == lpddoi->guidType)
+                    seenAxis = EAxis::RotY;
+                else if (GUID_RzAxis == lpddoi->guidType)
+                    seenAxis = EAxis::RotZ;
+                else
+                    TEST_FAILED_BECAUSE(L"Unrecognized axis GUID.");
+
+                TEST_ASSERT(false == actualSeenAxes.contains(seenAxis));
+                actualSeenAxes.insert(seenAxis);
+
+                return DIENUM_CONTINUE;
+            },
+            (LPVOID)&actualSeenAxes, DIDFT_FFACTUATOR | DIDFT_ABSAXIS)
+        );
+
+        TEST_ASSERT(actualSeenAxes == expectedSeenAxes);
+    }
+
     // No objects match the enumeration request, so the callback should never be invoked.
     TEST_CASE(VirtualDirectInputDevice_EnumObjects_NoMatchingObjects)
     {
