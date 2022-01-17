@@ -19,7 +19,6 @@
 #include "VirtualDirectInputDevice.h"
 #include "VirtualDirectInputEffect.h"
 
-#include <algorithm>
 #include <cstddef>
 #include <memory>
 #include <optional>
@@ -827,7 +826,7 @@ namespace Xidi
                 LOG_INVOCATION_AND_RETURN(DIERR_INVALIDPARAM, kMethodSeverity);
         }
 
-        HRESULT axesResult = DI_OK;
+        bool axesInsufficientBuffer = false;
         if (0 != (dwFlags & DIEP_AXES))
         {
             if (false == effect->HasAssociatedAxes())
@@ -837,7 +836,7 @@ namespace Xidi
             if (peff->cAxes < (DWORD)kAssociatedAxes.count)
             {
                 peff->cAxes = (DWORD)kAssociatedAxes.count;
-                axesResult = DIERR_MOREDATA;
+                axesInsufficientBuffer = true;
             }
             else
             {
@@ -882,7 +881,7 @@ namespace Xidi
             }
         }
 
-        HRESULT directionResult = DI_OK;
+        bool directionInsufficientBuffer = false;
         if (0 != (dwFlags & DIEP_DIRECTION))
         {
             if (false == effect->HasDirection())
@@ -892,7 +891,7 @@ namespace Xidi
             if (peff->cAxes < (DWORD)kDirectionVector.GetNumAxes())
             {
                 peff->cAxes = (DWORD)kDirectionVector.GetNumAxes();
-                directionResult = DIERR_MOREDATA;
+                directionInsufficientBuffer = true;
             }
             else
             {
@@ -980,11 +979,24 @@ namespace Xidi
         if (0 != (dwFlags & DIEP_SAMPLEPERIOD))
             peff->dwSamplePeriod = ConvertTimeToDirectInput(effect->GetSamplePeriod());
 
-        HRESULT typeSpecificParameterResult = DI_OK;
+        bool typeSpecificInsufficientBuffer = false;
         if (0 != (dwFlags & DIEP_TYPESPECIFICPARAMS))
-            typeSpecificParameterResult = GetTypeSpecificParameters(peff);
+        {
+            switch (GetTypeSpecificParameters(peff))
+            {
+            case DI_OK:
+                break;
 
-        const HRESULT kOverallResult = std::max({(ULONG)axesResult, (ULONG)directionResult, (ULONG)typeSpecificParameterResult});
+            case DIERR_MOREDATA:
+                typeSpecificInsufficientBuffer = true;
+                break;
+
+            default:
+                LOG_INVOCATION_AND_RETURN(DIERR_INVALIDPARAM, kMethodSeverity);
+            }
+        }
+
+        const HRESULT kOverallResult = ((true == (axesInsufficientBuffer || directionInsufficientBuffer || typeSpecificInsufficientBuffer)) ? DIERR_MOREDATA : DI_OK);
         LOG_INVOCATION_AND_RETURN(kOverallResult, kMethodSeverity);
     }
 
