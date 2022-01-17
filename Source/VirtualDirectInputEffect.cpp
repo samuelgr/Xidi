@@ -980,14 +980,11 @@ namespace Xidi
         if (0 != (dwFlags & DIEP_SAMPLEPERIOD))
             peff->dwSamplePeriod = ConvertTimeToDirectInput(effect->GetSamplePeriod());
 
-        if (0 != (dwFlags & DIEP_STARTDELAY))
-            peff->dwStartDelay = ConvertTimeToDirectInput(effect->GetStartDelay());
-
         HRESULT typeSpecificParameterResult = DI_OK;
         if (0 != (dwFlags & DIEP_TYPESPECIFICPARAMS))
             typeSpecificParameterResult = GetTypeSpecificParameters(peff);
 
-        const HRESULT kOverallResult = std::max({axesResult, directionResult, typeSpecificParameterResult});
+        const HRESULT kOverallResult = std::max({(ULONG)axesResult, (ULONG)directionResult, (ULONG)typeSpecificParameterResult});
         LOG_INVOCATION_AND_RETURN(kOverallResult, kMethodSeverity);
     }
 
