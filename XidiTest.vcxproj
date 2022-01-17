@@ -265,7 +265,7 @@
     <ClCompile Include="Source\Test\Case\DataFormatTest.cpp" />
     <ClCompile Include="Source\Test\Case\DigitalAxisMapperTest.cpp" />
     <ClCompile Include="Source\Test\Case\ForceFeedbackDeviceTest.cpp" />
-    <ClCompile Include="Source\Test\Case\ForceFeedbackDirectionVectorTest.cpp" />
+    <ClCompile Include="Source\Test\Case\ForceFeedbackParametersTest.cpp" />
     <ClCompile Include="Source\Test\Case\ForceFeedbackEffectTest.cpp" />
     <ClCompile Include="Source\Test\Case\InvertMapperTest.cpp" />
     <ClCompile Include="Source\Test\Case\KeyboardMapperTest.cpp" />

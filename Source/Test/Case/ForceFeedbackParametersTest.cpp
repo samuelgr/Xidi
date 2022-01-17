@@ -5,8 +5,9 @@
  * Authored by Samuel Grossman
  * Copyright (c) 2016-2022
  *************************************************************************//**
- * @file ForceFeedbackEffectTest.cpp
- *   Unit tests for functionality common to all force feedback effects.
+ * @file ForceFeedbackParametersTest.cpp
+ *   Unit tests for functionality related to force feedback parameters,
+ *   especially direction vectors.
  *****************************************************************************/
 
 #include "ForceFeedbackParameters.h"
@@ -231,7 +232,7 @@ namespace XidiTest
 
     // Exercises coordinate system setting, getting, and converting with single-axis direction vectors.
     // The only possible input coordinate system is Cartesian, and all of these attempted conversions should fail.
-    TEST_CASE(ForceFeedbackDirectionVector_1D_Conversions)
+    TEST_CASE(ForceFeedbackParameters_DirectionVector_1D_Conversions)
     {
         constexpr TEffectValue kTestCoordinates[] = {-100000000, -10000, -100, -1, 1, 100, 10000, 100000000};
         
@@ -260,7 +261,7 @@ namespace XidiTest
 
     // Exercises computation of a force's magnitude components using a single-axis direction vector.
     // Magnitude of the direction vector itself does not matter, only the sign does, so the expected output magnitude is single-component with the same absolute value and either the same sign of, or opposite sign of, the input.
-    TEST_CASE(ForceFeedbackDirectionVector_1D_MagnitudeComponents)
+    TEST_CASE(ForceFeedbackParameters_DirectionVector_1D_MagnitudeComponents)
     {
         constexpr TEffectValue kTestMagnitudes[] = {-1000, -10, 0, 100, 10000};
         constexpr TEffectValue kTestCoordinates[] = {-100000000, -10000, -100, -1, 1, 100, 10000, 100000000};
@@ -292,7 +293,7 @@ namespace XidiTest
     }
 
     // Exercises coordinate system setting, getting, and converting with two-axis direction vectors.
-    TEST_CASE(ForceFeedbackDirectionVector_2D_Conversions)
+    TEST_CASE(ForceFeedbackParameters_DirectionVector_2D_Conversions)
     {
         const SCoordinateConversionTestData<2> kTestData[] = {
 
@@ -328,7 +329,7 @@ namespace XidiTest
     }
 
     // Exercises computation of a force's magnitude components using two-axis direction vectors.
-    TEST_CASE(ForceFeedbackDirectionVector_2D_MagnitudeComponents)
+    TEST_CASE(ForceFeedbackParameters_DirectionVector_2D_MagnitudeComponents)
     {
         constexpr TEffectValue kTestMagnitude = 1000;
         const SMagnitudeComponentsTestData<2> kTestData[] = {
@@ -366,7 +367,7 @@ namespace XidiTest
 
     // Exercises coordinate system setting, getting, and converting with three-axis direction vectors.
     // Polar coordinates are invalid here.
-    TEST_CASE(ForceFeedbackDirectionVector_3D_Conversions)
+    TEST_CASE(ForceFeedbackParameters_DirectionVector_3D_Conversions)
     {
         const SCoordinateConversionTestData<3> kTestData[] = {
 
@@ -404,7 +405,7 @@ namespace XidiTest
     }
 
     // Exercises computation of a force's magnitude components using three-axis direction vectors.
-    TEST_CASE(ForceFeedbackDirectionVector_3D_MagnitudeComponents)
+    TEST_CASE(ForceFeedbackParameters_DirectionVector_3D_MagnitudeComponents)
     {
         constexpr TEffectValue kTestMagnitude = -1000;
         const SMagnitudeComponentsTestData<3> kTestData[] = {
@@ -444,7 +445,7 @@ namespace XidiTest
 
     // Exercises various ways of setting directions using invalid coordinates.
     // All invocations are expected to fail.
-    TEST_CASE(ForceFeedbackDirectionVector_InvalidCoordinates)
+    TEST_CASE(ForceFeedbackParameters_DirectionVector_InvalidCoordinates)
     {
         constexpr TEffectValue kInvalidAngleCoordinates[] = {-1, -1000, 36000, 50000};
 
@@ -485,7 +486,7 @@ namespace XidiTest
     }
 
     // Verifies that direction vector objects correctly report their original coordinate system once a direction is set.
-    TEST_CASE(ForceFeedbackDirectionVector_OriginalCoordinateSystem)
+    TEST_CASE(ForceFeedbackParameters_DirectionVector_OriginalCoordinateSystem)
     {
         constexpr TEffectValue kTestCoordinates[] = {5566};
 
@@ -503,7 +504,7 @@ namespace XidiTest
     }
 
     // Verifies that direction vector objects correctly enter omnidirectional mode and, when in this mode, broadcast force components without transformation.
-    TEST_CASE(ForceFeedbackDirectionVector_Omnidirectional)
+    TEST_CASE(ForceFeedbackParameters_DirectionVector_Omnidirectional)
     {
         constexpr TEffectValue kTestCoordinates[] = {0, 0, 0};
 
@@ -521,7 +522,7 @@ namespace XidiTest
     }
 
     // Verifies that direction vector objects exit omnidirectional mode once the direction is changed to something else.
-    TEST_CASE(ForceFeedbackDirectionVector_OmnidirectionalExit)
+    TEST_CASE(ForceFeedbackParameters_DirectionVector_OmnidirectionalExit)
     {
         DirectionVector vector;
         TEST_ASSERT(false == vector.HasDirection());
