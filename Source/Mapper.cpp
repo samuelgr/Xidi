@@ -222,8 +222,23 @@ namespace Xidi
             {
                 if (true == forceFeedbackActuators.all[i].isPresent)
                 {
-                    axesPresent.insert((int)forceFeedbackActuators.all[i].axis);
-                    axesForceFeedback.insert((int)forceFeedbackActuators.all[i].axis);
+                    switch (forceFeedbackActuators.all[i].mode)
+                    {
+                    case ForceFeedback::EActuatorMode::SingleAxis:
+                        axesPresent.insert((int)forceFeedbackActuators.all[i].singleAxis.axis);
+                        axesForceFeedback.insert((int)forceFeedbackActuators.all[i].singleAxis.axis);
+                        break;
+
+                    case ForceFeedback::EActuatorMode::MagnitudeProjection:
+                        axesPresent.insert((int)forceFeedbackActuators.all[i].magnitudeProjection.axisFirst);
+                        axesPresent.insert((int)forceFeedbackActuators.all[i].magnitudeProjection.axisSecond);
+                        axesForceFeedback.insert((int)forceFeedbackActuators.all[i].magnitudeProjection.axisFirst);
+                        axesForceFeedback.insert((int)forceFeedbackActuators.all[i].magnitudeProjection.axisSecond);
+                        break;
+
+                    default:
+                        break;
+                    }
                 }
             }
 
@@ -272,23 +287,43 @@ namespace Xidi
         {
             if (false == actuatorElement.isPresent)
                 return 0;
-            if (ForceFeedback::kEffectForceMagnitudeZero == virtualEffectComponents[(int)actuatorElement.axis])
-                return 0;
 
-            const bool kActuatorDirectionIsNegative = std::signbit(virtualEffectComponents[(int)actuatorElement.axis]);
-            if ((EAxisDirection::Positive == actuatorElement.direction) && (true == kActuatorDirectionIsNegative))
+            ForceFeedback::TEffectValue virtualActuatorStrengthRaw = 0;
+
+            switch (actuatorElement.mode)
+            {
+            case ForceFeedback::EActuatorMode::SingleAxis:
+                do
+                {
+                    if (ForceFeedback::kEffectForceMagnitudeZero == virtualEffectComponents[(int)actuatorElement.singleAxis.axis])
+                        return 0;
+
+                    const bool kActuatorDirectionIsNegative = std::signbit(virtualEffectComponents[(int)actuatorElement.singleAxis.axis]);
+                    if ((EAxisDirection::Positive == actuatorElement.singleAxis.direction) && (true == kActuatorDirectionIsNegative))
+                        return 0;
+                    if ((EAxisDirection::Negative == actuatorElement.singleAxis.direction) && (false == kActuatorDirectionIsNegative))
+                        return 0;
+
+                    virtualActuatorStrengthRaw = virtualEffectComponents[(int)actuatorElement.singleAxis.axis];
+                } while (false);
+                break;
+
+            case ForceFeedback::EActuatorMode::MagnitudeProjection:
+                virtualActuatorStrengthRaw = (ForceFeedback::TEffectValue)std::sqrt(std::pow(virtualEffectComponents[(int)actuatorElement.magnitudeProjection.axisFirst], 2) + std::pow(virtualEffectComponents[(int)actuatorElement.magnitudeProjection.axisSecond], 2));
+                break;
+
+            default:
                 return 0;
-            if ((EAxisDirection::Negative == actuatorElement.direction) && (false == kActuatorDirectionIsNegative))
-                return 0;
+            }
 
             constexpr ForceFeedback::TEffectValue kPhysicalActuatorRange = (ForceFeedback::TEffectValue)(std::numeric_limits<ForceFeedback::TPhysicalActuatorValue>::max() - std::numeric_limits<ForceFeedback::TPhysicalActuatorValue>::min());
             constexpr ForceFeedback::TEffectValue kVirtualMagnitudeRange = ForceFeedback::kEffectForceMagnitudeMaximum - ForceFeedback::kEffectForceMagnitudeZero;
             constexpr ForceFeedback::TEffectValue kScalingFactor = kPhysicalActuatorRange / kVirtualMagnitudeRange;
-            
+
             const ForceFeedback::TEffectValue kGainMultiplier = gain / ForceFeedback::kEffectModifierMaximum;
             const ForceFeedback::TEffectValue kVirtualActuatorStrengthMax = (ForceFeedback::kEffectForceMagnitudeMaximum - ForceFeedback::kEffectForceMagnitudeZero) * kGainMultiplier;
 
-            const ForceFeedback::TEffectValue kVirtualActuatorStrength = std::min(kVirtualActuatorStrengthMax, kGainMultiplier * std::abs(virtualEffectComponents[(int)actuatorElement.axis] - ForceFeedback::kEffectForceMagnitudeZero));
+            const ForceFeedback::TEffectValue kVirtualActuatorStrength = std::min(kVirtualActuatorStrengthMax, kGainMultiplier * std::abs(virtualActuatorStrengthRaw - ForceFeedback::kEffectForceMagnitudeZero));
             const long kPhysicalActuatorStrength = std::lround(kVirtualActuatorStrength * kScalingFactor);
 
             return (ForceFeedback::TPhysicalActuatorValue)kPhysicalActuatorStrength;

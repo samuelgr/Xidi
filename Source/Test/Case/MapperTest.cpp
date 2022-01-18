@@ -29,6 +29,7 @@
 namespace XidiTest
 {
     using namespace ::Xidi::Controller;
+    using ::Xidi::Controller::ForceFeedback::EActuatorMode;
     using ::Xidi::Controller::ForceFeedback::SPhysicalActuatorComponents;
     using ::Xidi::Controller::ForceFeedback::TOrderedMagnitudeComponents;
     using ::Xidi::Controller::ForceFeedback::TEffectValue;
@@ -509,9 +510,9 @@ namespace XidiTest
         TEST_ASSERT(kActualCapabilities == kExpectedCapabilities);
     }
 
-    // Mapper that is empty except for defining force feedback actuators on an axis.
+    // Mapper that is empty except for defining force feedback actuators on an axis using single axis mode.
     // Virtual controller should show that this axis exists but only for force feedback and not for physical controller element input.
-    TEST_CASE(Mapper_Capabilities_ForceFeedbackOnly)
+    TEST_CASE(Mapper_Capabilities_ForceFeedbackOnly_SingleAxis)
     {
         constexpr EAxis kTestAxis = EAxis::Z;
         constexpr SCapabilities kExpectedCapabilities = MakeExpectedCapabilities({
@@ -522,7 +523,30 @@ namespace XidiTest
         });
 
         constexpr Mapper::SForceFeedbackActuatorMap kTestActuatorMap = {
-            .rightMotor = {.isPresent = true, .axis = kTestAxis, .direction = EAxisDirection::Negative},
+            .rightMotor = {.isPresent = true, .mode = EActuatorMode::SingleAxis, .singleAxis = {.axis = kTestAxis, .direction = EAxisDirection::Negative}},
+        };
+
+        const Mapper mapper({}, kTestActuatorMap);
+        const SCapabilities kActualCapabilities = mapper.GetCapabilities();
+        TEST_ASSERT(kActualCapabilities == kExpectedCapabilities);
+    }
+
+    // Mapper that is empty except for defining force feedback actuators on an axis using magnitude projection mode.
+    // Virtual controller should show that this axis exists but only for force feedback and not for physical controller element input.
+    TEST_CASE(Mapper_Capabilities_ForceFeedbackOnly_MagnitudeProjection)
+    {
+        constexpr EAxis kTestAxisFirst = EAxis::Z;
+        constexpr EAxis kTestAxisSecond = EAxis::RotZ;
+
+        constexpr SCapabilities kExpectedCapabilities = MakeExpectedCapabilities({
+            .axisCapabilities = {{.type = kTestAxisFirst, .supportsForceFeedback = true}, {.type = kTestAxisSecond, .supportsForceFeedback = true}},
+            .numAxes = 2,
+            .numButtons = 0,
+            .hasPov = false
+        });
+
+        constexpr Mapper::SForceFeedbackActuatorMap kTestActuatorMap = {
+            .rightMotor = {.isPresent = true, .mode = EActuatorMode::MagnitudeProjection, .magnitudeProjection = {.axisFirst = kTestAxisFirst, .axisSecond = kTestAxisSecond}},
         };
 
         const Mapper mapper({}, kTestActuatorMap);
@@ -902,16 +926,16 @@ namespace XidiTest
 
     // The following sequence of tests, which together comprise the ForceFeedback suite, verify that a mapper correctly produces physical force feedback actuator values given a virtual magnitude vector and an actuator mapping table.
 
-    // Nominal case of some actuators mapped and using axes with the default of both directions.
-    TEST_CASE(Mapper_ForceFeedback_Nominal)
+    // Nominal case of some actuators mapped in single axis mode and using axes with the default of both directions.
+    TEST_CASE(Mapper_ForceFeedback_Nominal_SingleAxis)
     {
         constexpr TOrderedMagnitudeComponents kTestMagnitudeVector = {1111, -2222, 3333, -4444, 5555, -6666};
 
         constexpr Mapper::SForceFeedbackActuatorMap kTestActuatorMap = {
-            .leftMotor = {.isPresent = true, .axis = EAxis::X, .direction = EAxisDirection::Both},
-            .rightMotor = {.isPresent = true, .axis = EAxis::Y, .direction = EAxisDirection::Both},
+            .leftMotor = {.isPresent = true, .mode = EActuatorMode::SingleAxis, .singleAxis = {.axis = EAxis::X, .direction = EAxisDirection::Both}},
+            .rightMotor = {.isPresent = true, .mode = EActuatorMode::SingleAxis, .singleAxis = {.axis = EAxis::Y, .direction = EAxisDirection::Both}},
             .leftImpulseTrigger = {.isPresent = false},
-            .rightImpulseTrigger = {.isPresent = true, .axis = EAxis::RotZ, .direction = EAxisDirection::Both}
+            .rightImpulseTrigger = {.isPresent = true, .mode = EActuatorMode::SingleAxis, .singleAxis = {.axis = EAxis::RotZ, .direction = EAxisDirection::Both}}
         };
 
         const SPhysicalActuatorComponents kExpectedActuatorComponents = {
@@ -926,16 +950,41 @@ namespace XidiTest
         TEST_ASSERT(kActualActuatorComponents == kExpectedActuatorComponents);
     }
 
+    // Nominal case of some actuators mapped in magnitude projection mode.
+    // To keep the math simple, both X and Y axes have the same magnitude components, and these are the axes used in the magnitude projection.
+    TEST_CASE(Mapper_ForceFeedback_Nominal_MagnitudeProjection)
+    {
+        constexpr TOrderedMagnitudeComponents kTestMagnitudeVector = {1111, 1111, 2233, 4455, 6677, 8899};
+        const TEffectValue kSqrt2 = std::sqrtf(2);
+
+        constexpr Mapper::SForceFeedbackActuatorMap kTestActuatorMap = {
+            .leftMotor = {.isPresent = true, .mode = EActuatorMode::MagnitudeProjection, .magnitudeProjection = {.axisFirst = EAxis::X, .axisSecond = EAxis::Y}},
+            .rightMotor = {.isPresent = true, .mode = EActuatorMode::MagnitudeProjection, .magnitudeProjection = {.axisFirst = EAxis::Y, .axisSecond = EAxis::X}},
+            .leftImpulseTrigger = {.isPresent = false},
+            .rightImpulseTrigger = {.isPresent = false}
+        };
+
+        const SPhysicalActuatorComponents kExpectedActuatorComponents = {
+            .leftMotor = ForceFeedbackActuatorValueVirtualToPhysical(kTestMagnitudeVector[(int)EAxis::X] * kSqrt2),
+            .rightMotor = ForceFeedbackActuatorValueVirtualToPhysical(kTestMagnitudeVector[(int)EAxis::Y] * kSqrt2)
+        };
+
+        const Mapper mapper({}, kTestActuatorMap);
+
+        const SPhysicalActuatorComponents kActualActuatorComponents = mapper.MapForceFeedbackVirtualToPhysical(kTestMagnitudeVector);
+        TEST_ASSERT(kActualActuatorComponents == kExpectedActuatorComponents);
+    }
+
     // Slightly more complex case of some actuators mapped and in all cases using only a single axis direction.
     TEST_CASE(Mapper_ForceFeedback_Unidirectional)
     {
         constexpr TOrderedMagnitudeComponents kTestMagnitudeVector = {1111, -2222, 3333, -4444, 5555, -6666};
 
         constexpr Mapper::SForceFeedbackActuatorMap kTestActuatorMap = {
-            .leftMotor = {.isPresent = true, .axis = EAxis::X, .direction = EAxisDirection::Positive},
-            .rightMotor = {.isPresent = true, .axis = EAxis::Y, .direction = EAxisDirection::Positive},
+            .leftMotor = {.isPresent = true, .mode = EActuatorMode::SingleAxis, .singleAxis = {.axis = EAxis::X, .direction = EAxisDirection::Positive}},
+            .rightMotor = {.isPresent = true, .mode = EActuatorMode::SingleAxis, .singleAxis = {.axis = EAxis::Y, .direction = EAxisDirection::Positive}},
             .leftImpulseTrigger = {.isPresent = false},
-            .rightImpulseTrigger = {.isPresent = true, .axis = EAxis::RotZ, .direction = EAxisDirection::Negative}
+            .rightImpulseTrigger = {.isPresent = true, .mode = EActuatorMode::SingleAxis, .singleAxis = {.axis = EAxis::RotZ, .direction = EAxisDirection::Negative}}
         };
 
         const SPhysicalActuatorComponents kExpectedActuatorComponents = {
@@ -961,7 +1010,7 @@ namespace XidiTest
         };
 
         constexpr Mapper::SForceFeedbackActuatorMap kTestActuatorMap = {
-            .leftMotor = {.isPresent = true, .axis = EAxis::X, .direction = EAxisDirection::Both}
+            .leftMotor = {.isPresent = true, .mode = EActuatorMode::SingleAxis, .singleAxis = {.axis = EAxis::X, .direction = EAxisDirection::Both}}
         };
 
         const Mapper mapper({}, kTestActuatorMap);
@@ -983,7 +1032,7 @@ namespace XidiTest
         constexpr TOrderedMagnitudeComponents kTestMagnitudeVector = {-1000};
 
         constexpr Mapper::SForceFeedbackActuatorMap kTestActuatorMap = {
-            .leftMotor = {.isPresent = true, .axis = EAxis::X, .direction = EAxisDirection::Both}
+            .leftMotor = {.isPresent = true, .mode = EActuatorMode::SingleAxis, .singleAxis = {.axis = EAxis::X, .direction = EAxisDirection::Both}}
         };
 
         constexpr TEffectValue kTestGainValues[] = {10000, 7500, 5000, 2500, 1000};
@@ -1014,7 +1063,7 @@ namespace XidiTest
         constexpr TEffectValue kTestGainValues[] = {5000, 2500, 1000};
 
         constexpr Mapper::SForceFeedbackActuatorMap kTestActuatorMap = {
-            .leftMotor = {.isPresent = true, .axis = EAxis::X, .direction = EAxisDirection::Both}
+            .leftMotor = {.isPresent = true, .mode = EActuatorMode::SingleAxis, .singleAxis = {.axis = EAxis::X, .direction = EAxisDirection::Both}}
         };
 
         const Mapper mapper({}, kTestActuatorMap);

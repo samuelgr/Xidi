@@ -149,7 +149,7 @@ namespace Xidi
                         {
                             std::unique_lock lock(physicalControllerStateMutex[controllerIdentifier]);
                             physicalControllerState[controllerIdentifier] = newPhysicalState;
-                        } while (0);
+                        } while (false);
 
                         physicalControllerUpdateNotifier[controllerIdentifier].notify_all();
                     }

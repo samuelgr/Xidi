@@ -109,8 +109,8 @@ namespace XidiTest
             .buttonY = std::make_unique<ButtonMapper>(EButton::B4)
         },
         {
-            .leftMotor = {.isPresent = true, .axis = EAxis::X, .direction = EAxisDirection::Both},
-            .rightMotor = {.isPresent = true, .axis = EAxis::Y, .direction = EAxisDirection::Both}
+            .leftMotor = {.isPresent = true, .mode = EActuatorMode::SingleAxis, .singleAxis = {.axis = EAxis::X, .direction = EAxisDirection::Both}},
+            .rightMotor = {.isPresent = true, .mode = EActuatorMode::SingleAxis, .singleAxis = {.axis = EAxis::Y, .direction = EAxisDirection::Both}}
         }
     );
 

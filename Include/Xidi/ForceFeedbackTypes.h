@@ -44,6 +44,14 @@ namespace Xidi
                 Count                                                       ///< Sentinel value, total number of enumerators
             };
 
+            /// Enumerates the different methods of computing a physical actuator's power state data given a force feedback magnitude component vector.
+            enum class EActuatorMode : uint8_t
+            {
+                SingleAxis,                                                 ///< Actuator gets its power state data from a single force feedback axis. Direction mapping can be specified.
+                MagnitudeProjection,                                        ///< Actuator gets its power state data from a magnitude projection along two axes.
+                Count                                                       ///< Sentinel value, total number of enumerators.
+            };
+
             /// Type used for identifying effects.
             typedef uint64_t TEffectIdentifier;
 
@@ -70,10 +78,27 @@ namespace Xidi
             struct SActuatorElement
             {
                 bool isPresent : 1;                                         ///< Whether or not the associated physical force feedback actuator is present in the mapping.
-                EAxis axis : 3;                                             ///< Source virtual force feedback axis from which the physical actuator should obtain its state data.
-                EAxisDirection direction : 3;                               ///< Direction mode associated with the virtual force feedback axis.
+                EActuatorMode mode : 3;                                     ///< Actuator mode, which describes how the actuator should obtain its power state data from a force feedback magnitude component vector.
+
+                union
+                {
+                    struct
+                    {
+                        EAxis axis : 3;                                     ///< Source virtual force feedback axis from which the physical actuator should obtain its state data.
+                        EAxisDirection direction : 3;                       ///< Direction mode associated with the virtual force feedback axis.
+                    } singleAxis;                                           ///< Parameters for single axis mode.
+
+                    struct
+                    {
+                        EAxis axisFirst : 3;                                ///< First source virtual force feedback axis for the projection.
+                        EAxis axisSecond : 3;                               ///< Second source virtual force feedback axis for the projection.
+                    } magnitudeProjection;                                  ///< Parameters for magnitude projection mode.
+                };
+
+                
             };
-            static_assert(sizeof(SActuatorElement) == 1, "Data structure size constraint violation.");
+            static_assert(sizeof(SActuatorElement) == 2, "Data structure size constraint violation.");
+            static_assert((uint8_t)EActuatorMode::Count <= 0b111, "Highest-valued force feedback actuator mode identifier does not fit into 3 bits.");
             static_assert((uint8_t)EAxis::Count <= 0b111, "Highest-valued axis type identifier does not fit into 3 bits.");
             static_assert((uint8_t)EAxisDirection::Count <= 0b111, "Highest-valued axis direction mode does not fit into 3 bits.");
 

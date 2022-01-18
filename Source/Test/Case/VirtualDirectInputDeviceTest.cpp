@@ -110,10 +110,10 @@ namespace XidiTest
             .buttonStart = std::make_unique<ButtonMapper>(EButton::B8)
         },
         {
-            .leftMotor = {.isPresent = true, .axis = EAxis::X, .direction = EAxisDirection::Both},
-            .rightMotor = {.isPresent = true, .axis = EAxis::Y, .direction = EAxisDirection::Both}
+            .leftMotor = {.isPresent = true, .mode = Controller::ForceFeedback::EActuatorMode::SingleAxis, .singleAxis = {.axis = EAxis::X, .direction = EAxisDirection::Both}},
+            .rightMotor = {.isPresent = true, .mode = Controller::ForceFeedback::EActuatorMode::SingleAxis, .singleAxis = {.axis = EAxis::Y, .direction = EAxisDirection::Both}}
         }
-        );
+    );
 
     /// Object format specification for #STestDataPacket.
     static DIOBJECTDATAFORMAT testObjectFormatSpec[] = {

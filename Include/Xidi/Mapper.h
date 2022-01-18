@@ -38,24 +38,6 @@ namespace Xidi
         class Mapper
         {
         public:
-            // -------- CONSTANTS ------------------------------------------ //
-
-            /// Set of axes that must be present on all virtual controllers.
-            /// Contents are based on expectations of both DirectInput and WinMM state data structures.
-            /// If no element mappers contribute to these axes then they will be continually reported as being in a neutral position.
-            static constexpr BitSetEnum<EAxis> kRequiredAxes = {(int)EAxis::X, (int)EAxis::Y};
-
-            /// Set of axes that must be present on all virtual controllers and support force feedback.
-            /// If not mapped to a physical actuator, these axes will ignore all force feedback output.
-            static constexpr BitSetEnum<EAxis> kRequiredForceFeedbackAxes = kRequiredAxes;
-
-            /// Minimum number of buttons that must be present on all virtual controllers.
-            static constexpr int kMinNumButtons = 2;
-
-            /// Whether or not virtual controllers must contain a POV hat.
-            static constexpr bool kIsPovRequired = false;
-
-
             // -------- TYPE DEFINITIONS ----------------------------------- //
 
             /// XInput controller element mappers, one per controller element.
@@ -94,7 +76,7 @@ namespace Xidi
                 ForceFeedback::SActuatorElement leftImpulseTrigger;
                 ForceFeedback::SActuatorElement rightImpulseTrigger;
             };
-            static_assert(sizeof(SForceFeedbackActuatorMap) <= 4, "Data structure size constraint violation.");
+            static_assert(sizeof(SForceFeedbackActuatorMap) <= 8, "Data structure size constraint violation.");
 
             /// Dual representation of a controller element map. Intended for internal use only.
             /// In one representation the elements all have names for element-specific access.
@@ -194,6 +176,31 @@ namespace Xidi
             static_assert(sizeof(UForceFeedbackActuatorMap::named) == sizeof(UForceFeedbackActuatorMap::all), "Force feedback actuator field mismatch.");
 
 
+            // -------- CONSTANTS ------------------------------------------ //
+
+            /// Set of axes that must be present on all virtual controllers.
+            /// Contents are based on expectations of both DirectInput and WinMM state data structures.
+            /// If no element mappers contribute to these axes then they will be continually reported as being in a neutral position.
+            static constexpr BitSetEnum<EAxis> kRequiredAxes = { (int)EAxis::X, (int)EAxis::Y };
+
+            /// Set of axes that must be present on all virtual controllers and support force feedback.
+            /// If not mapped to a physical actuator, these axes will ignore all force feedback output.
+            static constexpr BitSetEnum<EAxis> kRequiredForceFeedbackAxes = kRequiredAxes;
+
+            /// Minimum number of buttons that must be present on all virtual controllers.
+            static constexpr int kMinNumButtons = 2;
+
+            /// Whether or not virtual controllers must contain a POV hat.
+            static constexpr bool kIsPovRequired = false;
+
+            /// Default force feedback actuator map.
+            /// Used whenever a force feedback actuator map is not provided.
+            static constexpr SForceFeedbackActuatorMap kDefaultForceFeedbackActuatorMap = {
+                .leftMotor = {.isPresent = true, .mode = ForceFeedback::EActuatorMode::MagnitudeProjection, .magnitudeProjection = {.axisFirst = EAxis::X, .axisSecond = EAxis::Y}},
+                .rightMotor = {.isPresent = true, .mode = ForceFeedback::EActuatorMode::MagnitudeProjection, .magnitudeProjection = {.axisFirst = EAxis::X, .axisSecond = EAxis::Y}}
+            };
+
+
         private:
             // -------- INSTANCE VARIABLES --------------------------------- //
 
@@ -217,13 +224,13 @@ namespace Xidi
             /// Initialization constructor.
             /// Requires a name and, for each controller element, a unique element mapper which becomes owned by this object.
             /// For controller elements that are not used, `nullptr` may be set instead.
-            Mapper(const std::wstring_view name, SElementMap&& elements, SForceFeedbackActuatorMap forceFeedbackActuators = {});
+            Mapper(const std::wstring_view name, SElementMap&& elements, SForceFeedbackActuatorMap forceFeedbackActuators = kDefaultForceFeedbackActuatorMap);
 
             /// Initialization constructor.
             /// Does not require or register a name for this mapper. This version is primarily useful for testing.
             /// Requires that a unique mapper be specified for each controller element, which in turn becomes owned by this object.
             /// For controller elements that are not used, `nullptr` may be set instead.
-            Mapper(SElementMap&& elements, SForceFeedbackActuatorMap forceFeedbackActuators = {});
+            Mapper(SElementMap&& elements, SForceFeedbackActuatorMap forceFeedbackActuators = kDefaultForceFeedbackActuatorMap);
 
             /// Default destructor.
             /// In general, mapper objects should not be destroyed once created.

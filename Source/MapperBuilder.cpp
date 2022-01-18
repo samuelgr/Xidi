@@ -91,7 +91,7 @@ namespace Xidi
             blueprint.buildAttempted = true;
 
             Mapper::UElementMap mapperElements;
-            Mapper::UForceFeedbackActuatorMap mapperForceFeedbackActuators;
+            Mapper::UForceFeedbackActuatorMap mapperForceFeedbackActuators(Mapper::kDefaultForceFeedbackActuatorMap);
 
             if (false == blueprint.templateName.empty())
             {
