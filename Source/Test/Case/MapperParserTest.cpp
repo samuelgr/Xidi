@@ -10,7 +10,9 @@
  *****************************************************************************/
 
 #include "ApiDirectInput.h"
+#include "ForceFeedbackTypes.h"
 #include "Keyboard.h"
+#include "Mapper.h"
 #include "MapperParser.h"
 #include "TestCase.h"
 
@@ -24,8 +26,11 @@
 namespace XidiTest
 {
     using namespace ::Xidi::Controller;
+    using ::Xidi::Controller::ForceFeedback::EActuatorMode;
+    using ::Xidi::Controller::ForceFeedback::SActuatorElement;
     using ::Xidi::Controller::MapperParser::ElementMapperOrError;
-    using ::Xidi::Controller::MapperParser::SElementMapperStringParts;
+    using ::Xidi::Controller::MapperParser::ForceFeedbackActuatorOrError;
+    using ::Xidi::Controller::MapperParser::SStringParts;
     using ::Xidi::Controller::MapperParser::SElementMapperParseResult;
     using ::Xidi::Controller::MapperParser::SParamStringParts;
     using ::Xidi::Keyboard::TKeyIdentifier;
@@ -133,6 +138,33 @@ namespace XidiTest
         }
     }
 
+    // Verifies correct identification of valid force feedback actuator strings.
+    TEST_CASE(MapperParser_ForceFeedbackActuatorString_Valid)
+    {
+        constexpr std::pair<unsigned int, std::wstring_view> kForceFeedbackActuators[] = {
+            {FFACTUATOR_MAP_INDEX_OF(leftMotor), L"ForceFeedback.LeftMotor"},
+            {FFACTUATOR_MAP_INDEX_OF(rightMotor), L"ForceFeedback.RightMotor"}
+        };
+
+        for (const auto& ffActuator : kForceFeedbackActuators)
+        {
+            TEST_ASSERT(true == MapperParser::IsForceFeedbackActuatorStringValid(ffActuator.second));
+            TEST_ASSERT(ffActuator.first == MapperParser::FindForceFeedbackActuatorIndex(ffActuator.second));
+        }
+    }
+
+    // Verifies correct identification of invalid force feedback actuator strings.
+    TEST_CASE(MapperParser_ForceFeedbackActuatorString_Invalid)
+    {
+        constexpr std::wstring_view kForceFeedbackActuatorStrings[] = { L"leftMotor", L"RightMotor", L"random_string" };
+
+        for (auto ffActuatorString : kForceFeedbackActuatorStrings)
+        {
+            TEST_ASSERT(false == MapperParser::IsForceFeedbackActuatorStringValid(ffActuatorString));
+            TEST_ASSERT(false == MapperParser::FindForceFeedbackActuatorIndex(ffActuatorString).has_value());
+        }
+    }
+
     // Verifies correct determination of recursion depth, given a set of input strings that are all properly balanced.
     TEST_CASE(MapperParser_RecursionDepth_Balanced)
     {
@@ -170,7 +202,7 @@ namespace XidiTest
     // The whole string is consumed, so there is no remainder.
     TEST_CASE(MapperParser_ExtractElementMapperStringParts_Simple)
     {
-        constexpr std::pair<std::wstring_view, SElementMapperStringParts> kExtractPartsTestItems[] = {
+        constexpr std::pair<std::wstring_view, SStringParts> kExtractPartsTestItems[] = {
             {L"Axis(Y)",                                {.type = L"Axis",   .params = L"Y"}},
             {L"   Axis       (    Y    ,    + )",       {.type = L"Axis",   .params = L"Y    ,    +"}},
             {L"   Null  ",                              {.type = L"Null"}}
@@ -185,7 +217,7 @@ namespace XidiTest
     // The whole string is consumed, so there is no remainder.
     TEST_CASE(MapperParser_ExtractElementMapperStringParts_Nested)
     {
-        constexpr std::pair<std::wstring_view, SElementMapperStringParts> kExtractPartsTestItems[] = {
+        constexpr std::pair<std::wstring_view, SStringParts> kExtractPartsTestItems[] = {
             {L"  Split ( Button(2), Button(3)   )",                                 {.type = L"Split",  .params = L"Button(2), Button(3)"}},
             {L"Split( Split(Button(1), Button(2)), Split(Button(3), Button(4)) )",  {.type = L"Split",  .params = L"Split(Button(1), Button(2)), Split(Button(3), Button(4))"}}
         };
@@ -198,7 +230,7 @@ namespace XidiTest
     // Exercises situations in which the whole string is not consumed, so there is a remaining part of the string left behind.
     TEST_CASE(MapperParser_ExtractElementMapperStringParts_PartialWithRemainder)
     {
-        constexpr std::pair<std::wstring_view, SElementMapperStringParts> kExtractPartsTestItems[] = {
+        constexpr std::pair<std::wstring_view, SStringParts> kExtractPartsTestItems[] = {
             {L"  Null      ,   Button(2) ",                                         {.type = L"Null",                                       .remaining = L"Button(2)"}},
             {L"  Null,   Button(2) ",                                               {.type = L"Null",                                       .remaining = L"Button(2)"}},
             {L"Split(Button(1), Button(2)), Split(Button(3), Button(4))",           {.type = L"Split",  .params = L"Button(1), Button(2)",  .remaining = L"Split(Button(3), Button(4))"}}
@@ -222,6 +254,34 @@ namespace XidiTest
 
         for (auto& extractPartsTestString : kExtractPartsTestStrings)
             TEST_ASSERT(false == MapperParser::ExtractElementMapperStringParts(extractPartsTestString).has_value());
+    }
+
+    TEST_CASE(MapperParser_ExtractForceFeedbackActuatorStringParts_Valid)
+    {
+        constexpr std::pair<std::wstring_view, SStringParts> kExtractPartsTestItems[] = {
+            {L"  SingleAxis( X )         ",                                         {.type = L"SingleAxis",             .params = L"X"}},
+            {L"SingleAxis(Y, +)",                                                   {.type = L"SingleAxis",             .params = L"Y, +"}},
+            {L"     MagnitudeProjection   (   Z,    RotZ   )           ",           {.type = L"MagnitudeProjection",    .params = L"Z,    RotZ"}},
+            {L" None ",                                                             {.type = L"None"}}
+        };
+
+        for (auto& extractPartsTestItem : kExtractPartsTestItems)
+            TEST_ASSERT(extractPartsTestItem.second == MapperParser::ExtractForceFeedbackActuatorStringParts(extractPartsTestItem.first));
+    }
+
+    TEST_CASE(MapperParser_ExtractForceFeedbackActuatorStringParts_Invalid)
+    {
+        constexpr std::wstring_view kExtractPartsTestStrings[] = {
+            L"  Null   )  ",
+            L"Null,",
+            L"  Null   , ",
+            L"MagnitudeProjection(X, Y), SingleAxis(X)",
+            L"MagnitudeProjection(X, Y",
+            L"SingleAxis(Y, +),"
+        };
+
+        for (auto& extractPartsTestString : kExtractPartsTestStrings)
+            TEST_ASSERT(false == MapperParser::ExtractForceFeedbackActuatorStringParts(extractPartsTestString).has_value());
     }
 
     // Verifies correct separation of a parameter string into first parameter and remainder substrings.
@@ -918,7 +978,6 @@ namespace XidiTest
         }
     }
 
-
     // Verifies failure to parse a single element mapper from an invalid supplied input string.
     TEST_CASE(MapperParser_ParseSingleElementMapper_Invalid)
     {
@@ -1038,6 +1097,86 @@ namespace XidiTest
         {
             const ElementMapperOrError kMaybeActualElementMapper = MapperParser::ElementMapperFromString(kTestStrings[i]);
             TEST_ASSERT(true == kMaybeActualElementMapper.HasError());
+        }
+    }
+
+    // Verifies successful parsing of force feedback actuator strings to force feedback actuator description objects.
+    TEST_CASE(MapperParser_ForceFeedbackActuatorFromString_Valid)
+    {
+        constexpr std::wstring_view kTestStrings[] = {
+            L"Default",
+            L"Disabled",
+            L"SingleAxis(RotX)",
+            L"SingleAxis(RotZ, -)",
+            L"MagnitudeProjection(Y, RotY)",
+            L"MagnitudeProjection(RotY, Y)"
+        };
+        constexpr SActuatorElement kExpectedForceFeedbackActuators[] = {
+            Mapper::kDefaultForceFeedbackActuator,
+            {
+                .isPresent = false
+            },
+            {
+                .isPresent = true,
+                .mode = EActuatorMode::SingleAxis,
+                .singleAxis = {
+                    .axis = EAxis::RotX,
+                    .direction = EAxisDirection::Both
+                }
+            },
+            {
+                .isPresent = true,
+                .mode = EActuatorMode::SingleAxis,
+                .singleAxis = {
+                    .axis = EAxis::RotZ,
+                    .direction = EAxisDirection::Negative
+                }
+            },
+            {
+                .isPresent = true,
+                .mode = EActuatorMode::MagnitudeProjection,
+                .magnitudeProjection = {
+                    .axisFirst = EAxis::Y,
+                    .axisSecond = EAxis::RotY
+                }
+            },
+            {
+                .isPresent = true,
+                .mode = EActuatorMode::MagnitudeProjection,
+                .magnitudeProjection = {
+                    .axisFirst = EAxis::RotY,
+                    .axisSecond = EAxis::Y
+                }
+            }
+        };
+        static_assert(_countof(kExpectedForceFeedbackActuators) == _countof(kTestStrings), "Mismatch between input and expected output array lengths.");
+
+        for (int i = 0; i < _countof(kTestStrings); ++i)
+        {
+            const ForceFeedbackActuatorOrError kMaybeActualForceFeedbackActuator = MapperParser::ForceFeedbackActuatorFromString(kTestStrings[i]);
+            TEST_ASSERT(true == kMaybeActualForceFeedbackActuator.HasValue());
+
+            const SActuatorElement kActualForceFeedbackActuator = kMaybeActualForceFeedbackActuator.Value();
+            TEST_ASSERT(kActualForceFeedbackActuator == kExpectedForceFeedbackActuators[i]);
+        }
+    }
+
+    // Verifies failure to parse force feedback actuator strings that are invalid.
+    TEST_CASE(MapperParser_ForceFeedbackActuatorFromString_Invalid)
+    {
+        constexpr std::wstring_view kTestStrings[] = {
+           L"Default(X)",
+           L"  UnknownActuatorType  ",
+           L"Disabled, Disabled",
+           L"SingleAxis(X), SingleAxis(Y)",
+           L"MagnitudeProjection(X, Y, Z)",
+           L"SingleAxis(X, +, -)"
+        };
+
+        for (int i = 0; i < _countof(kTestStrings); ++i)
+        {
+            const ForceFeedbackActuatorOrError kMaybeActualForceFeedbackActuator = MapperParser::ForceFeedbackActuatorFromString(kTestStrings[i]);
+            TEST_ASSERT(false == kMaybeActualForceFeedbackActuator.HasValue());
         }
     }
 }

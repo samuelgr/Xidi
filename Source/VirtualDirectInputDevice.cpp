@@ -37,8 +37,7 @@
 
 /// Logs a DirectInput interface method invocation and returns.
 #define LOG_INVOCATION_AND_RETURN(result, severity) \
-    do \
-    { \
+    do { \
         const HRESULT kResult = (result); \
         Message::OutputFormatted(severity, L"Invoked %s on Xidi virtual controller %u, result = 0x%08x.", __FUNCTIONW__ L"()", (1 + controller->GetIdentifier()), kResult); \
         return kResult; \
@@ -46,8 +45,7 @@
 
 /// Logs a DirectInput property-related method invocation and returns.
 #define LOG_PROPERTY_INVOCATION_AND_RETURN(result, severity, rguidprop, propvalfmt, ...) \
-    do \
-    { \
+    do { \
         const HRESULT kResult = (result); \
         Message::OutputFormatted(severity, L"Invoked function %s on Xidi virtual controller %u, result = 0x%08x, property = %s" propvalfmt L".", __FUNCTIONW__ L"()", (1 + controller->GetIdentifier()), kResult, PropertyGuidString(rguidprop), ##__VA_ARGS__); \
         return kResult; \
@@ -1363,8 +1361,7 @@ namespace Xidi
             LOG_INVOCATION_AND_RETURN(DIERR_INVALIDPARAM, kMethodSeverityForError);
 
         bool writeDataPacketResult = false;
-        do
-        {
+        do {
             auto lock = controller->Lock();
             writeDataPacketResult = dataFormat->WriteDataPacket(lpvData, cbData, controller->GetState());
         } while (false);
@@ -1562,8 +1559,7 @@ namespace Xidi
             LOG_PROPERTY_INVOCATION_DIPROPRANGE_AND_RETURN(DI_OK, kMethodSeverity, rguidProp, pdiph);
 
         case ((size_t)&DIPROP_RANGE):
-            do
-            {
+            do {
                 if (Controller::EElementType::Axis != element.type)
                     LOG_PROPERTY_INVOCATION_NO_VALUE_AND_RETURN(DIERR_INVALIDPARAM, kMethodSeverity, rguidProp);
 
@@ -1723,8 +1719,7 @@ namespace Xidi
                 controller->EventFilterRemoveElement(kElement);
         }
 
-        do
-        {
+        do {
             const Controller::SElementIdentifier kElement = {.type = Controller::EElementType::Pov};
             if (false == newDataFormat->HasElement(kElement))
                 controller->EventFilterRemoveElement(kElement);

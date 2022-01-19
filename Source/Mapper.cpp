@@ -293,8 +293,7 @@ namespace Xidi
             switch (actuatorElement.mode)
             {
             case ForceFeedback::EActuatorMode::SingleAxis:
-                do
-                {
+                do {
                     if (ForceFeedback::kEffectForceMagnitudeZero == virtualEffectComponents[(int)actuatorElement.singleAxis.axis])
                         return 0;
 

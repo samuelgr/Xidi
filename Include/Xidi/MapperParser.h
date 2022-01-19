@@ -14,6 +14,7 @@
 
 #include "ControllerTypes.h"
 #include "ElementMapper.h"
+#include "ForceFeedbackTypes.h"
 #include "Mapper.h"
 #include "ValueOrError.h"
 
@@ -34,12 +35,16 @@ namespace Xidi
             /// Intended to be returned from functions that parse element mapper strings and can be used to hold semantically-rich error messages for the user.
             typedef ValueOrError<std::unique_ptr<IElementMapper>, std::wstring> ElementMapperOrError;
 
-            /// Holds a partially-separated representation of an element mapper string.
-            /// This view of the element mapper string is separated into type and parameter portions.
+            /// Type alias for representing either a force feedback actuator or an error message.
+            /// Intended to be returned from functions that parse force feedback actuator strings and can be used to hold semantically-rich error messages for the user.
+            typedef ValueOrError<ForceFeedback::SActuatorElement, std::wstring> ForceFeedbackActuatorOrError;
+
+            /// Holds a partially-separated representation of a string that has been parsed at the very highest level.
+            /// This view of the input string is separated into type and parameter portions.
             /// For example, the string "Axis(RotY, +)" would be separated into "Axis" as the type and "RotY, +" (the entire contents of the parentheses) as the parameters.
-            struct SElementMapperStringParts
+            struct SStringParts
             {
-                std::wstring_view type;                                             ///< String identifying the element mapper type.
+                std::wstring_view type;                                             ///< String identifying the top-level type.
                 std::wstring_view params;                                           ///< String holding all of the parameters without the enclosing parentheses.
                 std::wstring_view remaining;                                        ///< Remaining part of the string that was not separated into parts.
 
@@ -47,10 +52,7 @@ namespace Xidi
                 /// Primarily useful during testing.
                 /// @param [in] other Object with which to compare.
                 /// @return `true` if this object is equal to the other object, `false` otherwise.
-                constexpr inline bool operator==(const SElementMapperStringParts& other) const
-                {
-                    return ((other.type == type) && (other.params == params) && (other.remaining == remaining));
-                }
+                constexpr inline bool operator==(const SStringParts& other) const = default;
             };
 
             /// Holds the result of parsing and consuming a single element mapper worth of input string.
@@ -70,10 +72,7 @@ namespace Xidi
                 /// Primarily useful during testing.
                 /// @param [in] other Object with which to compare.
                 /// @return `true` if this object is equal to the other object, `false` otherwise.
-                constexpr inline bool operator==(const SParamStringParts& other) const
-                {
-                    return ((other.first == first) && (other.remaining == remaining));
-                }
+                constexpr inline bool operator==(const SParamStringParts& other) const = default;
             };
 
 
@@ -85,17 +84,41 @@ namespace Xidi
             /// @return Element map array index, if it could be identified based on the input string.
             std::optional<unsigned int> FindControllerElementIndex(std::wstring_view controllerElementString);
 
+            /// Attempts to identify the index within the `all` member of #UForceFeedbackActuatorMap that corresponds to the force feedback actuator identified by the input string.
+            /// See "MapperParser.cpp" for strings that will be recognized as valid.
+            /// @param [in] ffActuatorString String to parse that supposedly identifies a controller element.
+            /// @return Force feedback actuator map array index, if it could be identified based on the input string.
+            std::optional<unsigned int> FindForceFeedbackActuatorIndex(std::wstring_view ffActuatorString);
+
             /// Attempts to build an element mapper using the supplied string.
             /// This is the main entry point intended for use when parsing element mappers from strings.
             /// @param [in] elementMapperString Input string supposedly representing an element mapper.
             /// @return Pointer to the new mapper object if successful, error message string otherwise.
             ElementMapperOrError ElementMapperFromString(std::wstring_view elementMapperString);
 
+            /// Attempts to build a force feedback actuator using the supplied string.
+            /// This is the main entry point intended for use when parsing force feedback actuators from strings.
+            /// @param [in] ffActuatorString Input string supposedly representing a force feedback actuator.
+            /// @return Force feedback actuator descriptor object if successful, error message string otherwise.
+            ForceFeedbackActuatorOrError ForceFeedbackActuatorFromString(std::wstring_view ffActuatorString);
+
             /// Determines if the specified controller element string is valid and recognized as identifying a controller element.
             /// See "MapperParser.cpp" for strings that will be recognized as valid.
             /// @param [in] controllerElementString String to be checked.
             /// @return `true` if the input string is recognized, `false` otherwise.
-            bool IsControllerElementStringValid(std::wstring_view controllerElementString);
+            inline bool IsControllerElementStringValid(std::wstring_view controllerElementString)
+            {
+                return FindControllerElementIndex(controllerElementString).has_value();
+            }
+
+            /// Determines if the specified force feedback actuator string is valid and recognized as identifying a physical force feedback actuator.
+            /// See "MapperParser.cpp" for strings that will be recognized as valid.
+            /// @param [in] ffActuatorString String to be checked.
+            /// @return `true` if the input string is recognized, `false` otherwise.
+            inline bool IsForceFeedbackActuatorStringValid(std::wstring_view ffActuatorString)
+            {
+                return FindForceFeedbackActuatorIndex(ffActuatorString).has_value();
+            }
 
 
             // -------- HELPERS -------------------------------------------- //
@@ -117,7 +140,13 @@ namespace Xidi
             /// Example: "Split(Button(1), Button(2)), Split(Button(3), Button(4))" would be split into "Split" and "Button(1), Button(2)" as type and parameters respectively, with "Split(Button(3), Button(4))" indicated as remaining.
             /// @param [in] elementMapperString Input string supposedly representing an element mapper.
             /// @return Structure of separated string parts, if successful.
-            std::optional<SElementMapperStringParts> ExtractElementMapperStringParts(std::wstring_view elementMapperString);
+            std::optional<SStringParts> ExtractElementMapperStringParts(std::wstring_view elementMapperString);
+
+            /// Separates the supplied force feedback actuator string into type and parameter parts and returns the result.
+            /// Force feedback actuator strings are structured like element mapper strings, except they are not allowed to have a remainder.
+            /// @param [in] ffActuatorString Input string supposedly representing an element mapper.
+            /// @return Structure of separated string parts, if successful.
+            std::optional<SStringParts> ExtractForceFeedbackActuatorStringParts(std::wstring_view ffActuatorString);
 
             /// Partially parses the supplied parameter list string by extracting the first parameter and leaving behind the rest of the string.
             /// Example: "A, B, C, D" would result in "A" as the first parameter and "B, C, D" as the remaining part of the string.
@@ -181,10 +210,39 @@ namespace Xidi
             /// @return Pointer to the new mapper object if successful, error message string otherwise.
             ElementMapperOrError MakeSplitMapper(std::wstring_view params);
 
+            /// Attempts to build a force feedback actuator description object that matches the default actuator configuration.
+            /// No parameters are allowed.
+            /// @param [in] params Parameter string.
+            /// @return Force feedback actuator description object if successful, error message string otherwise.
+            ForceFeedbackActuatorOrError MakeForceFeedbackActuatorDefault(std::wstring_view params);
+
+            /// Attempts to build a force feedback actuator description object that disables its associated physical actuator.
+            /// No parameters are allowed.
+            /// @param [in] params Parameter string.
+            /// @return Force feedback actuator description object if successful, error message string otherwise.
+            ForceFeedbackActuatorOrError MakeForceFeedbackActuatorDisabled(std::wstring_view params);
+
+            /// Attempts to build a force feedback actuator description object in single-axis mode using the supplied parameters.
+            /// Parameter string should consist of a string representing an axis and optionally a second string representing an axis direction.
+            /// @param [in] params Parameter string.
+            /// @return Force feedback actuator description object if successful, error message string otherwise.
+            ForceFeedbackActuatorOrError MakeForceFeedbackActuatorSingleAxis(std::wstring_view params);
+
+            /// Attempts to build a force feedback actuator description object in magnitude projection mode using the supplied parameters.
+            /// Parameter string should consist of two comma-separated strings representing axes.
+            /// @param [in] params Parameter string.
+            /// @return Force feedback actuator description object if successful, error message string otherwise.
+            ForceFeedbackActuatorOrError MakeForceFeedbackActuatorMagnitudeProjection(std::wstring_view params);
+
             /// Consumes part or all of the input string and attempts to parse it into an element mapper object.
             /// @param [in] elementMapperString Input string supposedly containing the representation of an element mapper.
             /// @return Result of the parse. Failure is indicated by the absence of an element mapper object.
             SElementMapperParseResult ParseSingleElementMapper(std::wstring_view elementMapperString);
+
+            /// Consumes all of the input string and attempts to parse it into a force feedback actuator description object.
+            /// @param [in] ffActuatorString Input string supposedly containing the representation of a force feedback actuator.
+            /// @return Force feedback actuator description object if successful, error message string otherwise.
+            ForceFeedbackActuatorOrError ParseForceFeedbackActuator(std::wstring_view ffActuatorString);
         }
     }
 }

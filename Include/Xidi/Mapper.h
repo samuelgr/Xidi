@@ -25,8 +25,11 @@
 
 // -------- MACROS --------------------------------------------------------- //
 
-/// Computes the index of the specified named controller element in the pointer array of the element map.
+/// Computes the index of the specified named controller element in the unnamed array representation of the element map.
 #define ELEMENT_MAP_INDEX_OF(element)       ((unsigned int)(offsetof(::Xidi::Controller::Mapper::UElementMap, named.##element) / sizeof(::Xidi::Controller::Mapper::UElementMap::all[0])))
+
+/// Computes the index of the specified named force feedback actuator element in the unnamed array representation of the force feedback actuator map.
+#define FFACTUATOR_MAP_INDEX_OF(ffactuator) ((unsigned int)(offsetof(::Xidi::Controller::Mapper::UForceFeedbackActuatorMap, named.##ffactuator) / sizeof(::Xidi::Controller::Mapper::UForceFeedbackActuatorMap::all[0])))
 
 
 namespace Xidi
@@ -193,11 +196,21 @@ namespace Xidi
             /// Whether or not virtual controllers must contain a POV hat.
             static constexpr bool kIsPovRequired = false;
 
+            /// Default force feedback actuator configuration.
+            static constexpr ForceFeedback::SActuatorElement kDefaultForceFeedbackActuator = {
+                .isPresent = true,
+                .mode = ForceFeedback::EActuatorMode::MagnitudeProjection,
+                .magnitudeProjection = {
+                    .axisFirst = EAxis::X,
+                    .axisSecond = EAxis::Y
+                }
+            };
+
             /// Default force feedback actuator map.
             /// Used whenever a force feedback actuator map is not provided.
             static constexpr SForceFeedbackActuatorMap kDefaultForceFeedbackActuatorMap = {
-                .leftMotor = {.isPresent = true, .mode = ForceFeedback::EActuatorMode::MagnitudeProjection, .magnitudeProjection = {.axisFirst = EAxis::X, .axisSecond = EAxis::Y}},
-                .rightMotor = {.isPresent = true, .mode = ForceFeedback::EActuatorMode::MagnitudeProjection, .magnitudeProjection = {.axisFirst = EAxis::X, .axisSecond = EAxis::Y}}
+                .leftMotor = kDefaultForceFeedbackActuator,
+                .rightMotor = kDefaultForceFeedbackActuator
             };
 
 

@@ -30,8 +30,7 @@
 
 /// Logs a DirectInput interface method invocation and returns.
 #define LOG_INVOCATION_AND_RETURN(result, severity) \
-    do \
-    { \
+    do { \
         const HRESULT kResult = (result); \
         Message::OutputFormatted(severity, L"Invoked %s on force feedback effect with identifier %llu associated with Xidi virtual controller %u, result = 0x%08x.", __FUNCTIONW__ L"()", (unsigned long long)UnderlyingEffect().Identifier(), (1 + associatedDevice.GetVirtualController().GetIdentifier()), kResult); \
         return kResult; \

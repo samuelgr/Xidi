@@ -160,8 +160,7 @@ namespace XidiTest
             }
         }
 
-        do
-        {
+        do {
             const SElementIdentifier expectedPovIdentifier = {.type = EElementType::Pov};
             const TOffset expectedPovOffset = expectedDataFormatSpec.povOffset;
 
@@ -350,8 +349,7 @@ namespace XidiTest
         // One final test with the entire data specification all at once.
         // Logic is the same as the single-element case, except here the expected output is much simpler to generate.
         // Furthermore, unlike the single-element tests, here the extraPov array consists of unused POVs, so it is expected that all elements will be filled with a center position value.
-        do
-        {
+        do {
             const DIDATAFORMAT kTestFormatSpec = {
                 .dwSize = sizeof(DIDATAFORMAT),
                 .dwObjSize = sizeof(DIOBJECTDATAFORMAT),

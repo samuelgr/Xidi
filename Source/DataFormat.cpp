@@ -158,8 +158,7 @@ namespace Xidi
             switch (element.type)
             {
             case Controller::EElementType::Axis:
-                do
-                {
+                do {
                     if (true == availableAxes.contains((int)element.axis))
                     {
                         availableAxes.erase((int)element.axis);
@@ -169,8 +168,7 @@ namespace Xidi
                 break;
 
             case Controller::EElementType::Button:
-                do
-                {
+                do {
                     if (true == availableButtons.contains((int)element.button))
                     {
                         availableButtons.erase((int)element.button);
@@ -441,8 +439,7 @@ namespace Xidi
             switch (maybeElementType.value())
             {
             case Controller::EElementType::Axis:
-                do
-                {
+                do {
                     if (false == buildHelper.AllocateAtOffset<TAxisValue>(objectFormatSpec.dwOfs))
                     {
                         Message::OutputFormatted(Message::ESeverity::Warning, L"Rejecting application data format due object at index %d: Failed to allocate %d byte(s) for an axis at offset %u.", (int)i, (int)sizeof(TAxisValue), objectFormatSpec.dwOfs);
@@ -479,8 +476,7 @@ namespace Xidi
                 break;
 
             case Controller::EElementType::Button:
-                do
-                {
+                do {
                     if (false == buildHelper.AllocateAtOffset<TButtonValue>(objectFormatSpec.dwOfs))
                     {
                         Message::OutputFormatted(Message::ESeverity::Warning, L"Rejecting application data format due object at index %d: Failed to allocate %d byte(s) for a button at offset %u.", (int)i, (int)sizeof(TButtonValue), objectFormatSpec.dwOfs);
@@ -502,8 +498,7 @@ namespace Xidi
                 break;
 
             case Controller::EElementType::Pov:
-                do
-                {
+                do {
                     if (false == buildHelper.AllocateAtOffset<EPovValue>(objectFormatSpec.dwOfs))
                     {
                         Message::OutputFormatted(Message::ESeverity::Warning, L"Rejecting application data format due object at index %d: Failed to allocate %d byte(s) for a POV at offset %u.", (int)i, (int)sizeof(EPovValue), objectFormatSpec.dwOfs);

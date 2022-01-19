@@ -95,7 +95,30 @@ namespace Xidi
                     } magnitudeProjection;                                  ///< Parameters for magnitude projection mode.
                 };
 
-                
+                /// Simple check for equality.
+                /// Primarily useful during testing.
+                /// @param [in] other Object with which to compare.
+                /// @return `true` if this object is equal to the other object, `false` otherwise.
+                constexpr inline bool operator==(const SActuatorElement& other) const
+                {
+                    if (other.isPresent != isPresent)
+                        return false;
+
+                    if (other.mode != mode)
+                        return false;
+
+                    switch (mode)
+                    {
+                    case EActuatorMode::SingleAxis:
+                        return ((other.singleAxis.axis == singleAxis.axis) && (other.singleAxis.direction == singleAxis.direction));
+
+                    case EActuatorMode::MagnitudeProjection:
+                        return ((other.magnitudeProjection.axisFirst == magnitudeProjection.axisFirst) && (other.magnitudeProjection.axisSecond == magnitudeProjection.axisSecond));
+
+                    default:
+                        return true;
+                    }
+                }
             };
             static_assert(sizeof(SActuatorElement) == 2, "Data structure size constraint violation.");
             static_assert((uint8_t)EActuatorMode::Count <= 0b111, "Highest-valued force feedback actuator mode identifier does not fit into 3 bits.");

@@ -145,8 +145,7 @@ namespace Xidi
                     // Update happens within the block and requires an exclusive lock.
                     if (newPhysicalState != physicalControllerState[controllerIdentifier])
                     {
-                        do
-                        {
+                        do {
                             std::unique_lock lock(physicalControllerStateMutex[controllerIdentifier]);
                             physicalControllerState[controllerIdentifier] = newPhysicalState;
                         } while (false);

@@ -171,8 +171,7 @@ namespace Xidi
             {
                 Sleep(kKeyboardUpdatePeriodMilliseconds);
 
-                do
-                {
+                do {
                     std::scoped_lock lock(keyboardGuard);
 
                     const TState nextKeyboardState = keyboardTracker.SnapshotRelativeTo(previousKeyboardState);

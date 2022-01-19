@@ -269,8 +269,7 @@ namespace XidiTest
         for (const auto kTestMagnitude : kTestMagnitudes)
         {
             // Verify that a zero-coordinate spherical specification works and also produces the same single axis vector as above.
-            do
-            {
+            do {
                 DirectionVector vector;
                 TEST_ASSERT(true == vector.SetDirectionUsingSpherical(nullptr, 0));
 

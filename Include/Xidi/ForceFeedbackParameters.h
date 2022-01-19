@@ -77,6 +77,9 @@ namespace Xidi
                     if (other.numAxes != numAxes)
                         return false;
 
+                    if (other.isOmnidirectional != isOmnidirectional)
+                        return false;
+
                     for (int i = 0; i < (numAxes - 1); ++i)
                     {
                         if (other.spherical[i] != spherical[i])

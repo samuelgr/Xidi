@@ -13,6 +13,7 @@
 #include "ApiDirectInput.h"
 #include "ControllerTypes.h"
 #include "ElementMapper.h"
+#include "ForceFeedbackTypes.h"
 #include "Keyboard.h"
 #include "Mapper.h"
 #include "MapperParser.h"
@@ -64,6 +65,9 @@ namespace Xidi
             /// Type for all functions that attempt to build individual element mappers given a parameter string.
             typedef ElementMapperOrError(*TMakeElementMapperFunc)(std::wstring_view);
 
+            /// Type for all functions that attempt to build force feedback actuator description objects given a parameter string.
+            typedef ForceFeedbackActuatorOrError(*TMakeForceFeedbackActuatorFunc)(std::wstring_view);
+
             /// Holds parameters for creating #AxisMapper objects.
             /// Useful because both #AxisMapper and #DigitalAxisMapper follow the same parsing logic and parameters.
             /// See #AxisMapper for documentation on the fields.
@@ -78,6 +82,102 @@ namespace Xidi
 
 
             // -------- INTERNAL FUNCTIONS --------------------------------- //
+
+            /// Attempts to map a string to an axis type enumerator.
+            /// @param [in] axisString String supposedly representing an axis type.
+            /// @return Corresponding axis type enumerator, if the string is parseable as such.
+            static std::optional<EAxis> AxisFromString(std::wstring_view axisString)
+            {
+                // Map of strings representing axes to axis enumerators.
+                static const std::map<std::wstring_view, EAxis> kAxisStrings = {
+                    {L"x",              EAxis::X},
+                    {L"X",              EAxis::X},
+
+                    {L"y",              EAxis::Y},
+                    {L"Y",              EAxis::Y},
+
+                    {L"z",              EAxis::Z},
+                    {L"Z",              EAxis::Z},
+
+                    {L"rx",             EAxis::RotX},
+                    {L"Rx",             EAxis::RotX},
+                    {L"rX",             EAxis::RotX},
+                    {L"RX",             EAxis::RotX},
+                    {L"rotx",           EAxis::RotX},
+                    {L"rotX",           EAxis::RotX},
+                    {L"Rotx",           EAxis::RotX},
+                    {L"RotX",           EAxis::RotX},
+
+                    {L"ry",             EAxis::RotY},
+                    {L"Ry",             EAxis::RotY},
+                    {L"rY",             EAxis::RotY},
+                    {L"RY",             EAxis::RotY},
+                    {L"roty",           EAxis::RotY},
+                    {L"rotY",           EAxis::RotY},
+                    {L"Roty",           EAxis::RotY},
+                    {L"RotY",           EAxis::RotY},
+
+                    {L"rz",             EAxis::RotZ},
+                    {L"Rz",             EAxis::RotZ},
+                    {L"rZ",             EAxis::RotZ},
+                    {L"RZ",             EAxis::RotZ},
+                    {L"rotz",           EAxis::RotZ},
+                    {L"rotZ",           EAxis::RotZ},
+                    {L"Rotz",           EAxis::RotZ},
+                    {L"RotZ",           EAxis::RotZ}
+                };
+
+                const auto kAxisIter = kAxisStrings.find(axisString);
+                if (kAxisStrings.cend() == kAxisIter)
+                    return std::nullopt;
+
+                return kAxisIter->second;
+            }
+
+            /// Attempts to map a string to an axis direction enumerator.
+            /// @param [in] directionString String supposedly representing an axis direction.
+            /// @return Corresponding axis direction enumerator, if the string is parseable as such.
+            static std::optional<EAxisDirection> AxisDirectionFromString(std::wstring_view directionString)
+            {
+                // Map of strings representing axis directions to axis direction enumerators.
+                static const std::map<std::wstring_view, EAxisDirection> kDirectionStrings = {
+                    {L"bidir",          EAxisDirection::Both},
+                    {L"Bidir",          EAxisDirection::Both},
+                    {L"BiDir",          EAxisDirection::Both},
+                    {L"BIDIR",          EAxisDirection::Both},
+                    {L"bidirectional",  EAxisDirection::Both},
+                    {L"Bidirectional",  EAxisDirection::Both},
+                    {L"BiDirectional",  EAxisDirection::Both},
+                    {L"BIDIRECTIONAL",  EAxisDirection::Both},
+                    {L"both",           EAxisDirection::Both},
+                    {L"Both",           EAxisDirection::Both},
+                    {L"BOTH",           EAxisDirection::Both},
+
+                    {L"+",              EAxisDirection::Positive},
+                    {L"+ve",            EAxisDirection::Positive},
+                    {L"pos",            EAxisDirection::Positive},
+                    {L"Pos",            EAxisDirection::Positive},
+                    {L"POS",            EAxisDirection::Positive},
+                    {L"positive",       EAxisDirection::Positive},
+                    {L"Positive",       EAxisDirection::Positive},
+                    {L"POSITIVE",       EAxisDirection::Positive},
+
+                    {L"-",              EAxisDirection::Negative},
+                    {L"-ve",            EAxisDirection::Negative},
+                    {L"neg",            EAxisDirection::Negative},
+                    {L"Neg",            EAxisDirection::Negative},
+                    {L"NEG",            EAxisDirection::Negative},
+                    {L"negative",       EAxisDirection::Negative},
+                    {L"Negative",       EAxisDirection::Negative},
+                    {L"NEGATIVE",       EAxisDirection::Negative}
+                };
+
+                const auto kDirectionIter = kDirectionStrings.find(directionString);
+                if (kDirectionStrings.cend() == kDirectionIter)
+                    return std::nullopt;
+
+                return kDirectionIter->second;
+            }
 
             /// Identifies the end position of the first parameter in the supplied string which should be a parameter list.
             /// Example: "RotY, +" would identify the position of the comma.
@@ -154,89 +254,17 @@ namespace Xidi
             /// @return Structure containing the parsed parameters if parsing was successful, error message otherwise.
             static AxisMapperParamsOrError ParseAxisMapperParams(std::wstring_view params)
             {
-                // Map of strings representing axes to axis enumerators.
-                static const std::map<std::wstring_view, EAxis> kAxisStrings = {
-                    {L"x",              EAxis::X},
-                    {L"X",              EAxis::X},
-
-                    {L"y",              EAxis::Y},
-                    {L"Y",              EAxis::Y},
-
-                    {L"z",              EAxis::Z},
-                    {L"Z",              EAxis::Z},
-
-                    {L"rx",             EAxis::RotX},
-                    {L"Rx",             EAxis::RotX},
-                    {L"rX",             EAxis::RotX},
-                    {L"RX",             EAxis::RotX},
-                    {L"rotx",           EAxis::RotX},
-                    {L"rotX",           EAxis::RotX},
-                    {L"Rotx",           EAxis::RotX},
-                    {L"RotX",           EAxis::RotX},
-
-                    {L"ry",             EAxis::RotY},
-                    {L"Ry",             EAxis::RotY},
-                    {L"rY",             EAxis::RotY},
-                    {L"RY",             EAxis::RotY},
-                    {L"roty",           EAxis::RotY},
-                    {L"rotY",           EAxis::RotY},
-                    {L"Roty",           EAxis::RotY},
-                    {L"RotY",           EAxis::RotY},
-
-                    {L"rz",             EAxis::RotZ},
-                    {L"Rz",             EAxis::RotZ},
-                    {L"rZ",             EAxis::RotZ},
-                    {L"RZ",             EAxis::RotZ},
-                    {L"rotz",           EAxis::RotZ},
-                    {L"rotZ",           EAxis::RotZ},
-                    {L"Rotz",           EAxis::RotZ},
-                    {L"RotZ",           EAxis::RotZ}
-                };
-
-                // Map of strings representing axis directions to axis direction enumerators.
-                static const std::map<std::wstring_view, EAxisDirection> kDirectionStrings = {
-                    {L"bidir",          EAxisDirection::Both},
-                    {L"Bidir",          EAxisDirection::Both},
-                    {L"BiDir",          EAxisDirection::Both},
-                    {L"BIDIR",          EAxisDirection::Both},
-                    {L"bidirectional",  EAxisDirection::Both},
-                    {L"Bidirectional",  EAxisDirection::Both},
-                    {L"BiDirectional",  EAxisDirection::Both},
-                    {L"BIDIRECTIONAL",  EAxisDirection::Both},
-                    {L"both",           EAxisDirection::Both},
-                    {L"Both",           EAxisDirection::Both},
-                    {L"BOTH",           EAxisDirection::Both},
-
-                    {L"+",              EAxisDirection::Positive},
-                    {L"+ve",            EAxisDirection::Positive},
-                    {L"pos",            EAxisDirection::Positive},
-                    {L"Pos",            EAxisDirection::Positive},
-                    {L"POS",            EAxisDirection::Positive},
-                    {L"positive",       EAxisDirection::Positive},
-                    {L"Positive",       EAxisDirection::Positive},
-                    {L"POSITIVE",       EAxisDirection::Positive},
-
-                    {L"-",              EAxisDirection::Negative},
-                    {L"-ve",            EAxisDirection::Negative},
-                    {L"neg",            EAxisDirection::Negative},
-                    {L"Neg",            EAxisDirection::Negative},
-                    {L"NEG",            EAxisDirection::Negative},
-                    {L"negative",       EAxisDirection::Negative},
-                    {L"Negative",       EAxisDirection::Negative},
-                    {L"NEGATIVE",       EAxisDirection::Negative}
-                };
-
                 SParamStringParts paramParts = ExtractParameterListStringParts(params).value_or(SParamStringParts());
 
                 // First parameter is required. It is a string that specifies the target axis.
                 if (true == paramParts.first.empty())
                     return L"Missing or unparseable axis";
 
-                const auto kAxisIter = kAxisStrings.find(paramParts.first);
-                if (kAxisStrings.cend() == kAxisIter)
+                const std::optional<EAxis> kMaybeAxis = AxisFromString(paramParts.first);
+                if (false == kMaybeAxis.has_value())
                     return Strings::FormatString(L"%s: Unrecognized axis", std::wstring(paramParts.first).c_str()).Data();
 
-                const EAxis kAxis = kAxisIter->second;
+                const EAxis kAxis = kMaybeAxis.value();
 
                 // Second parameter is optional. It is a string that specifies the axis direction, with the default being both.
                 EAxisDirection axisDirection = EAxisDirection::Both;
@@ -245,11 +273,11 @@ namespace Xidi
                 if (false == paramParts.first.empty())
                 {
                     // It is an error for a second parameter to be present but invalid.
-                    const auto kDirectionIter = kDirectionStrings.find(paramParts.first);
-                    if (kDirectionStrings.cend() == kDirectionIter)
+                    const std::optional<EAxisDirection> kMaybeAxisDirection = AxisDirectionFromString(paramParts.first);
+                    if (false == kMaybeAxisDirection.has_value())
                         return Strings::FormatString(L"%s: Unrecognized axis direction", std::wstring(paramParts.first).c_str()).Data();
 
-                    axisDirection = kDirectionIter->second;
+                    axisDirection = kMaybeAxisDirection.value();
                 }
 
                 // No further parameters allowed.
@@ -553,26 +581,26 @@ namespace Xidi
                 // Map of strings representing controller elements to indices within the element map data structure.
                 // One pair exists per field in the SElementMap structure.
                 static const std::map<std::wstring_view, unsigned int> kControllerElementStrings = {
-                    {L"StickLeftX",     ELEMENT_MAP_INDEX_OF(stickLeftX)},
-                    {L"StickLeftY",     ELEMENT_MAP_INDEX_OF(stickLeftY)},
-                    {L"StickRightX",    ELEMENT_MAP_INDEX_OF(stickRightX)},
-                    {L"StickRightY",    ELEMENT_MAP_INDEX_OF(stickRightY)},
-                    {L"DpadUp",         ELEMENT_MAP_INDEX_OF(dpadUp)},
-                    {L"DpadDown",       ELEMENT_MAP_INDEX_OF(dpadDown)},
-                    {L"DpadLeft",       ELEMENT_MAP_INDEX_OF(dpadLeft)},
-                    {L"DpadRight",      ELEMENT_MAP_INDEX_OF(dpadRight)},
-                    {L"TriggerLT",      ELEMENT_MAP_INDEX_OF(triggerLT)},
-                    {L"TriggerRT",      ELEMENT_MAP_INDEX_OF(triggerRT)},
-                    {L"ButtonA",        ELEMENT_MAP_INDEX_OF(buttonA)},
-                    {L"ButtonB",        ELEMENT_MAP_INDEX_OF(buttonB)},
-                    {L"ButtonX",        ELEMENT_MAP_INDEX_OF(buttonX)},
-                    {L"ButtonY",        ELEMENT_MAP_INDEX_OF(buttonY)},
-                    {L"ButtonLB",       ELEMENT_MAP_INDEX_OF(buttonLB)},
-                    {L"ButtonRB",       ELEMENT_MAP_INDEX_OF(buttonRB)},
-                    {L"ButtonBack",     ELEMENT_MAP_INDEX_OF(buttonBack)},
-                    {L"ButtonStart",    ELEMENT_MAP_INDEX_OF(buttonStart)},
-                    {L"ButtonLS",       ELEMENT_MAP_INDEX_OF(buttonLS)},
-                    {L"ButtonRS",       ELEMENT_MAP_INDEX_OF(buttonRS)}
+                    {L"StickLeftX",                                         ELEMENT_MAP_INDEX_OF(stickLeftX)},
+                    {L"StickLeftY",                                         ELEMENT_MAP_INDEX_OF(stickLeftY)},
+                    {L"StickRightX",                                        ELEMENT_MAP_INDEX_OF(stickRightX)},
+                    {L"StickRightY",                                        ELEMENT_MAP_INDEX_OF(stickRightY)},
+                    {L"DpadUp",                                             ELEMENT_MAP_INDEX_OF(dpadUp)},
+                    {L"DpadDown",                                           ELEMENT_MAP_INDEX_OF(dpadDown)},
+                    {L"DpadLeft",                                           ELEMENT_MAP_INDEX_OF(dpadLeft)},
+                    {L"DpadRight",                                          ELEMENT_MAP_INDEX_OF(dpadRight)},
+                    {L"TriggerLT",                                          ELEMENT_MAP_INDEX_OF(triggerLT)},
+                    {L"TriggerRT",                                          ELEMENT_MAP_INDEX_OF(triggerRT)},
+                    {L"ButtonA",                                            ELEMENT_MAP_INDEX_OF(buttonA)},
+                    {L"ButtonB",                                            ELEMENT_MAP_INDEX_OF(buttonB)},
+                    {L"ButtonX",                                            ELEMENT_MAP_INDEX_OF(buttonX)},
+                    {L"ButtonY",                                            ELEMENT_MAP_INDEX_OF(buttonY)},
+                    {L"ButtonLB",                                           ELEMENT_MAP_INDEX_OF(buttonLB)},
+                    {L"ButtonRB",                                           ELEMENT_MAP_INDEX_OF(buttonRB)},
+                    {L"ButtonBack",                                         ELEMENT_MAP_INDEX_OF(buttonBack)},
+                    {L"ButtonStart",                                        ELEMENT_MAP_INDEX_OF(buttonStart)},
+                    {L"ButtonLS",                                           ELEMENT_MAP_INDEX_OF(buttonLS)},
+                    {L"ButtonRS",                                           ELEMENT_MAP_INDEX_OF(buttonRS)}
                 };
 
                 const auto controllerElementIter = kControllerElementStrings.find(controllerElementString);
@@ -580,6 +608,24 @@ namespace Xidi
                     return std::nullopt;
                 else
                     return controllerElementIter->second;
+            }
+
+            // --------
+
+            std::optional<unsigned int> FindForceFeedbackActuatorIndex(std::wstring_view ffActuatorString)
+            {
+                // Map of strings representing controller elements to indices within the element map data structure.
+                // One pair exists per field in the SForceFeedbackActuatorMap structure.
+                static const std::map<std::wstring_view, unsigned int> kForceFeedbackActuatorStrings = {
+                    {L"ForceFeedback.LeftMotor",                            FFACTUATOR_MAP_INDEX_OF(leftMotor)},
+                    {L"ForceFeedback.RightMotor",                           FFACTUATOR_MAP_INDEX_OF(rightMotor)}
+                };
+
+                const auto ffActuatorIter = kForceFeedbackActuatorStrings.find(ffActuatorString);
+                if (kForceFeedbackActuatorStrings.cend() == ffActuatorIter)
+                    return std::nullopt;
+                else
+                    return ffActuatorIter->second;
             }
 
             // --------
@@ -605,9 +651,17 @@ namespace Xidi
 
             // --------
 
-            bool IsControllerElementStringValid(std::wstring_view element)
+            ForceFeedbackActuatorOrError ForceFeedbackActuatorFromString(std::wstring_view ffActuatorString)
             {
-                return FindControllerElementIndex(element).has_value();
+                const std::optional<unsigned int>kMaybeRecursionDepth = ComputeRecursionDepth(ffActuatorString);
+                if (false == kMaybeRecursionDepth.has_value())
+                    return Strings::FormatString(L"Syntax error: Unbalanced parentheses").Data();
+
+                const unsigned int kRecursionDepth = ComputeRecursionDepth(ffActuatorString).value();
+                if (kRecursionDepth > 1)
+                    return L"Nesting is not allowed for force feedback actuators";
+
+                return ParseForceFeedbackActuator(ffActuatorString);
             }
 
 
@@ -648,7 +702,7 @@ namespace Xidi
 
             // --------
 
-            std::optional<SElementMapperStringParts> ExtractElementMapperStringParts(std::wstring_view elementMapperString)
+            std::optional<SStringParts> ExtractElementMapperStringParts(std::wstring_view elementMapperString)
             {
                 // First, look for the end of the "type" part of the string. This just means looking for the first possible separator character.
                 // Example: "Axis(X)" means the type is "Axis"
@@ -662,7 +716,7 @@ namespace Xidi
                     // Example: "Null" in which case we got to the end of the string with no separator character identified.
                     
                     // The entire string is consumed and is the type. There are no parameters and no remaining parts to the string.
-                    return SElementMapperStringParts({.type = TrimWhitespace(elementMapperString)});
+                    return SStringParts({.type = TrimWhitespace(elementMapperString)});
                 }
                 else if (kCharElementMapperBeginParams != elementMapperString[kSeparatorPosition])
                 {
@@ -681,7 +735,7 @@ namespace Xidi
                     if (true == kRemainingString.empty())
                         return std::nullopt;
 
-                    return SElementMapperStringParts({.type = kTypeString, .remaining = kRemainingString});
+                    return SStringParts({.type = kTypeString, .remaining = kRemainingString});
                 }
                 else
                 {
@@ -721,8 +775,23 @@ namespace Xidi
 
                     const std::wstring_view kRemainingString = possibleRemainingString;
 
-                    return SElementMapperStringParts({.type = kTypeString, .params = kParamString, .remaining = kRemainingString});
+                    return SStringParts({.type = kTypeString, .params = kParamString, .remaining = kRemainingString});
                 }
+            }
+
+            // --------
+
+            std::optional<SStringParts> ExtractForceFeedbackActuatorStringParts(std::wstring_view ffActuatorString)
+            {
+                std::optional<SStringParts> maybeStringParts = ExtractElementMapperStringParts(ffActuatorString);
+
+                if (false == maybeStringParts.has_value())
+                    return std::nullopt;
+
+                if (false == maybeStringParts.value().remaining.empty())
+                    return std::nullopt;
+
+                return maybeStringParts;
             }
 
             // --------
@@ -934,58 +1003,145 @@ namespace Xidi
 
             // --------
 
+            ForceFeedbackActuatorOrError MakeForceFeedbackActuatorDefault(std::wstring_view params)
+            {
+                if (false == params.empty())
+                    return Strings::FormatString(L"Default: \"%s\" is extraneous", std::wstring(params).c_str()).Data();
+
+                const ForceFeedback::SActuatorElement kActuatorElement = Mapper::kDefaultForceFeedbackActuator;
+                
+                return kActuatorElement;
+            }
+
+            // --------
+
+            ForceFeedbackActuatorOrError MakeForceFeedbackActuatorDisabled(std::wstring_view params)
+            {
+                if (false == params.empty())
+                    return Strings::FormatString(L"Disabled: \"%s\" is extraneous", std::wstring(params).c_str()).Data();
+
+                const ForceFeedback::SActuatorElement kActuatorElement = {.isPresent = false};
+
+                return kActuatorElement;
+            }
+
+            // --------
+
+            ForceFeedbackActuatorOrError MakeForceFeedbackActuatorSingleAxis(std::wstring_view params)
+            {
+                const AxisMapperParamsOrError kMaybeAxisMapperParams = ParseAxisMapperParams(params);
+                if (true == kMaybeAxisMapperParams.HasError())
+                    return Strings::FormatString(L"SingleAxis: %s", kMaybeAxisMapperParams.Error().c_str()).Data();
+
+                const ForceFeedback::SActuatorElement kActuatorElement = {
+                    .isPresent = true,
+                    .mode = ForceFeedback::EActuatorMode::SingleAxis,
+                    .singleAxis = {
+                        .axis = kMaybeAxisMapperParams.Value().axis,
+                        .direction = kMaybeAxisMapperParams.Value().direction
+                    }
+                };
+
+                return kActuatorElement;
+            }
+
+            // --------
+
+            ForceFeedbackActuatorOrError MakeForceFeedbackActuatorMagnitudeProjection(std::wstring_view params)
+            {
+                SParamStringParts paramParts = ExtractParameterListStringParts(params).value_or(SParamStringParts());
+
+                // First parameter is required. It is a string that specifies the first axis in the projection.
+                if (true == paramParts.first.empty())
+                    return L"MagnitudeProjection: Missing or unparseable first axis";
+
+                const std::optional<EAxis> kMaybeAxisFirst = AxisFromString(paramParts.first);
+                if (false == kMaybeAxisFirst.has_value())
+                    return Strings::FormatString(L"MagnitudeProjection: %s: Unrecognized first axis", std::wstring(paramParts.first).c_str()).Data();
+
+                const EAxis kAxisFirst = kMaybeAxisFirst.value();
+
+                // Second parameter is required. It is a string that specifies the second axis in the projection.
+                paramParts = ExtractParameterListStringParts(paramParts.remaining).value_or(SParamStringParts());
+                if (true == paramParts.first.empty())
+                    return L"MagnitudeProjection: Missing or unparseable second axis";
+
+                const std::optional<EAxis> kMaybeAxisSecond = AxisFromString(paramParts.first);
+                if (false == kMaybeAxisSecond.has_value())
+                    return Strings::FormatString(L"MagnitudeProjection: %s: Unrecognized second axis", std::wstring(paramParts.first).c_str()).Data();
+
+                const EAxis kAxisSecond = kMaybeAxisSecond.value();
+
+                // No further parameters allowed.
+                if (false == paramParts.remaining.empty())
+                    return Strings::FormatString(L"\"%s\" is extraneous", std::wstring(paramParts.remaining).c_str()).Data();
+
+                const ForceFeedback::SActuatorElement kActuatorElement = {
+                    .isPresent = true,
+                    .mode = ForceFeedback::EActuatorMode::MagnitudeProjection,
+                    .magnitudeProjection = {
+                        .axisFirst = kAxisFirst,
+                        .axisSecond = kAxisSecond
+                    }
+                };
+
+                return kActuatorElement;
+            }
+
+            // --------
+
             SElementMapperParseResult ParseSingleElementMapper(std::wstring_view elementMapperString)
             {
                 static const std::map<std::wstring_view, TMakeElementMapperFunc> kMakeElementMapperFunctions = {
-                    {L"axis",               &MakeAxisMapper},
-                    {L"Axis",               &MakeAxisMapper},
+                    {L"axis",                   &MakeAxisMapper},
+                    {L"Axis",                   &MakeAxisMapper},
 
-                    {L"button",             &MakeButtonMapper},
-                    {L"Button",             &MakeButtonMapper},
+                    {L"button",                 &MakeButtonMapper},
+                    {L"Button",                 &MakeButtonMapper},
 
-                    {L"compound",           &MakeCompoundMapper},
-                    {L"Compound",           &MakeCompoundMapper},
+                    {L"compound",               &MakeCompoundMapper},
+                    {L"Compound",               &MakeCompoundMapper},
 
-                    {L"digitalaxis",        &MakeDigitalAxisMapper},
-                    {L"digitalAxis",        &MakeDigitalAxisMapper},
-                    {L"Digitalaxis",        &MakeDigitalAxisMapper},
-                    {L"DigitalAxis",        &MakeDigitalAxisMapper},
+                    {L"digitalaxis",            &MakeDigitalAxisMapper},
+                    {L"digitalAxis",            &MakeDigitalAxisMapper},
+                    {L"Digitalaxis",            &MakeDigitalAxisMapper},
+                    {L"DigitalAxis",            &MakeDigitalAxisMapper},
 
-                    {L"invert",             &MakeInvertMapper},
-                    {L"Invert",             &MakeInvertMapper},
+                    {L"invert",                 &MakeInvertMapper},
+                    {L"Invert",                 &MakeInvertMapper},
 
-                    {L"keyboard",           &MakeKeyboardMapper},
-                    {L"Keyboard",           &MakeKeyboardMapper},
-                    {L"keystroke",          &MakeKeyboardMapper},
-                    {L"Keystroke",          &MakeKeyboardMapper},
-                    {L"KeyStroke",          &MakeKeyboardMapper},
+                    {L"keyboard",               &MakeKeyboardMapper},
+                    {L"Keyboard",               &MakeKeyboardMapper},
+                    {L"keystroke",              &MakeKeyboardMapper},
+                    {L"Keystroke",              &MakeKeyboardMapper},
+                    {L"KeyStroke",              &MakeKeyboardMapper},
 
-                    {L"pov",                &MakePovMapper},
-                    {L"Pov",                &MakePovMapper},
-                    {L"POV",                &MakePovMapper},
-                    {L"povhat",             &MakePovMapper},
-                    {L"povHat",             &MakePovMapper},
-                    {L"Povhat",             &MakePovMapper},
-                    {L"PovHat",             &MakePovMapper},
+                    {L"pov",                    &MakePovMapper},
+                    {L"Pov",                    &MakePovMapper},
+                    {L"POV",                    &MakePovMapper},
+                    {L"povhat",                 &MakePovMapper},
+                    {L"povHat",                 &MakePovMapper},
+                    {L"Povhat",                 &MakePovMapper},
+                    {L"PovHat",                 &MakePovMapper},
 
-                    {L"null",               &MakeNullMapper},
-                    {L"Null",               &MakeNullMapper},
-                    {L"nothing",            &MakeNullMapper},
-                    {L"Nothing",            &MakeNullMapper},
-                    {L"none",               &MakeNullMapper},
-                    {L"None",               &MakeNullMapper},
-                    {L"nil",                &MakeNullMapper},
-                    {L"Nil",                &MakeNullMapper},
+                    {L"null",                   &MakeNullMapper},
+                    {L"Null",                   &MakeNullMapper},
+                    {L"nothing",                &MakeNullMapper},
+                    {L"Nothing",                &MakeNullMapper},
+                    {L"none",                   &MakeNullMapper},
+                    {L"None",                   &MakeNullMapper},
+                    {L"nil",                    &MakeNullMapper},
+                    {L"Nil",                    &MakeNullMapper},
 
-                    {L"split",              &MakeSplitMapper},
-                    {L"Split",              &MakeSplitMapper},
+                    {L"split",                  &MakeSplitMapper},
+                    {L"Split",                  &MakeSplitMapper}
                 };
 
-                const std::optional<SElementMapperStringParts> kMaybeElementMapperStringParts = ExtractElementMapperStringParts(elementMapperString);
+                const std::optional<SStringParts> kMaybeElementMapperStringParts = ExtractElementMapperStringParts(elementMapperString);
                 if (false == kMaybeElementMapperStringParts.has_value())
                     return {.maybeElementMapper = Strings::FormatString(L"\"%s\" contains a syntax error", std::wstring(elementMapperString).c_str()).Data()};
 
-                const SElementMapperStringParts& kElementMapperStringParts = kMaybeElementMapperStringParts.value();
+                const SStringParts& kElementMapperStringParts = kMaybeElementMapperStringParts.value();
                 if (true == kElementMapperStringParts.type.empty())
                     return {.maybeElementMapper = L"Missing or unparseable element mapper type."};
 
@@ -994,6 +1150,53 @@ namespace Xidi
                     return {.maybeElementMapper = Strings::FormatString(L"%s: Unrecognized element mapper type", std::wstring(kElementMapperStringParts.type).c_str()).Data()};
 
                 return {.maybeElementMapper = kMakeElementMapperIter->second(kElementMapperStringParts.params), .remainingString = kElementMapperStringParts.remaining};
+            }
+
+            // --------
+
+            ForceFeedbackActuatorOrError ParseForceFeedbackActuator(std::wstring_view ffActuatorString)
+            {
+                static const std::map<std::wstring_view, TMakeForceFeedbackActuatorFunc> kMakeForceFeedbackActuatorFunctions = {
+                    {L"disable",                &MakeForceFeedbackActuatorDisabled},
+                    {L"Disable",                &MakeForceFeedbackActuatorDisabled},
+                    {L"disabled",               &MakeForceFeedbackActuatorDisabled},
+                    {L"Disabled",               &MakeForceFeedbackActuatorDisabled},
+                    {L"empty",                  &MakeForceFeedbackActuatorDisabled},
+                    {L"Empty",                  &MakeForceFeedbackActuatorDisabled},
+                    {L"none",                   &MakeForceFeedbackActuatorDisabled},
+                    {L"None",                   &MakeForceFeedbackActuatorDisabled},
+                    {L"nothing",                &MakeForceFeedbackActuatorDisabled},
+                    {L"Nothing",                &MakeForceFeedbackActuatorDisabled},
+                    {L"null",                   &MakeForceFeedbackActuatorDisabled},
+                    {L"Null",                   &MakeForceFeedbackActuatorDisabled},
+                    {L"off",                    &MakeForceFeedbackActuatorDisabled},
+                    {L"Off",                    &MakeForceFeedbackActuatorDisabled},
+                    {L"unused",                 &MakeForceFeedbackActuatorDisabled},
+                    {L"Unused",                 &MakeForceFeedbackActuatorDisabled},
+
+                    {L"default",                &MakeForceFeedbackActuatorDefault},
+                    {L"Default",                &MakeForceFeedbackActuatorDefault},
+
+                    {L"singleaxis",             &MakeForceFeedbackActuatorSingleAxis},
+                    {L"SingleAxis",             &MakeForceFeedbackActuatorSingleAxis},
+
+                    {L"magnitudeprojection",    &MakeForceFeedbackActuatorMagnitudeProjection},
+                    {L"MagnitudeProjection",    &MakeForceFeedbackActuatorMagnitudeProjection}
+                };
+
+                const std::optional<SStringParts> kMaybeForceFeedbackActuatorStringParts = ExtractForceFeedbackActuatorStringParts(ffActuatorString);
+                if (false == kMaybeForceFeedbackActuatorStringParts.has_value())
+                    return Strings::FormatString(L"\"%s\" contains a syntax error", std::wstring(ffActuatorString).c_str()).Data();
+
+                const SStringParts& kForceFeedbackActuatorStringParts = kMaybeForceFeedbackActuatorStringParts.value();
+                if (true == kForceFeedbackActuatorStringParts.type.empty())
+                    return L"Missing or unparseable element mapper type.";
+
+                const auto kMakeForceFeedbackActuatorIter = kMakeForceFeedbackActuatorFunctions.find(kForceFeedbackActuatorStringParts.type);
+                if (kMakeForceFeedbackActuatorFunctions.cend() == kMakeForceFeedbackActuatorIter)
+                    return Strings::FormatString(L"%s: Unrecognized force feedback actuator mode", std::wstring(kForceFeedbackActuatorStringParts.type).c_str()).Data();
+
+                return kMakeForceFeedbackActuatorIter->second(kForceFeedbackActuatorStringParts.params);
             }
         }
     }

@@ -48,6 +48,7 @@ namespace Xidi
     {
         Error,                                                              ///< Indicates an error.
         SetElementMapper,                                                   ///< Set an element mapper for a controller element.
+        SetForceFeedbackActuator,                                           ///< Set a force feedback actuator configuration for a physical force feedback actuator.
         SetTemplate,                                                        ///< Set the blueprint template.
     };
 #endif
@@ -88,6 +89,10 @@ namespace Xidi
         // If the configuration setting name identifies a valid controller element, then the value should be parsed for an element mapper to be assigned to that controller element.
         if (true == Controller::MapperParser::IsControllerElementStringValid(name))
             return EBlueprintOperation::SetElementMapper;
+
+        // If the configuration setting name identifies a valid force feedback actuator, then the value should be parsed for a configuration to be assigned to that actuator.
+        if (true == Controller::MapperParser::IsForceFeedbackActuatorStringValid(name))
+            return EBlueprintOperation::SetForceFeedbackActuator;
 
         // If the configuration setting name is known and contained within the map above, simply return it.
         const auto blueprintOperationIter = kBlueprintOperationsMap.find(name);
@@ -223,6 +228,20 @@ namespace Xidi
                     }
                 } while (false);
                 break;
+
+            case EBlueprintOperation::SetForceFeedbackActuator:
+                do {
+                    Xidi::Controller::MapperParser::ForceFeedbackActuatorOrError maybeForceFeedbackActuator = Controller::MapperParser::ForceFeedbackActuatorFromString(value);
+                    if (false == maybeForceFeedbackActuator.HasValue())
+                    {
+                        SetErrorMessage(Strings::FormatString(L"%s: Failed to parse force feedback actuator: %s.", name.data(), maybeForceFeedbackActuator.Error().c_str()));
+                        customMapperBuilder->InvalidateBlueprint(customMapperName);
+                        return EAction::Error;
+                    }
+
+                    // TODO
+                    // Set the force feedback actuator in the blueprint.
+                } while (false);
 
             case EBlueprintOperation::SetTemplate:
                 do {
