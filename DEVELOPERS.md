@@ -12,18 +12,20 @@ The build system Xidi uses is based on Microsoft Visual Studio 2022. To build Xi
 
 This section provides a high-level description of how Xidi is designed and implemented. For those portions of this section that refer to XInput and DirectInput, it is assumed that the reader is familiar with these APIs and their relevant concepts, as described in Microsoft's documentation.
 
-A zoomed-out view of Xidi's functionality boils down to a very short sequence of three steps:
+A zoomed-out view of Xidi's input functionality boils down to a very short sequence of three steps:
  - *Read* the controller state of a real game controller using XInput
  - *Translate* said controller state from an XInput representation to an internal representation for a Xidi virtual controller device
  - *Expose* the state of Xidi virtual controller devices via DirectInput and WinMM
 
 Of these three steps, *translate* is the most intricate and interesting. The *read* step simply involves invoking the relevant XInput API functions, and the *expose* step requires that Xidi implement DirectInput and WinMM interfaces as described in the relevant documentation.
 
+Xidi also supports controller vibration, also known as *force feedback* in DirectInput parlance. The steps are basically the opposite as above, as Xidi must translate between the DirectInput application's view of the controller and the real physical XInput controller.
+
 Xidi's notion of virtual controller forms the heart of its implementation. A *virtual controller* is simply a layer of abstraction: it acts as an internal receptacle for translated controller data. Conversely, a *physical controller* is an actual XInput controller device, as exposed by the XInput API. The number of possible physical controllers is determined by the XInput API, but the number of virtual controller objects is not limited by the system or by Xidi. Multiple virtual controller objects can all be associated with the same physical controller device.
 
-Xidi uses mappers to translate from raw XInput controller state to the state of a virtual controller device and subsequently exposes virtual controller state to applications. Mappers also determine the capabilities (number of axes, number of buttons, and so on) of the virtual controllers that Xidi exposes to applications.
+Xidi uses mappers to translate between XInput controller data and virtual controller data, and subsequently exposes virtual controller data to applications. Mappers also determine the capabilities (number of axes, number of buttons, whether or not force feedback is supported, and so on) of the virtual controllers that Xidi exposes to applications.
 
-Constants and data structures that are used to represent virtual controller data are defined in `ControllerTypes.h`, and the main top-level implementation of virtual controllers is in the VirtualController module. A virtual controller can contain up to 6 axes (X, Y, Z, X-rotation, Y-rotation, and Z-rotation), 16 buttons, and 1 POV hat. The mapper object in use determines which subset of these controller elements is actually present on the associated virtual controller and, accordingly, which elements of the virtual controller state data structure would ever contain valid data. Communication with physical controller devices via the XInput API is all contained in the PhysicalController module.
+Constants and data structures that are used to represent virtual controller data are defined in `ControllerTypes.h`, with certain pieces specific to force feedback being in `ForceFeedbackTypes.h`. The main top-level implementation of virtual controllers is in the VirtualController module. A virtual controller can contain up to 6 axes (X, Y, Z, X-rotation, Y-rotation, and Z-rotation), 16 buttons, and 1 POV hat. The mapper object in use determines which subset of these controller elements is actually present on the associated virtual controller and, accordingly, which elements of the virtual controller state data structure would ever contain valid data. Communication with physical controller devices via the XInput API is all contained in the PhysicalController module.
 
 The sections that follow describe each step in Xidi's overall functionality in more detail.
 
@@ -129,8 +131,20 @@ Built-in mapper objects are instantiated as constants in the file `MapperDefinit
 ### Exposing Virtual Controllers to Applications
 
 VirtualDirectInputDevice, WrapperIDirectInput, and WrapperJoyWinMM expose virtual controllers to applications using DirectInput and WinMM. Internally, objects of the class `VirtualDirectInputDevice` use instances of the `DataFormat` class to manipulate data packets in the format specified by the application.
-
 Implementations of all of these modules are intended to be as straightforward as possible. The goal is to implement the relevant APIs per Microsoft documentation and observed behavior.
+
+
+### Force Feedback
+
+VirtualDirectInputEffect is Xidi's implementation of the IDirectInputEffect interface. Each such object is linked to an instance of VirtualDirectInputDevice to enable a proper implementation of all the interface methods.
+
+Typically a DirectInput device vendor supplies a force feedback driver that exposes a physical device's hardware force feedback effect generator to applications via DirectInput. Whereas the XInput API is relatively simple and works by means of directly specifying the rumble strength for each individual motor, DirectInput allows much more semantically rich effect intentions to be expressed, leaving it to the combination of hardware and driver to deliver the desired output.
+
+Xidi's emulation of force feedback effect generator hardware is encapsulated in the ForceFeedback namespace. The Effect hierarchy implements the effects themselves, exposing a convenient interface in which magnitude can be computed as a function of time. Mappers can then translate the output magnitude vectors, which are expressed using coordinates along DirectInput axes (X axis, Y axis, and so on), into physical actuator values with components that map directly to physical force feedback actuators (left motor, right motor, and so on). The PhysicalController module invokes the `XInputSetState` function periodically to set these physical force actuator values.
+
+DirectInput requires that an applicaton acquire a controller in exclusive mode before playing force feedback effects. Xidi requires this too, and the way this works internally is that the PhysicalController tracks the virtual controller object that has acquired it. This way, the PhysicalController module is able to query the virtual controller, enlisting its help in mapping from a DirectInput magnitude vector to a physical force feedback actuator vector that can then be applied to the motors on the device. Mappers are, after all, a virtual controller concept rather than a physical controller concept; mapper objects are owned by virtual controllers, not by physical controllers.
+
+Force feedback effect objects are intended to be uniquely identifiable but also exist in multiple locations. The rationale is that this enables Xidi to separate the parameters of an effect that exist in software - available via IDirectInputEffect - from the parameters that have been "downloaded" to the force feedback device. A new unique identifier is established whenever a new object is created, and when objects are copied they retain the same identifier. "Downloading an effect" is implemented by making a copy of the effect and placing it into a buffer owned by the force feedback device or, in the event of modifying an existing effect's parameters, invoking the `SyncParametersFrom` method on the device's version of the effect to update the parameters on the device and passing the software view as a source from which to obtain the new parameter values. Since the unique identifiers are identical Xidi knows that the two effect objects are intended to refer to the same effect and that the parameter transfer can be made in a type-safe way. By the same token, "unloading an effect" from the device is as simple as erasing the device's copy of the effect from the device buffer.
 
 
 ## Source Code Organization
@@ -153,6 +167,12 @@ Source code documentation is available and can be built using Doxygen. This sect
 
 **ExportApiDirectInput** and **ExportApiWinMM** implement the external interfaces to Xidi, mimicking the interfaces exposed by the system-supplied versions of the DirectInput and WinMM libraries. Applications that load Xidi will invoke these functions directly. In many cases they simply pass through to the imported functions of the same name, but when needed they perform additional functionality, calling into other parts of Xidi.
 
+**ForceFeedbackDevice** contains the top-level object Xidi uses to emulate force feedback devices. Methods encompass many of the sorts of operations that are typically performed on such devices via DirectInput. One instance of a force feedback device object is associated with each physical controller.
+
+**ForceFeedbackEffect** contains the entire class hierarchy for implementing individual force feedback effects and determining their magnitudes as a function of time. For example, implementing a sine wave effect requires computing the trigonometric sine, which is implemented by one of the classes in this module. Parameter updates, retrieval, and validation are also handled by the various classes in this class hierarchy.
+
+**ForceFeedbackParameters** defines data structures and objects that pertain to the parameters associated with force feedback effects. The largest implementation in this module is the direction vector, which is what Xidi uses to project a force of given magnitude along whatever axes, and in whatever direction, the application requested in the force feedback effect parameters.
+
 **Globals** holds miscellaneous global values and provides methods for accessing them. Examples include the specified import library paths from the configuration file and the internal system-defined instance handle used to refer specifically to the Xidi library.
 
 **ImportApiDirectInput** and **ImportApiWinMM** hold the addresses of all functions imported from either the system-supplied or user-overridden DirectInput and WinMM libraries. Other classes may call methods defined by these classes to invoke imported functions. The import tables are lazily initialized on first access. If an imported function is called that was missing from the originally-loaded library, these classes intentionally cause the program to crash by invoking a function using a `NULL` pointer. If logging is enabled, a message is logged indicating the problematic function.
@@ -167,7 +187,7 @@ Source code documentation is available and can be built using Doxygen. This sect
 
 **MapperDefinitions** contains instantiations of the built-in mappers.
 
-**MapperParser** implements all string-parsing functionality for identifying XInput controller elements and constructing element mappers based on strings contained within a configuration file.
+**MapperParser** implements all string-parsing functionality for identifying XInput controller elements, identifying force feedback actuators, and constructing both of these types of objects based on strings contained within a configuration file.
 
 **PhysicalController** manages all communication with the underlying XInput API. It periodically polls devices for changes to physical state and supports notifying other modules whenever a physical state change is detected.
 
@@ -176,6 +196,8 @@ Source code documentation is available and can be built using Doxygen. This sect
 **VirtualController** is the top-level virtual controller implementation. It combines all of the individual units of functionality needed to present a cohesive controller interface, including mapping, event buffering, and even some configuration properties. Some of the functionality is guided by what DirectInput expects, although none of the implementation is DirectInput-specific.
 
 **VirtualDirectInputDevice** is a DirectInput interface for exposing Xidi virtual controllers to applications. This class implements IDirectInputDevice (or IDirectInputDevice8, depending on the compiled form of Xidi) and contains a Xidi virtual controller device instance with which it communicates internally. Functionality related to application-defined data format is delegated to the DataFormat helper class.
+
+**VirtualDirectInputEffect** is a DirectInput interface for exposing force feedback effect objects to applications. This module contains an entire class hierarchy of different effect types, all of which implement the IDirectInputEffect interface.
 
 **WrapperIDirectInput** and **WrapperJoyWinMM** act as interception classes for all calls to DirectInput (via IDirectInput or IDirectInput8) and WinMM joystick (via direct function calls) APIs. In the former case, an instance of WrapperIDirectInput is returned when the application calls one of the DirectInput object creation methods exported by the Xidi DLL, and in the latter case, the joystick family of WinMM calls invokes functions supplied by WrapperJoyWinMM.
 
