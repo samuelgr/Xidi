@@ -222,7 +222,7 @@ namespace Xidi
 
                     if (false == customMapperBuilder->SetBlueprintElementMapper(customMapperName, name, std::move(maybeElementMapper.Value())))
                     {
-                        SetErrorMessage(Strings::FormatString(L"%s: Internal error: Successfully parsed element mapper object but failed to set it on the blueprint.", name.data()));
+                        SetErrorMessage(Strings::FormatString(L"%s: Internal error: Successfully parsed element mapper but failed to set it on the blueprint.", name.data()));
                         customMapperBuilder->InvalidateBlueprint(customMapperName);
                         return EAction::Error;
                     }
@@ -239,9 +239,14 @@ namespace Xidi
                         return EAction::Error;
                     }
 
-                    // TODO
-                    // Set the force feedback actuator in the blueprint.
+                    if (false == customMapperBuilder->SetBlueprintForceFeedbackActuator(customMapperName, name, maybeForceFeedbackActuator.Value()))
+                    {
+                        SetErrorMessage(Strings::FormatString(L"%s: Internal error: Successfully parsed force feedback actuator but failed to set it on the blueprint.", name.data()));
+                        customMapperBuilder->InvalidateBlueprint(customMapperName);
+                        return EAction::Error;
+                    }
                 } while (false);
+                break;
 
             case EBlueprintOperation::SetTemplate:
                 do {

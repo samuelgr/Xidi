@@ -11,6 +11,7 @@
 
 #include "ControllerTypes.h"
 #include "ElementMapper.h"
+#include "ForceFeedbackTypes.h"
 #include "Mapper.h"
 #include "MapperBuilder.h"
 #include "TestCase.h"
@@ -24,6 +25,9 @@
 namespace XidiTest
 {
     using namespace ::Xidi::Controller;
+    using ::Xidi::Controller::EAxis;
+    using ::Xidi::Controller::ForceFeedback::EActuatorMode;
+    using ::Xidi::Controller::ForceFeedback::SActuatorElement;
 
 
     // -------- INTERNAL FUNCTIONS ----------------------------------------- //
@@ -58,6 +62,15 @@ namespace XidiTest
                 TEST_ASSERT(nullptr == kElementMapB.all[i]);
             }
         }
+    }
+
+    /// Verifies that the two supplied force feedback actuator maps are equivalent to one another and flags a test failure if not.
+    /// @param [in] kElementMapA One side of the comparison.
+    /// @param [in] kElementMapB Another side of the comparison.
+    static void VerifyForceFeedbackActuatorMapsAreEquivalent(const Mapper::UForceFeedbackActuatorMap& kActuatorMapA, const Mapper::UForceFeedbackActuatorMap& kActuatorMapB)
+    {
+        for (unsigned int i = 0; i < _countof(Mapper::UForceFeedbackActuatorMap::all); ++i)
+            TEST_ASSERT(kActuatorMapA.all[i] == kActuatorMapB.all[i]);
     }
 
     /// Verifies that the supplied element map is empty and flags a test failure if not.
@@ -417,7 +430,7 @@ namespace XidiTest
     // Verifies that a mapper with a template and some changes applied can be built and registered, in this case the changes being element modification.
     // After build is completed, checks that the element mappers all match.
     // For this test the template is a known and documented mapper, and the changes involve switching the triggers to use button 15.
-    TEST_CASE(Mapper_Build_Template_WithModification)
+    TEST_CASE(MapperBuilder_Build_Template_WithModification)
     {
         constexpr std::wstring_view kMapperName = L"TestMapper";
         constexpr ButtonMapper kTestElementMapper(EButton::B15);
@@ -449,7 +462,7 @@ namespace XidiTest
     // Verifies that a mapper with a template and some changes applied can be built and registered, in this case the changes being element removal.
     // After build is completed, checks that the element mappers all match.
     // For this test the template is a known and documented mapper, and the changes involve removing the POV.
-    TEST_CASE(Mapper_Build_Template_WithRemoval)
+    TEST_CASE(MapperBuilder_Build_Template_WithRemoval)
     {
         constexpr std::wstring_view kMapperName = L"TestMapper";
         const std::set<int> kControllerElements= {ELEMENT_MAP_INDEX_OF(dpadUp), ELEMENT_MAP_INDEX_OF(dpadDown), ELEMENT_MAP_INDEX_OF(dpadLeft), ELEMENT_MAP_INDEX_OF(dpadRight)};
@@ -507,7 +520,7 @@ namespace XidiTest
     }
 
     // Verifies that a mapper fails to be built if it refers to itself as its own template.
-    TEST_CASE(Mapper_Build_Template_SelfReference)
+    TEST_CASE(MapperBuilder_Build_Template_SelfReference)
     {
         constexpr std::wstring_view kMapperName = L"TestMapper";
 
@@ -518,7 +531,7 @@ namespace XidiTest
     }
 
     // Verifies that a mapper fails to be built if it refers to an unkown mapper as its template.
-    TEST_CASE(Mapper_Build_Template_InvalidReference)
+    TEST_CASE(MapperBuilder_Build_Template_InvalidReference)
     {
         constexpr std::wstring_view kMapperName = L"TestMapper";
         constexpr std::wstring_view kTemplateName = L"UnknownMapper";
@@ -530,7 +543,7 @@ namespace XidiTest
     }
 
     // Verifies that mapper build succeeds in the presence of an acyclic chain of template dependencies.
-    TEST_CASE(Mapper_Build_Template_Chain)
+    TEST_CASE(MapperBuilder_Build_Template_Chain)
     {
         constexpr std::wstring_view kMapperNames[] = {L"TestMapperTemplateChainA", L"TestMapperTemplateChainB", L"TestMapperTemplateChainC", L"TestMapperTemplateChainD", L"TestMapperTemplateChainE", L"TestMapperTemplateChainF", L"TestMapperTemplateChainG"};
 
@@ -556,7 +569,7 @@ namespace XidiTest
     }
 
     // Verifies that a dependent mapper fails to build if its template has been invalidated.
-    TEST_CASE(Mapper_Build_Template_MarkInvalid)
+    TEST_CASE(MapperBuilder_Build_Template_MarkInvalid)
     {
         constexpr std::wstring_view kMapperNames[] = { L"TestMapperA", L"TestMapperB" };
 
@@ -573,7 +586,7 @@ namespace XidiTest
     }
 
     // Verifies that mapper build succeeds in the presence of an acyclic forking chain of template dependencies.
-    TEST_CASE(Mapper_Build_Template_Fork)
+    TEST_CASE(MapperBuilder_Build_Template_Fork)
     {
         constexpr std::wstring_view kMapperNameCommonDependency = L"TestMapperTemplateForkCommonDep";
         constexpr std::wstring_view kMapperNames[] = {L"TestMapperA", L"TestMapperB"};
@@ -599,7 +612,7 @@ namespace XidiTest
     }
 
     // Verifies that mapper build fails if there is a cycle in the template dependence graph.
-    TEST_CASE(Mapper_Build_Template_Cycle)
+    TEST_CASE(MapperBuilder_Build_Template_Cycle)
     {
         constexpr std::wstring_view kMapperNames[] = {L"TestMapperA", L"TestMapperB", L"TestMapperC", L"TestMapperD", L"TestMapperE", L"TestMapperF", L"TestMapperG"};
 
@@ -616,5 +629,77 @@ namespace XidiTest
 
         for (int i = 0; i < _countof(kMapperNames); ++i)
             TEST_ASSERT(nullptr == builder.Build(kMapperNames[i]));
+    }
+
+    // Verifies that a mapper is built using the default force feedback actuator map if not using a template and no changes are specified.
+    TEST_CASE(MapperBuilder_Build_ForceFeedback_Default)
+    {
+        constexpr std::wstring_view kMapperName = L"TestMapper";
+
+        MapperBuilder builder;
+        TEST_ASSERT(true == builder.CreateBlueprint(kMapperName));
+
+        std::unique_ptr<const Mapper> mapper(builder.Build(kMapperName));
+        TEST_ASSERT(nullptr != mapper);
+
+        const Mapper::UForceFeedbackActuatorMap& kExpectedActuatorMap = Mapper::kDefaultForceFeedbackActuatorMap;
+        const Mapper::UForceFeedbackActuatorMap& kActualActuatorMap = mapper->GetForceFeedbackActuatorMap();
+        VerifyForceFeedbackActuatorMapsAreEquivalent(kActualActuatorMap, kExpectedActuatorMap);
+    }
+
+    // Verifies that a mapper's force feedback actuator map is built completely from scratch without any default actuators if no template is used and a change to the actuator map is specified.
+    TEST_CASE(MapperBuilder_Build_ForceFeedback_FromScratch)
+    {
+        constexpr std::wstring_view kMapperName = L"TestMapper";
+
+        MapperBuilder builder;
+        TEST_ASSERT(true == builder.CreateBlueprint(kMapperName));
+
+        constexpr SActuatorElement kActuatorElement = {
+            .isPresent = true,
+            .mode = EActuatorMode::SingleAxis,
+            .singleAxis = {
+                .axis = EAxis::Z,
+                .direction = EAxisDirection::Negative
+            }
+        };
+        TEST_ASSERT(true == builder.SetBlueprintForceFeedbackActuator(kMapperName, FFACTUATOR_MAP_INDEX_OF(leftImpulseTrigger), kActuatorElement));
+
+        std::unique_ptr<const Mapper> mapper(builder.Build(kMapperName));
+        TEST_ASSERT(nullptr != mapper);
+
+        const Mapper::UForceFeedbackActuatorMap kExpectedActuatorMap({.leftImpulseTrigger = kActuatorElement});
+        const Mapper::UForceFeedbackActuatorMap& kActualActuatorMap = mapper->GetForceFeedbackActuatorMap();
+        VerifyForceFeedbackActuatorMapsAreEquivalent(kActualActuatorMap, kExpectedActuatorMap);
+    }
+
+    // Verifies that a mapper's force feedback actuator map is built in combination with a template's actuator map if a template is specified.
+    TEST_CASE(MapperBuilder_Build_ForceFeedback_WithTemplate)
+    {
+        constexpr std::wstring_view kMapperName = L"TestMapper";
+        constexpr std::wstring_view kTemplateMapperName = L"StandardGamepad";
+
+        MapperBuilder builder;
+        TEST_ASSERT(true == builder.CreateBlueprint(kMapperName));
+
+        constexpr SActuatorElement kActuatorElement = {
+            .isPresent = true,
+            .mode = EActuatorMode::SingleAxis,
+            .singleAxis = {
+                .axis = EAxis::Z,
+                .direction = EAxisDirection::Negative
+            }
+        };
+        TEST_ASSERT(true == builder.SetBlueprintForceFeedbackActuator(kMapperName, FFACTUATOR_MAP_INDEX_OF(leftImpulseTrigger), kActuatorElement));
+        TEST_ASSERT(true == builder.SetBlueprintTemplate(kMapperName, kTemplateMapperName));
+
+        std::unique_ptr<const Mapper> mapper(builder.Build(kMapperName));
+        TEST_ASSERT(nullptr != mapper);
+
+        Mapper::UForceFeedbackActuatorMap expectedActuatorMap = Mapper::GetByName(kTemplateMapperName)->GetForceFeedbackActuatorMap();
+        expectedActuatorMap.named.leftImpulseTrigger = kActuatorElement;
+
+        const Mapper::UForceFeedbackActuatorMap& kActualActuatorMap = mapper->GetForceFeedbackActuatorMap();
+        VerifyForceFeedbackActuatorMapsAreEquivalent(kActualActuatorMap, expectedActuatorMap);
     }
 }

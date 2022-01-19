@@ -15,6 +15,7 @@
 #include "ApiWindows.h"
 #include "ControllerTypes.h"
 #include "ElementMapper.h"
+#include "ForceFeedbackTypes.h"
 #include "Mapper.h"
 
 #include <map>
@@ -37,6 +38,10 @@ namespace Xidi
             /// Used within a blueprint to describe the element map to be created when the mapper is built.
             typedef std::map<unsigned int, std::unique_ptr<IElementMapper>> TElementMapSpec;
 
+            /// Maps from force feedback actuator map index to force feedback actuator description object.
+            /// Used within a blueprint to describe the force feedback actuator map to be created when the mapper is built.
+            typedef std::map<unsigned int, ForceFeedback::SActuatorElement> TForceFeedbackActuatorSpec;
+
 
             /// Holds a description about how to build a single mapper object.
             struct SBlueprint
@@ -47,9 +52,13 @@ namespace Xidi
                 /// A mapper with this as its name is resolved at mapper build time, not at name setting time.
                 std::wstring_view templateName;
 
-                /// Holds changes to be applied to the template when the mapper is being built.
+                /// Holds changes in controller elements to be applied to the template when the mapper is being built.
                 /// For mappers being built from scratch without a template, holds all of the controller element mappers.
-                TElementMapSpec changesFromTemplate;
+                TElementMapSpec elementChangesFromTemplate;
+
+                /// Holds possible changes in force feedback actuators to be applied to the template when the mapper is being built.
+                /// Mappers that are built from scratch without a template might use the contents of this map if it is not empty, otherwise they will use the default actuator configuration.
+                TForceFeedbackActuatorSpec ffActuatorChangesFromTemplate;
 
                 /// Flag for specifying if an attempt was made to build the mapper described by this blueprint.
                 /// Used to detect dependency cycles due to mappers specifying each other as templates.
@@ -104,6 +113,20 @@ namespace Xidi
             /// @return `true` if successful, `false` otherwise.
             bool ClearBlueprintElementMapper(std::wstring_view mapperName, std::wstring_view elementString);
 
+            /// Removes a force feedback actuator from this blueprint's actuator specification so it is not applied as a modification to the template when this object is built into a mapper.
+            /// This method will fail if the mapper name does not identify an existing blueprint, if the actuator index is out of bounds, or if no template modification exists for the specified actuator.
+            /// @param [in] mapperName Name that identifies the mapper whose element is being set.
+            /// @param [in] ffActuatorIndex Index of the actuator within the force feedback actuator map data structure (i.e. the `all` member of #UForceFeedbackActuatorMap).
+            /// @return `true` if successful, `false` otherwise.
+            bool ClearBlueprintForceFeedbackActuator(std::wstring_view mapperName, unsigned int ffActuatorIndex);
+
+            /// Convenience wrapper for both parsing a force feedback actuator string and clearing an associated template modification.
+            /// In addition to other reasons why this operation might fail, this method will fail if the actuator string cannot be mapped to a valid actuator.
+            /// @param [in] mapperName Name that identifies the mapper whose element is being set.
+            /// @param [in] ffActuatorString String that identifies the force feedback actuator. Must be null-terminated.
+            /// @return `true` if successful, `false` otherwise.
+            bool ClearBlueprintForceFeedbackActuator(std::wstring_view mapperName, std::wstring_view ffActuatorString);
+
             /// Creates a new mapper blueprint object with the specified mapper name.
             /// This method will fail if a mapper or mapper blueprint already exists with the specified name.
             /// @param [in] mapperName Name that identifies the mapper to be described by the blueprint.
@@ -120,6 +143,12 @@ namespace Xidi
             /// @param [in] mapperName Name that identifies the mapper described by a possibly-existing blueprint.
             /// @return Pointer to the blueprint's element map if the blueprint exists, or `nullptr` otherwise.
             const TElementMapSpec* GetBlueprintElementMapSpec(std::wstring_view mapperName) const;
+
+            /// Retrieves and returns a read-only pointer to the force feedback actuator specification associated with the blueprint for the mapper of the specified name.
+            /// Primarily useful for testing.
+            /// @param [in] mapperName Name that identifies the mapper described by a possibly-existing blueprint.
+            /// @return Pointer to the blueprint's force feedback actuator map if the blueprint exists, or `nullptr` otherwise.
+            const TForceFeedbackActuatorSpec* GetBlueprintForceFeedbackActuatorSpec(std::wstring_view mapperName) const;
 
             /// Retrieves and returns the template name associated with the blueprint for the mapper of the specified name.
             /// @param [in] mapperName Name that identifies the mapper described by a possibly-existing blueprint.
@@ -149,6 +178,23 @@ namespace Xidi
             /// @param [in] elementMapper Element mapper to use, which becomes owned by this object.
             /// @return `true` if successful, `false` otherwise.
             bool SetBlueprintElementMapper(std::wstring_view mapperName, std::wstring_view elementString, std::unique_ptr<IElementMapper>&& elementMapper);
+
+            /// Sets a specific force feedback actuator to be applied as a modification to the template when this object is built into a mapper.
+            /// If an empty or non-present actuator is specified, then the modification to be applied to the template is disabling the physical actuator. Use #ClearBlueprintForceFeedbackActuator to undo a modification.
+            /// This method will fail if the mapper name does not identify an existing blueprint or if the actuator is out of bounds.
+            /// @param [in] mapperName Name that identifies the mapper whose element is being set.
+            /// @param [in] ffActuatorIndex Index of the actuator within the force feedback actuator map data structure (i.e. the `all` member of #UForceFeedbackActuatorMap).
+            /// @param [in] ffActuator Force feedback actuator description to use.
+            /// @return `true` if successful, `false` otherwise.
+            bool SetBlueprintForceFeedbackActuator(std::wstring_view mapperName, unsigned int ffActuatorIndex, ForceFeedback::SActuatorElement ffActuator);
+
+            /// Convenience wrapper for both parsing a force feedback actuator string and applying it as a template modification.
+            /// In addition to other reasons why this operation might fail, this method will fail if the actuator string cannot be mapped to a valid actuator.
+            /// @param [in] mapperName Name that identifies the mapper whose element is being set.
+            /// @param [in] ffActuatorString String that identifies the force feedback actuator. Must be null-terminated.
+            /// @param [in] ffActuator Force feedback actuator description to use.
+            /// @return `true` if successful, `false` otherwise.
+            bool SetBlueprintForceFeedbackActuator(std::wstring_view mapperName, std::wstring_view ffActuatorString, ForceFeedback::SActuatorElement ffActuator);
 
             /// Sets the name of the mapper that will act as a template for the mapper being built.
             /// Template names are resolved when attempting to construct a mapper object, so it is not necessary for the template name to identify an existing mapper or mapper blueprint.

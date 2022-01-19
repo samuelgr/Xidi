@@ -32,7 +32,7 @@ namespace Xidi
         /// This function maintains the memory needed to store mapper names permanently and deduplicates to ensure only one copy of each mapper name is ever stored.
         /// @param [in] mapperName Name of the mapper for which a safe view is needed.
         /// @return Safe string view of the mapper name that will remain valid until program termination.
-        static inline std::wstring_view SafeMapperNameString(std::wstring_view mapperName)
+        static std::wstring_view SafeMapperNameString(std::wstring_view mapperName)
         {
             static std::set<std::wstring> mapperNames;
             return *mapperNames.emplace(mapperName).first;
@@ -91,7 +91,7 @@ namespace Xidi
             blueprint.buildAttempted = true;
 
             Mapper::UElementMap mapperElements;
-            Mapper::UForceFeedbackActuatorMap mapperForceFeedbackActuators(Mapper::kDefaultForceFeedbackActuatorMap);
+            Mapper::UForceFeedbackActuatorMap mapperForceFeedbackActuators;
 
             if (false == blueprint.templateName.empty())
             {
@@ -137,8 +137,20 @@ namespace Xidi
 
             // Loop through all the changes that the blueprint describes and apply them to the starting point.
             // If the starting point is empty then this is essentially building a new element map from scratch.
-            for (auto& changeFromTemplate : blueprint.changesFromTemplate)
-                mapperElements.all[changeFromTemplate.first] = std::move(changeFromTemplate.second);
+            for (auto& elementChangeFromTemplate : blueprint.elementChangesFromTemplate)
+                mapperElements.all[elementChangeFromTemplate.first] = std::move(elementChangeFromTemplate.second);
+
+            // If the actuator map is empty, then no template was specified and no actuators were parsed out of the configuration file.
+            // This means that the default actuator map should be used. Otherwise the logic is the same as for the element changes.
+            if (true == blueprint.ffActuatorChangesFromTemplate.empty())
+            {
+                mapperForceFeedbackActuators = Mapper::kDefaultForceFeedbackActuatorMap;
+            }
+            else
+            {
+                for (auto& ffActuatorChangeFromTemplate : blueprint.ffActuatorChangesFromTemplate)
+                    mapperForceFeedbackActuators.all[ffActuatorChangeFromTemplate.first] = ffActuatorChangeFromTemplate.second;
+            }
 
             Message::OutputFormatted(Message::ESeverity::Info, L"Successfully built mapper %s.", mapperName.data());
             return new Mapper(mapperName, std::move(mapperElements.named), mapperForceFeedbackActuators.named);
@@ -155,10 +167,10 @@ namespace Xidi
             if (elementIndex >= _countof(Mapper::UElementMap::all))
                 return false;
 
-            if (false == blueprintIter->second.changesFromTemplate.contains(elementIndex))
+            if (false == blueprintIter->second.elementChangesFromTemplate.contains(elementIndex))
                 return false;
 
-            blueprintIter->second.changesFromTemplate.erase(elementIndex);
+            blueprintIter->second.elementChangesFromTemplate.erase(elementIndex);
             return true;
         }
 
@@ -171,6 +183,35 @@ namespace Xidi
                 return false;
 
             return ClearBlueprintElementMapper(mapperName, kMaybeControllerElementIndex.value());
+        }
+
+        // --------
+
+        bool MapperBuilder::ClearBlueprintForceFeedbackActuator(std::wstring_view mapperName, unsigned int ffActuatorIndex)
+        {
+            const auto blueprintIter = blueprints.find(mapperName);
+            if (blueprints.end() == blueprintIter)
+                return false;
+
+            if (ffActuatorIndex >= _countof(Mapper::UForceFeedbackActuatorMap::all))
+                return false;
+
+            if (false == blueprintIter->second.ffActuatorChangesFromTemplate.contains(ffActuatorIndex))
+                return false;
+
+            blueprintIter->second.ffActuatorChangesFromTemplate.erase(ffActuatorIndex);
+            return true;
+        }
+
+        // --------
+
+        bool MapperBuilder::ClearBlueprintForceFeedbackActuator(std::wstring_view mapperName, std::wstring_view ffActuatorString)
+        {
+            const std::optional<unsigned int> kMaybeForceFeedbackActuatorIndex = MapperParser::FindForceFeedbackActuatorIndex(ffActuatorString);
+            if (false == kMaybeForceFeedbackActuatorIndex.has_value())
+                return false;
+
+            return ClearBlueprintForceFeedbackActuator(mapperName, kMaybeForceFeedbackActuatorIndex.value());
         }
 
         // --------
@@ -198,7 +239,18 @@ namespace Xidi
             if (blueprints.cend() == blueprintIter)
                 return nullptr;
 
-            return &blueprintIter->second.changesFromTemplate;
+            return &blueprintIter->second.elementChangesFromTemplate;
+        }
+
+        // --------
+
+        const MapperBuilder::TForceFeedbackActuatorSpec* MapperBuilder::GetBlueprintForceFeedbackActuatorSpec(std::wstring_view mapperName) const
+        {
+            const auto blueprintIter = blueprints.find(mapperName);
+            if (blueprints.cend() == blueprintIter)
+                return nullptr;
+
+            return &blueprintIter->second.ffActuatorChangesFromTemplate;
         }
 
         // --------
@@ -235,7 +287,7 @@ namespace Xidi
             if (elementIndex >= _countof(Mapper::UElementMap::all))
                 return false;
 
-            blueprintIter->second.changesFromTemplate[elementIndex] = std::move(elementMapper);
+            blueprintIter->second.elementChangesFromTemplate[elementIndex] = std::move(elementMapper);
             return true;
         }
 
@@ -248,6 +300,32 @@ namespace Xidi
                 return false;
 
             return SetBlueprintElementMapper(mapperName, kMaybeControllerElementIndex.value(), std::move(elementMapper));
+        }
+
+        // --------
+
+        bool MapperBuilder::SetBlueprintForceFeedbackActuator(std::wstring_view mapperName, unsigned int ffActuatorIndex, ForceFeedback::SActuatorElement ffActuator)
+        {
+            const auto blueprintIter = blueprints.find(mapperName);
+            if (blueprints.end() == blueprintIter)
+                return false;
+
+            if (ffActuatorIndex >= _countof(Mapper::UForceFeedbackActuatorMap::all))
+                return false;
+
+            blueprintIter->second.ffActuatorChangesFromTemplate[ffActuatorIndex] = ffActuator;
+            return true;
+        }
+
+        // --------
+
+        bool MapperBuilder::SetBlueprintForceFeedbackActuator(std::wstring_view mapperName, std::wstring_view ffActuatorString, ForceFeedback::SActuatorElement ffActuator)
+        {
+            const std::optional<unsigned int> kMaybeForceFeedbackActuatorIndex = MapperParser::FindForceFeedbackActuatorIndex(ffActuatorString);
+            if (false == kMaybeForceFeedbackActuatorIndex.has_value())
+                return false;
+
+            return SetBlueprintForceFeedbackActuator(mapperName, kMaybeForceFeedbackActuatorIndex.value(), ffActuator);
         }
 
         // --------
