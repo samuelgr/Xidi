@@ -17,9 +17,7 @@
 
 #include <map>
 #include <memory>
-#include <set>
-#include <string_view>
-#include <vector>
+#include <deque>
 
 
 namespace Xidi
@@ -30,12 +28,13 @@ namespace Xidi
 
         /// Retrieves and returns a safe string view that can be used to represent mapper names and template names.
         /// This function maintains the memory needed to store mapper names permanently and deduplicates to ensure only one copy of each mapper name is ever stored.
+        /// Internally, the data structure is heap-allocated so it is not destroyed until right at program termination, existing even past the lifetime of typical static objects.
         /// @param [in] mapperName Name of the mapper for which a safe view is needed.
         /// @return Safe string view of the mapper name that will remain valid until program termination.
         static std::wstring_view SafeMapperNameString(std::wstring_view mapperName)
         {
-            static std::set<std::wstring> mapperNames;
-            return *mapperNames.emplace(mapperName).first;
+            static std::deque<std::wstring>* mapperNames = new std::deque<std::wstring>();
+            return mapperNames->emplace_back(mapperName);
         }
 
 
