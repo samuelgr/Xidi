@@ -169,7 +169,9 @@ namespace XidiTest
     /// @return Smart pointer to the new virtual controller object.
     static inline std::unique_ptr<VirtualController> CreateTestVirtualController(const Mapper& mapper = kTestMapper)
     {
-        return std::make_unique<VirtualController>(kTestControllerIdentifier, mapper);
+        std::unique_ptr<VirtualController> testVirtualController = std::make_unique<VirtualController>(kTestControllerIdentifier, mapper);
+        testVirtualController->SetAllAxisRange(Controller::kAnalogValueMin, Controller::kAnalogValueMax);
+        return testVirtualController;
     }
 
 

@@ -585,8 +585,12 @@ namespace Xidi
 
                 if (objectInfo->dwSize > sizeof(DirectInputDeviceType<charMode>::DeviceObjectInstanceCompatType))
                 {
-                    objectInfo->dwFFMaxForce = (DWORD)Controller::ForceFeedback::kEffectForceMagnitudeMaximum;
-                    objectInfo->dwFFForceResolution = 1;
+                    // Maximum force is supposedly measured in Newtons. This value is taken from a Logitech RumblePad 2.
+                    objectInfo->dwFFMaxForce = 10;
+
+                    // Supported force range follows the DirectInput allowed range.
+                    // A difference of 1 probably will not be noticeable to a user, but nevertheless that resolution is supported.
+                    objectInfo->dwFFForceResolution = (DWORD)Controller::ForceFeedback::kEffectForceMagnitudeMaximum;
                 }
             }
             break;
@@ -1218,8 +1222,8 @@ namespace Xidi
         {
             case (sizeof(DIDEVCAPS)):
                 // Hardware information, only present in the latest version of the structure.
-                lpDIDevCaps->dwFirmwareRevision = 0;
-                lpDIDevCaps->dwHardwareRevision = 0;
+                lpDIDevCaps->dwFirmwareRevision = 1;
+                lpDIDevCaps->dwHardwareRevision = 1;
                 
                 // Force feedback information, only present in the latest version of the structure.
                 if (true == kForceFeedbackIsSupported)

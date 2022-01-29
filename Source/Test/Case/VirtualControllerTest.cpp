@@ -254,6 +254,8 @@ namespace XidiTest
         };
 
         VirtualController controller(kControllerIndex, kTestMapper);
+        controller.SetAllAxisRange(Controller::kAnalogValueMin, Controller::kAnalogValueMax);
+
         for (int i = 0; i < _countof(kExpectedStates); ++i)
         {
             controller.RefreshState(kPhysicalStates[i]);
@@ -279,6 +281,8 @@ namespace XidiTest
         };
 
         VirtualController controller(kControllerIndex, kTestMapper);
+        controller.SetAllAxisRange(Controller::kAnalogValueMin, Controller::kAnalogValueMax);
+
         for (const auto& expectedState : kExpectedStates)
         {
             controller.RefreshState(kPhysicalState);
@@ -322,6 +326,8 @@ namespace XidiTest
         };
 
         VirtualController controller(kControllerIndex, kTestMapper);
+        controller.SetAllAxisRange(Controller::kAnalogValueMin, Controller::kAnalogValueMax);
+
         for (int i = 0; i < _countof(kExpectedStates); ++i)
         {
             controller.RefreshState(kPhysicalStates[i]);
@@ -490,7 +496,7 @@ namespace XidiTest
             if ((int)kTestRangeAxis == i)
                 TEST_ASSERT(kTestRangeValue == controller.GetAxisRange((EAxis)i));
             else
-                TEST_ASSERT(std::make_pair(Controller::kAnalogValueMin, Controller::kAnalogValueMax) == controller.GetAxisRange((EAxis)i));
+                TEST_ASSERT(std::make_pair(VirtualController::kRangeMinDefault, VirtualController::kRangeMaxDefault) == controller.GetAxisRange((EAxis)i));
         }
 
         TEST_ASSERT(true == controller.SetAllAxisRange(kTestRangeValue.first, kTestRangeValue.second));
@@ -509,12 +515,12 @@ namespace XidiTest
         TEST_ASSERT(false == controller.SetAxisRange(kTestRangeAxis, kTestRangeValue.first, kTestRangeValue.second));
 
         for (int i = 0; i < (int)EAxis::Count; ++i)
-            TEST_ASSERT(std::make_pair(Controller::kAnalogValueMin, Controller::kAnalogValueMax) == controller.GetAxisRange((EAxis)i));
+            TEST_ASSERT(std::make_pair(VirtualController::kRangeMinDefault, VirtualController::kRangeMaxDefault) == controller.GetAxisRange((EAxis)i));
 
         TEST_ASSERT(false == controller.SetAllAxisRange(kTestRangeValue.first, kTestRangeValue.second));
 
         for (int i = 0; i < (int)EAxis::Count; ++i)
-            TEST_ASSERT(std::make_pair(Controller::kAnalogValueMin, Controller::kAnalogValueMax) == controller.GetAxisRange((EAxis)i));
+            TEST_ASSERT(std::make_pair(VirtualController::kRangeMinDefault, VirtualController::kRangeMaxDefault) == controller.GetAxisRange((EAxis)i));
     }
 
     // Valid saturation value set on a single axis and then on all axes.
@@ -652,6 +658,7 @@ namespace XidiTest
         for (unsigned int i = 1; i <= _countof(kPhysicalStates); ++i)
         {
             VirtualController controller(kControllerIndex, kTestMapper);
+            controller.SetAllAxisRange(Controller::kAnalogValueMin, Controller::kAnalogValueMax);
             controller.SetEventBufferCapacity(kEventBufferCapacity);
 
             uint32_t lastEventCount = controller.GetEventBufferCount();
@@ -706,6 +713,7 @@ namespace XidiTest
         for (unsigned int i = 1; i <= _countof(kPhysicalStates); ++i)
         {
             VirtualController controller(kControllerIndex, kTestMapper);
+            controller.SetAllAxisRange(Controller::kAnalogValueMin, Controller::kAnalogValueMax);
             controller.SetEventBufferCapacity(kEventBufferCapacity);
             controller.EventFilterRemoveElement({.type = EElementType::Axis, .axis = EAxis::X});
             controller.EventFilterRemoveElement({.type = EElementType::Axis, .axis = EAxis::Y});

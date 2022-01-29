@@ -49,6 +49,12 @@ namespace Xidi
             /// Default value for an axis deadzone property. No deadzone region is defined by default.
             static constexpr uint32_t kAxisDeadzoneDefault = kAxisDeadzoneMin;
 
+            /// Default lower-bound value for the range property, based on tests with real DirectInput hardware.
+            static constexpr int32_t kRangeMinDefault = 0;
+
+            /// Default upper-bound value for the range property, based on tests with real DirectInput hardware.
+            static constexpr int32_t kRangeMaxDefault = 65535;
+
             /// Minimum allowed value for an axis saturation property, per DirectInput documentation.
             static constexpr uint32_t kAxisSaturationMin = 0;
 
@@ -212,7 +218,7 @@ namespace Xidi
                 constexpr inline SAxisProperties(void)
                 {
                     SetDeadzone(kAxisDeadzoneDefault);
-                    SetRange(kAnalogValueMin, kAnalogValueMax);
+                    SetRange(kRangeMinDefault, kRangeMaxDefault);
                     SetSaturation(kAxisSaturationDefault);
                 }
 
