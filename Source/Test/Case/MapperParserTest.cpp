@@ -1170,6 +1170,7 @@ namespace XidiTest
            L"Disabled, Disabled",
            L"SingleAxis(X), SingleAxis(Y)",
            L"MagnitudeProjection(X, Y, Z)",
+           L"MagnitudeProjection(X, X)",
            L"SingleAxis(X, +, -)"
         };
 

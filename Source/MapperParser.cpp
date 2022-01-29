@@ -1071,6 +1071,8 @@ namespace Xidi
                     return Strings::FormatString(L"MagnitudeProjection: %s: Unrecognized second axis", std::wstring(paramParts.first).c_str()).Data();
 
                 const EAxis kAxisSecond = kMaybeAxisSecond.value();
+                if (kAxisFirst == kAxisSecond)
+                    return L"MagnitudeProjection: Axes must be different";
 
                 // No further parameters allowed.
                 if (false == paramParts.remaining.empty())

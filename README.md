@@ -18,7 +18,7 @@ Xidi is implemented as a library that games should load instead of the system-su
 
 Xidi is not useful if:
 
-- A game already speaks XInput to controllers. These games are modern enough to support Xbox-type controllers natively.
+- A game already uses the XInput API to communicate with controllers. These games would not benefit from Xidi.
 
 - The problem arises with controllers that are not XInput-based controllers. Xidi will not communicate with non-XInput controllers.
 
@@ -41,6 +41,7 @@ The remainder of this document is organized as follows.
    - [Custom Mappers](#custom-mappers)
      - [Defining a Custom Mapper](#defining-a-custom-mapper)
      - [Element Mappers](#element-mappers)
+     - [Force Feedback Actuators](#force-feedback-actuators)
 - [Questions and Answers](#questions-and-answers)
    
 
@@ -579,6 +580,74 @@ Split element mappers behave somewhat differently depending if they are linked t
   - If the trigger is either *not pressed* or *pressed below the midpoint position* then the negaive element mapper is forwarded the trigger value.
 
 
+### Force Feedback Actuators
+
+**Customizing the force feedback actuators is an advanced feature.**
+
+A *force feedback actuator* is a physical device that produces a force feedback effect. On XInput controllers four such actuators exist:
+ - Left motor, located in the body of the controller
+ - Right motor, located in the body of the controller
+ - Left impulse trigger, located near the LT trigger
+ - Right impulse trigger, located near the RT trigger
+
+Internally, the XInput API allows force feedback actuators to be used by specifying a rumble strength value, and these rumble strength values can vary with time to produce different vibration effects.
+
+Force feedback in DirectInput is very different. While the concept does encompass vibration effects, it is much more general and also includes within its purview actual forces that a game controller device might apply to controller components. For example, a joystick might have an effect generator that is capable of exerting a force on the joystick such that it is pushed in a particular direction. Therefore, DirectInput exposes all force feedback effects as actual forces exerted along one or more axes. Following the joystick example, an application might request a force be exerted on the X axis, which would result in the joystick itself being pushed along the corresponding physical direction.
+
+The idea of exerting a force along an axis does not make much sense in the context of vibration motors that accept a simple rumble strength value. DirectInput applications generally expect force feedback effects to be supported along both the X and Y axes, so Xidi provides that support. By default, Xidi computes the magnitude of the force vector along the X-Y plane and uses the resulting value as the rumble strength applied to both left and right motors. While this default behavior works in many situations, Xidi allows the mapping of axes to physical force feedback actuators to be customized.
+
+In addition to controller components like DpadUp, TriggerLT, and ButtonA, there are a few specific force feedback actuators whose behaviors can be customized. The example below shows all supported force feedback actuators and the default values used for the built-in mappers.
+
+```ini
+[CustomMapper:DefaultForceFeedbackSettings]
+
+; Left motor.
+ForceFeedback.LeftMotor     = MagnitudeProjection(X, Y)
+
+; Right motor.
+ForceFeedback.LeftMotor     = MagnitudeProjection(X, Y)
+```
+
+Xidi internally supports all four actuators, but the documented XInput API only exposes the left and right motors. As a result, the impulse triggers are currently not available.
+
+Force feedback actuator settings exist alongside the element mappers and are generally treated the same way when it comes to creating new custom mappers and using existing mappers as templates. However, there is one caveat: if a custom mapper is defined that does not use another mapper as a template and also does not define any force feedback settings, then the default force feedback settings are applied, as shown in the preceding example. The rationale for this caveat is that it ensures users who want to build custom mappers from scratch but do not wish to concern themselves with force feedback settings are still able to use force feedback.
+
+Various modes are supported for each force feedback actuator. These are described in the subsections that follow.
+
+
+#### Disabled
+
+A Disabled force feedback actuator does not produce any vibration effects whatsoever. This is primarily useful for removing a force feedback actuator from templates. For example, if the template is "StandardGamepad" and the goal is to cause the left motor to be turned off, then the below will work.
+
+```ini
+[CustomMapper:DisabledForceFeedbackExample]
+Template                    = StandardGamepad
+ForceFeedback.LeftMotor     = Disabled
+```
+
+
+#### MagnitudeProjection
+
+A MagnitudeProjection force feedback actuator computes the magnitude of the force feedback effect along a two-axis plane and uses the result as the rumble strength. Two parameters are required, each identifying an axis. This is the default mode for the left and right motors, using the X and Y axes together to obtain the rumble strength, as shown in the default settings example.
+
+
+#### SingleAxis
+
+A SingleAxis force feedback actuator directly obtains its rumble strength from a single force feedback axis. A direction can optionally be specified so that either positive or negative axis values are filtered out. Using a bidirectional SingleAxis force feedback actuator causes the absolute value of the effect strength along that axis to be mapped to the rumble strength.
+
+Parameters are the same as for the Axis and DigitalAxis element mappers. The first parameter identifies the axis of interest, and the second may optionally specify a direction. Refer to the example below for a demonstration of how to use SingleAxis force feedback actuators.
+
+```ini
+[CustomMapper:ForceFeedbackSingleAxisExample]
+
+; Left motor rumble strength is the absolute value of the force effect's X component.
+ForceFeedback.LeftMotor     = SingleAxis(X)
+
+; Right motor rumble strength is 0 if the force effect's X component is positive, otherwise it is the absolute value of the force effect's X component.
+ForceFeedback.RightMotor    = SingleAxis(X, -)
+```
+
+
 # Questions and Answers
 
 #### Which specific controllers does Xidi support?
@@ -623,4 +692,4 @@ Simply connect or disconnect controllers as needed. Xidi's use of virtual device
 
 #### DirectInput supports force feedback. What about Xidi?
 
-Xidi does not currently support force feedback, but this feature may be added in a future version.
+Yes, force feedback is implemented as of version 4.0.0.
