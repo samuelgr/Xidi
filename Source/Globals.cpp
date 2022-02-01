@@ -15,10 +15,10 @@
 #include "Globals.h"
 #include "Message.h"
 #include "Strings.h"
-#include "XidiConfigReader.h"
 
 #ifndef XIDI_SKIP_CONFIG
 #include "Configuration.h"
+#include "XidiConfigReader.h"
 #endif
 
 #ifndef XIDI_SKIP_MAPPERS
