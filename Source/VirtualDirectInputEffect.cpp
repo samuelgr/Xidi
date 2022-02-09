@@ -22,7 +22,6 @@
 #include <cstddef>
 #include <memory>
 #include <optional>
-#include <sstream>
 #include <string>
 
 
@@ -66,56 +65,55 @@ namespace Xidi
     /// Parses the specified flags, which would normally be passed to SetParameters, and extracts individual strings for each flag that is present.
     /// @param [in] dwFlags Flags to parse.
     /// @return String representation of the flags that are set.
-    static std::wstring ParameterTopLevelFlagsToString(DWORD dwFlags)
+    static TemporaryString ParameterTopLevelFlagsToString(DWORD dwFlags)
     {
-        std::wstringstream flagsstream;
+        constexpr std::wstring_view kFlagSeparator = L" | ";
+        TemporaryString flagsString;
 
         if (0 != (dwFlags & DIEP_NODOWNLOAD))
-            flagsstream << L" | DIEP_NODOWNLOAD";
+            flagsString << L"DIEP_NODOWNLOAD" << kFlagSeparator;
         if (0 != (dwFlags & DIEP_NORESTART))
-            flagsstream << L" | DIEP_NORESTART";
+            flagsString << L"DIEP_NORESTART" << kFlagSeparator;
         if (0 != (dwFlags & DIEP_START))
-            flagsstream << L" | DIEP_START";
+            flagsString << L"DIEP_START" << kFlagSeparator;
 
         if (DIEP_ALLPARAMS == (dwFlags & DIEP_ALLPARAMS))
         {
-            flagsstream << L" | DIEP_ALLPARAMS";
+            flagsString << L"DIEP_ALLPARAMS" << kFlagSeparator;
         }
         else if (DIEP_ALLPARAMS_DX5 == (dwFlags & DIEP_ALLPARAMS_DX5))
         {
-            flagsstream << L" | DIEP_ALLPARAMS_DX5";
+            flagsString << L"DIEP_ALLPARAMS_DX5" << kFlagSeparator;
         }
         else
         {
             if (0 != (dwFlags & DIEP_AXES))
-                flagsstream << L" | DIEP_AXES";
+                flagsString << L"DIEP_AXES" << kFlagSeparator;
             if (0 != (dwFlags & DIEP_DIRECTION))
-                flagsstream << L" | DIEP_DIRECTION";
+                flagsString << L"DIEP_DIRECTION" << kFlagSeparator;
             if (0 != (dwFlags & DIEP_DURATION))
-                flagsstream << L" | DIEP_DURATION";
+                flagsString << L"DIEP_DURATION" << kFlagSeparator;
             if (0 != (dwFlags & DIEP_ENVELOPE))
-                flagsstream << L" | DIEP_ENVELOPE";
+                flagsString << L"DIEP_ENVELOPE" << kFlagSeparator;
             if (0 != (dwFlags & DIEP_GAIN))
-                flagsstream << L" | DIEP_GAIN";
+                flagsString << L"DIEP_GAIN" << kFlagSeparator;
             if (0 != (dwFlags & DIEP_SAMPLEPERIOD))
-                flagsstream << L" | DIEP_SAMPLEPERIOD";
+                flagsString << L"DIEP_SAMPLEPERIOD" << kFlagSeparator;
             if (0 != (dwFlags & DIEP_STARTDELAY))
-                flagsstream << L" | DIEP_STARTDELAY";
+                flagsString << L"DIEP_STARTDELAY" << kFlagSeparator;
             if (0 != (dwFlags & DIEP_TRIGGERBUTTON))
-                flagsstream << L" | DIEP_TRIGGERBUTTON";
+                flagsString << L"DIEP_TRIGGERBUTTON" << kFlagSeparator;
             if (0 != (dwFlags & DIEP_TRIGGERREPEATINTERVAL))
-                flagsstream << L" | DIEP_TRIGGERREPEATINTERVAL";
+                flagsString << L"DIEP_TRIGGERREPEATINTERVAL" << kFlagSeparator;
             if (0 != (dwFlags & DIEP_TYPESPECIFICPARAMS))
-                flagsstream << L" | DIEP_TYPESPECIFICPARAMS";
+                flagsString << L"DIEP_TYPESPECIFICPARAMS" << kFlagSeparator;
         }
 
-        std::wstring flagsstring = flagsstream.str();
+        if (true == flagsString.Empty())
+            return flagsString << L"none" << kFlagSeparator;
 
-        if (true == flagsstring.empty())
-            return L"none";
-
-        flagsstring.erase(0, (_countof(L" | ") - 1));
-        return flagsstring;
+        flagsString.RemoveSuffix((unsigned int)kFlagSeparator.length());
+        return flagsString;
     }
 
     /// Attempts to recognize the size of a parameter structure and returns a string representing what was recognized.
@@ -139,28 +137,27 @@ namespace Xidi
     /// Parses the specified flags, which would normally be present inside the dwFlags member of DIEFFECT, and extracts individual strings for each flag that is present.
     /// @param [in] dwFlags Flags to parse.
     /// @return String representation of the flags that are set.
-    static const std::wstring ParameterStructFlagsToString(DWORD dwFlags)
+    static const TemporaryString ParameterStructFlagsToString(DWORD dwFlags)
     {
-        std::wstringstream flagsstream;
+        constexpr std::wstring_view kFlagSeparator = L" | ";
+        TemporaryString flagsString;
 
         if (0 != (dwFlags & DIEFF_CARTESIAN))
-            flagsstream << L" | DIEFF_CARTESIAN";
+            flagsString << L"DIEFF_CARTESIAN" << kFlagSeparator;
         if (0 != (dwFlags & DIEFF_POLAR))
-            flagsstream << L" | DIEFF_POLAR";
+            flagsString << L"DIEFF_POLAR" << kFlagSeparator;
         if (0 != (dwFlags & DIEFF_SPHERICAL))
-            flagsstream << L" | DIEFF_SPHERICAL";
+            flagsString << L"DIEFF_SPHERICAL" << kFlagSeparator;
         if (0 != (dwFlags & DIEFF_OBJECTIDS))
-            flagsstream << L" | DIEFF_OBJECTIDS";
+            flagsString << L"DIEFF_OBJECTIDS" << kFlagSeparator;
         if (0 != (dwFlags & DIEFF_OBJECTOFFSETS))
-            flagsstream << L" | DIEFF_OBJECTOFFSETS";
+            flagsString << L"DIEFF_OBJECTOFFSETS" << kFlagSeparator;
 
-        std::wstring flagsstring = flagsstream.str();
+        if (true == flagsString.Empty())
+            return flagsString << L"none" << kFlagSeparator;
 
-        if (true == flagsstring.empty())
-            return L"none";
-
-        flagsstring.erase(0, (_countof(L" | ") - 1));
-        return flagsstring;
+        flagsString.RemoveSuffix((unsigned int)kFlagSeparator.length());
+        return flagsString;
     }
 
     /// Selects the coordinate system that should be used to represent the coordinates set in the specified direction vector, subject to the specified flags.
@@ -252,7 +249,7 @@ namespace Xidi
             Message::Output(kDumpSeverity, L"Begin dump of effect parameters.");
 
             Message::Output(kDumpSeverity, L"  Control:");
-            Message::OutputFormatted(kDumpSeverity, L"    flags = 0x%08x (%s)", dwFlags, ParameterTopLevelFlagsToString(dwFlags).c_str());
+            Message::OutputFormatted(kDumpSeverity, L"    flags = 0x%08x (%s)", dwFlags, ParameterTopLevelFlagsToString(dwFlags).AsCString());
 
             Message::Output(kDumpSeverity, L"  Basics:");
             if (nullptr == peff)
@@ -262,7 +259,7 @@ namespace Xidi
             else
             {
                 Message::OutputFormatted(kDumpSeverity, L"    dwSize = %u (%s)", peff->dwSize, ParameterStructSizeToString(peff->dwSize));
-                Message::OutputFormatted(kDumpSeverity, L"    dwFlags = 0x%08x (%s)", peff->dwFlags, ParameterStructFlagsToString(peff->dwFlags).c_str());
+                Message::OutputFormatted(kDumpSeverity, L"    dwFlags = 0x%08x (%s)", peff->dwFlags, ParameterStructFlagsToString(peff->dwFlags).AsCString());
 
                 if (0 != (dwFlags & DIEP_DURATION))
                 {
@@ -321,8 +318,8 @@ namespace Xidi
                             if (true == maybeAxisElement.has_value())
                             {
                                 TemporaryBuffer<wchar_t> axisElementString;
-                                VirtualDirectInputDevice<ECharMode::W>::ElementToString(maybeAxisElement.value(), axisElementString, axisElementString.Count());
-                                Message::OutputFormatted(kDumpSeverity, L"    rgdwAxes[%2u] = 0x%04x (%s)", i, peff->rgdwAxes[i], (wchar_t*)axisElementString);
+                                VirtualDirectInputDevice<ECharMode::W>::ElementToString(maybeAxisElement.value(), axisElementString.Data(), axisElementString.Capacity());
+                                Message::OutputFormatted(kDumpSeverity, L"    rgdwAxes[%2u] = 0x%04x (%s)", i, peff->rgdwAxes[i], axisElementString.Data());
                             }
                             else
                             {

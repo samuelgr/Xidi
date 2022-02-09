@@ -156,17 +156,17 @@ namespace Xidi
     template <> int FillVirtualControllerName<LPSTR>(LPSTR buf, size_t bufcount, DWORD controllerIndex)
     {
         TemporaryBuffer<CHAR> xidiControllerNameFormatString;
-        LoadStringA(Globals::GetInstanceHandle(), IDS_XIDI_CONTROLLERIDENTIFICATION_CONTROLLER_NAME_FORMAT, xidiControllerNameFormatString, xidiControllerNameFormatString.Count());
+        LoadStringA(Globals::GetInstanceHandle(), IDS_XIDI_CONTROLLERIDENTIFICATION_CONTROLLER_NAME_FORMAT, xidiControllerNameFormatString.Data(), xidiControllerNameFormatString.Capacity());
 
-        return sprintf_s(buf, bufcount, (LPCSTR)xidiControllerNameFormatString, (controllerIndex + 1));
+        return sprintf_s(buf, bufcount, (LPCSTR)xidiControllerNameFormatString.Data(), (controllerIndex + 1));
     }
 
     template <> int FillVirtualControllerName<LPWSTR>(LPWSTR buf, size_t bufcount, DWORD controllerIndex)
     {
         TemporaryBuffer<WCHAR> xidiControllerNameFormatString;
-        LoadStringW(Globals::GetInstanceHandle(), IDS_XIDI_CONTROLLERIDENTIFICATION_CONTROLLER_NAME_FORMAT, xidiControllerNameFormatString, xidiControllerNameFormatString.Count());
+        LoadStringW(Globals::GetInstanceHandle(), IDS_XIDI_CONTROLLERIDENTIFICATION_CONTROLLER_NAME_FORMAT, xidiControllerNameFormatString.Data(), xidiControllerNameFormatString.Capacity());
 
-        return swprintf_s(buf, bufcount, (LPCWSTR)xidiControllerNameFormatString, (controllerIndex + 1));
+        return swprintf_s(buf, bufcount, (LPCWSTR)xidiControllerNameFormatString.Data(), (controllerIndex + 1));
     }
 
     // ---------

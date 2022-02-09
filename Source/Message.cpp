@@ -21,7 +21,6 @@
 #include <psapi.h>
 #include <sal.h>
 #include <shlobj.h>
-#include <sstream>
 #include <string>
 
 
@@ -167,7 +166,7 @@ namespace Xidi
         /// @param [in] message Message text.
         static void OutputInternalUsingDebugString(const ESeverity severity, const wchar_t* message)
         {
-            OutputDebugString(Strings::FormatString(L"%s-%s:[%c] %s\n", Strings::kStrProductName.data(), Strings::kStrFormName.data(), CharacterForSeverity(severity), message));
+            OutputDebugString(Strings::FormatString(L"%s-%s:[%c] %s\n", Strings::kStrProductName.data(), Strings::kStrFormName.data(), CharacterForSeverity(severity), message).AsCString());
         }
 
         /// Outputs the specified message to the log file.
@@ -176,7 +175,7 @@ namespace Xidi
         /// @param [in] message Message text.
         static void OutputInternalUsingLogFile(const ESeverity severity, const wchar_t* message)
         {
-            std::wstringstream outputString;
+            TemporaryString outputString;
 
             // First compose the output string stamp.
             // Desired format is "[(current date) (current time)] [(severity)]"
@@ -184,21 +183,21 @@ namespace Xidi
 
             TemporaryBuffer<wchar_t> bufferTimestamp;
 
-            if (0 != GetDateFormatEx(LOCALE_NAME_USER_DEFAULT, 0, nullptr, L"MM'/'dd'/'yyyy", bufferTimestamp, bufferTimestamp.Count(), nullptr))
-                outputString << (wchar_t*)bufferTimestamp;
+            if (0 != GetDateFormatEx(LOCALE_NAME_USER_DEFAULT, 0, nullptr, L"MM'/'dd'/'yyyy", bufferTimestamp.Data(), bufferTimestamp.Capacity(), nullptr))
+                outputString << bufferTimestamp.Data();
             else
                 outputString << L"(date not available)";
 
-            if (0 != GetTimeFormatEx(LOCALE_NAME_USER_DEFAULT, 0, nullptr, L"HH':'mm':'ss", bufferTimestamp, bufferTimestamp.Count()))
-                outputString << L' ' << (wchar_t*)bufferTimestamp;
+            if (0 != GetTimeFormatEx(LOCALE_NAME_USER_DEFAULT, 0, nullptr, L"HH':'mm':'ss", bufferTimestamp.Data(), bufferTimestamp.Capacity()))
+                outputString << L' ' << bufferTimestamp.Data();
             else
                 outputString << L" (time not available)";
 
             // Finish up the stamp and append the message itself.
-            outputString << L"] [" << CharacterForSeverity(severity) << "] " << message << L'\n';
+            outputString << L"] [" << CharacterForSeverity(severity) << L"] " << message << L'\n';
 
             // Write to the log file.
-            fputws(outputString.str().c_str(), logFileHandle);
+            fputws(outputString.AsCString(), logFileHandle);
             fflush(logFileHandle);
         }
 
@@ -286,8 +285,8 @@ namespace Xidi
         {
             TemporaryBuffer<wchar_t> messageBuf;
 
-            vswprintf_s(messageBuf, messageBuf.Count(), format, args);
-            OutputInternal(severity, messageBuf);
+            vswprintf_s(messageBuf.Data(), messageBuf.Capacity(), format, args);
+            OutputInternal(severity, messageBuf.Data());
         }
 
 

@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<AutoVisualizer xmlns="http://schemas.microsoft.com/vstudio/debugger/natvis/2010">
+
+    <Type Name="::Xidi::TemporaryString">
+        <DisplayString Condition="nullptr != buffer">{(wchar_t*)buffer,na}</DisplayString>
+        <DisplayString Condition="nullptr == buffer">unallocated</DisplayString>
+        <StringView>(wchar_t*)buffer,na</StringView>
+        <Expand>
+            <Item Name="buffer" ExcludeView="simple">(void*)buffer</Item>
+            <Item Name="capacity" Condition="nullptr != buffer" ExcludeView="simple">kNumElementsPerBuffer</Item>
+            <Item Name="isHeapAllocated" ExcludeView="simple">isHeapAllocated</Item>
+            <Item Name="size" ExcludeView="simple">size</Item>
+            <ArrayItems>
+                <Size>size</Size>
+                <ValuePointer>(wchar_t*)buffer</ValuePointer>
+            </ArrayItems>
+        </Expand>
+    </Type>
+
+    <Type Name="::Xidi::TemporaryVector&lt;*&gt;">
+        <DisplayString Condition="nullptr != buffer">{{ size={size} }}</DisplayString>
+        <DisplayString Condition="nullptr == buffer">unallocated</DisplayString>
+        <Expand>
+            <Item Name="buffer" ExcludeView="simple">(void*)buffer</Item>
+            <Item Name="capacity" Condition="nullptr != buffer" ExcludeView="simple">kNumElementsPerBuffer</Item>
+            <Item Name="isHeapAllocated" ExcludeView="simple">isHeapAllocated</Item>
+            <Item Name="size" ExcludeView="simple">size</Item>
+            <ArrayItems>
+                <Size>size</Size>
+                <ValuePointer>($T1*)buffer</ValuePointer>
+            </ArrayItems>
+        </Expand>
+    </Type>
+
+    <Type Name="::Xidi::TemporaryBuffer&lt;*&gt;">
+        <DisplayString Condition="nullptr != buffer">{{ isHeapAllocated={isHeapAllocated} }}</DisplayString>
+        <DisplayString Condition="nullptr == buffer">unallocated</DisplayString>
+        <Expand>
+            <Item Name="buffer" ExcludeView="simple">(void*)buffer</Item>
+            <Item Name="capacity" Condition="nullptr != buffer" ExcludeView="simple">kNumElementsPerBuffer</Item>
+            <Item Name="isHeapAllocated" ExcludeView="simple">isHeapAllocated</Item>
+        </Expand>
+    </Type>
+
+</AutoVisualizer>

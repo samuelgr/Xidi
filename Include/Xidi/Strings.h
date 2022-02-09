@@ -162,7 +162,7 @@ namespace Xidi
         /// Formats a string and returns the result in a newly-allocated null-terminated temporary buffer.
         /// @param [in] format Format string, possibly with format specifiers which must be matched with the arguments that follow.
         /// @return Resulting string after all formatting is applied.
-        TemporaryBuffer<wchar_t> FormatString(_Printf_format_string_ const wchar_t* format, ...);
+        TemporaryString FormatString(_Printf_format_string_ const wchar_t* format, ...);
 
         /// Retrieves a string used to represent a per-controller mapper type configuration setting.
         /// These are initialized on first invocation and returned subsequently as read-only views.
@@ -174,6 +174,6 @@ namespace Xidi
         /// Generates a string representation of a system error code.
         /// @param [in] systemErrorCode System error code for which to generate a string.
         /// @return String representation of the system error code.
-        std::wstring SystemErrorCodeString(const unsigned long systemErrorCode);
+        TemporaryString SystemErrorCodeString(const unsigned long systemErrorCode);
     }
 }

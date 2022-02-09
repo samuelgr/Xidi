@@ -21,7 +21,6 @@
 #include <psapi.h>
 #include <sal.h>
 #include <shlobj.h>
-#include <sstream>
 #include <string>
 #include <string_view>
 
@@ -101,9 +100,9 @@ namespace Xidi
             std::call_once(initFlag, []() -> void
                 {
                     TemporaryBuffer<wchar_t> buf;
-                    GetModuleFileName(nullptr, buf, (DWORD)buf.Count());
+                    GetModuleFileName(nullptr, buf.Data(), (DWORD)buf.Capacity());
 
-                    initString.assign(buf);
+                    initString.assign(buf.Data());
                 }
             );
 
@@ -165,9 +164,9 @@ namespace Xidi
             std::call_once(initFlag, []() -> void
                 {
                     TemporaryBuffer<wchar_t> buf;
-                    GetModuleFileName(Globals::GetInstanceHandle(), buf, (DWORD)buf.Count());
+                    GetModuleFileName(Globals::GetInstanceHandle(), buf.Data(), (DWORD)buf.Capacity());
 
-                    initString.assign(buf);
+                    initString.assign(buf.Data());
                 }
             );
 
@@ -229,7 +228,7 @@ namespace Xidi
             std::call_once(initFlag, []() -> void
                 {
                     TemporaryBuffer<wchar_t> buf;
-                    const UINT numChars = GetSystemDirectory(buf, buf.Count() - 1);
+                    const UINT numChars = GetSystemDirectory(buf.Data(), buf.Capacity() - 1);
 
                     if (L'\\' != buf[numChars - 1])
                     {
@@ -237,7 +236,7 @@ namespace Xidi
                         buf[numChars + 1] = L'\0';
                     }
 
-                    initString.assign(buf);
+                    initString.assign(buf.Data());
                 }
             );
 
@@ -353,7 +352,7 @@ namespace Xidi
 
             std::call_once(initFlag, []() -> void
                 {
-                    std::wstringstream logFilename;
+                    TemporaryString logFilename;
 
                     PWSTR knownFolderPath;
                     const HRESULT result = SHGetKnownFolderPath(FOLDERID_Desktop, 0, nullptr, &knownFolderPath);
@@ -366,7 +365,7 @@ namespace Xidi
 
                     logFilename << GetProductName().c_str() << L'_' << GetFormName().c_str() << L'_' << GetExecutableBaseName().c_str() << L'_' << Globals::GetCurrentProcessId() << kStrLogFileExtension;
 
-                    initString.assign(logFilename.str());
+                    initString.assign(logFilename);
                 }
             );
 
@@ -419,14 +418,14 @@ namespace Xidi
 
         // --------
 
-        TemporaryBuffer<wchar_t> FormatString(_Printf_format_string_ const wchar_t* format, ...)
+        TemporaryString FormatString(_Printf_format_string_ const wchar_t* format, ...)
         {
-            TemporaryBuffer<wchar_t> buf;
+            TemporaryString buf;
 
             va_list args;
             va_start(args, format);
 
-            vswprintf_s(buf.Data(), buf.Count(), format, args);
+            buf.UnsafeSetSize((size_t)vswprintf_s(buf.Data(), buf.Capacity(), format, args));
 
             va_end(args);
 
@@ -442,11 +441,13 @@ namespace Xidi
 
             std::call_once(initFlag, []() -> void
                 {
+                    TemporaryString perControllerMapperTypeString;
+
                     for (Controller::TControllerIdentifier i = 0; i < _countof(initStrings); ++i)
                     {
-                        std::wstringstream perControllerMapperTypeString;
+                        perControllerMapperTypeString.Clear();
                         perControllerMapperTypeString << kStrConfigurationSettingMapperType << kCharConfigurationSettingSeparator << (1 + i);
-                        initStrings[i] = perControllerMapperTypeString.str();
+                        initStrings[i] = perControllerMapperTypeString;
                     }
                 }
             );
@@ -459,14 +460,14 @@ namespace Xidi
 
         // --------
 
-        std::wstring SystemErrorCodeString(const unsigned long systemErrorCode)
+        TemporaryString SystemErrorCodeString(const unsigned long systemErrorCode)
         {
-            TemporaryBuffer<wchar_t> systemErrorString;
-            DWORD systemErrorLength = FormatMessage(FORMAT_MESSAGE_FROM_SYSTEM | FORMAT_MESSAGE_IGNORE_INSERTS, nullptr, systemErrorCode, 0, systemErrorString, systemErrorString.Count(), nullptr);
+            TemporaryString systemErrorString;
+            DWORD systemErrorLength = FormatMessage(FORMAT_MESSAGE_FROM_SYSTEM | FORMAT_MESSAGE_IGNORE_INSERTS, nullptr, systemErrorCode, 0, systemErrorString.Data(), systemErrorString.Capacity(), nullptr);
 
             if (0 == systemErrorLength)
             {
-                swprintf_s(systemErrorString, systemErrorString.Count(), L"System error %u.", (unsigned int)systemErrorCode);
+                systemErrorString = FormatString(L"System error %u.", (unsigned int)systemErrorCode);
             }
             else
             {
@@ -476,10 +477,11 @@ namespace Xidi
                         break;
 
                     systemErrorString[systemErrorLength] = L'\0';
+                    systemErrorString.UnsafeSetSize(systemErrorLength);
                 }
             }
 
-            return std::wstring(systemErrorString);
+            return systemErrorString;
         }
     }
 }

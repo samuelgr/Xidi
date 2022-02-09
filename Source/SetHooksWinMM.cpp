@@ -58,7 +58,7 @@ namespace Xidi
         if ((nullptr != kSystemLibraryHandle) && (INVALID_HANDLE_VALUE != kSystemLibraryHandle))
         {
             TemporaryBuffer<wchar_t> systemModuleName;
-            GetModuleFileName(kSystemLibraryHandle, systemModuleName, systemModuleName.Count());
+            GetModuleFileName(kSystemLibraryHandle, systemModuleName.Data(), systemModuleName.Capacity());
             Message::OutputFormatted(Message::ESeverity::Debug, L"System API set '%s' is already loaded as %s.", kApiSetJoystickName.data(), &systemModuleName[0]);
         }
         else
@@ -101,16 +101,16 @@ namespace Xidi
         for (auto importFunctionName : kReplaceableImportFunctionNames)
         {
             TemporaryBuffer<char> importFunctionNameAscii;
-            wcstombs_s(nullptr, importFunctionNameAscii, importFunctionNameAscii.Count(), &importFunctionName[0], importFunctionNameAscii.Size());
+            wcstombs_s(nullptr, importFunctionNameAscii.Data(), importFunctionNameAscii.Capacity(), &importFunctionName[0], importFunctionNameAscii.CapacityBytes());
 
-            void* const kSystemFunc = GetProcAddress(kSystemLibraryHandle, importFunctionNameAscii);
+            void* const kSystemFunc = GetProcAddress(kSystemLibraryHandle, importFunctionNameAscii.Data());
             if (nullptr == kSystemFunc)
             {
                 Message::OutputFormatted(Message::ESeverity::Warning, L"Function %s is missing from the system API set module.", &importFunctionName[0]);
                 continue;
             }
 
-            void* const kImportFunc = GetProcAddress(kImportLibraryHandle, importFunctionNameAscii);
+            void* const kImportFunc = GetProcAddress(kImportLibraryHandle, importFunctionNameAscii.Data());
             if (nullptr == kImportFunc)
             {
                 Message::OutputFormatted(Message::ESeverity::Warning, L"Function %s is missing from %s.", &importFunctionName[0], kImportLibraryFilename.c_str());
