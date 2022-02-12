@@ -563,7 +563,7 @@ A Split element mapper can be used to filter out all of the negative input so th
 ; This example is not complete.
 ; It only defines element mappers for a small subset of controller elements.
 
-; If the left stick's X axis is pressed to the right (positive direction) direction then button 2 is pressed.
+; If the left stick's X axis is pressed to the right (positive) direction then button 2 is pressed.
 StickLeftX          = Split( Button(2), Null )
 ```
 
@@ -584,7 +584,7 @@ Split element mappers behave somewhat differently depending if they are linked t
 
 **Customizing the force feedback actuators is an advanced feature.**
 
-A *force feedback actuator* is a physical device that produces a force feedback effect. On XInput controllers four such actuators exist:
+A *force feedback actuator* is a physical device that produces a force feedback effect. For example, Xbox One controllers feature four such actuators:
  - Left motor, located in the body of the controller
  - Right motor, located in the body of the controller
  - Left impulse trigger, located near the LT trigger
@@ -601,6 +601,9 @@ In addition to controller components like DpadUp, TriggerLT, and ButtonA, there 
 ```ini
 [CustomMapper:DefaultForceFeedbackSettings]
 
+; This example is not complete.
+; It only defines force feedback actuators, nothing else.
+
 ; Left motor.
 ForceFeedback.LeftMotor     = MagnitudeProjection(X, Y)
 
@@ -610,7 +613,7 @@ ForceFeedback.LeftMotor     = MagnitudeProjection(X, Y)
 
 Xidi internally supports all four actuators, but the documented XInput API only exposes the left and right motors. As a result, the impulse triggers are currently not available.
 
-Force feedback actuator settings exist alongside the element mappers and are generally treated the same way when it comes to creating new custom mappers and using existing mappers as templates. However, there is one caveat: if a custom mapper is defined that does not use another mapper as a template and also does not define any force feedback settings, then the default force feedback settings are applied, as shown in the preceding example. The rationale for this caveat is that it ensures users who want to build custom mappers from scratch but do not wish to concern themselves with force feedback settings are still able to use force feedback.
+Force feedback actuator settings exist alongside the element mappers and are generally treated the same way when it comes to creating new custom mappers and using existing mappers as templates. However, there is one caveat: if a custom mapper does not use a template and also does not define any force feedback settings, then the default force feedback settings are applied, as shown in the preceding example. The rationale for this caveat is that it ensures users who want to build custom mappers from scratch but do not wish to concern themselves with force feedback settings are still able to use force feedback.
 
 Various modes are supported for each force feedback actuator. These are described in the subsections that follow.
 
@@ -652,7 +655,7 @@ ForceFeedback.RightMotor    = SingleAxis(X, -)
 
 #### Which specific controllers does Xidi support?
 
-Any controller that supports Windows and XInput can be used with Xidi. This includes non-Microsoft controllers, wireless controllers, wired controllers, and so on. That being said, only Xbox 360 and Xbox One controllers have been specifically tested. Any issues with other controllers are likely indicative of bugs in Xidi.
+Any controller that supports Windows and XInput can be used with Xidi. This includes non-Microsoft controllers, wireless controllers, wired controllers, and so on. That being said, only Xbox 360 and Xbox One controllers have been specifically tested.
 
 #### Can I use Xidi with multiple controllers?
 
