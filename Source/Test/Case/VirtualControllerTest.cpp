@@ -265,6 +265,22 @@ namespace XidiTest
         }
     }
 
+    // Verifies that virtual controllers report everything neutral when no controller input is provided and no properties have been set.
+    // In this test case no physical state has been supplied to the virtual controller.
+    TEST_CASE(VirtualController_GetState_InitialDefault)
+    {
+        constexpr TControllerIdentifier kControllerIndex = 1;
+
+        constexpr int32_t kExpectedNeutralAnalogValue = (VirtualController::kRangeMinDefault + VirtualController::kRangeMaxDefault) / 2;
+        constexpr Controller::SState kExpectedState = {.axis = {kExpectedNeutralAnalogValue, kExpectedNeutralAnalogValue, 0, kExpectedNeutralAnalogValue, kExpectedNeutralAnalogValue, 0}};
+
+        VirtualController controller(kControllerIndex, kTestMapper);
+
+        const Controller::SState kActualState = controller.GetState();
+        TEST_ASSERT(kActualState == kExpectedState);
+
+    }
+
     // Verifies that virtual controllers correctly fill in controller state structures based on data received from XInput controllers.
     // Each time the virtual controller queries XInput it gets the same data packet.
     TEST_CASE(VirtualController_GetState_SameState)
@@ -567,21 +583,26 @@ namespace XidiTest
     // Valid property changes that should result in a transformation being applied to the current controller state view even without a state change.
     TEST_CASE(VirtualController_SetProperty_AutoApplyToExistingState)
     {
-        constexpr int32_t kTestAxisRangeMin = 500;
-        constexpr int32_t kTestAxisRangeMax = 1000;
-        constexpr int32_t kTestAxisRangeExpectedNeutralValue = (kTestAxisRangeMin + kTestAxisRangeMax) / 2;
+        constexpr int32_t kTestOldAxisRangeMin = 0;
+        constexpr int32_t kTestOldAxisRangeMax = 32768;
+        constexpr int32_t kTestOldAxisRangeExpectedNeutralValue = (kTestOldAxisRangeMin + kTestOldAxisRangeMax) / 2;
+
+        constexpr int32_t kTestNewAxisRangeMin = 500;
+        constexpr int32_t kTestNewAxisRangeMax = 1000;
+        constexpr int32_t kTestNewAxisRangeExpectedNeutralValue = (kTestNewAxisRangeMin + kTestNewAxisRangeMax) / 2;
 
         constexpr SPhysicalState kPhysicalState = {.errorCode = ERROR_SUCCESS, .state = {.dwPacketNumber = 1}};
-        constexpr Controller::SState kExpectedStateBefore = {.axis = {0, 0, 0, 0, 0, 0}};
-        constexpr Controller::SState kExpectedStateAfter = {.axis = {kTestAxisRangeExpectedNeutralValue, kTestAxisRangeExpectedNeutralValue, 0, kTestAxisRangeExpectedNeutralValue, kTestAxisRangeExpectedNeutralValue, 0}};
+        constexpr Controller::SState kExpectedStateBefore = {.axis = {kTestOldAxisRangeExpectedNeutralValue, kTestOldAxisRangeExpectedNeutralValue, 0, kTestOldAxisRangeExpectedNeutralValue, kTestOldAxisRangeExpectedNeutralValue, 0}};
+        constexpr Controller::SState kExpectedStateAfter = {.axis = {kTestNewAxisRangeExpectedNeutralValue, kTestNewAxisRangeExpectedNeutralValue, 0, kTestNewAxisRangeExpectedNeutralValue, kTestNewAxisRangeExpectedNeutralValue, 0}};
 
         VirtualController controller(0, kTestMapper);
-        controller.RefreshState(kPhysicalState);
 
+        controller.RefreshState(kPhysicalState);
+        controller.SetAllAxisRange(kTestOldAxisRangeMin, kTestOldAxisRangeMax);
         const Controller::SState kActualStateBefore = controller.GetState();
         TEST_ASSERT(kActualStateBefore == kExpectedStateBefore);
 
-        controller.SetAllAxisRange(kTestAxisRangeMin, kTestAxisRangeMax);
+        controller.SetAllAxisRange(kTestNewAxisRangeMin, kTestNewAxisRangeMax);
         const Controller::SState kActualStateAfter = controller.GetState();
         TEST_ASSERT(kActualStateAfter == kExpectedStateAfter);
     }

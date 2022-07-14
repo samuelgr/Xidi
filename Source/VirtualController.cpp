@@ -145,6 +145,8 @@ namespace Xidi
             const SPhysicalState initialState = GetCurrentPhysicalControllerState(kControllerIdentifier);
             
             RefreshState(initialState);
+            ReapplyProperties();
+
             physicalControllerMonitor = std::thread(MonitorPhysicalControllerState, this, initialState, physicalControllerMonitorStop.get_token());
 
             Message::OutputFormatted(Message::ESeverity::Info, L"Created virtual controller object with identifier %u.", (1 + kControllerIdentifier));
