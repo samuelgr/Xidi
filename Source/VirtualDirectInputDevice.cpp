@@ -1600,7 +1600,7 @@ namespace Xidi
     template <ECharMode charMode> HRESULT VirtualDirectInputDevice<charMode>::Poll(void)
     {
         constexpr Message::ESeverity kMethodSeverity = Message::ESeverity::SuperDebug;
-        LOG_INVOCATION_AND_RETURN(DI_NOEFFECT, kMethodSeverity);
+        LOG_INVOCATION_AND_RETURN(DI_OK, kMethodSeverity);
     }
 
     // ---------
