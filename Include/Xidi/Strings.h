@@ -100,6 +100,12 @@ namespace Xidi
         /// Configuration file setting for specifying a custom mapper template.
         inline constexpr std::wstring_view kStrConfigurationSettingCustomMapperTemplate = L"Template";
 
+        /// Configuration file section name for specifying behavioral tweaks to work around bugs in games.
+        inline constexpr std::wstring_view kStrConfigurationSectionWorkarounds = L"Workarounds";
+
+        /// Configuration file setting for a workaround that limits the number of virtual controllers Xidi will enumerate.
+        inline constexpr std::wstring_view kStrConfigurationSettingWorkaroundsMaxVirtualControllerCount = L"MaxVirtualControllerCount";
+
 
         // -------- RUN-TIME CONSTANTS ------------------------------------- //
         // Not safe to access before run-time, and should not be used to perform dynamic initialization.

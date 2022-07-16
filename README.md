@@ -36,6 +36,7 @@ The remainder of this document is organized as follows.
    - [Log](#log)
    - [Import](#import)
    - [CustomMapper](#custommapper)
+   - [Workarounds](#workarounds)
 - [Mapping Controller Buttons and Axes](#mapping-controller-buttons-and-axes)
    - [Built-In Mappers](#built-in-mappers)
    - [Custom Mappers](#custom-mappers)
@@ -185,6 +186,15 @@ In some situations, it may be desirable for Xidi to use functions provided by a 
 ## CustomMapper
 
 This section is used to define a custom mapper type that specifies how Xidi should translate XInput controller elements to virtual controller elements and keyboard keys. See [Custom Mappers](#custom-mappers) for more information.
+
+
+## Workarounds *(unreleased)*
+
+**It is not common for there to be a need to modify the settings in this section.**
+
+This section is used to modify the behavior of Xidi in ways that are not generally required by the DirectInput or WinMM APIs but are necessary to work around bugs in the original implementation of certain applications. Unless an application requires any of the available workarounds, the use of this section should be avoided.
+
+- **MaxVirtualControllerCount** limits the number of Xidi virtual controllers that are made available to the application. By default, Xidi makes available as many controllers as are possible under the XInput API, but some applications are implemented incorrectly such that they cannot properly distinguish between inputs from multiple controllers.
 
 
 # Mapping Controller Buttons and Axes

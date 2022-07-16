@@ -70,6 +70,9 @@ namespace Xidi
         ConfigurationFileLayoutSection(Strings::kStrConfigurationSectionMapper, {
             ConfigurationFileLayoutNameAndValueType(Strings::kStrConfigurationSettingMapperType, EValueType::String),
         }),
+        ConfigurationFileLayoutSection(Strings::kStrConfigurationSectionWorkarounds, {
+            ConfigurationFileLayoutNameAndValueType(Strings::kStrConfigurationSettingWorkaroundsMaxVirtualControllerCount, EValueType::Integer)
+        }),
     };
 
 

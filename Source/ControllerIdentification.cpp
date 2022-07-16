@@ -15,7 +15,13 @@
 #include "ControllerTypes.h"
 #include "Globals.h"
 #include "Mapper.h"
+#include "Message.h"
+#include "Strings.h"
 #include "TemporaryBuffer.h"
+
+#ifndef XIDI_SKIP_CONFIG
+#include "Configuration.h"
+#endif
 
 #include <memory>
 #include <optional>
@@ -105,14 +111,34 @@ namespace Xidi
     template <typename DeviceInstanceType> BOOL EnumerateVirtualControllers(BOOL(FAR PASCAL* lpCallback)(const DeviceInstanceType*, LPVOID), LPVOID pvRef, bool forceFeedbackRequired)
     {
         std::unique_ptr<DeviceInstanceType> instanceInfo = std::make_unique<DeviceInstanceType>();
+        DWORD numControllersToEnumerate = Controller::kPhysicalControllerCount;
 
-        for (DWORD idx = 0; idx < Controller::kPhysicalControllerCount; ++idx)
+#ifndef XIDI_SKIP_CONFIG
+        const Configuration::ConfigurationData& configData = Globals::GetConfigurationData();
+        if (configData.SectionNamePairExists(Strings::kStrConfigurationSectionWorkarounds, Strings::kStrConfigurationSettingWorkaroundsMaxVirtualControllerCount))
+        {
+            const DWORD kMaxVirtualControllerCount = (DWORD)configData[Strings::kStrConfigurationSectionWorkarounds][Strings::kStrConfigurationSettingWorkaroundsMaxVirtualControllerCount].FirstValue().GetIntegerValue();
+            if (kMaxVirtualControllerCount < numControllersToEnumerate)
+            {
+                numControllersToEnumerate = kMaxVirtualControllerCount;
+                Message::OutputFormatted(Message::ESeverity::Info, L"Enumerate: Number of Xidi virtual controllers is limited to %u by the configuration file.", numControllersToEnumerate);
+            }
+            else
+            {
+                Message::OutputFormatted(Message::ESeverity::Warning, L"Enumerate: Xidi virtual controller count limit of %u in the configuration file is ineffective because it is not less than the default limit of %u.", kMaxVirtualControllerCount, numControllersToEnumerate);
+            }
+        }
+#endif
+
+        for (DWORD idx = 0; idx < numControllersToEnumerate; ++idx)
         {
             if ((true == forceFeedbackRequired) && (false == DoesControllerSupportForceFeedback(idx)))
                 continue;
 
             *instanceInfo = {.dwSize = sizeof(*instanceInfo)};
             FillVirtualControllerInfo(*instanceInfo, idx);
+
+            Message::OutputFormatted(Message::ESeverity::Info, L"Enumerate: Presenting Xidi virtual controller %u to the application.", (1 + idx));
 
             if (DIENUM_CONTINUE != lpCallback(instanceInfo.get(), pvRef))
                 return DIENUM_STOP;
