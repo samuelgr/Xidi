@@ -107,6 +107,14 @@ namespace Xidi
         /// Reference count.
         std::atomic<unsigned long> refCount;
 
+        /// Storage for all properties that are silently supported but not used by Xidi.
+        /// Others can be added here as needed.
+        struct
+        {
+            DWORD autocenter = DIPROPAUTOCENTER_OFF;
+        } unusedProperties;
+        
+
     public:
         // -------- CONSTRUCTION AND DESTRUCTION ----------------------------------- //
 

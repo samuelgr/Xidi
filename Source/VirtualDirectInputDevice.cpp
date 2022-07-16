@@ -611,7 +611,7 @@ namespace Xidi
     // -------- CONSTRUCTION AND DESTRUCTION ------------------------------- //
     // See "VirtualDirectInputDevice.h" for documentation.
 
-    template <ECharMode charMode> VirtualDirectInputDevice<charMode>::VirtualDirectInputDevice(std::unique_ptr<Controller::VirtualController>&& controller) : controller(std::move(controller)), cooperativeLevel(ECooperativeLevel::Shared), dataFormat(), effectRegistry(), refCount(1)
+    template <ECharMode charMode> VirtualDirectInputDevice<charMode>::VirtualDirectInputDevice(std::unique_ptr<Controller::VirtualController>&& controller) : controller(std::move(controller)), cooperativeLevel(ECooperativeLevel::Shared), dataFormat(), effectRegistry(), refCount(1), unusedProperties()
     {
         // Nothing to do here.
     }
@@ -1513,7 +1513,7 @@ namespace Xidi
         case ((size_t)&DIPROP_AUTOCENTER):
             if (Controller::EElementType::WholeController != element.type)
                 LOG_PROPERTY_INVOCATION_NO_VALUE_AND_RETURN(DIERR_INVALIDPARAM, kMethodSeverity, rguidProp);
-            ((LPDIPROPDWORD)pdiph)->dwData = DIPROPAUTOCENTER_OFF;
+            ((LPDIPROPDWORD)pdiph)->dwData = unusedProperties.autocenter;
             LOG_PROPERTY_INVOCATION_DIPROPDWORD_AND_RETURN(DI_OK, kMethodSeverity, rguidProp, pdiph);
 
         case ((size_t)&DIPROP_BUFFERSIZE):
@@ -1775,10 +1775,15 @@ namespace Xidi
                 LOG_PROPERTY_INVOCATION_DIPROPDWORD_AND_RETURN(DIERR_UNSUPPORTED, kMethodSeverity, rguidProp, pdiph);
 
         case ((size_t)&DIPROP_AUTOCENTER):
-            if (DIPROPAUTOCENTER_OFF == ((LPDIPROPDWORD)pdiph)->dwData)
+            switch (((LPDIPROPDWORD)pdiph)->dwData)
+            {
+            case DIPROPAUTOCENTER_OFF:
+            case DIPROPAUTOCENTER_ON:
+                unusedProperties.autocenter = ((LPDIPROPDWORD)pdiph)->dwData;
                 LOG_PROPERTY_INVOCATION_DIPROPDWORD_AND_RETURN(DI_OK, kMethodSeverity, rguidProp, pdiph);
-            else
-                LOG_PROPERTY_INVOCATION_DIPROPDWORD_AND_RETURN(DIERR_UNSUPPORTED, kMethodSeverity, rguidProp, pdiph);
+            default:
+                LOG_PROPERTY_INVOCATION_DIPROPDWORD_AND_RETURN(DIERR_INVALIDPARAM, kMethodSeverity, rguidProp, pdiph);
+            }
 
         case ((size_t)&DIPROP_BUFFERSIZE):
             LOG_PROPERTY_INVOCATION_DIPROPDWORD_AND_RETURN(((true == controller->SetEventBufferCapacity(((LPDIPROPDWORD)pdiph)->dwData)) ? DI_OK : DIERR_INVALIDPARAM), kMethodSeverity, rguidProp, pdiph);

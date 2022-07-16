@@ -174,6 +174,32 @@ namespace XidiTest
         return testVirtualController;
     }
 
+    /// Common functionality for testing any properties that should be able to be set and retrieved via IDirectInputDevice interfaces even though Xidi does not use them.
+    /// @param [in] rguidProp DirectInput GUID reference that identifies the property in question.
+    /// @param [in] defaultPropertyValue Expected default value of the property when a new object is created.
+    /// @param [in] testPropertyValue Non-default value of the property that should be set and then retrieved.
+    /// @param [in] dwHow DirectInput methodology for identifying the object for which the property should be retrieved or set.
+    /// @param [in] dwObj DirectInput methodology-specific ID of the object for which the property should be retrieved or set.
+    static void TestUnusedPropertyDword(REFGUID rguidProp, DWORD defaultPropertyValue, DWORD testPropertyValue, DWORD dwHow, DWORD dwObj = 0)
+    {
+        const DIPROPHEADER kUnusedPropertyDwordHeader = {.dwSize = sizeof(DIPROPDWORD), .dwHeaderSize = sizeof(DIPROPHEADER), .dwObj = dwObj, .dwHow = dwHow};
+        VirtualDirectInputDevice<ECharMode::W> diController(CreateTestVirtualController());
+
+        // Check that the default value is correct.
+        DIPROPDWORD unusedPropertyValue = {.diph = kUnusedPropertyDwordHeader};
+        TEST_ASSERT(SUCCEEDED(diController.GetProperty(rguidProp, (LPDIPROPHEADER)&unusedPropertyValue)));
+        TEST_ASSERT(defaultPropertyValue == unusedPropertyValue.dwData);
+
+        // Verify that setting the test value succeeds.
+        unusedPropertyValue = {.diph = kUnusedPropertyDwordHeader, .dwData = testPropertyValue};
+        TEST_ASSERT(SUCCEEDED(diController.SetProperty(rguidProp, (LPDIPROPHEADER)&unusedPropertyValue)));
+
+        // Verify that retrieving the value results in the test value.
+        unusedPropertyValue = {.diph = kUnusedPropertyDwordHeader};
+        TEST_ASSERT(SUCCEEDED(diController.GetProperty(rguidProp, (LPDIPROPHEADER)&unusedPropertyValue)));
+        TEST_ASSERT(testPropertyValue == unusedPropertyValue.dwData);
+    }
+
 
     // -------- TEST CASES ------------------------------------------------- //
 
@@ -1194,6 +1220,14 @@ namespace XidiTest
 
         // Physical Range (read-only)
         TEST_ASSERT(FAILED(diController.GetProperty(DIPROP_PHYSICALRANGE, nullptr)));
+    }
+    
+    // Exercises properties that Xidi does not use.
+    // These should be silently accepted and stored for later retrieval.
+    TEST_CASE(VirtualDirectInputDevice_Properties_Unused)
+    {
+        // Autocenter
+        TestUnusedPropertyDword(DIPROP_AUTOCENTER, DIPROPAUTOCENTER_OFF, DIPROPAUTOCENTER_ON, DIPH_DEVICE);
     }
 
 
