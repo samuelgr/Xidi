@@ -79,7 +79,7 @@ namespace Xidi
         // -------- INTERNAL VARIABLES ------------------------------------- //
 
         /// Fixed set of virtual controllers.
-        static Controller::VirtualController* controllers[XUSER_MAX_COUNT];
+        static Controller::VirtualController* controllers[Controller::kPhysicalControllerCount];
 
         /// Maps from application-specified joystick index to the actual indices to present to WinMM or use internally.
         /// Negative values indicate XInput controllers, others indicate values to be passed to WinMM as is.

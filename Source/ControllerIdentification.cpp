@@ -106,7 +106,7 @@ namespace Xidi
     {
         std::unique_ptr<DeviceInstanceType> instanceInfo = std::make_unique<DeviceInstanceType>();
 
-        for (DWORD idx = 0; idx < XUSER_MAX_COUNT; ++idx)
+        for (DWORD idx = 0; idx < Controller::kPhysicalControllerCount; ++idx)
         {
             if ((true == forceFeedbackRequired) && (false == DoesControllerSupportForceFeedback(idx)))
                 continue;
@@ -190,7 +190,7 @@ namespace Xidi
     {
         DWORD xindex = ExtractVirtualControllerInstanceFromGuid(instanceGUID);
 
-        if (xindex < XUSER_MAX_COUNT)
+        if (xindex < Controller::kPhysicalControllerCount)
         {
             GUID realXInputGUID;
             MakeVirtualControllerInstanceGuid(realXInputGUID, xindex);
