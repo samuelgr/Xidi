@@ -38,6 +38,7 @@ namespace XidiTest
     using ::Xidi::Controller::VirtualController;
     using ::Xidi::Controller::ForceFeedback::SAssociatedAxes;
     using ::Xidi::Controller::ForceFeedback::SEnvelope;
+    using ::Xidi::Controller::ForceFeedback::TEffectIdentifier;
     using ::Xidi::Controller::ForceFeedback::TEffectTimeMs;
     using ::Xidi::Controller::ForceFeedback::TEffectValue;
 
@@ -315,6 +316,38 @@ namespace XidiTest
         TEST_ASSERT(DI_OK == diEffect->Unload());
         TEST_ASSERT(false == ffDevice.IsEffectPlaying(ffEffect.Identifier()));
         TEST_ASSERT(false == ffDevice.IsEffectOnDevice(ffEffect.Identifier()));
+    }
+
+    // Plays an effect and releases it while it is playing.
+    TEST_CASE(VirtualDirectInputEffect_ReleaseIsUnload)
+    {
+        auto physicalController = CreateMockPhysicalController();
+        auto& ffDevice = physicalController->GetForceFeedbackDevice();
+
+        auto diDevice = CreateAndAcquireTestDirectInputDevice(*physicalController);
+        
+        // For this test it is necessary to manipulate raw pointers just like a real DirectInput application would.
+        auto diEffect = CreateTestDirectInputEffect(*diDevice).release();
+        const TEffectIdentifier kForceFeedbackEffectIdentifier = diEffect->UnderlyingEffect().Identifier();
+
+        // Any reference to the effect will become invalid when the effect is deleted using COM methods.
+        do
+        {
+            MockEffectWithTypeSpecificParameters& ffEffect = (MockEffectWithTypeSpecificParameters&)diEffect->UnderlyingEffect();
+            ffEffect.InitializeDefaultAssociatedAxes();
+            ffEffect.InitializeDefaultDirection();
+            ffEffect.SetDuration(100);
+            ffEffect.SetTypeSpecificParameters({.valid = true});
+        } while (false);
+
+        TEST_ASSERT(DI_OK == diEffect->Download());
+        TEST_ASSERT(DI_OK == diEffect->StartInternal(1, 0, 0));
+        TEST_ASSERT(true == ffDevice.IsEffectPlaying(kForceFeedbackEffectIdentifier));
+        TEST_ASSERT(true == ffDevice.IsEffectOnDevice(kForceFeedbackEffectIdentifier));
+
+        TEST_ASSERT(0 == diEffect->Release());
+        TEST_ASSERT(false == ffDevice.IsEffectPlaying(kForceFeedbackEffectIdentifier));
+        TEST_ASSERT(false == ffDevice.IsEffectOnDevice(kForceFeedbackEffectIdentifier));
     }
 
 

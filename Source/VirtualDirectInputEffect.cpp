@@ -224,6 +224,11 @@ namespace Xidi
 
     template <ECharMode charMode> VirtualDirectInputEffect<charMode>::~VirtualDirectInputEffect(void)
     {
+        // If the effect represented by this object is already downloaded to a device then it must be removed from that device.
+        Controller::ForceFeedback::Device* const forceFeedbackDevice = associatedDevice.GetVirtualController().ForceFeedbackGetDevice();
+        if (nullptr != forceFeedbackDevice)
+            forceFeedbackDevice->RemoveEffect(effect->Identifier());
+        
         associatedDevice.ForceFeedbackEffectUnregister((void*)this);
         associatedDevice.Release();
     }
