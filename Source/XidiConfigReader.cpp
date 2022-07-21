@@ -71,7 +71,8 @@ namespace Xidi
             ConfigurationFileLayoutNameAndValueType(Strings::kStrConfigurationSettingMapperType, EValueType::String),
         }),
         ConfigurationFileLayoutSection(Strings::kStrConfigurationSectionWorkarounds, {
-            ConfigurationFileLayoutNameAndValueType(Strings::kStrConfigurationSettingWorkaroundsMaxVirtualControllerCount, EValueType::Integer)
+            ConfigurationFileLayoutNameAndValueType(Strings::kStrConfigurationSettingWorkaroundsMaxVirtualControllerCount, EValueType::Integer),
+            ConfigurationFileLayoutNameAndValueType(Strings::kStrConfigurationSettingWorkaroundsPollReturnCode, EValueType::Integer),
         }),
     };
 

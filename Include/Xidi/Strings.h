@@ -106,6 +106,10 @@ namespace Xidi
         /// Configuration file setting for a workaround that limits the number of virtual controllers Xidi will enumerate.
         inline constexpr std::wstring_view kStrConfigurationSettingWorkaroundsMaxVirtualControllerCount = L"MaxVirtualControllerCount";
 
+        /// Configuration file setting for a workaround that overrides the return code of the `IDirectInputDevice::Poll` method, which is unnecessary with Xidi.
+        /// Usually this returns `DI_NOEFFECT` but some applications explicitly check for a different return code.
+        inline constexpr std::wstring_view kStrConfigurationSettingWorkaroundsPollReturnCode = L"PollReturnCode";
+
 
         // -------- RUN-TIME CONSTANTS ------------------------------------- //
         // Not safe to access before run-time, and should not be used to perform dynamic initialization.

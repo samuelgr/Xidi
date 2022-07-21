@@ -17,12 +17,17 @@
 #include "DataFormat.h"
 #include "ForceFeedbackDevice.h"
 #include "ForceFeedbackTypes.h"
+#include "Globals.h"
 #include "Message.h"
 #include "PhysicalController.h"
 #include "Strings.h"
 #include "VirtualController.h"
 #include "VirtualDirectInputDevice.h"
 #include "VirtualDirectInputEffect.h"
+
+#ifndef XIDI_SKIP_CONFIG
+#include "Configuration.h"
+#endif
 
 #include <atomic>
 #include <cstdio>
@@ -1599,8 +1604,22 @@ namespace Xidi
 
     template <ECharMode charMode> HRESULT VirtualDirectInputDevice<charMode>::Poll(void)
     {
+        // Not required for Xidi virtual controllers as they are implemented now.
+        // However, some applications explicitly check for return codes like `DI_OK`, which is why a workaround is allowed to change the return code.
+        static constexpr DWORD kDefaultPollReturnCode = DI_NOEFFECT;
+
+#ifndef XIDI_SKIP_CONFIG
+        static const Configuration::ConfigurationData& configData = Globals::GetConfigurationData();
+        static const DWORD kPollReturnCode = (
+            (configData.SectionNamePairExists(Strings::kStrConfigurationSectionWorkarounds, Strings::kStrConfigurationSettingWorkaroundsPollReturnCode))
+            ? ((DWORD)configData[Strings::kStrConfigurationSectionWorkarounds][Strings::kStrConfigurationSettingWorkaroundsPollReturnCode].FirstValue().GetIntegerValue())
+            : kDefaultPollReturnCode);
+#else
+        static const DWORD kPollReturnCode = kDefaultPollReturnCode;
+#endif
+
         constexpr Message::ESeverity kMethodSeverity = Message::ESeverity::SuperDebug;
-        LOG_INVOCATION_AND_RETURN(DI_OK, kMethodSeverity);
+        LOG_INVOCATION_AND_RETURN(kPollReturnCode, kMethodSeverity);
     }
 
     // ---------
