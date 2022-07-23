@@ -735,6 +735,23 @@ namespace Xidi
     // -------- INSTANCE METHODS ------------------------------------------- //
     // See "VirtualDirectInputDevice.h" for documentation.
 
+    template <ECharMode charMode> Controller::ForceFeedback::Device* VirtualDirectInputDevice<charMode>::AutoAcquireAndGetForceFeedbackDevice(void)
+    {
+        Controller::ForceFeedback::Device* forceFeedbackDevice = controller->ForceFeedbackGetDevice();
+
+        if (nullptr == forceFeedbackDevice)
+        {
+            Message::OutputFormatted(Message::ESeverity::Info, L"Attempting to acquire Xidi virtual controller %u automatically because the application did not do so explicitly.", (1 + controller->GetIdentifier()));
+
+            Acquire();
+            forceFeedbackDevice = controller->ForceFeedbackGetDevice();
+        }
+
+        return forceFeedbackDevice;
+    }
+
+    // --------
+
     template <ECharMode charMode> std::optional<Controller::SElementIdentifier> VirtualDirectInputDevice<charMode>::IdentifyElement(DWORD dwObj, DWORD dwHow) const
     {
         switch (dwHow)
@@ -1421,19 +1438,19 @@ namespace Xidi
         if (nullptr == pdwOut)
             LOG_INVOCATION_AND_RETURN(DIERR_INVALIDPARAM, kMethodSeverity);
 
-        if (false == controller->ForceFeedbackIsRegistered())
+        Controller::ForceFeedback::Device* forceFeedbackDevice = AutoAcquireAndGetForceFeedbackDevice();
+        if (nullptr == forceFeedbackDevice)
             LOG_INVOCATION_AND_RETURN(DIERR_NOTEXCLUSIVEACQUIRED, kMethodSeverity);
 
-        Controller::ForceFeedback::Device& forceFeedbackDevice = *controller->ForceFeedbackGetDevice();
         DWORD forceFeedbackDeviceState = DIGFFS_POWERON;
 
-        if (true == forceFeedbackDevice.IsDeviceOutputMuted())
+        if (true == forceFeedbackDevice->IsDeviceOutputMuted())
             forceFeedbackDeviceState |= DIGFFS_ACTUATORSOFF;
         else
             forceFeedbackDeviceState |= DIGFFS_ACTUATORSON;
 
-        const bool kDeviceIsEmpty = forceFeedbackDevice.IsDeviceEmpty();
-        const bool kDeviceIsPaused = forceFeedbackDevice.IsDeviceOutputPaused();
+        const bool kDeviceIsEmpty = forceFeedbackDevice->IsDeviceEmpty();
+        const bool kDeviceIsPaused = forceFeedbackDevice->IsDeviceOutputPaused();
 
         if (true == kDeviceIsEmpty)
         {
@@ -1451,7 +1468,7 @@ namespace Xidi
 
             if (true == kDeviceIsPaused)
                 forceFeedbackDeviceState |= DIGFFS_PAUSED;
-            else if (false == forceFeedbackDevice.IsDevicePlayingAnyEffects())
+            else if (false == forceFeedbackDevice->IsDevicePlayingAnyEffects())
                 forceFeedbackDeviceState |= DIGFFS_STOPPED;
         }
 
@@ -1650,41 +1667,40 @@ namespace Xidi
             LOG_INVOCATION_AND_RETURN(DIERR_UNSUPPORTED, kMethodSeverity);
         }
 
-        if (false == controller->ForceFeedbackIsRegistered())
+        Controller::ForceFeedback::Device* forceFeedbackDevice = AutoAcquireAndGetForceFeedbackDevice();
+        if (nullptr == forceFeedbackDevice)
             LOG_INVOCATION_AND_RETURN(DIERR_NOTEXCLUSIVEACQUIRED, kMethodSeverity);
-
-        Controller::ForceFeedback::Device& forceFeedbackDevice = *controller->ForceFeedbackGetDevice();
 
         switch (dwFlags)
         {
         case DISFFC_CONTINUE:
             Message::Output(Message::ESeverity::Debug, L"Sending force feedback command DISFFC_CONTINUE.");
-            forceFeedbackDevice.SetPauseState(false);
+            forceFeedbackDevice->SetPauseState(false);
             break;
 
         case DISFFC_PAUSE:
             Message::Output(Message::ESeverity::Debug, L"Sending force feedback command DISFFC_PAUSE.");
-            forceFeedbackDevice.SetPauseState(true);
+            forceFeedbackDevice->SetPauseState(true);
             break;
 
         case DISFFC_RESET:
             Message::Output(Message::ESeverity::Debug, L"Sending force feedback command DISFFC_RESET.");
-            forceFeedbackDevice.Clear();
+            forceFeedbackDevice->Clear();
             break;
 
         case DISFFC_SETACTUATORSOFF:
             Message::Output(Message::ESeverity::Debug, L"Sending force feedback command DISFFC_SETACTUATORSOFF.");
-            forceFeedbackDevice.SetMutedState(true);
+            forceFeedbackDevice->SetMutedState(true);
             break;
 
         case DISFFC_SETACTUATORSON:
             Message::Output(Message::ESeverity::Debug, L"Sending force feedback command DISFFC_SETACTUATORSON.");
-            forceFeedbackDevice.SetMutedState(false);
+            forceFeedbackDevice->SetMutedState(false);
             break;
 
         case DISFFC_STOPALL:
             Message::Output(Message::ESeverity::Debug, L"Sending force feedback command DISFFC_STOPALL.");
-            forceFeedbackDevice.StopAllEffects();
+            forceFeedbackDevice->StopAllEffects();
             break;
 
         default:

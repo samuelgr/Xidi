@@ -238,7 +238,7 @@ namespace Xidi
 
     template <ECharMode charMode> HRESULT VirtualDirectInputEffect<charMode>::DownloadInternal(void)
     {
-        Controller::ForceFeedback::Device* const forceFeedbackDevice = associatedDevice.GetVirtualController().ForceFeedbackGetDevice();
+        Controller::ForceFeedback::Device* const forceFeedbackDevice = associatedDevice.AutoAcquireAndGetForceFeedbackDevice();
         if (nullptr == forceFeedbackDevice)
             return DIERR_NOTEXCLUSIVEACQUIRED;
 
@@ -636,7 +636,7 @@ namespace Xidi
         if (0 == dwIterations)
             return DIERR_INVALIDPARAM;
 
-        Controller::ForceFeedback::Device* const forceFeedbackDevice = associatedDevice.GetVirtualController().ForceFeedbackGetDevice();
+        Controller::ForceFeedback::Device* const forceFeedbackDevice = associatedDevice.AutoAcquireAndGetForceFeedbackDevice();
         if (nullptr == forceFeedbackDevice)
             return DIERR_NOTEXCLUSIVEACQUIRED;
 
@@ -1023,7 +1023,7 @@ namespace Xidi
     {
         constexpr Message::ESeverity kMethodSeverity = Message::ESeverity::Info;
 
-        Controller::ForceFeedback::Device* const forceFeedbackDevice = associatedDevice.GetVirtualController().ForceFeedbackGetDevice();
+        Controller::ForceFeedback::Device* const forceFeedbackDevice = associatedDevice.AutoAcquireAndGetForceFeedbackDevice();
         if (nullptr == forceFeedbackDevice)
             LOG_INVOCATION_AND_RETURN(DIERR_NOTEXCLUSIVEACQUIRED, kMethodSeverity);
 
@@ -1066,7 +1066,7 @@ namespace Xidi
     {
         constexpr Message::ESeverity kMethodSeverity = Message::ESeverity::Info;
 
-        Controller::ForceFeedback::Device* const forceFeedbackDevice = associatedDevice.GetVirtualController().ForceFeedbackGetDevice();
+        Controller::ForceFeedback::Device* const forceFeedbackDevice = associatedDevice.AutoAcquireAndGetForceFeedbackDevice();
         if (nullptr == forceFeedbackDevice)
             LOG_INVOCATION_AND_RETURN(DIERR_NOTEXCLUSIVEACQUIRED, kMethodSeverity);
         

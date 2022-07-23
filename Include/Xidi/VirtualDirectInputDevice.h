@@ -145,6 +145,12 @@ namespace Xidi
 
         // -------- INSTANCE METHODS ----------------------------------------------- //
 
+        /// Obtains the force feedback device associated with this controller.
+        /// If this controller is not yet acquired then an attempt is made to acquire it automatically.
+        /// @return Pointer to the force feedback device object if successful, `nullptr` otherwise.
+        Controller::ForceFeedback::Device* AutoAcquireAndGetForceFeedbackDevice(void);
+
+
         /// Registers a force feedback effect by adding it to the effect registry.
         /// Intended to be invoked automaticaly as effects are constructed.
         /// @param [in] effect Address of the effect object to register.
