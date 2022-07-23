@@ -15,12 +15,14 @@
 #include "ForceFeedbackDevice.h"
 #include "Globals.h"
 #include "ImportApiWinMM.h"
+#include "Mapper.h"
 #include "Message.h"
 #include "PhysicalController.h"
 #include "VirtualController.h"
 
 #include <condition_variable>
 #include <cstdint>
+#include <set>
 #include <shared_mutex>
 #include <stop_token>
 #include <thread>
@@ -77,7 +79,7 @@ namespace Xidi
         static ForceFeedback::Device* physicalControllerForceFeedbackBuffer;
 
         /// Pointers to the virtual controller objects registered for force feedback with each physical controller.
-        static const VirtualController* physicalControllerForceFeedbackRegistration[kPhysicalControllerCount];
+        static std::set<const VirtualController*> physicalControllerForceFeedbackRegistration[kPhysicalControllerCount];
 
         /// Mutex objects for protecting against concurrent accesses to the physical controller force feedback registration data.
         static std::mutex physicalControllerForceFeedbackMutex[kPhysicalControllerCount];
@@ -100,6 +102,7 @@ namespace Xidi
 
                 if (true == Globals::DoesCurrentProcessHaveInputFocus())
                 {
+                    ForceFeedback::TEffectValue overallEffectGain = 10000;
                     ForceFeedback::SPhysicalActuatorComponents physicalActuatorVector = {};
                     ForceFeedback::TOrderedMagnitudeComponents virtualMagnitudeVector = physicalControllerForceFeedbackBuffer[controllerIdentifier].PlayEffects();
 
@@ -107,8 +110,13 @@ namespace Xidi
                     {
                         std::unique_lock lock(physicalControllerForceFeedbackMutex[controllerIdentifier]);
 
-                        if (nullptr != physicalControllerForceFeedbackRegistration[controllerIdentifier])
-                            physicalActuatorVector = physicalControllerForceFeedbackRegistration[controllerIdentifier]->ForceFeedbackMapVirtualToPhysical(virtualMagnitudeVector);
+                        // Gain is modified downwards by each virtual controller object.
+                        // Typically there would only be one, in which case the properties of that object would be effective.
+                        // Otherwise this loop is essentially modeled as multiple volume knobs connected in sequence, each lowering the volume of the effects by the value of its own device-wide gain property.
+                        for (auto virtualController : physicalControllerForceFeedbackRegistration[controllerIdentifier])
+                            overallEffectGain *= ((ForceFeedback::TEffectValue)virtualController->GetForceFeedbackGain() / ForceFeedback::kEffectModifierMaximum);
+
+                        physicalActuatorVector = Mapper::GetConfigured(controllerIdentifier)->MapForceFeedbackVirtualToPhysical(virtualMagnitudeVector, overallEffectGain);
                     }
 
                     // Currently the impulse trigger values are ignored.
@@ -286,14 +294,9 @@ namespace Xidi
             }
 
             std::unique_lock lock(physicalControllerForceFeedbackMutex[controllerIdentifier]);
+            physicalControllerForceFeedbackRegistration[controllerIdentifier].insert(virtualController);
 
-            if (nullptr == physicalControllerForceFeedbackRegistration[controllerIdentifier])
-            {
-                physicalControllerForceFeedbackRegistration[controllerIdentifier] = virtualController;
-                return &physicalControllerForceFeedbackBuffer[controllerIdentifier];
-            }
-
-            return nullptr;
+            return &physicalControllerForceFeedbackBuffer[controllerIdentifier];
         }
 
         // --------
@@ -309,12 +312,7 @@ namespace Xidi
             }
 
             std::unique_lock lock(physicalControllerForceFeedbackMutex[controllerIdentifier]);
-
-            if (virtualController == physicalControllerForceFeedbackRegistration[controllerIdentifier])
-            {
-                physicalControllerForceFeedbackRegistration[controllerIdentifier] = nullptr;
-                physicalControllerForceFeedbackBuffer[controllerIdentifier].Clear();
-            }
+            physicalControllerForceFeedbackRegistration[controllerIdentifier].erase(virtualController);
         }
 
         // --------

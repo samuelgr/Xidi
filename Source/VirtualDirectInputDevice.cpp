@@ -880,8 +880,9 @@ namespace Xidi
         switch (cooperativeLevel)
         {
         case ECooperativeLevel::Exclusive:
-            // In exclusive mode, the virtual controller takes exclusive control over the physical controller's force feedback buffer.
-            // Acquisition is modeled as registering successfully for such control.
+            // In exclusive mode, the virtual controller gets access to the physical controller's force feedback buffer.
+            // Normally DirectInput would enforce mutual exclusion between applications, hence the "exclusive" terminology.
+            // Xidi does not enforce mutual exclusion at all. However, in the interest of compabitility with DirectInput, Xidi does require exclusive acquisition in order for force feedback to be available.
 
             Message::OutputFormatted(kMethodSeverity, L"Acquiring Xidi virtual controller %u in exclusive mode.", (1 + controller->GetIdentifier()));
 
@@ -891,9 +892,8 @@ namespace Xidi
             if (true == controller->ForceFeedbackRegister())
                 LOG_INVOCATION_AND_RETURN(DI_OK, kMethodSeverity);
 
-            // Getting to this point means another object has already acquired exclusive access to the physical device.
-            // DirectInput would normally enforce mutual exclusion between multiple applications, whereas Xidi only does so between multiple objects within the same application.
-            LOG_INVOCATION_AND_RETURN(DIERR_OTHERAPPHASPRIO, Message::ESeverity::Warning);
+            // Getting to this point means force feedback registration failed. This should not normally occur.
+            LOG_INVOCATION_AND_RETURN(DIERR_OTHERAPPHASPRIO, Message::ESeverity::Error);
 
         default:
             // No other cooperative level requires any action on Xidi's part for the acquisition to succeed.

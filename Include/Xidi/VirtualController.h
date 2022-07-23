@@ -71,7 +71,7 @@ namespace Xidi
             static constexpr uint32_t kFfGainMax = 10000;
 
             /// Default value for force feedback gain. No scaling down of effects by default.
-            static constexpr uint32_t kFfGainDefault = 10000;
+            static constexpr uint32_t kFfGainDefault = kFfGainMax;
 
 
             // -------- TYPE DEFINITIONS ----------------------------------- //

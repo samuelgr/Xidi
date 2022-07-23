@@ -139,11 +139,8 @@ namespace Xidi
 
             if (nullptr != mockPhysicalController[controllerIdentifier])
             {
-                if (nullptr == mockPhysicalController[controllerIdentifier]->GetForceFeedbackRegistration())
-                {
-                    mockPhysicalController[controllerIdentifier]->SetForceFeedbackRegistration(virtualController);
-                    return &mockPhysicalController[controllerIdentifier]->GetForceFeedbackDevice();
-                }
+                mockPhysicalController[controllerIdentifier]->InsertForceFeedbackRegistration(virtualController);
+                return &mockPhysicalController[controllerIdentifier]->GetForceFeedbackDevice();
             }
 
             return nullptr;
@@ -160,8 +157,7 @@ namespace Xidi
 
             if (nullptr != mockPhysicalController[controllerIdentifier])
             {
-                if (virtualController == mockPhysicalController[controllerIdentifier]->GetForceFeedbackRegistration())
-                    mockPhysicalController[controllerIdentifier]->SetForceFeedbackRegistration(nullptr);
+                mockPhysicalController[controllerIdentifier]->EraseForceFeedbackRegistration(virtualController);
             }
         }
 

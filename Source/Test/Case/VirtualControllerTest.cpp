@@ -846,20 +846,20 @@ namespace XidiTest
 
         TEST_ASSERT(false == controller.ForceFeedbackIsRegistered());
         TEST_ASSERT(nullptr == controller.ForceFeedbackGetDevice());
-        TEST_ASSERT(nullptr == physicalController.GetForceFeedbackRegistration());
+        TEST_ASSERT(false == physicalController.IsVirtualControllerRegisteredForForceFeedback(&controller));
 
         TEST_ASSERT(true == controller.ForceFeedbackRegister());
         TEST_ASSERT(kForceFeedbackDeviceAddress == controller.ForceFeedbackGetDevice());
-        TEST_ASSERT(&controller == physicalController.GetForceFeedbackRegistration());
+        TEST_ASSERT(true == physicalController.IsVirtualControllerRegisteredForForceFeedback(&controller));
 
         controller.ForceFeedbackUnregister();
         TEST_ASSERT(false == controller.ForceFeedbackIsRegistered());
         TEST_ASSERT(nullptr == controller.ForceFeedbackGetDevice());
-        TEST_ASSERT(nullptr == physicalController.GetForceFeedbackRegistration());
+        TEST_ASSERT(false == physicalController.IsVirtualControllerRegisteredForForceFeedback(&controller));
     }
 
-    // Verifies that only one virtual controller is allowed to register at a time, even with the same controller identifier.
-    TEST_CASE(VirtualController_ForceFeedback_MutualExclusion)
+    // Verifies that multiple virtual controllers are allowed to register at a time.
+    TEST_CASE(VirtualController_ForceFeedback_MultipleRegistrations)
     {
         constexpr TControllerIdentifier kControllerIndex = 1;
         constexpr SPhysicalState kPhysicalState = {.errorCode = ERROR_SUCCESS, .state = {.dwPacketNumber = 1}};
@@ -875,12 +875,6 @@ namespace XidiTest
 
         TEST_ASSERT(true == controller.ForceFeedbackRegister());
         TEST_ASSERT(true == controller.ForceFeedbackIsRegistered());
-        TEST_ASSERT(false == controller2.ForceFeedbackRegister());
-        TEST_ASSERT(false == controller2.ForceFeedbackIsRegistered());
-
-        controller.ForceFeedbackUnregister();
-        TEST_ASSERT(false == controller.ForceFeedbackIsRegistered());
-
         TEST_ASSERT(true == controller2.ForceFeedbackRegister());
         TEST_ASSERT(true == controller2.ForceFeedbackIsRegistered());
     }
@@ -900,7 +894,7 @@ namespace XidiTest
             TEST_ASSERT(true == controller.ForceFeedbackRegister());
 
         TEST_ASSERT(kForceFeedbackDeviceAddress == controller.ForceFeedbackGetDevice());
-        TEST_ASSERT(&controller == physicalController.GetForceFeedbackRegistration());
+        TEST_ASSERT(true == physicalController.IsVirtualControllerRegisteredForForceFeedback(&controller));
     }
 
     // Verifies that virtual controllers automatically unregister themselves upon destruction.
@@ -914,9 +908,9 @@ namespace XidiTest
 
         VirtualController* controller = new VirtualController(kControllerIndex, kTestMapper);
         TEST_ASSERT(true == controller->ForceFeedbackRegister());
-        TEST_ASSERT(controller == physicalController.GetForceFeedbackRegistration());
+        TEST_ASSERT(true == physicalController.IsVirtualControllerRegisteredForForceFeedback(controller));
 
         delete controller;
-        TEST_ASSERT(nullptr == physicalController.GetForceFeedbackRegistration());
+        TEST_ASSERT(false == physicalController.IsVirtualControllerRegisteredForForceFeedback(controller));
     }
 }

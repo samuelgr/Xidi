@@ -17,6 +17,7 @@
 #include "VirtualController.h"
 
 #include <cstddef>
+#include <set>
 
 
 namespace XidiTest
@@ -56,8 +57,8 @@ namespace XidiTest
         /// Initialized to use a base timestamp of 0.
         ForceFeedback::Device forceFeedbackDevice;
 
-        /// Virtual controller registered for force feedback.
-        const VirtualController* forceFeedbackRegistration;
+        /// Virtual controllers registered for force feedback.
+        std::set<const VirtualController*> forceFeedbackRegistration;
 
 
     public:
@@ -80,6 +81,13 @@ namespace XidiTest
         /// Intended to be invoked internally only.
         void AdvancePhysicalState(void);
 
+        /// Unregisters a virtual controller for force feedback.
+        /// @param [in] controllerToRegister Pointer to the virtual controller object that should be unregistered for force feedback.
+        inline void EraseForceFeedbackRegistration(const VirtualController* controllerToUnregister)
+        {
+            forceFeedbackRegistration.erase(controllerToUnregister);
+        }
+
         /// Retrieves and returns the current physical state.
         /// @return Current physical state being reported to the test cases that request it.
         SPhysicalState GetCurrentPhysicalState(void) const;
@@ -91,11 +99,18 @@ namespace XidiTest
             return forceFeedbackDevice;
         }
 
-        /// Provides access to the virtual controller object that is registered for force feedback.
-        /// @return Pointer to the registered virtual controller, or `nullptr` if no virtual controller is registered.
-        inline const VirtualController* GetForceFeedbackRegistration(void) const
+        /// Registers a virtual controller for force feedback.
+        /// @param [in] controllerToRegister Pointer to the virtual controller object that should be registered for force feedback.
+        inline void InsertForceFeedbackRegistration(const VirtualController* controllerToRegister)
         {
-            return forceFeedbackRegistration;
+            forceFeedbackRegistration.insert(controllerToRegister);
+        }
+
+        /// Checks if the specified virtual controller is registered for force feedback.
+        /// @return `true` if so, `false` if not.
+        inline bool IsVirtualControllerRegisteredForForceFeedback(const VirtualController* controllerToCheck)
+        {
+            return forceFeedbackRegistration.contains(controllerToCheck);
         }
 
         /// Retrieves and returns the controller identifier associated with this object.
@@ -115,13 +130,5 @@ namespace XidiTest
         /// Requests an advancement to the next physical state.
         /// Test will fail due to a test implementation issue if attempting to advance past the end of the physical state array.
         void RequestAdvancePhysicalState(void);
-
-        /// Sets the virtual controller that is registered for force feedback.
-        /// Passing `nullptr` clears the registration entirely.
-        /// @param [in] controllerToRegister Pointer to the virtual controller object that should be registered for force feedback.
-        inline void SetForceFeedbackRegistration(const VirtualController* controllerToRegister)
-        {
-            forceFeedbackRegistration = controllerToRegister;
-        }
     };
 }
