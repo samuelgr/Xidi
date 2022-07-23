@@ -102,6 +102,7 @@ namespace Xidi
 
         /// Registry of all force feedback effect objects created by this object.
         /// Deliberately not type-safe to avoid a circular dependency between header files.
+        /// Used exclusively to allow DirectInput device objects to enumerate the effect objects associated with them.
         std::set<void*> effectRegistry;
 
         /// Reference count.
@@ -158,6 +159,14 @@ namespace Xidi
         inline void ForceFeedbackEffectUnregister(void* effect)
         {
             effectRegistry.erase(effect);
+        }
+
+        /// Retrieves and returns the configured cooperative level that defines how access to the underlying physical device is shared with other objects.
+        /// The cooperative level defaults to shared but can be updated by the application via an interface method.
+        /// @return Configured cooperative level of this object.
+        inline ECooperativeLevel GetCooperativeLevel(void)
+        {
+            return cooperativeLevel;
         }
 
         /// Retrieves a reference to the underlying virtual controller object.

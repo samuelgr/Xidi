@@ -71,17 +71,25 @@ namespace XidiTest
 
         MockEffect effect = MakeTestEffect(kTestEffectDuration);
 
+        TEST_ASSERT(true == Device.IsDeviceEmpty());
+        TEST_ASSERT(false == Device.IsDevicePlayingAnyEffects());
+
         TEST_ASSERT(true == Device.AddOrUpdateEffect(effect));
+        TEST_ASSERT(false == Device.IsDeviceEmpty());
+        TEST_ASSERT(false == Device.IsDevicePlayingAnyEffects());
+
         TEST_ASSERT(true == Device.IsEffectOnDevice(effect.Identifier()));
         TEST_ASSERT(false == Device.IsEffectPlaying(effect.Identifier()));
 
         TEST_ASSERT(true == Device.StartEffect(effect.Identifier(), 1, kDefaultTimestampBase));
+        TEST_ASSERT(true == Device.IsDevicePlayingAnyEffects());
 
         // Final iteration is one past the playback duration. Effect should not be playing once the loop finishes.
         for (TEffectTimeMs t = 0; t <= kTestEffectDuration; ++t)
         {
             TEST_ASSERT(true == Device.IsEffectOnDevice(effect.Identifier()));
             TEST_ASSERT(true == Device.IsEffectPlaying(effect.Identifier()));
+            TEST_ASSERT(true == Device.IsDevicePlayingAnyEffects());
 
             const TOrderedMagnitudeComponents kExpectedMagnitudeComponents = effect.ComputeOrderedMagnitudeComponents(t);
             const TOrderedMagnitudeComponents kActualMagnitudeComponents = Device.PlayEffects(t);

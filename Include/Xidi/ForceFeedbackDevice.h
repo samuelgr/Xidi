@@ -148,7 +148,7 @@ namespace Xidi
                 /// @return `true` if so, `false` if not.
                 inline bool IsDevicePlayingAnyEffects(void)
                 {
-                    return (0 == GetCountPlayingEffects());
+                    return (0 != GetCountPlayingEffects());
                 }
 
                 /// Determines if the identified effect is loaded into the device buffer.
