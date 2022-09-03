@@ -12,6 +12,7 @@
 
 #include "ApiBitSet.h"
 #include "ApiWindows.h"
+#include "Configuration.h"
 #include "ControllerTypes.h"
 #include "ElementMapper.h"
 #include "ForceFeedbackTypes.h"
@@ -19,10 +20,6 @@
 #include "Mapper.h"
 #include "Message.h"
 #include "Strings.h"
-
-#ifndef XIDI_SKIP_CONFIG
-#include "Configuration.h"
-#endif
 
 #include <limits>
 #include <map>
@@ -416,7 +413,6 @@ namespace Xidi
 
             std::call_once(configuredMapperFlag, []() -> void
                 {
-#ifndef XIDI_SKIP_CONFIG
                     const Configuration::ConfigurationData& configData = Globals::GetConfigurationData();
 
                     if (true == configData.SectionExists(Strings::kStrConfigurationSectionMapper))
@@ -467,9 +463,8 @@ namespace Xidi
                         }
                     }
                     else
-#endif
                     {
-                        // Mapper section does not exist in the configuration file, or configuration file code was skipped entirely.
+                        // Mapper section does not exist in the configuration file.
                         const Mapper* defaultMapper = GetDefault();
                         if (nullptr == defaultMapper)
                         {

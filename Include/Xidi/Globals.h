@@ -13,10 +13,7 @@
 #pragma once
 
 #include "ApiWindows.h"
-
-#ifndef XIDI_SKIP_CONFIG
 #include "Configuration.h"
-#endif
 
 #include <string>
 #include <string_view>
@@ -56,12 +53,10 @@ namespace Xidi
 
         // -------- FUNCTIONS ---------------------------------------------- //
 
-#ifndef XIDI_SKIP_CONFIG
         /// Retrieves the configuration object that represents the data read from a configuration file.
         /// @return Read-only configuration object reference.
         const Configuration::ConfigurationData& GetConfigurationData(void);
-#endif
-        
+
         /// Determines if this process has input focus based on whether or not a window it owns is at the foreground.
         /// @return `true` if so, `false` if not.
         bool DoesCurrentProcessHaveInputFocus(void);

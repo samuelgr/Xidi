@@ -11,15 +11,12 @@
  *****************************************************************************/
 
 #include "ApiWindows.h"
+#include "Configuration.h"
 #include "GitVersionInfo.h"
 #include "Globals.h"
 #include "Message.h"
 #include "Strings.h"
-
-#ifndef XIDI_SKIP_CONFIG
-#include "Configuration.h"
 #include "XidiConfigReader.h"
-#endif
 
 #ifndef XIDI_SKIP_MAPPERS
 #include "Mapper.h"
@@ -102,11 +99,7 @@ namespace Xidi
         /// Upon completion, regardless of outcome, clears out all of the stored blueprint objects.
         static inline void BuildCustomMappers(void)
         {
-#ifndef XIDI_SKIP_CONFIG
             if ((false == customMapperBuilder.Build()) && (false == GetConfigurationData().HasErrors()))
-#else
-            if (false == customMapperBuilder.Build())
-#endif
             {
                 if (true == Message::IsLogFileEnabled())
                     Message::Output(Message::ESeverity::ForcedInteractiveWarning, L"Errors were encountered during custom mapper construction. See log file for more information.");
@@ -118,7 +111,6 @@ namespace Xidi
         }
 #endif
 
-#ifndef XIDI_SKIP_CONFIG
         /// Enables the log if it is not already enabled.
         /// Regardless, the minimum severity for output is set based on the parameter.
         /// @param [in] logLevel Logging level to configure as the minimum severity for output.
@@ -147,7 +139,6 @@ namespace Xidi
                 EnableLog(configuredSeverity);
             }
         }
-#endif
 
 
         // -------- FUNCTIONS ---------------------------------------------- //
@@ -163,7 +154,6 @@ namespace Xidi
 
         // --------
 
-#ifndef XIDI_SKIP_CONFIG
         const Configuration::ConfigurationData& GetConfigurationData(void)
         {
             static Configuration::ConfigurationData configData;
@@ -194,7 +184,6 @@ namespace Xidi
 
             return configData;
         }
-#endif
 
         // --------
 
@@ -238,9 +227,7 @@ namespace Xidi
 
         void Initialize(void)
         {
-#ifndef XIDI_SKIP_CONFIG
             EnableLogIfConfigured();
-#endif
 
 #ifndef XIDI_SKIP_MAPPERS
             BuildCustomMappers();

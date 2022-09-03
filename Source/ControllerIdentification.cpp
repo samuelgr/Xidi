@@ -11,6 +11,7 @@
  *****************************************************************************/
 
 #include "ApiDirectInput.h"
+#include "Configuration.h"
 #include "ControllerIdentification.h"
 #include "ControllerTypes.h"
 #include "Globals.h"
@@ -18,10 +19,6 @@
 #include "Message.h"
 #include "Strings.h"
 #include "TemporaryBuffer.h"
-
-#ifndef XIDI_SKIP_CONFIG
-#include "Configuration.h"
-#endif
 
 #include <memory>
 #include <optional>
@@ -113,11 +110,10 @@ namespace Xidi
         std::unique_ptr<DeviceInstanceType> instanceInfo = std::make_unique<DeviceInstanceType>();
         DWORD numControllersToEnumerate = Controller::kPhysicalControllerCount;
 
-#ifndef XIDI_SKIP_CONFIG
-        const Configuration::ConfigurationData& configData = Globals::GetConfigurationData();
-        if (configData.SectionNamePairExists(Strings::kStrConfigurationSectionWorkarounds, Strings::kStrConfigurationSettingWorkaroundsMaxVirtualControllerCount))
+        const auto kMaybeMaxVirtualControllerCount = Globals::GetConfigurationData().GetFirstIntegerValue(Strings::kStrConfigurationSectionWorkarounds, Strings::kStrConfigurationSettingWorkaroundsMaxVirtualControllerCount);
+        if (true == kMaybeMaxVirtualControllerCount.has_value())
         {
-            const DWORD kMaxVirtualControllerCount = (DWORD)configData[Strings::kStrConfigurationSectionWorkarounds][Strings::kStrConfigurationSettingWorkaroundsMaxVirtualControllerCount].FirstValue().GetIntegerValue();
+            const DWORD kMaxVirtualControllerCount = (DWORD)kMaybeMaxVirtualControllerCount.value();
             if (kMaxVirtualControllerCount < numControllersToEnumerate)
             {
                 numControllersToEnumerate = kMaxVirtualControllerCount;
@@ -128,7 +124,6 @@ namespace Xidi
                 Message::OutputFormatted(Message::ESeverity::Warning, L"Enumerate: Xidi virtual controller count limit of %u in the configuration file is ineffective because it is not less than the default limit of %u.", kMaxVirtualControllerCount, numControllersToEnumerate);
             }
         }
-#endif
 
         for (DWORD idx = 0; idx < numControllersToEnumerate; ++idx)
         {

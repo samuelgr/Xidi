@@ -12,6 +12,7 @@
 
 #include "ApiDirectInput.h"
 #include "ApiGUID.h"
+#include "Configuration.h"
 #include "ControllerIdentification.h"
 #include "ControllerTypes.h"
 #include "DataFormat.h"
@@ -24,10 +25,6 @@
 #include "VirtualController.h"
 #include "VirtualDirectInputDevice.h"
 #include "VirtualDirectInputEffect.h"
-
-#ifndef XIDI_SKIP_CONFIG
-#include "Configuration.h"
-#endif
 
 #include <atomic>
 #include <cstdio>
@@ -1623,17 +1620,7 @@ namespace Xidi
     {
         // Not required for Xidi virtual controllers as they are implemented now.
         // However, some applications explicitly check for return codes like `DI_OK`, which is why a workaround is allowed to change the return code.
-        static constexpr DWORD kDefaultPollReturnCode = DI_NOEFFECT;
-
-#ifndef XIDI_SKIP_CONFIG
-        static const Configuration::ConfigurationData& configData = Globals::GetConfigurationData();
-        static const DWORD kPollReturnCode = (
-            (configData.SectionNamePairExists(Strings::kStrConfigurationSectionWorkarounds, Strings::kStrConfigurationSettingWorkaroundsPollReturnCode))
-            ? ((DWORD)configData[Strings::kStrConfigurationSectionWorkarounds][Strings::kStrConfigurationSettingWorkaroundsPollReturnCode].FirstValue().GetIntegerValue())
-            : kDefaultPollReturnCode);
-#else
-        static const DWORD kPollReturnCode = kDefaultPollReturnCode;
-#endif
+        static const DWORD kPollReturnCode = (DWORD)Globals::GetConfigurationData().GetFirstIntegerValue(Strings::kStrConfigurationSectionWorkarounds, Strings::kStrConfigurationSettingWorkaroundsPollReturnCode).value_or(DI_NOEFFECT);
 
         constexpr Message::ESeverity kMethodSeverity = Message::ESeverity::SuperDebug;
         LOG_INVOCATION_AND_RETURN(kPollReturnCode, kMethodSeverity);

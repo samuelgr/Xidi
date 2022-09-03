@@ -11,18 +11,12 @@
  *****************************************************************************/
 
 #include "ApiWindows.h"
+#include "ApiXidi.h"
+#include "Configuration.h"
 #include "Globals.h"
 #include "ImportApiWinMM.h"
 #include "Message.h"
 #include "Strings.h"
-
-#ifndef XIDI_SKIP_API
-#include "ApiXidi.h"
-#endif
-
-#ifndef XIDI_SKIP_CONFIG
-#include "Configuration.h"
-#endif
 
 #include <map>
 #include <mutex>
@@ -251,11 +245,7 @@ namespace Xidi
         /// @return Library path.
         static std::wstring_view GetImportLibraryPathWinMM(void)
         {
-#ifndef XIDI_SKIP_CONFIG
             return Globals::GetConfigurationData().GetFirstStringValue(Strings::kStrConfigurationSectionImport, Strings::kStrConfigurationSettingImportWinMM).value_or(Strings::kStrSystemLibraryFilenameWinMM);
-#else
-            return Strings::kStrLibraryNameWinMM;
-#endif
         }
 
         /// Logs a warning event related to failure to import a particular function from the import library.
@@ -3090,7 +3080,6 @@ namespace Xidi
         }
 
 
-#ifndef XIDI_SKIP_API
         // -------- XIDI API ----------------------------------------------- //
 
         /// Implements the Xidi API interface #IImportFunctions.
@@ -3115,8 +3104,8 @@ namespace Xidi
 
                 std::call_once(initFlag, []() -> void
                     {
-                        for (auto replaceableFunction : kReplaceableFunctions)
-                            initSet.insert(replaceableFunction.first);
+                        for (const auto& kReplaceableFunction : kReplaceableFunctions)
+                            initSet.insert(kReplaceableFunction.first);
                     }
                 );
 
@@ -3132,12 +3121,12 @@ namespace Xidi
                 const std::wstring_view kLibraryPath = GetImportLibraryPathWinMM();
                 size_t numReplaced = 0;
 
-                for (auto newImportFunction : importFunctionTable)
+                for (const auto& kNewImportFunction : importFunctionTable)
                 {
-                    if (true == kReplaceableFunctions.contains(newImportFunction.first))
+                    if (true == kReplaceableFunctions.contains(kNewImportFunction.first))
                     {
-                        Message::OutputFormatted(Message::ESeverity::Debug, L"Import function \"%s\" has been replaced.", newImportFunction.first.data());
-                        importTable.ptr[kReplaceableFunctions.at(newImportFunction.first)] = newImportFunction.second;
+                        Message::OutputFormatted(Message::ESeverity::Debug, L"Import function \"%s\" has been replaced.", kNewImportFunction.first.data());
+                        importTable.ptr[kReplaceableFunctions.at(kNewImportFunction.first)] = kNewImportFunction.second;
                         numReplaced += 1;
                     }
                 }
@@ -3165,6 +3154,5 @@ namespace Xidi
 
         /// Singleton Xidi API implementation object.
         static JoystickFunctionReplacer joystickFunctionReplacer;
-#endif
     }
 }
