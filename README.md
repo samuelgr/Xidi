@@ -141,6 +141,9 @@ winmm.dll           = C:\Windows\system32\winmm.dll
 
 [CustomMapper]
 ; This section does not exist by default.
+
+[Workarounds]
+; This section does not exist by default.
 ```
 
 
@@ -188,13 +191,15 @@ In some situations, it may be desirable for Xidi to use functions provided by a 
 This section is used to define a custom mapper type that specifies how Xidi should translate XInput controller elements to virtual controller elements and keyboard keys. See [Custom Mappers](#custom-mappers) for more information.
 
 
-## Workarounds *(unreleased)*
+## Workarounds
 
 **It is not common for there to be a need to modify the settings in this section.**
 
 This section is used to modify the behavior of Xidi in ways that are not generally required by the DirectInput or WinMM APIs but are necessary to work around bugs in the original implementation of certain applications. Unless an application requires any of the available workarounds, the use of this section should be avoided.
 
-- **MaxVirtualControllerCount** limits the number of Xidi virtual controllers that are made available to the application. By default, Xidi makes available as many controllers as are possible under the XInput API, but some applications are implemented incorrectly such that they cannot properly distinguish between inputs from multiple controllers.
+- **MaxVirtualControllerCount** limits the number of Xidi virtual controllers that are made available to the application. By default, Xidi makes available as many controllers as are possible under the XInput API, but some applications are implemented incorrectly such that they cannot properly distinguish between inputs from multiple controllers. For example, `MaxVirtualControllerCount = 1` limits Xidi to exposing only a single virtual controller.
+
+- **PollReturnCode** modifies the return code for a specific DirectInput API call that some applications make but Xidi does not require. By default, Xidi informs applications that invoking this API call is unnecessary, which per DirectInput documentation is considered a successful result, but some applications are hard-coded to look for a specific return code that might be different. For example, `PollReturnCode = 0` would modify the return code to 0, which indicates that the operation completed successfully.
 
 
 # Mapping Controller Buttons and Axes
