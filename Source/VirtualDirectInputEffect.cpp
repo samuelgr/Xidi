@@ -591,11 +591,13 @@ namespace Xidi
         }
         else
         {
-            // It is not an error if the physical device has not been acquired in exclusive mode.
-            // In that case, the download operation is skipped but parameters are still updated.
-            Controller::ForceFeedback::Device* forceFeedbackDevice = associatedDevice.GetVirtualController().ForceFeedbackGetDevice();
+            Controller::ForceFeedback::Device* const forceFeedbackDevice = associatedDevice.AutoAcquireAndGetForceFeedbackDevice();
             if (nullptr == forceFeedbackDevice)
+            {
+                // It is not an error if the physical device has not been, or cannot be, acquired in exclusive mode.
+                // In that case, the download operation is skipped but parameters are still updated.
                 return DI_DOWNLOADSKIPPED;
+            }
 
             // If the download operation fails the parameters have still been updated but the caller needs to be provided the reason for the failure.
             const HRESULT kDownloadResult = DownloadEffectToDevice(*effect, *forceFeedbackDevice);
@@ -608,7 +610,7 @@ namespace Xidi
         {
             // Getting to this point means the effect exists on the device.
             // Starting or restarting the effect requires that the device be acquired in exclusive mode, although since the download succeeded this should be the case already.
-            Controller::ForceFeedback::Device* forceFeedbackDevice = associatedDevice.GetVirtualController().ForceFeedbackGetDevice();
+            Controller::ForceFeedback::Device* const forceFeedbackDevice = associatedDevice.GetVirtualController().ForceFeedbackGetDevice();
             if (nullptr == forceFeedbackDevice)
             {
                 // This should never happen. It means an effect exists on the device and yet the device is somehow not acquired in exclusive mode.
