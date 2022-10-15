@@ -62,12 +62,44 @@ namespace XidiTest
     /// Simply returns the received time as the output magnitude and uses a mock type-specific parameter structure.
     class MockEffectWithTypeSpecificParameters : public EffectWithTypeSpecificParameters<SMockTypeSpecificParameters>
     {
+    private:
+        // -------- INSTANCE VARIABLES ------------------------------------- //
+
+        /// Specifies if whatever error might be present in a set of invalid type-specific parameters can be automatically fixed.
+        bool canFixInvalidTypeSpecificParameters = false;
+
+
     public:
+        // -------- INSTANCE METHODS --------------------------------------- //
+
+        /// Retrieves whether or not this effect's type-specific parameters have an error that can automatically be fixed somehow.
+        /// This value is intended to be set by tests exercising automatic fixing of type-specific parameter errors.
+        /// @return `true` if so, `false` if not.
+        inline bool GetCanFixInvalidTypeSpecificParameters(void)
+        {
+            return canFixInvalidTypeSpecificParameters;
+        }
+
+        /// Enables or disables this effect's ability to fix an error in type-specific parameters.
+        /// This value is intended to be set by tests exercising automatic fixing of type-specific parameter errors.
+        /// @param [in] newCanFixInvalidTypeSpecificParameters Whether or not an error should be considered fixable.
+        inline void SetCanFixInvalidTypeSpecificParameters(bool newCanFixInvalidTypeSpecificParameters)
+        {
+            canFixInvalidTypeSpecificParameters = newCanFixInvalidTypeSpecificParameters;
+        }
+
+
         // -------- CONCRETE INSTANCE METHODS ------------------------------ //
 
         bool AreTypeSpecificParametersValid(const SMockTypeSpecificParameters& newTypeSpecificParameters) const override
         {
             return newTypeSpecificParameters.valid;
+        }
+
+        void CheckAndFixTypeSpecificParameters(SMockTypeSpecificParameters& newTypeSpecificParameters) const override
+        {
+            if (true == canFixInvalidTypeSpecificParameters)
+                newTypeSpecificParameters.valid = true;
         }
 
         std::unique_ptr<Effect> Clone(void) const override

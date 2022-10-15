@@ -380,7 +380,7 @@ namespace Xidi
                 std::optional<TypeSpecificParameterType> typeSpecificParameters = std::nullopt;
 
 
-            public:
+            protected:
                 // -------- CONCRETE INSTANCE METHODS ---------------------- //
 
                 /// Validates that the contents of the supplied type-specific parameters are valid.
@@ -402,7 +402,6 @@ namespace Xidi
                     // Nothing to do here.
                 }
 
-            protected:
                 /// Default implementation of checking that this type-specific event is completely defined, which simply verifies that type-specific parameters exist.
                 /// Subclasses that define more complex type-specific parameters or need to do other checks can override this method.
                 /// @return `true` if all type-specific parameters are valid and have been defined, `false` otherwise.

@@ -630,6 +630,43 @@ namespace XidiTest
         TEST_ASSERT(actualTypeSpecificParameters == expectedTypeSpecificParameters);
     }
 
+    // Type-specific parameters that are invalid and cannot be automatically fixed
+    TEST_CASE(VirtualDirectInputEffect_SetParameters_InvalidTypeSpecificParameters)
+    {
+        auto physicalController = CreateMockPhysicalController();
+        auto diDevice = CreateAndAcquireTestDirectInputDevice(*physicalController);
+        auto diEffect = CreateTestDirectInputEffect(*diDevice);
+
+        MockEffectWithTypeSpecificParameters& ffEffect = (MockEffectWithTypeSpecificParameters&)diEffect->UnderlyingEffect();
+        ffEffect.SetCanFixInvalidTypeSpecificParameters(false);
+
+        SMockTypeSpecificParameters invalidTypeSpecificParameters = {.valid = false, .param1 = 1000, .param2 = 2000};
+        DIEFFECT parameters = {.dwSize = sizeof(DIEFFECT), .cbTypeSpecificParams = sizeof(invalidTypeSpecificParameters), .lpvTypeSpecificParams = &invalidTypeSpecificParameters};
+        TEST_ASSERT(DIERR_INVALIDPARAM == diEffect->SetParametersInternal(&parameters, (DIEP_TYPESPECIFICPARAMS | DIEP_NODOWNLOAD)));
+        TEST_ASSERT(false == ffEffect.HasTypeSpecificParameters());
+    }
+
+    // Type-specific parameters that are invalid but can be automatically fixed
+    TEST_CASE(VirtualDirectInputEffect_SetParameters_InvalidFixableTypeSpecificParameters)
+    {
+        auto physicalController = CreateMockPhysicalController();
+        auto diDevice = CreateAndAcquireTestDirectInputDevice(*physicalController);
+        auto diEffect = CreateTestDirectInputEffect(*diDevice);
+
+        MockEffectWithTypeSpecificParameters& ffEffect = (MockEffectWithTypeSpecificParameters&)diEffect->UnderlyingEffect();
+        ffEffect.SetCanFixInvalidTypeSpecificParameters(true);
+
+        SMockTypeSpecificParameters invalidTypeSpecificParameters = {.valid = false, .param1 = 1000, .param2 = 2000};
+        DIEFFECT parameters = {.dwSize = sizeof(DIEFFECT), .cbTypeSpecificParams = sizeof(invalidTypeSpecificParameters), .lpvTypeSpecificParams = &invalidTypeSpecificParameters};
+        TEST_ASSERT(DI_DOWNLOADSKIPPED == diEffect->SetParametersInternal(&parameters, (DIEP_TYPESPECIFICPARAMS | DIEP_NODOWNLOAD)));
+
+        TEST_ASSERT(true == ffEffect.HasTypeSpecificParameters());
+
+        const SMockTypeSpecificParameters kExpectedTypeSpecificParameters = {.valid = true, .param1 = invalidTypeSpecificParameters.param1, .param2 = invalidTypeSpecificParameters.param2};
+        const SMockTypeSpecificParameters kActualTypeSpecificParameters = ffEffect.GetTypeSpecificParameters().value();
+        TEST_ASSERT(kActualTypeSpecificParameters == kExpectedTypeSpecificParameters);
+    }
+
     // Specifies a complete set of parameters and automatically downloads, but does not start, the effect.
     TEST_CASE(VirtualDirectInputEffect_SetParameters_CompleteAndDownload)
     {
