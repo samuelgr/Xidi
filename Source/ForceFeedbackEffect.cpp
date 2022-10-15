@@ -80,6 +80,16 @@ namespace Xidi
 
             // --------
 
+            void ConstantForceEffect::CheckAndFixTypeSpecificParameters(SConstantForceParameters& newTypeSpecificParameters) const
+            {
+                if (newTypeSpecificParameters.magnitude < kEffectForceMagnitudeMinimum)
+                    newTypeSpecificParameters.magnitude = kEffectForceMagnitudeMinimum;
+                else if (newTypeSpecificParameters.magnitude > kEffectForceMagnitudeMaximum)
+                    newTypeSpecificParameters.magnitude = kEffectForceMagnitudeMaximum;
+            }
+
+            // --------
+
             std::unique_ptr<Effect> ConstantForceEffect::Clone(void) const
             {
                 return std::make_unique<ConstantForceEffect>(*this);

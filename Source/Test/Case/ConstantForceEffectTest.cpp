@@ -140,4 +140,24 @@ namespace XidiTest
         for (TEffectTimeMs t = kFadeStartTime; t < kFadeEndTime; ++t)
             TEST_ASSERT((kTestMagnitude + ((t - kFadeStartTime) * kFadeSlope)) == effect.ComputeMagnitude(t));
     }
+
+    // Verifies that out-of-bounds magnitudes are accepted and saturated at the extreme ends of the supported range.
+    TEST_CASE(ConstantForceEffect_SetMagnitude_CheckAndFixTypeSpecificParameters)
+    {
+        constexpr TEffectValue kInputMagnitudes[] = {(3 * kEffectForceMagnitudeMinimum), (2 * kEffectForceMagnitudeMinimum), (kEffectForceMagnitudeMinimum - 1), (kEffectForceMagnitudeMaximum + 1), (2 * kEffectForceMagnitudeMaximum), (3 * kEffectForceMagnitudeMaximum)};
+        constexpr TEffectValue kExpectedMagnitudes[] = {kEffectForceMagnitudeMinimum, kEffectForceMagnitudeMinimum, kEffectForceMagnitudeMinimum, kEffectForceMagnitudeMaximum, kEffectForceMagnitudeMaximum, kEffectForceMagnitudeMaximum};
+        static_assert(_countof(kInputMagnitudes) == _countof(kExpectedMagnitudes), "Input and expected output magnitudes must have the same count.");
+
+        for (int i = 0; i < _countof(kInputMagnitudes); ++i)
+        {
+            ConstantForceEffect effect;
+            TEST_ASSERT(true == effect.SetTypeSpecificParameters({.magnitude = kInputMagnitudes[i]}));
+
+            const auto kMaybeActualMagnitude = effect.GetTypeSpecificParameters();
+            TEST_ASSERT(true == kMaybeActualMagnitude.has_value());
+
+            const TEffectValue kActualMagnitude = kMaybeActualMagnitude.value().magnitude;
+            TEST_ASSERT(kActualMagnitude == kExpectedMagnitudes[i]);
+        }
+    }
 }

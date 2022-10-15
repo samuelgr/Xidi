@@ -393,6 +393,15 @@ namespace Xidi
                     return true;
                 }
 
+                /// Checks the contents of the supplied type-specific parameters and applies modifications in case they have invalidities that can easily be corrected.
+                /// Invoked by this class whenever it is requested that type-specific parameters be set but before it checks them for validity, as above.
+                /// Default implementation does not perform any action whatsoever. Subclasses may override this method.
+                /// @param newTypeSpecificParameters Mutable reference to the type-specific parameters to check and possibly fix.
+                virtual void CheckAndFixTypeSpecificParameters(TypeSpecificParameterType& newTypeSpecificParameters) const
+                {
+                    // Nothing to do here.
+                }
+
             protected:
                 /// Default implementation of checking that this type-specific event is completely defined, which simply verifies that type-specific parameters exist.
                 /// Subclasses that define more complex type-specific parameters or need to do other checks can override this method.
@@ -444,6 +453,17 @@ namespace Xidi
                         typeSpecificParameters = newTypeSpecificParameters;
                         return true;
                     }
+                    else
+                    {
+                        TypeSpecificParameterType fixedTypeSpecificParameters = newTypeSpecificParameters;
+                        CheckAndFixTypeSpecificParameters(fixedTypeSpecificParameters);
+
+                        if (true == AreTypeSpecificParametersValid(fixedTypeSpecificParameters))
+                        {
+                            typeSpecificParameters = fixedTypeSpecificParameters;
+                            return true;
+                        }
+                    }
 
                     return false;
                 }
@@ -469,6 +489,7 @@ namespace Xidi
                 // -------- CONCRETE INSTANCE METHODS ---------------------- //
 
                 bool AreTypeSpecificParametersValid(const SConstantForceParameters& newTypeSpecificParameters) const override;
+                void CheckAndFixTypeSpecificParameters(SConstantForceParameters& newTypeSpecificParameters) const override;
                 std::unique_ptr<Effect> Clone(void) const override;
 
             protected:
