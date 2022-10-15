@@ -28,7 +28,6 @@
 #include <string>
 #include <utility>
 #include <vector>
-#include <xinput.h>
 
 
 // -------- MACROS --------------------------------------------------------- //
@@ -185,35 +184,29 @@ namespace Xidi
             SWinMMEnumCallbackInfo* callbackInfo = (SWinMMEnumCallbackInfo*)pvRef;
 
             std::wstring devicePath;
-            bool deviceSupportsXInput = DoesDirectInputControllerSupportXInput<EarliestIDirectInput, EarliestIDirectInputDevice>(callbackInfo->directInputInterface, lpddi->guidInstance, &devicePath);
+            bool deviceSupportsXInput = DoesDirectInputControllerSupportXInput<LatestIDirectInput, LatestIDirectInputDevice>(callbackInfo->directInputInterface, lpddi->guidInstance, &devicePath);
 
             if (deviceSupportsXInput)
             {
-                const WCHAR* devicePathString = devicePath.c_str();
-
-                // Skip to the part of the path string that identifies vendor and product.
-                const wchar_t* devicePathSubstring = wcsstr(devicePathString, L"VID_");
-                if (nullptr == devicePathSubstring) devicePathSubstring = wcsstr(devicePathString, L"vid_");
-                if (nullptr != devicePathSubstring)
+                // For each element of the WinMM devices list, see if the vendor and product IDs match the one DirectInput presented as being compatible with XInput.
+                // If so, mark it in the list as being an XInput controller.
+                for (size_t i = 0; i < callbackInfo->systemDeviceInfo->size(); ++i)
                 {
-                    // For each element of the WinMM devices list, see if the vendor and product IDs match the one DirectInput presented as being compatible with XInput.
-                    // If so, mark it in the list as being an XInput controller.
-                    for (size_t i = 0; i < callbackInfo->systemDeviceInfo->size(); ++i)
+                    // Already seen this device, skip.
+                    if (true == callbackInfo->systemDeviceInfo->at(i).second)
+                        continue;
+
+                    // No device at that position, skip.
+                    if (callbackInfo->systemDeviceInfo->at(i).first.empty())
+                        continue;
+
+                    // Check for a matching vendor and product ID. If so, mark the device as supporting XInput.
+                    if (true == ApproximatelyEqualVendorAndProductId(devicePath, callbackInfo->systemDeviceInfo->at(i).first).value_or(false))
                     {
-                        // Already seen this device, skip.
-                        if (true == callbackInfo->systemDeviceInfo->at(i).second)
-                            continue;
-
-                        // No device at that position, skip.
-                        if (callbackInfo->systemDeviceInfo->at(i).first.empty())
-                            continue;
-
-                        // Check for a matching vendor and product ID. If so, mark the device as supporting XInput.
-                        if (0 == _wcsnicmp(callbackInfo->systemDeviceInfo->at(i).first.c_str(), devicePathSubstring, callbackInfo->systemDeviceInfo->at(i).first.length()))
-                        {
-                            callbackInfo->systemDeviceInfo->at(i).second = true;
-                            Message::OutputFormatted(Message::ESeverity::Debug, L"    [%u]: XInput device", (unsigned int)i);
-                        }
+                        callbackInfo->systemDeviceInfo->at(i).second = true;
+                        Message::OutputFormatted(Message::ESeverity::Debug, L"    [%u]: %s", (unsigned int)i, lpddi->tszProductName);
+                        Message::OutputFormatted(Message::ESeverity::Debug, L"    [%u]:     WinMM ID:       %s", (unsigned int)i, callbackInfo->systemDeviceInfo->at(i).first.c_str());
+                        Message::OutputFormatted(Message::ESeverity::Debug, L"    [%u]:     DirectInput ID: %s", (unsigned int)i, devicePath.c_str());
                     }
                 }
             }

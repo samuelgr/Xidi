@@ -20,6 +20,7 @@
 #include "Strings.h"
 #include "TemporaryBuffer.h"
 
+#include <array>
 #include <memory>
 #include <optional>
 #include <xinput.h>
@@ -62,6 +63,45 @@ namespace Xidi
 
     // -------- FUNCTIONS -------------------------------------------------- //
     // See "ControllerIdentification.h" for documentation.
+
+    std::optional<bool> ApproximatelyEqualVendorAndProductId(std::wstring_view controllerStringA, std::wstring_view controllerStringB)
+    {
+        TemporaryVector<std::wstring_view> piecesA = Strings::SplitString(controllerStringA, {L"_", L"&", L"#"});
+        TemporaryVector<std::wstring_view> piecesB = Strings::SplitString(controllerStringB, { L"_", L"&", L"#" });
+
+        std::wstring_view vendorIdA, vendorIdB, productIdA, productIdB;
+        
+        for (size_t i = 0; i < (piecesA.Size() - 1); ++i)
+        {
+            if ((piecesA[i] == L"VID") || (piecesA[i] == L"vid"))
+                vendorIdA = piecesA[++i];
+            else if ((piecesA[i] == L"PID") || (piecesA[i] == L"pid"))
+                productIdA = piecesA[++i];
+        }
+
+        for (size_t i = 0; i < (piecesB.Size() - 1); ++i)
+        {
+            if ((piecesB[i] == L"VID") || (piecesB[i] == L"vid"))
+                vendorIdB = piecesB[++i];
+            else if ((piecesB[i] == L"PID") || (piecesB[i] == L"pid"))
+                productIdB = piecesB[++i];
+        }
+
+        if (vendorIdA.empty() || vendorIdB.empty() || productIdA.empty() || productIdB.empty())
+            return std::nullopt;
+
+        if (false == Strings::EqualsCaseInsensitive(productIdA, productIdB))
+            return false;
+
+        if ((vendorIdA.length() == vendorIdB.length()) && (vendorIdA == vendorIdB))
+            return Strings::EqualsCaseInsensitive(vendorIdA, vendorIdB);
+        else if (vendorIdA.length() < vendorIdB.length())
+            return Strings::EqualsCaseInsensitive(vendorIdA, vendorIdB.substr(vendorIdB.length() - vendorIdA.length()));
+        else
+            return Strings::EqualsCaseInsensitive(vendorIdA.substr(vendorIdA.length() - vendorIdB.length()), vendorIdB);
+    }
+
+    // --------
 
     template <typename EarliestIDirectInputType, typename EarliestIDirectInputDeviceType> bool DoesDirectInputControllerSupportXInput(EarliestIDirectInputType* dicontext, REFGUID instanceGUID, std::wstring* devicePath)
     {

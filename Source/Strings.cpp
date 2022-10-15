@@ -15,7 +15,9 @@
 #include "Strings.h"
 #include "TemporaryBuffer.h"
 
+#include <cctype>
 #include <cstdlib>
+#include <cwctype>
 #include <intrin.h>
 #include <mutex>
 #include <psapi.h>
@@ -39,6 +41,35 @@ namespace Xidi
 
 
         // -------- INTERNAL FUNCTIONS ------------------------------------- //
+
+        /// Converts a single character to lowercase.
+        /// Default implementation does nothing useful.
+        /// @tparam CharType Character type.
+        /// @param [in] c Character to convert.
+        /// @return Null character, as the default implementation does nothing useful.
+        template <typename CharType> static inline CharType ToLowercase(CharType c)
+        {
+            return L'\0';
+        }
+
+        /// Converts a single narrow character to lowercase.
+        /// @tparam CharType Character type.
+        /// @param [in] c Character to convert.
+        /// @return Lowercase version of the input, if a conversion is possible, or the same character as the input otherwise.
+        template <> char static inline ToLowercase(char c)
+        {
+            return std::tolower(c);
+        }
+
+        /// Converts a single wide character to lowercase.
+        /// Default implementation does nothing useful.
+        /// @tparam CharType Character type.
+        /// @param [in] c Character to convert.
+        /// @return Lowercase version of the input, if a conversion is possible, or the same character as the input otherwise.
+        template <> wchar_t static inline ToLowercase(wchar_t c)
+        {
+            return std::towlower(c);
+        }
 
         /// Generates the value for kStrProductName; see documentation of this run-time constant for more information.
         /// @return Corresponding run-time constant value.
@@ -418,6 +449,25 @@ namespace Xidi
 
         // --------
 
+        template <typename CharType> bool EqualsCaseInsensitive(std::basic_string_view<CharType> strA, std::basic_string_view<CharType> strB)
+        {
+            if (strA.length() != strB.length())
+                return false;
+
+            for (size_t i = 0; i < strA.length(); ++i)
+            {
+                if (ToLowercase(strA[i]) != ToLowercase(strB[i]))
+                    return false;
+            }
+
+            return true;
+        }
+
+        template bool EqualsCaseInsensitive<char>(std::string_view, std::string_view);
+        template bool EqualsCaseInsensitive<wchar_t>(std::wstring_view, std::wstring_view);
+
+        // --------
+
         TemporaryString FormatString(_Printf_format_string_ const wchar_t* format, ...)
         {
             TemporaryString buf;
@@ -456,6 +506,77 @@ namespace Xidi
                 return std::wstring_view();
 
             return initStrings[controllerIdentifier];
+        }
+
+        // --------
+
+        TemporaryVector<std::wstring_view> SplitString(std::wstring_view stringToSplit, std::wstring_view delimiter)
+        {
+            TemporaryVector<std::wstring_view> stringPieces;
+
+            auto beginIter = stringToSplit.cbegin();
+            auto endIter = ((false == delimiter.empty()) ? beginIter : stringToSplit.cend());
+
+            while ((stringPieces.Size() < stringPieces.Capacity()) && (stringToSplit.cend() != endIter))
+            {
+                std::wstring_view remainingStringToSplit(endIter, stringToSplit.cend());
+                if (true == remainingStringToSplit.starts_with(delimiter))
+                {
+                    stringPieces.EmplaceBack(beginIter, endIter);
+                    endIter += delimiter.length();
+                    beginIter = endIter;
+                }
+                else
+                {
+                    endIter += 1;
+                }
+            }
+
+            if (stringPieces.Size() < stringPieces.Capacity())
+                stringPieces.EmplaceBack(beginIter, endIter);
+            else
+                stringPieces.Clear();
+
+            return stringPieces;
+        }
+
+        // --------
+
+        TemporaryVector<std::wstring_view> SplitString(std::wstring_view stringToSplit, std::initializer_list<std::wstring_view> delimiters)
+        {
+            TemporaryVector<std::wstring_view> stringPieces;
+
+            auto beginIter = stringToSplit.cbegin();
+            auto endIter = ((false == std::empty(delimiters)) ? beginIter : stringToSplit.cend());
+
+            while ((stringPieces.Size() < stringPieces.Capacity()) && (stringToSplit.cend() != endIter))
+            {
+                bool delimiterFound = false;
+                std::wstring_view remainingStringToSplit(endIter, stringToSplit.cend());
+                for (const auto& delimiter : delimiters)
+                {
+                    if (true == remainingStringToSplit.starts_with(delimiter))
+                    {
+                        stringPieces.EmplaceBack(beginIter, endIter);
+                        endIter += delimiter.length();
+                        beginIter = endIter;
+                        delimiterFound = true;
+                        break;
+                    }
+                }
+                
+                if (false == delimiterFound)
+                {
+                    endIter += 1;
+                }
+            }
+
+            if (stringPieces.Size() < stringPieces.Capacity())
+                stringPieces.EmplaceBack(beginIter, endIter);
+            else
+                stringPieces.Clear();
+
+            return stringPieces;
         }
 
         // --------

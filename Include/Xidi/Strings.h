@@ -16,6 +16,7 @@
 
 #include <cstddef>
 #include <cstdint>
+#include <initializer_list>
 #include <sal.h>
 #include <string>
 #include <string_view>
@@ -169,6 +170,13 @@ namespace Xidi
         /// @return String representation of the axis type.
         const wchar_t* AxisTypeString(Controller::EAxis axis);
 
+        /// Compares two strings without regard for the case of each individual character.
+        /// @tparam CharType Type of character in each string, either narrow or wide.
+        /// @param [in] strA First string in the comparison.
+        /// @param [in] strB Second string in the comparison.
+        /// @return `true` if the strings compare equal, `false` otherwise.
+        template <typename CharType> bool EqualsCaseInsensitive(std::basic_string_view<CharType> strA, std::basic_string_view<CharType> strB);
+
         /// Formats a string and returns the result in a newly-allocated null-terminated temporary buffer.
         /// @param [in] format Format string, possibly with format specifiers which must be matched with the arguments that follow.
         /// @return Resulting string after all formatting is applied.
@@ -180,6 +188,22 @@ namespace Xidi
         /// @param [in] controllerIdentifier Controller identifier for which a string is desired.
         /// @return Corresponding configuration setting string, or an empty view if the controller identifier is out of range.
         std::wstring_view MapperTypeConfigurationNameString(Controller::TControllerIdentifier controllerIdentifier);
+
+        /// Splits a string using the specified delimiter string and returns a list of views each corresponding to a part of the input string.
+        /// If there are too many delimiters present such that not all of the pieces can fit into the returned container type then the returned container will be empty.
+        /// Otherwise the returned container will contain at least one element.
+        /// @param [in] stringToSplit Input string to be split.
+        /// @param [in] delimiter Delimiter character sequence that identifies boundaries between pieces of the input string.
+        /// @return Container that holds views referring to pieces of the input string split using the specified delimiter.
+        TemporaryVector<std::wstring_view> SplitString(std::wstring_view stringToSplit, std::wstring_view delimiter);
+
+        /// Splits a string using the specified delimiter strings and returns a list of views each corresponding to a part of the input string.
+        /// If there are too many delimiters present such that not all of the pieces can fit into the returned container type then the returned container will be empty.
+        /// Otherwise the returned container will contain at least one element.
+        /// @param [in] stringToSplit Input string to be split.
+        /// @param [in] delimiters Delimiter character sequences each of which identifies a boundary between pieces of the input string.
+        /// @return Container that holds views referring to pieces of the input string split using the specified delimiter.
+        TemporaryVector<std::wstring_view> SplitString(std::wstring_view stringToSplit, std::initializer_list<std::wstring_view> delimiters);
 
         /// Generates a string representation of a system error code.
         /// @param [in] systemErrorCode System error code for which to generate a string.

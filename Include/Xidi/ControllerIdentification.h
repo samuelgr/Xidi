@@ -16,6 +16,7 @@
 
 #include <optional>
 #include <string>
+#include <string_view>
 
 
 namespace Xidi
@@ -33,6 +34,17 @@ namespace Xidi
 
 
     // -------- FUNCTIONS -------------------------------------------------- //
+
+    /// Extracts and approximately compares the vendor and product IDs contained within two controller hardware identification strings.
+    /// All comparisons are without regard for case.
+    /// Product IDs must be identically equal, but vendor IDs can be considered approximately equal if they are considered similar enough.
+    /// Whichever string has the shorter vendor ID must have its vendor ID be identically equal to the last characters of the other string's vendor ID.
+    /// For example, if the two vendor IDs are "5E" and "045E" then that is considered a match because the longer string ends with the entire contents of the shorter string.
+    /// On the other hand, "5D" and "045E" do not match, and neither do "04" and "045E" because the criterion above is not satisfied.
+    /// @param [in] controllerStringA First string to compare.
+    /// @param [in] controllerStringB Second string to compare.
+    /// @return `true` if the two controller identification strings are approximately equal, `false` if they are not, and no value if one or both of the strings are missing either a product ID or a vendor ID.
+    std::optional<bool> ApproximatelyEqualVendorAndProductId(std::wstring_view controllerStringA, std::wstring_view controllerStringB);
 
     // Returns TRUE if the specified DirectInput controller supports XInput, FALSE if not or this information could not be determined.
     /// Determines if the specified DirectInput controller supports XInput.
