@@ -66,24 +66,27 @@ namespace Xidi
 
     std::optional<bool> ApproximatelyEqualVendorAndProductId(std::wstring_view controllerStringA, std::wstring_view controllerStringB)
     {
+        static constexpr std::wstring_view kVendorIdPrefix = L"VID";
+        static constexpr std::wstring_view kProductIdPrefix = L"PID";
+
         TemporaryVector<std::wstring_view> piecesA = Strings::SplitString(controllerStringA, {L"_", L"&", L"#"});
-        TemporaryVector<std::wstring_view> piecesB = Strings::SplitString(controllerStringB, { L"_", L"&", L"#" });
+        TemporaryVector<std::wstring_view> piecesB = Strings::SplitString(controllerStringB, {L"_", L"&", L"#"});
 
         std::wstring_view vendorIdA, vendorIdB, productIdA, productIdB;
         
         for (size_t i = 0; i < (piecesA.Size() - 1); ++i)
         {
-            if ((piecesA[i] == L"VID") || (piecesA[i] == L"vid"))
+            if (true == Strings::EqualsCaseInsensitive(piecesA[i], kVendorIdPrefix))
                 vendorIdA = piecesA[++i];
-            else if ((piecesA[i] == L"PID") || (piecesA[i] == L"pid"))
+            else if (true == Strings::EqualsCaseInsensitive(piecesA[i], kProductIdPrefix))
                 productIdA = piecesA[++i];
         }
 
         for (size_t i = 0; i < (piecesB.Size() - 1); ++i)
         {
-            if ((piecesB[i] == L"VID") || (piecesB[i] == L"vid"))
+            if (true == Strings::EqualsCaseInsensitive(piecesB[i], kVendorIdPrefix))
                 vendorIdB = piecesB[++i];
-            else if ((piecesB[i] == L"PID") || (piecesB[i] == L"pid"))
+            if (true == Strings::EqualsCaseInsensitive(piecesB[i], kProductIdPrefix))
                 productIdB = piecesB[++i];
         }
 
