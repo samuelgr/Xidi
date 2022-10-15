@@ -554,7 +554,7 @@ StickLeftX          = Split( Keyboard(Right), Keyboard(Left) )
 
 ; If the left stick's Y axis is moved sufficiently down (positive), press the down arrow key.
 ; If the left stick's Y axis is moved sufficiently up (negative), press the up arrow key.
-; Of course, if the left stick's X axis is neutral, then neither key is pressed.
+; Of course, if the left stick's Y axis is neutral, then neither key is pressed.
 StickLeftY          = Split( Keyboard(Down), Keyboard(Up) )
 ```
 
