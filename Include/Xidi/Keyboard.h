@@ -7,7 +7,7 @@
  *************************************************************************//**
  * @file Keyboard.h
  *   Declaration of virtual keyboard event functionality, which allows
- *   physical controller element to trigger key presses and releases.
+ *   physical controller elements to trigger key presses and releases.
  *****************************************************************************/
 
 #pragma once

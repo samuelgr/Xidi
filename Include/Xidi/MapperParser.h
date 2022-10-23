@@ -187,7 +187,13 @@ namespace Xidi
             ElementMapperOrError MakeInvertMapper(std::wstring_view params);
 
             /// Attempts to build a #KeyboardMapper using the supplied parameters.
-            /// Parameter string should consist of a single integer identifying the keyboard scan code.
+            /// Parameter string should consist of a string identifying the keyboard scan code.
+            /// @param [in] params Parameter string.
+            /// @return Pointer to the new mapper object if successful, error message string otherwise.
+            ElementMapperOrError MakeKeyboardMapper(std::wstring_view params);
+
+            /// Attempts to build a #MouseButtonMapper using the supplied parameters.
+            /// Parameter string should consist of a string identifying the target mouse button.
             /// @param [in] params Parameter string.
             /// @return Pointer to the new mapper object if successful, error message string otherwise.
             ElementMapperOrError MakeKeyboardMapper(std::wstring_view params);

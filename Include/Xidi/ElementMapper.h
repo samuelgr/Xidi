@@ -14,6 +14,7 @@
 
 #include "ControllerTypes.h"
 #include "Keyboard.h"
+#include "Mouse.h"
 
 #include <array>
 #include <cstddef>
@@ -363,6 +364,52 @@ namespace Xidi
             inline Keyboard::TKeyIdentifier GetTargetKey(void) const
             {
                 return key;
+            }
+
+
+            // -------- CONCRETE INSTANCE METHODS -------------------------- //
+
+            std::unique_ptr<IElementMapper> Clone(void) const override;
+            void ContributeFromAnalogValue(SState& controllerState, int16_t analogValue) const override;
+            void ContributeFromButtonValue(SState& controllerState, bool buttonPressed) const override;
+            void ContributeFromTriggerValue(SState& controllerState, uint8_t triggerValue) const override;
+            void ContributeNeutral(SState& controllerState) const override;
+            int GetTargetElementCount(void) const override;
+            std::optional<SElementIdentifier> GetTargetElementAt(int index) const override;
+        };
+
+        /// Maps a single XInput controller element to a mouse button.
+        /// For analog sticks, if the axis displacement from neutral is greater than a threshold, the mouse button is considered pressed.
+        /// For triggers, if the magnitude of the trigger reading is greater than a threshold, the mouse button is considered pressed.
+        /// For buttons, the button state is mapped directly to the target mouse button.
+        class MouseButtonMapper : public IElementMapper
+        {
+        private:
+            // -------- INSTANCE VARIABLES --------------------------------- //
+
+            /// Identifies the mouse button to which this mapper should contribute on the virtual mouse.
+            const Mouse::EMouseButton mouseButton;
+
+
+        public:
+            // -------- CONSTRUCTION AND DESTRUCTION ----------------------- //
+
+            /// Initialization constructor.
+            /// Specifies the mouse button to which to contribute.
+            inline constexpr MouseButtonMapper(Mouse::EMouseButton mouseButton) : mouseButton(mouseButton)
+            {
+                // Nothing to do here.
+            }
+
+
+            // -------- INSTANCE METHODS ----------------------------------- //
+
+            /// Retrieves and returns the target mouse button to which this object contributes.
+            /// Intended for tests.
+            /// @return Target mouse button identifier.
+            inline Mouse::EMouseButton GetTargetMouseButton(void) const
+            {
+                return mouseButton;
             }
 
 

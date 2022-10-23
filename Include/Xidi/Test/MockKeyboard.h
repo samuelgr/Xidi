@@ -63,13 +63,11 @@ namespace XidiTest
         /// Upon completion, no virtual keyboard is the target of any captures.
         void EndCapture(void);
 
-        /// Submits a key state of pressed from a particular identified controller.
-        /// @param [in] controllerIdentifier Identifier of the controller that is the source of the key press state.
+        /// Submits a key state of pressed.
         /// @param [in] key Keyboard key that is affected.
         void SubmitKeyPressedState(TKeyIdentifier key);
 
-        /// Submits a key state of released from a particular identified controller.
-        /// @param [in] controllerIdentifier Identifier of the controller that is the source of the key state.
+        /// Submits a key state of released.
         /// @param [in] key Keyboard key that is affected.
         void SubmitKeyReleasedState(TKeyIdentifier key);
     };

@@ -43,6 +43,7 @@
     <ClInclude Include="Include\Xidi\MapperBuilder.h" />
     <ClInclude Include="Include\Xidi\MapperParser.h" />
     <ClInclude Include="Include\Xidi\Message.h" />
+    <ClInclude Include="Include\Xidi\Mouse.h" />
     <ClInclude Include="Include\Xidi\PhysicalController.h" />
     <ClInclude Include="Include\Xidi\StateChangeEventBuffer.h" />
     <ClInclude Include="Include\Xidi\Strings.h" />
@@ -75,6 +76,7 @@
     <ClCompile Include="Source\MapperDefinitions.cpp" />
     <ClCompile Include="Source\MapperParser.cpp" />
     <ClCompile Include="Source\Message.cpp" />
+    <ClCompile Include="Source\Mouse.cpp" />
     <ClCompile Include="Source\PhysicalController.cpp" />
     <ClCompile Include="Source\StateChangeEventBuffer.cpp" />
     <ClCompile Include="Source\Strings.cpp" />

@@ -6,7 +6,7 @@
  * Copyright (c) 2016-2022
  *************************************************************************//**
  * @file MockKeyboard.cpp
- *   Declaration of a mock version of the keyboard interface along with
+ *   Implementation of a mock version of the keyboard interface along with
  *   additional testing-specific functions.
  *****************************************************************************/
 
@@ -70,7 +70,7 @@ namespace XidiTest
     void MockKeyboard::SubmitKeyPressedState(TKeyIdentifier key)
     {
         if (key >= virtualKeyboardState.max_size())
-            TEST_FAILED_BECAUSE(L"%s: Test implementation error due to out-of-bounds controller identifier.", __FUNCTIONW__);
+            TEST_FAILED_BECAUSE(L"%s: Test implementation error due to out-of-bounds keyboard key identifier.", __FUNCTIONW__);
 
         virtualKeyboardState.insert(key);
     }
@@ -80,7 +80,7 @@ namespace XidiTest
     void MockKeyboard::SubmitKeyReleasedState(TKeyIdentifier key)
     {
         if (key >= virtualKeyboardState.max_size())
-            TEST_FAILED_BECAUSE(L"%s: Test implementation error due to out-of-bounds controller identifier.", __FUNCTIONW__);
+            TEST_FAILED_BECAUSE(L"%s: Test implementation error due to out-of-bounds keyboard key identifier.", __FUNCTIONW__);
 
         virtualKeyboardState.erase(key);
     }

@@ -7,7 +7,7 @@
  *************************************************************************//**
  * @file Keyboard.cpp
  *   Implementation of virtual keyboard event functionality, which allows
- *   physical controller element to trigger key presses and releases.
+ *   physical controller elements to trigger key presses and releases.
  *****************************************************************************/
 
 #include "ApiBitSet.h"

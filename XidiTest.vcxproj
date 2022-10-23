@@ -224,8 +224,10 @@
     <ClInclude Include="Include\Xidi\MapperBuilder.h" />
     <ClInclude Include="Include\Xidi\Message.h" />
     <ClInclude Include="Include\Xidi\MapperParser.h" />
+    <ClInclude Include="Include\Xidi\Mouse.h" />
     <ClInclude Include="Include\Xidi\PhysicalController.h" />
     <ClInclude Include="Include\Xidi\Test\MockForceFeedbackEffect.h" />
+    <ClInclude Include="Include\Xidi\Test\MockMouse.h" />
     <ClInclude Include="Include\Xidi\ValueOrError.h" />
     <ClInclude Include="Include\Xidi\StateChangeEventBuffer.h" />
     <ClInclude Include="Include\Xidi\Strings.h" />
@@ -277,6 +279,7 @@
     <ClCompile Include="Source\Test\Case\MapperBuilderTest.cpp" />
     <ClCompile Include="Source\Test\Case\MapperTest.cpp" />
     <ClCompile Include="Source\Test\Case\MapperParserTest.cpp" />
+    <ClCompile Include="Source\Test\Case\MouseButtonMapperTest.cpp" />
     <ClCompile Include="Source\Test\Case\PeriodicEffectTest.cpp" />
     <ClCompile Include="Source\Test\Case\PovMapperTest.cpp" />
     <ClCompile Include="Source\Test\Case\RampForceEffectTest.cpp" />
@@ -286,6 +289,7 @@
     <ClCompile Include="Source\Test\Case\VirtualDirectInputDeviceTest.cpp" />
     <ClCompile Include="Source\Test\Case\VirtualDirectInputEffectTest.cpp" />
     <ClCompile Include="Source\Test\MockKeyboard.cpp" />
+    <ClCompile Include="Source\Test\MockMouse.cpp" />
     <ClCompile Include="Source\Test\MockPhysicalController.cpp" />
     <ClCompile Include="Source\Test\Harness.cpp" />
     <ClCompile Include="Source\Test\TestCase.cpp" />

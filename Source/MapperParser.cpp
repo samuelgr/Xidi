@@ -17,6 +17,7 @@
 #include "Keyboard.h"
 #include "Mapper.h"
 #include "MapperParser.h"
+#include "Mouse.h"
 #include "Strings.h"
 #include "ValueOrError.h"
 
@@ -331,7 +332,7 @@ namespace Xidi
             }
 
             /// Parses a string representation of a DirectInput keyboard scancode into an integer.
-            /// This function will fail if the input string is too long or if it does not entirely represent an unsigned integer value.
+            /// This function will fail if the input string is too long or if it does not represent a keyboard scancode.
             /// @param [in] kbString String from which to parse.
             /// @return Parsed integer value if successful.
             static std::optional<unsigned int> ParseKeyboardScancode(std::wstring_view kbString)
@@ -538,6 +539,73 @@ namespace Xidi
                     return std::nullopt;
                 else
                     return keyboardScanCodeIter->second;
+            }
+
+            /// Parses a string representation of a mouse button into a mouse button enumerator.
+            /// This function will fail if the input string is too long or if it does not entirely represent a mouse button.
+            /// @param [in] mbString String from which to parse.
+            /// @return Parsed mouse button enumerator if successful.
+            static std::optional<Mouse::EMouseButton> ParseMouseButton(std::wstring_view mbString)
+            {
+                // Map of strings representing keyboard scancodes to the keyboard scancodes themselves.
+                // One pair exists per DIK_* constant. Comparisons with the input string are case-insensitive because the input string is converted to uppercase to match the contents of this map.
+                static const std::map<std::wstring_view, Mouse::EMouseButton> kMouseButtonStrings = {
+
+                    // Left button
+                    {L"left",               Mouse::EMouseButton::Left},
+                    {L"Left",               Mouse::EMouseButton::Left},
+                    {L"leftbutton",         Mouse::EMouseButton::Left},
+                    {L"Leftbutton",         Mouse::EMouseButton::Left},
+                    {L"LeftButton",         Mouse::EMouseButton::Left},
+                    
+                    // Middle button, often also the button beneath the mouse wheel
+                    {L"mid",                Mouse::EMouseButton::Middle},
+                    {L"Mid",                Mouse::EMouseButton::Middle},
+                    {L"middle",             Mouse::EMouseButton::Middle},
+                    {L"Middle",             Mouse::EMouseButton::Middle},
+                    {L"middlebutton",       Mouse::EMouseButton::Middle},
+                    {L"Middlebutton",       Mouse::EMouseButton::Middle},
+                    {L"MiddleButton",       Mouse::EMouseButton::Middle},
+                    {L"wheel",              Mouse::EMouseButton::Middle},
+                    {L"Wheel",              Mouse::EMouseButton::Middle},
+                    {L"wheelbutton",        Mouse::EMouseButton::Middle},
+                    {L"WheelButton",        Mouse::EMouseButton::Middle},
+                    
+                    // Right button
+                    {L"right",              Mouse::EMouseButton::Right},
+                    {L"Right",              Mouse::EMouseButton::Right},
+                    {L"rightbutton",        Mouse::EMouseButton::Right},
+                    {L"Rightbutton",        Mouse::EMouseButton::Right},
+                    {L"RightButton",        Mouse::EMouseButton::Right},
+
+                    // X1 button, often also used as "back" in internet browsers
+                    {L"x1",                 Mouse::EMouseButton::X1},
+                    {L"X1",                 Mouse::EMouseButton::X1},
+                    {L"x1button",           Mouse::EMouseButton::X1},
+                    {L"X1Button",           Mouse::EMouseButton::X1},
+                    {L"back",               Mouse::EMouseButton::X1},
+                    {L"Back",               Mouse::EMouseButton::X1},
+                    {L"backbutton",         Mouse::EMouseButton::X1},
+                    {L"Backbutton",         Mouse::EMouseButton::X1},
+                    {L"BackButton",         Mouse::EMouseButton::X1},
+
+                    // X2 button, often also used as "forward" in internet browsers
+                    {L"x2",                 Mouse::EMouseButton::X2},
+                    {L"X2",                 Mouse::EMouseButton::X2},
+                    {L"x2button",           Mouse::EMouseButton::X2},
+                    {L"X2Button",           Mouse::EMouseButton::X2},
+                    {L"forward",            Mouse::EMouseButton::X2},
+                    {L"Forward",            Mouse::EMouseButton::X2},
+                    {L"forwardbutton",      Mouse::EMouseButton::X2},
+                    {L"Forwardbutton",      Mouse::EMouseButton::X2},
+                    {L"ForwardButton",      Mouse::EMouseButton::X2}
+                };
+
+                const auto mouseButtonIter = kMouseButtonStrings.find(mbString);
+                if (kMouseButtonStrings.cend() == mouseButtonIter)
+                    return std::nullopt;
+                else
+                    return mouseButtonIter->second;
             }
 
             /// Trims all whitespace from the back of the supplied string.
@@ -925,6 +993,18 @@ namespace Xidi
 
             // --------
 
+            ElementMapperOrError MakeMouseButtonMapper(std::wstring_view params)
+            {
+                std::optional<Mouse::EMouseButton> maybeMouseButton = ParseMouseButton(params);
+                if (false == maybeMouseButton.has_value())
+                    return Strings::FormatString(L"MouseButton: \"%s\" must map to a valid mouse button", std::wstring(params).c_str()).Data();
+
+                const Mouse::EMouseButton kMouseButton = maybeMouseButton.value();
+                return std::make_unique<MouseButtonMapper>(kMouseButton);
+            }
+
+            // --------
+
             ElementMapperOrError MakeNullMapper(std::wstring_view params)
             {
                 if (false == params.empty())
@@ -1117,6 +1197,10 @@ namespace Xidi
                     {L"keystroke",              &MakeKeyboardMapper},
                     {L"Keystroke",              &MakeKeyboardMapper},
                     {L"KeyStroke",              &MakeKeyboardMapper},
+
+                    {L"mousebutton",            &MakeMouseButtonMapper},
+                    {L"Mousebutton",            &MakeMouseButtonMapper},
+                    {L"MouseButton",            &MakeMouseButtonMapper},
 
                     {L"pov",                    &MakePovMapper},
                     {L"Pov",                    &MakePovMapper},

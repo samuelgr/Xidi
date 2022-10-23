@@ -14,6 +14,7 @@
 #include "ControllerTypes.h"
 #include "ElementMapper.h"
 #include "Keyboard.h"
+#include "Mouse.h"
 
 #include <cstdint>
 #include <optional>
@@ -468,6 +469,64 @@ namespace Xidi
         // --------
 
         std::optional<SElementIdentifier> KeyboardMapper::GetTargetElementAt(int index) const
+        {
+            return std::nullopt;
+        }
+
+        // --------
+
+        std::unique_ptr<IElementMapper> MouseButtonMapper::Clone(void) const
+        {
+            return std::make_unique<MouseButtonMapper>(*this);
+        }
+
+        // --------
+
+        void MouseButtonMapper::ContributeFromAnalogValue(SState& controllerState, int16_t analogValue) const
+        {
+            if (true == IsAnalogPressed(analogValue))
+                Mouse::SubmitMouseButtonPressedState(mouseButton);
+            else
+                Mouse::SubmitMouseButtonReleasedState(mouseButton);
+        }
+
+        // --------
+
+        void MouseButtonMapper::ContributeFromButtonValue(SState& controllerState, bool buttonPressed) const
+        {
+            if (true == buttonPressed)
+                Mouse::SubmitMouseButtonPressedState(mouseButton);
+            else
+                Mouse::SubmitMouseButtonReleasedState(mouseButton);
+        }
+
+        // --------
+
+        void MouseButtonMapper::ContributeFromTriggerValue(SState& controllerState, uint8_t triggerValue) const
+        {
+            if (true == IsTriggerPressed(triggerValue))
+                Mouse::SubmitMouseButtonPressedState(mouseButton);
+            else
+                Mouse::SubmitMouseButtonReleasedState(mouseButton);
+        }
+
+        // --------
+
+        void MouseButtonMapper::ContributeNeutral(SState& controllerState) const
+        {
+            Mouse::SubmitMouseButtonReleasedState(mouseButton);
+        }
+
+        // --------
+
+        int MouseButtonMapper::GetTargetElementCount(void) const
+        {
+            return 0;
+        }
+
+        // --------
+
+        std::optional<SElementIdentifier> MouseButtonMapper::GetTargetElementAt(int index) const
         {
             return std::nullopt;
         }
