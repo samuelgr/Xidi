@@ -547,8 +547,7 @@ namespace Xidi
             /// @return Parsed mouse button enumerator if successful.
             static std::optional<Mouse::EMouseButton> ParseMouseButton(std::wstring_view mbString)
             {
-                // Map of strings representing keyboard scancodes to the keyboard scancodes themselves.
-                // One pair exists per DIK_* constant. Comparisons with the input string are case-insensitive because the input string is converted to uppercase to match the contents of this map.
+                // Map of strings representing mouse buttons.
                 static const std::map<std::wstring_view, Mouse::EMouseButton> kMouseButtonStrings = {
 
                     // Left button
