@@ -521,12 +521,12 @@ ButtonBack          = Keyboard(Esc)
 
 A mouse button element mapper links an XInput controller element to a mouse button. It behaves very similarly to a keyboard element mapper except it acts on a mouse button rather than on a keyboard key.
 
-Element mappers of this type require a single parameter identifying the associated mouse button. There are [five possible mouse buttons](https://learn.microsoft.com/en-us/windows/win32/api/winuser/ns-winuser-mouseinput) for which standard identifiers exist: `Left`, `Middle`, `Right`, `X1`, and `X2`. The X1 and X2 mouse buttons commonly appear on mouse hardware as "back" and "forward" buttons respectively and tend to be used for those navigation purposes in various places on Windows machines, including in internet browsers and in File Explorer.
+Element mappers of this type require a single parameter identifying the associated mouse button. There are five possible mouse buttons for which standard identifiers exist: `Left`, `Middle`, `Right`, `X1`, and `X2`. The X1 and X2 mouse buttons commonly appear on mouse hardware as "back" and "forward" buttons respectively and tend to be used for those navigation purposes in various places on Windows machines, including in internet browsers and in File Explorer.
 
 For example, the below configuration links the A, B, X, LB, and RB buttons on an XInput controller to the left, right, middle, X1, and X2 mouse buttons respectively.
 
 ```ini
-[CustomMapper:MouseButton]
+[CustomMapper:MouseButtonExample]
 
 ; This example is not complete.
 ; It only defines element mappers for a small subset of controller elements.
