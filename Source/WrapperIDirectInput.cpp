@@ -220,6 +220,7 @@ namespace Xidi
 
         HRESULT enumResult = DI_OK;
         Message::Output(Message::ESeverity::Debug, L"Starting to enumerate DirectInput devices.");
+        Message::OutputFormatted(Message::ESeverity::Debug, L"Enumerate: dwDevType = 0x%08x, dwFlags = 0x%08x.", dwDevType, dwFlags);
 
         // Enumerating game controllers requires some manipulation.
         if (gameControllersRequested)
@@ -228,14 +229,17 @@ namespace Xidi
             enumResult = underlyingDIObject->EnumDevices(dwDevType, &WrapperIDirectInput<charMode>::CallbackEnumGameControllersXInputScan, (LPVOID)&callbackInfo, dwFlags);
             if (DI_OK != enumResult) return enumResult;
 
-            // Second, if the system has XInput controllers, enumerate them.
-            // These will be the first controllers seen by the application.
             const BOOL systemHasXInputDevices = (0 != callbackInfo.seenInstanceIdentifiers.size());
 
             if (systemHasXInputDevices)
-            {
                 Message::Output(Message::ESeverity::Debug, L"Enumerate: System has XInput devices, so Xidi virtual controllers are being presented to the application before other controllers.");
+            else
+                Message::Output(Message::ESeverity::Debug, L"Enumerate: System has no XInput devices, so Xidi virtual controllers are being presented to the application after other controllers.");
 
+            // Second, if the system has XInput controllers, enumerate them.
+            // These will be the first controllers seen by the application.
+            if (systemHasXInputDevices)
+            {
                 callbackInfo.callbackReturnCode = EnumerateVirtualControllers(lpCallback, pvRef, kForceFeedbackControllersOnly);
 
                 if (DIENUM_CONTINUE != callbackInfo.callbackReturnCode)
@@ -260,8 +264,6 @@ namespace Xidi
             // These will be the last controllers seen by the application.
             if (!systemHasXInputDevices)
             {
-                Message::Output(Message::ESeverity::Debug, L"Enumerate: System has no XInput devices, so Xidi virtual controllers are being presented to the application after other controllers.");
-
                 callbackInfo.callbackReturnCode = EnumerateVirtualControllers(lpCallback, pvRef, kForceFeedbackControllersOnly);
 
                 if (DIENUM_CONTINUE != callbackInfo.callbackReturnCode)
@@ -351,12 +353,13 @@ namespace Xidi
     {
         SEnumDevicesCallbackInfo<charMode>* callbackInfo = (SEnumDevicesCallbackInfo<charMode>*)pvRef;
 
+        // If the device has not been seen already, add it to the set and present it to the application.
         if (0 == callbackInfo->seenInstanceIdentifiers.count(lpddi->guidInstance))
         {
-            // If the device has not been seen already, add it to the set and present it to the application.
+            OutputProductName<charMode>(Message::ESeverity::Debug, L"Enumerate: DirectInput device \"%s\" is being presented to the application.", lpddi);
+
             callbackInfo->seenInstanceIdentifiers.insert(lpddi->guidInstance);
             callbackInfo->callbackReturnCode = ((BOOL(FAR PASCAL *)(const DirectInputType<charMode>::DeviceInstanceType*,LPVOID))(callbackInfo->lpCallback))(lpddi, callbackInfo->pvRef);
-            OutputProductName<charMode>(Message::ESeverity::Debug, L"Enumerate: DirectInput device \"%s\" is being presented to the application.", lpddi);
             return callbackInfo->callbackReturnCode;
         }
         else
