@@ -17,6 +17,7 @@
 #include "ElementMapper.h"
 #include "ForceFeedbackTypes.h"
 #include "Globals.h"
+#include "ImportApiXInput.h"
 #include "Mapper.h"
 #include "Message.h"
 #include "Strings.h"
@@ -26,7 +27,6 @@
 #include <mutex>
 #include <set>
 #include <string_view>
-#include <xinput.h>
 
 
 namespace Xidi

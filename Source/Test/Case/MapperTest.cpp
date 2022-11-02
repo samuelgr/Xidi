@@ -14,6 +14,7 @@
 #include "ControllerTypes.h"
 #include "ElementMapper.h"
 #include "ForceFeedbackTypes.h"
+#include "ImportApiXInput.h"
 #include "Mapper.h"
 #include "MockElementMapper.h"
 #include "TestCase.h"
@@ -23,7 +24,6 @@
 #include <limits>
 #include <memory>
 #include <utility>
-#include <xinput.h>
 
 
 namespace XidiTest

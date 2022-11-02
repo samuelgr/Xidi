@@ -13,6 +13,7 @@
 #include "ControllerTypes.h"
 #include "ElementMapper.h"
 #include "ForceFeedbackDevice.h"
+#include "ImportApiXInput.h"
 #include "MockPhysicalController.h"
 #include "StateChangeEventBuffer.h"
 #include "TestCase.h"
@@ -23,7 +24,6 @@
 #include <deque>
 #include <memory>
 #include <optional>
-#include <xinput.h>
 
 
 namespace XidiTest

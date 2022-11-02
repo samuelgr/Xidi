@@ -15,6 +15,7 @@
 #include "ControllerIdentification.h"
 #include "ControllerTypes.h"
 #include "Globals.h"
+#include "ImportApiXInput.h"
 #include "Mapper.h"
 #include "Message.h"
 #include "Strings.h"
@@ -23,7 +24,6 @@
 #include <array>
 #include <memory>
 #include <optional>
-#include <xinput.h>
 
 
 namespace Xidi

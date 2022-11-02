@@ -13,6 +13,7 @@
 #pragma once
 
 #include "ApiWindows.h"
+#include "ImportApiXInput.h"
 
 #include <algorithm>
 #include <bitset>
@@ -20,7 +21,6 @@
 #include <cstdlib>
 #include <cstring>
 #include <type_traits>
-#include <xinput.h>
 
 
 namespace Xidi

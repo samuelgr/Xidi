@@ -219,6 +219,7 @@
     <ClInclude Include="Include\Xidi\ForceFeedbackTypes.h" />
     <ClInclude Include="Include\Xidi\Globals.h" />
     <ClInclude Include="Include\Xidi\ImportApiWinMM.h" />
+    <ClInclude Include="Include\Xidi\ImportApiXInput.h" />
     <ClInclude Include="Include\Xidi\Keyboard.h" />
     <ClInclude Include="Include\Xidi\Mapper.h" />
     <ClInclude Include="Include\Xidi\MapperBuilder.h" />
@@ -257,6 +258,7 @@
     <ClCompile Include="Source\ForceFeedbackParameters.cpp" />
     <ClCompile Include="Source\Globals.cpp" />
     <ClCompile Include="Source\ImportApiWinMM.cpp" />
+    <ClCompile Include="Source\ImportApiXInput.cpp" />
     <ClCompile Include="Source\Mapper.cpp" />
     <ClCompile Include="Source\MapperBuilder.cpp" />
     <ClCompile Include="Source\MapperDefinitions.cpp" />

@@ -15,6 +15,7 @@
 #include "ForceFeedbackDevice.h"
 #include "Globals.h"
 #include "ImportApiWinMM.h"
+#include "ImportApiXInput.h"
 #include "Mapper.h"
 #include "Message.h"
 #include "PhysicalController.h"
@@ -26,7 +27,6 @@
 #include <shared_mutex>
 #include <stop_token>
 #include <thread>
-#include <xinput.h>
 
 
 namespace Xidi
@@ -129,7 +129,7 @@ namespace Xidi
 
                 if (previousPhysicalActuatorValues != currentPhysicalActuatorValues)
                 {
-                    XInputSetState(controllerIdentifier, &currentPhysicalActuatorValues.named);
+                    ImportApiXInput::XInputSetState(controllerIdentifier, &currentPhysicalActuatorValues.named);
                     previousPhysicalActuatorValues = currentPhysicalActuatorValues;
                 }
             }
@@ -147,7 +147,7 @@ namespace Xidi
                 
                 for (auto controllerIdentifier = 0; controllerIdentifier < _countof(physicalControllerState); ++controllerIdentifier)
                 {
-                    newPhysicalState.errorCode = XInputGetState(controllerIdentifier, &newPhysicalState.state);
+                    newPhysicalState.errorCode = ImportApiXInput::XInputGetState(controllerIdentifier, &newPhysicalState.state);
 
                     // Unguarded read is safe because all other threads only perform guarded reads.
                     // Update happens within the block and requires an exclusive lock.
@@ -225,7 +225,7 @@ namespace Xidi
                 {
                     // Initialize controller state data structures.
                     for (auto controllerIdentifier = 0; controllerIdentifier < _countof(physicalControllerState); ++controllerIdentifier)
-                        physicalControllerState[controllerIdentifier].errorCode = XInputGetState(controllerIdentifier, &physicalControllerState[controllerIdentifier].state);
+                        physicalControllerState[controllerIdentifier].errorCode = ImportApiXInput::XInputGetState(controllerIdentifier, &physicalControllerState[controllerIdentifier].state);
 
                     // Ensure the system timer resolution is suitable for the desired polling frequency.
                     TIMECAPS timeCaps;

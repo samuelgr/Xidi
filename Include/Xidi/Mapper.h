@@ -17,10 +17,10 @@
 #include "ControllerTypes.h"
 #include "ElementMapper.h"
 #include "ForceFeedbackTypes.h"
+#include "ImportApiXInput.h"
 
 #include <memory>
 #include <string_view>
-#include <xinput.h>
 
 
 // -------- MACROS --------------------------------------------------------- //
