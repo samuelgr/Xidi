@@ -44,7 +44,9 @@ Translation from physical controller state to virtual controller state is govern
 
 #### Element Mappers
 
-An *element mapper* reads the value associated with a single element of an XInput controller (i.e. A button, LT trigger, right-stick horizontal axis) and writes a value contribution to the data structure representing a virtual controller's state. Each element mapper is allowed to contribute to any number of elements of a virtual controller, and it is possible for multiple element mappers to contribute to the same element of a virtual controller. Certain types of element mappers may also have side effects which extend beyond simply updating virtual controller state. Element mappers are expected to be stateless with respect to previous or future contributions to virtual controller state and side effects.
+An *element mapper* reads the value associated with a single element of an XInput controller (i.e. A button, LT trigger, right-stick horizontal axis) and writes a value contribution to the data structure representing a virtual controller's state. Each element mapper is allowed to contribute to any number of elements of a virtual controller, and it is possible for multiple element mappers to contribute to the same element of a virtual controller. Certain types of element mappers may also have side effects which extend beyond simply updating virtual controller state.
+
+Element mappers are expected to be stateless with respect to previous or future contributions to virtual controller state and side effects. However, each time it is asked to make a contribution, it is provided with an opaque "source identifier" which is an integer that uniquely identifies the source of the controller input that is triggering the contribution. There is no semantic meaning or guarantee as to the specific value or relationship between different source identifiers other than that they will be equal if they represent the same physical controller element on the same physical controller. For example, the same source identifier will be supplied to element mappers for all contributions from the "A" button on the controller associated with player 2, but any contributions from other controller elements or even the "A" button on a different player's controller will lead to a different source identifier. Source identifiers are useful for certain element mappers that produce side effects as a way of opaquely keeping track of contributions from different physical controller elements.
 
 "Contributing to a virtual controller element" means producing a value for the virtual controller element and then aggregating it with whatever value already exists for that element. This is important because multiple mappers might contribute to the same virtual controller element. For an element mapper that contributes to a virtual controller axis this typically means aggregation by summation: if an element mapper intends to produce a value of 1000 for its associated axis, rather than writing 1000 it should add 1000 to whatever value already exists for that axis.
 
@@ -91,6 +93,11 @@ This type of element mapper contains a single underlying element mapper to which
 Behavior is very similar to ButtonMapper in terms of the logic. However, instead of contributing to a virtual controller button press, this type of mapper simulates a key press on the system keyboard. Keys are identified by DirectInput scan code, which are listed as `DIK_*` constants in the file `dinput.h`.
 
 This type of mapper is considered to have a side effect because, unlike other types, it does not not contribute directly to virtual controller state but rather to the keyboard state. As a result it implements `ContributeNeutral` so that associated keyboard buttons can be released in the absence of input from the controller.
+
+
+##### MouseButtonMapper
+
+Behavior and implementation is extremely similar to KeyboardMapper. However, instead of a virtual keyboard key, this type of element mapper simulates a mouse button press on the system mouse.
 
 
 ##### PovMapper
@@ -188,6 +195,8 @@ Source code documentation is available and can be built using Doxygen. This sect
 **MapperDefinitions** contains instantiations of the built-in mappers.
 
 **MapperParser** implements all string-parsing functionality for identifying XInput controller elements, identifying force feedback actuators, and constructing both of these types of objects based on strings contained within a configuration file.
+
+**Mouse** tracks virtual mouse state as reported by any `MouseButtonMapper` objects that may exist. It maintains state information for each possible mouse button and periodically submits mouse events to the system using the `SendInput` Windows API function.
 
 **PhysicalController** manages all communication with the underlying XInput API. It periodically polls devices for changes to physical state and supports notifying other modules whenever a physical state change is detected.
 

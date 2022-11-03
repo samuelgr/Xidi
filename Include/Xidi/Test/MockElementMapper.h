@@ -17,6 +17,7 @@
 #include "TestCase.h"
 
 #include <memory>
+#include <optional>
 #include <vector>
 
 
@@ -60,11 +61,13 @@ namespace XidiTest
 
         /// Specifies the expected source of an input value.
         /// Causes a test to fail if the wrong `ContributeFrom` method is invoked on this object.
-        const EExpectedSource expectedSource;
+        /// Can be empty if not testing this functionality.
+        const std::optional<EExpectedSource> maybeExpectedSource;
 
         /// Specifies the expected input value, one for each allowed type.
-        /// Which member is valid is determined by the value of #expectedSource.
-        const UExpectedValue expectedValue;
+        /// Which member is valid is determined by the value of #maybeExpectedSource.
+        /// Can be empty if not testing this functionality.
+        const std::optional<UExpectedValue> maybeExpectedValue;
 
         /// Holds the address of a counter that is incremented by 1 whenever this element mapper is asked for a contribution.
         int* const contributionCounter;
@@ -72,24 +75,37 @@ namespace XidiTest
         /// Holds the fake list of target elements.
         const std::vector<SElementIdentifier> fakeTargetElements;
 
+        /// Holds the expected source identifier.
+        /// Set either at construction time or the first time this element mapper is asked for a contribution.
+        std::optional<uint32_t> expectedSourceIdentifier;
+
 
     public:
         // -------- CONSTRUCTION AND DESTRUCTION ----------------------- //
         
         /// Initialization constructor.
         /// Requires that values for all instance variables be provided.
-        /// For tests that do not exercise controller capabilities, type and index can be omitted.
-        inline MockElementMapper(EExpectedSource expectedSource, UExpectedValue expectedValue, int* contributionCounter = nullptr, std::vector<SElementIdentifier>&& fakeTargetElements = {SElementIdentifier()}) : expectedSource(expectedSource), expectedValue(expectedValue), contributionCounter(contributionCounter), fakeTargetElements(std::move(fakeTargetElements))
+        /// Can be used as a default constructor for tests that do not exercise controller capabilities.
+        inline MockElementMapper(std::optional<EExpectedSource> maybeExpectedSource = std::nullopt, std::optional<UExpectedValue> maybeExpectedValue = std::nullopt, int* contributionCounter = nullptr, std::vector<SElementIdentifier>&& fakeTargetElements = {SElementIdentifier()}, std::optional<uint32_t> expectedSourceIdentifier = std::nullopt) : maybeExpectedSource(maybeExpectedSource), maybeExpectedValue(maybeExpectedValue), contributionCounter(contributionCounter), fakeTargetElements(std::move(fakeTargetElements)), expectedSourceIdentifier(expectedSourceIdentifier)
         {
             // Nothing to do here.
         }
 
         /// Initialization constructor.
         /// For simpler tests that expect no contributions but require only a single target element.
-        /// Can be used as a default constructor to create a mock element identifier with empty target element.
-        inline MockElementMapper(SElementIdentifier fakeTargetElement = SElementIdentifier()) : MockElementMapper(EExpectedSource::None, false, nullptr, {fakeTargetElement})
+        inline MockElementMapper(SElementIdentifier fakeTargetElement) : MockElementMapper(EExpectedSource::None, false, nullptr, {fakeTargetElement})
         {
             // Nothing to do here.
+        }
+
+
+        // -------- INSTANCE METHODS ----------------------------------- //
+
+        /// Retrieves and returns the opaque source identifier that has been associated with this element mapper, if one has been set.
+        /// @return Source identifier associated with this element mapper if one has been set.
+        inline std::optional<uint32_t> GetSourceIdentifier(void) const
+        {
+            return expectedSourceIdentifier;
         }
 
 
@@ -102,13 +118,18 @@ namespace XidiTest
 
         // --------
 
-        void ContributeFromAnalogValue(SState& controllerState, int16_t analogValue) const override
+        void ContributeFromAnalogValue(SState& controllerState, int16_t analogValue, uint32_t sourceIdentifier) const override
         {
-            if (EExpectedSource::Analog != expectedSource)
-                TEST_FAILED_BECAUSE(L"MockElementMapper: wrong value source (expected enumerator %d, got Analog).", (int)expectedSource);
+            if (EExpectedSource::Analog != maybeExpectedSource.value_or(EExpectedSource::Analog))
+                TEST_FAILED_BECAUSE(L"MockElementMapper: wrong value source (expected enumerator %d, got Analog).", (int)maybeExpectedSource.value());
 
-            if (expectedValue.analog != analogValue)
-                TEST_FAILED_BECAUSE(L"MockElementMapper: wrong analog value (expected %d, got %d).", (int)expectedValue.analog, (int)analogValue);
+            if (maybeExpectedValue.value_or(analogValue).analog != analogValue)
+                TEST_FAILED_BECAUSE(L"MockElementMapper: wrong analog value (expected %d, got %d).", (int)maybeExpectedValue.value().analog, (int)analogValue);
+
+            if (false == expectedSourceIdentifier.has_value())
+                const_cast<MockElementMapper*>(this)->expectedSourceIdentifier = sourceIdentifier;
+            else if (expectedSourceIdentifier.value() != sourceIdentifier)
+                TEST_FAILED_BECAUSE(L"MockElementMapper: wrong source identifier for analog contribution (expected %u, got %u).", (unsigned int)expectedSourceIdentifier.value(), (unsigned int)sourceIdentifier);
 
             if (nullptr != contributionCounter)
                 *contributionCounter += 1;
@@ -116,13 +137,18 @@ namespace XidiTest
 
         // --------
 
-        void ContributeFromButtonValue(SState& controllerState, bool buttonPressed) const override
+        void ContributeFromButtonValue(SState& controllerState, bool buttonPressed, uint32_t sourceIdentifier) const override
         {
-            if (EExpectedSource::Button != expectedSource)
-                TEST_FAILED_BECAUSE(L"MockElementMapper: wrong value source (expected enumerator %d, got Button).", (int)expectedSource);
+            if (EExpectedSource::Button != maybeExpectedSource.value_or(EExpectedSource::Button))
+                TEST_FAILED_BECAUSE(L"MockElementMapper: wrong value source (expected enumerator %d, got Button).", (int)maybeExpectedSource.value());
 
-            if (expectedValue.button != buttonPressed)
-                TEST_FAILED_BECAUSE(L"MockElementMapper: wrong button value (expected %s, got %s).", (true == expectedValue.button ? L"'true (pressed)'" : L"'false (not pressed)'"), (true == buttonPressed ? L"'true (pressed)'" : L"'false (not pressed)'"));
+            if (maybeExpectedValue.value_or(buttonPressed).button != buttonPressed)
+                TEST_FAILED_BECAUSE(L"MockElementMapper: wrong button value (expected %s, got %s).", (true == maybeExpectedValue.value().button ? L"'true (pressed)'" : L"'false (not pressed)'"), (true == buttonPressed ? L"'true (pressed)'" : L"'false (not pressed)'"));
+
+            if (false == expectedSourceIdentifier.has_value())
+                const_cast<MockElementMapper*>(this)->expectedSourceIdentifier = sourceIdentifier;
+            else if (expectedSourceIdentifier.value() != sourceIdentifier)
+                TEST_FAILED_BECAUSE(L"MockElementMapper: wrong source identifier for button contribution (expected %u, got %u).", (unsigned int)expectedSourceIdentifier.value(), (unsigned int)sourceIdentifier);
 
             if (nullptr != contributionCounter)
                 *contributionCounter += 1;
@@ -130,13 +156,18 @@ namespace XidiTest
 
         // --------
 
-        void ContributeFromTriggerValue(SState& controllerState, uint8_t triggerValue) const override
+        void ContributeFromTriggerValue(SState& controllerState, uint8_t triggerValue, uint32_t sourceIdentifier) const override
         {
-            if (EExpectedSource::Trigger != expectedSource)
-                TEST_FAILED_BECAUSE(L"MockElementMapper: wrong value source (expected enumerator %d, got Trigger).", (int)expectedSource);
+            if (EExpectedSource::Trigger != maybeExpectedSource.value_or(EExpectedSource::Trigger))
+                TEST_FAILED_BECAUSE(L"MockElementMapper: wrong value source (expected enumerator %d, got Trigger).", (int)maybeExpectedSource.value());
 
-            if (expectedValue.trigger != triggerValue)
-                TEST_FAILED_BECAUSE(L"MockElementMapper: wrong trigger value (expected %d, got %d).", (int)expectedValue.trigger, (int)triggerValue);
+            if (maybeExpectedValue.value_or(triggerValue).trigger != triggerValue)
+                TEST_FAILED_BECAUSE(L"MockElementMapper: wrong trigger value (expected %d, got %d).", (int)maybeExpectedValue.value().trigger, (int)triggerValue);
+
+            if (false == expectedSourceIdentifier.has_value())
+                const_cast<MockElementMapper*>(this)->expectedSourceIdentifier = sourceIdentifier;
+            else if (expectedSourceIdentifier.value() != sourceIdentifier)
+                TEST_FAILED_BECAUSE(L"MockElementMapper: wrong source identifier for trigger contribution (expected %u, got %u).", (unsigned int)expectedSourceIdentifier.value(), (unsigned int)sourceIdentifier);
 
             if (nullptr != contributionCounter)
                 *contributionCounter += 1;
@@ -144,16 +175,21 @@ namespace XidiTest
 
         // --------
 
-        void ContributeNeutral(SState& controllerState) const override
+        void ContributeNeutral(SState& controllerState, uint32_t sourceIdentifier) const override
         {
             // Neutral contributions are non-destructive.
             // Some element mappers will forward these to sub-element mappers, so unless explicitly testing for neutral contributions they can largely be ignored.
             // The exception is if no contributions whatsoever are expected, in which case any contributions are errors.
 
-            if (EExpectedSource::None == expectedSource)
-                TEST_FAILED_BECAUSE(L"MockElementMapper: wrong value source (expected enumerator %d, got Trigger).", (int)expectedSource);
+            if (EExpectedSource::None == maybeExpectedSource)
+                TEST_FAILED_BECAUSE(L"MockElementMapper: wrong value source (expected None, got Neutral).");
 
-            if (EExpectedSource::Neutral == expectedSource)
+            if (false == expectedSourceIdentifier.has_value())
+                const_cast<MockElementMapper*>(this)->expectedSourceIdentifier = sourceIdentifier;
+            else if (expectedSourceIdentifier.value() != sourceIdentifier)
+                TEST_FAILED_BECAUSE(L"MockElementMapper: wrong source identifier for neutral contribution (expected %u, got %u).", (unsigned int)expectedSourceIdentifier.value(), (unsigned int)sourceIdentifier);
+
+            if (EExpectedSource::Neutral == maybeExpectedSource)
             {
                 if (nullptr != contributionCounter)
                     *contributionCounter += 1;

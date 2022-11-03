@@ -49,19 +49,22 @@ namespace Xidi
             /// Contribution is aggregated with anything that already exists in the controller state.
             /// @param [in,out] controllerState Controller state data structure to be updated.
             /// @param [in] analogStickValue Raw analog stick value from the XInput controller.
-            virtual void ContributeFromAnalogValue(SState& controllerState, int16_t analogValue) const = 0;
+            /// @param [in] sourceIdentifier Opaque identifier for the specific controller element that is triggering the contribution.
+            virtual void ContributeFromAnalogValue(SState& controllerState, int16_t analogValue, uint32_t sourceIdentifier) const = 0;
 
             /// Calculates the contribution to controller state from a given button pressed status reading.
             /// Contribution is aggregated with anything that already exists in the controller state.
             /// @param [in,out] controllerState Controller state data structure to be updated.
             /// @param [in] buttonPressed Button state from the XInput controller, `true` if pressed and `false` otherwise.
-            virtual void ContributeFromButtonValue(SState& controllerState, bool buttonPressed) const = 0;
+            /// @param [in] sourceIdentifier Opaque identifier for the specific controller element that is triggering the contribution.
+            virtual void ContributeFromButtonValue(SState& controllerState, bool buttonPressed, uint32_t sourceIdentifier) const = 0;
 
             /// Calculates the contribution to controller state from a given trigger reading in the standard XInput trigger range 0 to 255.
             /// Contribution is aggregated with anything that already exists in the controller state.
             /// @param [in,out] controllerState Controller state data structure to be updated.
             /// @param [in] buttonPressed Button state from the XInput controller, `true` if pressed and `false` otherwise.
-            virtual void ContributeFromTriggerValue(SState& controllerState, uint8_t triggerValue) const = 0;
+            /// @param [in] sourceIdentifier Opaque identifier for the specific controller element that is triggering the contribution.
+            virtual void ContributeFromTriggerValue(SState& controllerState, uint8_t triggerValue, uint32_t sourceIdentifier) const = 0;
 
             /// Specifies the number of virtual controller elements that are the target of any contributions from this element mapper.
             /// @return Number of virtual controller elements to which contributions are targetted.
@@ -78,9 +81,9 @@ namespace Xidi
             /// Specifies that the element mapper should make a neutral state contribution to the virtual controller.
             /// Primarily intended for element mappers that have side effects so that they can reset their side effects in response to not making any contribution.
             /// It is optional to override this method, as a default empty implementation is supplied.
-            /// @param [in] controllerIdentifier Identifier of the controller for which an update contribution is being requested.
             /// @param [in,out] controllerState Controller state data structure to be updated.
-            virtual void ContributeNeutral(SState& controllerState) const
+            /// @param [in] sourceIdentifier Opaque identifier for the specific controller element that is triggering the contribution.
+            virtual void ContributeNeutral(SState& controllerState, uint32_t sourceIdentifier) const
             {
                 // Nothing to do here.
             }
@@ -127,9 +130,9 @@ namespace Xidi
             // -------- CONCRETE INSTANCE METHODS -------------------------- //
 
             std::unique_ptr<IElementMapper> Clone(void) const override;
-            void ContributeFromAnalogValue(SState& controllerState, int16_t analogValue) const override;
-            void ContributeFromButtonValue(SState& controllerState, bool buttonPressed) const override;
-            void ContributeFromTriggerValue(SState& controllerState, uint8_t triggerValue) const override;
+            void ContributeFromAnalogValue(SState& controllerState, int16_t analogValue, uint32_t sourceIdentifier = 0) const override;
+            void ContributeFromButtonValue(SState& controllerState, bool buttonPressed, uint32_t sourceIdentifier = 0) const override;
+            void ContributeFromTriggerValue(SState& controllerState, uint8_t triggerValue, uint32_t sourceIdentifier = 0) const override;
             int GetTargetElementCount(void) const override;
             std::optional<SElementIdentifier> GetTargetElementAt(int index) const override;
         };
@@ -161,9 +164,9 @@ namespace Xidi
             // -------- CONCRETE INSTANCE METHODS -------------------------- //
 
             std::unique_ptr<IElementMapper> Clone(void) const override;
-            void ContributeFromAnalogValue(SState& controllerState, int16_t analogValue) const override;
-            void ContributeFromButtonValue(SState& controllerState, bool buttonPressed) const override;
-            void ContributeFromTriggerValue(SState& controllerState, uint8_t triggerValue) const override;
+            void ContributeFromAnalogValue(SState& controllerState, int16_t analogValue, uint32_t sourceIdentifier = 0) const override;
+            void ContributeFromButtonValue(SState& controllerState, bool buttonPressed, uint32_t sourceIdentifier = 0) const override;
+            void ContributeFromTriggerValue(SState& controllerState, uint8_t triggerValue, uint32_t sourceIdentifier = 0) const override;
             int GetTargetElementCount(void) const override;
             std::optional<SElementIdentifier> GetTargetElementAt(int index) const override;
         };
@@ -248,10 +251,10 @@ namespace Xidi
             // -------- CONCRETE INSTANCE METHODS -------------------------- //
 
             std::unique_ptr<IElementMapper> Clone(void) const override;
-            void ContributeFromAnalogValue(SState& controllerState, int16_t analogValue) const override;
-            void ContributeFromButtonValue(SState& controllerState, bool buttonPressed) const override;
-            void ContributeFromTriggerValue(SState& controllerState, uint8_t triggerValue) const override;
-            void ContributeNeutral(SState& controllerState) const override;
+            void ContributeFromAnalogValue(SState& controllerState, int16_t analogValue, uint32_t sourceIdentifier = 0) const override;
+            void ContributeFromButtonValue(SState& controllerState, bool buttonPressed, uint32_t sourceIdentifier = 0) const override;
+            void ContributeFromTriggerValue(SState& controllerState, uint8_t triggerValue, uint32_t sourceIdentifier = 0) const override;
+            void ContributeNeutral(SState& controllerState, uint32_t sourceIdentifier = 0) const override;
             int GetTargetElementCount(void) const override;
             std::optional<SElementIdentifier> GetTargetElementAt(int index) const override;
         };
@@ -276,8 +279,8 @@ namespace Xidi
             // -------- CONCRETE INSTANCE METHODS -------------------------- //
 
             std::unique_ptr<IElementMapper> Clone(void) const override;
-            void ContributeFromAnalogValue(SState& controllerState, int16_t analogValue) const override;
-            void ContributeFromTriggerValue(SState& controllerState, uint8_t triggerValue) const override;
+            void ContributeFromAnalogValue(SState& controllerState, int16_t analogValue, uint32_t sourceIdentifier = 0) const override;
+            void ContributeFromTriggerValue(SState& controllerState, uint8_t triggerValue, uint32_t sourceIdentifier = 0) const override;
         };
 
         /// Inverts the input reading from an XInput controller element and then forwards it to another element mapper.
@@ -324,10 +327,10 @@ namespace Xidi
             // -------- CONCRETE INSTANCE METHODS -------------------------- //
 
             std::unique_ptr<IElementMapper> Clone(void) const override;
-            void ContributeFromAnalogValue(SState& controllerState, int16_t analogValue) const override;
-            void ContributeFromButtonValue(SState& controllerState, bool buttonPressed) const override;
-            void ContributeFromTriggerValue(SState& controllerState, uint8_t triggerValue) const override;
-            void ContributeNeutral(SState& controllerState) const override;
+            void ContributeFromAnalogValue(SState& controllerState, int16_t analogValue, uint32_t sourceIdentifier = 0) const override;
+            void ContributeFromButtonValue(SState& controllerState, bool buttonPressed, uint32_t sourceIdentifier = 0) const override;
+            void ContributeFromTriggerValue(SState& controllerState, uint8_t triggerValue, uint32_t sourceIdentifier = 0) const override;
+            void ContributeNeutral(SState& controllerState, uint32_t sourceIdentifier = 0) const override;
             int GetTargetElementCount(void) const override;
             std::optional<SElementIdentifier> GetTargetElementAt(int index) const override;
         };
@@ -370,10 +373,10 @@ namespace Xidi
             // -------- CONCRETE INSTANCE METHODS -------------------------- //
 
             std::unique_ptr<IElementMapper> Clone(void) const override;
-            void ContributeFromAnalogValue(SState& controllerState, int16_t analogValue) const override;
-            void ContributeFromButtonValue(SState& controllerState, bool buttonPressed) const override;
-            void ContributeFromTriggerValue(SState& controllerState, uint8_t triggerValue) const override;
-            void ContributeNeutral(SState& controllerState) const override;
+            void ContributeFromAnalogValue(SState& controllerState, int16_t analogValue, uint32_t sourceIdentifier = 0) const override;
+            void ContributeFromButtonValue(SState& controllerState, bool buttonPressed, uint32_t sourceIdentifier = 0) const override;
+            void ContributeFromTriggerValue(SState& controllerState, uint8_t triggerValue, uint32_t sourceIdentifier = 0) const override;
+            void ContributeNeutral(SState& controllerState, uint32_t sourceIdentifier = 0) const override;
             int GetTargetElementCount(void) const override;
             std::optional<SElementIdentifier> GetTargetElementAt(int index) const override;
         };
@@ -416,10 +419,10 @@ namespace Xidi
             // -------- CONCRETE INSTANCE METHODS -------------------------- //
 
             std::unique_ptr<IElementMapper> Clone(void) const override;
-            void ContributeFromAnalogValue(SState& controllerState, int16_t analogValue) const override;
-            void ContributeFromButtonValue(SState& controllerState, bool buttonPressed) const override;
-            void ContributeFromTriggerValue(SState& controllerState, uint8_t triggerValue) const override;
-            void ContributeNeutral(SState& controllerState) const override;
+            void ContributeFromAnalogValue(SState& controllerState, int16_t analogValue, uint32_t sourceIdentifier = 0) const override;
+            void ContributeFromButtonValue(SState& controllerState, bool buttonPressed, uint32_t sourceIdentifier = 0) const override;
+            void ContributeFromTriggerValue(SState& controllerState, uint8_t triggerValue, uint32_t sourceIdentifier = 0) const override;
+            void ContributeNeutral(SState& controllerState, uint32_t sourceIdentifier = 0) const override;
             int GetTargetElementCount(void) const override;
             std::optional<SElementIdentifier> GetTargetElementAt(int index) const override;
         };
@@ -459,9 +462,9 @@ namespace Xidi
             // -------- CONCRETE INSTANCE METHODS -------------------------- //
 
             std::unique_ptr<IElementMapper> Clone(void) const override;
-            void ContributeFromAnalogValue(SState& controllerState, int16_t analogValue) const override;
-            void ContributeFromButtonValue(SState& controllerState, bool buttonPressed) const override;
-            void ContributeFromTriggerValue(SState& controllerState, uint8_t triggerValue) const override;
+            void ContributeFromAnalogValue(SState& controllerState, int16_t analogValue, uint32_t sourceIdentifier = 0) const override;
+            void ContributeFromButtonValue(SState& controllerState, bool buttonPressed, uint32_t sourceIdentifier = 0) const override;
+            void ContributeFromTriggerValue(SState& controllerState, uint8_t triggerValue, uint32_t sourceIdentifier = 0) const override;
             int GetTargetElementCount(void) const override;
             std::optional<SElementIdentifier> GetTargetElementAt(int index) const override;
         };
@@ -526,10 +529,10 @@ namespace Xidi
             // -------- CONCRETE INSTANCE METHODS -------------------------- //
 
             std::unique_ptr<IElementMapper> Clone(void) const override;
-            void ContributeFromAnalogValue(SState& controllerState, int16_t analogValue) const override;
-            void ContributeFromButtonValue(SState& controllerState, bool buttonPressed) const override;
-            void ContributeFromTriggerValue(SState& controllerState, uint8_t triggerValue) const override;
-            void ContributeNeutral(SState& controllerState) const override;
+            void ContributeFromAnalogValue(SState& controllerState, int16_t analogValue, uint32_t sourceIdentifier = 0) const override;
+            void ContributeFromButtonValue(SState& controllerState, bool buttonPressed, uint32_t sourceIdentifier = 0) const override;
+            void ContributeFromTriggerValue(SState& controllerState, uint8_t triggerValue, uint32_t sourceIdentifier = 0) const override;
+            void ContributeNeutral(SState& controllerState, uint32_t sourceIdentifier = 0) const override;
             int GetTargetElementCount(void) const override;
             std::optional<SElementIdentifier> GetTargetElementAt(int index) const override;
         };
