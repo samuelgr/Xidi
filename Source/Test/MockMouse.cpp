@@ -84,6 +84,11 @@ namespace XidiTest
 
         virtualMouseButtonState.erase((unsigned int)button);
     }
+
+    void MockMouse::SubmitMouseMovement(EMouseAxis axis, int mouseMovementUnits, uint32_t sourceIdentifier)
+    {
+        // TODO
+    }
 }
 
 
@@ -117,6 +122,18 @@ namespace Xidi
                 TEST_FAILED_BECAUSE(L"%s: No mock mouse is installed to capture a mouse button release event.", __FUNCTIONW__);
 
             capturingVirtualMouse->SubmitMouseButtonReleasedState(button);
+        }
+
+        // --------
+
+        void SubmitMouseMovement(EMouseAxis axis, int mouseMovementUnits, uint32_t sourceIdentifier)
+        {
+            std::scoped_lock lock(captureGuard);
+
+            if (nullptr == capturingVirtualMouse)
+                TEST_FAILED_BECAUSE(L"%s: No mock mouse is installed to capture a mouse movement event.", __FUNCTIONW__);
+
+            capturingVirtualMouse->SubmitMouseMovement(axis, mouseMovementUnits, sourceIdentifier);
         }
     }
 }

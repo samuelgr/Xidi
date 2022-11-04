@@ -29,7 +29,7 @@
 #define ELEMENT_MAP_INDEX_OF(element)       ((unsigned int)(offsetof(::Xidi::Controller::Mapper::UElementMap, named.##element) / (offsetof(::Xidi::Controller::Mapper::UElementMap, all[1]) - offsetof(::Xidi::Controller::Mapper::UElementMap, all[0]))))
 
 /// Computes the index of the specified named force feedback actuator element in the unnamed array representation of the force feedback actuator map.
-#define FFACTUATOR_MAP_INDEX_OF(ffactuator) ((unsigned int)(offsetof(::Xidi::Controller::Mapper::UForceFeedbackActuatorMap, named.##ffactuator) / sizeof(::Xidi::Controller::Mapper::UForceFeedbackActuatorMap::all[0])))
+#define FFACTUATOR_MAP_INDEX_OF(ffactuator) ((unsigned int)(offsetof(::Xidi::Controller::Mapper::UForceFeedbackActuatorMap, named.##ffactuator) / (offsetof(::Xidi::Controller::Mapper::UForceFeedbackActuatorMap, all[1]) - offsetof(::Xidi::Controller::Mapper::UForceFeedbackActuatorMap, all[0]))))
 
 
 namespace Xidi
@@ -340,6 +340,12 @@ namespace Xidi
             /// @param [in] sourceControllerIdentifier Opaque identifier of the physical controller associated with the state being mapped.
             /// @return Controller state object that was filled as a result of the mapping.
             SState MapStatePhysicalToVirtual(XINPUT_GAMEPAD physicalState, uint32_t sourceControllerIdentifier) const;
+
+            /// Maps from physical controller state to virtual controller state in which the physical controller is completely neutral and possibly even disconnected.
+            /// Does not apply any properties configured by the application, such as deadzone and range.
+            /// @param [in] sourceControllerIdentifier Opaque identifier of the physical controller associated with the state being mapped.
+            /// @return Controller state object that was filled as a result of the mapping.
+            SState MapNeutralPhysicalToVirtual(uint32_t sourceControllerIdentifier) const;
         };
     }
 }

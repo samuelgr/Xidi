@@ -325,6 +325,15 @@ namespace Xidi
             return (ForceFeedback::TPhysicalActuatorValue)kPhysicalActuatorStrength;
         }
 
+        /// Computes the opaque source identifier that is to be passed to an element mapper.
+        /// @param [in] sourceControllerIdentifier Opaque identifier of the physical controller associated with the state being mapped.
+        /// @param [in] elementMapIndex Positional index of the element mapper within the overall element map.
+        /// @return Opaque source identifier value that can be passed to the element mapper.
+        inline uint32_t SourceIdentifierForElementMapper(uint32_t sourceControllerIdentifier, uint32_t elementMapIndex)
+        {
+            return (sourceControllerIdentifier << 8) + elementMapIndex;
+        }
+
 
         // -------- CONSTRUCTION AND DESTRUCTION --------------------------- //
         // See "Mapper.h" for documentation.
@@ -516,39 +525,38 @@ namespace Xidi
         SState Mapper::MapStatePhysicalToVirtual(XINPUT_GAMEPAD physicalState, uint32_t sourceControllerIdentifier) const
         {
             SState controllerState = {};
-            const uint32_t kSourceIdentifierBase = sourceControllerIdentifier << 8;
 
             // Left and right stick values need to be saturated at the virtual controller range due to a very slight difference between XInput range and virtual controller range.
             // This difference (-32768 extreme negative for XInput vs -32767 extreme negative for Xidi) does not affect functionality when filtered by saturation.
             // Vertical analog axes additionally need to be inverted because XInput presents up as positive and down as negative whereas Xidi needs to do the opposite.
 
-            if (nullptr != elements.named.stickLeftX) elements.named.stickLeftX->ContributeFromAnalogValue(controllerState, FilterAnalogStickValue(physicalState.sThumbLX), kSourceIdentifierBase + ELEMENT_MAP_INDEX_OF(stickLeftX));
-            if (nullptr != elements.named.stickLeftY) elements.named.stickLeftY->ContributeFromAnalogValue(controllerState, FilterAndInvertAnalogStickValue(physicalState.sThumbLY), kSourceIdentifierBase + ELEMENT_MAP_INDEX_OF(stickLeftY));
+            if (nullptr != elements.named.stickLeftX) elements.named.stickLeftX->ContributeFromAnalogValue(controllerState, FilterAnalogStickValue(physicalState.sThumbLX), SourceIdentifierForElementMapper(sourceControllerIdentifier, ELEMENT_MAP_INDEX_OF(stickLeftX)));
+            if (nullptr != elements.named.stickLeftY) elements.named.stickLeftY->ContributeFromAnalogValue(controllerState, FilterAndInvertAnalogStickValue(physicalState.sThumbLY), SourceIdentifierForElementMapper(sourceControllerIdentifier, ELEMENT_MAP_INDEX_OF(stickLeftY)));
 
-            if (nullptr != elements.named.stickRightX) elements.named.stickRightX->ContributeFromAnalogValue(controllerState, FilterAnalogStickValue(physicalState.sThumbRX), kSourceIdentifierBase + ELEMENT_MAP_INDEX_OF(stickRightX));
-            if (nullptr != elements.named.stickRightY) elements.named.stickRightY->ContributeFromAnalogValue(controllerState, FilterAndInvertAnalogStickValue(physicalState.sThumbRY), kSourceIdentifierBase + ELEMENT_MAP_INDEX_OF(stickRightY));
+            if (nullptr != elements.named.stickRightX) elements.named.stickRightX->ContributeFromAnalogValue(controllerState, FilterAnalogStickValue(physicalState.sThumbRX), SourceIdentifierForElementMapper(sourceControllerIdentifier, ELEMENT_MAP_INDEX_OF(stickRightX)));
+            if (nullptr != elements.named.stickRightY) elements.named.stickRightY->ContributeFromAnalogValue(controllerState, FilterAndInvertAnalogStickValue(physicalState.sThumbRY), SourceIdentifierForElementMapper(sourceControllerIdentifier, ELEMENT_MAP_INDEX_OF(stickRightY)));
 
-            if (nullptr != elements.named.dpadUp) elements.named.dpadUp->ContributeFromButtonValue(controllerState, (0 != (physicalState.wButtons & XINPUT_GAMEPAD_DPAD_UP)), kSourceIdentifierBase + ELEMENT_MAP_INDEX_OF(dpadUp));
-            if (nullptr != elements.named.dpadDown) elements.named.dpadDown->ContributeFromButtonValue(controllerState, (0 != (physicalState.wButtons & XINPUT_GAMEPAD_DPAD_DOWN)), kSourceIdentifierBase + ELEMENT_MAP_INDEX_OF(dpadDown));
-            if (nullptr != elements.named.dpadLeft) elements.named.dpadLeft->ContributeFromButtonValue(controllerState, (0 != (physicalState.wButtons & XINPUT_GAMEPAD_DPAD_LEFT)), kSourceIdentifierBase + ELEMENT_MAP_INDEX_OF(dpadLeft));
-            if (nullptr != elements.named.dpadRight) elements.named.dpadRight->ContributeFromButtonValue(controllerState, (0 != (physicalState.wButtons & XINPUT_GAMEPAD_DPAD_RIGHT)), kSourceIdentifierBase + ELEMENT_MAP_INDEX_OF(dpadRight));
+            if (nullptr != elements.named.dpadUp) elements.named.dpadUp->ContributeFromButtonValue(controllerState, (0 != (physicalState.wButtons & XINPUT_GAMEPAD_DPAD_UP)), SourceIdentifierForElementMapper(sourceControllerIdentifier, ELEMENT_MAP_INDEX_OF(dpadUp)));
+            if (nullptr != elements.named.dpadDown) elements.named.dpadDown->ContributeFromButtonValue(controllerState, (0 != (physicalState.wButtons & XINPUT_GAMEPAD_DPAD_DOWN)), SourceIdentifierForElementMapper(sourceControllerIdentifier, ELEMENT_MAP_INDEX_OF(dpadDown)));
+            if (nullptr != elements.named.dpadLeft) elements.named.dpadLeft->ContributeFromButtonValue(controllerState, (0 != (physicalState.wButtons & XINPUT_GAMEPAD_DPAD_LEFT)), SourceIdentifierForElementMapper(sourceControllerIdentifier, ELEMENT_MAP_INDEX_OF(dpadLeft)));
+            if (nullptr != elements.named.dpadRight) elements.named.dpadRight->ContributeFromButtonValue(controllerState, (0 != (physicalState.wButtons & XINPUT_GAMEPAD_DPAD_RIGHT)), SourceIdentifierForElementMapper(sourceControllerIdentifier, ELEMENT_MAP_INDEX_OF(dpadRight)));
 
-            if (nullptr != elements.named.triggerLT) elements.named.triggerLT->ContributeFromTriggerValue(controllerState, physicalState.bLeftTrigger, kSourceIdentifierBase + ELEMENT_MAP_INDEX_OF(triggerLT));
-            if (nullptr != elements.named.triggerRT) elements.named.triggerRT->ContributeFromTriggerValue(controllerState, physicalState.bRightTrigger, kSourceIdentifierBase + ELEMENT_MAP_INDEX_OF(triggerRT));
+            if (nullptr != elements.named.triggerLT) elements.named.triggerLT->ContributeFromTriggerValue(controllerState, physicalState.bLeftTrigger, SourceIdentifierForElementMapper(sourceControllerIdentifier, ELEMENT_MAP_INDEX_OF(triggerLT)));
+            if (nullptr != elements.named.triggerRT) elements.named.triggerRT->ContributeFromTriggerValue(controllerState, physicalState.bRightTrigger, SourceIdentifierForElementMapper(sourceControllerIdentifier, ELEMENT_MAP_INDEX_OF(triggerRT)));
 
-            if (nullptr != elements.named.buttonA) elements.named.buttonA->ContributeFromButtonValue(controllerState, (0 != (physicalState.wButtons & XINPUT_GAMEPAD_A)), kSourceIdentifierBase + ELEMENT_MAP_INDEX_OF(buttonA));
-            if (nullptr != elements.named.buttonB) elements.named.buttonB->ContributeFromButtonValue(controllerState, (0 != (physicalState.wButtons & XINPUT_GAMEPAD_B)), kSourceIdentifierBase + ELEMENT_MAP_INDEX_OF(buttonB));
-            if (nullptr != elements.named.buttonX) elements.named.buttonX->ContributeFromButtonValue(controllerState, (0 != (physicalState.wButtons & XINPUT_GAMEPAD_X)), kSourceIdentifierBase + ELEMENT_MAP_INDEX_OF(buttonX));
-            if (nullptr != elements.named.buttonY) elements.named.buttonY->ContributeFromButtonValue(controllerState, (0 != (physicalState.wButtons & XINPUT_GAMEPAD_Y)), kSourceIdentifierBase + ELEMENT_MAP_INDEX_OF(buttonY));
+            if (nullptr != elements.named.buttonA) elements.named.buttonA->ContributeFromButtonValue(controllerState, (0 != (physicalState.wButtons & XINPUT_GAMEPAD_A)), SourceIdentifierForElementMapper(sourceControllerIdentifier, ELEMENT_MAP_INDEX_OF(buttonA)));
+            if (nullptr != elements.named.buttonB) elements.named.buttonB->ContributeFromButtonValue(controllerState, (0 != (physicalState.wButtons & XINPUT_GAMEPAD_B)), SourceIdentifierForElementMapper(sourceControllerIdentifier, ELEMENT_MAP_INDEX_OF(buttonB)));
+            if (nullptr != elements.named.buttonX) elements.named.buttonX->ContributeFromButtonValue(controllerState, (0 != (physicalState.wButtons & XINPUT_GAMEPAD_X)), SourceIdentifierForElementMapper(sourceControllerIdentifier, ELEMENT_MAP_INDEX_OF(buttonX)));
+            if (nullptr != elements.named.buttonY) elements.named.buttonY->ContributeFromButtonValue(controllerState, (0 != (physicalState.wButtons & XINPUT_GAMEPAD_Y)), SourceIdentifierForElementMapper(sourceControllerIdentifier, ELEMENT_MAP_INDEX_OF(buttonY)));
 
-            if (nullptr != elements.named.buttonLB) elements.named.buttonLB->ContributeFromButtonValue(controllerState, (0 != (physicalState.wButtons & XINPUT_GAMEPAD_LEFT_SHOULDER)), kSourceIdentifierBase + ELEMENT_MAP_INDEX_OF(buttonLB));
-            if (nullptr != elements.named.buttonRB) elements.named.buttonRB->ContributeFromButtonValue(controllerState, (0 != (physicalState.wButtons & XINPUT_GAMEPAD_RIGHT_SHOULDER)), kSourceIdentifierBase + +ELEMENT_MAP_INDEX_OF(buttonRB));
+            if (nullptr != elements.named.buttonLB) elements.named.buttonLB->ContributeFromButtonValue(controllerState, (0 != (physicalState.wButtons & XINPUT_GAMEPAD_LEFT_SHOULDER)), SourceIdentifierForElementMapper(sourceControllerIdentifier, ELEMENT_MAP_INDEX_OF(buttonLB)));
+            if (nullptr != elements.named.buttonRB) elements.named.buttonRB->ContributeFromButtonValue(controllerState, (0 != (physicalState.wButtons & XINPUT_GAMEPAD_RIGHT_SHOULDER)), SourceIdentifierForElementMapper(sourceControllerIdentifier, ELEMENT_MAP_INDEX_OF(buttonRB)));
 
-            if (nullptr != elements.named.buttonBack) elements.named.buttonBack->ContributeFromButtonValue(controllerState, (0 != (physicalState.wButtons & XINPUT_GAMEPAD_BACK)), kSourceIdentifierBase + ELEMENT_MAP_INDEX_OF(buttonBack));
-            if (nullptr != elements.named.buttonStart) elements.named.buttonStart->ContributeFromButtonValue(controllerState, (0 != (physicalState.wButtons & XINPUT_GAMEPAD_START)), kSourceIdentifierBase + ELEMENT_MAP_INDEX_OF(buttonStart));
+            if (nullptr != elements.named.buttonBack) elements.named.buttonBack->ContributeFromButtonValue(controllerState, (0 != (physicalState.wButtons & XINPUT_GAMEPAD_BACK)), SourceIdentifierForElementMapper(sourceControllerIdentifier, ELEMENT_MAP_INDEX_OF(buttonBack)));
+            if (nullptr != elements.named.buttonStart) elements.named.buttonStart->ContributeFromButtonValue(controllerState, (0 != (physicalState.wButtons & XINPUT_GAMEPAD_START)), SourceIdentifierForElementMapper(sourceControllerIdentifier, ELEMENT_MAP_INDEX_OF(buttonStart)));
 
-            if (nullptr != elements.named.buttonLS) elements.named.buttonLS->ContributeFromButtonValue(controllerState, (0 != (physicalState.wButtons & XINPUT_GAMEPAD_LEFT_THUMB)), kSourceIdentifierBase + ELEMENT_MAP_INDEX_OF(buttonLS));
-            if (nullptr != elements.named.buttonRS) elements.named.buttonRS->ContributeFromButtonValue(controllerState, (0 != (physicalState.wButtons & XINPUT_GAMEPAD_RIGHT_THUMB)), kSourceIdentifierBase + ELEMENT_MAP_INDEX_OF(buttonRS));
+            if (nullptr != elements.named.buttonLS) elements.named.buttonLS->ContributeFromButtonValue(controllerState, (0 != (physicalState.wButtons & XINPUT_GAMEPAD_LEFT_THUMB)), SourceIdentifierForElementMapper(sourceControllerIdentifier, ELEMENT_MAP_INDEX_OF(buttonLS)));
+            if (nullptr != elements.named.buttonRS) elements.named.buttonRS->ContributeFromButtonValue(controllerState, (0 != (physicalState.wButtons & XINPUT_GAMEPAD_RIGHT_THUMB)), SourceIdentifierForElementMapper(sourceControllerIdentifier, ELEMENT_MAP_INDEX_OF(buttonRS)));
 
             // Once all contributions have been committed, saturate all axis values at the extreme ends of the allowed range.
             // Doing this at the end means that intermediate contributions are computed with much more range than the controller is allowed to report, which can increase accuracy when there are multiple interfering mappers contributing to axes.
@@ -559,6 +567,41 @@ namespace Xidi
                 else if (axisValue < kAnalogValueMin)
                     axisValue = kAnalogValueMin;
             }
+
+            return controllerState;
+        }
+
+        SState Mapper::MapNeutralPhysicalToVirtual(uint32_t sourceControllerIdentifier) const
+        {
+            SState controllerState = {};
+
+            if (nullptr != elements.named.stickLeftX) elements.named.stickLeftX->ContributeNeutral(controllerState, SourceIdentifierForElementMapper(sourceControllerIdentifier, ELEMENT_MAP_INDEX_OF(stickLeftX)));
+            if (nullptr != elements.named.stickLeftY) elements.named.stickLeftY->ContributeNeutral(controllerState, SourceIdentifierForElementMapper(sourceControllerIdentifier, ELEMENT_MAP_INDEX_OF(stickLeftY)));
+
+            if (nullptr != elements.named.stickRightX) elements.named.stickRightX->ContributeNeutral(controllerState, SourceIdentifierForElementMapper(sourceControllerIdentifier, ELEMENT_MAP_INDEX_OF(stickRightX)));
+            if (nullptr != elements.named.stickRightY) elements.named.stickRightY->ContributeNeutral(controllerState, SourceIdentifierForElementMapper(sourceControllerIdentifier, ELEMENT_MAP_INDEX_OF(stickRightY)));
+
+            if (nullptr != elements.named.dpadUp) elements.named.dpadUp->ContributeNeutral(controllerState, SourceIdentifierForElementMapper(sourceControllerIdentifier, ELEMENT_MAP_INDEX_OF(dpadUp)));
+            if (nullptr != elements.named.dpadDown) elements.named.dpadDown->ContributeNeutral(controllerState, SourceIdentifierForElementMapper(sourceControllerIdentifier, ELEMENT_MAP_INDEX_OF(dpadDown)));
+            if (nullptr != elements.named.dpadLeft) elements.named.dpadLeft->ContributeNeutral(controllerState, SourceIdentifierForElementMapper(sourceControllerIdentifier, ELEMENT_MAP_INDEX_OF(dpadLeft)));
+            if (nullptr != elements.named.dpadRight) elements.named.dpadRight->ContributeNeutral(controllerState, SourceIdentifierForElementMapper(sourceControllerIdentifier, ELEMENT_MAP_INDEX_OF(dpadRight)));
+
+            if (nullptr != elements.named.triggerLT) elements.named.triggerLT->ContributeNeutral(controllerState, SourceIdentifierForElementMapper(sourceControllerIdentifier, ELEMENT_MAP_INDEX_OF(triggerLT)));
+            if (nullptr != elements.named.triggerRT) elements.named.triggerRT->ContributeNeutral(controllerState, SourceIdentifierForElementMapper(sourceControllerIdentifier, ELEMENT_MAP_INDEX_OF(triggerRT)));
+
+            if (nullptr != elements.named.buttonA) elements.named.buttonA->ContributeNeutral(controllerState, SourceIdentifierForElementMapper(sourceControllerIdentifier, ELEMENT_MAP_INDEX_OF(buttonA)));
+            if (nullptr != elements.named.buttonB) elements.named.buttonB->ContributeNeutral(controllerState, SourceIdentifierForElementMapper(sourceControllerIdentifier, ELEMENT_MAP_INDEX_OF(buttonB)));
+            if (nullptr != elements.named.buttonX) elements.named.buttonX->ContributeNeutral(controllerState, SourceIdentifierForElementMapper(sourceControllerIdentifier, ELEMENT_MAP_INDEX_OF(buttonX)));
+            if (nullptr != elements.named.buttonY) elements.named.buttonY->ContributeNeutral(controllerState, SourceIdentifierForElementMapper(sourceControllerIdentifier, ELEMENT_MAP_INDEX_OF(buttonY)));
+
+            if (nullptr != elements.named.buttonLB) elements.named.buttonLB->ContributeNeutral(controllerState, SourceIdentifierForElementMapper(sourceControllerIdentifier, ELEMENT_MAP_INDEX_OF(buttonLB)));
+            if (nullptr != elements.named.buttonRB) elements.named.buttonRB->ContributeNeutral(controllerState, SourceIdentifierForElementMapper(sourceControllerIdentifier, ELEMENT_MAP_INDEX_OF(buttonRB)));
+
+            if (nullptr != elements.named.buttonBack) elements.named.buttonBack->ContributeNeutral(controllerState, SourceIdentifierForElementMapper(sourceControllerIdentifier, ELEMENT_MAP_INDEX_OF(buttonBack)));
+            if (nullptr != elements.named.buttonStart) elements.named.buttonStart->ContributeNeutral(controllerState, SourceIdentifierForElementMapper(sourceControllerIdentifier, ELEMENT_MAP_INDEX_OF(buttonStart)));
+
+            if (nullptr != elements.named.buttonLS) elements.named.buttonLS->ContributeNeutral(controllerState, SourceIdentifierForElementMapper(sourceControllerIdentifier, ELEMENT_MAP_INDEX_OF(buttonLS)));
+            if (nullptr != elements.named.buttonRS) elements.named.buttonRS->ContributeNeutral(controllerState, SourceIdentifierForElementMapper(sourceControllerIdentifier, ELEMENT_MAP_INDEX_OF(buttonRS)));
 
             return controllerState;
         }

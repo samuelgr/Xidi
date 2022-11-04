@@ -475,6 +475,115 @@ namespace Xidi
 
         // --------
 
+        std::unique_ptr<IElementMapper> MouseAxisMapper::Clone(void) const
+        {
+            return std::make_unique<MouseAxisMapper>(*this);
+        }
+
+        // --------
+
+        void MouseAxisMapper::ContributeFromAnalogValue(SState& controllerState, int16_t analogValue, uint32_t sourceIdentifier) const
+        {
+            constexpr int16_t kMouseAnalogDeadzone = (((int)kAnalogValueMax - (int)kAnalogValueMin) / 2) / 10;
+            int analogValueForContribution = kAnalogValueNeutral;
+            if (analogValue > kMouseAnalogDeadzone || analogValue < -kMouseAnalogDeadzone)
+                analogValueForContribution = analogValue;
+
+            constexpr double kAnalogToMouseScalingFactor = (double)(Mouse::kMouseMovementUnitsMax - Mouse::kMouseMovementUnitsMin) / (double)(kAnalogValueMax - kAnalogValueMin);
+            int mouseAxisValueToContribute = (int)((double)(analogValueForContribution - kAnalogValueNeutral) * kAnalogToMouseScalingFactor);
+
+            switch (direction)
+            {
+            case EAxisDirection::Both:
+                break;
+
+            case EAxisDirection::Positive:
+                mouseAxisValueToContribute = (mouseAxisValueToContribute - Mouse::kMouseMovementUnitsMin) / 2;
+                break;
+
+            case EAxisDirection::Negative:
+                mouseAxisValueToContribute = (mouseAxisValueToContribute - Mouse::kMouseMovementUnitsMax) / 2;
+                break;
+            }
+
+            Mouse::SubmitMouseMovement(axis, mouseAxisValueToContribute, sourceIdentifier);
+        }
+
+        // --------
+
+        void MouseAxisMapper::ContributeFromButtonValue(SState& controllerState, bool buttonPressed, uint32_t sourceIdentifier) const
+        {
+            int mouseAxisValueToContribute = 0;
+
+            switch (direction)
+            {
+            case EAxisDirection::Both:
+                mouseAxisValueToContribute = (buttonPressed ? Mouse::kMouseMovementUnitsMax : Mouse::kMouseMovementUnitsMin);
+                break;
+
+            case EAxisDirection::Positive:
+                mouseAxisValueToContribute = (buttonPressed ? Mouse::kMouseMovementUnitsMax : Mouse::kMouseMovementUnitsNeutral);
+                break;
+
+            case EAxisDirection::Negative:
+                mouseAxisValueToContribute = (buttonPressed ? Mouse::kMouseMovementUnitsMin : Mouse::kMouseMovementUnitsNeutral);
+                break;
+            }
+
+            Mouse::SubmitMouseMovement(axis, mouseAxisValueToContribute, sourceIdentifier);
+        }
+
+        // --------
+
+        void MouseAxisMapper::ContributeFromTriggerValue(SState& controllerState, uint8_t triggerValue, uint32_t sourceIdentifier) const
+        {
+            constexpr double kBidirectionalStepSize = (double)(Mouse::kMouseMovementUnitsMax - Mouse::kMouseMovementUnitsMin) / (double)(kTriggerValueMax - kTriggerValueMin);
+            constexpr double kPositiveStepSize = (double)Mouse::kMouseMovementUnitsMax / (double)(kTriggerValueMax - kTriggerValueMin);
+            constexpr double kNegativeStepSize = (double)Mouse::kMouseMovementUnitsMin / (double)(kTriggerValueMax - kTriggerValueMin);
+
+            int mouseAxisValueToContribute = 0;
+
+            switch (direction)
+            {
+            case EAxisDirection::Both:
+                mouseAxisValueToContribute = (int)((double)triggerValue * kBidirectionalStepSize) + Mouse::kMouseMovementUnitsMin;
+                break;
+
+            case EAxisDirection::Positive:
+                mouseAxisValueToContribute = (int)((double)triggerValue * kPositiveStepSize) + Mouse::kMouseMovementUnitsNeutral;
+                break;
+
+            case EAxisDirection::Negative:
+                mouseAxisValueToContribute = (int)((double)triggerValue * kNegativeStepSize) - Mouse::kMouseMovementUnitsNeutral;
+                break;
+            }
+
+            Mouse::SubmitMouseMovement(axis, mouseAxisValueToContribute, sourceIdentifier);
+        }
+
+        // --------
+
+        void MouseAxisMapper::ContributeNeutral(SState& controllerState, uint32_t sourceIdentifier) const
+        {
+            Mouse::SubmitMouseMovement(axis, Mouse::kMouseMovementUnitsNeutral, sourceIdentifier);
+        }
+
+        // --------
+
+        int MouseAxisMapper::GetTargetElementCount(void) const
+        {
+            return 0;
+        }
+
+        // --------
+
+        std::optional<SElementIdentifier> MouseAxisMapper::GetTargetElementAt(int index) const
+        {
+            return std::nullopt;
+        }
+
+        // --------
+        
         std::unique_ptr<IElementMapper> MouseButtonMapper::Clone(void) const
         {
             return std::make_unique<MouseButtonMapper>(*this);

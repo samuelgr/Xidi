@@ -381,6 +381,55 @@ namespace Xidi
             std::optional<SElementIdentifier> GetTargetElementAt(int index) const override;
         };
 
+        /// Maps a single XInput controller element to a mouse movement axis.
+        /// For analog sticks and triggers, the value read is mapped directly to the corresponding mouse axis, scaled by an appropriate speed. Half-axis mode generally makes sense only for triggers because they can share an axis, but it is implemented by range mapping for analog stick axes as well.
+        /// For buttons, the value is either negative extreme if the button is not pressed or positive extreme if the value is pressed. Use a half-axis configuration to map to either neutral (not pressed) or extreme value (pressed).
+        class MouseAxisMapper : public IElementMapper
+        {
+        protected:
+            // -------- INSTANCE VARIABLES --------------------------------- //
+
+            /// Identifies the axis to which this mapper should contribute in the internal controller state data structure.
+            const Mouse::EMouseAxis axis;
+
+            /// Identifies the direction to which this mapper should contribute on its associated axis.
+            /// If set to anything other than both directions, the contribution is to half of the axis only.
+            const EAxisDirection direction;
+
+
+        public:
+            // -------- CONSTRUCTION AND DESTRUCTION ----------------------- //
+
+            /// Initialization constructor.
+            /// Specifies the axis and, optionally, the direction to which this mapper should contribute in the internal controller state data structure.
+            inline constexpr MouseAxisMapper(Mouse::EMouseAxis axis, EAxisDirection direction = EAxisDirection::Both) : IElementMapper(), axis(axis), direction(direction)
+            {
+                // Nothing to do here.
+            }
+
+
+            // -------- INSTANCE METHODS ----------------------------------- //
+
+            /// Retrieves and returns the axis direction to which this mapper should contribute on its associated axis.
+            /// Intended for tests.
+            /// @return Target axis direction.
+            inline EAxisDirection GetAxisDirection(void) const
+            {
+                return direction;
+            }
+
+
+            // -------- CONCRETE INSTANCE METHODS -------------------------- //
+
+            std::unique_ptr<IElementMapper> Clone(void) const override;
+            void ContributeFromAnalogValue(SState& controllerState, int16_t analogValue, uint32_t sourceIdentifier) const override;
+            void ContributeFromButtonValue(SState& controllerState, bool buttonPressed, uint32_t sourceIdentifier) const override;
+            void ContributeFromTriggerValue(SState& controllerState, uint8_t triggerValue, uint32_t sourceIdentifier) const override;
+            void ContributeNeutral(SState& controllerState, uint32_t sourceIdentifier) const override;
+            int GetTargetElementCount(void) const override;
+            std::optional<SElementIdentifier> GetTargetElementAt(int index) const override;
+        };
+
         /// Maps a single XInput controller element to a mouse button.
         /// For analog sticks, if the axis displacement from neutral is greater than a threshold, the mouse button is considered pressed.
         /// For triggers, if the magnitude of the trigger reading is greater than a threshold, the mouse button is considered pressed.
