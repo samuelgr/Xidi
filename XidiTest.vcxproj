@@ -281,6 +281,7 @@
     <ClCompile Include="Source\Test\Case\MapperBuilderTest.cpp" />
     <ClCompile Include="Source\Test\Case\MapperTest.cpp" />
     <ClCompile Include="Source\Test\Case\MapperParserTest.cpp" />
+    <ClCompile Include="Source\Test\Case\MouseAxisMapperTest.cpp" />
     <ClCompile Include="Source\Test\Case\MouseButtonMapperTest.cpp" />
     <ClCompile Include="Source\Test\Case\PeriodicEffectTest.cpp" />
     <ClCompile Include="Source\Test\Case\PovMapperTest.cpp" />

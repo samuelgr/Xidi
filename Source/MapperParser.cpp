@@ -180,6 +180,57 @@ namespace Xidi
                 return kDirectionIter->second;
             }
 
+            /// Attempts to map a string to a mouse axis type enumerator.
+            /// @param [in] mouseAxisString String supposedly representing an axis type.
+            /// @return Corresponding mouse axis type enumerator, if the string is parseable as such.
+            static std::optional<Mouse::EMouseAxis> MouseAxisFromString(std::wstring_view mouseAxisString)
+            {
+                // Map of strings representing mouse axes to mouse axis enumerators.
+                static const std::map<std::wstring_view, Mouse::EMouseAxis> kMouseAxisStrings = {
+                    {L"x",                  Mouse::EMouseAxis::X},
+                    {L"X",                  Mouse::EMouseAxis::X},
+                    {L"h",                  Mouse::EMouseAxis::X},
+                    {L"H",                  Mouse::EMouseAxis::X},
+                    {L"horiz",              Mouse::EMouseAxis::X},
+                    {L"Horiz",              Mouse::EMouseAxis::X},
+                    {L"horizontal",         Mouse::EMouseAxis::X},
+                    {L"Horizontal",         Mouse::EMouseAxis::X},
+
+                    {L"y",                  Mouse::EMouseAxis::Y},
+                    {L"Y",                  Mouse::EMouseAxis::Y},
+                    {L"v",                  Mouse::EMouseAxis::Y},
+                    {L"V",                  Mouse::EMouseAxis::Y},
+                    {L"vert",               Mouse::EMouseAxis::Y},
+                    {L"Vert",               Mouse::EMouseAxis::Y},
+                    {L"vertical",           Mouse::EMouseAxis::Y},
+                    {L"Vertical",           Mouse::EMouseAxis::Y},
+
+                    {L"wheelh",             Mouse::EMouseAxis::WheelHorizontal},
+                    {L"wheelH",             Mouse::EMouseAxis::WheelHorizontal},
+                    {L"WheelH",             Mouse::EMouseAxis::WheelHorizontal},
+                    {L"wheelx",             Mouse::EMouseAxis::WheelHorizontal},
+                    {L"wheelX",             Mouse::EMouseAxis::WheelHorizontal},
+                    {L"WheelX",             Mouse::EMouseAxis::WheelHorizontal},
+                    {L"wheelHorizontal",    Mouse::EMouseAxis::WheelHorizontal},
+                    {L"WheelHorizontal",    Mouse::EMouseAxis::WheelHorizontal},
+
+                    {L"wheelv",             Mouse::EMouseAxis::WheelVertical},
+                    {L"wheelV",             Mouse::EMouseAxis::WheelVertical},
+                    {L"WheelV",             Mouse::EMouseAxis::WheelVertical},
+                    {L"wheely",             Mouse::EMouseAxis::WheelVertical},
+                    {L"wheelY",             Mouse::EMouseAxis::WheelVertical},
+                    {L"WheelY",             Mouse::EMouseAxis::WheelVertical},
+                    {L"wheelVertical",      Mouse::EMouseAxis::WheelVertical},
+                    {L"WheelVertical",      Mouse::EMouseAxis::WheelVertical}
+                };
+
+                const auto kMouseAxisIter = kMouseAxisStrings.find(mouseAxisString);
+                if (kMouseAxisStrings.cend() == kMouseAxisIter)
+                    return std::nullopt;
+
+                return kMouseAxisIter->second;
+            }
+
             /// Identifies the end position of the first parameter in the supplied string which should be a parameter list.
             /// Example: "RotY, +" would identify the position of the comma.
             /// Example: "Split(Button(1), Button(2)), Split(Button(3), Button(4))" would identify the position of the second comma.
@@ -992,6 +1043,13 @@ namespace Xidi
 
             // --------
 
+            ElementMapperOrError MakeMouseAxisMapper(std::wstring_view params)
+            {
+                return L"MouseAxis: Not yet implemented.";
+            }
+
+            // --------
+
             ElementMapperOrError MakeMouseButtonMapper(std::wstring_view params)
             {
                 std::optional<Mouse::EMouseButton> maybeMouseButton = ParseMouseButton(params);
@@ -1196,6 +1254,10 @@ namespace Xidi
                     {L"keystroke",              &MakeKeyboardMapper},
                     {L"Keystroke",              &MakeKeyboardMapper},
                     {L"KeyStroke",              &MakeKeyboardMapper},
+
+                    {L"mouseaxis",              &MakeMouseAxisMapper},
+                    {L"Mouseaxis",              &MakeMouseAxisMapper},
+                    {L"MouseAxis",              &MakeMouseAxisMapper},
 
                     {L"mousebutton",            &MakeMouseButtonMapper},
                     {L"Mousebutton",            &MakeMouseButtonMapper},

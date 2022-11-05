@@ -14,6 +14,7 @@
 #include "Keyboard.h"
 #include "Mapper.h"
 #include "MapperParser.h"
+#include "Mouse.h"
 #include "TestCase.h"
 
 #include <memory>
@@ -34,6 +35,8 @@ namespace XidiTest
     using ::Xidi::Controller::MapperParser::SElementMapperParseResult;
     using ::Xidi::Controller::MapperParser::SParamStringParts;
     using ::Xidi::Keyboard::TKeyIdentifier;
+    using ::Xidi::Mouse::EMouseAxis;
+    using ::Xidi::Mouse::EMouseButton;
 
 
     // -------- INTERNAL FUNCTIONS ----------------------------------------- //
@@ -541,7 +544,7 @@ namespace XidiTest
         }
     }
 
-    // Verifies correct failure to create button mapper objects when the parameter strings are invalid.
+    // Verifies correct failure to create keyboard mapper objects when the parameter strings are invalid.
     TEST_CASE(MapperParser_MakeKeyboardMapper_Invalid)
     {
         const std::wstring_view kKeyboardMapperTestStrings[] = {L"256", L"0x101", L"DIK_INVALID", L"Invalid", L""};
@@ -550,6 +553,71 @@ namespace XidiTest
         {
             ElementMapperOrError maybeKeyboardMapper = MapperParser::MakeKeyboardMapper(keyboardMapperTestString);
             TEST_ASSERT(false == maybeKeyboardMapper.HasValue());
+        }
+    }
+
+    // Verifies correct construction of mouse axis mapper objects in the nominal case of valid parameter strings being passed.
+    TEST_CASE(MapperParser_MakeMouseAxisMapper_Nominal)
+    {
+        // TODO
+    }
+
+    // Verifies correct failure to create mouse button mapper objects when the parameter strings are invalid.
+    TEST_CASE(MapperParser_MakeMouseAxisMapper_Invalid)
+    {
+        const std::wstring_view kMouseAxisMapperTestStrings[] = { L"B", L"5", L"x, anydir", L"wheelX, +, morestuff" };
+
+        for (auto& mouseAxisMapperTestString : kMouseAxisMapperTestStrings)
+        {
+            ElementMapperOrError maybeMouseAxisMapper = MapperParser::MakeMouseAxisMapper(mouseAxisMapperTestString);
+            TEST_ASSERT(false == maybeMouseAxisMapper.HasValue());
+        }
+    }
+
+    // Verifies correct construction of mouse button mapper objects in the nominal case of valid parameter strings being passed.
+    TEST_CASE(MapperParser_MakeMouseButtonMapper_Nominal)
+    {
+        constexpr std::pair<std::wstring_view, EMouseButton> kMouseButtonMapperTestItems[] = {
+            {L"left",           EMouseButton::Left},
+            {L"Left",           EMouseButton::Left},
+            {L"LeftButton",     EMouseButton::Left},
+            {L"middle",         EMouseButton::Middle},
+            {L"Middle",         EMouseButton::Middle},
+            {L"Wheel",          EMouseButton::Middle},
+            {L"right",          EMouseButton::Right},
+            {L"Right",          EMouseButton::Right},
+            {L"RightButton",    EMouseButton::Right},
+            {L"X1",             EMouseButton::X1},
+            {L"Back",           EMouseButton::X1},
+            {L"X2",             EMouseButton::X2},
+            {L"Forward",        EMouseButton::X2}
+
+        };
+
+        for (auto& mouseButtonMapperTestItem : kMouseButtonMapperTestItems)
+        {
+            ElementMapperOrError maybeMouseButtonMapper = MapperParser::MakeMouseButtonMapper(mouseButtonMapperTestItem.first);
+
+            TEST_ASSERT(true == maybeMouseButtonMapper.HasValue());
+            TEST_ASSERT(0 == maybeMouseButtonMapper.Value()->GetTargetElementCount());
+
+            TEST_ASSERT(nullptr != dynamic_cast<MouseButtonMapper*>(maybeMouseButtonMapper.Value().get()));
+
+            const EMouseButton kExpectedTargetMouseButton = mouseButtonMapperTestItem.second;
+            const EMouseButton kActualTargetMouseButton = dynamic_cast<MouseButtonMapper*>(maybeMouseButtonMapper.Value().get())->GetMouseButton();
+            TEST_ASSERT(kActualTargetMouseButton == kExpectedTargetMouseButton);
+        }
+    }
+
+    // Verifies correct failure to create mouse button mapper objects when the parameter strings are invalid.
+    TEST_CASE(MapperParser_MakeMouseButtonMapper_Invalid)
+    {
+        const std::wstring_view kMouseButtonMapperTestStrings[] = {L"invalid", L"", L" "};
+
+        for (auto& mouseButtonMapperTestString : kMouseButtonMapperTestStrings)
+        {
+            ElementMapperOrError maybeMouseButtonMapper = MapperParser::MakeKeyboardMapper(mouseButtonMapperTestString);
+            TEST_ASSERT(false == maybeMouseButtonMapper.HasValue());
         }
     }
 

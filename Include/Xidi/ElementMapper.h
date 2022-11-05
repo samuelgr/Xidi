@@ -410,7 +410,15 @@ namespace Xidi
 
             // -------- INSTANCE METHODS ----------------------------------- //
 
-            /// Retrieves and returns the axis direction to which this mapper should contribute on its associated axis.
+            /// Retrieves and returns the mouse axis with which this element mapper is associated.
+            /// Intended for tests.
+            /// @return Associated axis.
+            inline Mouse::EMouseAxis GetAxis(void) const
+            {
+                return axis;
+            }
+
+            /// Retrieves and returns the axis direction to which this element mapper should contribute on its associated axis.
             /// Intended for tests.
             /// @return Target axis direction.
             inline EAxisDirection GetAxisDirection(void) const
@@ -459,7 +467,7 @@ namespace Xidi
             /// Retrieves and returns the target mouse button to which this object contributes.
             /// Intended for tests.
             /// @return Target mouse button identifier.
-            inline Mouse::EMouseButton GetTargetMouseButton(void) const
+            inline Mouse::EMouseButton GetMouseButton(void) const
             {
                 return mouseButton;
             }

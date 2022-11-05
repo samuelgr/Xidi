@@ -52,7 +52,7 @@ namespace XidiTest
             const std::optional<SElementIdentifier> maybeTargetElement = mapper.GetTargetElementAt(0);
             TEST_ASSERT(false == maybeTargetElement.has_value());
 
-            TEST_ASSERT(mapper.GetTargetMouseButton() == button);
+            TEST_ASSERT(mapper.GetMouseButton() == button);
         }
     }
 
@@ -73,7 +73,7 @@ namespace XidiTest
             const std::optional<SElementIdentifier> maybeTargetElement = mapperClone->GetTargetElementAt(0);
             TEST_ASSERT(false == maybeTargetElement.has_value());
 
-            TEST_ASSERT(dynamic_cast<MouseButtonMapper*>(mapperClone.get())->GetTargetMouseButton() == button);
+            TEST_ASSERT(dynamic_cast<MouseButtonMapper*>(mapperClone.get())->GetMouseButton() == button);
         }
     }
 
