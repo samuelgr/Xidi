@@ -16,6 +16,7 @@
 #include "Keyboard.h"
 #include "Mouse.h"
 
+#include <cmath>
 #include <cstdint>
 #include <optional>
 
@@ -484,13 +485,18 @@ namespace Xidi
 
         void MouseAxisMapper::ContributeFromAnalogValue(SState& controllerState, int16_t analogValue, uint32_t sourceIdentifier) const
         {
-            constexpr int16_t kMouseAnalogDeadzone = (((int)kAnalogValueMax - (int)kAnalogValueMin) / 2) / 10;
+            constexpr double kMouseAnalogDeadzonePercentage = 7.5;
+            constexpr double kMouseAnalogDeadzone = (((double)kAnalogValueMax - (double)kAnalogValueMin) / 2.0) / (100.0 / kMouseAnalogDeadzonePercentage);
+
             int analogValueForContribution = kAnalogValueNeutral;
-            if (analogValue > kMouseAnalogDeadzone || analogValue < -kMouseAnalogDeadzone)
-                analogValueForContribution = analogValue;
+            if ((double)analogValue > kMouseAnalogDeadzone || (double)analogValue < -kMouseAnalogDeadzone)
+                analogValueForContribution = (int)std::copysign(((std::abs((double)analogValue) - kMouseAnalogDeadzone) * (100.0 / (100.0 - (double)kMouseAnalogDeadzonePercentage))), (double)analogValue);
 
             constexpr double kAnalogToMouseScalingFactor = (double)(Mouse::kMouseMovementUnitsMax - Mouse::kMouseMovementUnitsMin) / (double)(kAnalogValueMax - kAnalogValueMin);
-            int mouseAxisValueToContribute = (int)((double)(analogValueForContribution - kAnalogValueNeutral) * kAnalogToMouseScalingFactor);
+            const double kMouseAxisValueRaw = ((double)(analogValueForContribution - kAnalogValueNeutral) * kAnalogToMouseScalingFactor);
+            const double kMouseAxisValueTransformed = kMouseAxisValueRaw;
+
+            int mouseAxisValueToContribute = (int)kMouseAxisValueTransformed;
 
             switch (direction)
             {
@@ -513,20 +519,22 @@ namespace Xidi
 
         void MouseAxisMapper::ContributeFromButtonValue(SState& controllerState, bool buttonPressed, uint32_t sourceIdentifier) const
         {
-            int mouseAxisValueToContribute = 0;
+            constexpr double kMouseButtonContributionScalingFactor = 0.5;
+
+            int mouseAxisValueToContribute = Mouse::kMouseMovementUnitsNeutral;
 
             switch (direction)
             {
             case EAxisDirection::Both:
-                mouseAxisValueToContribute = (buttonPressed ? Mouse::kMouseMovementUnitsMax : Mouse::kMouseMovementUnitsMin);
+                mouseAxisValueToContribute += (int)(kMouseButtonContributionScalingFactor * (double)(buttonPressed ? (Mouse::kMouseMovementUnitsMax - Mouse::kMouseMovementUnitsNeutral) : (Mouse::kMouseMovementUnitsMin - Mouse::kMouseMovementUnitsNeutral)));
                 break;
 
             case EAxisDirection::Positive:
-                mouseAxisValueToContribute = (buttonPressed ? Mouse::kMouseMovementUnitsMax : Mouse::kMouseMovementUnitsNeutral);
+                mouseAxisValueToContribute += (int)(kMouseButtonContributionScalingFactor * (double)(buttonPressed ? (Mouse::kMouseMovementUnitsMax - Mouse::kMouseMovementUnitsNeutral) : 0));
                 break;
 
             case EAxisDirection::Negative:
-                mouseAxisValueToContribute = (buttonPressed ? Mouse::kMouseMovementUnitsMin : Mouse::kMouseMovementUnitsNeutral);
+                mouseAxisValueToContribute += (int)(kMouseButtonContributionScalingFactor * (double)(buttonPressed ? (Mouse::kMouseMovementUnitsMin - Mouse::kMouseMovementUnitsNeutral) : 0));
                 break;
             }
 

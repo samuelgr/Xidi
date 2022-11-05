@@ -575,33 +575,11 @@ namespace Xidi
         {
             SState controllerState = {};
 
-            if (nullptr != elements.named.stickLeftX) elements.named.stickLeftX->ContributeNeutral(controllerState, SourceIdentifierForElementMapper(sourceControllerIdentifier, ELEMENT_MAP_INDEX_OF(stickLeftX)));
-            if (nullptr != elements.named.stickLeftY) elements.named.stickLeftY->ContributeNeutral(controllerState, SourceIdentifierForElementMapper(sourceControllerIdentifier, ELEMENT_MAP_INDEX_OF(stickLeftY)));
-
-            if (nullptr != elements.named.stickRightX) elements.named.stickRightX->ContributeNeutral(controllerState, SourceIdentifierForElementMapper(sourceControllerIdentifier, ELEMENT_MAP_INDEX_OF(stickRightX)));
-            if (nullptr != elements.named.stickRightY) elements.named.stickRightY->ContributeNeutral(controllerState, SourceIdentifierForElementMapper(sourceControllerIdentifier, ELEMENT_MAP_INDEX_OF(stickRightY)));
-
-            if (nullptr != elements.named.dpadUp) elements.named.dpadUp->ContributeNeutral(controllerState, SourceIdentifierForElementMapper(sourceControllerIdentifier, ELEMENT_MAP_INDEX_OF(dpadUp)));
-            if (nullptr != elements.named.dpadDown) elements.named.dpadDown->ContributeNeutral(controllerState, SourceIdentifierForElementMapper(sourceControllerIdentifier, ELEMENT_MAP_INDEX_OF(dpadDown)));
-            if (nullptr != elements.named.dpadLeft) elements.named.dpadLeft->ContributeNeutral(controllerState, SourceIdentifierForElementMapper(sourceControllerIdentifier, ELEMENT_MAP_INDEX_OF(dpadLeft)));
-            if (nullptr != elements.named.dpadRight) elements.named.dpadRight->ContributeNeutral(controllerState, SourceIdentifierForElementMapper(sourceControllerIdentifier, ELEMENT_MAP_INDEX_OF(dpadRight)));
-
-            if (nullptr != elements.named.triggerLT) elements.named.triggerLT->ContributeNeutral(controllerState, SourceIdentifierForElementMapper(sourceControllerIdentifier, ELEMENT_MAP_INDEX_OF(triggerLT)));
-            if (nullptr != elements.named.triggerRT) elements.named.triggerRT->ContributeNeutral(controllerState, SourceIdentifierForElementMapper(sourceControllerIdentifier, ELEMENT_MAP_INDEX_OF(triggerRT)));
-
-            if (nullptr != elements.named.buttonA) elements.named.buttonA->ContributeNeutral(controllerState, SourceIdentifierForElementMapper(sourceControllerIdentifier, ELEMENT_MAP_INDEX_OF(buttonA)));
-            if (nullptr != elements.named.buttonB) elements.named.buttonB->ContributeNeutral(controllerState, SourceIdentifierForElementMapper(sourceControllerIdentifier, ELEMENT_MAP_INDEX_OF(buttonB)));
-            if (nullptr != elements.named.buttonX) elements.named.buttonX->ContributeNeutral(controllerState, SourceIdentifierForElementMapper(sourceControllerIdentifier, ELEMENT_MAP_INDEX_OF(buttonX)));
-            if (nullptr != elements.named.buttonY) elements.named.buttonY->ContributeNeutral(controllerState, SourceIdentifierForElementMapper(sourceControllerIdentifier, ELEMENT_MAP_INDEX_OF(buttonY)));
-
-            if (nullptr != elements.named.buttonLB) elements.named.buttonLB->ContributeNeutral(controllerState, SourceIdentifierForElementMapper(sourceControllerIdentifier, ELEMENT_MAP_INDEX_OF(buttonLB)));
-            if (nullptr != elements.named.buttonRB) elements.named.buttonRB->ContributeNeutral(controllerState, SourceIdentifierForElementMapper(sourceControllerIdentifier, ELEMENT_MAP_INDEX_OF(buttonRB)));
-
-            if (nullptr != elements.named.buttonBack) elements.named.buttonBack->ContributeNeutral(controllerState, SourceIdentifierForElementMapper(sourceControllerIdentifier, ELEMENT_MAP_INDEX_OF(buttonBack)));
-            if (nullptr != elements.named.buttonStart) elements.named.buttonStart->ContributeNeutral(controllerState, SourceIdentifierForElementMapper(sourceControllerIdentifier, ELEMENT_MAP_INDEX_OF(buttonStart)));
-
-            if (nullptr != elements.named.buttonLS) elements.named.buttonLS->ContributeNeutral(controllerState, SourceIdentifierForElementMapper(sourceControllerIdentifier, ELEMENT_MAP_INDEX_OF(buttonLS)));
-            if (nullptr != elements.named.buttonRS) elements.named.buttonRS->ContributeNeutral(controllerState, SourceIdentifierForElementMapper(sourceControllerIdentifier, ELEMENT_MAP_INDEX_OF(buttonRS)));
+            for (uint32_t elementMapIdx = 0; elementMapIdx < _countof(elements.all); ++elementMapIdx)
+            {
+                if (nullptr != elements.all[elementMapIdx])
+                    elements.all[elementMapIdx]->ContributeNeutral(controllerState, SourceIdentifierForElementMapper(sourceControllerIdentifier, elementMapIdx));
+            }
 
             return controllerState;
         }

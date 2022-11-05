@@ -42,6 +42,32 @@ namespace XidiTest
     /// Opaque source identifier used for many mapper tests in this file.
     static constexpr uint32_t kOpaqueSourceIdentifier = 100;
 
+    /// Mapper with a mock element mapper on every possible controller element.
+    /// Does not check for specific contributions.
+    /// For use as a template in test cases.
+    static const Mapper kFullyMockedMapper({
+        .stickLeftX = std::make_unique<MockElementMapper>(),
+        .stickLeftY = std::make_unique<MockElementMapper>(),
+        .stickRightX = std::make_unique<MockElementMapper>(),
+        .stickRightY = std::make_unique<MockElementMapper>(),
+        .dpadUp = std::make_unique<MockElementMapper>(),
+        .dpadDown = std::make_unique<MockElementMapper>(),
+        .dpadLeft = std::make_unique<MockElementMapper>(),
+        .dpadRight = std::make_unique<MockElementMapper>(),
+        .triggerLT = std::make_unique<MockElementMapper>(),
+        .triggerRT = std::make_unique<MockElementMapper>(),
+        .buttonA = std::make_unique<MockElementMapper>(),
+        .buttonB = std::make_unique<MockElementMapper>(),
+        .buttonX = std::make_unique<MockElementMapper>(),
+        .buttonY = std::make_unique<MockElementMapper>(),
+        .buttonLB = std::make_unique<MockElementMapper>(),
+        .buttonRB = std::make_unique<MockElementMapper>(),
+        .buttonBack = std::make_unique<MockElementMapper>(),
+        .buttonStart = std::make_unique<MockElementMapper>(),
+        .buttonLS = std::make_unique<MockElementMapper>(),
+        .buttonRS = std::make_unique<MockElementMapper>()
+    });
+
 
     // -------- INTERNAL FUNCTIONS ----------------------------------------- //
 
@@ -100,67 +126,100 @@ namespace XidiTest
     
     // -------- TEST CASES ------------------------------------------------- //
 
-    // Verifies that opaque source identifiers are always the same for the same controller and controller element but are different otherwise.
-    TEST_CASE(Mapper_OpaqueSourceIdentifier)
+    // Verifies that opaque source identifiers are always the same for the same controller and controller element, regardless of how the mapping takes place and regardless of which specific mapper object is used.
+    TEST_CASE(Mapper_OpaqueSourceIdentifier_SameAcrossMappingAttempts)
     {
-        const Mapper testMapperBase({
-            .stickLeftX = std::make_unique<MockElementMapper>(),
-            .stickLeftY = std::make_unique<MockElementMapper>(),
-            .stickRightX = std::make_unique<MockElementMapper>(),
-            .stickRightY = std::make_unique<MockElementMapper>(),
-            .dpadUp = std::make_unique<MockElementMapper>(),
-            .dpadDown = std::make_unique<MockElementMapper>(),
-            .dpadLeft = std::make_unique<MockElementMapper>(),
-            .dpadRight = std::make_unique<MockElementMapper>(),
-            .triggerLT = std::make_unique<MockElementMapper>(),
-            .triggerRT = std::make_unique<MockElementMapper>(),
-            .buttonA = std::make_unique<MockElementMapper>(),
-            .buttonB = std::make_unique<MockElementMapper>(),
-            .buttonX = std::make_unique<MockElementMapper>(),
-            .buttonY = std::make_unique<MockElementMapper>(),
-            .buttonLB = std::make_unique<MockElementMapper>(),
-            .buttonRB = std::make_unique<MockElementMapper>(),
-            .buttonBack = std::make_unique<MockElementMapper>(),
-            .buttonStart = std::make_unique<MockElementMapper>(),
-            .buttonLS = std::make_unique<MockElementMapper>(),
-            .buttonRS = std::make_unique<MockElementMapper>()
-        });
-
-        const Mapper testMappers[] = {Mapper(testMapperBase), Mapper(testMapperBase), Mapper(testMapperBase), Mapper(testMapperBase)};
+        const Mapper kTestMappers[] = {kFullyMockedMapper, kFullyMockedMapper, kFullyMockedMapper, kFullyMockedMapper, kFullyMockedMapper};
 
         std::unordered_set<uint32_t> seenSourceIdentifiers;
-        size_t expectedSeenSourceIdentifiersCount = 0;
 
-        for (uint32_t mapperIdx = 0; mapperIdx < _countof(testMappers); ++mapperIdx)
+        for (const auto& kTestMapper : kTestMappers)
         {
-            const uint32_t kOpaqueControllerIdentifier = (mapperIdx * 100);
-
-            // Test will fail if any individual element mapper gets a different opaque source identifier between mapping attempts.
-            // If that happens it means that the same controller element on the same controller got a different opaque source identifier, which violates the guarantee about opaque source identifiers.
-            for (int mappingIter = 0; mappingIter < 5; ++mappingIter)
-                testMappers[mapperIdx].MapStatePhysicalToVirtual({}, kOpaqueControllerIdentifier);
-
-            const Mapper::UElementMap& testElementMap = testMappers[mapperIdx].ElementMap();
-
-            for (uint32_t elementIdx = 0; elementIdx < _countof(testElementMap.all); ++elementIdx)
+            for (int mappingIter = 0; mappingIter < 10; ++mappingIter)
             {
-                if (nullptr != testElementMap.all[elementIdx])
-                {
-                    uint32_t sourceIdentifier = static_cast<const MockElementMapper*>(testElementMap.all[elementIdx].get())->GetSourceIdentifier().value();
-
-                    // Each element mapper should give a different source identifier.
-                    // Every outer loop iteration triggers a different opaque controller identifier, so this is true cumulatively across outer loop iterations.
-                    expectedSeenSourceIdentifiersCount += 1;
-                    seenSourceIdentifiers.insert(sourceIdentifier);
-                }
+                // Test will fail if any individual element mapper gets a different opaque source identifier between mapping attempts.
+                // If that happens it means that the same controller element on the same controller got a different opaque source identifier, which violates the guarantee about opaque source identifiers.
+                kTestMapper.MapStatePhysicalToVirtual({}, kOpaqueSourceIdentifier);
+                kTestMapper.MapNeutralPhysicalToVirtual(kOpaqueSourceIdentifier);
             }
         }
 
-        // Verify that every individual element mapper got a different opaque source identifier from every other individual element mapper.
-        // Each element mapper within each mapper object simulates a different physical controller element on the same physical controller.
-        // Each mapper object simulates a different physical controller.
-        size_t actualSeenSourceIdentifiersCount = seenSourceIdentifiers.size();
-        TEST_ASSERT(actualSeenSourceIdentifiersCount == expectedSeenSourceIdentifiersCount);
+        // Scanning element-by-element through the element map should show the same opaque source identifier for each element across all the mapper objects.
+        for (uint32_t elementMapIdx = 0; elementMapIdx < _countof(Mapper::UElementMap::all); ++elementMapIdx)
+        {
+            const uint32_t kExpectedSourceIdentifier = static_cast<const MockElementMapper*>(kTestMappers[0].ElementMap().all[elementMapIdx].get())->GetSourceIdentifier().value();
+
+            for (const auto& kTestMapper : kTestMappers)
+            {
+                const uint32_t kActualSourceIdentifier = static_cast<const MockElementMapper*>(kTestMapper.ElementMap().all[elementMapIdx].get())->GetSourceIdentifier().value();
+                TEST_ASSERT(kActualSourceIdentifier == kExpectedSourceIdentifier);
+            }
+        }
+    }
+
+    /// Verifies that all opaque source identifiers on the same controller but for different elements are different.
+    TEST_CASE(Mapper_OpaqueSourceIdentifier_DifferentAcrossControllerElements)
+    {
+        const Mapper kTestMapper(kFullyMockedMapper);
+        kTestMapper.MapNeutralPhysicalToVirtual(kOpaqueSourceIdentifier);
+
+        std::unordered_set<uint32_t> seenSourceIdentifiers;
+
+        const Mapper::UElementMap& kTestMapperElementMap = kTestMapper.ElementMap();
+        for (uint32_t elementMapIdx = 0; elementMapIdx < _countof(kTestMapperElementMap.all); ++elementMapIdx)
+        {
+            if (nullptr != kTestMapperElementMap.all[elementMapIdx])
+            {
+                const uint32_t kSourceIdentifier = static_cast<const MockElementMapper*>(kTestMapperElementMap.all[elementMapIdx].get())->GetSourceIdentifier().value();
+
+                // Every time through this loop there should be a different opaque source identifier.
+                // Any duplicates will not cause an insertion into the set, so the number of actual items in the set will be less than expected by the end.
+                const bool kSourceIdentifierIsUnique = seenSourceIdentifiers.insert(kSourceIdentifier).second;
+                TEST_ASSERT(true == kSourceIdentifierIsUnique);
+            }
+        }
+    }
+
+    /// Verifies that opaque source identifiers are different across different controllers, even if the controller element is the same.
+    TEST_CASE(Mapper_OpaqueSourceIdentifier_DifferentAcrossControllers)
+    {
+        const struct {
+            Mapper mapper;
+            uint32_t opaqueControllerIdentifier;
+        } kTestRecords[] = {
+            {.mapper = kFullyMockedMapper, .opaqueControllerIdentifier = 0},
+            {.mapper = kFullyMockedMapper, .opaqueControllerIdentifier = 1},
+            {.mapper = kFullyMockedMapper, .opaqueControllerIdentifier = 2},
+            {.mapper = kFullyMockedMapper, .opaqueControllerIdentifier = 3},
+            {.mapper = kFullyMockedMapper, .opaqueControllerIdentifier = 4},
+            {.mapper = kFullyMockedMapper, .opaqueControllerIdentifier = 100},
+            {.mapper = kFullyMockedMapper, .opaqueControllerIdentifier = 2000},
+            {.mapper = kFullyMockedMapper, .opaqueControllerIdentifier = 3033},
+            {.mapper = kFullyMockedMapper, .opaqueControllerIdentifier = 456789}
+        };
+
+        std::unordered_set<uint32_t> seenSourceIdentifiers;
+
+        for (const auto& kTestRecord : kTestRecords)
+        {
+            // Sets the opaque source identifier within each individual test mapper.
+            // Since the opaque controller identifier is different these whould all produce different values.
+            kTestRecord.mapper.MapNeutralPhysicalToVirtual(kTestRecord.opaqueControllerIdentifier);
+
+            const Mapper::UElementMap& kTestMapperElementMap = kTestRecord.mapper.ElementMap();
+            for (uint32_t elementMapIdx = 0; elementMapIdx < _countof(kTestMapperElementMap.all); ++elementMapIdx)
+            {
+                if (nullptr != kTestMapperElementMap.all[elementMapIdx])
+                {
+                    const uint32_t kSourceIdentifier = static_cast<const MockElementMapper*>(kTestMapperElementMap.all[elementMapIdx].get())->GetSourceIdentifier().value();
+
+                    // Every time through this loop there should be a different opaque source identifier.
+                    // Any duplicates will not cause an insertion into the set, so the number of actual items in the set will be less than expected by the end.
+                    const bool kSourceIdentifierIsUnique = seenSourceIdentifiers.insert(kSourceIdentifier).second;
+                    TEST_ASSERT(true == kSourceIdentifierIsUnique);
+                }
+            }
+        }
     }
 
 

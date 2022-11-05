@@ -233,7 +233,10 @@ namespace Xidi
                 return {.mouseData = (DWORD)mouseMovementPixels, .dwFlags = MOUSEEVENTF_HWHEEL};
 
             case EMouseAxis::WheelVertical:
-                return {.mouseData = (DWORD)mouseMovementPixels, .dwFlags = MOUSEEVENTF_WHEEL};
+                // Vertical mouse wheel needs inversion to be semantically consistent with up being negative and down being positive for other mouse and game controller axes.
+                // Ordinarily, positive is "forward, away from the user" (up) and negative is "backward, towards the user" (down).
+                // See https://learn.microsoft.com/en-us/windows/win32/api/winuser/ns-winuser-mouseinput for more information.
+                return {.mouseData = (DWORD)(-mouseMovementPixels), .dwFlags = MOUSEEVENTF_WHEEL};
 
             default:
                 return {};
@@ -245,7 +248,11 @@ namespace Xidi
         /// @return Appropriate number of pixels represented by the mouse movement units.
         static int MouseMovementUnitsToPixels(int mouseMovementUnits)
         {
-            constexpr int kFastestPixelsPerPollingPeriod = 14;
+            constexpr double kFastestPixelsPerSecond = 2160;
+
+            constexpr double kMillisecondsPerSecond = 1000.0;
+            constexpr double kPollingPeriodsPerSecond = (kMillisecondsPerSecond / (double)kMouseUpdatePeriodMilliseconds);
+            constexpr double kFastestPixelsPerPollingPeriod = kFastestPixelsPerSecond / kPollingPeriodsPerSecond;
             constexpr double kConversionScalingFactor = kFastestPixelsPerPollingPeriod / ((kMouseMovementUnitsMax - kMouseMovementUnitsMin) / 2.0);
 
             return (int)((double)(mouseMovementUnits - kMouseMovementUnitsNeutral) * kConversionScalingFactor);
@@ -310,7 +317,7 @@ namespace Xidi
 
                 if (mouseEvents.size() > 0)
                 {
-                    //if (true == Globals::DoesCurrentProcessHaveInputFocus())
+                    if (true == Globals::DoesCurrentProcessHaveInputFocus())
                         SendInput((UINT)mouseEvents.size(), mouseEvents.data(), (int)sizeof(INPUT));
                 }
 
