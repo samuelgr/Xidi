@@ -15,6 +15,7 @@
 #include "TestCase.h"
 
 #include <mutex>
+#include <unordered_map>
 
 
 namespace XidiTest
@@ -67,6 +68,17 @@ namespace XidiTest
 
     // --------
 
+    std::optional<int> MockMouse::GetMovementContributionFromSource(EMouseAxis axis, uint32_t sourceIdentifier) const
+    {
+        const auto contributionIter = virtualMouseMovementContributionBySource[(unsigned int)axis].find(sourceIdentifier);
+        if (virtualMouseMovementContributionBySource[(unsigned int)axis].cend() == contributionIter)
+            return std::nullopt;
+
+        return contributionIter->second;
+    }
+
+    // --------
+
     void MockMouse::SubmitMouseButtonPressedState(EMouseButton button)
     {
         if ((unsigned int)button >= virtualMouseButtonState.max_size())
@@ -85,9 +97,17 @@ namespace XidiTest
         virtualMouseButtonState.erase((unsigned int)button);
     }
 
+    // --------
+
     void MockMouse::SubmitMouseMovement(EMouseAxis axis, int mouseMovementUnits, uint32_t sourceIdentifier)
     {
-        // TODO
+        if (mouseMovementUnits < kMouseMovementUnitsMin)
+            TEST_FAILED_BECAUSE(L"%s: Mouse movement units %d is below the minimum allowed %d.", __FUNCTIONW__, mouseMovementUnits, kMouseMovementUnitsMin);
+
+        if (mouseMovementUnits > kMouseMovementUnitsMax)
+            TEST_FAILED_BECAUSE(L"%s: Mouse movement units %d is above the maximum allowed %d.", __FUNCTIONW__, mouseMovementUnits, kMouseMovementUnitsMax);
+
+        virtualMouseMovementContributionBySource[(unsigned int)axis][sourceIdentifier] = mouseMovementUnits;
     }
 }
 
