@@ -48,7 +48,7 @@ The remainder of this document is organized as follows.
 
 # Getting Started
 
-1. Ensure the system is running Windows 10 or 11. Xidi is built to target Windows 10 or 11 and does not support older versions of Windows.
+1. Ensure the system is running Windows 10 or 11. Xidi is built to target Windows 10 or 11 and may not run correctly on older versions of Windows.
 
 1. Ensure the [Visual C++ Runtime for Visual Studio 2022](https://docs.microsoft.com/en-us/cpp/windows/latest-supported-vc-redist) is installed. Xidi is linked against this runtime and will not work without it. If running a 64-bit operating system, install both the x86 and the x64 versions of this runtime, otherwise install just the x86 version.
 
@@ -517,7 +517,33 @@ ButtonBack          = Keyboard(Esc)
 ```
 
 
-#### MouseButton *(unreleased)*
+#### MouseAxis
+
+A mouse axis element mapper links an XInput controller element to mouse movement along one of the possible mouse axes. It otherwise behaves very similarly to an axis mapper.
+
+MouseAxis requires a parameter specifying the mouse motion axis to which to link. Supported axis names are `X`, `Y`, `WheelHorizontal`, `WheelVertical`; the first two correspond to physical mouse movement, and the second two correspond to rotation of the scroll wheel that is present on some mouse hardware. A second optional parameter is additionally allowed to specify the axis direction, either `+` or `-` (alternative values `Positive` and `Negative` are also accepted).
+
+As an example, the below configuration links the right stick and the d-pad to mouse cursor movement.
+
+```ini
+[CustomMapper:MouseAxisExample]
+
+; This example is not complete.
+; It only defines element mappers for a small subset of controller elements.
+
+; For the right stick one mouse axis maps entirely to an analog controller axis.
+StickRightX         = MouseAxis(X)
+StickRightY         = MouseAxis(Y)
+
+; For the d-pad one button corresponds to a different direction of motion.
+DpadUp              = MouseAxis(Y, -)
+DpadDown            = MouseAxis(Y, +)
+DpadLeft            = MouseAxis(X, -)
+DpadRight           = MouseAxis(X, +)
+```
+
+
+#### MouseButton
 
 A mouse button element mapper links an XInput controller element to a mouse button. It behaves very similarly to a keyboard element mapper except it acts on a mouse button rather than on a keyboard key.
 

@@ -69,25 +69,79 @@ namespace Xidi
             /// Type for all functions that attempt to build force feedback actuator description objects given a parameter string.
             typedef ForceFeedbackActuatorOrError(*TMakeForceFeedbackActuatorFunc)(std::wstring_view);
 
-            /// Holds parameters for creating #AxisMapper objects.
-            /// Useful because both #AxisMapper and #DigitalAxisMapper follow the same parsing logic and parameters.
-            /// See #AxisMapper for documentation on the fields.
-            struct SAxisMapperParams
+            /// Holds parameters for creating various types of axis mapper objects, where those mapper objects include an axis enumerator and an axis direction enumerator.
+            /// @tparam AxisEnumType Axis enumeration type that identifies the target axis.
+            template<typename AxisEnumType> struct SAxisParams
             {
-                EAxis axis;
+                AxisEnumType axis;
                 EAxisDirection direction;
             };
 
             /// Type alias for enabling axis parameter parsing to indicate a semantically-rich error on parse failure.
-            typedef ValueOrError<SAxisMapperParams, std::wstring> AxisMapperParamsOrError;
+            /// @tparam AxisEnumType Axis enumeration type that identifies the target axis.
+            template <typename AxisEnumType> using AxisParamsOrError = ValueOrError<SAxisParams<AxisEnumType>, std::wstring>;
 
 
             // -------- INTERNAL FUNCTIONS --------------------------------- //
 
-            /// Attempts to map a string to an axis type enumerator.
+            /// Attempts to map a string to an axis direction enumerator.
+            /// @param [in] directionString String supposedly representing an axis direction.
+            /// @return Corresponding axis direction enumerator, if the string is parseable as such.
+            static std::optional<EAxisDirection> AxisDirectionFromString(std::wstring_view directionString)
+            {
+                // Map of strings representing axis directions to axis direction enumerators.
+                static const std::map<std::wstring_view, EAxisDirection> kDirectionStrings = {
+                    {L"bidir",          EAxisDirection::Both},
+                    {L"Bidir",          EAxisDirection::Both},
+                    {L"BiDir",          EAxisDirection::Both},
+                    {L"BIDIR",          EAxisDirection::Both},
+                    {L"bidirectional",  EAxisDirection::Both},
+                    {L"Bidirectional",  EAxisDirection::Both},
+                    {L"BiDirectional",  EAxisDirection::Both},
+                    {L"BIDIRECTIONAL",  EAxisDirection::Both},
+                    {L"both",           EAxisDirection::Both},
+                    {L"Both",           EAxisDirection::Both},
+                    {L"BOTH",           EAxisDirection::Both},
+
+                    {L"+",              EAxisDirection::Positive},
+                    {L"+ve",            EAxisDirection::Positive},
+                    {L"pos",            EAxisDirection::Positive},
+                    {L"Pos",            EAxisDirection::Positive},
+                    {L"POS",            EAxisDirection::Positive},
+                    {L"positive",       EAxisDirection::Positive},
+                    {L"Positive",       EAxisDirection::Positive},
+                    {L"POSITIVE",       EAxisDirection::Positive},
+
+                    {L"-",              EAxisDirection::Negative},
+                    {L"-ve",            EAxisDirection::Negative},
+                    {L"neg",            EAxisDirection::Negative},
+                    {L"Neg",            EAxisDirection::Negative},
+                    {L"NEG",            EAxisDirection::Negative},
+                    {L"negative",       EAxisDirection::Negative},
+                    {L"Negative",       EAxisDirection::Negative},
+                    {L"NEGATIVE",       EAxisDirection::Negative}
+                };
+
+                const auto kDirectionIter = kDirectionStrings.find(directionString);
+                if (kDirectionStrings.cend() == kDirectionIter)
+                    return std::nullopt;
+
+                return kDirectionIter->second;
+            }
+
+            /// Attempts to map a string to an axis type enumerator. This generic version does nothing.
+            /// @tparam AxisEnumType Axis enumeration type that identifies the target axis.
             /// @param [in] axisString String supposedly representing an axis type.
             /// @return Corresponding axis type enumerator, if the string is parseable as such.
-            static std::optional<EAxis> AxisFromString(std::wstring_view axisString)
+            template <typename AxisEnumType> static std::optional<AxisEnumType> AxisTypeFromString(std::wstring_view axisString)
+            {
+                return std::nullopt;
+            }
+
+            /// Attempts to map a string to an axis type enumerator, specialized for analog axes.
+            /// @param [in] axisString String supposedly representing an axis type.
+            /// @return Corresponding axis type enumerator, if the string is parseable as such.
+            template <> static std::optional<EAxis> AxisTypeFromString(std::wstring_view axisString)
             {
                 // Map of strings representing axes to axis enumerators.
                 static const std::map<std::wstring_view, EAxis> kAxisStrings = {
@@ -135,55 +189,10 @@ namespace Xidi
                 return kAxisIter->second;
             }
 
-            /// Attempts to map a string to an axis direction enumerator.
-            /// @param [in] directionString String supposedly representing an axis direction.
-            /// @return Corresponding axis direction enumerator, if the string is parseable as such.
-            static std::optional<EAxisDirection> AxisDirectionFromString(std::wstring_view directionString)
-            {
-                // Map of strings representing axis directions to axis direction enumerators.
-                static const std::map<std::wstring_view, EAxisDirection> kDirectionStrings = {
-                    {L"bidir",          EAxisDirection::Both},
-                    {L"Bidir",          EAxisDirection::Both},
-                    {L"BiDir",          EAxisDirection::Both},
-                    {L"BIDIR",          EAxisDirection::Both},
-                    {L"bidirectional",  EAxisDirection::Both},
-                    {L"Bidirectional",  EAxisDirection::Both},
-                    {L"BiDirectional",  EAxisDirection::Both},
-                    {L"BIDIRECTIONAL",  EAxisDirection::Both},
-                    {L"both",           EAxisDirection::Both},
-                    {L"Both",           EAxisDirection::Both},
-                    {L"BOTH",           EAxisDirection::Both},
-
-                    {L"+",              EAxisDirection::Positive},
-                    {L"+ve",            EAxisDirection::Positive},
-                    {L"pos",            EAxisDirection::Positive},
-                    {L"Pos",            EAxisDirection::Positive},
-                    {L"POS",            EAxisDirection::Positive},
-                    {L"positive",       EAxisDirection::Positive},
-                    {L"Positive",       EAxisDirection::Positive},
-                    {L"POSITIVE",       EAxisDirection::Positive},
-
-                    {L"-",              EAxisDirection::Negative},
-                    {L"-ve",            EAxisDirection::Negative},
-                    {L"neg",            EAxisDirection::Negative},
-                    {L"Neg",            EAxisDirection::Negative},
-                    {L"NEG",            EAxisDirection::Negative},
-                    {L"negative",       EAxisDirection::Negative},
-                    {L"Negative",       EAxisDirection::Negative},
-                    {L"NEGATIVE",       EAxisDirection::Negative}
-                };
-
-                const auto kDirectionIter = kDirectionStrings.find(directionString);
-                if (kDirectionStrings.cend() == kDirectionIter)
-                    return std::nullopt;
-
-                return kDirectionIter->second;
-            }
-
-            /// Attempts to map a string to a mouse axis type enumerator.
-            /// @param [in] mouseAxisString String supposedly representing an axis type.
-            /// @return Corresponding mouse axis type enumerator, if the string is parseable as such.
-            static std::optional<Mouse::EMouseAxis> MouseAxisFromString(std::wstring_view mouseAxisString)
+            /// Attempts to map a string to an axis type enumerator, specialized for mouse axes.
+            /// @param [in] axisString String supposedly representing an axis type.
+            /// @return Corresponding axis type enumerator, if the string is parseable as such.
+            template <> static std::optional<Mouse::EMouseAxis> AxisTypeFromString(std::wstring_view axisString)
             {
                 // Map of strings representing mouse axes to mouse axis enumerators.
                 static const std::map<std::wstring_view, Mouse::EMouseAxis> kMouseAxisStrings = {
@@ -224,7 +233,7 @@ namespace Xidi
                     {L"WheelVertical",      Mouse::EMouseAxis::WheelVertical}
                 };
 
-                const auto kMouseAxisIter = kMouseAxisStrings.find(mouseAxisString);
+                const auto kMouseAxisIter = kMouseAxisStrings.find(axisString);
                 if (kMouseAxisStrings.cend() == kMouseAxisIter)
                     return std::nullopt;
 
@@ -300,11 +309,11 @@ namespace Xidi
                 return std::wstring_view::npos;
             }
 
-            /// Common logic for parsing axis mapper parameters from an axis mapper string.
-            /// Used for creating both #AxisMapper and #DigitalAxisMapper objects.
+            /// Common logic for parsing various types of axis mapper parameters from an axis mapper string.
+            /// @tparam AxisEnumType Axis enumeration type that identifies the target axis.
             /// @param [in] params Parameter string.
             /// @return Structure containing the parsed parameters if parsing was successful, error message otherwise.
-            static AxisMapperParamsOrError ParseAxisMapperParams(std::wstring_view params)
+            template <typename AxisEnumType> static AxisParamsOrError<AxisEnumType> ParseAxisParams(std::wstring_view params)
             {
                 SParamStringParts paramParts = ExtractParameterListStringParts(params).value_or(SParamStringParts());
 
@@ -312,11 +321,11 @@ namespace Xidi
                 if (true == paramParts.first.empty())
                     return L"Missing or unparseable axis";
 
-                const std::optional<EAxis> kMaybeAxis = AxisFromString(paramParts.first);
+                const std::optional<AxisEnumType> kMaybeAxis = AxisTypeFromString<AxisEnumType>(paramParts.first);
                 if (false == kMaybeAxis.has_value())
                     return Strings::FormatString(L"%s: Unrecognized axis", std::wstring(paramParts.first).c_str()).Data();
 
-                const EAxis kAxis = kMaybeAxis.value();
+                const AxisEnumType kAxis = kMaybeAxis.value();
 
                 // Second parameter is optional. It is a string that specifies the axis direction, with the default being both.
                 EAxisDirection axisDirection = EAxisDirection::Both;
@@ -336,7 +345,7 @@ namespace Xidi
                 if (false == paramParts.remaining.empty())
                     return Strings::FormatString(L"\"%s\" is extraneous", std::wstring(paramParts.remaining).c_str()).Data();
 
-                return SAxisMapperParams({.axis = kAxis, .direction = axisDirection});
+                return SAxisParams<AxisEnumType>({.axis = kAxis, .direction = axisDirection});
             }
 
             /// Parses a relatively small unsigned integer value from the supplied input string.
@@ -945,7 +954,7 @@ namespace Xidi
 
             ElementMapperOrError MakeAxisMapper(std::wstring_view params)
             {
-                const AxisMapperParamsOrError kMaybeAxisMapperParams = ParseAxisMapperParams(params);
+                const AxisParamsOrError<EAxis> kMaybeAxisMapperParams = ParseAxisParams<EAxis>(params);
                 if (true == kMaybeAxisMapperParams.HasError())
                     return Strings::FormatString(L"Axis: %s", kMaybeAxisMapperParams.Error().c_str()).Data();
 
@@ -1000,7 +1009,7 @@ namespace Xidi
 
             ElementMapperOrError MakeDigitalAxisMapper(std::wstring_view params)
             {
-                const AxisMapperParamsOrError kMaybeAxisMapperParams = ParseAxisMapperParams(params);
+                const AxisParamsOrError<EAxis> kMaybeAxisMapperParams = ParseAxisParams<EAxis>(params);
                 if (true == kMaybeAxisMapperParams.HasError())
                     return Strings::FormatString(L"DigitalAxis: %s", kMaybeAxisMapperParams.Error().c_str()).Data();
 
@@ -1045,7 +1054,11 @@ namespace Xidi
 
             ElementMapperOrError MakeMouseAxisMapper(std::wstring_view params)
             {
-                return L"MouseAxis: Not yet implemented.";
+                const AxisParamsOrError<Mouse::EMouseAxis> kMaybeMouseAxisMapperParams = ParseAxisParams<Mouse::EMouseAxis>(params);
+                if (true == kMaybeMouseAxisMapperParams.HasError())
+                    return Strings::FormatString(L"MouseAxis: %s", kMaybeMouseAxisMapperParams.Error().c_str()).Data();
+
+                return std::make_unique<MouseAxisMapper>(kMaybeMouseAxisMapperParams.Value().axis, kMaybeMouseAxisMapperParams.Value().direction);
             }
 
             // --------
@@ -1166,7 +1179,7 @@ namespace Xidi
 
             ForceFeedbackActuatorOrError MakeForceFeedbackActuatorSingleAxis(std::wstring_view params)
             {
-                const AxisMapperParamsOrError kMaybeAxisMapperParams = ParseAxisMapperParams(params);
+                const AxisParamsOrError<EAxis> kMaybeAxisMapperParams = ParseAxisParams<EAxis>(params);
                 if (true == kMaybeAxisMapperParams.HasError())
                     return Strings::FormatString(L"SingleAxis: %s", kMaybeAxisMapperParams.Error().c_str()).Data();
 
@@ -1192,7 +1205,7 @@ namespace Xidi
                 if (true == paramParts.first.empty())
                     return L"MagnitudeProjection: Missing or unparseable first axis";
 
-                const std::optional<EAxis> kMaybeAxisFirst = AxisFromString(paramParts.first);
+                const std::optional<EAxis> kMaybeAxisFirst = AxisTypeFromString<EAxis>(paramParts.first);
                 if (false == kMaybeAxisFirst.has_value())
                     return Strings::FormatString(L"MagnitudeProjection: %s: Unrecognized first axis", std::wstring(paramParts.first).c_str()).Data();
 
@@ -1203,7 +1216,7 @@ namespace Xidi
                 if (true == paramParts.first.empty())
                     return L"MagnitudeProjection: Missing or unparseable second axis";
 
-                const std::optional<EAxis> kMaybeAxisSecond = AxisFromString(paramParts.first);
+                const std::optional<EAxis> kMaybeAxisSecond = AxisTypeFromString<EAxis>(paramParts.first);
                 if (false == kMaybeAxisSecond.has_value())
                     return Strings::FormatString(L"MagnitudeProjection: %s: Unrecognized second axis", std::wstring(paramParts.first).c_str()).Data();
 

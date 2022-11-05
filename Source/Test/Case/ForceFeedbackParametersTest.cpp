@@ -102,7 +102,7 @@ namespace XidiTest
     /// @param [in] valueA First of the two magnitude component vectors to compare.
     /// @param [in] valueB Second of the two magnitude component to compare.
     /// @return `true` if the two magnitude component vectors all have components that are approximately equal, `false` otherwise.
-    template<> static bool ApproximatelyEqual<TMagnitudeComponents>(TMagnitudeComponents valueA, TMagnitudeComponents valueB)
+    template <> static bool ApproximatelyEqual<TMagnitudeComponents>(TMagnitudeComponents valueA, TMagnitudeComponents valueB)
     {
         for (size_t i = 0; i < valueA.size(); ++i)
         {

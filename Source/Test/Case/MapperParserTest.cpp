@@ -559,7 +559,29 @@ namespace XidiTest
     // Verifies correct construction of mouse axis mapper objects in the nominal case of valid parameter strings being passed.
     TEST_CASE(MapperParser_MakeMouseAxisMapper_Nominal)
     {
-        // TODO
+        constexpr struct {
+            std::wstring_view params;
+            EMouseAxis axis;
+            EAxisDirection axisDirection;
+        } kMouseAxisMapperTestItems[] = {
+            {.params = L" X  ",             .axis = EMouseAxis::X},
+            {.params = L" Horizontal,  -",  .axis = EMouseAxis::X,                  .axisDirection = EAxisDirection::Negative},
+            {.params = L"WheelVertical, +", .axis = EMouseAxis::WheelVertical,      .axisDirection = EAxisDirection::Positive}
+        };
+
+        for (auto& mouseAxisMapperTestItem : kMouseAxisMapperTestItems)
+        {
+            ElementMapperOrError maybeMouseAxisMapper = MapperParser::MakeMouseAxisMapper(mouseAxisMapperTestItem.params);
+
+            TEST_ASSERT(true == maybeMouseAxisMapper.HasValue());
+            TEST_ASSERT(0 == maybeMouseAxisMapper.Value()->GetTargetElementCount());
+
+            const MouseAxisMapper* const mouseAxisMapper = dynamic_cast<MouseAxisMapper*>(maybeMouseAxisMapper.Value().get());
+            TEST_ASSERT(nullptr != mouseAxisMapper);
+
+            TEST_ASSERT(mouseAxisMapperTestItem.axis == mouseAxisMapper->GetAxis());
+            TEST_ASSERT(mouseAxisMapperTestItem.axisDirection == mouseAxisMapper->GetAxisDirection());
+        }
     }
 
     // Verifies correct failure to create mouse button mapper objects when the parameter strings are invalid.

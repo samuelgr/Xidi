@@ -95,6 +95,13 @@ Behavior is very similar to ButtonMapper in terms of the logic. However, instead
 This type of mapper is considered to have a side effect because, unlike other types, it does not not contribute directly to virtual controller state but rather to the keyboard state. As a result it implements `ContributeNeutral` so that associated keyboard buttons can be released in the absence of input from the controller.
 
 
+##### MouseAxisMapper
+
+Behavior and implementation is similar to AxisMapper and DigitalAxisMapper. However, instead of a virtual controller axis, this type of element mapper simulates motion of the system mouse along one of the four supported axes (X, Y, horizontal mouse wheel, vertical mouse wheel).
+
+This mapper uses an opaque source identifier to allow the Mouse module to aggregate across all possible sources of mouse input for the purpose of determining the net contribution Xidi will make at any given time to movement of the system mouse. Unlike virtual controller motion, mouse movement is always relative.
+
+
 ##### MouseButtonMapper
 
 Behavior and implementation is extremely similar to KeyboardMapper. However, instead of a virtual keyboard key, this type of element mapper simulates a mouse button press on the system mouse.
@@ -196,7 +203,7 @@ Source code documentation is available and can be built using Doxygen. This sect
 
 **MapperParser** implements all string-parsing functionality for identifying XInput controller elements, identifying force feedback actuators, and constructing both of these types of objects based on strings contained within a configuration file.
 
-**Mouse** tracks virtual mouse state as reported by any `MouseButtonMapper` objects that may exist. It maintains state information for each possible mouse button and periodically submits mouse events to the system using the `SendInput` Windows API function.
+**Mouse** tracks virtual mouse state as reported by any `MouseAxisMapper` and `MouseButtonMapper` objects that may exist. It maintains state information for each possible mouse axis and button, periodically submitting mouse events to the system using the `SendInput` Windows API function. For mouse axes, this module keeps track of movement contributions from all physical sources, aggregates across them using summation, and appropriately converts from the absolute position scheme reported by game controllers to the relative motion scheme that Windows uses for mouse movement.
 
 **PhysicalController** manages all communication with the underlying XInput API. It periodically polls devices for changes to physical state and supports notifying other modules whenever a physical state change is detected.
 
