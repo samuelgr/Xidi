@@ -204,6 +204,7 @@
     </PreBuildEvent>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClInclude Include="Include\Xidi\ApiGUID.h" />
     <ClInclude Include="Include\Xidi\ApiWindows.h" />
     <ClInclude Include="Include\Xidi\ApiBitSet.h" />
     <ClInclude Include="Include\Xidi\ApiXidi.h" />
@@ -227,7 +228,9 @@
     <ClInclude Include="Include\Xidi\MapperParser.h" />
     <ClInclude Include="Include\Xidi\Mouse.h" />
     <ClInclude Include="Include\Xidi\PhysicalController.h" />
+    <ClInclude Include="Include\Xidi\Test\MockDirectInputDevice.h" />
     <ClInclude Include="Include\Xidi\Test\MockForceFeedbackEffect.h" />
+    <ClInclude Include="Include\Xidi\Test\MockDirectInput.h" />
     <ClInclude Include="Include\Xidi\Test\MockMouse.h" />
     <ClInclude Include="Include\Xidi\ValueOrError.h" />
     <ClInclude Include="Include\Xidi\StateChangeEventBuffer.h" />
@@ -242,6 +245,7 @@
     <ClInclude Include="Include\Xidi\VirtualController.h" />
     <ClInclude Include="Include\Xidi\VirtualDirectInputDevice.h" />
     <ClInclude Include="Include\Xidi\VirtualDirectInputEffect.h" />
+    <ClInclude Include="Include\Xidi\WrapperIDirectInput.h" />
     <ClInclude Include="Include\Xidi\XidiConfigReader.h" />
     <ClInclude Include="Resources\Xidi.h" />
   </ItemGroup>
@@ -291,6 +295,8 @@
     <ClCompile Include="Source\Test\Case\VirtualControllerTest.cpp" />
     <ClCompile Include="Source\Test\Case\VirtualDirectInputDeviceTest.cpp" />
     <ClCompile Include="Source\Test\Case\VirtualDirectInputEffectTest.cpp" />
+    <ClCompile Include="Source\Test\MockDirectInput.cpp" />
+    <ClCompile Include="Source\Test\MockDirectInputDevice.cpp" />
     <ClCompile Include="Source\Test\MockKeyboard.cpp" />
     <ClCompile Include="Source\Test\MockMouse.cpp" />
     <ClCompile Include="Source\Test\MockPhysicalController.cpp" />
@@ -300,6 +306,7 @@
     <ClCompile Include="Source\VirtualController.cpp" />
     <ClCompile Include="Source\VirtualDirectInputDevice.cpp" />
     <ClCompile Include="Source\VirtualDirectInputEffect.cpp" />
+    <ClCompile Include="Source\WrapperIDirectInput.cpp" />
     <ClCompile Include="Source\XidiConfigReader.cpp" />
   </ItemGroup>
   <ItemGroup>
