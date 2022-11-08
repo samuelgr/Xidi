@@ -29,7 +29,7 @@ namespace Xidi
     /// @tparam charMode Selects between ASCII ("A" suffix) and Unicode ("W") suffix versions of types and interfaces.
     template <ECharMode charMode> class VirtualDirectInputEffect : public IDirectInputEffect
     {
-        // -------- CONSTANTS ------------------------------------------------------ //
+        // -------- CONSTANTS ---------------------------------------------- //
     public:
 
         /// Scaling factor for converting between DirectInput force feedback effect time units and internal Xidi force feedback time units.
@@ -38,7 +38,7 @@ namespace Xidi
 
 
     private:
-        // -------- INSTANCE VARIABLES --------------------------------------------- //
+        // -------- INSTANCE VARIABLES ------------------------------------- //
 
         /// Associated DirectInput device object.
         VirtualDirectInputDevice<charMode>& associatedDevice;
@@ -54,7 +54,7 @@ namespace Xidi
 
 
     protected:
-        // -------- CONSTRUCTION AND DESTRUCTION ----------------------------------- //
+        // -------- CONSTRUCTION AND DESTRUCTION --------------------------- //
 
         /// Initialization constructor.
         /// @param [in] associatedDevice DirectInput device object with which to associate this effect.
@@ -67,7 +67,7 @@ namespace Xidi
         virtual ~VirtualDirectInputEffect(void);
 
 
-        // -------- CLASS METHODS -------------------------------------------------- //
+        // -------- CLASS METHODS ------------------------------------------ //
 
         /// Converts the specified time interval, represented in DirectInput units, to internal Xidi time units.
         /// @param [in] diTime Amount of time, represented using DirectInput units.
@@ -86,7 +86,7 @@ namespace Xidi
         }
 
 
-        // -------- INSTANCE METHODS ----------------------------------------------- //
+        // -------- INSTANCE METHODS --------------------------------------- //
 
         /// Retrieves a reference to the underlying effect.
         /// Intended for internal use but additionally exposed for testing.
@@ -118,7 +118,7 @@ namespace Xidi
 
 
     protected:
-        // -------- CONCRETE INSTANCE METHODS -------------------------------------- //
+        // -------- CONCRETE INSTANCE METHODS ------------------------------ //
 
         /// Dumps the type-specific parameters contained in the provided effect parameter structure to the log.
         /// Intended for internal use.
@@ -146,12 +146,12 @@ namespace Xidi
 
 
     public:
-        // -------- METHODS: IUnknown ---------------------------------------------- //
+        // -------- METHODS: IUnknown -------------------------------------- //
         HRESULT STDMETHODCALLTYPE QueryInterface(REFIID riid, LPVOID* ppvObj) override;
         ULONG STDMETHODCALLTYPE AddRef(void) override;
         ULONG STDMETHODCALLTYPE Release(void) override;
 
-        // -------- METHODS: IDirectInputEffect ------------------------------------ //
+        // -------- METHODS: IDirectInputEffect ---------------------------- //
         HRESULT STDMETHODCALLTYPE Initialize(HINSTANCE hinst, DWORD dwVersion, REFGUID rguid) override;
         HRESULT STDMETHODCALLTYPE GetEffectGuid(LPGUID pguid) override;
         HRESULT STDMETHODCALLTYPE GetParameters(LPDIEFFECT peff, DWORD dwFlags) override;
@@ -171,7 +171,7 @@ namespace Xidi
     template <ECharMode charMode, typename DirectInputTypeSpecificParameterType, typename TypeSpecificParameterType> class VirtualDirectInputEffectWithTypeSpecificParameters : public VirtualDirectInputEffect<charMode>
     {
     protected:
-        // -------- CONSTRUCTION AND DESTRUCTION ----------------------------------- //
+        // -------- CONSTRUCTION AND DESTRUCTION --------------------------- //
 
         /// Initialization constructor.
         /// @param [in] associatedDevice DirectInput device object with which to associate this effect.
@@ -183,7 +183,7 @@ namespace Xidi
         }
 
 
-        // -------- INSTANCE METHODS ----------------------------------------------- //
+        // -------- INSTANCE METHODS --------------------------------------- //
 
         /// Type-casts and returns a reference to the underlying effect.
         /// No run-time checks are performed, but the type-cast operation is safe based on the types allowed for the initialization constructor parameters.
@@ -194,7 +194,7 @@ namespace Xidi
         }
 
 
-        // -------- ABSTRACT INSTANCE METHODS -------------------------------------- //
+        // -------- ABSTRACT INSTANCE METHODS ------------------------------ //
 
         /// Converts from the DirectInput type-specific parameter type to the internal type-specific parameter type.
         /// Performs no error-checking.
@@ -209,7 +209,7 @@ namespace Xidi
         virtual DirectInputTypeSpecificParameterType ConvertToDirectInput(const TypeSpecificParameterType& typeSpecificParams) const = 0;
 
 
-        // -------- CONCRETE INSTANCE METHODS -------------------------------------- //
+        // -------- CONCRETE INSTANCE METHODS ------------------------------ //
 
         HRESULT GetTypeSpecificParameters(LPDIEFFECT peff) override
         {
@@ -254,7 +254,7 @@ namespace Xidi
     template <ECharMode charMode> class ConstantForceDirectInputEffect : public VirtualDirectInputEffectWithTypeSpecificParameters<charMode, DICONSTANTFORCE, Controller::ForceFeedback::SConstantForceParameters>
     {
     public:
-        // -------- CONSTRUCTION AND DESTRUCTION ----------------------------------- //
+        // -------- CONSTRUCTION AND DESTRUCTION --------------------------- //
 
         /// Initialization constructor.
         /// Simply delegates to the base class.
@@ -265,7 +265,7 @@ namespace Xidi
 
 
     protected:
-        // -------- CONCRETE INSTANCE METHODS -------------------------------------- //
+        // -------- CONCRETE INSTANCE METHODS ------------------------------ //
 
         Controller::ForceFeedback::SConstantForceParameters ConvertFromDirectInput(const DICONSTANTFORCE& diTypeSpecificParams) const override
         {
@@ -285,7 +285,7 @@ namespace Xidi
     template <ECharMode charMode> class PeriodicDirectInputEffect : public VirtualDirectInputEffectWithTypeSpecificParameters<charMode, DIPERIODIC, Controller::ForceFeedback::SPeriodicParameters>
     {
     public:
-        // -------- CONSTRUCTION AND DESTRUCTION ----------------------------------- //
+        // -------- CONSTRUCTION AND DESTRUCTION --------------------------- //
 
         /// Initialization constructor.
         /// Simply delegates to the base class.
@@ -296,7 +296,7 @@ namespace Xidi
 
 
     protected:
-        // -------- CONCRETE INSTANCE METHODS -------------------------------------- //
+        // -------- CONCRETE INSTANCE METHODS ------------------------------ //
 
         Controller::ForceFeedback::SPeriodicParameters ConvertFromDirectInput(const DIPERIODIC& diTypeSpecificParams) const override
         {
@@ -326,7 +326,7 @@ namespace Xidi
     template <ECharMode charMode> class RampForceDirectInputEffect : public VirtualDirectInputEffectWithTypeSpecificParameters<charMode, DIRAMPFORCE, Controller::ForceFeedback::SRampForceParameters>
     {
     public:
-        // -------- CONSTRUCTION AND DESTRUCTION ----------------------------------- //
+        // -------- CONSTRUCTION AND DESTRUCTION --------------------------- //
 
         /// Initialization constructor.
         /// Simply delegates to the base class.
@@ -337,7 +337,7 @@ namespace Xidi
 
 
     protected:
-        // -------- CONCRETE INSTANCE METHODS -------------------------------------- //
+        // -------- CONCRETE INSTANCE METHODS ------------------------------ //
 
         Controller::ForceFeedback::SRampForceParameters ConvertFromDirectInput(const DIRAMPFORCE& diTypeSpecificParams) const override
         {

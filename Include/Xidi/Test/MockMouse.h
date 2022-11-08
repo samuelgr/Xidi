@@ -57,9 +57,9 @@ namespace XidiTest
         /// Simple equality check by comparing all the individual mouse state objects that comprise the virtual mouse state.
         /// @param [in] other Object with which to compare.
         /// @return `true` if this object is equal to the other object, `false` otherwise.
-        constexpr inline bool operator==(const MockMouse& other) const
+        inline bool operator==(const MockMouse& other) const
         {
-            return (virtualMouseButtonState == other.virtualMouseButtonState);
+            return ((virtualMouseButtonState == other.virtualMouseButtonState) && (virtualMouseMovementContributionBySource == other.virtualMouseMovementContributionBySource));
         }
 
 

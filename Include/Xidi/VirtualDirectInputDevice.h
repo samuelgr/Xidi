@@ -87,7 +87,7 @@ namespace Xidi
     template <ECharMode charMode> class VirtualDirectInputDevice : public DirectInputDeviceType<charMode>
     {
     private:
-        // -------- INSTANCE VARIABLES --------------------------------------------- //
+        // -------- INSTANCE VARIABLES ------------------------------------- //
 
         /// Virtual controller with which to interface.
         std::unique_ptr<Controller::VirtualController> controller;
@@ -117,7 +117,7 @@ namespace Xidi
         
 
     public:
-        // -------- CONSTRUCTION AND DESTRUCTION ----------------------------------- //
+        // -------- CONSTRUCTION AND DESTRUCTION --------------------------- //
 
         /// Initialization constructor.
         /// @param [in] controller Virtual controller object to associate with this object.
@@ -127,7 +127,7 @@ namespace Xidi
         ~VirtualDirectInputDevice(void);
 
 
-        // -------- CLASS METHODS -------------------------------------------------- //
+        // -------- CLASS METHODS ------------------------------------------ //
 
         /// Fills the specified buffer with a friendly string representation of the specified controller element.
         /// Intended for internal use, primarily for log message generation.
@@ -143,7 +143,7 @@ namespace Xidi
         static bool ForceFeedbackEffectCanCreateObject(REFGUID rguidEffect);
 
 
-        // -------- INSTANCE METHODS ----------------------------------------------- //
+        // -------- INSTANCE METHODS --------------------------------------- //
 
         /// Obtains the force feedback device associated with this controller.
         /// If this controller is not yet acquired then an attempt is made to acquire it automatically.
@@ -209,13 +209,13 @@ namespace Xidi
         }
 
 
-        // -------- METHODS: IUnknown ---------------------------------------------- //
+        // -------- METHODS: IUnknown -------------------------------------- //
         HRESULT STDMETHODCALLTYPE QueryInterface(REFIID riid, LPVOID* ppvObj) override;
         ULONG STDMETHODCALLTYPE AddRef(void) override;
         ULONG STDMETHODCALLTYPE Release(void) override;
 
 
-        // -------- METHODS: IDirectInputDevice COMMON ----------------------------- //
+        // -------- METHODS: IDirectInputDevice COMMON --------------------- //
         HRESULT STDMETHODCALLTYPE Acquire(void) override;
         HRESULT STDMETHODCALLTYPE CreateEffect(REFGUID rguid, LPCDIEFFECT lpeff, LPDIRECTINPUTEFFECT* ppdeff, LPUNKNOWN punkOuter) override;
         HRESULT STDMETHODCALLTYPE EnumCreatedEffectObjects(LPDIENUMCREATEDEFFECTOBJECTSCALLBACK lpCallback, LPVOID pvRef, DWORD fl) override;
@@ -244,7 +244,7 @@ namespace Xidi
         HRESULT STDMETHODCALLTYPE WriteEffectToFile(DirectInputDeviceType<charMode>::ConstStringType lptszFileName, DWORD dwEntries, LPDIFILEEFFECT rgDiFileEft, DWORD dwFlags) override;
 
 #if DIRECTINPUT_VERSION >= 0x0800
-        // -------- METHODS: IDirectInputDevice8 ONLY ------------------------------ //
+        // -------- METHODS: IDirectInputDevice8 ONLY ---------------------- //
         HRESULT STDMETHODCALLTYPE BuildActionMap(DirectInputDeviceType<charMode>::ActionFormatType* lpdiaf, DirectInputDeviceType<charMode>::ConstStringType lpszUserName, DWORD dwFlags) override;
         HRESULT STDMETHODCALLTYPE GetImageInfo(DirectInputDeviceType<charMode>::DeviceImageInfoHeaderType* lpdiDevImageInfoHeader) override;
         HRESULT STDMETHODCALLTYPE SetActionMap(DirectInputDeviceType<charMode>::ActionFormatType* lpdiActionFormat, DirectInputDeviceType<charMode>::ConstStringType lptszUserName, DWORD dwFlags) override;

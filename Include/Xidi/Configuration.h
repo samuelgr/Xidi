@@ -26,7 +26,7 @@ namespace Xidi
 {
     namespace Configuration
     {
-        // -------- CONSTANTS ------------------------------------------ //
+        // -------- CONSTANTS ---------------------------------------------- //
 
         /// Section name for all settings that appear at global scope (i.e. outside of a section).
         inline constexpr wchar_t kSectionNameGlobal[] = L"";
