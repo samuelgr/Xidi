@@ -355,10 +355,12 @@ namespace XidiTest
                 TEST_ASSERT(nullptr == pvRef);
 
                 const DWORD kButtonNumber = (DWORD)DIDFT_GETINSTANCE(lpddoi->dwType);
-                if (kButtonNumber < _countof(STestDataPacket::button))
-                    TEST_ASSERT(offsetof(STestDataPacket, button[kButtonNumber]) == lpddoi->dwOfs);
-                else
-                    TEST_ASSERT(DataFormat::kInvalidOffsetValue == lpddoi->dwOfs);
+                const DWORD kActualOffset = lpddoi->dwOfs;
+                const DWORD kExpectedOffset = (kButtonNumber < _countof(STestDataPacket::button)
+                    ? (offsetof(STestDataPacket, button) + (kButtonNumber * sizeof(STestDataPacket::button[0])))
+                    : DataFormat::kInvalidOffsetValue);
+                
+                TEST_ASSERT(kActualOffset == kExpectedOffset);
 
                 return DIENUM_CONTINUE;
             },
