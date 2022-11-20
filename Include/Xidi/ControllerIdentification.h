@@ -82,13 +82,21 @@ namespace Xidi
     /// @return Number of characters written, or negative in the event of an error.
     template <typename StringType> int FillVirtualControllerName(StringType buf, size_t bufcount, DWORD controllerId);
 
-    /// Generates an instance GUID for an Xidi virtual controller of the specified index and places it into the supplied GUID.
-    /// @param [out] xguid GUID to fill.
-    /// @param [in] controllerId Xidi virtual controller identifier.
-    void MakeVirtualControllerInstanceGuid(GUID& xguid, DWORD controllerId);
-
     /// Retrieves the Xidi virtual controller index of the specified instance GUID.
     /// @param [in] instanceGUID Xidi virtual controller instance GUID.
     /// @return Xidi virtual controller identifier from the specified GUID, assuming said GUID is actually a Xidi virtual controller instance GUID.
     std::optional<DWORD> VirtualControllerIdFromInstanceGuid(REFGUID instanceGUID);
+
+    /// Generates an instance GUID for a Xidi virtual controller of the specified index.
+    /// @param [in] controllerId Xidi virtual controller identifier.
+    /// @return Instance GUID for a Xidi virtual controller of the specified index.
+    constexpr inline GUID VirtualControllerInstanceGuid(DWORD controllerId)
+    {
+        GUID xguid = kVirtualControllerInstanceBaseGuid;
+        xguid.Data4[4] = ((controllerId >> 0) & 0xff);
+        xguid.Data4[5] = ((controllerId >> 8) & 0xff);
+        xguid.Data4[6] = ((controllerId >> 16) & 0xff);
+        xguid.Data4[7] = ((controllerId >> 24) & 0xff);
+        return xguid;
+    }
 }

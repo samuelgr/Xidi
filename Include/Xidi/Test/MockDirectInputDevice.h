@@ -46,18 +46,40 @@ namespace XidiTest
     /// Record type for holding information about a single device that is known to the simulated system.
     struct SDirectInputDeviceInfo
     {
-        DirectInputType<kDirectInputTestCharMode>::DeviceInstanceType instance;    ///< Device instance record, in the same format as used for device enumeration.
-        std::unordered_map<GUID, UDirectInputDeviceProperty> properties;           ///< All device properties that are available to be read, keyed by property GUID.
-
-        /// Allows less-than comparison to support many standard containers that use this type of comparison for sorting.
-        /// Objects are compared on the basis of their instance GUIDs.
-        /// @param [in] rhs Right-hand side of the binary operator.
-        /// @return `true` if this object (lhs) is less than the other object (rhs), `false` otherwise.
-        inline bool operator<(const SDirectInputDeviceInfo& rhs) const
-        {
-            return std::less<GUID>()(instance.guidInstance, rhs.instance.guidInstance);
-        }
+        DirectInputType<kDirectInputTestCharMode>::DeviceInstanceType instance;     ///< Device instance record, in the same format as used for device enumeration.
+        DIDEVCAPS capabilities;                                                     ///< Device capabilities record.
+        std::unordered_map<const GUID*, UDirectInputDeviceProperty> properties;     ///< All device properties that are available to be read, keyed by property GUID address.
     };
+
+    /// Allows less-than comparison between device information records to support many standard containers that use this type of comparison for sorting.
+    /// Objects are compared on the basis of their instance GUIDs.
+    /// @param [in] lhs Left-hand side of the binary operator.
+    /// @param [in] rhs Right-hand side of the binary operator.
+    /// @return `true` if this object (lhs) is less than the other object (rhs), `false` otherwise.
+    inline bool operator<(const SDirectInputDeviceInfo& lhs, const SDirectInputDeviceInfo& rhs)
+    {
+        return std::less<GUID>()(lhs.instance.guidInstance, rhs.instance.guidInstance);
+    }
+
+    /// Allows less-than comparison between device information records and GUIDs to support transparent lookup of instance GUIDs.
+    /// Objects are compared on the basis of their instance GUIDs.
+    /// @param [in] lhs Left-hand side of the binary operator.
+    /// @param [in] rhs Right-hand side of the binary operator.
+    /// @return `true` if this object (lhs) is less than the other object (rhs), `false` otherwise.
+    inline bool operator<(const SDirectInputDeviceInfo& lhs, const GUID& rhs)
+    {
+        return std::less<GUID>()(lhs.instance.guidInstance, rhs);
+    }
+
+    /// Allows less-than comparison between device information records and GUIDs to support transparent lookup of instance GUIDs.
+    /// Objects are compared on the basis of their instance GUIDs.
+    /// @param [in] lhs Left-hand side of the binary operator.
+    /// @param [in] rhs Right-hand side of the binary operator.
+    /// @return `true` if this object (lhs) is less than the other object (rhs), `false` otherwise.
+    inline bool operator<(const GUID& lhs, const SDirectInputDeviceInfo& rhs)
+    {
+        return std::less<GUID>()(lhs, rhs.instance.guidInstance);
+    }
 
     /// Mock version of the IDirectInput interface, used to test interaction with system-supplied DirectInput objects.
     /// Objects of this type should only be created via appropriate device creation calls to #MockDirectInput.
@@ -67,13 +89,20 @@ namespace XidiTest
     private:
         // -------- INSTANCE VARIABLES ------------------------------------- //
 
-        // TODO
+        /// Read-only device information, which defines both instance information and device properties.
+        /// Owned by the #MockDirectInput device that creates this object.
+        const SDirectInputDeviceInfo& kDeviceInfo;
 
 
     public:
         // -------- CONSTRUCTION AND DESTRUCTION --------------------------- //
 
-        // TODO
+        /// Initialization constructor.
+        /// Requires a device information object.
+        inline MockDirectInputDevice(const SDirectInputDeviceInfo& kDeviceInfo) : kDeviceInfo(kDeviceInfo)
+        {
+            // Nothing to do here.
+        }
 
 
         // -------- METHODS: IUnknown -------------------------------------- //

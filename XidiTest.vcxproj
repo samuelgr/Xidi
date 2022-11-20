@@ -295,6 +295,7 @@
     <ClCompile Include="Source\Test\Case\VirtualControllerTest.cpp" />
     <ClCompile Include="Source\Test\Case\VirtualDirectInputDeviceTest.cpp" />
     <ClCompile Include="Source\Test\Case\VirtualDirectInputEffectTest.cpp" />
+    <ClCompile Include="Source\Test\Case\WrapperIDirectInputTest.cpp" />
     <ClCompile Include="Source\Test\MockDirectInput.cpp" />
     <ClCompile Include="Source\Test\MockDirectInputDevice.cpp" />
     <ClCompile Include="Source\Test\MockKeyboard.cpp" />

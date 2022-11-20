@@ -36,7 +36,7 @@ namespace XidiTest
         /// All devices known to the simulated system.
         /// These are the devices that are available to be created and enumerated.
         /// Set once at compile-time and never updated.
-        const std::set<SDirectInputDeviceInfo> kMockSystemDevices;
+        const std::set<SDirectInputDeviceInfo, std::less<>> kMockSystemDevices;
 
         /// Registry of all device objects created via method calls to this object.
         /// All such objects are automatically destroyed when this object is destroyed.
@@ -46,18 +46,25 @@ namespace XidiTest
     public:
         // -------- CONSTRUCTION AND DESTRUCTION --------------------------- //
 
+        /// Default constructor.
+        /// Establishes an empty set of system devices.
+        inline MockDirectInput(void) = default;
+
         /// Initialization constructor.
-        /// Copies a set of system devices into the mock system held by this object.
-        inline MockDirectInput(std::set<SDirectInputDeviceInfo>& mockSystemDevices) : kMockSystemDevices(mockSystemDevices)
+        /// Moves a set of system devices into the mock system held by this object.
+        inline MockDirectInput(std::set<SDirectInputDeviceInfo, std::less<>>&& mockSystemDevices) : kMockSystemDevices(std::move(mockSystemDevices))
         {
             // Nothing to do here.
         }
 
-        /// Initialization constructor.
-        /// Moves a set of system devices into the mock system held by this object.
-        inline MockDirectInput(std::set<SDirectInputDeviceInfo>&& mockSystemDevices) : kMockSystemDevices(std::move(mockSystemDevices))
+
+        // -------- INSTANCE METHODS --------------------------------------- //
+
+        /// Retrieves and returns the number of system devices held by this object.
+        /// @return Number of system devices present.
+        inline size_t GetSystemDeviceCount(void) const
         {
-            // Nothing to do here.
+            return kMockSystemDevices.size();
         }
 
 

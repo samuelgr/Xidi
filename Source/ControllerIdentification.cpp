@@ -51,15 +51,6 @@ namespace Xidi
         return (*((DWORD*)(&xguid.Data4[4])));
     }
 
-    /// Turns the provided base instance GUID for a Xidi virtual controller into an instance GUID for a controller of the specified index.
-    /// Does not verify that the supplied GUID actually represents a Xidi virtual controller instance GUID.
-    /// @param [in,out] xguid GUID whose XInput instance field should be set.
-    /// @param [in] xindex Instance index (a.k.a. XInput player number).
-    static inline void SetVirtualControllerInstanceInGuid(GUID& xguid, DWORD xindex)
-    {
-        *((DWORD*)(&xguid.Data4[4])) = xindex;
-    }
-
 
     // -------- FUNCTIONS -------------------------------------------------- //
     // See "ControllerIdentification.h" for documentation.
@@ -192,7 +183,7 @@ namespace Xidi
 
     template <typename DeviceInstanceType> void FillVirtualControllerInfo(DeviceInstanceType& instanceInfo, DWORD controllerId)
     {
-        MakeVirtualControllerInstanceGuid(instanceInfo.guidInstance, controllerId);
+        instanceInfo.guidInstance = VirtualControllerInstanceGuid(controllerId);
         instanceInfo.guidProduct = kVirtualControllerProductGuid;
         instanceInfo.dwDevType = DINPUT_DEVTYPE_XINPUT_GAMEPAD;
         FillVirtualControllerName(instanceInfo.tszInstanceName, _countof(instanceInfo.tszInstanceName), controllerId);
@@ -242,23 +233,13 @@ namespace Xidi
 
     // ---------
 
-    void MakeVirtualControllerInstanceGuid(GUID& xguid, DWORD controllerId)
-    {
-        xguid = kVirtualControllerInstanceBaseGuid;
-        SetVirtualControllerInstanceInGuid(xguid, controllerId);
-    }
-
-    // ---------
-
     std::optional<DWORD> VirtualControllerIdFromInstanceGuid(REFGUID instanceGUID)
     {
         DWORD xindex = ExtractVirtualControllerInstanceFromGuid(instanceGUID);
 
         if (xindex < Controller::kPhysicalControllerCount)
         {
-            GUID realXInputGUID;
-            MakeVirtualControllerInstanceGuid(realXInputGUID, xindex);
-
+            GUID realXInputGUID = VirtualControllerInstanceGuid(xindex);
             if (realXInputGUID == instanceGUID)
                 return xindex;
         }

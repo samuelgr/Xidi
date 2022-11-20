@@ -14,9 +14,9 @@
 #include "TestCase.h"
 
 
- // -------- MACROS --------------------------------------------------------- //
+// -------- MACROS --------------------------------------------------------- //
 
- /// Fails a test because a method was invoked that is beyond the scope of tests and therefore not implemented in the mock version of the DirectInput interface.
+/// Fails a test because a method was invoked that is beyond the scope of tests and therefore not implemented in the mock version of the DirectInput interface.
 #define TEST_FAILED_UNIMPLEMENTED_METHOD            TEST_FAILED_BECAUSE(L"%s: Invoked an unimplemented MockDirectInputDevice method.", __FUNCTIONW__)
 
 
@@ -34,14 +34,16 @@ namespace XidiTest
 
     ULONG STDMETHODCALLTYPE MockDirectInputDevice::AddRef(void)
     {
-        TEST_FAILED_UNIMPLEMENTED_METHOD;
+        // This is a no-op for mock objects.
+        return 1;
     }
 
     // --------
 
     ULONG STDMETHODCALLTYPE MockDirectInputDevice::Release(void)
     {
-        TEST_FAILED_UNIMPLEMENTED_METHOD;
+        // This is a no-op for mock objects.
+        return 1;
     }
 
 
@@ -99,7 +101,11 @@ namespace XidiTest
 
     HRESULT STDMETHODCALLTYPE MockDirectInputDevice::GetCapabilities(LPDIDEVCAPS lpDIDevCaps)
     {
-        TEST_FAILED_UNIMPLEMENTED_METHOD;
+        if (nullptr == lpDIDevCaps)
+            return E_POINTER;
+
+        memcpy(lpDIDevCaps, &kDeviceInfo.capabilities, std::min(lpDIDevCaps->dwSize, kDeviceInfo.capabilities.dwSize));
+        return DI_OK;
     }
 
     // --------
@@ -113,7 +119,11 @@ namespace XidiTest
 
     HRESULT STDMETHODCALLTYPE MockDirectInputDevice::GetDeviceInfo(DirectInputDeviceType<kDirectInputTestCharMode>::DeviceInstanceType* pdidi)
     {
-        TEST_FAILED_UNIMPLEMENTED_METHOD;
+        if (nullptr == pdidi)
+            return E_POINTER;
+
+        memcpy(pdidi, &kDeviceInfo.instance, std::min(pdidi->dwSize, kDeviceInfo.instance.dwSize));
+        return DI_OK;
     }
 
     // --------
@@ -148,7 +158,13 @@ namespace XidiTest
 
     HRESULT STDMETHODCALLTYPE MockDirectInputDevice::GetProperty(REFGUID rguidProp, LPDIPROPHEADER pdiph)
     {
-        TEST_FAILED_UNIMPLEMENTED_METHOD;
+        const auto propertyIterator = kDeviceInfo.properties.find(&rguidProp);
+        if (kDeviceInfo.properties.cend() == propertyIterator)
+            return DIERR_UNSUPPORTED;
+
+        const UDirectInputDeviceProperty& kDeviceProperty = propertyIterator->second;
+        memcpy(pdiph, &kDeviceProperty, std::min(pdiph->dwSize, kDeviceProperty.header.dwSize));
+        return DI_OK;
     }
 
     // --------
