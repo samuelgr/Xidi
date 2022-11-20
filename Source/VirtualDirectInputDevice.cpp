@@ -1159,15 +1159,8 @@ namespace Xidi
 
                     *objectDescriptor = {.dwSize = sizeof(*objectDescriptor)};
                     FillObjectInstanceInfo<charMode>(controllerCapabilities, kAxisIdentifier, kAxisOffset, objectDescriptor.get());
-                    switch (lpCallback(objectDescriptor.get(), pvRef))
-                    {
-                    case DIENUM_CONTINUE:
-                        break;
-                    case DIENUM_STOP:
+                    if (DIENUM_STOP == lpCallback(objectDescriptor.get(), pvRef))
                         LOG_INVOCATION_AND_RETURN(DI_OK, kMethodSeverity);
-                    default:
-                        LOG_INVOCATION_AND_RETURN(DIERR_INVALIDPARAM, kMethodSeverity);
-                    }
                 }
             }
 
@@ -1181,15 +1174,8 @@ namespace Xidi
 
                     *objectDescriptor = {.dwSize = sizeof(*objectDescriptor)};
                     FillObjectInstanceInfo<charMode>(controllerCapabilities, kButtonIdentifier, kButtonOffset, objectDescriptor.get());
-                    switch (lpCallback(objectDescriptor.get(), pvRef))
-                    {
-                    case DIENUM_CONTINUE:
-                        break;
-                    case DIENUM_STOP:
+                    if (DIENUM_STOP == lpCallback(objectDescriptor.get(), pvRef))
                         LOG_INVOCATION_AND_RETURN(DI_OK, kMethodSeverity);
-                    default:
-                        LOG_INVOCATION_AND_RETURN(DIERR_INVALIDPARAM, kMethodSeverity);
-                    }
                 }
             }
 
@@ -1202,15 +1188,8 @@ namespace Xidi
                     
                     *objectDescriptor = {.dwSize = sizeof(*objectDescriptor)};
                     FillObjectInstanceInfo<charMode>(controllerCapabilities, kPovIdentifier, kPovOffset, objectDescriptor.get());
-                    switch (lpCallback(objectDescriptor.get(), pvRef))
-                    {
-                    case DIENUM_CONTINUE:
-                        break;
-                    case DIENUM_STOP:
+                    if (DIENUM_STOP == lpCallback(objectDescriptor.get(), pvRef))
                         LOG_INVOCATION_AND_RETURN(DI_OK, kMethodSeverity);
-                    default:
-                        LOG_INVOCATION_AND_RETURN(DIERR_INVALIDPARAM, kMethodSeverity);
-                    }
                 }
             }
         }

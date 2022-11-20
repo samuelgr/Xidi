@@ -242,7 +242,7 @@ namespace Xidi
             {
                 callbackInfo.callbackReturnCode = EnumerateVirtualControllers(lpCallback, pvRef, kForceFeedbackControllersOnly);
 
-                if (DIENUM_CONTINUE != callbackInfo.callbackReturnCode)
+                if (DIENUM_STOP == callbackInfo.callbackReturnCode)
                 {
                     Message::Output(Message::ESeverity::Debug, L"Application has terminated enumeration.");
                     return enumResult;
@@ -254,7 +254,7 @@ namespace Xidi
 
             if (DI_OK != enumResult) return enumResult;
 
-            if (DIENUM_CONTINUE != callbackInfo.callbackReturnCode)
+            if (DIENUM_STOP == callbackInfo.callbackReturnCode)
             {
                 Message::Output(Message::ESeverity::Debug, L"Application has terminated enumeration.");
                 return enumResult;
@@ -266,7 +266,7 @@ namespace Xidi
             {
                 callbackInfo.callbackReturnCode = EnumerateVirtualControllers(lpCallback, pvRef, kForceFeedbackControllersOnly);
 
-                if (DIENUM_CONTINUE != callbackInfo.callbackReturnCode)
+                if (DIENUM_STOP == callbackInfo.callbackReturnCode)
                 {
                     Message::Output(Message::ESeverity::Debug, L"Application has terminated enumeration.");
                     return enumResult;
@@ -279,7 +279,7 @@ namespace Xidi
 
         if (DI_OK != enumResult) return enumResult;
 
-        if (DIENUM_CONTINUE != callbackInfo.callbackReturnCode)
+        if (DIENUM_STOP == callbackInfo.callbackReturnCode)
         {
             Message::Output(Message::ESeverity::Debug, L"Application has terminated enumeration.");
             return enumResult;
