@@ -201,6 +201,8 @@ This section is used to modify the behavior of Xidi in ways that are not general
 
 - **PollReturnCode** modifies the return code for a specific DirectInput API call that some applications make but Xidi does not require. By default, Xidi informs applications that invoking this API call is unnecessary, which per DirectInput documentation is considered a successful result, but some applications are hard-coded to look for a specific return code that might be different. For example, `PollReturnCode = 0` would modify the return code to 0, which indicates that the operation completed successfully.
 
+- **IgnoreEnumObjectsCallbackReturnCode** *(unreleased)* causes Xidi to ignore the return code it receives from an application while it is enumerating objects (buttons, axes, and so on) that exist on a virtual controller. Normally the application has the option to terminate the enumeration early, but this workaround causes Xidi to ignore the application's request and continue enumerating until all objects have been presented to the application.
+
 
 # Mapping Controller Buttons and Axes
 
