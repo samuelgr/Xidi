@@ -1126,6 +1126,7 @@ namespace Xidi
 
     template <ECharMode charMode> HRESULT VirtualDirectInputDevice<charMode>::EnumObjects(DirectInputDeviceType<charMode>::EnumObjectsCallbackType lpCallback, LPVOID pvRef, DWORD dwFlags)
     {
+        static const bool kAlwaysContinueEnumerating = Globals::GetConfigurationData().GetFirstBooleanValue(Strings::kStrConfigurationSectionWorkarounds, Strings::kStrConfigurationSettingsWorkaroundsIgnoreEnumObjectsCallbackReturnCode).value_or(false);
         constexpr Message::ESeverity kMethodSeverity = Message::ESeverity::Info;
 
         if (nullptr == lpCallback)
@@ -1159,7 +1160,9 @@ namespace Xidi
 
                     *objectDescriptor = {.dwSize = sizeof(*objectDescriptor)};
                     FillObjectInstanceInfo<charMode>(controllerCapabilities, kAxisIdentifier, kAxisOffset, objectDescriptor.get());
-                    if (DIENUM_STOP == lpCallback(objectDescriptor.get(), pvRef))
+
+                    const bool kContinueEnumerating = (DIENUM_STOP != lpCallback(objectDescriptor.get(), pvRef));
+                    if (!kAlwaysContinueEnumerating && !kContinueEnumerating)
                         LOG_INVOCATION_AND_RETURN(DI_OK, kMethodSeverity);
                 }
             }
@@ -1174,7 +1177,9 @@ namespace Xidi
 
                     *objectDescriptor = {.dwSize = sizeof(*objectDescriptor)};
                     FillObjectInstanceInfo<charMode>(controllerCapabilities, kButtonIdentifier, kButtonOffset, objectDescriptor.get());
-                    if (DIENUM_STOP == lpCallback(objectDescriptor.get(), pvRef))
+
+                    const bool kContinueEnumerating = (DIENUM_STOP != lpCallback(objectDescriptor.get(), pvRef));
+                    if (!kAlwaysContinueEnumerating && !kContinueEnumerating)
                         LOG_INVOCATION_AND_RETURN(DI_OK, kMethodSeverity);
                 }
             }
@@ -1188,7 +1193,9 @@ namespace Xidi
                     
                     *objectDescriptor = {.dwSize = sizeof(*objectDescriptor)};
                     FillObjectInstanceInfo<charMode>(controllerCapabilities, kPovIdentifier, kPovOffset, objectDescriptor.get());
-                    if (DIENUM_STOP == lpCallback(objectDescriptor.get(), pvRef))
+
+                    const bool kContinueEnumerating = (DIENUM_STOP != lpCallback(objectDescriptor.get(), pvRef));
+                    if (!kAlwaysContinueEnumerating && !kContinueEnumerating)
                         LOG_INVOCATION_AND_RETURN(DI_OK, kMethodSeverity);
                 }
             }

@@ -111,6 +111,10 @@ namespace Xidi
         /// Usually this returns `DI_NOEFFECT` but some applications explicitly check for a different return code.
         inline constexpr std::wstring_view kStrConfigurationSettingWorkaroundsPollReturnCode = L"PollReturnCode";
 
+        /// Configuration file setting for a workaround that overrides the return code that Xidi receives from a callback it makes during `IDirectInputDevice::EnumObjects`.
+        /// If ignored, the application's callback is always assumed to return `DIENUM_CONTINUE`.
+        inline constexpr std::wstring_view kStrConfigurationSettingsWorkaroundsIgnoreEnumObjectsCallbackReturnCode = L"IgnoreEnumObjectsCallbackReturnCode";
+
 
         // -------- RUN-TIME CONSTANTS ------------------------------------- //
         // Not safe to access before run-time, and should not be used to perform dynamic initialization.

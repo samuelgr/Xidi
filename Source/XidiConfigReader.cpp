@@ -73,6 +73,7 @@ namespace Xidi
         ConfigurationFileLayoutSection(Strings::kStrConfigurationSectionWorkarounds, {
             ConfigurationFileLayoutNameAndValueType(Strings::kStrConfigurationSettingWorkaroundsMaxVirtualControllerCount, EValueType::Integer),
             ConfigurationFileLayoutNameAndValueType(Strings::kStrConfigurationSettingWorkaroundsPollReturnCode, EValueType::Integer),
+            ConfigurationFileLayoutNameAndValueType(Strings::kStrConfigurationSettingsWorkaroundsIgnoreEnumObjectsCallbackReturnCode, EValueType::Boolean),
         }),
     };
 
