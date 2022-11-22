@@ -18,6 +18,7 @@
 #include "ImportApiDirectInput.h"
 #include "ImportApiWinMM.h"
 #include "Message.h"
+#include "Strings.h"
 #include "VirtualController.h"
 #include "WrapperJoyWinMM.h"
 
@@ -125,6 +126,8 @@ namespace Xidi
         /// Any controllers that support XInput are removed from the mapping.
         static void CreateJoyIndexMap(void)
         {
+            const uint64_t kActiveVirtualControllerMask = Globals::GetConfigurationData().GetFirstIntegerValue(Strings::kStrConfigurationSectionWorkarounds, Strings::kStrConfigurationSettingWorkaroundsActiveVirtualControllerMask).value_or(UINT64_MAX);
+
             const size_t numDevicesFromSystem = joySystemDeviceInfo.size();
             const size_t numXInputVirtualDevices = _countof(controllers);
             const size_t numDevicesTotal = numDevicesFromSystem + numXInputVirtualDevices;
@@ -151,8 +154,11 @@ namespace Xidi
 
                 for (int i = 0; i < (int)numXInputVirtualDevices; ++i)
                 {
-                    Message::OutputFormatted(Message::ESeverity::Debug, L"    [%u]: Xidi virtual controller %u", (unsigned int)joyIndexMap.size(), (unsigned int)(i + 1));
-                    joyIndexMap.push_back(-(i + 1));
+                    if (0 != (kActiveVirtualControllerMask & ((uint64_t)1 << i)))
+                    {
+                        Message::OutputFormatted(Message::ESeverity::Debug, L"    [%u]: Xidi virtual controller %u", (unsigned int)joyIndexMap.size(), (unsigned int)(i + 1));
+                        joyIndexMap.push_back(-(i + 1));
+                    }
                 }
             }
             else
@@ -162,8 +168,11 @@ namespace Xidi
 
                 for (int i = 0; i < (int)numXInputVirtualDevices; ++i)
                 {
-                    Message::OutputFormatted(Message::ESeverity::Debug, L"    [%u]: Xidi virtual controller %u", (unsigned int)joyIndexMap.size(), (unsigned int)(i + 1));
-                    joyIndexMap.push_back(-(i + 1));
+                    if (0 != (kActiveVirtualControllerMask & ((uint64_t)1 << i)))
+                    {
+                        Message::OutputFormatted(Message::ESeverity::Debug, L"    [%u]: Xidi virtual controller %u", (unsigned int)joyIndexMap.size(), (unsigned int)(i + 1));
+                        joyIndexMap.push_back(-(i + 1));
+                    }
                 }
 
                 for (int i = 0; i < (int)numDevicesFromSystem; ++i)
@@ -392,19 +401,25 @@ namespace Xidi
             static std::once_flag initializationFlag;
             std::call_once(initializationFlag, []() -> void
                 {
+                    const uint64_t kActiveVirtualControllerMask = Globals::GetConfigurationData().GetFirstIntegerValue(Strings::kStrConfigurationSectionWorkarounds, Strings::kStrConfigurationSettingWorkaroundsActiveVirtualControllerMask).value_or(UINT64_MAX);
                     for (Controller::TControllerIdentifier i = 0; i < _countof(controllers); ++i)
                     {
-                        const Controller::Mapper* mapper = Controller::Mapper::GetConfigured(i);
-                        if (nullptr == mapper)
-                        {
-                            Message::OutputFormatted(Message::ESeverity::Error, L"Virtual controller %u will not function because a mapper could not be located for it.", (unsigned int)i);
-                            mapper = Controller::Mapper::GetNull();
-                        }
+                        controllers[i] = nullptr;
 
-                        controllers[i] = new Controller::VirtualController(i, *mapper);
-                        controllers[i]->SetAllAxisDeadzone(kAxisDeadzone);
-                        controllers[i]->SetAllAxisSaturation(kAxisSaturation);
-                        controllers[i]->SetAllAxisRange(kAxisRangeMin, kAxisRangeMax);
+                        if (0 != (kActiveVirtualControllerMask & ((uint64_t)1 << i)))
+                        {
+                            const Controller::Mapper* mapper = Controller::Mapper::GetConfigured(i);
+                            if (nullptr == mapper)
+                            {
+                                Message::OutputFormatted(Message::ESeverity::Error, L"Virtual controller %u will not function because a mapper could not be located for it.", (unsigned int)i);
+                                mapper = Controller::Mapper::GetNull();
+                            }
+
+                            controllers[i] = new Controller::VirtualController(i, *mapper);
+                            controllers[i]->SetAllAxisDeadzone(kAxisDeadzone);
+                            controllers[i]->SetAllAxisSaturation(kAxisSaturation);
+                            controllers[i]->SetAllAxisRange(kAxisRangeMin, kAxisRangeMax);
+                        }
                     }
 
                     // Enumerate all devices exposed by WinMM.

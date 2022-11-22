@@ -104,8 +104,8 @@ namespace Xidi
         /// Configuration file section name for specifying behavioral tweaks to work around bugs in games.
         inline constexpr std::wstring_view kStrConfigurationSectionWorkarounds = L"Workarounds";
 
-        /// Configuration file setting for a workaround that limits the number of virtual controllers Xidi will enumerate.
-        inline constexpr std::wstring_view kStrConfigurationSettingWorkaroundsMaxVirtualControllerCount = L"MaxVirtualControllerCount";
+        /// Configuration file setting for a workaround that limits the specific virtual controllers Xidi will enumerate.
+        inline constexpr std::wstring_view kStrConfigurationSettingWorkaroundsActiveVirtualControllerMask = L"ActiveVirtualControllerMask";
 
         /// Configuration file setting for a workaround that overrides the return code of the `IDirectInputDevice::Poll` method, which is unnecessary with Xidi.
         /// Usually this returns `DI_NOEFFECT` but some applications explicitly check for a different return code.

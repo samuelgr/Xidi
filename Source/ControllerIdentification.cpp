@@ -10,6 +10,7 @@
  *   controllers in the context of DirectInput.
  *****************************************************************************/
 
+#include "ApiBitSet.h"
 #include "ApiDirectInput.h"
 #include "Configuration.h"
 #include "ControllerIdentification.h"
@@ -144,20 +145,7 @@ namespace Xidi
         std::unique_ptr<DeviceInstanceType> instanceInfo = std::make_unique<DeviceInstanceType>();
         DWORD numControllersToEnumerate = Controller::kPhysicalControllerCount;
 
-        const auto kMaybeMaxVirtualControllerCount = Globals::GetConfigurationData().GetFirstIntegerValue(Strings::kStrConfigurationSectionWorkarounds, Strings::kStrConfigurationSettingWorkaroundsMaxVirtualControllerCount);
-        if (true == kMaybeMaxVirtualControllerCount.has_value())
-        {
-            const DWORD kMaxVirtualControllerCount = (DWORD)kMaybeMaxVirtualControllerCount.value();
-            if (kMaxVirtualControllerCount < numControllersToEnumerate)
-            {
-                numControllersToEnumerate = kMaxVirtualControllerCount;
-                Message::OutputFormatted(Message::ESeverity::Info, L"Enumerate: Number of Xidi virtual controllers is limited to %u by the configuration file.", numControllersToEnumerate);
-            }
-            else
-            {
-                Message::OutputFormatted(Message::ESeverity::Warning, L"Enumerate: Xidi virtual controller count limit of %u in the configuration file is ineffective because it is not less than the default limit of %u.", kMaxVirtualControllerCount, numControllersToEnumerate);
-            }
-        }
+        const uint64_t kActiveVirtualControllerMask = Globals::GetConfigurationData().GetFirstIntegerValue(Strings::kStrConfigurationSectionWorkarounds, Strings::kStrConfigurationSettingWorkaroundsActiveVirtualControllerMask).value_or(UINT64_MAX);
 
         for (DWORD idx = 0; idx < numControllersToEnumerate; ++idx)
         {
@@ -167,10 +155,13 @@ namespace Xidi
             *instanceInfo = {.dwSize = sizeof(*instanceInfo)};
             FillVirtualControllerInfo(*instanceInfo, idx);
 
-            Message::OutputFormatted(Message::ESeverity::Info, L"Enumerate: Presenting Xidi virtual controller %u to the application.", (1 + idx));
+            if (0 != (kActiveVirtualControllerMask & ((uint64_t)1 << idx)))
+            {
+                Message::OutputFormatted(Message::ESeverity::Info, L"Enumerate: Presenting Xidi virtual controller %u to the application.", (1 + idx));
 
-            if (DIENUM_CONTINUE != lpCallback(instanceInfo.get(), pvRef))
-                return DIENUM_STOP;
+                if (DIENUM_CONTINUE != lpCallback(instanceInfo.get(), pvRef))
+                    return DIENUM_STOP;
+            }
         }
 
         return DIENUM_CONTINUE;
