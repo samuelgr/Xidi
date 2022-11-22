@@ -226,7 +226,9 @@ namespace Xidi
         if (gameControllersRequested)
         {
             // First scan the system for any XInput-compatible game controllers that match the enumeration request.
-            enumResult = underlyingDIObject->EnumDevices(dwDevType, &WrapperIDirectInput<charMode>::CallbackEnumGameControllersXInputScan, (LPVOID)&callbackInfo, dwFlags);
+            // In general, XInput devices enumerated via DirectInput do not report supporting force feedback, even though Xidi does implement such support.
+            // For this reason any filtering by force feedback support must be removed while using the system-supplied interfaces to scan for XInput devices.
+            enumResult = underlyingDIObject->EnumDevices(dwDevType, &WrapperIDirectInput<charMode>::CallbackEnumGameControllersXInputScan, (LPVOID)&callbackInfo, (dwFlags & ~(DIEDFL_FORCEFEEDBACK)));
             if (DI_OK != enumResult) return enumResult;
 
             const BOOL systemHasXInputDevices = (0 != callbackInfo.seenInstanceIdentifiers.size());

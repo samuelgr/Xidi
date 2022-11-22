@@ -46,9 +46,24 @@ namespace XidiTest
     /// Record type for holding information about a single device that is known to the simulated system.
     struct SDirectInputDeviceInfo
     {
+        bool supportsXInput;                                                        ///< Whether or not this device is supposed to be an XInput device.
         DirectInputType<kDirectInputTestCharMode>::DeviceInstanceType instance;     ///< Device instance record, in the same format as used for device enumeration.
         DIDEVCAPS capabilities;                                                     ///< Device capabilities record.
         std::unordered_map<const GUID*, UDirectInputDeviceProperty> properties;     ///< All device properties that are available to be read, keyed by property GUID address.
+
+        /// Checks if the represented DirectInput device is reported as being an XInput device.
+        /// @return `true` if so, `false` otherwise.
+        inline bool SupportsXInput(void) const
+        {
+            return supportsXInput;
+        }
+
+        /// Checks if the represented DirectInput device is reported as supporting force feedback.
+        /// @return `true` if so, `false` otherwise.
+        inline bool SupportsForceFeedback(void) const
+        {
+            return (0 != (capabilities.dwFlags & DIDC_FORCEFEEDBACK));
+        }
     };
 
     /// Allows less-than comparison between device information records to support many standard containers that use this type of comparison for sorting.

@@ -68,10 +68,10 @@ namespace XidiTest
     {
         for (const auto& kMockSystemDevice : kMockSystemDevices)
         {
-            if ((0 == dwDevType) || (0 != (dwDevType & kMockSystemDevice.instance.dwDevType)))
+            if ((0 == dwDevType) || ((dwDevType & kMockSystemDevice.instance.dwDevType) == dwDevType))
             {
                 // Flag constants allowed for enumeration filters (DIEDFL_*) are equal to flag constants for capabilities (DIDC_*).
-                if ((0 == dwFlags) || (0 != (dwFlags & kMockSystemDevice.capabilities.dwFlags)))
+                if ((0 == dwFlags) || ((dwFlags & kMockSystemDevice.capabilities.dwFlags) == dwFlags))
                 {
                     if (DIENUM_CONTINUE != lpCallback(&kMockSystemDevice.instance, pvRef))
                         return DI_OK;

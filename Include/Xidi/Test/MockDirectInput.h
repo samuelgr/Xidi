@@ -67,6 +67,21 @@ namespace XidiTest
             return kMockSystemDevices.size();
         }
 
+        /// Retrieves and returns the number of system devices held by this object that match a specified filter predicate.
+        /// @return Number of matching system devices present.
+        template <typename FilterPredicate> inline size_t GetSystemDeviceCountFiltered(FilterPredicate predicate) const
+        {
+            size_t numDevices = 0;
+
+            for (const auto& kMockSystemDevice : kMockSystemDevices)
+            {
+                if (true == predicate(kMockSystemDevice))
+                    numDevices += 1;
+            }
+
+            return numDevices;
+        }
+
 
         // -------- METHODS: IUnknown -------------------------------------- //
         HRESULT STDMETHODCALLTYPE QueryInterface(REFIID riid, LPVOID* ppvObj) override;
