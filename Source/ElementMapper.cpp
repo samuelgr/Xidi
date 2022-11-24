@@ -39,6 +39,42 @@ namespace Xidi
 
         // -------- INTERNAL FUNCTIONS ------------------------------------- //
 
+        /// Applies a deadzone transformation to a raw analog value.
+        /// @param [in] analogValue Analog value for which a deadzone should be applied.
+        /// @param [in] deadzoneHudnredthsOfPercent Hundredths of a percent of the analog range for which the deadzone should be applied.
+        static int16_t ApplyRawAnalogDeadzone(int16_t analogValue, unsigned int deadzoneHundredthsOfPercent)
+        {
+            if (0 == deadzoneHundredthsOfPercent)
+                return analogValue;
+            
+            const double kDeadzonePercentage = (double)deadzoneHundredthsOfPercent / 1000.0;
+            const double kDeadzone = (((double)kAnalogValueMax - (double)kAnalogValueMin) / 2.0) / (100.0 / kDeadzonePercentage);
+
+            int16_t analogValueTransformed = kAnalogValueNeutral;
+            if (std::abs((double)analogValue) > kDeadzone)
+                analogValueTransformed = (int16_t)std::copysign(((std::abs((double)analogValue) - kDeadzone) * (100.0 / (100.0 - (double)kDeadzonePercentage))), (double)analogValue);
+
+            return analogValueTransformed;
+        }
+
+        /// Applies a deadzone transformation to a raw trigger value.
+        /// @param [in] analogValue Analog value for which a deadzone should be applied.
+        /// @param [in] deadzoneHudnredthsOfPercent Hundredths of a percent of the analog range for which the deadzone should be applied.
+        static uint8_t ApplyRawTriggerDeadzone(uint8_t triggerValue, unsigned int deadzoneHundredthsOfPercent)
+        {
+            if (0 == deadzoneHundredthsOfPercent)
+                return triggerValue;
+
+            const double kDeadzonePercentage = (double)deadzoneHundredthsOfPercent / 1000.0;
+            const double kDeadzone = ((double)kTriggerValueMax - (double)kTriggerValueMin) / (100.0 / kDeadzonePercentage);
+
+            uint8_t triggerValueTransformed = kTriggerValueMin;
+            if (triggerValue > kDeadzone)
+                triggerValueTransformed = (uint8_t)(((double)triggerValue - kDeadzone) * (100.0 / (100.0 - (double)kDeadzonePercentage)));
+
+            return triggerValueTransformed;
+        }
+
         /// Determines if an analog reading is considered "pressed" as a digital button in the negative direction.
         /// @param [in] analogValue Analog reading from the XInput controller.
         /// @return `true` if the virtual button is considered pressed, `false` otherwise.
@@ -485,14 +521,11 @@ namespace Xidi
 
         void MouseAxisMapper::ContributeFromAnalogValue(SState& controllerState, int16_t analogValue, uint32_t sourceIdentifier) const
         {
-            constexpr double kMouseAnalogDeadzonePercentage = 7.5;
-            constexpr double kMouseAnalogDeadzone = (((double)kAnalogValueMax - (double)kAnalogValueMin) / 2.0) / (100.0 / kMouseAnalogDeadzonePercentage);
-
-            int analogValueForContribution = kAnalogValueNeutral;
-            if ((double)analogValue > kMouseAnalogDeadzone || (double)analogValue < -kMouseAnalogDeadzone)
-                analogValueForContribution = (int)std::copysign(((std::abs((double)analogValue) - kMouseAnalogDeadzone) * (100.0 / (100.0 - (double)kMouseAnalogDeadzonePercentage))), (double)analogValue);
-
             constexpr double kAnalogToMouseScalingFactor = (double)(Mouse::kMouseMovementUnitsMax - Mouse::kMouseMovementUnitsMin) / (double)(kAnalogValueMax - kAnalogValueMin);
+            
+            constexpr unsigned int kAnalogMouseDeadzoneHundredthsPercent = 750;
+            const int16_t analogValueForContribution = ApplyRawAnalogDeadzone(analogValue, kAnalogMouseDeadzoneHundredthsPercent);
+
             const double kMouseAxisValueRaw = ((double)(analogValueForContribution - kAnalogValueNeutral) * kAnalogToMouseScalingFactor);
             const double kMouseAxisValueTransformed = kMouseAxisValueRaw;
 
@@ -548,21 +581,24 @@ namespace Xidi
             constexpr double kBidirectionalStepSize = (double)(Mouse::kMouseMovementUnitsMax - Mouse::kMouseMovementUnitsMin) / (double)(kTriggerValueMax - kTriggerValueMin);
             constexpr double kPositiveStepSize = (double)Mouse::kMouseMovementUnitsMax / (double)(kTriggerValueMax - kTriggerValueMin);
             constexpr double kNegativeStepSize = (double)Mouse::kMouseMovementUnitsMin / (double)(kTriggerValueMax - kTriggerValueMin);
+            
+            constexpr unsigned int kTriggerMouseDeadzoneHundredthsPercent = 750;
+            const uint8_t triggerValueForContribution = ApplyRawTriggerDeadzone(triggerValue, kTriggerMouseDeadzoneHundredthsPercent);
 
             int mouseAxisValueToContribute = 0;
 
             switch (direction)
             {
             case EAxisDirection::Both:
-                mouseAxisValueToContribute = (int)((double)triggerValue * kBidirectionalStepSize) + Mouse::kMouseMovementUnitsMin;
+                mouseAxisValueToContribute = (int)((double)triggerValueForContribution * kBidirectionalStepSize) + Mouse::kMouseMovementUnitsMin;
                 break;
 
             case EAxisDirection::Positive:
-                mouseAxisValueToContribute = (int)((double)triggerValue * kPositiveStepSize) + Mouse::kMouseMovementUnitsNeutral;
+                mouseAxisValueToContribute = (int)((double)triggerValueForContribution * kPositiveStepSize) + Mouse::kMouseMovementUnitsNeutral;
                 break;
 
             case EAxisDirection::Negative:
-                mouseAxisValueToContribute = (int)((double)triggerValue * kNegativeStepSize) - Mouse::kMouseMovementUnitsNeutral;
+                mouseAxisValueToContribute = (int)((double)triggerValueForContribution * kNegativeStepSize) - Mouse::kMouseMovementUnitsNeutral;
                 break;
             }
 
