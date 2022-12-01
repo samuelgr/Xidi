@@ -99,4 +99,18 @@ namespace Xidi
         xguid.Data4[7] = ((controllerId >> 24) & 0xff);
         return xguid;
     }
+
+    /// Retrieves the 16-bit product identifier for Xidi virtual controllers.
+    /// @return Product identifier for all virtual controllers.
+    constexpr inline WORD VirtualControllerProductId(void)
+    {
+        return (WORD)(kVirtualControllerProductGuid.Data1 >> 16);
+    }
+
+    /// Retrieves the 16-bit vendor identifier for Xidi virtual controllers.
+    /// @return Vendor identifier for all virtual controllers.
+    constexpr inline WORD VirtualControllerVendorId(void)
+    {
+        return (WORD)(kVirtualControllerProductGuid.Data1);
+    }
 }
