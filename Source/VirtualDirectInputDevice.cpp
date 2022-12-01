@@ -245,7 +245,9 @@ namespace Xidi
         case ((size_t)&DIPROP_DEADZONE):
         case ((size_t)&DIPROP_GRANULARITY):
         case ((size_t)&DIPROP_SATURATION):
+#if DIRECTINPUT_VERSION >= 0x0800
         case ((size_t)&DIPROP_VIDPID):
+#endif
             // Axis mode, deadzone, granularity, saturation, and vendor/product ID all use DIPROPDWORD.
             if (sizeof(DIPROPDWORD) != pdiph->dwSize)
             {
@@ -1585,11 +1587,13 @@ namespace Xidi
             ((LPDIPROPDWORD)pdiph)->dwData = controller->GetAxisSaturation(element.axis);
             LOG_PROPERTY_INVOCATION_DIPROPDWORD_AND_RETURN(DI_OK, kMethodSeverity, rguidProp, pdiph);
 
+#if DIRECTINPUT_VERSION >= 0x0800
         case ((size_t)&DIPROP_VIDPID):
             if (Controller::EElementType::WholeController != element.type)
                 LOG_PROPERTY_INVOCATION_NO_VALUE_AND_RETURN(DIERR_INVALIDPARAM, kMethodSeverity, rguidProp);
             ((LPDIPROPDWORD)pdiph)->dwData = ((DWORD)VirtualControllerProductId() << 16) | ((DWORD)VirtualControllerVendorId());
             LOG_PROPERTY_INVOCATION_DIPROPDWORD_AND_RETURN(DI_OK, kMethodSeverity, rguidProp, pdiph);
+#endif
 
         default:
             LOG_PROPERTY_INVOCATION_NO_VALUE_AND_RETURN(DIERR_UNSUPPORTED, kMethodSeverity, rguidProp);
