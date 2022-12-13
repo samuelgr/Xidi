@@ -1,8 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
-  <ImportGroup Label="PropertySheets">
-    <Import Project="$(SolutionDir)Properties\Dependencies.$(ProjectName).props" Condition="exists('$(SolutionDir)Properties\Dependencies.$(ProjectName).props')"/>
-  </ImportGroup>
   <ImportGroup Label="PropertySheets" Condition="'$(ThirdPartyNeedsBoost)'!=''">
     <Import Project="$(SolutionDir)Properties\ThirdParty\Boost.props" />
   </ImportGroup>
