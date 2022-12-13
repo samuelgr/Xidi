@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup Label="UserMacros">
+    <ThirdPartyNeedsHookshot>yes</ThirdPartyNeedsHookshot>
+  </PropertyGroup>
+  <ImportGroup Label="PropertySheets">
+    <Import Project="$(SolutionDir)Properties\$(SolutionName).props" />
+  </ImportGroup>
+  <PropertyGroup />
+  <ItemDefinitionGroup />
+  <ItemGroup>
+    <BuildMacro Include="ThirdPartyNeedsHookshot">
+      <Value>$(ThirdPartyNeedsHookshot)</Value>
+    </BuildMacro>
+  </ItemGroup>
+</Project>
