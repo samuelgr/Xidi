@@ -24,127 +24,127 @@
     <ClInclude Include="Resources\Xidi.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="Include\Xidi\ControllerTypes.h">
+    <ClInclude Include="Include\Xidi\Internal\ControllerTypes.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="Include\Xidi\ApiWindows.h">
+    <ClInclude Include="Include\Xidi\Internal\ApiWindows.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="Include\Xidi\Test\Utilities.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="Include\Xidi\DataFormat.h">
+    <ClInclude Include="Include\Xidi\Internal\DataFormat.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="Include\Xidi\Globals.h">
+    <ClInclude Include="Include\Xidi\Internal\Globals.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="Include\Xidi\TemporaryBuffer.h">
+    <ClInclude Include="Include\Xidi\Internal\TemporaryBuffer.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="Include\Xidi\Strings.h">
+    <ClInclude Include="Include\Xidi\Internal\Strings.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="Include\Xidi\Message.h">
+    <ClInclude Include="Include\Xidi\Internal\Message.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="Include\Xidi\VirtualController.h">
+    <ClInclude Include="Include\Xidi\Internal\VirtualController.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="Include\Xidi\StateChangeEventBuffer.h">
+    <ClInclude Include="Include\Xidi\Internal\StateChangeEventBuffer.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="Include\Xidi\VirtualDirectInputDevice.h">
+    <ClInclude Include="Include\Xidi\Internal\VirtualDirectInputDevice.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="Include\Xidi\ElementMapper.h">
+    <ClInclude Include="Include\Xidi\Internal\ElementMapper.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="Include\Xidi\Mapper.h">
+    <ClInclude Include="Include\Xidi\Internal\Mapper.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="Include\Xidi\ControllerIdentification.h">
+    <ClInclude Include="Include\Xidi\Internal\ControllerIdentification.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="Include\Xidi\Test\MockElementMapper.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="Include\Xidi\PhysicalController.h">
+    <ClInclude Include="Include\Xidi\Internal\PhysicalController.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="Include\Xidi\Test\MockPhysicalController.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="Include\Xidi\Keyboard.h">
+    <ClInclude Include="Include\Xidi\Internal\Keyboard.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="Include\Xidi\Test\MockKeyboard.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="Include\Xidi\MapperBuilder.h">
+    <ClInclude Include="Include\Xidi\Internal\MapperBuilder.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="Include\Xidi\MapperParser.h">
+    <ClInclude Include="Include\Xidi\Internal\MapperParser.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="Include\Xidi\ApiBitSet.h">
+    <ClInclude Include="Include\Xidi\Internal\ApiBitSet.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="Include\Xidi\ValueOrError.h">
+    <ClInclude Include="Include\Xidi\Internal\ValueOrError.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="Include\Xidi\ForceFeedbackEffect.h">
+    <ClInclude Include="Include\Xidi\Internal\ForceFeedbackEffect.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="Include\Xidi\ForceFeedbackParameters.h">
+    <ClInclude Include="Include\Xidi\Internal\ForceFeedbackParameters.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="Include\Xidi\VirtualDirectInputEffect.h">
+    <ClInclude Include="Include\Xidi\Internal\VirtualDirectInputEffect.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="Include\Xidi\ForceFeedbackTypes.h">
+    <ClInclude Include="Include\Xidi\Internal\ForceFeedbackTypes.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="Include\Xidi\ForceFeedbackDevice.h">
+    <ClInclude Include="Include\Xidi\Internal\ForceFeedbackDevice.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="Include\Xidi\ImportApiWinMM.h">
+    <ClInclude Include="Include\Xidi\Internal\ImportApiWinMM.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="Include\Xidi\Test\MockForceFeedbackEffect.h">
+    <ClInclude Include="Include\Xidi\Internal\ForceFeedbackMath.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="Include\Xidi\ForceFeedbackMath.h">
+    <ClInclude Include="Include\Xidi\Internal\Configuration.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="Include\Xidi\Configuration.h">
+    <ClInclude Include="Include\Xidi\Internal\XidiConfigReader.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="Include\Xidi\XidiConfigReader.h">
+    <ClInclude Include="Include\Xidi\Internal\ApiXidi.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="Include\Xidi\ApiXidi.h">
+    <ClInclude Include="Include\Xidi\Internal\Mouse.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="Include\Xidi\Test\MockMouse.h">
+    <ClInclude Include="Include\Xidi\Internal\ImportApiXInput.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="Include\Xidi\Mouse.h">
+    <ClInclude Include="Include\Xidi\Internal\WrapperIDirectInput.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="Include\Xidi\ImportApiXInput.h">
+    <ClInclude Include="Include\Xidi\Internal\ApiGUID.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="Include\Xidi\Test\MockDirectInput.h">
+    <ClInclude Include="Include\Xidi\Internal\Test\MockDirectInputDevice.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="Include\Xidi\WrapperIDirectInput.h">
+    <ClInclude Include="Include\Xidi\Internal\Test\MockForceFeedbackEffect.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="Include\Xidi\Test\MockDirectInputDevice.h">
+    <ClInclude Include="Include\Xidi\Internal\Test\MockDirectInput.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="Include\Xidi\ApiGUID.h">
+    <ClInclude Include="Include\Xidi\Internal\Test\MockMouse.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

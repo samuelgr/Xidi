@@ -134,17 +134,17 @@
     <ClCompile Include="Source\XidiConfigReader.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="Include\Xidi\ApiDirectInput.h" />
-    <ClInclude Include="Include\Xidi\ApiGUID.h" />
-    <ClInclude Include="Include\Xidi\ApiWindows.h" />
-    <ClInclude Include="Include\Xidi\ApiXidi.h" />
-    <ClInclude Include="Include\Xidi\Configuration.h" />
-    <ClInclude Include="Include\Xidi\Globals.h" />
-    <ClInclude Include="Include\Xidi\SetHooks.h" />
-    <ClInclude Include="Include\Xidi\Message.h" />
-    <ClInclude Include="Include\Xidi\Strings.h" />
-    <ClInclude Include="Include\Xidi\TemporaryBuffer.h" />
-    <ClInclude Include="Include\Xidi\XidiConfigReader.h" />
+    <ClInclude Include="Include\Xidi\Internal\ApiDirectInput.h" />
+    <ClInclude Include="Include\Xidi\Internal\ApiGUID.h" />
+    <ClInclude Include="Include\Xidi\Internal\ApiWindows.h" />
+    <ClInclude Include="Include\Xidi\Internal\ApiXidi.h" />
+    <ClInclude Include="Include\Xidi\Internal\Configuration.h" />
+    <ClInclude Include="Include\Xidi\Internal\Globals.h" />
+    <ClInclude Include="Include\Xidi\Internal\SetHooks.h" />
+    <ClInclude Include="Include\Xidi\Internal\Message.h" />
+    <ClInclude Include="Include\Xidi\Internal\Strings.h" />
+    <ClInclude Include="Include\Xidi\Internal\TemporaryBuffer.h" />
+    <ClInclude Include="Include\Xidi\Internal\XidiConfigReader.h" />
     <ClInclude Include="Resources\HookModule.h" />
     <ClInclude Include="Resources\Xidi.h" />
   </ItemGroup>

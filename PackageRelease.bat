@@ -144,9 +144,9 @@ for %%P in (%project_platforms%) do (
         md %output_dir%\%%P
 
         for %%F in (%files_release_build% !files_release_build_%%P!) do (
-            if exist Output\%%P\%build_output_subdirectory%\%%F (
-                echo     Output\%%P\%build_output_subdirectory%\%%F
-                copy "Output\%%P\%build_output_subdirectory%\%%F" "%output_dir%\%%P" >NUL 2>NUL
+            if exist Output\%build_output_subdirectory%\%%P\%%F (
+                echo     Output\%build_output_subdirectory%\%%P\%%F
+                copy "Output\%build_output_subdirectory%\%%P\%%F" "%output_dir%\%%P" >NUL 2>NUL
             ) else (
                 set files_are_missing=yes
             )
@@ -207,8 +207,8 @@ if "yes"=="%files_are_missing%" (
     for %%P in (%project_platforms%) do (
         if not ""=="%files_release_build%!files_release_build_%%P!" (
             for %%F in (%files_release_build% !files_release_build_%%P!) do (
-                if not exist Output\%%P\%build_output_subdirectory%\%%F (
-                    echo     Output\%%P\%build_output_subdirectory%\%%F
+                if not exist Output\%build_output_subdirectory%\%%P\%%F (
+                    echo     Output\%build_output_subdirectory%\%%P\%%F
                 )
             )
         )
