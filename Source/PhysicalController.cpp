@@ -96,9 +96,14 @@ namespace Xidi
             UForceFeedbackVibration previousPhysicalActuatorValues;
             UForceFeedbackVibration currentPhysicalActuatorValues;
 
+            DWORD lastActuationResult = ERROR_SUCCESS;
+
             while (true)
             {
-                Sleep(kPhysicalForceFeedbackPeriodMilliseconds);
+                if (ERROR_SUCCESS == lastActuationResult)
+                    Sleep(kPhysicalForceFeedbackPeriodMilliseconds);
+                else
+                    Sleep(kPhysicalErrorBackoffPeriodMilliseconds);
 
                 if (true == Globals::DoesCurrentProcessHaveInputFocus())
                 {
@@ -129,37 +134,42 @@ namespace Xidi
 
                 if (previousPhysicalActuatorValues != currentPhysicalActuatorValues)
                 {
-                    ImportApiXInput::XInputSetState(controllerIdentifier, &currentPhysicalActuatorValues.named);
+                    lastActuationResult = ImportApiXInput::XInputSetState(controllerIdentifier, &currentPhysicalActuatorValues.named);
                     previousPhysicalActuatorValues = currentPhysicalActuatorValues;
+                }
+                else
+                {
+                    lastActuationResult = ERROR_SUCCESS;
                 }
             }
         }
 
         /// Periodically polls for physical controller state.
         /// On detected state change, updates the internal data structure and notifies all waiting threads.
-        static void PollForPhysicalControllerStateChanges(void)
+        /// @param [in] controllerIdentifier Identifier of the controller on which to operate.
+        static void PollForPhysicalControllerStateChanges(TControllerIdentifier controllerIdentifier)
         {
-            SPhysicalState newPhysicalState;
+            SPhysicalState newPhysicalState = {.errorCode = ERROR_SUCCESS};
 
             while (true)
             {
-                Sleep(kPhysicalPollingPeriodMilliseconds);
-                
-                for (auto controllerIdentifier = 0; controllerIdentifier < _countof(physicalControllerState); ++controllerIdentifier)
+                if (ERROR_SUCCESS == newPhysicalState.errorCode)
+                    Sleep(kPhysicalPollingPeriodMilliseconds);
+                else
+                    Sleep(kPhysicalErrorBackoffPeriodMilliseconds);
+
+                newPhysicalState.errorCode = ImportApiXInput::XInputGetState(controllerIdentifier, &newPhysicalState.state);
+
+                // Unguarded read is safe because all other threads only perform guarded reads.
+                // Update happens within the block and requires an exclusive lock.
+                if (newPhysicalState != physicalControllerState[controllerIdentifier])
                 {
-                    newPhysicalState.errorCode = ImportApiXInput::XInputGetState(controllerIdentifier, &newPhysicalState.state);
+                    do {
+                        std::unique_lock lock(physicalControllerStateMutex[controllerIdentifier]);
+                        physicalControllerState[controllerIdentifier] = newPhysicalState;
+                    } while (false);
 
-                    // Unguarded read is safe because all other threads only perform guarded reads.
-                    // Update happens within the block and requires an exclusive lock.
-                    if (newPhysicalState != physicalControllerState[controllerIdentifier])
-                    {
-                        do {
-                            std::unique_lock lock(physicalControllerStateMutex[controllerIdentifier]);
-                            physicalControllerState[controllerIdentifier] = newPhysicalState;
-                        } while (false);
-
-                        physicalControllerUpdateNotifier[controllerIdentifier].notify_all();
-                    }
+                    physicalControllerUpdateNotifier[controllerIdentifier].notify_all();
                 }
             }
         }
@@ -244,9 +254,12 @@ namespace Xidi
                         Message::OutputFormatted(Message::ESeverity::Warning, L"Failed with code %u to obtain system timer resolution information.", timeResult);
                     }
 
-                    // Create and start the polling thread.
-                    std::thread(PollForPhysicalControllerStateChanges).detach();
-                    Message::OutputFormatted(Message::ESeverity::Info, L"Initialized the physical controller state polling thread. Desired polling period is %u ms.", kPhysicalPollingPeriodMilliseconds);
+                    // Create and start the polling threads.
+                    for (auto controllerIdentifier = 0; controllerIdentifier < kPhysicalControllerCount; ++controllerIdentifier)
+                    {
+                        std::thread(PollForPhysicalControllerStateChanges, controllerIdentifier).detach();
+                        Message::OutputFormatted(Message::ESeverity::Info, L"Initialized the physical controller state polling thread for controller %u. Desired polling period is %u ms.", (unsigned int)(1 + controllerIdentifier), kPhysicalPollingPeriodMilliseconds);
+                    }
 
                     // Allocate the force feedback device buffers, then create and start the force feedback threads.
                     physicalControllerForceFeedbackBuffer = new ForceFeedback::Device[kPhysicalControllerCount];
@@ -256,7 +269,7 @@ namespace Xidi
                         Message::OutputFormatted(Message::ESeverity::Info, L"Initialized the physical controller force feedback actuation thread for controller %u. Desired actuation period is %u ms.", (unsigned int)(1 + controllerIdentifier), kPhysicalForceFeedbackPeriodMilliseconds);
                     }
 
-                    // No point monitoring physical controllers for hardware status changes if none of the messages will actually be delivered as output.
+                    // Create and start the physical controller hardware status monitoring threads, but only if the messages generated by those threads will actually be delivered as output.
                     if (Message::WillOutputMessageOfSeverity(Message::ESeverity::Warning))
                     {
                         for (auto controllerIdentifier = 0; controllerIdentifier < kPhysicalControllerCount; ++controllerIdentifier)

@@ -32,6 +32,9 @@ namespace Xidi
         /// Number of milliseconds to wait between force feedback actuation passes.
         inline constexpr unsigned int kPhysicalForceFeedbackPeriodMilliseconds = 5;
 
+        /// Number of milliseconds to wait between attempts to communicate with the physical hardware if the last attempt resulted in an error, such as the controller being disconnected.
+        inline constexpr unsigned int kPhysicalErrorBackoffPeriodMilliseconds = 100;
+
 
         // -------- FUNCTIONS ---------------------------------------------- //
 
