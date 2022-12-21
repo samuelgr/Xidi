@@ -81,8 +81,8 @@ namespace XidiTest
 
             SState possibleExpectedStates[2];
             ZeroMemory(possibleExpectedStates, sizeof(possibleExpectedStates));
-            possibleExpectedStates[0].axis[(int)kTargetAxis] = kAllowedValues[currentAllowedIndex];
-            possibleExpectedStates[1].axis[(int)kTargetAxis] = kAllowedValues[currentAllowedIndex + 1];
+            possibleExpectedStates[0][kTargetAxis] = kAllowedValues[currentAllowedIndex];
+            possibleExpectedStates[1][kTargetAxis] = kAllowedValues[currentAllowedIndex + 1];
             
             SState actualState;
             ZeroMemory(&actualState, sizeof(actualState));
@@ -99,7 +99,7 @@ namespace XidiTest
             }
             else
             {
-                TEST_FAILED_BECAUSE(L"Unexpected value %d produced by a digital axis mapper with analog input %d.", (int)actualState.axis[(int)kTargetAxis], analogValue);
+                TEST_FAILED_BECAUSE(L"Unexpected value %d produced by a digital axis mapper with analog input %d.", (int)actualState[kTargetAxis], analogValue);
             }
         }
 
@@ -121,7 +121,7 @@ namespace XidiTest
 
             SState expectedState;
             ZeroMemory(&expectedState, sizeof(expectedState));
-            expectedState.axis[(int)kTargetAxis] = kAnalogValueNeutral;
+            expectedState[kTargetAxis] = kAnalogValueNeutral;
 
             SState actualState;
             ZeroMemory(&actualState, sizeof(actualState));
@@ -141,8 +141,8 @@ namespace XidiTest
 
             SState possibleExpectedStates[2];
             ZeroMemory(possibleExpectedStates, sizeof(possibleExpectedStates));
-            possibleExpectedStates[0].axis[(int)kTargetAxis] = kAllowedValues[currentAllowedIndex];
-            possibleExpectedStates[1].axis[(int)kTargetAxis] = kAllowedValues[currentAllowedIndex + 1];
+            possibleExpectedStates[0][kTargetAxis] = kAllowedValues[currentAllowedIndex];
+            possibleExpectedStates[1][kTargetAxis] = kAllowedValues[currentAllowedIndex + 1];
 
             SState actualState;
             ZeroMemory(&actualState, sizeof(actualState));
@@ -159,7 +159,7 @@ namespace XidiTest
             }
             else
             {
-                TEST_FAILED_BECAUSE(L"Unexpected value %d produced by a digital axis mapper with analog input %d.", (int)actualState.axis[(int)kTargetAxis], analogValue);
+                TEST_FAILED_BECAUSE(L"Unexpected value %d produced by a digital axis mapper with analog input %d.", (int)actualState[kTargetAxis], analogValue);
             }
         }
 
@@ -181,7 +181,7 @@ namespace XidiTest
 
             SState expectedState;
             ZeroMemory(&expectedState, sizeof(expectedState));
-            expectedState.axis[(int)kTargetAxis] = kAnalogValueNeutral;
+            expectedState[kTargetAxis] = kAnalogValueNeutral;
 
             SState actualState;
             ZeroMemory(&actualState, sizeof(actualState));
@@ -201,8 +201,8 @@ namespace XidiTest
 
             SState possibleExpectedStates[2];
             ZeroMemory(possibleExpectedStates, sizeof(possibleExpectedStates));
-            possibleExpectedStates[0].axis[(int)kTargetAxis] = kAllowedValues[currentAllowedIndex];
-            possibleExpectedStates[1].axis[(int)kTargetAxis] = kAllowedValues[currentAllowedIndex + 1];
+            possibleExpectedStates[0][kTargetAxis] = kAllowedValues[currentAllowedIndex];
+            possibleExpectedStates[1][kTargetAxis] = kAllowedValues[currentAllowedIndex + 1];
 
             SState actualState;
             ZeroMemory(&actualState, sizeof(actualState));
@@ -219,7 +219,7 @@ namespace XidiTest
             }
             else
             {
-                TEST_FAILED_BECAUSE(L"Unexpected value %d produced by a digital axis mapper with analog input %d.", (int)actualState.axis[(int)kTargetAxis], analogValue);
+                TEST_FAILED_BECAUSE(L"Unexpected value %d produced by a digital axis mapper with analog input %d.", (int)actualState[kTargetAxis], analogValue);
             }
         }
 
@@ -246,7 +246,7 @@ namespace XidiTest
 
         SState expectedState;
         ZeroMemory(&expectedState, sizeof(expectedState));
-        expectedState.axis[(int)kTargetAxis] = kAnalogValueMin * (int32_t)_countof(mappers);
+        expectedState[kTargetAxis] = kAnalogValueMin * (int32_t)_countof(mappers);
 
         SState actualState;
         ZeroMemory(&actualState, sizeof(actualState));
@@ -275,7 +275,7 @@ namespace XidiTest
 
         SState expectedState;
         ZeroMemory(&expectedState, sizeof(expectedState));
-        expectedState.axis[(int)kTargetAxis] = kAnalogValueNeutral;
+        expectedState[kTargetAxis] = kAnalogValueNeutral;
 
         SState actualState;
         ZeroMemory(&actualState, sizeof(actualState));
@@ -299,7 +299,7 @@ namespace XidiTest
 
             SState expectedState;
             ZeroMemory(&expectedState, sizeof(expectedState));
-            expectedState.axis[(int)kTargetAxis] = (true == buttonIsPressed ? kAnalogValueMax : kAnalogValueMin);
+            expectedState[kTargetAxis] = (true == buttonIsPressed ? kAnalogValueMax : kAnalogValueMin);
 
             SState actualState;
             ZeroMemory(&actualState, sizeof(actualState));
@@ -321,7 +321,7 @@ namespace XidiTest
 
             SState expectedState;
             ZeroMemory(&expectedState, sizeof(expectedState));
-            expectedState.axis[(int)kTargetAxis] = (true == buttonIsPressed ? kAnalogValueMax : kAnalogValueNeutral);
+            expectedState[kTargetAxis] = (true == buttonIsPressed ? kAnalogValueMax : kAnalogValueNeutral);
 
             SState actualState;
             ZeroMemory(&actualState, sizeof(actualState));
@@ -343,7 +343,7 @@ namespace XidiTest
 
             SState expectedState;
             ZeroMemory(&expectedState, sizeof(expectedState));
-            expectedState.axis[(int)kTargetAxis] = (true == buttonIsPressed ? kAnalogValueMin : kAnalogValueNeutral);
+            expectedState[kTargetAxis] = (true == buttonIsPressed ? kAnalogValueMin : kAnalogValueNeutral);
 
             SState actualState;
             ZeroMemory(&actualState, sizeof(actualState));
@@ -373,7 +373,7 @@ namespace XidiTest
 
             SState expectedState;
             ZeroMemory(&expectedState, sizeof(expectedState));
-            expectedState.axis[(int)kTargetAxis] = (true == buttonIsPressed ? kAnalogValueMax : kAnalogValueMin) * _countof(mappers);
+            expectedState[kTargetAxis] = (true == buttonIsPressed ? kAnalogValueMax : kAnalogValueMin) * _countof(mappers);
 
             SState actualState;
             ZeroMemory(&actualState, sizeof(actualState));
@@ -404,7 +404,7 @@ namespace XidiTest
 
         SState expectedState;
         ZeroMemory(&expectedState, sizeof(expectedState));
-        expectedState.axis[(int)kTargetAxis] = kAnalogValueNeutral;
+        expectedState[kTargetAxis] = kAnalogValueNeutral;
 
         SState actualState;
         ZeroMemory(&actualState, sizeof(actualState));
@@ -433,8 +433,8 @@ namespace XidiTest
 
             SState possibleExpectedStates[2];
             ZeroMemory(possibleExpectedStates, sizeof(possibleExpectedStates));
-            possibleExpectedStates[0].axis[(int)kTargetAxis] = kAllowedValues[currentAllowedIndex];
-            possibleExpectedStates[1].axis[(int)kTargetAxis] = kAllowedValues[currentAllowedIndex + 1];
+            possibleExpectedStates[0][kTargetAxis] = kAllowedValues[currentAllowedIndex];
+            possibleExpectedStates[1][kTargetAxis] = kAllowedValues[currentAllowedIndex + 1];
 
             SState actualState;
             ZeroMemory(&actualState, sizeof(actualState));
@@ -451,7 +451,7 @@ namespace XidiTest
             }
             else
             {
-                TEST_FAILED_BECAUSE(L"Unexpected value %d produced by a digital axis mapper with trigger input %d.", (int)actualState.axis[(int)kTargetAxis], triggerValue);
+                TEST_FAILED_BECAUSE(L"Unexpected value %d produced by a digital axis mapper with trigger input %d.", (int)actualState[kTargetAxis], triggerValue);
             }
         }
 
@@ -475,8 +475,8 @@ namespace XidiTest
 
             SState possibleExpectedStates[2];
             ZeroMemory(possibleExpectedStates, sizeof(possibleExpectedStates));
-            possibleExpectedStates[0].axis[(int)kTargetAxis] = kAllowedValues[currentAllowedIndex];
-            possibleExpectedStates[1].axis[(int)kTargetAxis] = kAllowedValues[currentAllowedIndex + 1];
+            possibleExpectedStates[0][kTargetAxis] = kAllowedValues[currentAllowedIndex];
+            possibleExpectedStates[1][kTargetAxis] = kAllowedValues[currentAllowedIndex + 1];
 
             SState actualState;
             ZeroMemory(&actualState, sizeof(actualState));
@@ -493,7 +493,7 @@ namespace XidiTest
             }
             else
             {
-                TEST_FAILED_BECAUSE(L"Unexpected value %d produced by a digital axis mapper with trigger input %d.", (int)actualState.axis[(int)kTargetAxis], triggerValue);
+                TEST_FAILED_BECAUSE(L"Unexpected value %d produced by a digital axis mapper with trigger input %d.", (int)actualState[kTargetAxis], triggerValue);
             }
         }
 
@@ -517,8 +517,8 @@ namespace XidiTest
 
             SState possibleExpectedStates[2];
             ZeroMemory(possibleExpectedStates, sizeof(possibleExpectedStates));
-            possibleExpectedStates[0].axis[(int)kTargetAxis] = kAllowedValues[currentAllowedIndex];
-            possibleExpectedStates[1].axis[(int)kTargetAxis] = kAllowedValues[currentAllowedIndex + 1];
+            possibleExpectedStates[0][kTargetAxis] = kAllowedValues[currentAllowedIndex];
+            possibleExpectedStates[1][kTargetAxis] = kAllowedValues[currentAllowedIndex + 1];
 
             SState actualState;
             ZeroMemory(&actualState, sizeof(actualState));
@@ -535,7 +535,7 @@ namespace XidiTest
             }
             else
             {
-                TEST_FAILED_BECAUSE(L"Unexpected value %d produced by a digital axis mapper with trigger input %d.", (int)actualState.axis[(int)kTargetAxis], triggerValue);
+                TEST_FAILED_BECAUSE(L"Unexpected value %d produced by a digital axis mapper with trigger input %d.", (int)actualState[kTargetAxis], triggerValue);
             }
         }
 
@@ -561,7 +561,7 @@ namespace XidiTest
 
         SState expectedState;
         ZeroMemory(&expectedState, sizeof(expectedState));
-        expectedState.axis[(int)kTargetAxis] = kAnalogValueMax * _countof(mappers);
+        expectedState[kTargetAxis] = kAnalogValueMax * _countof(mappers);
 
         SState actualState;
         ZeroMemory(&actualState, sizeof(actualState));
@@ -591,7 +591,7 @@ namespace XidiTest
 
         SState expectedState;
         ZeroMemory(&expectedState, sizeof(expectedState));
-        expectedState.axis[(int)kTargetAxis] = kAnalogValueNeutral;
+        expectedState[kTargetAxis] = kAnalogValueNeutral;
 
         SState actualState;
         ZeroMemory(&actualState, sizeof(actualState));

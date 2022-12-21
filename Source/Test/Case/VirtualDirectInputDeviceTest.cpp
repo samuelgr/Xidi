@@ -22,6 +22,7 @@
 #include "VirtualDirectInputDevice.h"
 #include "VirtualDirectInputEffect.h"
 
+#include <bitset>
 #include <cstdint>
 #include <cstring>
 #include <memory>
@@ -37,6 +38,10 @@ namespace XidiTest
     using ::Xidi::Controller::EAxisDirection;
     using ::Xidi::Controller::EButton;
     using ::Xidi::Controller::EElementType;
+    using ::Xidi::Controller::EPhysicalButton;
+    using ::Xidi::Controller::EPhysicalDeviceStatus;
+    using ::Xidi::Controller::EPhysicalStick;
+    using ::Xidi::Controller::EPhysicalTrigger;
     using ::Xidi::Controller::EPovDirection;
     using ::Xidi::Controller::Mapper;
     using ::Xidi::Controller::PovMapper;
@@ -162,6 +167,19 @@ namespace XidiTest
         }
 
         return lastSequence;
+    }
+
+    /// Creates a button set given a compile-time-constant list of buttons.
+    /// @param [in] buttons Initializer list containing all of the desired buttons to be added to the set.
+    /// @return Button set representation of the button list.
+    static constexpr std::bitset<(int)EPhysicalButton::Count> ButtonSet(std::initializer_list<EPhysicalButton> buttons)
+    {
+        std::bitset<(int)EPhysicalButton::Count> buttonSet;
+
+        for (auto button : buttons)
+            buttonSet[(int)button] = true;
+
+        return buttonSet;
     }
 
     /// Creates and returns a virtual controller object that by default uses the test mapper at the top of this file.
@@ -657,7 +675,7 @@ namespace XidiTest
     {
         constexpr DWORD kBufferSize = 16;
         constexpr DIPROPDWORD kBufferSizeProperty = {.diph = {.dwSize = sizeof(DIPROPDWORD), .dwHeaderSize = sizeof(DIPROPHEADER), .dwObj = 0, .dwHow = DIPH_DEVICE}, .dwData = kBufferSize};
-        constexpr SPhysicalState kPhysicalState = {.errorCode = ERROR_SUCCESS, .state = {.dwPacketNumber = 1, .Gamepad = {.wButtons = (XINPUT_GAMEPAD_A | XINPUT_GAMEPAD_X), .sThumbLX = -1234, .sThumbRX = 5678}}};
+        constexpr SPhysicalState kPhysicalState = {.deviceStatus = EPhysicalDeviceStatus::Ok, .stick = {-1234, 0, 5678, 0}, .button = ButtonSet({EPhysicalButton::A, EPhysicalButton::X})};
 
         // Set based on the number of controller elements present in the above XINPUT_STATE structure that are also contained in STestDataPacket.
         // In this case, the right thumbstick has no matching offset, but all the other three controller components are represented.
@@ -709,7 +727,7 @@ namespace XidiTest
     {
         constexpr DWORD kBufferSize = 16;
         constexpr DIPROPDWORD kBufferSizeProperty = {.diph = {.dwSize = sizeof(DIPROPDWORD), .dwHeaderSize = sizeof(DIPROPHEADER), .dwObj = 0, .dwHow = DIPH_DEVICE}, .dwData = kBufferSize};
-        constexpr SPhysicalState kPhysicalState = {.errorCode = ERROR_SUCCESS, .state = {.dwPacketNumber = 1, .Gamepad = {.wButtons = (XINPUT_GAMEPAD_A | XINPUT_GAMEPAD_X), .sThumbLX = -1234, .sThumbRX = 5678}}};
+        constexpr SPhysicalState kPhysicalState = {.deviceStatus = EPhysicalDeviceStatus::Ok, .stick = {-1234, 0, 5678, 0}, .button = ButtonSet({EPhysicalButton::A, EPhysicalButton::X})};
 
         // Set based on the number of controller elements present in the above XINPUT_STATE structure that are also contained in STestDataPacket.
         // In this case, the right thumbstick has no matching offset, but all the other three controller components are represented.
@@ -768,7 +786,7 @@ namespace XidiTest
     // Nominal situation in which all inputs are valid and a controller reports its state.
     TEST_CASE(VirtualDirectInputDevice_GetDeviceState_Nominal)
     {
-        constexpr SPhysicalState kPhysicalState = {.errorCode = ERROR_SUCCESS, .state = {.dwPacketNumber = 1, .Gamepad = {.wButtons = (XINPUT_GAMEPAD_A | XINPUT_GAMEPAD_X), .sThumbLX = -1234, .sThumbRX = 5678}}};
+        constexpr SPhysicalState kPhysicalState = {.deviceStatus = EPhysicalDeviceStatus::Ok, .stick = {-1234, 0, 5678, 0}, .button = ButtonSet({EPhysicalButton::A, EPhysicalButton::X})};
 
         // Based on the mapper defined at the top of this file. POV is filled in to reflect its centered state.
         constexpr STestDataPacket kExpectedDataPacketResult = {.axisX = -1234, .pov = EPovValue::Center, .button = {DataFormat::kButtonValuePressed, DataFormat::kButtonValueNotPressed, DataFormat::kButtonValuePressed, DataFormat::kButtonValueNotPressed}};
@@ -805,7 +823,7 @@ namespace XidiTest
     // Method is expected to succeed.
     TEST_CASE(VirtualDirectInputDevice_GetDeviceState_SizeTooBig)
     {
-        constexpr SPhysicalState kPhysicalState = {.errorCode = ERROR_SUCCESS, .state = {.dwPacketNumber = 1, .Gamepad = {.wButtons = (XINPUT_GAMEPAD_A | XINPUT_GAMEPAD_X), .sThumbLX = -1234, .sThumbRX = 5678}}};
+        constexpr SPhysicalState kPhysicalState = {.deviceStatus = EPhysicalDeviceStatus::Ok, .stick = {-1234, 0, 5678, 0}, .button = ButtonSet({EPhysicalButton::A, EPhysicalButton::X})};
 
         VirtualDirectInputDevice<ECharMode::W> diController(CreateTestVirtualController());
         diController.GetVirtualController().RefreshState(kPhysicalState);
@@ -1265,7 +1283,7 @@ namespace XidiTest
     // The effect should automatically be downloaded.
     TEST_CASE(VirtualDirectInputDevice_ForceFeedback_CreateAndDownload)
     {
-        constexpr SPhysicalState kPhysicalState = {.errorCode = ERROR_SUCCESS, .state = {.dwPacketNumber = 1}};
+        constexpr SPhysicalState kPhysicalState = {.deviceStatus = EPhysicalDeviceStatus::Ok};
 
         MockPhysicalController physicalController(kTestControllerIdentifier, &kPhysicalState, 1);
         Controller::ForceFeedback::Device* const forceFeedbackDevice = &physicalController.GetForceFeedbackDevice();
@@ -1299,7 +1317,7 @@ namespace XidiTest
     // The effect should be created but not downloaded.
     TEST_CASE(VirtualDirectInputDevice_ForceFeedback_CreateWithoutDownload)
     {
-        constexpr SPhysicalState kPhysicalState = {.errorCode = ERROR_SUCCESS, .state = {.dwPacketNumber = 1}};
+        constexpr SPhysicalState kPhysicalState = {.deviceStatus = EPhysicalDeviceStatus::Ok};
 
         MockPhysicalController physicalController(kTestControllerIdentifier, &kPhysicalState, 1);
         Controller::ForceFeedback::Device* const forceFeedbackDevice = &physicalController.GetForceFeedbackDevice();
@@ -1695,7 +1713,7 @@ namespace XidiTest
     // Exercises device acquisition in exclusive mode.
     TEST_CASE(VirtualDirectInputDevice_ForceFeedback_AcquireExclusively)
     {
-        constexpr SPhysicalState kPhysicalState = {.errorCode = ERROR_SUCCESS, .state = {.dwPacketNumber = 1}};
+        constexpr SPhysicalState kPhysicalState = {.deviceStatus = EPhysicalDeviceStatus::Ok};
 
         MockPhysicalController physicalController(kTestControllerIdentifier, &kPhysicalState, 1);
         Controller::ForceFeedback::Device* const forceFeedbackDevice = &physicalController.GetForceFeedbackDevice();
@@ -1720,7 +1738,7 @@ namespace XidiTest
     // Exercises GetForceFeedbackState and SendForceFeedbackCommand with various parameters and expected state changes for the force feedback device.
     TEST_CASE(VirtualDirectInputDevice_ForceFeedback_DeviceControl)
     {
-        constexpr SPhysicalState kPhysicalState = {.errorCode = ERROR_SUCCESS, .state = {.dwPacketNumber = 1}};
+        constexpr SPhysicalState kPhysicalState = {.deviceStatus = EPhysicalDeviceStatus::Ok};
 
         MockPhysicalController physicalController(kTestControllerIdentifier, &kPhysicalState, 1);
         Controller::ForceFeedback::Device* const forceFeedbackDevice = &physicalController.GetForceFeedbackDevice();

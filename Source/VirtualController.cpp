@@ -78,7 +78,7 @@ namespace Xidi
             {
                 const uint32_t kTimestamp = ImportApiWinMM::timeGetTime();
 
-                for (unsigned int i = 0; i < _countof(oldState.axis); ++i)
+                for (unsigned int i = 0; i < oldState.axis.size(); ++i)
                 {
                     if (oldState.axis[i] != newState.axis[i])
                     {
@@ -175,7 +175,7 @@ namespace Xidi
             for (int i = 0; i < controllerCapabilities.numAxes; ++i)
             {
                 const EAxis axis = controllerCapabilities.axisCapabilities[i].type;
-                controllerState.axis[(int)axis] = TransformAxisValue(controllerState.axis[(int)axis], properties.axis[(int)axis]);
+                controllerState[axis] = TransformAxisValue(controllerState[axis], properties[axis]);
             }
         }
 
@@ -227,13 +227,9 @@ namespace Xidi
 
         // --------
 
-        bool VirtualController::RefreshState(const SPhysicalState& newStateData)
+        bool VirtualController::RefreshState(SPhysicalState newPhysicalState)
         {
-            // This conditional has the effect of reporting the controller's physical state as neutral if the new physical state data reports anything other than success.
-            // We can assume that something about the state has changed since the last refresh.
-            const XINPUT_STATE kNewState = (ERROR_SUCCESS == newStateData.errorCode) ? newStateData.state : XINPUT_STATE();
-
-            SState newStateRaw = (ERROR_SUCCESS == newStateData.errorCode) ? mapper.MapStatePhysicalToVirtual(kNewState.Gamepad, (uint32_t)kControllerIdentifier) : mapper.MapNeutralPhysicalToVirtual((uint32_t)kControllerIdentifier);
+            const SState newStateRaw = (EPhysicalDeviceStatus::Ok == newPhysicalState.deviceStatus) ? mapper.MapStatePhysicalToVirtual(newPhysicalState, (uint32_t)kControllerIdentifier) : mapper.MapNeutralPhysicalToVirtual((uint32_t)kControllerIdentifier);
 
             // Depending on what XInput controller elements the mapper is configured to take into consideration, there may not be a virtual controller state change here.
             // For example, an axis mapped to a button may have been moved, but if that does not affect the button pressed or unpressed decision then there is no change worth continuing with.
@@ -264,7 +260,7 @@ namespace Xidi
             {
                 auto lock = Lock();
 
-                properties.axis[(int)axis].SetDeadzone(deadzone);
+                properties[axis].SetDeadzone(deadzone);
 
                 ReapplyProperties();
                 return true;
@@ -281,7 +277,7 @@ namespace Xidi
             {
                 auto lock = Lock();
 
-                properties.axis[(int)axis].SetRange(rangeMin, rangeMax);
+                properties[axis].SetRange(rangeMin, rangeMax);
 
                 ReapplyProperties();
                 return true;
@@ -298,7 +294,7 @@ namespace Xidi
             {
                 auto lock = Lock();
 
-                properties.axis[(int)axis].SetSaturation(saturation);
+                properties[axis].SetSaturation(saturation);
 
                 ReapplyProperties();
                 return true;
@@ -315,8 +311,8 @@ namespace Xidi
             {
                 auto lock = Lock();
 
-                for (int i = 0; i < _countof(properties.axis); ++i)
-                    properties.axis[(int)i].SetDeadzone(deadzone);
+                for (auto& axis : properties.axis)
+                    axis.SetDeadzone(deadzone);
 
                 ReapplyProperties();
                 return true;
@@ -333,8 +329,8 @@ namespace Xidi
             {
                 auto lock = Lock();
 
-                for (int i = 0; i < _countof(properties.axis); ++i)
-                    properties.axis[(int)i].SetRange(rangeMin, rangeMax);
+                for (auto& axis : properties.axis)
+                    axis.SetRange(rangeMin, rangeMax);
 
                 ReapplyProperties();
                 return true;
@@ -351,8 +347,8 @@ namespace Xidi
             {
                 auto lock = Lock();
 
-                for (int i = 0; i < _countof(properties.axis); ++i)
-                    properties.axis[(int)i].SetSaturation(saturation);
+                for (auto& axis : properties.axis)
+                    axis.SetSaturation(saturation);
 
                 ReapplyProperties();
                 return true;

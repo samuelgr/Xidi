@@ -17,6 +17,7 @@
 #include "Mapper.h"
 #include "StateChangeEventBuffer.h"
 
+#include <array>
 #include <bitset>
 #include <cstdint>
 #include <functional>
@@ -259,7 +260,7 @@ namespace Xidi
             /// Holds all per-element and device-wide properties.
             struct SProperties
             {
-                SAxisProperties axis[(int)EAxis::Count];                    ///< Axis properties, one element per possible axis.
+                std::array<SAxisProperties, (int)EAxis::Count> axis;        ///< Axis properties, one element per possible axis.
                 SDeviceProperties device;                                   ///< Device-wide properties.
 
                 /// Simple check for equality.
@@ -267,6 +268,22 @@ namespace Xidi
                 /// @param [in] other Object with which to compare.
                 /// @return `true` if this object is equal to the other object, `false` otherwise.
                 inline bool operator==(const SProperties& other) const = default;
+
+                /// Provides read-only access to axis properties by indexing using an enumerator.
+                /// @param [in] desiredAxis Enumerator that identifies the desired axis.
+                /// @return Associated axis property data.
+                constexpr decltype(axis)::const_reference operator[](EAxis desiredAxis) const
+                {
+                    return axis[(int)desiredAxis];
+                }
+
+                /// Provides mutable access to axis properties by indexing using an enumerator.
+                /// @param [in] desiredAxis Enumerator that identifies the desired axis.
+                /// @return Associated axis property data.
+                constexpr decltype(axis)::reference operator[](EAxis desiredAxis)
+                {
+                    return axis[(int)desiredAxis];
+                }
             };
 
 
@@ -413,7 +430,7 @@ namespace Xidi
             /// @return Deadzone value associated with the target axis.
             inline uint32_t GetAxisDeadzone(EAxis axis) const
             {
-                return properties.axis[(int)axis].deadzone;
+                return properties[axis].deadzone;
             }
 
             /// Retrieves and returns the range property of the specified axis.
@@ -421,7 +438,7 @@ namespace Xidi
             /// @return Pair of range values associated with the target axis. First is the minimum, and second is the maximum.
             inline std::pair<int32_t, int32_t> GetAxisRange(EAxis axis) const
             {
-                return std::make_pair(properties.axis[(int)axis].rangeMin, properties.axis[(int)axis].rangeMax);
+                return std::make_pair(properties[axis].rangeMin, properties[axis].rangeMax);
             }
 
             /// Retrieves and returns the saturation property of the specified axis.
@@ -429,7 +446,7 @@ namespace Xidi
             /// @return Saturation value associated with the target axis.
             inline uint32_t GetAxisSaturation(EAxis axis) const
             {
-                return properties.axis[(int)axis].saturation;
+                return properties[axis].saturation;
             }
 
             /// Retrieves and returns the capacity of the event buffer in number of events.
@@ -516,7 +533,7 @@ namespace Xidi
             /// Primarily intended to be called by a background thread, but exposed externally for testing.
             /// @param [in] newStateData Physical controller state data to apply to this virtual controller's internal state view.
             /// @return `true` if the state of the controller changed as a result of applying the new state data, `false` otherwise.
-            bool RefreshState(const SPhysicalState& newStateData);
+            bool RefreshState(SPhysicalState newStateData);
 
             /// Sets the deadzone property for a single axis.
             /// @param [in] axis Target axis.

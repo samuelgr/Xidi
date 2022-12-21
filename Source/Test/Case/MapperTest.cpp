@@ -14,7 +14,6 @@
 #include "ControllerTypes.h"
 #include "ElementMapper.h"
 #include "ForceFeedbackTypes.h"
-#include "ImportApiXInput.h"
 #include "Mapper.h"
 #include "MockElementMapper.h"
 #include "TestCase.h"
@@ -70,6 +69,19 @@ namespace XidiTest
 
 
     // -------- INTERNAL FUNCTIONS ----------------------------------------- //
+
+    /// Creates a button set given a compile-time-constant list of buttons.
+    /// @param [in] buttons Initializer list containing all of the desired buttons to be added to the set.
+    /// @return Button set representation of the button list.
+    static constexpr std::bitset<(int)EPhysicalButton::Count> ButtonSet(std::initializer_list<EPhysicalButton> buttons)
+    {
+        std::bitset<(int)EPhysicalButton::Count> buttonSet;
+
+        for (auto button : buttons)
+            buttonSet[(int)button] = true;
+
+        return buttonSet;
+    }
 
     /// Computes the expected physical actuator value given an input virtual actuator value.
     /// @param [in] virtualValue Virtual actuator value for which a translation to physical is desired.
@@ -233,7 +245,7 @@ namespace XidiTest
         int numContributions = 0;
 
         const Mapper controllerMapper({.stickLeftX = std::make_unique<MockElementMapper>(MockElementMapper::EExpectedSource::Analog, kTestValue, &numContributions)});
-        controllerMapper.MapStatePhysicalToVirtual({.sThumbLX = kTestValue}, kOpaqueSourceIdentifier);
+        controllerMapper.MapStatePhysicalToVirtual({.deviceStatus = EPhysicalDeviceStatus::Ok, .stick = {kTestValue, 0, 0, 0}}, kOpaqueSourceIdentifier);
 
         TEST_ASSERT(1 == numContributions);
     }
@@ -246,7 +258,7 @@ namespace XidiTest
         int numContributions = 0;
 
         const Mapper controllerMapper({.stickLeftY = std::make_unique<MockElementMapper>(MockElementMapper::EExpectedSource::Analog, kInvertedTestValue, &numContributions)});
-        controllerMapper.MapStatePhysicalToVirtual({.sThumbLY = kTestValue}, kOpaqueSourceIdentifier);
+        controllerMapper.MapStatePhysicalToVirtual({.deviceStatus = EPhysicalDeviceStatus::Ok, .stick = {0, kTestValue, 0, 0}}, kOpaqueSourceIdentifier);
 
         TEST_ASSERT(1 == numContributions);
     }
@@ -258,7 +270,7 @@ namespace XidiTest
         int numContributions = 0;
 
         const Mapper controllerMapper({.stickRightX = std::make_unique<MockElementMapper>(MockElementMapper::EExpectedSource::Analog, kTestValue, &numContributions)});
-        controllerMapper.MapStatePhysicalToVirtual({.sThumbRX = kTestValue}, kOpaqueSourceIdentifier);
+        controllerMapper.MapStatePhysicalToVirtual({.deviceStatus = EPhysicalDeviceStatus::Ok, .stick = {0, 0, kTestValue, 0}}, kOpaqueSourceIdentifier);
 
         TEST_ASSERT(1 == numContributions);
     }
@@ -271,7 +283,7 @@ namespace XidiTest
         int numContributions = 0;
 
         const Mapper controllerMapper({.stickRightY = std::make_unique<MockElementMapper>(MockElementMapper::EExpectedSource::Analog, kInvertedTestValue, &numContributions)});
-        controllerMapper.MapStatePhysicalToVirtual({.sThumbRY = kTestValue}, kOpaqueSourceIdentifier);
+        controllerMapper.MapStatePhysicalToVirtual({.deviceStatus = EPhysicalDeviceStatus::Ok, .stick = {0, 0, 0, kTestValue}}, kOpaqueSourceIdentifier);
 
         TEST_ASSERT(1 == numContributions);
     }
@@ -283,7 +295,7 @@ namespace XidiTest
         int numContributions = 0;
 
         const Mapper controllerMapper({.dpadUp = std::make_unique<MockElementMapper>(MockElementMapper::EExpectedSource::Button, kTestValue, &numContributions)});
-        controllerMapper.MapStatePhysicalToVirtual({.wButtons = (kTestValue ? XINPUT_GAMEPAD_DPAD_UP : 0)}, kOpaqueSourceIdentifier);
+        controllerMapper.MapStatePhysicalToVirtual({.deviceStatus = EPhysicalDeviceStatus::Ok, .button = ButtonSet({EPhysicalButton::DpadUp})}, kOpaqueSourceIdentifier);
 
         TEST_ASSERT(1 == numContributions);
     }
@@ -295,7 +307,7 @@ namespace XidiTest
         int numContributions = 0;
 
         const Mapper controllerMapper({.dpadDown = std::make_unique<MockElementMapper>(MockElementMapper::EExpectedSource::Button, kTestValue, &numContributions)});
-        controllerMapper.MapStatePhysicalToVirtual({.wButtons = (kTestValue ? XINPUT_GAMEPAD_DPAD_DOWN : 0)}, kOpaqueSourceIdentifier);
+        controllerMapper.MapStatePhysicalToVirtual({.deviceStatus = EPhysicalDeviceStatus::Ok, .button = ButtonSet({EPhysicalButton::DpadDown})}, kOpaqueSourceIdentifier);
 
         TEST_ASSERT(1 == numContributions);
     }
@@ -307,7 +319,7 @@ namespace XidiTest
         int numContributions = 0;
 
         const Mapper controllerMapper({.dpadLeft = std::make_unique<MockElementMapper>(MockElementMapper::EExpectedSource::Button, kTestValue, &numContributions)});
-        controllerMapper.MapStatePhysicalToVirtual({.wButtons = (kTestValue ? XINPUT_GAMEPAD_DPAD_LEFT : 0)}, kOpaqueSourceIdentifier);
+        controllerMapper.MapStatePhysicalToVirtual({.deviceStatus = EPhysicalDeviceStatus::Ok, .button = ButtonSet({EPhysicalButton::DpadLeft})}, kOpaqueSourceIdentifier);
 
         TEST_ASSERT(1 == numContributions);
     }
@@ -319,7 +331,7 @@ namespace XidiTest
         int numContributions = 0;
 
         const Mapper controllerMapper({.dpadRight = std::make_unique<MockElementMapper>(MockElementMapper::EExpectedSource::Button, kTestValue, &numContributions)});
-        controllerMapper.MapStatePhysicalToVirtual({.wButtons = (kTestValue ? XINPUT_GAMEPAD_DPAD_RIGHT : 0)}, kOpaqueSourceIdentifier);
+        controllerMapper.MapStatePhysicalToVirtual({.deviceStatus = EPhysicalDeviceStatus::Ok, .button = ButtonSet({EPhysicalButton::DpadRight})}, kOpaqueSourceIdentifier);
 
         TEST_ASSERT(1 == numContributions);
     }
@@ -331,7 +343,7 @@ namespace XidiTest
         int numContributions = 0;
 
         const Mapper controllerMapper({.triggerLT = std::make_unique<MockElementMapper>(MockElementMapper::EExpectedSource::Trigger, kTestValue, &numContributions)});
-        controllerMapper.MapStatePhysicalToVirtual({.bLeftTrigger = kTestValue}, kOpaqueSourceIdentifier);
+        controllerMapper.MapStatePhysicalToVirtual({.deviceStatus = EPhysicalDeviceStatus::Ok, .trigger = {kTestValue, 0}}, kOpaqueSourceIdentifier);
 
         TEST_ASSERT(1 == numContributions);
     }
@@ -343,7 +355,7 @@ namespace XidiTest
         int numContributions = 0;
 
         const Mapper controllerMapper({.triggerRT = std::make_unique<MockElementMapper>(MockElementMapper::EExpectedSource::Trigger, kTestValue, &numContributions)});
-        controllerMapper.MapStatePhysicalToVirtual({.bRightTrigger = kTestValue}, kOpaqueSourceIdentifier);
+        controllerMapper.MapStatePhysicalToVirtual({.deviceStatus = EPhysicalDeviceStatus::Ok, .trigger = {0, kTestValue}}, kOpaqueSourceIdentifier);
 
         TEST_ASSERT(1 == numContributions);
     }
@@ -355,7 +367,7 @@ namespace XidiTest
         int numContributions = 0;
 
         const Mapper controllerMapper({.buttonA = std::make_unique<MockElementMapper>(MockElementMapper::EExpectedSource::Button, kTestValue, &numContributions)});
-        controllerMapper.MapStatePhysicalToVirtual({.wButtons = (kTestValue ? XINPUT_GAMEPAD_A : 0)}, kOpaqueSourceIdentifier);
+        controllerMapper.MapStatePhysicalToVirtual({.deviceStatus = EPhysicalDeviceStatus::Ok, .button = ButtonSet({EPhysicalButton::A})}, kOpaqueSourceIdentifier);
 
         TEST_ASSERT(1 == numContributions);
     }
@@ -367,7 +379,7 @@ namespace XidiTest
         int numContributions = 0;
 
         const Mapper controllerMapper({.buttonB = std::make_unique<MockElementMapper>(MockElementMapper::EExpectedSource::Button, kTestValue, &numContributions)});
-        controllerMapper.MapStatePhysicalToVirtual({.wButtons = (kTestValue ? XINPUT_GAMEPAD_B : 0)}, kOpaqueSourceIdentifier);
+        controllerMapper.MapStatePhysicalToVirtual({.deviceStatus = EPhysicalDeviceStatus::Ok, .button = ButtonSet({EPhysicalButton::B})}, kOpaqueSourceIdentifier);
 
         TEST_ASSERT(1 == numContributions);
     }
@@ -379,7 +391,7 @@ namespace XidiTest
         int numContributions = 0;
 
         const Mapper controllerMapper({.buttonX = std::make_unique<MockElementMapper>(MockElementMapper::EExpectedSource::Button, kTestValue, &numContributions)});
-        controllerMapper.MapStatePhysicalToVirtual({.wButtons = (kTestValue ? XINPUT_GAMEPAD_X : 0)}, kOpaqueSourceIdentifier);
+        controllerMapper.MapStatePhysicalToVirtual({.deviceStatus = EPhysicalDeviceStatus::Ok, .button = ButtonSet({EPhysicalButton::X})}, kOpaqueSourceIdentifier);
 
         TEST_ASSERT(1 == numContributions);
     }
@@ -391,7 +403,7 @@ namespace XidiTest
         int numContributions = 0;
 
         const Mapper controllerMapper({.buttonY = std::make_unique<MockElementMapper>(MockElementMapper::EExpectedSource::Button, kTestValue, &numContributions)});
-        controllerMapper.MapStatePhysicalToVirtual({.wButtons = (kTestValue ? XINPUT_GAMEPAD_Y : 0)}, kOpaqueSourceIdentifier);
+        controllerMapper.MapStatePhysicalToVirtual({.deviceStatus = EPhysicalDeviceStatus::Ok, .button = ButtonSet({EPhysicalButton::Y})}, kOpaqueSourceIdentifier);
 
         TEST_ASSERT(1 == numContributions);
     }
@@ -403,7 +415,7 @@ namespace XidiTest
         int numContributions = 0;
 
         const Mapper controllerMapper({.buttonLB = std::make_unique<MockElementMapper>(MockElementMapper::EExpectedSource::Button, kTestValue, &numContributions)});
-        controllerMapper.MapStatePhysicalToVirtual({.wButtons = (kTestValue ? XINPUT_GAMEPAD_LEFT_SHOULDER : 0)}, kOpaqueSourceIdentifier);
+        controllerMapper.MapStatePhysicalToVirtual({.deviceStatus = EPhysicalDeviceStatus::Ok, .button = ButtonSet({EPhysicalButton::LB})}, kOpaqueSourceIdentifier);
 
         TEST_ASSERT(1 == numContributions);
     }
@@ -415,7 +427,7 @@ namespace XidiTest
         int numContributions = 0;
 
         const Mapper controllerMapper({.buttonRB = std::make_unique<MockElementMapper>(MockElementMapper::EExpectedSource::Button, kTestValue, &numContributions)});
-        controllerMapper.MapStatePhysicalToVirtual({.wButtons = (kTestValue ? XINPUT_GAMEPAD_RIGHT_SHOULDER : 0)}, kOpaqueSourceIdentifier);
+        controllerMapper.MapStatePhysicalToVirtual({.deviceStatus = EPhysicalDeviceStatus::Ok, .button = ButtonSet({EPhysicalButton::RB})}, kOpaqueSourceIdentifier);
 
         TEST_ASSERT(1 == numContributions);
     }
@@ -427,7 +439,7 @@ namespace XidiTest
         int numContributions = 0;
 
         const Mapper controllerMapper({.buttonBack = std::make_unique<MockElementMapper>(MockElementMapper::EExpectedSource::Button, kTestValue, &numContributions)});
-        controllerMapper.MapStatePhysicalToVirtual({.wButtons = (kTestValue ? XINPUT_GAMEPAD_BACK : 0)}, kOpaqueSourceIdentifier);
+        controllerMapper.MapStatePhysicalToVirtual({.deviceStatus = EPhysicalDeviceStatus::Ok, .button = ButtonSet({EPhysicalButton::Back})}, kOpaqueSourceIdentifier);
 
         TEST_ASSERT(1 == numContributions);
     }
@@ -439,7 +451,7 @@ namespace XidiTest
         int numContributions = 0;
 
         const Mapper controllerMapper({.buttonStart = std::make_unique<MockElementMapper>(MockElementMapper::EExpectedSource::Button, kTestValue, &numContributions)});
-        controllerMapper.MapStatePhysicalToVirtual({.wButtons = (kTestValue ? XINPUT_GAMEPAD_START : 0)}, kOpaqueSourceIdentifier);
+        controllerMapper.MapStatePhysicalToVirtual({.deviceStatus = EPhysicalDeviceStatus::Ok, .button = ButtonSet({EPhysicalButton::Start})}, kOpaqueSourceIdentifier);
 
         TEST_ASSERT(1 == numContributions);
     }
@@ -451,7 +463,7 @@ namespace XidiTest
         int numContributions = 0;
 
         const Mapper controllerMapper({.buttonLS = std::make_unique<MockElementMapper>(MockElementMapper::EExpectedSource::Button, kTestValue, &numContributions)});
-        controllerMapper.MapStatePhysicalToVirtual({.wButtons = (kTestValue ? XINPUT_GAMEPAD_LEFT_THUMB : 0)}, kOpaqueSourceIdentifier);
+        controllerMapper.MapStatePhysicalToVirtual({.deviceStatus = EPhysicalDeviceStatus::Ok, .button = ButtonSet({EPhysicalButton::LS})}, kOpaqueSourceIdentifier);
 
         TEST_ASSERT(1 == numContributions);
     }
@@ -463,7 +475,7 @@ namespace XidiTest
         int numContributions = 0;
 
         const Mapper controllerMapper({.buttonRS = std::make_unique<MockElementMapper>(MockElementMapper::EExpectedSource::Button, kTestValue, &numContributions)});
-        controllerMapper.MapStatePhysicalToVirtual({.wButtons = (kTestValue ? XINPUT_GAMEPAD_RIGHT_THUMB : 0)}, kOpaqueSourceIdentifier);
+        controllerMapper.MapStatePhysicalToVirtual({.deviceStatus = EPhysicalDeviceStatus::Ok, .button = ButtonSet({EPhysicalButton::RS})}, kOpaqueSourceIdentifier);
 
         TEST_ASSERT(1 == numContributions);
     }
@@ -954,13 +966,10 @@ namespace XidiTest
         TEST_ASSERT(actualState == expectedState);
 
         actualState = mapper.MapStatePhysicalToVirtual({
-            .wButtons = 32767,
-            .bLeftTrigger = 128,
-            .bRightTrigger = 128,
-            .sThumbLX = 16383,
-            .sThumbLY = -16383,
-            .sThumbRX = -16383,
-            .sThumbRY = 16383
+            .deviceStatus = EPhysicalDeviceStatus::Ok,
+            .stick = {16383, -16383, -16383, 16383},
+            .trigger = {128, 128},
+            .button = 32767
         }, kOpaqueSourceIdentifier);
         TEST_ASSERT(actualState == expectedState);
     }
@@ -975,7 +984,7 @@ namespace XidiTest
         
         SState expectedState;
         ZeroMemory(&expectedState, sizeof(expectedState));
-        expectedState.axis[(int)EAxis::X] = kExpectedOutputValue;
+        expectedState[EAxis::X] = kExpectedOutputValue;
 
         const Mapper mapper({
             .stickLeftX = std::make_unique<AxisMapper>(EAxis::X),
@@ -985,10 +994,8 @@ namespace XidiTest
         });
 
         SState actualState = mapper.MapStatePhysicalToVirtual({
-            .sThumbLX = kNonInvertedInputValue,
-            .sThumbLY = kInvertedInputValue,
-            .sThumbRX = kNonInvertedInputValue,
-            .sThumbRY = kInvertedInputValue
+            .deviceStatus = EPhysicalDeviceStatus::Ok,
+            .stick = {kNonInvertedInputValue, kInvertedInputValue, kNonInvertedInputValue, kInvertedInputValue}
         }, kOpaqueSourceIdentifier);
         TEST_ASSERT(actualState == expectedState);
     }
@@ -1003,7 +1010,7 @@ namespace XidiTest
         
         SState expectedState;
         ZeroMemory(&expectedState, sizeof(expectedState));
-        expectedState.axis[(int)EAxis::RotX] = kExpectedOutputValue;
+        expectedState[EAxis::RotX] = kExpectedOutputValue;
 
         const Mapper mapper({
             .stickLeftX = std::make_unique<AxisMapper>(EAxis::RotX),
@@ -1013,10 +1020,8 @@ namespace XidiTest
         });
 
         SState actualState = mapper.MapStatePhysicalToVirtual({
-            .sThumbLX = kNonInvertedInputValue,
-            .sThumbLY = kInvertedInputValue,
-            .sThumbRX = kNonInvertedInputValue,
-            .sThumbRY = kInvertedInputValue
+            .deviceStatus = EPhysicalDeviceStatus::Ok,
+            .stick = {kNonInvertedInputValue, kInvertedInputValue, kNonInvertedInputValue, kInvertedInputValue}
         }, kOpaqueSourceIdentifier);
         TEST_ASSERT(actualState == expectedState);
     }
@@ -1032,10 +1037,10 @@ namespace XidiTest
 
         SState expectedState;
         ZeroMemory(&expectedState, sizeof(expectedState));
-        expectedState.axis[(int)EAxis::X] = kNonInvertedExpectedOutputValue;
-        expectedState.axis[(int)EAxis::Y] = kInvertedExpectedOutputValue;
-        expectedState.axis[(int)EAxis::RotX] = kNonInvertedExpectedOutputValue;
-        expectedState.axis[(int)EAxis::RotY] = kInvertedExpectedOutputValue;
+        expectedState[EAxis::X] = kNonInvertedExpectedOutputValue;
+        expectedState[EAxis::Y] = kInvertedExpectedOutputValue;
+        expectedState[EAxis::RotX] = kNonInvertedExpectedOutputValue;
+        expectedState[EAxis::RotY] = kInvertedExpectedOutputValue;
 
         const Mapper mapper({
             .stickLeftX = std::make_unique<AxisMapper>(EAxis::X),
@@ -1045,10 +1050,8 @@ namespace XidiTest
         });
 
         SState actualState = mapper.MapStatePhysicalToVirtual({
-            .sThumbLX = kExtremeNegativeInputValue,
-            .sThumbLY = kExtremeNegativeInputValue,
-            .sThumbRX = kExtremeNegativeInputValue,
-            .sThumbRY = kExtremeNegativeInputValue
+            .deviceStatus = EPhysicalDeviceStatus::Ok,
+            .stick = {kExtremeNegativeInputValue, kExtremeNegativeInputValue, kExtremeNegativeInputValue, kExtremeNegativeInputValue}
         }, kOpaqueSourceIdentifier);
         TEST_ASSERT(actualState == expectedState);
     }

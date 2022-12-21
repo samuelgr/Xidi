@@ -232,10 +232,10 @@ namespace XidiTest
         for (const auto& povTestData : kPovTestData)
         {
             Controller::SState controllerState;
-            controllerState.povDirection.components[(int)Controller::EPovDirection::Up] = povTestData.povUp;
-            controllerState.povDirection.components[(int)Controller::EPovDirection::Down] = povTestData.povDown;
-            controllerState.povDirection.components[(int)Controller::EPovDirection::Left] = povTestData.povLeft;
-            controllerState.povDirection.components[(int)Controller::EPovDirection::Right] = povTestData.povRight;
+            controllerState[Controller::EPovDirection::Up] = povTestData.povUp;
+            controllerState[Controller::EPovDirection::Down] = povTestData.povDown;
+            controllerState[Controller::EPovDirection::Left] = povTestData.povLeft;
+            controllerState[Controller::EPovDirection::Right] = povTestData.povRight;
 
             const EPovValue kExpectedPovValue = povTestData.expectedPovValue;
             const EPovValue kActualPovValue = DataFormat::DirectInputPovValue(controllerState.povDirection);
@@ -321,11 +321,11 @@ namespace XidiTest
             switch (kTestElement.type)
             {
             case EElementType::Axis:
-                *((TAxisValue*)(((size_t)&expectedDataPacket) + (size_t)testObjectFormatSpec[i].dwOfs)) = kTestControllerState.axis[(int)kTestElement.axis];
+                *((TAxisValue*)(((size_t)&expectedDataPacket) + (size_t)testObjectFormatSpec[i].dwOfs)) = kTestControllerState[kTestElement.axis];
                 break;
 
             case EElementType::Button:
-                *((TButtonValue*)(((size_t)&expectedDataPacket) + (size_t)testObjectFormatSpec[i].dwOfs)) = ((true == kTestControllerState.button[(int)kTestElement.button]) ? DataFormat::kButtonValuePressed : DataFormat::kButtonValueNotPressed);
+                *((TButtonValue*)(((size_t)&expectedDataPacket) + (size_t)testObjectFormatSpec[i].dwOfs)) = ((true == kTestControllerState[kTestElement.button]) ? DataFormat::kButtonValuePressed : DataFormat::kButtonValueNotPressed);
                 break;
 
             case EElementType::Pov:
@@ -363,9 +363,9 @@ namespace XidiTest
             TEST_ASSERT(nullptr != dataFormat);
 
             const STestDataPacket expectedDataPacket = {
-                .axisX = kTestControllerState.axis[(int)EAxis::X],
-                .axisY = kTestControllerState.axis[(int)EAxis::Y],
-                .axisZ = kTestControllerState.axis[(int)EAxis::Z],
+                .axisX = kTestControllerState[EAxis::X],
+                .axisY = kTestControllerState[EAxis::Y],
+                .axisZ = kTestControllerState[EAxis::Z],
                 .pov = DataFormat::DirectInputPovValue(kTestControllerState.povDirection),
                 .button = {
                     ((true == kTestControllerState.button[0]) ? DataFormat::kButtonValuePressed : DataFormat::kButtonValueNotPressed),

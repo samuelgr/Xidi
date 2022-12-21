@@ -13,14 +13,15 @@
 #pragma once
 
 #include "ApiWindows.h"
-#include "ImportApiXInput.h"
 
 #include <algorithm>
+#include <array>
 #include <bitset>
 #include <cstdint>
 #include <cstdlib>
 #include <cstring>
 #include <type_traits>
+#include <xinput.h>
 
 
 namespace Xidi
@@ -300,7 +301,7 @@ namespace Xidi
         /// Holds POV direction, which is presented both as an array of separate components and as a single aggregated integer view.
         union UPovDirection
         {
-            bool components[(int)EPovDirection::Count];                     ///< Pressed (`true`) or unpressed (`false`) state for each POV direction separately, one element per button. Bitset versus boolean produces no size difference, given the number of POV directions.
+            std::array<bool, (int)EPovDirection::Count> components;         ///< Pressed (`true`) or unpressed (`false`) state for each POV direction separately, one element per button. Bitset versus boolean produces no size difference, given the number of POV directions.
             uint32_t all;                                                   ///< Aggregate state of all POV directions, available as a single quantity for easy comparison and assignment.
 
             /// Simple check for equality.
@@ -315,11 +316,10 @@ namespace Xidi
         static_assert(sizeof(UPovDirection::components) == sizeof(UPovDirection::all), "Mismatch in POV view sizes.");
         
         /// Native data format for virtual controllers, used internally to represent controller state.
-        /// Instances of `XINPUT_GAMEPAD` are passed through a mapper to produce objects of this type.
         /// Validity or invalidity of each element depends on the mapper.
         struct SState
         {
-            int32_t axis[(int)EAxis::Count];                                ///< Values for all axes, one element per axis.
+            std::array<int32_t, (int)EAxis::Count> axis;                    ///< Values for all axes, one element per axis.
             std::bitset<(int)EButton::Count> button;                        ///< Pressed (`true`) or unpressed (`false`) state for each button, one bit per button. Bitset is used as a size optimization, given the number of buttons.
             UPovDirection povDirection;                                     ///< POV direction, presented simultaneously as individual components and as an aggregate quantity.
 
@@ -333,28 +333,171 @@ namespace Xidi
                     && (other.button == button)
                     && (other.povDirection == povDirection));
             }
+
+            /// Provides read-only access to axis state by indexing using an enumerator.
+            /// @param [in] desiredAxis Enumerator that identifies the desired axis.
+            /// @return Associated state information.
+            constexpr int32_t operator[](EAxis desiredAxis) const
+            {
+                return axis[(int)desiredAxis];
+            }
+
+            /// Provides read-only access to button state by indexing using an enumerator.
+            /// @param [in] desiredButton Enumerator that identifies the desired button.
+            /// @return Associated state information.
+            constexpr bool operator[](EButton desiredButton) const
+            {
+                return button[(int)desiredButton];
+            }
+
+            /// Provides read-only access to POV state by indexing using an enumerator.
+            /// @param [in] desiredButton Enumerator that identifies the desired POV direction.
+            /// @return Associated state information.
+            constexpr bool operator[](EPovDirection desiredPovDirection) const
+            {
+                return povDirection.components[(int)desiredPovDirection];
+            }
+
+            /// Provides mutable access to axis state by indexing using an enumerator.
+            /// @param [in] desiredAxis Enumerator that identifies the desired axis.
+            /// @return Associated state information.
+            constexpr int32_t& operator[](EAxis desiredAxis)
+            {
+                return axis[(int)desiredAxis];
+            }
+
+            /// Provides mutable access to button state by indexing using an enumerator.
+            /// @param [in] desiredButton Enumerator that identifies the desired button.
+            /// @return Associated state information.
+            constexpr decltype(button)::reference operator[](EButton desiredButton)
+            {
+                return button[(int)desiredButton];
+            }
+
+            /// Provides mutable access to POV state by indexing using an enumerator.
+            /// @param [in] desiredButton Enumerator that identifies the desired POV direction.
+            /// @return Associated state information.
+            constexpr bool& operator[](EPovDirection desiredPovDirection)
+            {
+                return povDirection.components[(int)desiredPovDirection];
+            }
         };
         static_assert(sizeof(SState) <= 32, "Data structure size constraint violation.");
 
-        /// Structure used for holding physical controller state data.
+        /// Enumerates possible statuses for physical controller devices.
+        enum class EPhysicalDeviceStatus : uint8_t
+        {
+            Ok,                                                             ///< Device is connected and functioning correctly
+            NotConnected,                                                   ///< Device is not connected and has not reported an error
+            Error,                                                          ///< Device has experienced an error
+            Count                                                           ///< Sentinel value, total number of enumerators
+        };
+
+        /// Enumerates all analog sticks that might be present on a physical controller.
+        /// One enumerator exists per possible stick.
+        enum class EPhysicalStick : uint8_t
+        {
+            LeftX,                                                          ///< Left analog stick, horizontal axis
+            LeftY,                                                          ///< Left analog stick, vertical axis
+            RightX,                                                         ///< Right analog stick, horizontal axis
+            RightY,                                                         ///< Right analog stick, vertical axis
+            Count                                                           ///< Sentinel value, total number of enumerators
+        };
+
+        /// Enumerates all analog triggers that might be present on a physical controller.
+        /// One enumerator exists per possible trigger.
+        enum class EPhysicalTrigger : uint8_t
+        {
+            LT,                                                             ///< Left trigger
+            RT,                                                             ///< Right trigger
+            Count                                                           ///< Sentinel value, total number of enumerators
+        };
+
+        /// Enumerates all digital buttons that might be present on a physical controller.
+        /// As an implementation simplification, the order of enumerators corresponds to the ordering used in XInput.
+        /// One enumerator exists per possible button, and some are unused.
+        enum class EPhysicalButton : uint8_t
+        {
+            DpadUp,                                                         ///< Up direction on the d-pad.
+            DpadDown,                                                       ///< Down direction on the d-pad.
+            DpadLeft,                                                       ///< Left direction on the d-pad.
+            DpadRight,                                                      ///< Right direction on the d-pad.
+            Start,                                                          ///< Start button
+            Back,                                                           ///< Back button
+            LS,                                                             ///< Left stick button
+            RS,                                                             ///< Right stick button
+            LB,                                                             ///< Left shoulder button
+            RB,                                                             ///< Right shoulder button
+            UnusedGuide,                                                    ///< Guide button (not used, but space is allocated for it)
+            UnusedShare,                                                    ///< Share button (speculative and not used, but space is allocated for it)
+            A,                                                              ///< A button
+            B,                                                              ///< B bytton
+            X,                                                              ///< X button
+            Y,                                                              ///< Y button
+            Count                                                           ///< Sentinel value, total number of enumerators
+        };
+
+        /// Data format for representing physical controller state, as received from controller devices and before being passed through a mapper.
         struct SPhysicalState
         {
-            DWORD errorCode;                                                ///< Error code resulting from the last attempt to poll the physical controller.
-            XINPUT_STATE state;                                             ///< State data from the last attempt to poll the physical controller.
+            EPhysicalDeviceStatus deviceStatus;                             ///< Whether or not the physical state represented by this object was successfully read from a controller device.
+            std::array<int16_t, (int)EPhysicalStick::Count> stick;          ///< Analog stick values read from the physical controller, one element per possible stick and axis direction.
+            std::array<uint8_t, (int)EPhysicalTrigger::Count> trigger;      ///< Analog trigger values read from the physical controller, one element per possible trigger.
+            std::bitset<(int)EPhysicalButton::Count> button;                ///< Digital button values read from the physical controller, one element per possible digital button.
 
             /// Simple equality check to detect physical state changes.
             /// @param [in] other Object with which to compare.
             /// @return `true` if this object is equal to the other object, `false` otherwise.
-            constexpr inline bool operator==(const SPhysicalState& other) const
+            constexpr inline bool operator==(const SPhysicalState& other) const = default;
+
+            /// Provides read-only access to analog stick state by indexing using an enumerator.
+            /// @param [in] desiredStick Enumerator that identifies the desired analog stick.
+            /// @return Associated state information.
+            constexpr int16_t operator[](EPhysicalStick desiredStick) const
             {
-                if (errorCode != other.errorCode)
-                    return false;
+                return stick[(int)desiredStick];
+            }
 
-                if ((errorCode == 0) && (state.dwPacketNumber != other.state.dwPacketNumber))
-                    return false;
+            /// Provides read-only access to analog trigger state by indexing using an enumerator.
+            /// @param [in] desiredTrigger Enumerator that identifies the desired analog trigger.
+            /// @return Associated state information.
+            constexpr uint8_t operator[](EPhysicalTrigger desiredTrigger) const
+            {
+                return trigger[(int)desiredTrigger];
+            }
 
-                return true;
+            /// Provides read-only access to button state by indexing using an enumerator.
+            /// @param [in] desiredButton Enumerator that identifies the desired button.
+            /// @return Associated state information.
+            constexpr bool operator[](EPhysicalButton desiredButton) const
+            {
+                return button[(int)desiredButton];
+            }
+
+            /// Provides mutable access to analog stick state by indexing using an enumerator.
+            /// @param [in] desiredStick Enumerator that identifies the desired analog stick.
+            /// @return Associated state information.
+            constexpr decltype(stick)::reference operator[](EPhysicalStick desiredStick)
+            {
+                return stick[(int)desiredStick];
+            }
+
+            /// Provides mutable access to analog trigger state by indexing using an enumerator.
+            /// @param [in] desiredTrigger Enumerator that identifies the desired analog trigger.
+            /// @return Associated state information.
+            constexpr decltype(trigger)::reference operator[](EPhysicalTrigger desiredTrigger)
+            {
+                return trigger[(int)desiredTrigger];
+            }
+
+            /// Provides mutable access to button state by indexing using an enumerator.
+            /// @param [in] desiredButton Enumerator that identifies the desired button.
+            /// @return Associated state information.
+            constexpr decltype(button)::reference operator[](EPhysicalButton desiredButton)
+            {
+                return button[(int)desiredButton];
             }
         };
+        static_assert(sizeof(SPhysicalState) <= 16, "Data structure size constraint violation.");
     }
 }

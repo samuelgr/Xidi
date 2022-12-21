@@ -30,7 +30,7 @@ namespace XidiTest
     // -------- INTERNAL CONSTANTS ----------------------------------------- //
 
     /// Default physical state to return when no other physical states are specified.
-    static constexpr SPhysicalState kDefaultPhysicalState = {.errorCode = ERROR_SUCCESS, .state = {}};
+    static constexpr SPhysicalState kDefaultPhysicalState = {.deviceStatus = EPhysicalDeviceStatus::Ok};
 
 
     // -------- INTERNAL VARIABLES ----------------------------------------- //

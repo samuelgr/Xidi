@@ -136,7 +136,7 @@ namespace Xidi
                 break;
             }
 
-            controllerState.axis[(int)axis] += axisValueToContribute;
+            controllerState[axis] += axisValueToContribute;
         }
 
         // --------
@@ -160,7 +160,7 @@ namespace Xidi
                 break;
             }
 
-            controllerState.axis[(int)axis] += axisValueToContribute;
+            controllerState[axis] += axisValueToContribute;
         }
 
         // --------
@@ -188,7 +188,7 @@ namespace Xidi
                 break;
             }
 
-            controllerState.axis[(int)axis] += axisValueToContribute;
+            controllerState[axis] += axisValueToContribute;
         }
 
         // --------
@@ -219,21 +219,21 @@ namespace Xidi
 
         void ButtonMapper::ContributeFromAnalogValue(SState& controllerState, int16_t analogValue, uint32_t sourceIdentifier) const
         {
-            controllerState.button[(int)button] = (controllerState.button[(int)button] || IsAnalogPressed(analogValue));
+            controllerState[button] = (controllerState[button] || IsAnalogPressed(analogValue));
         }
 
         // --------
 
         void ButtonMapper::ContributeFromButtonValue(SState& controllerState, bool buttonPressed, uint32_t sourceIdentifier) const
         {
-            controllerState.button[(int)button] = (controllerState.button[(int)button] || buttonPressed);
+            controllerState[button] = (controllerState[button] || buttonPressed);
         }
 
         // --------
 
         void ButtonMapper::ContributeFromTriggerValue(SState& controllerState, uint8_t triggerValue, uint32_t sourceIdentifier) const
         {
-            controllerState.button[(int)button] = (controllerState.button[(int)button] || IsTriggerPressed(triggerValue));
+            controllerState[button] = (controllerState[button] || IsTriggerPressed(triggerValue));
         }
 
         // --------
@@ -374,7 +374,7 @@ namespace Xidi
                 break;
             }
 
-            controllerState.axis[(int)axis] += axisValueToContribute;
+            controllerState[axis] += axisValueToContribute;
         }
 
         // --------

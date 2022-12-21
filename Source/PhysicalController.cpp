@@ -33,36 +33,6 @@ namespace Xidi
 {
     namespace Controller
     {
-        // -------- INTERNAL TYPES ----------------------------------------- //
-
-        /// Dual view of physical force feedback actuator values.
-        /// Used for quick comparison, given how small the XInput structure is.
-        union UForceFeedbackVibration
-        {
-            XINPUT_VIBRATION named;
-            uint32_t all;
-
-            static_assert(sizeof(named) == sizeof(all), "Vibration data structure field mismatch.");
-
-            /// Default constructor.
-            /// Zero-initializes the entire structure in aggregate.
-            constexpr inline UForceFeedbackVibration(void) : all()
-            {
-                // Nothing to do here.
-            }
-
-            /// Equality check. Compares the entire structure in aggregate.
-            /// @param [in] other Object with which to compare.
-            /// @return `true` if this object is equal to the other object, `false` otherwise.
-            constexpr inline bool operator==(const UForceFeedbackVibration& other) const
-            {
-                return (all == other.all);
-            }
-        };
-        static_assert(sizeof(UForceFeedbackVibration) == sizeof(XINPUT_VIBRATION), "Data structure size constraint violation.");
-
-
-
         // -------- INTERNAL VARIABLES ------------------------------------- //
 
         /// State data for each of the possible physical controllers.
@@ -87,20 +57,76 @@ namespace Xidi
 
         // -------- INTERNAL FUNCTIONS ------------------------------------- //
         
+        /// Reads physical controller state.
+        /// @param [in] controllerIdentifier Identifier of the controller on which to operate.
+        /// @return Physical state of the identified controller.
+        SPhysicalState ReadPhysicalControllerState(TControllerIdentifier controllerIdentifier)
+        {
+            constexpr uint16_t kUnusedButtonMask = ~((uint16_t)((1u << (unsigned int)EPhysicalButton::UnusedGuide) | (1u << (unsigned int)EPhysicalButton::UnusedShare)));
+
+            XINPUT_STATE xinputState;
+            DWORD xinputGetStateResult = ImportApiXInput::XInputGetState(controllerIdentifier, &xinputState);
+
+            switch (xinputGetStateResult)
+            {
+            case ERROR_SUCCESS:
+                // Directly using wButtons assumes that the bit layout is the same between the internal bitset and the XInput data structure.
+                // The static assertions below this function verify this assumption and will cause a compiler error if it is wrong.
+                return {
+                    .deviceStatus = EPhysicalDeviceStatus::Ok,
+                    .stick = {xinputState.Gamepad.sThumbLX, xinputState.Gamepad.sThumbLY, xinputState.Gamepad.sThumbRX, xinputState.Gamepad.sThumbRY},
+                    .trigger = {xinputState.Gamepad.bLeftTrigger, xinputState.Gamepad.bRightTrigger},
+                    .button = (uint16_t)(xinputState.Gamepad.wButtons & kUnusedButtonMask)
+                };
+
+            case ERROR_DEVICE_NOT_CONNECTED:
+                return {.deviceStatus = EPhysicalDeviceStatus::NotConnected};
+
+            default:
+                return {.deviceStatus = EPhysicalDeviceStatus::Error};
+            }
+        }
+        static_assert(1u << (unsigned int)EPhysicalButton::DpadUp == XINPUT_GAMEPAD_DPAD_UP);
+        static_assert(1u << (unsigned int)EPhysicalButton::DpadDown == XINPUT_GAMEPAD_DPAD_DOWN);
+        static_assert(1u << (unsigned int)EPhysicalButton::DpadLeft == XINPUT_GAMEPAD_DPAD_LEFT);
+        static_assert(1u << (unsigned int)EPhysicalButton::DpadRight == XINPUT_GAMEPAD_DPAD_RIGHT);
+        static_assert(1u << (unsigned int)EPhysicalButton::Start == XINPUT_GAMEPAD_START);
+        static_assert(1u << (unsigned int)EPhysicalButton::Back == XINPUT_GAMEPAD_BACK);
+        static_assert(1u << (unsigned int)EPhysicalButton::LS == XINPUT_GAMEPAD_LEFT_THUMB);
+        static_assert(1u << (unsigned int)EPhysicalButton::RS == XINPUT_GAMEPAD_RIGHT_THUMB);
+        static_assert(1u << (unsigned int)EPhysicalButton::LB == XINPUT_GAMEPAD_LEFT_SHOULDER);
+        static_assert(1u << (unsigned int)EPhysicalButton::RB == XINPUT_GAMEPAD_RIGHT_SHOULDER);
+        static_assert(1u << (unsigned int)EPhysicalButton::A == XINPUT_GAMEPAD_A);
+        static_assert(1u << (unsigned int)EPhysicalButton::B == XINPUT_GAMEPAD_B);
+        static_assert(1u << (unsigned int)EPhysicalButton::X == XINPUT_GAMEPAD_X);
+        static_assert(1u << (unsigned int)EPhysicalButton::Y == XINPUT_GAMEPAD_Y);
+
+        /// Writes a vibration command to a physical controller.
+        /// @param [in] controllerIdentifier Identifier of the controller on which to operate.
+        /// @param [in] vibration Physical actuator vibration vector.
+        /// @return `true` if successful, `false` otherwise.
+        bool WritePhysicalControllerVibration(TControllerIdentifier controllerIdentifier, ForceFeedback::SPhysicalActuatorComponents vibration)
+        {
+            // Impulse triggers are ignored because the XInput API does not support them.
+            XINPUT_VIBRATION xinputVibration = {.wLeftMotorSpeed = (WORD)vibration.leftMotor, .wRightMotorSpeed = (WORD)vibration.rightMotor};
+            return (ERROR_SUCCESS == ImportApiXInput::XInputSetState((DWORD)controllerIdentifier, &xinputVibration));
+        }
+
         /// Periodically plays force feedback effects on the physical controller actuators.
         /// @param [in] controllerIdentifier Identifier of the controller on which to operate.
         static void ForceFeedbackActuateEffects(TControllerIdentifier controllerIdentifier)
         {
             constexpr ForceFeedback::TOrderedMagnitudeComponents kVirtualMagnitudeVectorZero = {};
 
-            UForceFeedbackVibration previousPhysicalActuatorValues;
-            UForceFeedbackVibration currentPhysicalActuatorValues;
+            ForceFeedback::SPhysicalActuatorComponents previousPhysicalActuatorValues;
+            ForceFeedback::SPhysicalActuatorComponents currentPhysicalActuatorValues;
 
-            DWORD lastActuationResult = ERROR_SUCCESS;
+            const Mapper* mapper = Mapper::GetConfigured(controllerIdentifier);
+            bool lastActuationResult = true;
 
             while (true)
             {
-                if (ERROR_SUCCESS == lastActuationResult)
+                if (true == lastActuationResult)
                     Sleep(kPhysicalForceFeedbackPeriodMilliseconds);
                 else
                     Sleep(kPhysicalErrorBackoffPeriodMilliseconds);
@@ -121,25 +147,24 @@ namespace Xidi
                         for (auto virtualController : physicalControllerForceFeedbackRegistration[controllerIdentifier])
                             overallEffectGain *= ((ForceFeedback::TEffectValue)virtualController->GetForceFeedbackGain() / ForceFeedback::kEffectModifierMaximum);
 
-                        physicalActuatorVector = Mapper::GetConfigured(controllerIdentifier)->MapForceFeedbackVirtualToPhysical(virtualMagnitudeVector, overallEffectGain);
+                        physicalActuatorVector = mapper->MapForceFeedbackVirtualToPhysical(virtualMagnitudeVector, overallEffectGain);
                     }
 
-                    // Currently the impulse trigger values are ignored.
-                    currentPhysicalActuatorValues.named = {.wLeftMotorSpeed = physicalActuatorVector.leftMotor, .wRightMotorSpeed = physicalActuatorVector.rightMotor};
+                    currentPhysicalActuatorValues = physicalActuatorVector;
                 }
                 else
                 {
-                    currentPhysicalActuatorValues.all = 0;
+                    currentPhysicalActuatorValues = {};
                 }
 
                 if (previousPhysicalActuatorValues != currentPhysicalActuatorValues)
                 {
-                    lastActuationResult = ImportApiXInput::XInputSetState(controllerIdentifier, &currentPhysicalActuatorValues.named);
+                    lastActuationResult = WritePhysicalControllerVibration(controllerIdentifier, currentPhysicalActuatorValues);
                     previousPhysicalActuatorValues = currentPhysicalActuatorValues;
                 }
                 else
                 {
-                    lastActuationResult = ERROR_SUCCESS;
+                    lastActuationResult = true;
                 }
             }
         }
@@ -149,16 +174,16 @@ namespace Xidi
         /// @param [in] controllerIdentifier Identifier of the controller on which to operate.
         static void PollForPhysicalControllerStateChanges(TControllerIdentifier controllerIdentifier)
         {
-            SPhysicalState newPhysicalState = {.errorCode = ERROR_SUCCESS};
+            SPhysicalState newPhysicalState = {.deviceStatus = EPhysicalDeviceStatus::Ok};
 
             while (true)
             {
-                if (ERROR_SUCCESS == newPhysicalState.errorCode)
+                if (EPhysicalDeviceStatus::Ok == newPhysicalState.deviceStatus)
                     Sleep(kPhysicalPollingPeriodMilliseconds);
                 else
                     Sleep(kPhysicalErrorBackoffPeriodMilliseconds);
 
-                newPhysicalState.errorCode = ImportApiXInput::XInputGetState(controllerIdentifier, &newPhysicalState.state);
+                newPhysicalState = ReadPhysicalControllerState(controllerIdentifier);
 
                 // Unguarded read is safe because all other threads only perform guarded reads.
                 // Update happens within the block and requires an exclusive lock.
@@ -193,32 +218,32 @@ namespace Xidi
                 WaitForPhysicalControllerStateChange(controllerIdentifier, newPhysicalState, std::stop_token());
 
                 // Look for status changes and output to the log, as appropriate.
-                switch (newPhysicalState.errorCode)
+                switch (newPhysicalState.deviceStatus)
                 {
-                case ERROR_SUCCESS:
-                    switch (oldPhysicalState.errorCode)
+                case EPhysicalDeviceStatus::Ok:
+                    switch (oldPhysicalState.deviceStatus)
                     {
-                    case ERROR_SUCCESS:
+                    case EPhysicalDeviceStatus::Ok:
                         break;
 
-                    case ERROR_DEVICE_NOT_CONNECTED:
+                    case EPhysicalDeviceStatus::NotConnected:
                         Message::OutputFormatted(Message::ESeverity::Info, L"Physical controller %u: Hardware connected.", (1 + controllerIdentifier));
                         break;
 
                     default:
-                        Message::OutputFormatted(Message::ESeverity::Warning, L"Physical controller %u: Cleared previous error condition with code 0x%08x.", (1 + controllerIdentifier), oldPhysicalState.errorCode);
+                        Message::OutputFormatted(Message::ESeverity::Warning, L"Physical controller %u: Cleared previous error condition.", (1 + controllerIdentifier));
                         break;
                     }
                     break;
 
-                case ERROR_DEVICE_NOT_CONNECTED:
-                    if (newPhysicalState.errorCode != oldPhysicalState.errorCode)
+                case EPhysicalDeviceStatus::NotConnected:
+                    if (newPhysicalState.deviceStatus != oldPhysicalState.deviceStatus)
                         Message::OutputFormatted(Message::ESeverity::Info, L"Physical controller %u: Hardware disconnected.", (1 + controllerIdentifier));
                     break;
 
                 default:
-                    if (newPhysicalState.errorCode != oldPhysicalState.errorCode)
-                        Message::OutputFormatted(Message::ESeverity::Warning, L"Physical controller %u: Encountered error condition with code 0x%08x.", (1 + controllerIdentifier), newPhysicalState.errorCode);
+                    if (newPhysicalState.deviceStatus != oldPhysicalState.deviceStatus)
+                        Message::OutputFormatted(Message::ESeverity::Warning, L"Physical controller %u: Encountered an error condition.", (1 + controllerIdentifier));
                     break;
                 }
 
@@ -235,7 +260,7 @@ namespace Xidi
                 {
                     // Initialize controller state data structures.
                     for (auto controllerIdentifier = 0; controllerIdentifier < _countof(physicalControllerState); ++controllerIdentifier)
-                        physicalControllerState[controllerIdentifier].errorCode = ImportApiXInput::XInputGetState(controllerIdentifier, &physicalControllerState[controllerIdentifier].state);
+                        physicalControllerState[controllerIdentifier] = ReadPhysicalControllerState(controllerIdentifier);
 
                     // Ensure the system timer resolution is suitable for the desired polling frequency.
                     TIMECAPS timeCaps;

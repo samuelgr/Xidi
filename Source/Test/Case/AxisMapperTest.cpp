@@ -75,7 +75,7 @@ namespace XidiTest
 
             SState expectedState;
             ZeroMemory(&expectedState, sizeof(expectedState));
-            expectedState.axis[(int)kTargetAxis] = analogValue;
+            expectedState[kTargetAxis] = analogValue;
 
             SState actualState;
             ZeroMemory(&actualState, sizeof(actualState));
@@ -98,7 +98,7 @@ namespace XidiTest
 
             SState expectedState;
             ZeroMemory(&expectedState, sizeof(expectedState));
-            expectedState.axis[(int)kTargetAxis] = kAnalogValueNeutral + (int32_t)(analogValueDisplacement * kStepSize);
+            expectedState[kTargetAxis] = kAnalogValueNeutral + (int32_t)(analogValueDisplacement * kStepSize);
 
             SState actualState;
             ZeroMemory(&actualState, sizeof(actualState));
@@ -121,7 +121,7 @@ namespace XidiTest
 
             SState expectedState;
             ZeroMemory(&expectedState, sizeof(expectedState));
-            expectedState.axis[(int)kTargetAxis] = kAnalogValueMin + (int32_t)(analogValueDisplacement * kStepSize);
+            expectedState[kTargetAxis] = kAnalogValueMin + (int32_t)(analogValueDisplacement * kStepSize);
 
             SState actualState;
             ZeroMemory(&actualState, sizeof(actualState));
@@ -150,7 +150,7 @@ namespace XidiTest
 
         SState expectedState;
         ZeroMemory(&expectedState, sizeof(expectedState));
-        expectedState.axis[(int)kTargetAxis] = (int32_t)kAnalogValue * _countof(mappers);
+        expectedState[kTargetAxis] = (int32_t)kAnalogValue * _countof(mappers);
 
         SState actualState;
         ZeroMemory(&actualState, sizeof(actualState));
@@ -180,7 +180,7 @@ namespace XidiTest
 
         SState expectedState;
         ZeroMemory(&expectedState, sizeof(expectedState));
-        expectedState.axis[(int)kTargetAxis] = kAnalogValueNeutral;
+        expectedState[kTargetAxis] = kAnalogValueNeutral;
 
         SState actualState;
         ZeroMemory(&actualState, sizeof(actualState));
@@ -204,7 +204,7 @@ namespace XidiTest
 
             SState expectedState;
             ZeroMemory(&expectedState, sizeof(expectedState));
-            expectedState.axis[(int)kTargetAxis] = (true == buttonIsPressed ? kAnalogValueMax : kAnalogValueMin);
+            expectedState[kTargetAxis] = (true == buttonIsPressed ? kAnalogValueMax : kAnalogValueMin);
 
             SState actualState;
             ZeroMemory(&actualState, sizeof(actualState));
@@ -226,7 +226,7 @@ namespace XidiTest
 
             SState expectedState;
             ZeroMemory(&expectedState, sizeof(expectedState));
-            expectedState.axis[(int)kTargetAxis] = (true == buttonIsPressed ? kAnalogValueMax : kAnalogValueNeutral);
+            expectedState[kTargetAxis] = (true == buttonIsPressed ? kAnalogValueMax : kAnalogValueNeutral);
 
             SState actualState;
             ZeroMemory(&actualState, sizeof(actualState));
@@ -248,7 +248,7 @@ namespace XidiTest
 
             SState expectedState;
             ZeroMemory(&expectedState, sizeof(expectedState));
-            expectedState.axis[(int)kTargetAxis] = (true == buttonIsPressed ? kAnalogValueMin : kAnalogValueNeutral);
+            expectedState[kTargetAxis] = (true == buttonIsPressed ? kAnalogValueMin : kAnalogValueNeutral);
 
             SState actualState;
             ZeroMemory(&actualState, sizeof(actualState));
@@ -278,7 +278,7 @@ namespace XidiTest
 
             SState expectedState;
             ZeroMemory(&expectedState, sizeof(expectedState));
-            expectedState.axis[(int)kTargetAxis] = (true == buttonIsPressed ? kAnalogValueMax : kAnalogValueMin) * _countof(mappers);
+            expectedState[kTargetAxis] = (true == buttonIsPressed ? kAnalogValueMax : kAnalogValueMin) * _countof(mappers);
 
             SState actualState;
             ZeroMemory(&actualState, sizeof(actualState));
@@ -309,7 +309,7 @@ namespace XidiTest
 
         SState expectedState;
         ZeroMemory(&expectedState, sizeof(expectedState));
-        expectedState.axis[(int)kTargetAxis] = kAnalogValueNeutral;
+        expectedState[kTargetAxis] = kAnalogValueNeutral;
 
         SState actualState;
         ZeroMemory(&actualState, sizeof(actualState));
@@ -335,7 +335,7 @@ namespace XidiTest
 
             SState expectedState;
             ZeroMemory(&expectedState, sizeof(expectedState));
-            expectedState.axis[(int)kTargetAxis] = kAnalogValueMin + (int32_t)(triggerValueDisplacement * kStepSize);
+            expectedState[kTargetAxis] = kAnalogValueMin + (int32_t)(triggerValueDisplacement * kStepSize);
 
             SState actualState;
             ZeroMemory(&actualState, sizeof(actualState));
@@ -358,7 +358,7 @@ namespace XidiTest
 
             SState expectedState;
             ZeroMemory(&expectedState, sizeof(expectedState));
-            expectedState.axis[(int)kTargetAxis] = kAnalogValueNeutral + (int32_t)(triggerValueDisplacement * kStepSize);
+            expectedState[kTargetAxis] = kAnalogValueNeutral + (int32_t)(triggerValueDisplacement * kStepSize);
 
             SState actualState;
             ZeroMemory(&actualState, sizeof(actualState));
@@ -381,7 +381,7 @@ namespace XidiTest
 
             SState expectedState;
             ZeroMemory(&expectedState, sizeof(expectedState));
-            expectedState.axis[(int)kTargetAxis] = kAnalogValueNeutral - (int32_t)(triggerValueDisplacement * kStepSize);
+            expectedState[kTargetAxis] = kAnalogValueNeutral - (int32_t)(triggerValueDisplacement * kStepSize);
 
             SState actualState;
             ZeroMemory(&actualState, sizeof(actualState));
@@ -408,7 +408,7 @@ namespace XidiTest
 
         SState expectedState;
         ZeroMemory(&expectedState, sizeof(expectedState));
-        expectedState.axis[(int)kTargetAxis] = kAnalogValueMax * _countof(mappers);
+        expectedState[kTargetAxis] = kAnalogValueMax * _countof(mappers);
 
         SState actualState;
         ZeroMemory(&actualState, sizeof(actualState));
@@ -438,7 +438,7 @@ namespace XidiTest
 
         SState expectedState;
         ZeroMemory(&expectedState, sizeof(expectedState));
-        expectedState.axis[(int)kTargetAxis] = kAnalogValueNeutral;
+        expectedState[kTargetAxis] = kAnalogValueNeutral;
 
         SState actualState;
         ZeroMemory(&actualState, sizeof(actualState));

@@ -13,15 +13,16 @@
 #include "ControllerTypes.h"
 #include "ElementMapper.h"
 #include "ForceFeedbackDevice.h"
-#include "ImportApiXInput.h"
 #include "MockPhysicalController.h"
 #include "StateChangeEventBuffer.h"
 #include "TestCase.h"
 #include "VirtualController.h"
 
+#include <bitset>
 #include <cmath>
 #include <cstdint>
 #include <deque>
+#include <initializer_list>
 #include <memory>
 #include <optional>
 
@@ -34,6 +35,10 @@ namespace XidiTest
     using ::Xidi::Controller::EAxis;
     using ::Xidi::Controller::EButton;
     using ::Xidi::Controller::EElementType;
+    using ::Xidi::Controller::EPhysicalButton;
+    using ::Xidi::Controller::EPhysicalDeviceStatus;
+    using ::Xidi::Controller::EPhysicalStick;
+    using ::Xidi::Controller::EPhysicalTrigger;
     using ::Xidi::Controller::EPovDirection;
     using ::Xidi::Controller::Mapper;
     using ::Xidi::Controller::PovMapper;
@@ -86,11 +91,11 @@ namespace XidiTest
         switch (eventData.element.type)
         {
         case EElementType::Axis:
-            controllerState.axis[(int)eventData.element.axis] = eventData.value.axis;
+            controllerState[eventData.element.axis] = eventData.value.axis;
             break;
 
         case EElementType::Button:
-            controllerState.button[(int)eventData.element.button] = eventData.value.button;
+            controllerState[eventData.element.button] = eventData.value.button;
             break;
 
         case EElementType::Pov:
@@ -98,7 +103,20 @@ namespace XidiTest
             break;
         }
     }
-    
+
+    /// Creates a button set given a compile-time-constant list of buttons.
+    /// @param [in] buttons Initializer list containing all of the desired buttons to be added to the set.
+    /// @return Button set representation of the button list.
+    static constexpr std::bitset<(int)EPhysicalButton::Count> ButtonSet(std::initializer_list<EPhysicalButton> buttons)
+    {
+        std::bitset<(int)EPhysicalButton::Count> buttonSet;
+
+        for (auto button : buttons)
+            buttonSet[(int)button] = true;
+
+        return buttonSet;
+    }
+
     /// Computes and returns the deadzone value that corresponds to the specified percentage of an axis' physical range of motion.
     /// @param [in] pct Desired percentage.
     /// @return Corresponding deadzone value.
@@ -123,10 +141,10 @@ namespace XidiTest
     {
         Controller::SState controllerState;
         ZeroMemory(&controllerState, sizeof(controllerState));
-        controllerState.axis[(int)EAxis::X] = inputAxisValue;
+        controllerState[EAxis::X] = inputAxisValue;
 
         controller.ApplyProperties(controllerState);
-        return controllerState.axis[(int)kTestSingleAxis];
+        return controllerState[kTestSingleAxis];
     }
 
     /// Main test body for all axis property tests.
@@ -239,10 +257,10 @@ namespace XidiTest
     {
         constexpr TControllerIdentifier kControllerIndex = 2;
         constexpr SPhysicalState kPhysicalStates[] = {
-            {.errorCode = ERROR_SUCCESS, .state = {.dwPacketNumber = 1, .Gamepad = {.wButtons = XINPUT_GAMEPAD_A}}},
-            {.errorCode = ERROR_SUCCESS, .state = {.dwPacketNumber = 2, .Gamepad = {.wButtons = XINPUT_GAMEPAD_B}}},
-            {.errorCode = ERROR_SUCCESS, .state = {.dwPacketNumber = 3, .Gamepad = {.wButtons = XINPUT_GAMEPAD_X}}},
-            {.errorCode = ERROR_SUCCESS, .state = {.dwPacketNumber = 4, .Gamepad = {.wButtons = XINPUT_GAMEPAD_Y}}}
+            {.deviceStatus = EPhysicalDeviceStatus::Ok, .button = ButtonSet({EPhysicalButton::A})},
+            {.deviceStatus = EPhysicalDeviceStatus::Ok, .button = ButtonSet({EPhysicalButton::B})},
+            {.deviceStatus = EPhysicalDeviceStatus::Ok, .button = ButtonSet({EPhysicalButton::X})},
+            {.deviceStatus = EPhysicalDeviceStatus::Ok, .button = ButtonSet({EPhysicalButton::Y})}
         };
 
         // Button assignments are based on the mapper defined at the top of this file.
@@ -286,7 +304,7 @@ namespace XidiTest
     TEST_CASE(VirtualController_GetState_SameState)
     {
         constexpr TControllerIdentifier kControllerIndex = 3;
-        constexpr SPhysicalState kPhysicalState = {.errorCode = ERROR_SUCCESS, .state = {.dwPacketNumber = 1, .Gamepad = {.wButtons = XINPUT_GAMEPAD_A | XINPUT_GAMEPAD_X}}};
+        constexpr SPhysicalState kPhysicalState = {.deviceStatus = EPhysicalDeviceStatus::Ok, .button = ButtonSet({EPhysicalButton::A, EPhysicalButton::X})};
 
         // Button assignments are based on the mapper defined at the top of this file.
         constexpr Controller::SState kExpectedStates[] = {
@@ -316,15 +334,15 @@ namespace XidiTest
         // It is not obvious from documentation how packet numbers are supposed to behave across error conditions.
         // Nominal case is packet number increases, and the other two possibilities are packet number stays the same or decreases. All three are tested below in that order.
         constexpr SPhysicalState kPhysicalStates[] = {
-            {.errorCode = ERROR_SUCCESS,                .state = {.dwPacketNumber = 1, .Gamepad = {.wButtons = XINPUT_GAMEPAD_A | XINPUT_GAMEPAD_Y}}},
-            {.errorCode = ERROR_DEVICE_NOT_CONNECTED},
-            {.errorCode = ERROR_SUCCESS,                .state = {.dwPacketNumber = 2, .Gamepad = {.wButtons = XINPUT_GAMEPAD_A | XINPUT_GAMEPAD_Y}}},
-            {.errorCode = ERROR_SUCCESS,                .state = {.dwPacketNumber = 3, .Gamepad = {.wButtons = XINPUT_GAMEPAD_B | XINPUT_GAMEPAD_Y}}},
-            {.errorCode = ERROR_INVALID_ACCESS},
-            {.errorCode = ERROR_SUCCESS,                .state = {.dwPacketNumber = 3, .Gamepad = {.wButtons = XINPUT_GAMEPAD_B | XINPUT_GAMEPAD_Y}}},
-            {.errorCode = ERROR_SUCCESS,                .state = {.dwPacketNumber = 4, .Gamepad = {.wButtons = XINPUT_GAMEPAD_X | XINPUT_GAMEPAD_Y}}},
-            {.errorCode = ERROR_NOT_SUPPORTED},
-            {.errorCode = ERROR_SUCCESS,                .state = {.dwPacketNumber = 1, .Gamepad = {.wButtons = XINPUT_GAMEPAD_X | XINPUT_GAMEPAD_Y}}}
+            {.deviceStatus = EPhysicalDeviceStatus::Ok,                .button = ButtonSet({EPhysicalButton::A, EPhysicalButton::Y})},
+            {.deviceStatus = EPhysicalDeviceStatus::NotConnected},
+            {.deviceStatus = EPhysicalDeviceStatus::Ok,                .button = ButtonSet({EPhysicalButton::A, EPhysicalButton::Y})},
+            {.deviceStatus = EPhysicalDeviceStatus::Ok,                .button = ButtonSet({EPhysicalButton::B, EPhysicalButton::Y})},
+            {.deviceStatus = EPhysicalDeviceStatus::Error},
+            {.deviceStatus = EPhysicalDeviceStatus::Ok,                .button = ButtonSet({EPhysicalButton::B, EPhysicalButton::Y})},
+            {.deviceStatus = EPhysicalDeviceStatus::Ok,                .button = ButtonSet({EPhysicalButton::X, EPhysicalButton::Y})},
+            {.deviceStatus = EPhysicalDeviceStatus::Error},
+            {.deviceStatus = EPhysicalDeviceStatus::Ok,                .button = ButtonSet({EPhysicalButton::X, EPhysicalButton::Y})}
         };
 
         // When XInput calls fail, the controller state should be completely neutral.
@@ -591,7 +609,7 @@ namespace XidiTest
         constexpr int32_t kTestNewAxisRangeMax = 1000;
         constexpr int32_t kTestNewAxisRangeExpectedNeutralValue = (kTestNewAxisRangeMin + kTestNewAxisRangeMax) / 2;
 
-        constexpr SPhysicalState kPhysicalState = {.errorCode = ERROR_SUCCESS, .state = {.dwPacketNumber = 1}};
+        constexpr SPhysicalState kPhysicalState = {.deviceStatus = EPhysicalDeviceStatus::Ok};
         constexpr Controller::SState kExpectedStateBefore = {.axis = {kTestOldAxisRangeExpectedNeutralValue, kTestOldAxisRangeExpectedNeutralValue, 0, kTestOldAxisRangeExpectedNeutralValue, kTestOldAxisRangeExpectedNeutralValue, 0}};
         constexpr Controller::SState kExpectedStateAfter = {.axis = {kTestNewAxisRangeExpectedNeutralValue, kTestNewAxisRangeExpectedNeutralValue, 0, kTestNewAxisRangeExpectedNeutralValue, kTestNewAxisRangeExpectedNeutralValue, 0}};
 
@@ -635,9 +653,9 @@ namespace XidiTest
         constexpr uint32_t kEventBufferCapacity = 64;
 
         constexpr SPhysicalState kPhysicalStates[] = {
-            {.errorCode = ERROR_SUCCESS, .state = {.dwPacketNumber = 1}},
-            {.errorCode = ERROR_SUCCESS, .state = {.dwPacketNumber = 3}},
-            {.errorCode = ERROR_SUCCESS, .state = {.dwPacketNumber = 5}}
+            {.deviceStatus = EPhysicalDeviceStatus::Ok},
+            {.deviceStatus = EPhysicalDeviceStatus::Ok},
+            {.deviceStatus = EPhysicalDeviceStatus::Ok}
         };
 
         VirtualController controller(kControllerIndex, kTestMapper);
@@ -658,10 +676,10 @@ namespace XidiTest
 
         // Avoid using vertical components of the analog sticks to avoid having to worry about axis inversion.
         constexpr SPhysicalState kPhysicalStates[] = {
-            {.errorCode = ERROR_SUCCESS, .state = {.dwPacketNumber = 1, .Gamepad = {.wButtons = XINPUT_GAMEPAD_A, .sThumbLX = 1111, .sThumbRX = 2222}}},
-            {.errorCode = ERROR_SUCCESS, .state = {.dwPacketNumber = 2, .Gamepad = {.wButtons = XINPUT_GAMEPAD_A, .sThumbLX = 3333, .sThumbRX = 4444}}},
-            {.errorCode = ERROR_SUCCESS, .state = {.dwPacketNumber = 3, .Gamepad = {.wButtons = XINPUT_GAMEPAD_A | XINPUT_GAMEPAD_Y | XINPUT_GAMEPAD_DPAD_UP, .sThumbLX = -5555, .sThumbRX = -6666}}},
-            {.errorCode = ERROR_SUCCESS, .state = {.dwPacketNumber = 4, .Gamepad = {.wButtons = XINPUT_GAMEPAD_DPAD_LEFT}}}
+            {.deviceStatus = EPhysicalDeviceStatus::Ok, .stick = {1111, 0, 2222, 0}, .button = ButtonSet({EPhysicalButton::A})},
+            {.deviceStatus = EPhysicalDeviceStatus::Ok, .stick = {3333, 0, 4444, 0}, .button = ButtonSet({EPhysicalButton::A})},
+            {.deviceStatus = EPhysicalDeviceStatus::Ok, .stick = {-5555, 0, -6666, 0}, .button = ButtonSet({EPhysicalButton::A, EPhysicalButton::Y, EPhysicalButton::DpadUp})},
+            {.deviceStatus = EPhysicalDeviceStatus::Ok, .button = ButtonSet({EPhysicalButton::DpadLeft})}
         };
 
         // Values come from the mapper at the top of this file.
@@ -712,10 +730,10 @@ namespace XidiTest
         constexpr uint32_t kEventBufferCapacity = 64;
 
         constexpr SPhysicalState kPhysicalStates[] = {
-            {.errorCode = ERROR_SUCCESS, .state = {.dwPacketNumber = 1, .Gamepad = {.wButtons = XINPUT_GAMEPAD_A, .sThumbLX = 1111, .sThumbLY = 2222}}},
-            {.errorCode = ERROR_SUCCESS, .state = {.dwPacketNumber = 2, .Gamepad = {.wButtons = XINPUT_GAMEPAD_A, .sThumbLX = 3333, .sThumbLY = 4444}}},
-            {.errorCode = ERROR_SUCCESS, .state = {.dwPacketNumber = 3, .Gamepad = {.wButtons = XINPUT_GAMEPAD_A | XINPUT_GAMEPAD_Y | XINPUT_GAMEPAD_DPAD_UP, .sThumbLX = -5555, .sThumbLY = -6666}}},
-            {.errorCode = ERROR_SUCCESS, .state = {.dwPacketNumber = 4, .Gamepad = {.wButtons = XINPUT_GAMEPAD_DPAD_LEFT}}}
+            {.deviceStatus = EPhysicalDeviceStatus::Ok, .stick = {1111, 2222, 0, 0}, .button = ButtonSet({EPhysicalButton::A})},
+            {.deviceStatus = EPhysicalDeviceStatus::Ok, .stick = {3333, 4444, 0, 0}, .button = ButtonSet({EPhysicalButton::A})},
+            {.deviceStatus = EPhysicalDeviceStatus::Ok, .stick = {-5555, -6666, 0, 0}, .button = ButtonSet({EPhysicalButton::A, EPhysicalButton::Y, EPhysicalButton::DpadUp})},
+            {.deviceStatus = EPhysicalDeviceStatus::Ok, .button = ButtonSet({EPhysicalButton::DpadLeft})}
         };
 
         // Values come from the mapper at the top of this file.
@@ -767,13 +785,13 @@ namespace XidiTest
 
         // All of the buttons used in these physical states are part of the test mapper defined at the top of this file.
         constexpr SPhysicalState kPhysicalStates[] = {
-            {.errorCode = ERROR_SUCCESS, .state = {.dwPacketNumber = 1}},
-            {.errorCode = ERROR_SUCCESS, .state = {.dwPacketNumber = 2, .Gamepad = {.wButtons = XINPUT_GAMEPAD_A                                              }}},
-            {.errorCode = ERROR_SUCCESS, .state = {.dwPacketNumber = 3, .Gamepad = {.wButtons = XINPUT_GAMEPAD_A | XINPUT_GAMEPAD_B                           }}},
-            {.errorCode = ERROR_SUCCESS, .state = {.dwPacketNumber = 4, .Gamepad = {.wButtons = XINPUT_GAMEPAD_A | XINPUT_GAMEPAD_B | XINPUT_GAMEPAD_DPAD_LEFT}}},
-            {.errorCode = ERROR_SUCCESS, .state = {.dwPacketNumber = 5, .Gamepad = {.wButtons =                    XINPUT_GAMEPAD_B | XINPUT_GAMEPAD_DPAD_LEFT}}},
-            {.errorCode = ERROR_SUCCESS, .state = {.dwPacketNumber = 6, .Gamepad = {.wButtons =                    XINPUT_GAMEPAD_B                           }}},
-            {.errorCode = ERROR_SUCCESS, .state = {.dwPacketNumber = 7}}
+            {.deviceStatus = EPhysicalDeviceStatus::Ok},
+            {.deviceStatus = EPhysicalDeviceStatus::Ok, .button = ButtonSet({EPhysicalButton::A                                                         })},
+            {.deviceStatus = EPhysicalDeviceStatus::Ok, .button = ButtonSet({EPhysicalButton::A,    EPhysicalButton::B                                  })},
+            {.deviceStatus = EPhysicalDeviceStatus::Ok, .button = ButtonSet({EPhysicalButton::A,    EPhysicalButton::B,     EPhysicalButton::DpadLeft   })},
+            {.deviceStatus = EPhysicalDeviceStatus::Ok, .button = ButtonSet({                       EPhysicalButton::B,     EPhysicalButton::DpadLeft   })},
+            {.deviceStatus = EPhysicalDeviceStatus::Ok, .button = ButtonSet({                       EPhysicalButton::B                                  })},
+            {.deviceStatus = EPhysicalDeviceStatus::Ok}
         };
 
         const HANDLE kStateChangeEvent = CreateEvent(nullptr, FALSE, FALSE, nullptr);
@@ -800,15 +818,15 @@ namespace XidiTest
         // Only some of the buttons used in these physical states are part of the test mapper defined at the top of this file.
         // Left and right shoulder buttons are not mapped to any virtual controller element, so pressing and releasing them counts as a physical controller state change but not as a virtual controller state change.
         constexpr SPhysicalState kPhysicalStates[] = {
-            {.errorCode = ERROR_SUCCESS, .state = {.dwPacketNumber = 1}},
-            {.errorCode = ERROR_SUCCESS, .state = {.dwPacketNumber = 2, .Gamepad = {.wButtons = XINPUT_GAMEPAD_A                                                                                        }}},
-            {.errorCode = ERROR_SUCCESS, .state = {.dwPacketNumber = 3, .Gamepad = {.wButtons = XINPUT_GAMEPAD_A | XINPUT_GAMEPAD_LEFT_SHOULDER                                                         }}},
-            {.errorCode = ERROR_SUCCESS, .state = {.dwPacketNumber = 4, .Gamepad = {.wButtons = XINPUT_GAMEPAD_A | XINPUT_GAMEPAD_LEFT_SHOULDER | XINPUT_GAMEPAD_DPAD_UP                                }}},
-            {.errorCode = ERROR_SUCCESS, .state = {.dwPacketNumber = 5, .Gamepad = {.wButtons = XINPUT_GAMEPAD_A | XINPUT_GAMEPAD_LEFT_SHOULDER | XINPUT_GAMEPAD_DPAD_UP | XINPUT_GAMEPAD_RIGHT_SHOULDER}}},
-            {.errorCode = ERROR_SUCCESS, .state = {.dwPacketNumber = 6, .Gamepad = {.wButtons = XINPUT_GAMEPAD_A | XINPUT_GAMEPAD_LEFT_SHOULDER                          | XINPUT_GAMEPAD_RIGHT_SHOULDER}}},
-            {.errorCode = ERROR_SUCCESS, .state = {.dwPacketNumber = 7, .Gamepad = {.wButtons = XINPUT_GAMEPAD_A | XINPUT_GAMEPAD_LEFT_SHOULDER                                                         }}},
-            {.errorCode = ERROR_SUCCESS, .state = {.dwPacketNumber = 8, .Gamepad = {.wButtons =                    XINPUT_GAMEPAD_LEFT_SHOULDER                                                         }}},
-            {.errorCode = ERROR_SUCCESS, .state = {.dwPacketNumber = 9}}
+            {.deviceStatus = EPhysicalDeviceStatus::Ok},
+            {.deviceStatus = EPhysicalDeviceStatus::Ok, .button = ButtonSet({EPhysicalButton::A                                                                                 })},
+            {.deviceStatus = EPhysicalDeviceStatus::Ok, .button = ButtonSet({EPhysicalButton::A,    EPhysicalButton::LB                                                         })},
+            {.deviceStatus = EPhysicalDeviceStatus::Ok, .button = ButtonSet({EPhysicalButton::A,    EPhysicalButton::LB,    EPhysicalButton::DpadUp                             })},
+            {.deviceStatus = EPhysicalDeviceStatus::Ok, .button = ButtonSet({EPhysicalButton::A,    EPhysicalButton::LB,    EPhysicalButton::DpadUp,    EPhysicalButton::RB     })},
+            {.deviceStatus = EPhysicalDeviceStatus::Ok, .button = ButtonSet({EPhysicalButton::A,    EPhysicalButton::LB,                                EPhysicalButton::RB     })},
+            {.deviceStatus = EPhysicalDeviceStatus::Ok, .button = ButtonSet({EPhysicalButton::A,    EPhysicalButton::LB                                                         })},
+            {.deviceStatus = EPhysicalDeviceStatus::Ok, .button = ButtonSet({                       EPhysicalButton::LB                                                         })},
+            {.deviceStatus = EPhysicalDeviceStatus::Ok}
         };
         static_assert(0 != (_countof(kPhysicalStates) % 2), "An even number of states is required beyond the initial physical state.");
 
@@ -837,7 +855,7 @@ namespace XidiTest
     TEST_CASE(VirtualController_ForceFeedback_Nominal)
     {
         constexpr TControllerIdentifier kControllerIndex = 1;
-        constexpr SPhysicalState kPhysicalState = {.errorCode = ERROR_SUCCESS, .state = {.dwPacketNumber = 1}};
+        constexpr SPhysicalState kPhysicalState = {.deviceStatus = EPhysicalDeviceStatus::Ok};
 
         MockPhysicalController physicalController(kControllerIndex, &kPhysicalState, 1);
         const Controller::ForceFeedback::Device* const kForceFeedbackDeviceAddress = &physicalController.GetForceFeedbackDevice();
@@ -862,7 +880,7 @@ namespace XidiTest
     TEST_CASE(VirtualController_ForceFeedback_MultipleRegistrations)
     {
         constexpr TControllerIdentifier kControllerIndex = 1;
-        constexpr SPhysicalState kPhysicalState = {.errorCode = ERROR_SUCCESS, .state = {.dwPacketNumber = 1}};
+        constexpr SPhysicalState kPhysicalState = {.deviceStatus = EPhysicalDeviceStatus::Ok};
 
         MockPhysicalController physicalController(kControllerIndex, &kPhysicalState, 1);
         const Controller::ForceFeedback::Device* const kForceFeedbackDeviceAddress = &physicalController.GetForceFeedbackDevice();
@@ -883,7 +901,7 @@ namespace XidiTest
     TEST_CASE(VirtualController_ForceFeedback_Idempotent)
     {
         constexpr TControllerIdentifier kControllerIndex = 1;
-        constexpr SPhysicalState kPhysicalState = {.errorCode = ERROR_SUCCESS, .state = {.dwPacketNumber = 1}};
+        constexpr SPhysicalState kPhysicalState = {.deviceStatus = EPhysicalDeviceStatus::Ok};
 
         MockPhysicalController physicalController(kControllerIndex, &kPhysicalState, 1);
         const Controller::ForceFeedback::Device* const kForceFeedbackDeviceAddress = &physicalController.GetForceFeedbackDevice();
@@ -901,7 +919,7 @@ namespace XidiTest
     TEST_CASE(VirtualController_ForceFeedback_UnregisterOnDestruction)
     {
         constexpr TControllerIdentifier kControllerIndex = 1;
-        constexpr SPhysicalState kPhysicalState = {.errorCode = ERROR_SUCCESS, .state = {.dwPacketNumber = 1}};
+        constexpr SPhysicalState kPhysicalState = {.deviceStatus = EPhysicalDeviceStatus::Ok};
 
         MockPhysicalController physicalController(kControllerIndex, &kPhysicalState, 1);
         const Controller::ForceFeedback::Device* const kForceFeedbackDeviceAddress = &physicalController.GetForceFeedbackDevice();

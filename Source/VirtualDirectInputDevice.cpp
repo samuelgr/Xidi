@@ -494,7 +494,7 @@ namespace Xidi
         switch (controllerElement.type)
         {
         case Controller::EElementType::Axis:
-            return offsetof(Controller::SState, axis[(int)controllerElement.axis]);
+            return offsetof(Controller::SState, axis) + (sizeof(Controller::SState::axis[0]) * (int)controllerElement.axis);
 
         case Controller::EElementType::Button:
             return offsetof(Controller::SState, button) + (TOffset)controllerElement.button;

@@ -572,9 +572,9 @@ namespace Xidi
 
                 const Controller::SState kJoyStateData = controllers[xJoyID]->GetState();
 
-                pji->wXpos = (WORD)kJoyStateData.axis[(int)Controller::EAxis::X];
-                pji->wYpos = (WORD)kJoyStateData.axis[(int)Controller::EAxis::Y];
-                pji->wZpos = (WORD)kJoyStateData.axis[(int)Controller::EAxis::Z];
+                pji->wXpos = (WORD)kJoyStateData[Controller::EAxis::X];
+                pji->wYpos = (WORD)kJoyStateData[Controller::EAxis::Y];
+                pji->wZpos = (WORD)kJoyStateData[Controller::EAxis::Z];
                 pji->wButtons = 0;
                 if (true == kJoyStateData.button[0])
                     pji->wButtons |= JOY_BUTTON1;
@@ -624,12 +624,12 @@ namespace Xidi
                 // Fill in the provided structure.
                 // WinMM uses only 16 bits to indicate that the dpad is centered, whereas it is safe to use all 32 in DirectInput, hence the conversion (forgetting this can introduce bugs into games).
                 pji->dwPOV = (EPovValue::Center == kJoyStateDataPovValue ? (DWORD)(JOY_POVCENTERED) : (DWORD)kJoyStateDataPovValue);
-                pji->dwXpos = kJoyStateData.axis[(int)Controller::EAxis::X];
-                pji->dwYpos = kJoyStateData.axis[(int)Controller::EAxis::Y];
-                pji->dwZpos = kJoyStateData.axis[(int)Controller::EAxis::Z];
-                pji->dwRpos = kJoyStateData.axis[(int)Controller::EAxis::RotZ];
-                pji->dwUpos = kJoyStateData.axis[(int)Controller::EAxis::RotY];
-                pji->dwVpos = kJoyStateData.axis[(int)Controller::EAxis::RotX];
+                pji->dwXpos = kJoyStateData[Controller::EAxis::X];
+                pji->dwYpos = kJoyStateData[Controller::EAxis::Y];
+                pji->dwZpos = kJoyStateData[Controller::EAxis::Z];
+                pji->dwRpos = kJoyStateData[Controller::EAxis::RotZ];
+                pji->dwUpos = kJoyStateData[Controller::EAxis::RotY];
+                pji->dwVpos = kJoyStateData[Controller::EAxis::RotX];
                 pji->dwButtons = 0;
                 for (DWORD i = 0; i < kJoyStateData.button.size(); ++i)
                 {

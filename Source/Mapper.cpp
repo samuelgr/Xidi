@@ -17,7 +17,6 @@
 #include "ElementMapper.h"
 #include "ForceFeedbackTypes.h"
 #include "Globals.h"
-#include "ImportApiXInput.h"
 #include "Mapper.h"
 #include "Message.h"
 #include "Strings.h"
@@ -253,7 +252,7 @@ namespace Xidi
             return capabilities;
         }
 
-        /// Filters (by saturation) analog stick values that might be slightly out of range due to differences between the implemented range and the XInput actual range.
+        /// Filters (by saturation) analog stick values that might be slightly out of range due to differences between the implemented range and the physical controller's actual range.
         /// @param [in] analogValue Raw analog value.
         /// @return Filtered analog value, which will most likely be the same as the input.
         static inline int16_t FilterAnalogStickValue(int16_t analogValue)
@@ -266,7 +265,7 @@ namespace Xidi
                 return analogValue;
         }
 
-        /// Filters and inverts analog stick values based on presentation differences between XInput and virtual controller needs.
+        /// Filters and inverts analog stick values based on presentation differences between physical and virtual controller needs.
         /// Useful for XInput axes that have opposite polarity as compared to virtual controller axes.
         /// @param [in] analogValue Raw analog value.
         /// @return Filtered and inverted analog value.
@@ -522,7 +521,7 @@ namespace Xidi
             };
         }
 
-        SState Mapper::MapStatePhysicalToVirtual(XINPUT_GAMEPAD physicalState, uint32_t sourceControllerIdentifier) const
+        SState Mapper::MapStatePhysicalToVirtual(SPhysicalState physicalState, uint32_t sourceControllerIdentifier) const
         {
             SState controllerState = {};
 
@@ -530,33 +529,33 @@ namespace Xidi
             // This difference (-32768 extreme negative for XInput vs -32767 extreme negative for Xidi) does not affect functionality when filtered by saturation.
             // Vertical analog axes additionally need to be inverted because XInput presents up as positive and down as negative whereas Xidi needs to do the opposite.
 
-            if (nullptr != elements.named.stickLeftX) elements.named.stickLeftX->ContributeFromAnalogValue(controllerState, FilterAnalogStickValue(physicalState.sThumbLX), SourceIdentifierForElementMapper(sourceControllerIdentifier, ELEMENT_MAP_INDEX_OF(stickLeftX)));
-            if (nullptr != elements.named.stickLeftY) elements.named.stickLeftY->ContributeFromAnalogValue(controllerState, FilterAndInvertAnalogStickValue(physicalState.sThumbLY), SourceIdentifierForElementMapper(sourceControllerIdentifier, ELEMENT_MAP_INDEX_OF(stickLeftY)));
+            if (nullptr != elements.named.stickLeftX) elements.named.stickLeftX->ContributeFromAnalogValue(controllerState, FilterAnalogStickValue(physicalState[EPhysicalStick::LeftX]), SourceIdentifierForElementMapper(sourceControllerIdentifier, ELEMENT_MAP_INDEX_OF(stickLeftX)));
+            if (nullptr != elements.named.stickLeftY) elements.named.stickLeftY->ContributeFromAnalogValue(controllerState, FilterAndInvertAnalogStickValue(physicalState[EPhysicalStick::LeftY]), SourceIdentifierForElementMapper(sourceControllerIdentifier, ELEMENT_MAP_INDEX_OF(stickLeftY)));
 
-            if (nullptr != elements.named.stickRightX) elements.named.stickRightX->ContributeFromAnalogValue(controllerState, FilterAnalogStickValue(physicalState.sThumbRX), SourceIdentifierForElementMapper(sourceControllerIdentifier, ELEMENT_MAP_INDEX_OF(stickRightX)));
-            if (nullptr != elements.named.stickRightY) elements.named.stickRightY->ContributeFromAnalogValue(controllerState, FilterAndInvertAnalogStickValue(physicalState.sThumbRY), SourceIdentifierForElementMapper(sourceControllerIdentifier, ELEMENT_MAP_INDEX_OF(stickRightY)));
+            if (nullptr != elements.named.stickRightX) elements.named.stickRightX->ContributeFromAnalogValue(controllerState, FilterAnalogStickValue(physicalState[EPhysicalStick::RightX]), SourceIdentifierForElementMapper(sourceControllerIdentifier, ELEMENT_MAP_INDEX_OF(stickRightX)));
+            if (nullptr != elements.named.stickRightY) elements.named.stickRightY->ContributeFromAnalogValue(controllerState, FilterAndInvertAnalogStickValue(physicalState[EPhysicalStick::RightY]), SourceIdentifierForElementMapper(sourceControllerIdentifier, ELEMENT_MAP_INDEX_OF(stickRightY)));
 
-            if (nullptr != elements.named.dpadUp) elements.named.dpadUp->ContributeFromButtonValue(controllerState, (0 != (physicalState.wButtons & XINPUT_GAMEPAD_DPAD_UP)), SourceIdentifierForElementMapper(sourceControllerIdentifier, ELEMENT_MAP_INDEX_OF(dpadUp)));
-            if (nullptr != elements.named.dpadDown) elements.named.dpadDown->ContributeFromButtonValue(controllerState, (0 != (physicalState.wButtons & XINPUT_GAMEPAD_DPAD_DOWN)), SourceIdentifierForElementMapper(sourceControllerIdentifier, ELEMENT_MAP_INDEX_OF(dpadDown)));
-            if (nullptr != elements.named.dpadLeft) elements.named.dpadLeft->ContributeFromButtonValue(controllerState, (0 != (physicalState.wButtons & XINPUT_GAMEPAD_DPAD_LEFT)), SourceIdentifierForElementMapper(sourceControllerIdentifier, ELEMENT_MAP_INDEX_OF(dpadLeft)));
-            if (nullptr != elements.named.dpadRight) elements.named.dpadRight->ContributeFromButtonValue(controllerState, (0 != (physicalState.wButtons & XINPUT_GAMEPAD_DPAD_RIGHT)), SourceIdentifierForElementMapper(sourceControllerIdentifier, ELEMENT_MAP_INDEX_OF(dpadRight)));
+            if (nullptr != elements.named.dpadUp) elements.named.dpadUp->ContributeFromButtonValue(controllerState, physicalState[EPhysicalButton::DpadUp], SourceIdentifierForElementMapper(sourceControllerIdentifier, ELEMENT_MAP_INDEX_OF(dpadUp)));
+            if (nullptr != elements.named.dpadDown) elements.named.dpadDown->ContributeFromButtonValue(controllerState, physicalState[EPhysicalButton::DpadDown], SourceIdentifierForElementMapper(sourceControllerIdentifier, ELEMENT_MAP_INDEX_OF(dpadDown)));
+            if (nullptr != elements.named.dpadLeft) elements.named.dpadLeft->ContributeFromButtonValue(controllerState, physicalState[EPhysicalButton::DpadLeft], SourceIdentifierForElementMapper(sourceControllerIdentifier, ELEMENT_MAP_INDEX_OF(dpadLeft)));
+            if (nullptr != elements.named.dpadRight) elements.named.dpadRight->ContributeFromButtonValue(controllerState, physicalState[EPhysicalButton::DpadRight], SourceIdentifierForElementMapper(sourceControllerIdentifier, ELEMENT_MAP_INDEX_OF(dpadRight)));
 
-            if (nullptr != elements.named.triggerLT) elements.named.triggerLT->ContributeFromTriggerValue(controllerState, physicalState.bLeftTrigger, SourceIdentifierForElementMapper(sourceControllerIdentifier, ELEMENT_MAP_INDEX_OF(triggerLT)));
-            if (nullptr != elements.named.triggerRT) elements.named.triggerRT->ContributeFromTriggerValue(controllerState, physicalState.bRightTrigger, SourceIdentifierForElementMapper(sourceControllerIdentifier, ELEMENT_MAP_INDEX_OF(triggerRT)));
+            if (nullptr != elements.named.triggerLT) elements.named.triggerLT->ContributeFromTriggerValue(controllerState, physicalState[EPhysicalTrigger::LT], SourceIdentifierForElementMapper(sourceControllerIdentifier, ELEMENT_MAP_INDEX_OF(triggerLT)));
+            if (nullptr != elements.named.triggerRT) elements.named.triggerRT->ContributeFromTriggerValue(controllerState, physicalState[EPhysicalTrigger::RT], SourceIdentifierForElementMapper(sourceControllerIdentifier, ELEMENT_MAP_INDEX_OF(triggerRT)));
 
-            if (nullptr != elements.named.buttonA) elements.named.buttonA->ContributeFromButtonValue(controllerState, (0 != (physicalState.wButtons & XINPUT_GAMEPAD_A)), SourceIdentifierForElementMapper(sourceControllerIdentifier, ELEMENT_MAP_INDEX_OF(buttonA)));
-            if (nullptr != elements.named.buttonB) elements.named.buttonB->ContributeFromButtonValue(controllerState, (0 != (physicalState.wButtons & XINPUT_GAMEPAD_B)), SourceIdentifierForElementMapper(sourceControllerIdentifier, ELEMENT_MAP_INDEX_OF(buttonB)));
-            if (nullptr != elements.named.buttonX) elements.named.buttonX->ContributeFromButtonValue(controllerState, (0 != (physicalState.wButtons & XINPUT_GAMEPAD_X)), SourceIdentifierForElementMapper(sourceControllerIdentifier, ELEMENT_MAP_INDEX_OF(buttonX)));
-            if (nullptr != elements.named.buttonY) elements.named.buttonY->ContributeFromButtonValue(controllerState, (0 != (physicalState.wButtons & XINPUT_GAMEPAD_Y)), SourceIdentifierForElementMapper(sourceControllerIdentifier, ELEMENT_MAP_INDEX_OF(buttonY)));
+            if (nullptr != elements.named.buttonA) elements.named.buttonA->ContributeFromButtonValue(controllerState, physicalState[EPhysicalButton::A], SourceIdentifierForElementMapper(sourceControllerIdentifier, ELEMENT_MAP_INDEX_OF(buttonA)));
+            if (nullptr != elements.named.buttonB) elements.named.buttonB->ContributeFromButtonValue(controllerState, physicalState[EPhysicalButton::B], SourceIdentifierForElementMapper(sourceControllerIdentifier, ELEMENT_MAP_INDEX_OF(buttonB)));
+            if (nullptr != elements.named.buttonX) elements.named.buttonX->ContributeFromButtonValue(controllerState, physicalState[EPhysicalButton::X], SourceIdentifierForElementMapper(sourceControllerIdentifier, ELEMENT_MAP_INDEX_OF(buttonX)));
+            if (nullptr != elements.named.buttonY) elements.named.buttonY->ContributeFromButtonValue(controllerState, physicalState[EPhysicalButton::Y], SourceIdentifierForElementMapper(sourceControllerIdentifier, ELEMENT_MAP_INDEX_OF(buttonY)));
 
-            if (nullptr != elements.named.buttonLB) elements.named.buttonLB->ContributeFromButtonValue(controllerState, (0 != (physicalState.wButtons & XINPUT_GAMEPAD_LEFT_SHOULDER)), SourceIdentifierForElementMapper(sourceControllerIdentifier, ELEMENT_MAP_INDEX_OF(buttonLB)));
-            if (nullptr != elements.named.buttonRB) elements.named.buttonRB->ContributeFromButtonValue(controllerState, (0 != (physicalState.wButtons & XINPUT_GAMEPAD_RIGHT_SHOULDER)), SourceIdentifierForElementMapper(sourceControllerIdentifier, ELEMENT_MAP_INDEX_OF(buttonRB)));
+            if (nullptr != elements.named.buttonLB) elements.named.buttonLB->ContributeFromButtonValue(controllerState, physicalState[EPhysicalButton::LB], SourceIdentifierForElementMapper(sourceControllerIdentifier, ELEMENT_MAP_INDEX_OF(buttonLB)));
+            if (nullptr != elements.named.buttonRB) elements.named.buttonRB->ContributeFromButtonValue(controllerState, physicalState[EPhysicalButton::RB], SourceIdentifierForElementMapper(sourceControllerIdentifier, ELEMENT_MAP_INDEX_OF(buttonRB)));
 
-            if (nullptr != elements.named.buttonBack) elements.named.buttonBack->ContributeFromButtonValue(controllerState, (0 != (physicalState.wButtons & XINPUT_GAMEPAD_BACK)), SourceIdentifierForElementMapper(sourceControllerIdentifier, ELEMENT_MAP_INDEX_OF(buttonBack)));
-            if (nullptr != elements.named.buttonStart) elements.named.buttonStart->ContributeFromButtonValue(controllerState, (0 != (physicalState.wButtons & XINPUT_GAMEPAD_START)), SourceIdentifierForElementMapper(sourceControllerIdentifier, ELEMENT_MAP_INDEX_OF(buttonStart)));
+            if (nullptr != elements.named.buttonBack) elements.named.buttonBack->ContributeFromButtonValue(controllerState, physicalState[EPhysicalButton::Back], SourceIdentifierForElementMapper(sourceControllerIdentifier, ELEMENT_MAP_INDEX_OF(buttonBack)));
+            if (nullptr != elements.named.buttonStart) elements.named.buttonStart->ContributeFromButtonValue(controllerState, physicalState[EPhysicalButton::Start], SourceIdentifierForElementMapper(sourceControllerIdentifier, ELEMENT_MAP_INDEX_OF(buttonStart)));
 
-            if (nullptr != elements.named.buttonLS) elements.named.buttonLS->ContributeFromButtonValue(controllerState, (0 != (physicalState.wButtons & XINPUT_GAMEPAD_LEFT_THUMB)), SourceIdentifierForElementMapper(sourceControllerIdentifier, ELEMENT_MAP_INDEX_OF(buttonLS)));
-            if (nullptr != elements.named.buttonRS) elements.named.buttonRS->ContributeFromButtonValue(controllerState, (0 != (physicalState.wButtons & XINPUT_GAMEPAD_RIGHT_THUMB)), SourceIdentifierForElementMapper(sourceControllerIdentifier, ELEMENT_MAP_INDEX_OF(buttonRS)));
+            if (nullptr != elements.named.buttonLS) elements.named.buttonLS->ContributeFromButtonValue(controllerState, physicalState[EPhysicalButton::LS], SourceIdentifierForElementMapper(sourceControllerIdentifier, ELEMENT_MAP_INDEX_OF(buttonLS)));
+            if (nullptr != elements.named.buttonRS) elements.named.buttonRS->ContributeFromButtonValue(controllerState, physicalState[EPhysicalButton::RS], SourceIdentifierForElementMapper(sourceControllerIdentifier, ELEMENT_MAP_INDEX_OF(buttonRS)));
 
             // Once all contributions have been committed, saturate all axis values at the extreme ends of the allowed range.
             // Doing this at the end means that intermediate contributions are computed with much more range than the controller is allowed to report, which can increase accuracy when there are multiple interfering mappers contributing to axes.

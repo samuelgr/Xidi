@@ -17,7 +17,6 @@
 #include "ControllerTypes.h"
 #include "ElementMapper.h"
 #include "ForceFeedbackTypes.h"
-#include "ImportApiXInput.h"
 
 #include <memory>
 #include <string_view>
@@ -36,14 +35,14 @@ namespace Xidi
 {
     namespace Controller
     {
-        /// Maps an XInput controller layout to a virtual controller layout.
+        /// Maps a physical controller layout to a virtual controller layout.
         /// Each instance of this class represents a different virtual controller layout.
         class Mapper
         {
         public:
             // -------- TYPE DEFINITIONS ----------------------------------- //
 
-            /// XInput controller element mappers, one per controller element.
+            /// Physical controller element mappers, one per controller element.
             /// For controller elements that are not used, a value of `nullptr` may be used instead.
             struct SElementMap
             {
@@ -69,7 +68,7 @@ namespace Xidi
                 std::unique_ptr<const IElementMapper> buttonRS = nullptr;
             };
 
-            /// XInput force feedback actuator mappers, one per force feedback actuator.
+            /// Physical force feedback actuator mappers, one per force feedback actuator.
             /// For force feedback actuators that are not used, the `valid` bit is set to 0.
             /// Names correspond to the enumerators in the #ForceFeedback::EActuator enumeration.
             struct SForceFeedbackActuatorMap
@@ -339,7 +338,7 @@ namespace Xidi
             /// @param [in] physicalState Physical controller state from which to read.
             /// @param [in] sourceControllerIdentifier Opaque identifier of the physical controller associated with the state being mapped.
             /// @return Controller state object that was filled as a result of the mapping.
-            SState MapStatePhysicalToVirtual(XINPUT_GAMEPAD physicalState, uint32_t sourceControllerIdentifier) const;
+            SState MapStatePhysicalToVirtual(SPhysicalState physicalState, uint32_t sourceControllerIdentifier) const;
 
             /// Maps from physical controller state to virtual controller state in which the physical controller is completely neutral and possibly even disconnected.
             /// Does not apply any properties configured by the application, such as deadzone and range.

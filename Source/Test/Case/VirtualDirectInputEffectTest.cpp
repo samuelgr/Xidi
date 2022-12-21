@@ -30,6 +30,7 @@ namespace XidiTest
     using ::Xidi::Controller::ButtonMapper;
     using ::Xidi::Controller::EAxis;
     using ::Xidi::Controller::EButton;
+    using ::Xidi::Controller::EPhysicalDeviceStatus;
     using ::Xidi::Controller::EPovDirection;
     using ::Xidi::Controller::Mapper;
     using ::Xidi::Controller::PovMapper;
@@ -139,8 +140,7 @@ namespace XidiTest
 
     /// Neutral physical state for use with mock physical controller objects.
     static constexpr SPhysicalState kNeutralPhysicalState = {
-        .errorCode = ERROR_SUCCESS,
-        .state = {.dwPacketNumber = 1}
+        .deviceStatus = EPhysicalDeviceStatus::Ok,
     };
 
 
