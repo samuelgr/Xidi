@@ -12,16 +12,11 @@
 
 #pragma once
 
-#include "ApiWindows.h"
-
 #include <algorithm>
 #include <array>
 #include <bitset>
 #include <cstdint>
-#include <cstdlib>
-#include <cstring>
 #include <type_traits>
-#include <xinput.h>
 
 
 namespace Xidi
@@ -33,7 +28,7 @@ namespace Xidi
         /// Number of physical controllers that the underlying system supports.
         /// Not all will necessarily be physically present at any given time.
         /// Maximum allowable controller identifier is one less than this value.
-        inline constexpr DWORD kPhysicalControllerCount = XUSER_MAX_COUNT;
+        inline constexpr uint16_t kPhysicalControllerCount = 4;
 
         /// Maximum possible reading from an XInput controller's analog stick.
         /// Value taken from XInput documentation.

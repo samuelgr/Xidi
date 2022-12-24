@@ -330,10 +330,10 @@ namespace Xidi
 
             // Place the names into the correct spots for the application to read.
             // These will be in HKCU\System\CurrentControlSet\Control\MediaProperties\PrivateProperties\Joystick\OEM\Xidi# and contain the name of the controller.
-            for (DWORD i = 0; i < _countof(controllers); ++i)
+            for (int i = 0; i < _countof(controllers); ++i)
             {
                 wchar_t valueData[64];
-                const int valueDataCount = FillVirtualControllerName(valueData, _countof(valueData), i);
+                const int valueDataCount = FillVirtualControllerName(valueData, _countof(valueData), (Controller::TControllerIdentifier)i);
 
                 swprintf_s(registryPath, _countof(registryPath), REGSTR_PATH_JOYOEM L"\\%s%u", registryKeyName, i + 1);
                 result = RegCreateKeyEx(HKEY_CURRENT_USER, registryPath, 0, nullptr, REG_OPTION_VOLATILE, KEY_SET_VALUE, nullptr, &registryKey, nullptr);
@@ -353,10 +353,10 @@ namespace Xidi
             result = RegCreateKeyEx(HKEY_CURRENT_USER, registryPath, 0, nullptr, REG_OPTION_VOLATILE, KEY_SET_VALUE, nullptr, &registryKey, nullptr);
             if (ERROR_SUCCESS != result) return;
 
-            for (DWORD i = 0; i < joyIndexMap.size(); ++i)
+            for (size_t i = 0; i < joyIndexMap.size(); ++i)
             {
                 wchar_t valueName[64];
-                const int valueNameCount = swprintf_s(valueName, _countof(valueName), REGSTR_VAL_JOYNOEMNAME, (i + 1));
+                const int valueNameCount = swprintf_s(valueName, _countof(valueName), REGSTR_VAL_JOYNOEMNAME, ((int)i + 1));
 
                 if (joyIndexMap[i] < 0)
                 {
@@ -477,7 +477,7 @@ namespace Xidi
             if (realJoyID < 0)
             {
                 // Querying an XInput controller.
-                const DWORD xJoyID = (DWORD)((-realJoyID) - 1);
+                const Controller::TControllerIdentifier xJoyID = (Controller::TControllerIdentifier)((-realJoyID) - 1);
 
                 if (sizeof(*pjc) != cbjc)
                 {
@@ -568,7 +568,7 @@ namespace Xidi
             if (realJoyID < 0)
             {
                 // Querying an XInput controller.
-                const DWORD xJoyID = (DWORD)((-realJoyID) - 1);
+                const Controller::TControllerIdentifier xJoyID = (Controller::TControllerIdentifier)((-realJoyID) - 1);
 
                 const Controller::SState kJoyStateData = controllers[xJoyID]->GetState();
 
@@ -608,7 +608,7 @@ namespace Xidi
             if (realJoyID < 0)
             {
                 // Querying an XInput controller.
-                const DWORD xJoyID = (DWORD)((-realJoyID) - 1);
+                const Controller::TControllerIdentifier xJoyID = (Controller::TControllerIdentifier)((-realJoyID) - 1);
 
                 if (sizeof(*pji) != pji->dwSize)
                 {
@@ -631,7 +631,8 @@ namespace Xidi
                 pji->dwUpos = kJoyStateData[Controller::EAxis::RotY];
                 pji->dwVpos = kJoyStateData[Controller::EAxis::RotX];
                 pji->dwButtons = 0;
-                for (DWORD i = 0; i < kJoyStateData.button.size(); ++i)
+
+                for (size_t i = 0; i < kJoyStateData.button.size(); ++i)
                 {
                     if (true == kJoyStateData.button[i])
                         pji->dwButtons |= (1 << i);

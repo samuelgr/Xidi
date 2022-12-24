@@ -140,7 +140,7 @@ namespace Xidi
     template <ECharMode charMode> HRESULT STDMETHODCALLTYPE WrapperIDirectInput<charMode>::CreateDevice(REFGUID rguid, DirectInputType<charMode>::EarliestIDirectInputDeviceType** lplpDirectInputDevice, LPUNKNOWN pUnkOuter)
     {
         // Check if the specified instance GUID is an Xidi virtual controller GUID.
-        const std::optional<DWORD> maybeVirtualControllerId = VirtualControllerIdFromInstanceGuid(rguid);
+        const std::optional<Controller::TControllerIdentifier> maybeVirtualControllerId = VirtualControllerIdFromInstanceGuid(rguid);
 
         if (false == maybeVirtualControllerId.has_value())
         {
@@ -177,7 +177,7 @@ namespace Xidi
         }
         else
         {
-            const DWORD kVirtualControllerId = maybeVirtualControllerId.value();
+            const Controller::TControllerIdentifier kVirtualControllerId = maybeVirtualControllerId.value();
 
             // Is a virtual controller GUID, so create a virtual controller wrapped with a DirectInput interface.
             Message::OutputFormatted(Message::ESeverity::Info, L"Binding to Xidi virtual controller %u.", (kVirtualControllerId + 1));
@@ -303,7 +303,7 @@ namespace Xidi
     template <ECharMode charMode> HRESULT STDMETHODCALLTYPE WrapperIDirectInput<charMode>::GetDeviceStatus(REFGUID rguidInstance)
     {
         // Check if the specified instance GUID is an XInput GUID.
-        const std::optional<DWORD> maybeVirtualControllerId = VirtualControllerIdFromInstanceGuid(rguidInstance);
+        const std::optional<Controller::TControllerIdentifier> maybeVirtualControllerId = VirtualControllerIdFromInstanceGuid(rguidInstance);
 
         if (false == maybeVirtualControllerId.has_value())
         {

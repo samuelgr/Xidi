@@ -33,7 +33,7 @@ namespace Xidi
     /// Determines if the specified controller supports force feedback.
     /// @param [in] controllerId Identifier of the controller of interest.
     /// @return `true` if so, `false` otherwise.
-    static inline bool DoesControllerSupportForceFeedback(DWORD controllerId)
+    static inline bool DoesControllerSupportForceFeedback(Controller::TControllerIdentifier controllerId)
     {
         const Controller::Mapper* const mapper = Controller::Mapper::GetConfigured((Controller::TControllerIdentifier)controllerId);
         if (nullptr == mapper)
@@ -46,9 +46,9 @@ namespace Xidi
     /// Does not verify that the supplied GUID actually represents an XInput instance GUID.
     /// @param [in] xguid Xidi virtual controller's instance GUID.
     /// @return Instance index (a.k.a. XInput player number).
-    static inline DWORD ExtractVirtualControllerInstanceFromGuid(REFGUID xguid)
+    static inline uint32_t ExtractVirtualControllerInstanceFromGuid(REFGUID xguid)
     {
-        return (*((DWORD*)(&xguid.Data4[4])));
+        return (*((uint32_t*)(&xguid.Data4[4])));
     }
 
 
@@ -142,11 +142,11 @@ namespace Xidi
     template <typename DeviceInstanceType> BOOL EnumerateVirtualControllers(BOOL(FAR PASCAL* lpCallback)(const DeviceInstanceType*, LPVOID), LPVOID pvRef, bool forceFeedbackRequired)
     {
         std::unique_ptr<DeviceInstanceType> instanceInfo = std::make_unique<DeviceInstanceType>();
-        DWORD numControllersToEnumerate = Controller::kPhysicalControllerCount;
+        uint32_t numControllersToEnumerate = Controller::kPhysicalControllerCount;
 
         const uint64_t kActiveVirtualControllerMask = Globals::GetConfigurationData().GetFirstIntegerValue(Strings::kStrConfigurationSectionWorkarounds, Strings::kStrConfigurationSettingWorkaroundsActiveVirtualControllerMask).value_or(UINT64_MAX);
 
-        for (DWORD idx = 0; idx < numControllersToEnumerate; ++idx)
+        for (uint32_t idx = 0; idx < numControllersToEnumerate; ++idx)
         {
             if ((true == forceFeedbackRequired) && (false == DoesControllerSupportForceFeedback(idx)))
                 continue;
@@ -171,7 +171,7 @@ namespace Xidi
 
     // ---------
 
-    template <typename DeviceInstanceType> void FillVirtualControllerInfo(DeviceInstanceType& instanceInfo, DWORD controllerId)
+    template <typename DeviceInstanceType> void FillVirtualControllerInfo(DeviceInstanceType& instanceInfo, Controller::TControllerIdentifier controllerId)
     {
         instanceInfo.guidInstance = VirtualControllerInstanceGuid(controllerId);
         instanceInfo.guidProduct = kVirtualControllerProductGuid;
@@ -193,12 +193,12 @@ namespace Xidi
         }
     }
 
-    template void FillVirtualControllerInfo(DIDEVICEINSTANCEA&, DWORD);
-    template void FillVirtualControllerInfo(DIDEVICEINSTANCEW&, DWORD);
+    template void FillVirtualControllerInfo(DIDEVICEINSTANCEA&, Controller::TControllerIdentifier);
+    template void FillVirtualControllerInfo(DIDEVICEINSTANCEW&, Controller::TControllerIdentifier);
 
     // ---------
 
-    template <> int FillVirtualControllerName<LPSTR>(LPSTR buf, size_t bufcount, DWORD controllerIndex)
+    template <> int FillVirtualControllerName<LPSTR>(LPSTR buf, size_t bufcount, Controller::TControllerIdentifier controllerIndex)
     {
         TemporaryBuffer<CHAR> xidiControllerNameFormatString;
         LoadStringA(Globals::GetInstanceHandle(), IDS_XIDI_CONTROLLERIDENTIFICATION_CONTROLLER_NAME_FORMAT, xidiControllerNameFormatString.Data(), xidiControllerNameFormatString.Capacity());
@@ -206,7 +206,7 @@ namespace Xidi
         return sprintf_s(buf, bufcount, (LPCSTR)xidiControllerNameFormatString.Data(), (controllerIndex + 1));
     }
 
-    template <> int FillVirtualControllerName<LPWSTR>(LPWSTR buf, size_t bufcount, DWORD controllerIndex)
+    template <> int FillVirtualControllerName<LPWSTR>(LPWSTR buf, size_t bufcount, Controller::TControllerIdentifier controllerIndex)
     {
         TemporaryBuffer<WCHAR> xidiControllerNameFormatString;
         LoadStringW(Globals::GetInstanceHandle(), IDS_XIDI_CONTROLLERIDENTIFICATION_CONTROLLER_NAME_FORMAT, xidiControllerNameFormatString.Data(), xidiControllerNameFormatString.Capacity());
@@ -223,15 +223,15 @@ namespace Xidi
 
     // ---------
 
-    std::optional<DWORD> VirtualControllerIdFromInstanceGuid(REFGUID instanceGUID)
+    std::optional<Controller::TControllerIdentifier> VirtualControllerIdFromInstanceGuid(REFGUID instanceGUID)
     {
-        DWORD xindex = ExtractVirtualControllerInstanceFromGuid(instanceGUID);
+        uint32_t xindex = ExtractVirtualControllerInstanceFromGuid(instanceGUID);
 
         if (xindex < Controller::kPhysicalControllerCount)
         {
             GUID realXInputGUID = VirtualControllerInstanceGuid(xindex);
             if (realXInputGUID == instanceGUID)
-                return xindex;
+                return (Controller::TControllerIdentifier)xindex;
         }
 
         return std::nullopt;
