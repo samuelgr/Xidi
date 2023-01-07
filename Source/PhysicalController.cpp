@@ -33,16 +33,86 @@ namespace Xidi
 {
     namespace Controller
     {
+        // -------- INTERNAL TYPES ----------------------------------------- //
+
+        /// Wraps controller state data in a way that is concurrency-safe following a single-producer multiple-consumer threading model.
+        /// @tparam StateType Controller state data structure type.
+        template <typename StateType> class ConcurrencySafeStateDataWrapper
+        {
+        private:
+            // -------- INSTANCE VARIABLES --------------------------------- //
+
+            /// State data itself.
+            StateType stateData;
+
+            /// Condition variable used to wait for updates to the state data.
+            std::condition_variable_any stateUpdateNotifier;
+
+            /// Mutex for protecting against concurrent accesses to the state data structure.
+            std::shared_mutex stateMutex;
+
+
+        public:
+            // -------- INSTANCE METHODS ----------------------------------- //
+
+            /// Retrieves and returns the stored state data in a concurrency-safe way.
+            /// @return Stored state data.
+            inline StateType GetStateData(void)
+            {
+                std::shared_lock lock(stateMutex);
+                return stateData;
+            }
+
+            /// Writes to the stored state data in a concurrency-safe way.
+            /// @param [in] newStateData New state data to be stored.
+            inline void SetStateData(const StateType& newStateData)
+            {
+                std::unique_lock lock(stateMutex);
+                stateData = newStateData;
+            }
+
+            /// Updates the stored state data in a concurrency-safe way and notifies all waiting threads of the state change.
+            /// Operations are conditional on the new state data being different than the currently-stored state data.
+            /// @param [in] newStateData New state data to be stored.
+            inline void UpdateStateData(const StateType& newStateData)
+            {
+                // This unguarded read is safe because by design only one thread, the one that produces updated state data, ever invokes this method.
+                // All other threads use guarded reads.
+                if (newStateData != stateData)
+                {
+                    SetStateData(newStateData);
+                    stateUpdateNotifier.notify_all();
+                }
+            }
+
+            /// Waits for the stored state data to be updated.
+            /// This function is fully concurrency-safe. If needed, the caller can interrupt the wait using a stop token.
+            /// @param [in,out] externalStateData On input, used to identify the last-known state data for the calling thread. On output, filled in with the updated state data.
+            /// @param [in] stopToken Token that allows the weight to be interrupted.
+            /// @return `true` if the wait succeeded and the state data structure was updated, `false` if no updates were made due to invalid parameter or interrupted wait.
+            inline bool WaitForStateDataChange(StateType& externalStateData, std::stop_token stopToken)
+            {
+                std::shared_lock lock(stateMutex);
+
+                stateUpdateNotifier.wait(lock, stopToken, [this, &externalStateData]() -> bool
+                    {
+                        return (stateData != externalStateData);
+                    }
+                );
+
+                if (stopToken.stop_requested())
+                    return false;
+
+                externalStateData = stateData;
+                return true;
+            }
+        };
+
+
         // -------- INTERNAL VARIABLES ------------------------------------- //
 
         /// State data for each of the possible physical controllers.
-        static SPhysicalState physicalControllerState[kPhysicalControllerCount];
-
-        /// Condition variables used to wait for updates to the physical controller state information, one per possible physical controller.
-        static std::condition_variable_any physicalControllerUpdateNotifier[kPhysicalControllerCount];
-
-        /// Mutex objects for protecting against concurrent accesses to the shared physical controller state data structure.
-        static std::shared_mutex physicalControllerStateMutex[kPhysicalControllerCount];
+        static ConcurrencySafeStateDataWrapper<SPhysicalState> physicalControllerState[kPhysicalControllerCount];
 
         /// Per-controller force feedback device buffer objects.
         /// These objects are not safe for dynamic initialization, so they are initialized later by pointer.
@@ -183,19 +253,7 @@ namespace Xidi
                 else
                     Sleep(kPhysicalErrorBackoffPeriodMilliseconds);
 
-                newPhysicalState = ReadPhysicalControllerState(controllerIdentifier);
-
-                // Unguarded read is safe because all other threads only perform guarded reads.
-                // Update happens within the block and requires an exclusive lock.
-                if (newPhysicalState != physicalControllerState[controllerIdentifier])
-                {
-                    do {
-                        std::unique_lock lock(physicalControllerStateMutex[controllerIdentifier]);
-                        physicalControllerState[controllerIdentifier] = newPhysicalState;
-                    } while (false);
-
-                    physicalControllerUpdateNotifier[controllerIdentifier].notify_all();
-                }
+                physicalControllerState[controllerIdentifier].UpdateStateData(ReadPhysicalControllerState(controllerIdentifier));
             }
         }
 
@@ -260,7 +318,7 @@ namespace Xidi
                 {
                     // Initialize controller state data structures.
                     for (auto controllerIdentifier = 0; controllerIdentifier < _countof(physicalControllerState); ++controllerIdentifier)
-                        physicalControllerState[controllerIdentifier] = ReadPhysicalControllerState(controllerIdentifier);
+                        physicalControllerState[controllerIdentifier].SetStateData(ReadPhysicalControllerState(controllerIdentifier));
 
                     // Ensure the system timer resolution is suitable for the desired polling frequency.
                     TIMECAPS timeCaps;
@@ -314,9 +372,7 @@ namespace Xidi
         SPhysicalState GetCurrentPhysicalControllerState(TControllerIdentifier controllerIdentifier)
         {
             Initialize();
-            
-            std::shared_lock lock(physicalControllerStateMutex[controllerIdentifier]);
-            return physicalControllerState[controllerIdentifier];
+            return physicalControllerState[controllerIdentifier].GetStateData();
         }
 
         // --------
@@ -362,18 +418,7 @@ namespace Xidi
             if (controllerIdentifier >= kPhysicalControllerCount)
                 return false;
 
-            std::shared_lock lock(physicalControllerStateMutex[controllerIdentifier]);
-            physicalControllerUpdateNotifier[controllerIdentifier].wait(lock, stopToken, [controllerIdentifier, &state]() -> bool
-                {
-                    return (physicalControllerState[controllerIdentifier] != state);
-                }
-            );
-
-            if (stopToken.stop_requested())
-                return false;
-
-            state = physicalControllerState[controllerIdentifier];
-            return true;
+            return physicalControllerState[controllerIdentifier].WaitForStateDataChange(state, stopToken);
         }
     }
 }
