@@ -46,7 +46,7 @@ enum class ECharMode
 #define DINPUT_VER_MIN                          0x0800
 #define DINPUT_VER_MAX                          0x08ff
 
-#define DINPUT_DEVTYPE_XINPUT_GAMEPAD           ((DI8DEVTYPE_GAMEPAD) | ((DI8DEVTYPEGAMEPAD_STANDARD) << 8))
+#define DINPUT_DEVTYPE_XINPUT_GAMEPAD           ((DIDEVTYPE_HID) | (DI8DEVTYPE_GAMEPAD) | ((DI8DEVTYPEGAMEPAD_STANDARD) << 8))
 
 typedef IDirectInput8                           EarliestIDirectInput;
 typedef IDirectInput8                           LatestIDirectInput;
@@ -73,7 +73,7 @@ typedef IDirectInputDevice8W                    LatestIDirectInputDeviceW;
 #define DINPUT_VER_MIN                          0x0200
 #define DINPUT_VER_MAX                          0x07ff
 
-#define DINPUT_DEVTYPE_XINPUT_GAMEPAD           ((DIDEVTYPE_JOYSTICK) | ((DIDEVTYPEJOYSTICK_GAMEPAD) << 8))
+#define DINPUT_DEVTYPE_XINPUT_GAMEPAD           ((DIDEVTYPE_HID) | (DIDEVTYPE_JOYSTICK) | ((DIDEVTYPEJOYSTICK_GAMEPAD) << 8))
 
 typedef IDirectInput                            EarliestIDirectInput;
 typedef IDirectInput7                           LatestIDirectInput;

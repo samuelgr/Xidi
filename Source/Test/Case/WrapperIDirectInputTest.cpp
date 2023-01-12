@@ -253,11 +253,12 @@ namespace XidiTest
         /// @return `true` if the instance is a Xidi virtual controller, `false` otherwise.
         static bool IsXidiVirtualControllerInstance(const DirectInputType<kDirectInputTestCharMode>::DeviceInstanceType& deviceInstance)
         {
-            if (kVirtualControllerProductGuid != deviceInstance.guidProduct)
+            const auto maybeVirtualControllerId = VirtualControllerIdFromInstanceGuid(deviceInstance.guidInstance);
+            if (false == maybeVirtualControllerId.has_value())
                 return false;
 
-            static constexpr GUID kReferenceInstanceGuid = kVirtualControllerInstanceBaseGuid;
-            if (0 != memcmp(&deviceInstance.guidInstance, &kReferenceInstanceGuid, offsetof(GUID, Data4[4])))
+            const GUID expectedVirtualControllerGuid = VirtualControllerGuid(maybeVirtualControllerId.value());
+            if ((deviceInstance.guidProduct != expectedVirtualControllerGuid) || (deviceInstance.guidInstance != expectedVirtualControllerGuid))
                 return false;
 
             return true;

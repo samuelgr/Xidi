@@ -1043,7 +1043,7 @@ namespace XidiTest
         } while (false);
 
 
-        // Logical Range (read-only)
+        // Logical range (read-only)
         do {
             constexpr DIPROPHEADER kLogicalRangeHeader = {.dwSize = sizeof(DIPROPRANGE), .dwHeaderSize = sizeof(DIPROPHEADER), .dwObj = DIDFT_MAKEINSTANCE(0) | DIDFT_ABSAXIS, .dwHow = DIPH_BYID};
             constexpr DIPROPRANGE kExpectedLogicalRange = {.diph = kLogicalRangeHeader, .lMin = Controller::kAnalogValueMin, .lMax = Controller::kAnalogValueMax};
@@ -1053,7 +1053,7 @@ namespace XidiTest
             TEST_ASSERT(0 == memcmp(&actualLogicalRange, &kExpectedLogicalRange, sizeof(kExpectedLogicalRange)));
         } while (false);
 
-        // Physical Range (read-only)
+        // Physical range (read-only)
         do {
             constexpr DIPROPHEADER kPhysicalRangeHeader = {.dwSize = sizeof(DIPROPRANGE), .dwHeaderSize = sizeof(DIPROPHEADER), .dwObj = DIDFT_MAKEINSTANCE(0) | DIDFT_ABSAXIS, .dwHow = DIPH_BYID};
             constexpr DIPROPRANGE kExpectedPhysicalRange = {.diph = kPhysicalRangeHeader, .lMin = Controller::kAnalogValueMin, .lMax = Controller::kAnalogValueMax};
@@ -1061,6 +1061,37 @@ namespace XidiTest
             TEST_ASSERT(FAILED(diController.SetProperty(DIPROP_PHYSICALRANGE, (LPCDIPROPHEADER)&kExpectedPhysicalRange)));
             TEST_ASSERT(DI_OK == diController.GetProperty(DIPROP_PHYSICALRANGE, (LPDIPROPHEADER)&actualPhysicalRange));
             TEST_ASSERT(0 == memcmp(&actualPhysicalRange, &kExpectedPhysicalRange, sizeof(kExpectedPhysicalRange)));
+        } while (false);
+
+        // Instance and product name (writes are accepted but ignored)
+        do {
+            constexpr DIPROPHEADER kNameHeader = {.dwSize = sizeof(DIPROPSTRING), .dwHeaderSize = sizeof(DIPROPHEADER), .dwObj = 0, .dwHow = DIPH_DEVICE};
+
+            DIPROPSTRING expectedName = {.diph = kNameHeader};
+            FillVirtualControllerName(expectedName.wsz, _countof(expectedName.wsz), diController.GetVirtualController().GetIdentifier());
+
+            constexpr DIPROPSTRING kNameToSet = {.diph = kNameHeader, .wsz = L"Name to be ignored"};
+            TEST_ASSERT(DI_OK == diController.SetProperty(DIPROP_INSTANCENAME, (LPCDIPROPHEADER)&kNameToSet));
+            TEST_ASSERT(DI_OK == diController.SetProperty(DIPROP_PRODUCTNAME, (LPCDIPROPHEADER)&kNameToSet));
+
+            DIPROPSTRING actualName = {.diph = kNameHeader};
+            TEST_ASSERT(DI_OK == diController.GetProperty(DIPROP_INSTANCENAME, (LPDIPROPHEADER)&actualName));
+            TEST_ASSERT(0 == wcsncmp(expectedName.wsz, actualName.wsz, _countof(actualName.wsz)));
+            TEST_ASSERT(DI_OK == diController.GetProperty(DIPROP_PRODUCTNAME, (LPDIPROPHEADER)&actualName));
+            TEST_ASSERT(0 == wcsncmp(expectedName.wsz, actualName.wsz, _countof(actualName.wsz)));
+        } while (false);
+
+        // Class GUID and path (read-only)
+        do {
+            constexpr GUID kExpectedClassGuid = VirtualControllerClassGuid();
+            constexpr DIPROPHEADER kClassGuidAndPathHeader = {.dwSize = sizeof(DIPROPGUIDANDPATH), .dwHeaderSize = sizeof(DIPROPHEADER), .dwObj = 0, .dwHow = DIPH_DEVICE};
+
+            constexpr DIPROPGUIDANDPATH kClassGuidAndPathToSet = {.diph = kClassGuidAndPathHeader, .guidClass = kExpectedClassGuid, .wszPath = L"ignoredpath"};
+            TEST_ASSERT(FAILED(diController.SetProperty(DIPROP_GUIDANDPATH, (LPCDIPROPHEADER)&kClassGuidAndPathToSet)));
+
+            DIPROPGUIDANDPATH actualClassGuidAndPath = {.diph = kClassGuidAndPathHeader};
+            TEST_ASSERT(DI_OK == diController.GetProperty(DIPROP_GUIDANDPATH, (LPDIPROPHEADER)&actualClassGuidAndPath));
+            TEST_ASSERT(actualClassGuidAndPath.guidClass == kExpectedClassGuid);
         } while (false);
     }
 
@@ -1204,6 +1235,21 @@ namespace XidiTest
             DIPROPSTRING propPhysicalRange = {.diph = kPhysicalRangeHeader};
             TEST_ASSERT(DIERR_INVALIDPARAM == diController.GetProperty(DIPROP_PHYSICALRANGE, (LPDIPROPHEADER)&propPhysicalRange));
         } while (false);
+
+        // Instance and product name (writes are accepted but ignored)
+        do {
+            constexpr DIPROPHEADER kNameHeader = {.dwSize = sizeof(DIPROPDWORD), .dwHeaderSize = sizeof(DIPROPDWORD), .dwObj = 0, .dwHow = DIPH_DEVICE};
+            DIPROPSTRING propName = {.diph = kNameHeader };
+            TEST_ASSERT(DIERR_INVALIDPARAM == diController.GetProperty(DIPROP_INSTANCENAME, (LPDIPROPHEADER)&propName));
+            TEST_ASSERT(DIERR_INVALIDPARAM == diController.GetProperty(DIPROP_PRODUCTNAME, (LPDIPROPHEADER)&propName));
+        } while (false);
+
+        // Class GUID and path (read-only)
+        do {
+            constexpr DIPROPHEADER kClassGuidAndPathHeader = {.dwSize = sizeof(DIPROPDWORD), .dwHeaderSize = sizeof(DIPROPDWORD), .dwObj = 0, .dwHow = DIPH_DEVICE};
+            DIPROPGUIDANDPATH propClassGuidAndPath = {.diph = kClassGuidAndPathHeader };
+            TEST_ASSERT(DIERR_INVALIDPARAM == diController.GetProperty(DIPROP_GUIDANDPATH, (LPDIPROPHEADER)&propClassGuidAndPath));
+        } while (false);
     }
 
     // Passes nullptr to GetProperty and SetProperty.
@@ -1240,6 +1286,15 @@ namespace XidiTest
 
         // Physical Range (read-only)
         TEST_ASSERT(FAILED(diController.GetProperty(DIPROP_PHYSICALRANGE, nullptr)));
+
+        // Instance and product name (writes are accepted but ignored)
+        TEST_ASSERT(FAILED(diController.SetProperty(DIPROP_INSTANCENAME, nullptr)));
+        TEST_ASSERT(FAILED(diController.GetProperty(DIPROP_INSTANCENAME, nullptr)));
+        TEST_ASSERT(FAILED(diController.SetProperty(DIPROP_PRODUCTNAME, nullptr)));
+        TEST_ASSERT(FAILED(diController.GetProperty(DIPROP_PRODUCTNAME, nullptr)));
+
+        // Class GUID and path (read-only)
+        TEST_ASSERT(FAILED(diController.GetProperty(DIPROP_GUIDANDPATH, nullptr)));
     }
     
     // Exercises properties that Xidi does not use.

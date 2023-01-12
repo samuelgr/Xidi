@@ -173,8 +173,8 @@ namespace Xidi
 
     template <typename DeviceInstanceType> void FillVirtualControllerInfo(DeviceInstanceType& instanceInfo, Controller::TControllerIdentifier controllerId)
     {
-        instanceInfo.guidInstance = VirtualControllerInstanceGuid(controllerId);
-        instanceInfo.guidProduct = kVirtualControllerProductGuid;
+        instanceInfo.guidInstance = VirtualControllerGuid(controllerId);
+        instanceInfo.guidProduct = VirtualControllerGuid(controllerId);
         instanceInfo.dwDevType = DINPUT_DEVTYPE_XINPUT_GAMEPAD;
         FillVirtualControllerName(instanceInfo.tszInstanceName, _countof(instanceInfo.tszInstanceName), controllerId);
         FillVirtualControllerName(instanceInfo.tszProductName, _countof(instanceInfo.tszProductName), controllerId);
@@ -216,10 +216,20 @@ namespace Xidi
 
     // ---------
 
-    void GetProductGuid(GUID& xguid)
+    template <typename StringType> int FillVirtualControllerPath(StringType buf, size_t bufcount, Controller::TControllerIdentifier controllerId)
     {
-        xguid = kVirtualControllerProductGuid;
+        // Paths are not currently meaningful, so just a single null character is used to indicate an empty string path.
+        if (bufcount > 0)
+        {
+            buf[0] = 0;
+            return 1;
+        }
+
+        return 0;
     }
+
+    template int FillVirtualControllerPath(LPSTR buf, size_t bufcount, Controller::TControllerIdentifier controllerId);
+    template int FillVirtualControllerPath(LPWSTR buf, size_t bufcount, Controller::TControllerIdentifier controllerId);
 
     // ---------
 
@@ -229,7 +239,7 @@ namespace Xidi
 
         if (xindex < Controller::kPhysicalControllerCount)
         {
-            GUID realXInputGUID = VirtualControllerInstanceGuid(xindex);
+            GUID realXInputGUID = VirtualControllerGuid(xindex);
             if (realXInputGUID == instanceGUID)
                 return (Controller::TControllerIdentifier)xindex;
         }

@@ -62,6 +62,9 @@
 /// Logs a DirectInput property-related method where the value is provided in a DIPROPRANGE structure and returns.
 #define LOG_PROPERTY_INVOCATION_DIPROPRANGE_AND_RETURN(result, severity, rguidprop, ppropval)   LOG_PROPERTY_INVOCATION_AND_RETURN(result, severity, rguidprop, L", value = { lMin = %ld, lMax = %ld }", ((LPDIPROPRANGE)ppropval)->lMin, ((LPDIPROPRANGE)ppropval)->lMax)
 
+/// Logs a DirectInput property-related method where the value is provided in a DIPROPSTRING structure and returns.
+#define LOG_PROPERTY_INVOCATION_DIPROPSTRING_AND_RETURN(result, severity, rguidprop, ppropval)  LOG_PROPERTY_INVOCATION_AND_RETURN(result, severity, rguidprop, L", value = { wsz = %s }", ((LPDIPROPSTRING)ppropval)->wsz)
+
 
 namespace Xidi
 {
@@ -280,6 +283,35 @@ namespace Xidi
             if (sizeof(DIPROPRANGE) != pdiph->dwSize)
             {
                 Message::OutputFormatted(Message::ESeverity::Warning, L"Rejected invalid property header for %s: Incorrect size for DIPROPRANGE (expected %u, got %u).", PropertyGuidString(rguidProp), (unsigned int)sizeof(DIPROPRANGE), (unsigned int)pdiph->dwSize);
+                return false;
+            }
+            break;
+
+        case ((size_t)&DIPROP_INSTANCENAME):
+        case ((size_t)&DIPROP_PRODUCTNAME):
+            // Instance and product name properties use DIPROPSTRING and are exclusively device-wide properties.
+            if (DIPH_DEVICE != pdiph->dwHow)
+            {
+                Message::OutputFormatted(Message::ESeverity::Warning, L"Rejected invalid property header for %s: Incorrect object identification method for this property (expected %s, got %s).", PropertyGuidString(rguidProp), IdentificationMethodString(DIPH_DEVICE), IdentificationMethodString(pdiph->dwHow));
+                return false;
+            }
+            else if (sizeof(DIPROPSTRING) != pdiph->dwSize)
+            {
+                Message::OutputFormatted(Message::ESeverity::Warning, L"Rejected invalid property header for %s: Incorrect size for DIPROPSTRING (expected %u, got %u).", PropertyGuidString(rguidProp), (unsigned int)sizeof(DIPROPSTRING), (unsigned int)pdiph->dwSize);
+                return false;
+            }
+            break;
+
+        case ((size_t)&DIPROP_GUIDANDPATH):
+            // GUID-and-path uses DIPROPGUIDANDPATH and is exclusively a device-wide property.
+            if (DIPH_DEVICE != pdiph->dwHow)
+            {
+                Message::OutputFormatted(Message::ESeverity::Warning, L"Rejected invalid property header for %s: Incorrect object identification method for this property (expected %s, got %s).", PropertyGuidString(rguidProp), IdentificationMethodString(DIPH_DEVICE), IdentificationMethodString(pdiph->dwHow));
+                return false;
+            }
+            else if (sizeof(DIPROPGUIDANDPATH) != pdiph->dwSize)
+            {
+                Message::OutputFormatted(Message::ESeverity::Warning, L"Rejected invalid property header for %s: Incorrect size for DIPROPGUIDANDPATH (expected %u, got %u).", PropertyGuidString(rguidProp), (unsigned int)sizeof(DIPROPGUIDANDPATH), (unsigned int)pdiph->dwSize);
                 return false;
             }
             break;
@@ -1551,6 +1583,16 @@ namespace Xidi
             ((LPDIPROPDWORD)pdiph)->dwData = 1;
             LOG_PROPERTY_INVOCATION_DIPROPDWORD_AND_RETURN(DI_OK, kMethodSeverity, rguidProp, pdiph);
 
+        case ((size_t)&DIPROP_GUIDANDPATH):
+            ((LPDIPROPGUIDANDPATH)pdiph)->guidClass = VirtualControllerClassGuid();
+            FillVirtualControllerPath(((LPDIPROPGUIDANDPATH)pdiph)->wszPath, _countof(((LPDIPROPGUIDANDPATH)pdiph)->wszPath), controller->GetIdentifier());
+            LOG_PROPERTY_INVOCATION_NO_VALUE_AND_RETURN(DI_OK, kMethodSeverity, rguidProp);
+
+        case ((size_t)&DIPROP_INSTANCENAME):
+        case ((size_t)&DIPROP_PRODUCTNAME):
+            FillVirtualControllerName(((LPDIPROPSTRING)pdiph)->wsz, _countof(((LPDIPROPSTRING)pdiph)->wsz), controller->GetIdentifier());
+            LOG_PROPERTY_INVOCATION_DIPROPSTRING_AND_RETURN(DI_OK, kMethodSeverity, rguidProp, pdiph);
+
         case ((size_t)&DIPROP_JOYSTICKID):
             ((LPDIPROPDWORD)pdiph)->dwData = controller->GetIdentifier();
             LOG_PROPERTY_INVOCATION_DIPROPDWORD_AND_RETURN(DI_OK, kMethodSeverity, rguidProp, pdiph);
@@ -1820,6 +1862,12 @@ namespace Xidi
 
         case ((size_t)&DIPROP_FFGAIN):
             LOG_PROPERTY_INVOCATION_DIPROPDWORD_AND_RETURN(((true == controller->SetForceFeedbackGain(((LPDIPROPDWORD)pdiph)->dwData)) ? DI_OK : DIERR_INVALIDPARAM), kMethodSeverity, rguidProp, pdiph);
+
+        case ((size_t)&DIPROP_INSTANCENAME):
+        case ((size_t)&DIPROP_PRODUCTNAME):
+            // DirectInput API documentation for SetProperty says that these properties can be set even if the values are not stored in a place retrievable by GetProperty.
+            // Xidi therefore accepts them but does nothing with the value provided.
+            LOG_PROPERTY_INVOCATION_DIPROPSTRING_AND_RETURN(DI_OK, kMethodSeverity, rguidProp, pdiph);
 
         case ((size_t)&DIPROP_RANGE):
             switch (element.type)

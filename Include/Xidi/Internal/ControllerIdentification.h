@@ -24,12 +24,9 @@
 namespace Xidi
 {
     // -------- CONSTANTS -------------------------------------------------- //
-
-    /// Product GUID for Xidi virtual controllers.
-    inline constexpr GUID kVirtualControllerProductGuid = {0xffffffff, 0x0000, 0x0000, {0x00, 0x00, 0x00, 0x00, 'X', 'I', 'D', 'I'}};
-
-    /// Instance base GUID for Xidi virtual controllers from which instance GUIDs per controller may be derived by using the controller identifier..
-    inline constexpr GUID kVirtualControllerInstanceBaseGuid = {0xffffffff, 0x0000, 0x0000, {'X', 'I', 'D', 'I', 0x00, 0x00, 0x00, 0x00}};
+    
+    /// Base GUID for Xidi virtual controllers from which product and instance GUIDs per controller may be derived by using the controller identifier.
+    inline constexpr GUID kVirtualControllerBaseGuid = {0xffffffff, 0x0000, 0x0000, {'X', 'I', 'D', 'I', 0x00, 0x00, 0x00, 0x00}};
 
     /// Force feedback driver GUID for Xidi virtual controllers.
     inline constexpr GUID kVirtualControllerForceFeedbackDriverGuid = {0xffffffff, 0x0000, 0x0000, {'F', 'F', 'D', 0x00, 'X', 'I', 'D', 'I'}};
@@ -76,7 +73,7 @@ namespace Xidi
     /// @param [in] controllerId Identifier of the controller for which information is to be filled in.
     template <typename DeviceInstanceType> void FillVirtualControllerInfo(DeviceInstanceType& instanceInfo, Controller::TControllerIdentifier controllerId);
     
-    /// Generates and places a string representing the Xidi virtual controller's product name for the controller at the specified index.
+    /// Generates and places a string representing the Xidi virtual controller's product or instance name for the controller at the specified index.
     /// @tparam StringType Either LPSTR or LPWSTR depending on whether ASCII or Unicode is desired.
     /// @param [out] buf Buffer to fill.
     /// @param [in] bufcount Buffer size, expressed in terms of number of characters.
@@ -84,17 +81,34 @@ namespace Xidi
     /// @return Number of characters written, or negative in the event of an error.
     template <typename StringType> int FillVirtualControllerName(StringType buf, size_t bufcount, Controller::TControllerIdentifier controllerId);
 
+    /// Generates and places a string representing the Xidi virtual controller's underlying device path.
+    /// @tparam StringType Either LPSTR or LPWSTR depending on whether ASCII or Unicode is desired.
+    /// @param [out] buf Buffer to fill.
+    /// @param [in] bufcount Buffer size, expressed in terms of number of characters.
+    /// @param [in] controllerId Xidi virtual controller identifier, which is used to determine the actual text to produce.
+    /// @return Number of characters written, or negative in the event of an error.
+    template <typename StringType> int FillVirtualControllerPath(StringType buf, size_t bufcount, Controller::TControllerIdentifier controllerId);
+
     /// Retrieves the Xidi virtual controller index of the specified instance GUID.
     /// @param [in] instanceGUID Xidi virtual controller instance GUID.
     /// @return Xidi virtual controller identifier from the specified GUID, assuming said GUID is actually a Xidi virtual controller instance GUID.
     std::optional<Controller::TControllerIdentifier> VirtualControllerIdFromInstanceGuid(REFGUID instanceGUID);
 
-    /// Generates an instance GUID for a Xidi virtual controller of the specified index.
+    /// Generates a class GUID for a Xidi virtual controller.
+    /// All Xidi virtual controllers use the same class GUID.
+    /// @return GUID for identifying the device class of Xidi virtual controllers.
+    constexpr inline GUID VirtualControllerClassGuid(void)
+    {
+        constexpr GUID kHidClassGuid = {0x745a17a0, 0x74d3, 0x11d0, {0xb6, 0xfe, 0x00, 0xa0, 0xc9, 0x0f, 0x57, 0xda}};
+        return kHidClassGuid;
+    }
+
+    /// Generates a product or instance GUID for a Xidi virtual controller of the specified index.
     /// @param [in] controllerId Xidi virtual controller identifier.
     /// @return Instance GUID for a Xidi virtual controller of the specified index.
-    constexpr inline GUID VirtualControllerInstanceGuid(Controller::TControllerIdentifier controllerId)
+    constexpr inline GUID VirtualControllerGuid(Controller::TControllerIdentifier controllerId)
     {
-        GUID xguid = kVirtualControllerInstanceBaseGuid;
+        GUID xguid = kVirtualControllerBaseGuid;
         xguid.Data4[4] = (((uint32_t)controllerId >> 0) & 0xff);
         xguid.Data4[5] = (((uint32_t)controllerId >> 8) & 0xff);
         xguid.Data4[6] = (((uint32_t)controllerId >> 16) & 0xff);
@@ -106,13 +120,13 @@ namespace Xidi
     /// @return Product identifier for all virtual controllers.
     constexpr inline WORD VirtualControllerProductId(void)
     {
-        return (WORD)(kVirtualControllerProductGuid.Data1 >> 16);
+        return (WORD)(kVirtualControllerBaseGuid.Data1 >> 16);
     }
 
     /// Retrieves the 16-bit vendor identifier for Xidi virtual controllers.
     /// @return Vendor identifier for all virtual controllers.
     constexpr inline WORD VirtualControllerVendorId(void)
     {
-        return (WORD)(kVirtualControllerProductGuid.Data1);
+        return (WORD)(kVirtualControllerBaseGuid.Data1);
     }
 }
