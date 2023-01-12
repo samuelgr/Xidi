@@ -46,9 +46,9 @@ namespace Xidi
     /// Does not verify that the supplied GUID actually represents an XInput instance GUID.
     /// @param [in] xguid Xidi virtual controller's instance GUID.
     /// @return Instance index (a.k.a. XInput player number).
-    static inline uint32_t ExtractVirtualControllerInstanceFromGuid(REFGUID xguid)
+    static inline Controller::TControllerIdentifier ExtractVirtualControllerInstanceFromGuid(REFGUID xguid)
     {
-        return (*((uint32_t*)(&xguid.Data4[4])));
+        return (Controller::TControllerIdentifier)((xguid.Data1 >> 16) & 0x0000ffff) - (Controller::TControllerIdentifier)VirtualControllerProductId(0);
     }
 
 
@@ -235,7 +235,7 @@ namespace Xidi
 
     std::optional<Controller::TControllerIdentifier> VirtualControllerIdFromInstanceGuid(REFGUID instanceGUID)
     {
-        uint32_t xindex = ExtractVirtualControllerInstanceFromGuid(instanceGUID);
+        Controller::TControllerIdentifier xindex = ExtractVirtualControllerInstanceFromGuid(instanceGUID);
 
         if (xindex < Controller::kPhysicalControllerCount)
         {

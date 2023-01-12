@@ -26,10 +26,10 @@ namespace Xidi
     // -------- CONSTANTS -------------------------------------------------- //
     
     /// Base GUID for Xidi virtual controllers from which product and instance GUIDs per controller may be derived by using the controller identifier.
-    inline constexpr GUID kVirtualControllerBaseGuid = {0xffffffff, 0x0000, 0x0000, {'X', 'I', 'D', 'I', 0x00, 0x00, 0x00, 0x00}};
+    inline constexpr GUID kVirtualControllerBaseGuid = {0x0000ffff, 0x0000, 0x0000, {'X', 'I', 'D', 'I', 'V', 'C', 0x00, 0x00}};
 
     /// Force feedback driver GUID for Xidi virtual controllers.
-    inline constexpr GUID kVirtualControllerForceFeedbackDriverGuid = {0xffffffff, 0x0000, 0x0000, {'F', 'F', 'D', 0x00, 'X', 'I', 'D', 'I'}};
+    inline constexpr GUID kVirtualControllerForceFeedbackDriverGuid = {0xffffffff, 0x0000, 0x0000, {'X', 'I', 'D', 'I', 'F', 'F', 'D', 0x00}};
 
 
     // -------- FUNCTIONS -------------------------------------------------- //
@@ -94,6 +94,21 @@ namespace Xidi
     /// @return Xidi virtual controller identifier from the specified GUID, assuming said GUID is actually a Xidi virtual controller instance GUID.
     std::optional<Controller::TControllerIdentifier> VirtualControllerIdFromInstanceGuid(REFGUID instanceGUID);
 
+    /// Retrieves the 16-bit product identifier for a Xidi virtual controller.
+    /// @param [in] controllerId Xidi virtual controller identifier.
+    /// @return Product identifier for all virtual controllers.
+    constexpr inline WORD VirtualControllerProductId(Controller::TControllerIdentifier controllerId)
+    {
+        return (WORD)(1 + controllerId);
+    }
+
+    /// Retrieves the 16-bit vendor identifier for Xidi virtual controllers.
+    /// @return Vendor identifier for all virtual controllers.
+    constexpr inline WORD VirtualControllerVendorId(void)
+    {
+        return (WORD)(kVirtualControllerBaseGuid.Data1 & 0x0000ffff);
+    }
+
     /// Generates a class GUID for a Xidi virtual controller.
     /// All Xidi virtual controllers use the same class GUID.
     /// @return GUID for identifying the device class of Xidi virtual controllers.
@@ -109,24 +124,7 @@ namespace Xidi
     constexpr inline GUID VirtualControllerGuid(Controller::TControllerIdentifier controllerId)
     {
         GUID xguid = kVirtualControllerBaseGuid;
-        xguid.Data4[4] = (((uint32_t)controllerId >> 0) & 0xff);
-        xguid.Data4[5] = (((uint32_t)controllerId >> 8) & 0xff);
-        xguid.Data4[6] = (((uint32_t)controllerId >> 16) & 0xff);
-        xguid.Data4[7] = (((uint32_t)controllerId >> 24) & 0xff);
+        xguid.Data1 |= ((LONG)VirtualControllerProductId(controllerId)) << 16l;
         return xguid;
-    }
-
-    /// Retrieves the 16-bit product identifier for Xidi virtual controllers.
-    /// @return Product identifier for all virtual controllers.
-    constexpr inline WORD VirtualControllerProductId(void)
-    {
-        return (WORD)(kVirtualControllerBaseGuid.Data1 >> 16);
-    }
-
-    /// Retrieves the 16-bit vendor identifier for Xidi virtual controllers.
-    /// @return Vendor identifier for all virtual controllers.
-    constexpr inline WORD VirtualControllerVendorId(void)
-    {
-        return (WORD)(kVirtualControllerBaseGuid.Data1);
     }
 }

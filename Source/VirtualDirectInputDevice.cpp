@@ -1633,7 +1633,7 @@ namespace Xidi
         case ((size_t)&DIPROP_VIDPID):
             if (Controller::EElementType::WholeController != element.type)
                 LOG_PROPERTY_INVOCATION_NO_VALUE_AND_RETURN(DIERR_INVALIDPARAM, kMethodSeverity, rguidProp);
-            ((LPDIPROPDWORD)pdiph)->dwData = ((DWORD)VirtualControllerProductId() << 16) | ((DWORD)VirtualControllerVendorId());
+            ((LPDIPROPDWORD)pdiph)->dwData = ((DWORD)VirtualControllerProductId(controller->GetIdentifier()) << 16) | ((DWORD)VirtualControllerVendorId());
             LOG_PROPERTY_INVOCATION_DIPROPDWORD_AND_RETURN(DI_OK, kMethodSeverity, rguidProp, pdiph);
 #endif
 
