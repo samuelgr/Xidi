@@ -582,24 +582,57 @@ namespace Xidi
         ForceFeedbackEffectToString(effectInfo->guid, effectInfo->tszName, _countof(effectInfo->tszName));
     }
 
+    /// Fills the specified object instance information structure with information about the specified HID collection.
+    /// Size member must already be initialized because multiple versions of the structure exist, so it is used to determine which members to fill in.
+    /// @tparam charMode Selects between ASCII ("A" suffix) and Unicode ("W") suffix versions of types and interfaces.
+    /// @param hidCollectionNumber HID collection number for which information should be filled.
+    /// @param objectInfo [out] Structure to be filled with instance information.
+    template <ECharMode charMode> static void FillHidCollectionInstanceInfo(uint16_t hidCollectionNumber, typename DirectInputDeviceType<charMode>::DeviceObjectInstanceType* objectInfo)
+    {
+        // DirectInput versions 5 and higher include extra members in this structure, and this is indicated on input using the size member of the structure.
+        if (objectInfo->dwSize > sizeof(DirectInputDeviceType<charMode>::DeviceObjectInstanceCompatType))
+        {
+            const SHidUsageData virtualControllerHidUsageData = HidUsageDataForControllerElement({.type = Controller::EElementType::WholeController});
+
+            objectInfo->dwFFMaxForce = 0;
+            objectInfo->dwFFForceResolution = 0;
+            objectInfo->wCollectionNumber = 0;
+            objectInfo->wDesignatorIndex = 0;
+            objectInfo->wUsagePage = virtualControllerHidUsageData.usagePage;
+            objectInfo->wUsage = ((kVirtualControllerHidCollectionForEntireDevice == hidCollectionNumber) ? virtualControllerHidUsageData.usage : 0);
+            objectInfo->dwDimension = 0;
+            objectInfo->wExponent = 0;
+            objectInfo->wReportId = 0;
+        }
+
+        objectInfo->guidType = GUID_Unknown;
+        objectInfo->dwOfs = 0;
+        objectInfo->dwType = DIDFT_COLLECTION | DIDFT_NODATA | DIDFT_MAKEINSTANCE(hidCollectionNumber);
+        objectInfo->dwFlags = 0;
+
+        FillHidCollectionName(objectInfo->tszName, _countof(objectInfo->tszName), hidCollectionNumber);
+    }
+
     /// Fills the specified object instance information structure with information about the specified controller element.
     /// Size member must already be initialized because multiple versions of the structure exist, so it is used to determine which members to fill in.
     /// @tparam charMode Selects between ASCII ("A" suffix) and Unicode ("W") suffix versions of types and interfaces.
     /// @param [in] controllerCapabilities Capabilities that describe the layout of the virtual controller.
     /// @param [in] controllerElement Virtual controller element about which to fill information.
     /// @param [in] offset Offset to place into the object instance information structure.
-    /// @param objectInfo [out] Structure to be filled with instance information.
+    /// @param [out] objectInfo Structure to be filled with instance information.
     template <ECharMode charMode> static void FillObjectInstanceInfo(Controller::SCapabilities controllerCapabilities, Controller::SElementIdentifier controllerElement, TOffset offset, typename DirectInputDeviceType<charMode>::DeviceObjectInstanceType* objectInfo)
     {
         // DirectInput versions 5 and higher include extra members in this structure, and this is indicated on input using the size member of the structure.
         if (objectInfo->dwSize > sizeof(DirectInputDeviceType<charMode>::DeviceObjectInstanceCompatType))
         {
+            const SHidUsageData elementHidUsageData = HidUsageDataForControllerElement(controllerElement);
+
             objectInfo->dwFFMaxForce = 0;
             objectInfo->dwFFForceResolution = 0;
-            objectInfo->wCollectionNumber = 0;
+            objectInfo->wCollectionNumber = kVirtualControllerHidCollectionForIndividualElements;
             objectInfo->wDesignatorIndex = 0;
-            objectInfo->wUsagePage = 0;
-            objectInfo->wUsage = 0;
+            objectInfo->wUsagePage = elementHidUsageData.usagePage;
+            objectInfo->wUsage = elementHidUsageData.usage;
             objectInfo->dwDimension = 0;
             objectInfo->wExponent = 0;
             objectInfo->wReportId = 0;
@@ -828,6 +861,25 @@ namespace Xidi
                     break;
                 }
             }
+            break;
+
+        case DIPH_BYUSAGE:
+            // Controller element is being identified by HID usage data.
+            // The HID specification defines a fixed mapping between this information and controller elements.
+            // If the identified controller element exists on this virtual controller then the usage-based identification succeeds.
+            do {
+                const uint16_t hidUsage = (uint16_t)((dwObj >> 0) & 0x0000ffff);
+                const uint16_t hidUsagePage = (uint16_t)((dwObj >> 16) & 0x0000ffff);
+
+                const std::optional<Controller::SElementIdentifier> maybeControllerElement = ControllerElementFromHidUsageData({.usagePage = hidUsagePage, .usage = hidUsage});
+
+                if (true == maybeControllerElement.has_value())
+                {
+                    const Controller::SElementIdentifier controllerElement = maybeControllerElement.value();
+                    if (controller->GetCapabilities().HasElement(controllerElement))
+                        return controllerElement;
+                }
+            } while (false);
             break;
         }
 
@@ -1173,11 +1225,13 @@ namespace Xidi
             LOG_INVOCATION_AND_RETURN(DI_OK, kMethodSeverity);
 
         const bool kForceFeedbackActuatorsOnly = (0 != (dwFlags & DIDFT_FFACTUATOR));
+        const bool kOutsideHidCollectionOnly = (0 != (dwFlags & DIDFT_NOCOLLECTION));
         const bool kWillEnumerateAxes = ((DIDFT_ALL == dwFlags) || (0 != (dwFlags & DIDFT_ABSAXIS)));
-        const bool kWillEnumerateButtons = ((false == kForceFeedbackActuatorsOnly) && ((DIDFT_ALL == dwFlags) || (0 != (dwFlags & DIDFT_PSHBUTTON))));
-        const bool kWillEnumeratePov = ((false == kForceFeedbackActuatorsOnly) && ((DIDFT_ALL == dwFlags) || (0 != (dwFlags & DIDFT_POV))));
+        const bool kWillEnumerateButtons = ((false == kForceFeedbackActuatorsOnly) && (false == kOutsideHidCollectionOnly) && ((DIDFT_ALL == dwFlags) || (0 != (dwFlags & DIDFT_PSHBUTTON))));
+        const bool kWillEnumeratePov = ((false == kForceFeedbackActuatorsOnly) && (false == kOutsideHidCollectionOnly) && ((DIDFT_ALL == dwFlags) || (0 != (dwFlags & DIDFT_POV))));
+        const bool kWillEnumerateHidCollections = ((false == kForceFeedbackActuatorsOnly) && (false == kOutsideHidCollectionOnly) && ((DIDFT_ALL == dwFlags) || (0 != (dwFlags & DIDFT_COLLECTION))));
 
-        if ((true == kWillEnumerateAxes) || (true == kWillEnumerateButtons) || (true == kWillEnumeratePov))
+        if ((true == kWillEnumerateAxes) || (true == kWillEnumerateButtons) || (true == kWillEnumeratePov) || (true == kWillEnumerateHidCollections))
         {
             std::unique_ptr<DirectInputDeviceType<charMode>::DeviceObjectInstanceType> objectDescriptor = std::make_unique<DirectInputDeviceType<charMode>::DeviceObjectInstanceType>();
             const Controller::SCapabilities controllerCapabilities = controller->GetCapabilities();
@@ -1221,13 +1275,28 @@ namespace Xidi
 
             if (true == kWillEnumeratePov)
             {
-                if (true == controllerCapabilities.hasPov)
+                if (true == controllerCapabilities.HasPov())
                 {
                     const Controller::SElementIdentifier kPovIdentifier = {.type = Controller::EElementType::Pov};
                     const TOffset kPovOffset = ((true == IsApplicationDataFormatSet()) ? dataFormat->GetOffsetForElement(kPovIdentifier).value_or(DataFormat::kInvalidOffsetValue) : NativeOffsetForElement(kPovIdentifier));
-                    
+
                     *objectDescriptor = {.dwSize = sizeof(*objectDescriptor)};
                     FillObjectInstanceInfo<charMode>(controllerCapabilities, kPovIdentifier, kPovOffset, objectDescriptor.get());
+
+                    const bool kContinueEnumerating = (DIENUM_STOP != lpCallback(objectDescriptor.get(), pvRef));
+                    if (!kAlwaysContinueEnumerating && !kContinueEnumerating)
+                        LOG_INVOCATION_AND_RETURN(DI_OK, kMethodSeverity);
+                }
+            }
+
+            if (true == kWillEnumerateHidCollections)
+            {
+                constexpr uint16_t kHidCollectionsToEnumerate[] = {kVirtualControllerHidCollectionForEntireDevice, kVirtualControllerHidCollectionForIndividualElements};
+
+                for (auto hidCollectionNumber : kHidCollectionsToEnumerate)
+                {
+                    *objectDescriptor = {.dwSize = sizeof(*objectDescriptor)};
+                    FillHidCollectionInstanceInfo<charMode>(hidCollectionNumber, objectDescriptor.get());
 
                     const bool kContinueEnumerating = (DIENUM_STOP != lpCallback(objectDescriptor.get(), pvRef));
                     if (!kAlwaysContinueEnumerating && !kContinueEnumerating)
@@ -1292,7 +1361,7 @@ namespace Xidi
                 // Information about controller layout comes from controller capabilities.
                 lpDIDevCaps->dwAxes = controller->GetCapabilities().numAxes;
                 lpDIDevCaps->dwButtons = controller->GetCapabilities().numButtons;
-                lpDIDevCaps->dwPOVs = ((true == controller->GetCapabilities().hasPov) ? 1 : 0);
+                lpDIDevCaps->dwPOVs = ((true == controller->GetCapabilities().HasPov()) ? 1 : 0);
                 break;
 
             default:
@@ -1633,7 +1702,7 @@ namespace Xidi
         case ((size_t)&DIPROP_VIDPID):
             if (Controller::EElementType::WholeController != element.type)
                 LOG_PROPERTY_INVOCATION_NO_VALUE_AND_RETURN(DIERR_INVALIDPARAM, kMethodSeverity, rguidProp);
-            ((LPDIPROPDWORD)pdiph)->dwData = ((DWORD)VirtualControllerProductId(controller->GetIdentifier()) << 16) | ((DWORD)VirtualControllerVendorId());
+            ((LPDIPROPDWORD)pdiph)->dwData = ((DWORD)VirtualControllerProductId(controller->GetIdentifier()) << 16) | ((DWORD)kVirtualControllerVendorId);
             LOG_PROPERTY_INVOCATION_DIPROPDWORD_AND_RETURN(DI_OK, kMethodSeverity, rguidProp, pdiph);
 #endif
 

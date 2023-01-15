@@ -507,7 +507,7 @@ namespace Xidi
                 pjc->wVmin = kAxisRangeMin;
                 pjc->wVmax = kAxisRangeMax;
 
-                if (true == controllerCapabilities.hasPov)
+                if (true == controllerCapabilities.HasPov())
                     pjc->wCaps = JOYCAPS_HASPOV | JOYCAPS_POVCTS;
 
                 if (true == controllerCapabilities.HasAxis(Controller::EAxis::Z))

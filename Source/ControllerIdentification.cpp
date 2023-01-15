@@ -28,6 +28,35 @@
 
 namespace Xidi
 {
+    // -------- INTERNAL TYPES --------------------------------------------- //
+
+    /// Enumerates the various HID usage pages that are relevant to Xidi.
+    /// See https://www.usb.org/document-library/hid-usage-tables-13 for more information.
+    enum class EHidUsagePage : uint16_t
+    {
+        GeneralDesktop                          = 0x0001,
+        Button                                  = 0x0009
+    };
+
+    /// Enumerates the various HID usages within the General Desktop page that are relevant to Xidi.
+    /// See https://www.usb.org/document-library/hid-usage-tables-13 for more information.
+    enum class EHidUsageGeneralDesktop : uint16_t
+    {
+        // Identification of entire devices
+        Joystick                                = 0x0004,
+        Gamepad                                 = 0x0005,
+
+        // Identification of individual controller elements within devices
+        AxisX                                   = 0x0030,
+        AxisY                                   = 0x0031,
+        AxisZ                                   = 0x0032,
+        AxisRotX                                = 0x0033,
+        AxisRotY                                = 0x0034,
+        AxisRotZ                                = 0x0035,
+        HatSwitch                               = 0x0039
+    };
+
+
     // -------- INTERNAL FUNCTIONS ----------------------------------------- //
 
     /// Determines if the specified controller supports force feedback.
@@ -46,9 +75,66 @@ namespace Xidi
     /// Does not verify that the supplied GUID actually represents an XInput instance GUID.
     /// @param [in] xguid Xidi virtual controller's instance GUID.
     /// @return Instance index (a.k.a. XInput player number).
-    static inline Controller::TControllerIdentifier ExtractVirtualControllerInstanceFromGuid(REFGUID xguid)
+    static constexpr Controller::TControllerIdentifier ExtractVirtualControllerInstanceFromGuid(REFGUID xguid)
     {
         return (Controller::TControllerIdentifier)((xguid.Data1 >> 16) & 0x0000ffff) - (Controller::TControllerIdentifier)VirtualControllerProductId(0);
+    }
+
+    /// Computes the HID usage data for a virtual controller axis.
+    /// @param [in] axis Axis of interest.
+    /// @return Corresponding HID usage data.
+    static constexpr SHidUsageData HidUsageDataForAxis(Controller::EAxis axis)
+    {
+        uint16_t usageForAxis = 0;
+
+        switch (axis)
+        {
+        case Controller::EAxis::X:
+            usageForAxis = (uint16_t)EHidUsageGeneralDesktop::AxisX;
+            break;
+        case Controller::EAxis::Y:
+            usageForAxis = (uint16_t)EHidUsageGeneralDesktop::AxisY;
+            break;
+        case Controller::EAxis::Z:
+            usageForAxis = (uint16_t)EHidUsageGeneralDesktop::AxisZ;
+            break;
+        case Controller::EAxis::RotX:
+            usageForAxis = (uint16_t)EHidUsageGeneralDesktop::AxisRotX;
+            break;
+        case Controller::EAxis::RotY:
+            usageForAxis = (uint16_t)EHidUsageGeneralDesktop::AxisRotY;
+            break;
+        case Controller::EAxis::RotZ:
+            usageForAxis = (uint16_t)EHidUsageGeneralDesktop::AxisRotZ;
+            break;
+        default:
+            break;
+        }
+
+        return {.usagePage = (uint16_t)EHidUsagePage::GeneralDesktop, .usage = usageForAxis};
+    }
+
+    /// Computes the HID usage data for a virtual controller button.
+    /// @param [in] button Button of interest.
+    /// @return Corresponding HID usage data.
+    static constexpr SHidUsageData HidUsageDataForButton(Controller::EButton button)
+    {
+        uint16_t usageForButton = (uint16_t)1 + (uint16_t)button;
+        return {.usagePage = (uint16_t)EHidUsagePage::Button, .usage = usageForButton};
+    }
+
+    /// Computes the HID usage data for a virtual controller POV.
+    /// @return Corresponding HID usage data.
+    static constexpr SHidUsageData HidUsageDataForPov(void)
+    {
+        return {.usagePage = (uint16_t)EHidUsagePage::GeneralDesktop, .usage = (uint16_t)EHidUsageGeneralDesktop::HatSwitch};
+    }
+
+    /// Computes the HID usage data for an entire virtual controller.
+    /// @return Corresponding HID usage data.
+    static constexpr SHidUsageData HidUsageDataForVirtualController(void)
+    {
+        return {.usagePage = (uint16_t)EHidUsagePage::GeneralDesktop, .usage = (uint16_t)EHidUsageGeneralDesktop::Gamepad};
     }
 
 
@@ -93,6 +179,48 @@ namespace Xidi
             return Strings::EqualsCaseInsensitive(vendorIdA, vendorIdB.substr(vendorIdB.length() - vendorIdA.length()));
         else
             return Strings::EqualsCaseInsensitive(vendorIdA.substr(vendorIdA.length() - vendorIdB.length()), vendorIdB);
+    }
+
+    // --------
+
+    std::optional<Controller::SElementIdentifier> ControllerElementFromHidUsageData(SHidUsageData hidUsageData)
+    {
+        switch (hidUsageData.usagePage)
+        {
+        case (uint16_t)EHidUsagePage::GeneralDesktop:
+            switch (hidUsageData.usage)
+            {
+            case HidUsageDataForAxis(Controller::EAxis::X).usage:
+                return Controller::SElementIdentifier({.type = Controller::EElementType::Axis, .axis = Controller::EAxis::X});
+            case HidUsageDataForAxis(Controller::EAxis::Y).usage:
+                return Controller::SElementIdentifier({.type = Controller::EElementType::Axis, .axis = Controller::EAxis::Y});
+            case HidUsageDataForAxis(Controller::EAxis::Z).usage:
+                return Controller::SElementIdentifier({.type = Controller::EElementType::Axis, .axis = Controller::EAxis::Z});
+            case HidUsageDataForAxis(Controller::EAxis::RotX).usage:
+                return Controller::SElementIdentifier({.type = Controller::EElementType::Axis, .axis = Controller::EAxis::RotX});
+            case HidUsageDataForAxis(Controller::EAxis::RotY).usage:
+                return Controller::SElementIdentifier({.type = Controller::EElementType::Axis, .axis = Controller::EAxis::RotY});
+            case HidUsageDataForAxis(Controller::EAxis::RotZ).usage:
+                return Controller::SElementIdentifier({.type = Controller::EElementType::Axis, .axis = Controller::EAxis::RotZ});
+            case HidUsageDataForPov().usage:
+                return Controller::SElementIdentifier({.type = Controller::EElementType::Pov});
+                case HidUsageDataForVirtualController().usage:
+                return Controller::SElementIdentifier({.type = Controller::EElementType::WholeController});
+            default:
+                break;
+            }
+            break;
+
+        case (uint16_t)EHidUsagePage::Button:
+            if (hidUsageData.usage <= (uint16_t)Controller::EButton::Count)
+                return Controller::SElementIdentifier({.type = Controller::EElementType::Button, .button = (Controller::EButton)(hidUsageData.usage - 1)});
+            break;
+
+        default:
+            break;
+        }
+
+        return std::nullopt;
     }
 
     // --------
@@ -171,6 +299,32 @@ namespace Xidi
 
     // ---------
 
+    template <> int FillHidCollectionName<LPSTR>(LPSTR buf, size_t bufcount, uint16_t hidCollectionNumber)
+    {
+        TemporaryBuffer<CHAR> hidCollectionNameNameFormatString;
+
+        if (kVirtualControllerHidCollectionForEntireDevice == hidCollectionNumber)
+            LoadStringA(Globals::GetInstanceHandle(), IDS_XIDI_CONTROLLERIDENTIFICATION_HID_COLLECTION_NAME_PLUS_CONTROLLER_TYPE_FORMAT, hidCollectionNameNameFormatString.Data(), hidCollectionNameNameFormatString.Capacity());
+        else
+            LoadStringA(Globals::GetInstanceHandle(), IDS_XIDI_CONTROLLERIDENTIFICATION_HID_COLLECTION_NAME_FORMAT, hidCollectionNameNameFormatString.Data(), hidCollectionNameNameFormatString.Capacity());
+
+        return sprintf_s(buf, bufcount, (LPCSTR)hidCollectionNameNameFormatString.Data(), (unsigned int)hidCollectionNumber);
+    }
+
+    template <> int FillHidCollectionName<LPWSTR>(LPWSTR buf, size_t bufcount, uint16_t hidCollectionNumber)
+    {
+        TemporaryBuffer<WCHAR> hidCollectionNameNameFormatString;
+
+        if (kVirtualControllerHidCollectionForEntireDevice == hidCollectionNumber)
+            LoadStringW(Globals::GetInstanceHandle(), IDS_XIDI_CONTROLLERIDENTIFICATION_HID_COLLECTION_NAME_PLUS_CONTROLLER_TYPE_FORMAT, hidCollectionNameNameFormatString.Data(), hidCollectionNameNameFormatString.Capacity());
+        else
+            LoadStringW(Globals::GetInstanceHandle(), IDS_XIDI_CONTROLLERIDENTIFICATION_HID_COLLECTION_NAME_FORMAT, hidCollectionNameNameFormatString.Data(), hidCollectionNameNameFormatString.Capacity());
+
+        return swprintf_s(buf, bufcount, (LPCWSTR)hidCollectionNameNameFormatString.Data(), (unsigned int)hidCollectionNumber);
+    }
+
+    // ---------
+
     template <typename DeviceInstanceType> void FillVirtualControllerInfo(DeviceInstanceType& instanceInfo, Controller::TControllerIdentifier controllerId)
     {
         instanceInfo.guidInstance = VirtualControllerGuid(controllerId);
@@ -187,9 +341,9 @@ namespace Xidi
             else
                 instanceInfo.guidFFDriver = {};
 
-            // These fields are zeroed out because Xidi does not currently offer any of the functionality they represent.
-            instanceInfo.wUsagePage = 0;
-            instanceInfo.wUsage = 0;
+            const SHidUsageData virtualControllerHidData = HidUsageDataForVirtualController();
+            instanceInfo.wUsagePage = virtualControllerHidData.usagePage;
+            instanceInfo.wUsage = virtualControllerHidData.usage;
         }
     }
 
@@ -230,6 +384,26 @@ namespace Xidi
 
     template int FillVirtualControllerPath(LPSTR buf, size_t bufcount, Controller::TControllerIdentifier controllerId);
     template int FillVirtualControllerPath(LPWSTR buf, size_t bufcount, Controller::TControllerIdentifier controllerId);
+
+    // ---------
+
+    SHidUsageData HidUsageDataForControllerElement(Controller::SElementIdentifier element)
+    {
+        switch (element.type)
+        {
+        case Controller::EElementType::Axis:
+            return HidUsageDataForAxis(element.axis);
+
+        case Controller::EElementType::Button:
+            return HidUsageDataForButton(element.button);
+
+        case Controller::EElementType::Pov:
+            return HidUsageDataForPov();
+
+        default:
+            return HidUsageDataForVirtualController();
+        }
+    }
 
     // ---------
 

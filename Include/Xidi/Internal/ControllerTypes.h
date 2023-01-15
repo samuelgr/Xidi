@@ -288,6 +288,31 @@ namespace Xidi
             {
                 return ((uint8_t)button < numButtons);
             }
+
+            /// Checks if this capabilities object specifies that the controller has a POV.
+            /// @return `true` if a POV is present, `false` otherwise.
+            constexpr inline bool HasPov(void) const
+            {
+                return hasPov;
+            }
+
+            /// Checks if this capabilities object specifies that the controller has the specified element.
+            /// @param [in] element Controller element for which to query.
+            /// @return `true` if the element is present, `false` otherwise.
+            constexpr inline bool HasElement(SElementIdentifier element) const
+            {
+                switch (element.type)
+                {
+                case EElementType::Axis:
+                    return HasAxis(element.axis);
+                case EElementType::Button:
+                    return HasButton(element.button);
+                case EElementType::Pov:
+                    return HasPov();
+                default:
+                    return false;
+                }
+            }
         };
         static_assert(sizeof(SCapabilities) <= 8, "Data structure size constraint violation.");
         static_assert((uint8_t)EAxis::Count <= 0b111, "Number of axes does not fit into 3 bits.");

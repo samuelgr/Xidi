@@ -121,7 +121,7 @@ namespace XidiTest
     {
         const SCapabilities kMinCapabilities = MinimalCapabilities();
 
-        SCapabilities expectedCapabilities = {.numButtons = std::max(kMinCapabilities.numButtons, baseExpectedCapabilities.numButtons), .hasPov = (kMinCapabilities.hasPov || baseExpectedCapabilities.hasPov)};
+        SCapabilities expectedCapabilities = {.numButtons = std::max(kMinCapabilities.numButtons, baseExpectedCapabilities.numButtons), .hasPov = (kMinCapabilities.HasPov() || baseExpectedCapabilities.HasPov())};
         for (int i = 0; i < (int)EAxis::Count; ++i)
         {
             const bool kSupportsForceFeedback = (baseExpectedCapabilities.ForceFeedbackIsSupportedForAxis((EAxis)i) || kMinCapabilities.ForceFeedbackIsSupportedForAxis((EAxis)i));

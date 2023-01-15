@@ -79,7 +79,7 @@ namespace Xidi
             for (int i = 0; i < controllerCapabilities.numButtons; ++i)
                 availableButtons.insert(i);
 
-            if (true == controllerCapabilities.hasPov)
+            if (true == controllerCapabilities.HasPov())
                 availablePov = true;
         }
 

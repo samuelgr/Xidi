@@ -248,10 +248,10 @@ namespace XidiTest
             return DIENUM_CONTINUE;
         }
 
-        /// Checks if a DirectInput device instance structure represents a Xidi virtual controller by comparing product and instance GUIDs.
+        /// Checks if a DirectInput device instance structure represents a Xidi virtual controller by comparing product and instance GUIDs as well as HID usage data.
         /// @param [in] deviceInstance Device instance to check.
         /// @return `true` if the instance is a Xidi virtual controller, `false` otherwise.
-        static bool IsXidiVirtualControllerInstance(const DirectInputType<kDirectInputTestCharMode>::DeviceInstanceType& deviceInstance)
+        static bool IsValidXidiVirtualControllerInstance(const DirectInputType<kDirectInputTestCharMode>::DeviceInstanceType& deviceInstance)
         {
             const auto maybeVirtualControllerId = VirtualControllerIdFromInstanceGuid(deviceInstance.guidInstance);
             if (false == maybeVirtualControllerId.has_value())
@@ -259,6 +259,11 @@ namespace XidiTest
 
             const GUID expectedVirtualControllerGuid = VirtualControllerGuid(maybeVirtualControllerId.value());
             if ((deviceInstance.guidProduct != expectedVirtualControllerGuid) || (deviceInstance.guidInstance != expectedVirtualControllerGuid))
+                return false;
+
+            static const SHidUsageData kExpectedHidUsageData = HidUsageDataForControllerElement({.type = Controller::EElementType::WholeController});
+            const SHidUsageData actualHidUsageData = {.usagePage = deviceInstance.wUsagePage, .usage = deviceInstance.wUsage};
+            if (actualHidUsageData != kExpectedHidUsageData)
                 return false;
 
             return true;
@@ -299,13 +304,13 @@ namespace XidiTest
             case EExpectedEnumerationOrder::SystemDevicesFirst:
                 if (DoneEnumeratingSystemDevices())
                 {
-                    TEST_ASSERT(true == IsXidiVirtualControllerInstance(deviceInstance));
+                    TEST_ASSERT(true == IsValidXidiVirtualControllerInstance(deviceInstance));
                     TEST_ASSERT(false == DoneEnumeratingXidiVirtualControllers());
                     numXidiVirtualControllersEnumerated += 1;
                 }
                 else
                 {
-                    TEST_ASSERT(false == IsXidiVirtualControllerInstance(deviceInstance));
+                    TEST_ASSERT(false == IsValidXidiVirtualControllerInstance(deviceInstance));
                     numSystemDevicesEnumerated += 1;
                 }
                 break;
@@ -313,13 +318,13 @@ namespace XidiTest
             case EExpectedEnumerationOrder::XidiVirtualControllersFirst:
                 if (DoneEnumeratingXidiVirtualControllers())
                 {
-                    TEST_ASSERT(false == IsXidiVirtualControllerInstance(deviceInstance));
+                    TEST_ASSERT(false == IsValidXidiVirtualControllerInstance(deviceInstance));
                     TEST_ASSERT(false == DoneEnumeratingSystemDevices());
                     numSystemDevicesEnumerated += 1;
                 }
                 else
                 {
-                    TEST_ASSERT(true == IsXidiVirtualControllerInstance(deviceInstance));
+                    TEST_ASSERT(true == IsValidXidiVirtualControllerInstance(deviceInstance));
                     numXidiVirtualControllersEnumerated += 1;
                 }
                 break;

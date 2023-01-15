@@ -259,7 +259,7 @@ namespace XidiTest
         } seen;
 
         VirtualDirectInputDevice<ECharMode::W> diController(CreateTestVirtualController());
-        TEST_ASSERT(DI_OK == diController.EnumObjects([](LPCDIDEVICEOBJECTINSTANCE lpddoi, LPVOID pvRef) -> BOOL
+        const HRESULT enumObjectsResult = diController.EnumObjects([](LPCDIDEVICEOBJECTINSTANCE lpddoi, LPVOID pvRef) -> BOOL
             {
                 SSeen& seen = *((SSeen*)pvRef);
                 
@@ -289,6 +289,10 @@ namespace XidiTest
                 TEST_ASSERT(false == seen.axes.contains(seenAxis));
                 seen.axes.insert(seenAxis);
 
+                const SHidUsageData expectedHidUsageData = HidUsageDataForControllerElement({.type = EElementType::Axis, .axis = seenAxis});
+                const SHidUsageData actualHidUsageData = {.usagePage = lpddoi->wUsagePage, .usage = lpddoi->wUsage};
+                TEST_ASSERT(actualHidUsageData == expectedHidUsageData);
+
                 DWORD seenInstance = DIDFT_GETINSTANCE(lpddoi->dwType);
                 TEST_ASSERT(seenInstance <= kTestMapper.GetCapabilities().numAxes);
                 TEST_ASSERT(false == seen.instances.contains(seenInstance));
@@ -296,9 +300,9 @@ namespace XidiTest
 
                 return DIENUM_CONTINUE;
             },
-            (LPVOID)&seen, DIDFT_ABSAXIS)
-        );
+            (LPVOID)&seen, DIDFT_ABSAXIS);
 
+        TEST_ASSERT(DI_OK == enumObjectsResult);
         TEST_ASSERT(seen.axes.size() == kTestMapper.GetCapabilities().numAxes);
         TEST_ASSERT(seen.instances.size() == kTestMapper.GetCapabilities().numAxes);
     }
@@ -310,7 +314,8 @@ namespace XidiTest
     {
         VirtualDirectInputDevice<ECharMode::W> diController(CreateTestVirtualController());
         TEST_ASSERT(DI_OK == diController.SetDataFormat(&kTestFormatSpec));
-        TEST_ASSERT(DI_OK == diController.EnumObjects([](LPCDIDEVICEOBJECTINSTANCE lpddoi, LPVOID pvRef) -> BOOL
+
+        const HRESULT enumObjectsResult = diController.EnumObjects([](LPCDIDEVICEOBJECTINSTANCE lpddoi, LPVOID pvRef) -> BOOL
             {
                 TEST_ASSERT(nullptr == pvRef);
 
@@ -325,8 +330,9 @@ namespace XidiTest
 
                 return DIENUM_CONTINUE;
             },
-            nullptr, DIDFT_ABSAXIS)
-        );
+            nullptr, DIDFT_ABSAXIS);
+
+        TEST_ASSERT(DI_OK == enumObjectsResult);
     }
 
     // Verifies that buttons are enumerated correctly.
@@ -337,7 +343,7 @@ namespace XidiTest
         std::set<EButton> seenButtons;
 
         VirtualDirectInputDevice<ECharMode::W> diController(CreateTestVirtualController());
-        TEST_ASSERT(DI_OK == diController.EnumObjects([](LPCDIDEVICEOBJECTINSTANCE lpddoi, LPVOID pvRef) -> BOOL
+        const HRESULT enumObjectsResult = diController.EnumObjects([](LPCDIDEVICEOBJECTINSTANCE lpddoi, LPVOID pvRef) -> BOOL
             {
                 std::set<EButton>& seenButtons = *((std::set<EButton>*)pvRef);
 
@@ -353,11 +359,15 @@ namespace XidiTest
                 TEST_ASSERT(false == seenButtons.contains(seenButton));
                 seenButtons.insert(seenButton);
 
+                const SHidUsageData expectedHidUsageData = HidUsageDataForControllerElement({.type = EElementType::Button, .button = seenButton});
+                const SHidUsageData actualHidUsageData = {.usagePage = lpddoi->wUsagePage, .usage = lpddoi->wUsage};
+                TEST_ASSERT(actualHidUsageData == expectedHidUsageData);
+
                 return DIENUM_CONTINUE;
             },
-            (LPVOID)&seenButtons, DIDFT_PSHBUTTON)
-        );
+            (LPVOID)&seenButtons, DIDFT_PSHBUTTON);
 
+        TEST_ASSERT(DI_OK == enumObjectsResult);
         TEST_ASSERT(seenButtons.size() == kTestMapper.GetCapabilities().numButtons);
     }
 
@@ -368,7 +378,7 @@ namespace XidiTest
     {
         VirtualDirectInputDevice<ECharMode::W> diController(CreateTestVirtualController());
         TEST_ASSERT(DI_OK == diController.SetDataFormat(&kTestFormatSpec));
-        TEST_ASSERT(DI_OK == diController.EnumObjects([](LPCDIDEVICEOBJECTINSTANCE lpddoi, LPVOID pvRef) -> BOOL
+        const HRESULT enumObjectsResult = diController.EnumObjects([](LPCDIDEVICEOBJECTINSTANCE lpddoi, LPVOID pvRef) -> BOOL
             {
                 TEST_ASSERT(nullptr == pvRef);
 
@@ -382,8 +392,9 @@ namespace XidiTest
 
                 return DIENUM_CONTINUE;
             },
-            nullptr, DIDFT_PSHBUTTON)
-        );
+            nullptr, DIDFT_PSHBUTTON);
+
+        TEST_ASSERT(DI_OK == enumObjectsResult);
     }
 
     // Verifies that the POV is enumerated correctly via EnumObjects.
@@ -394,7 +405,7 @@ namespace XidiTest
         bool seenPov = false;
 
         VirtualDirectInputDevice<ECharMode::W> diController(CreateTestVirtualController());
-        TEST_ASSERT(DI_OK == diController.EnumObjects([](LPCDIDEVICEOBJECTINSTANCE lpddoi, LPVOID pvRef) -> BOOL
+        const HRESULT enumObjectsResult = diController.EnumObjects([](LPCDIDEVICEOBJECTINSTANCE lpddoi, LPVOID pvRef) -> BOOL
             {
                 bool& seenPov = *((bool*)pvRef);
 
@@ -409,12 +420,16 @@ namespace XidiTest
                 TEST_ASSERT(false == seenPov);
                 seenPov = true;
 
+                const SHidUsageData expectedHidUsageData = HidUsageDataForControllerElement({.type = EElementType::Pov});
+                const SHidUsageData actualHidUsageData = {.usagePage = lpddoi->wUsagePage, .usage = lpddoi->wUsage};
+                TEST_ASSERT(actualHidUsageData == expectedHidUsageData);
+
                 return DIENUM_CONTINUE;
             },
-            (LPVOID)&seenPov, DIDFT_POV)
-        );
+            (LPVOID)&seenPov, DIDFT_POV);
 
-        TEST_ASSERT(kTestMapper.GetCapabilities().hasPov == seenPov);
+        TEST_ASSERT(DI_OK == enumObjectsResult);
+        TEST_ASSERT(kTestMapper.GetCapabilities().HasPov() == seenPov);
     }
 
     // Same basic idea as above, but with the data format set, so only offsets are checked.
@@ -424,14 +439,16 @@ namespace XidiTest
     {
         VirtualDirectInputDevice<ECharMode::W> diController(CreateTestVirtualController());
         TEST_ASSERT(DI_OK == diController.SetDataFormat(&kTestFormatSpec));
-        TEST_ASSERT(DI_OK == diController.EnumObjects([](LPCDIDEVICEOBJECTINSTANCE lpddoi, LPVOID pvRef) -> BOOL
+
+        const HRESULT enumObjectsResult = diController.EnumObjects([](LPCDIDEVICEOBJECTINSTANCE lpddoi, LPVOID pvRef) -> BOOL
             {
                 TEST_ASSERT(nullptr == pvRef);
                 TEST_ASSERT(offsetof(STestDataPacket, pov) == lpddoi->dwOfs);
                 return DIENUM_CONTINUE;
             },
-            nullptr, DIDFT_POV)
-        );
+            nullptr, DIDFT_POV);
+
+        TEST_ASSERT(DI_OK == enumObjectsResult);
     }
 
     TEST_CASE(VirtualDirectInputDevice_EnumObjects_OnlyForceFeedbackActuators)
@@ -449,7 +466,7 @@ namespace XidiTest
 
         std::set<EAxis> actualSeenAxes;
 
-        TEST_ASSERT(DI_OK == diController.EnumObjects([](LPCDIDEVICEOBJECTINSTANCE lpddoi, LPVOID pvRef)->BOOL
+        const HRESULT enumObjectsResult = diController.EnumObjects([](LPCDIDEVICEOBJECTINSTANCE lpddoi, LPVOID pvRef)->BOOL
             {
                 std::set<EAxis>& actualSeenAxes = *((std::set<EAxis>*)pvRef);
 
@@ -474,9 +491,9 @@ namespace XidiTest
 
                 return DIENUM_CONTINUE;
             },
-            (LPVOID)&actualSeenAxes, DIDFT_FFACTUATOR | DIDFT_ABSAXIS)
-        );
+            (LPVOID)&actualSeenAxes, DIDFT_FFACTUATOR | DIDFT_ABSAXIS);
 
+        TEST_ASSERT(DI_OK == enumObjectsResult);
         TEST_ASSERT(actualSeenAxes == expectedSeenAxes);
     }
 
@@ -484,30 +501,72 @@ namespace XidiTest
     TEST_CASE(VirtualDirectInputDevice_EnumObjects_NoMatchingObjects)
     {
         VirtualDirectInputDevice<ECharMode::W> diController(CreateTestVirtualController());
-        TEST_ASSERT(DI_OK == diController.EnumObjects([](LPCDIDEVICEOBJECTINSTANCE lpddoi, LPVOID pvRef) -> BOOL
+        const HRESULT enumObjectsResult = diController.EnumObjects([](LPCDIDEVICEOBJECTINSTANCE lpddoi, LPVOID pvRef) -> BOOL
             {
                 TEST_FAILED_BECAUSE(L"Unexpected invocation of the EnumObjects callback.");
             },
-            nullptr, (DIDFT_RELAXIS | DIDFT_TGLBUTTON | DIDFT_VENDORDEFINED))
-        );
+            nullptr, (DIDFT_RELAXIS | DIDFT_TGLBUTTON | DIDFT_VENDORDEFINED));
+
+        TEST_ASSERT(DI_OK == enumObjectsResult);
     }
 
-    // The special value `DIDFT_ALL` is passed as an enumeration specification, so all controller elements should be enumerated.
+    // The special value `DIDFT_ALL` is passed as an enumeration specification, so all controller elements should be enumerated including two HID collections.
     // Verified by simple numeric consistency check of the number of times the callback is invoked.
     TEST_CASE(VirtualDirectInputDevice_EnumObjects_AllObjects)
     {
-        const int kExpectedNumCallbacks = kTestMapper.GetCapabilities().numAxes + kTestMapper.GetCapabilities().numButtons + ((true == kTestMapper.GetCapabilities().hasPov) ? 1 : 0);
+        const int kExpectedNumCallbacks = 2 + kTestMapper.GetCapabilities().numAxes + kTestMapper.GetCapabilities().numButtons + ((true == kTestMapper.GetCapabilities().HasPov()) ? 1 : 0);
         int actualNumCallbacks = 0;
 
         VirtualDirectInputDevice<ECharMode::W> diController(CreateTestVirtualController());
-        TEST_ASSERT(DI_OK == diController.EnumObjects([](LPCDIDEVICEOBJECTINSTANCE lpddoi, LPVOID pvRef) -> BOOL
+        const HRESULT enumObjectsResult = diController.EnumObjects([](LPCDIDEVICEOBJECTINSTANCE lpddoi, LPVOID pvRef) -> BOOL
             {
                 *((int*)pvRef) += 1;
                 return DIENUM_CONTINUE;
             },
-            (LPVOID)&actualNumCallbacks, DIDFT_ALL)
-        );
+            (LPVOID)&actualNumCallbacks, DIDFT_ALL);
 
+        TEST_ASSERT(DI_OK == enumObjectsResult);
+        TEST_ASSERT(actualNumCallbacks == kExpectedNumCallbacks);
+    }
+
+    // Only axes, buttons, and POV are to be enumerated, so all controller elements should be enumerated but HID collections should be skipped.
+    // Verified by simple numeric consistency check of the number of times the callback is invoked.
+    TEST_CASE(VirtualDirectInputDevice_EnumObjects_AllObjectsExceptHidCollections)
+    {
+        const int kExpectedNumCallbacks = kTestMapper.GetCapabilities().numAxes + kTestMapper.GetCapabilities().numButtons + ((true == kTestMapper.GetCapabilities().HasPov()) ? 1 : 0);
+        int actualNumCallbacks = 0;
+
+        VirtualDirectInputDevice<ECharMode::W> diController(CreateTestVirtualController());
+        const HRESULT enumObjectsResult = diController.EnumObjects([](LPCDIDEVICEOBJECTINSTANCE lpddoi, LPVOID pvRef) -> BOOL
+            {
+                *((int*)pvRef) += 1;
+                return DIENUM_CONTINUE;
+            },
+            (LPVOID)&actualNumCallbacks, DIDFT_AXIS | DIDFT_BUTTON | DIDFT_POV);
+
+        TEST_ASSERT(DI_OK == enumObjectsResult);
+        TEST_ASSERT(actualNumCallbacks == kExpectedNumCallbacks);
+    }
+
+    // Only HID collections are to be enumerated, so only two callbacks are expected.
+    TEST_CASE(VirtualDirectInputDevice_EnumObjects_OnlyHidCollections)
+    {
+        const int kExpectedNumCallbacks = 2;
+        int actualNumCallbacks = 0;
+
+        VirtualDirectInputDevice<ECharMode::W> diController(CreateTestVirtualController());
+        const HRESULT enumObjectsResult = diController.EnumObjects([](LPCDIDEVICEOBJECTINSTANCE lpddoi, LPVOID pvRef) -> BOOL
+            {
+                const DWORD expectedObjectType = (DIDFT_COLLECTION | DIDFT_NODATA | DIDFT_MAKEINSTANCE(*((int*)pvRef)));
+                const DWORD actualObjectType = lpddoi->dwType;
+                TEST_ASSERT(actualObjectType == expectedObjectType);
+
+                *((int*)pvRef) += 1;
+                return DIENUM_CONTINUE;
+            },
+            (LPVOID)&actualNumCallbacks, DIDFT_COLLECTION);
+
+        TEST_ASSERT(DI_OK == enumObjectsResult);
         TEST_ASSERT(actualNumCallbacks == kExpectedNumCallbacks);
     }
 
@@ -519,14 +578,14 @@ namespace XidiTest
         int actualNumCallbacks = 0;
 
         VirtualDirectInputDevice<ECharMode::W> diController(CreateTestVirtualController());
-        TEST_ASSERT(DI_OK == diController.EnumObjects([](LPCDIDEVICEOBJECTINSTANCE lpddoi, LPVOID pvRef) -> BOOL
+        const HRESULT enumObjectsResult = diController.EnumObjects([](LPCDIDEVICEOBJECTINSTANCE lpddoi, LPVOID pvRef) -> BOOL
             {
                 *((int*)pvRef) += 1;
                 return DIENUM_STOP;
             },
-            (LPVOID)&actualNumCallbacks, DIDFT_ALL)
-        );
+            (LPVOID)&actualNumCallbacks, DIDFT_ALL);
 
+        TEST_ASSERT(DI_OK == enumObjectsResult);
         TEST_ASSERT(actualNumCallbacks == kExpectedNumCallbacks);
     }
 
@@ -546,7 +605,7 @@ namespace XidiTest
             .dwDevType = DINPUT_DEVTYPE_XINPUT_GAMEPAD,
             .dwAxes = kTestMapper.GetCapabilities().numAxes,
             .dwButtons = kTestMapper.GetCapabilities().numButtons,
-            .dwPOVs = (DWORD)((true == kTestMapper.GetCapabilities().hasPov) ? 1 : 0),
+            .dwPOVs = (DWORD)((true == kTestMapper.GetCapabilities().HasPov()) ? 1 : 0),
         };
 
         DIDEVCAPS actualCapabilities;
@@ -578,7 +637,7 @@ namespace XidiTest
             .dwDevType = DINPUT_DEVTYPE_XINPUT_GAMEPAD,
             .dwAxes = kTestMapper.GetCapabilities().numAxes,
             .dwButtons = kTestMapper.GetCapabilities().numButtons,
-            .dwPOVs = (DWORD)((true == kTestMapper.GetCapabilities().hasPov) ? 1 : 0)
+            .dwPOVs = (DWORD)((true == kTestMapper.GetCapabilities().HasPov()) ? 1 : 0)
         };
 
         DIDEVCAPS actualCapabilities;
@@ -865,7 +924,7 @@ namespace XidiTest
         VirtualDirectInputDevice<ECharMode::W> diController(CreateTestVirtualController());
 
         TEST_ASSERT(DI_OK == diController.SetDataFormat(&kTestFormatSpec));
-        TEST_ASSERT(DI_OK == diController.EnumObjects([](LPCDIDEVICEOBJECTINSTANCE lpddoi, LPVOID pvRef) -> BOOL
+        const HRESULT enumObjectsResult = diController.EnumObjects([](LPCDIDEVICEOBJECTINSTANCE lpddoi, LPVOID pvRef) -> BOOL
             {
                 VirtualDirectInputDevice<ECharMode::W>& diController = *((VirtualDirectInputDevice<ECharMode::W>*)pvRef);
 
@@ -888,21 +947,28 @@ namespace XidiTest
                 TEST_ASSERT(DI_OK == diController.GetObjectInfo(&actualObjectInstance, kExpectedObjectInstance.dwType, DIPH_BYID));
                 TEST_ASSERT(0 == memcmp(&actualObjectInstance, &kExpectedObjectInstance, sizeof(kExpectedObjectInstance)));
 
+                // Finally try by HID usage data.
+                ZeroMemory(&actualObjectInstance, sizeof(actualObjectInstance));
+                actualObjectInstance.dwSize = sizeof(DIDEVICEOBJECTINSTANCE);
+                TEST_ASSERT(DI_OK == diController.GetObjectInfo(&actualObjectInstance, DIMAKEUSAGEDWORD(kExpectedObjectInstance.wUsagePage, kExpectedObjectInstance.wUsage), DIPH_BYUSAGE));
+                TEST_ASSERT(0 == memcmp(&actualObjectInstance, &kExpectedObjectInstance, sizeof(kExpectedObjectInstance)));
+
                 return DIENUM_CONTINUE;
             },
-            &diController, DIDFT_ALL)
-        );
+            &diController, DIDFT_AXIS | DIDFT_BUTTON | DIDFT_POV);
+
+        TEST_ASSERT(DI_OK == enumObjectsResult);
     }
 
     // Same as above, except the structure is an older version which is supported for compatibility.
-    // The older structure, with suffix _DX3, is a strict subset of the more modern version.
+    // The older structure, with suffix _DX3, is a strict subset of the more modern version. For example, it does not contain HID usage data.
     TEST_CASE(VirtualDirectInputDevice_GetObjectInfo_Legacy)
     {
         constexpr uint8_t kPoisonByte = 0xcd;
         VirtualDirectInputDevice<ECharMode::W> diController(CreateTestVirtualController());
 
         TEST_ASSERT(DI_OK == diController.SetDataFormat(&kTestFormatSpec));
-        TEST_ASSERT(DI_OK == diController.EnumObjects([](LPCDIDEVICEOBJECTINSTANCE lpddoi, LPVOID pvRef) -> BOOL
+        const HRESULT enumObjectsResult = diController.EnumObjects([](LPCDIDEVICEOBJECTINSTANCE lpddoi, LPVOID pvRef) -> BOOL
             {
                 VirtualDirectInputDevice<ECharMode::W>& diController = *((VirtualDirectInputDevice<ECharMode::W>*)pvRef);
 
@@ -933,8 +999,9 @@ namespace XidiTest
 
                 return DIENUM_CONTINUE;
             },
-            &diController, DIDFT_ALL)
-        );
+            &diController, DIDFT_AXIS | DIDFT_BUTTON | DIDFT_POV);
+
+        TEST_ASSERT(DI_OK == enumObjectsResult);
     }
 
     // A null pointer is passed. This is expected to cause the method to fail.
@@ -967,6 +1034,10 @@ namespace XidiTest
 
         // Using an offset that definitely does exist in the data packet, but the data format has not been set.
         TEST_ASSERT(DIERR_OBJECTNOTFOUND == diController.GetObjectInfo(&objectInstance, 0, DIPH_BYOFFSET));
+
+        // Using a combination of HID usage page and usage that does not exist on the virtual controller.
+        const SHidUsageData nonexistentElementHidUsageData = HidUsageDataForControllerElement({.type = EElementType::Axis, .axis = EAxis::Z});
+        TEST_ASSERT(DIERR_OBJECTNOTFOUND == diController.GetObjectInfo(&objectInstance, DIMAKEUSAGEDWORD(nonexistentElementHidUsageData.usagePage, nonexistentElementHidUsageData.usage), DIPH_BYUSAGE));
 
         // Specifying the whole device, which is not an allowed mechanism for identifying an object for this method, meaning the parameters are invalid.
         TEST_ASSERT(DIERR_INVALIDPARAM == diController.GetObjectInfo(&objectInstance, 0, DIPH_DEVICE));
@@ -1066,7 +1137,7 @@ namespace XidiTest
         // Vendor and product ID (read-only)
         do {
             constexpr DIPROPHEADER kVidPidHeader = {.dwSize = sizeof(DIPROPDWORD), .dwHeaderSize = sizeof(DIPROPHEADER), .dwObj = 0, .dwHow = DIPH_DEVICE};
-            constexpr WORD kExpectedVendorId = VirtualControllerVendorId();
+            constexpr WORD kExpectedVendorId = kVirtualControllerVendorId;
             constexpr WORD kExpectedProductId = VirtualControllerProductId(kTestControllerIdentifier);
 
             DIPROPDWORD actualVidPid = {.diph = kVidPidHeader};
@@ -1444,7 +1515,7 @@ namespace XidiTest
         constexpr DWORD kExpectedEffectParams = (DIEP_AXES | DIEP_DIRECTION | DIEP_DURATION | DIEP_ENVELOPE | DIEP_GAIN | DIEP_SAMPLEPERIOD | DIEP_STARTDELAY | DIEP_TYPESPECIFICPARAMS);
 
         VirtualDirectInputDevice<ECharMode::W> diController(CreateTestVirtualController(kTestMapperWithForceFeedback));
-        TEST_ASSERT(DI_OK == diController.EnumEffects([](LPCDIEFFECTINFO pdei, LPVOID pvRef) -> BOOL
+        const HRESULT enumEffectsResult = diController.EnumEffects([](LPCDIEFFECTINFO pdei, LPVOID pvRef) -> BOOL
             {
                 std::set<GUID>& seenGuids = *((std::set<GUID>*)pvRef);
 
@@ -1460,9 +1531,9 @@ namespace XidiTest
 
                 return DIENUM_CONTINUE;
             },
-            (LPVOID)&actualSeenGuids, DIEFT_ALL)
-        );
+            (LPVOID)&actualSeenGuids, DIEFT_ALL);
 
+        TEST_ASSERT(DI_OK == enumEffectsResult);
         TEST_ASSERT(actualSeenGuids == kExpectedSeenGuids);
     }
 
@@ -1470,7 +1541,7 @@ namespace XidiTest
     TEST_CASE(VirtualDirectInputDevice_ForceFeedback_GetInfoAll)
     {
         VirtualDirectInputDevice<ECharMode::W> diController(CreateTestVirtualController(kTestMapperWithForceFeedback));
-        TEST_ASSERT(DI_OK == diController.EnumEffects([](LPCDIEFFECTINFO pdei, LPVOID pvRef) -> BOOL
+        const HRESULT enumEffectsResult = diController.EnumEffects([](LPCDIEFFECTINFO pdei, LPVOID pvRef) -> BOOL
             {
                 VirtualDirectInputDevice<ECharMode::W>& diController = *((VirtualDirectInputDevice<ECharMode::W>*)pvRef);
                 TEST_ASSERT((nullptr != pdei) && (nullptr != pvRef));
@@ -1481,8 +1552,9 @@ namespace XidiTest
 
                 return DIENUM_CONTINUE;
             },
-            (LPVOID)&diController, DIEFT_ALL)
-        );
+            (LPVOID)&diController, DIEFT_ALL);
+
+        TEST_ASSERT(DI_OK == enumEffectsResult);
     }
 
     // Attempts to get information on an effect using an unsupported GUID. The attempted operation is expected to fail.
@@ -1508,7 +1580,7 @@ namespace XidiTest
         constexpr DWORD kExpectedEffectType = DIEFT_CONSTANTFORCE;
 
         VirtualDirectInputDevice<ECharMode::W> diController(CreateTestVirtualController(kTestMapperWithForceFeedback));
-        TEST_ASSERT(DI_OK == diController.EnumEffects([](LPCDIEFFECTINFO pdei, LPVOID pvRef) -> BOOL
+        const HRESULT enumEffectsResult = diController.EnumEffects([](LPCDIEFFECTINFO pdei, LPVOID pvRef) -> BOOL
             {
                 std::set<GUID>& seenGuids = *((std::set<GUID>*)pvRef);
 
@@ -1522,9 +1594,9 @@ namespace XidiTest
 
                 return DIENUM_CONTINUE;
             },
-            (LPVOID)&actualSeenGuids, kExpectedEffectType)
-        );
+            (LPVOID)&actualSeenGuids, kExpectedEffectType);
 
+        TEST_ASSERT(DI_OK == enumEffectsResult);
         TEST_ASSERT(actualSeenGuids == kExpectedSeenGuids);
     }
 
@@ -1543,7 +1615,7 @@ namespace XidiTest
         constexpr DWORD kExpectedEffectType = DIEFT_RAMPFORCE;
 
         VirtualDirectInputDevice<ECharMode::W> diController(CreateTestVirtualController(kTestMapperWithForceFeedback));
-        TEST_ASSERT(DI_OK == diController.EnumEffects([](LPCDIEFFECTINFO pdei, LPVOID pvRef) -> BOOL
+        const HRESULT enumEffectsResult = diController.EnumEffects([](LPCDIEFFECTINFO pdei, LPVOID pvRef) -> BOOL
             {
                 std::set<GUID>& seenGuids = *((std::set<GUID>*)pvRef);
 
@@ -1557,9 +1629,9 @@ namespace XidiTest
 
                 return DIENUM_CONTINUE;
             },
-            (LPVOID)&actualSeenGuids, kExpectedEffectType)
-        );
+            (LPVOID)&actualSeenGuids, kExpectedEffectType);
 
+        TEST_ASSERT(DI_OK == enumEffectsResult);
         TEST_ASSERT(actualSeenGuids == kExpectedSeenGuids);
     }
 
@@ -1578,7 +1650,7 @@ namespace XidiTest
         constexpr DWORD kExpectedEffectType = DIEFT_PERIODIC;
 
         VirtualDirectInputDevice<ECharMode::W> diController(CreateTestVirtualController(kTestMapperWithForceFeedback));
-        TEST_ASSERT(DI_OK == diController.EnumEffects([](LPCDIEFFECTINFO pdei, LPVOID pvRef) -> BOOL
+        const HRESULT enumEffectsResult = diController.EnumEffects([](LPCDIEFFECTINFO pdei, LPVOID pvRef) -> BOOL
             {
                 std::set<GUID>& seenGuids = *((std::set<GUID>*)pvRef);
 
@@ -1592,9 +1664,9 @@ namespace XidiTest
 
                 return DIENUM_CONTINUE;
             },
-            (LPVOID)&actualSeenGuids, kExpectedEffectType)
-        );
+            (LPVOID)&actualSeenGuids, kExpectedEffectType);
 
+        TEST_ASSERT(DI_OK == enumEffectsResult);
         TEST_ASSERT(actualSeenGuids == kExpectedSeenGuids);
     }
 
@@ -1613,7 +1685,7 @@ namespace XidiTest
         constexpr DWORD kExpectedEffectType = DIEFT_CUSTOMFORCE;
 
         VirtualDirectInputDevice<ECharMode::W> diController(CreateTestVirtualController(kTestMapperWithForceFeedback));
-        TEST_ASSERT(DI_OK == diController.EnumEffects([](LPCDIEFFECTINFO pdei, LPVOID pvRef) -> BOOL
+        const HRESULT enumEffectsResult = diController.EnumEffects([](LPCDIEFFECTINFO pdei, LPVOID pvRef) -> BOOL
             {
                 std::set<GUID>& seenGuids = *((std::set<GUID>*)pvRef);
 
@@ -1627,9 +1699,9 @@ namespace XidiTest
 
                 return DIENUM_CONTINUE;
             },
-            (LPVOID)&actualSeenGuids, kExpectedEffectType)
-        );
+            (LPVOID)&actualSeenGuids, kExpectedEffectType);
 
+        TEST_ASSERT(DI_OK == enumEffectsResult);
         TEST_ASSERT(actualSeenGuids == kExpectedSeenGuids);
     }
 
@@ -1639,13 +1711,14 @@ namespace XidiTest
         constexpr DWORD kExpectedEffectType = DIEFT_STARTDELAY;
 
         VirtualDirectInputDevice<ECharMode::W> diController(CreateTestVirtualController(kTestMapperWithForceFeedback));
-        TEST_ASSERT(DI_OK == diController.EnumEffects([](LPCDIEFFECTINFO pdei, LPVOID pvRef) -> BOOL
+        const HRESULT enumEffectsResult = diController.EnumEffects([](LPCDIEFFECTINFO pdei, LPVOID pvRef) -> BOOL
             {
                 TEST_FAILED_BECAUSE(L"Unexpected invocation of the EnumEffects enumeration function.");
                 return DIENUM_CONTINUE;
             },
-            nullptr, kExpectedEffectType)
-        );
+            nullptr, kExpectedEffectType);
+
+        TEST_ASSERT(DI_OK == enumEffectsResult);
     }
 
     // Creates several effects and attempts to enumerate them all.
@@ -1668,14 +1741,15 @@ namespace XidiTest
             expectedSeenEffects.insert(testEffect);
         }
 
-        TEST_ASSERT(DI_OK == diController.EnumCreatedEffectObjects([](LPDIRECTINPUTEFFECT peff, LPVOID pvRef) -> BOOL
+        const HRESULT enumCreatedEffectObjectsResult = diController.EnumCreatedEffectObjects([](LPDIRECTINPUTEFFECT peff, LPVOID pvRef) -> BOOL
             {
                 std::set<IDirectInputEffect*>& seenEffects = *((std::set<IDirectInputEffect*>*)pvRef);
                 seenEffects.insert(peff);
                 return DIENUM_CONTINUE;
             },
-            (LPVOID)&actualSeenEffects, 0));
+            (LPVOID)&actualSeenEffects, 0);
 
+        TEST_ASSERT(DI_OK == enumCreatedEffectObjectsResult);
         TEST_ASSERT(actualSeenEffects == expectedSeenEffects);
     }
 
@@ -1699,7 +1773,7 @@ namespace XidiTest
             expectedSeenEffects.insert(testEffect);
         }
 
-        TEST_ASSERT(DI_OK == diController.EnumCreatedEffectObjects([](LPDIRECTINPUTEFFECT peff, LPVOID pvRef) -> BOOL
+        const HRESULT enumCreatedEffectObjectsResult = diController.EnumCreatedEffectObjects([](LPDIRECTINPUTEFFECT peff, LPVOID pvRef) -> BOOL
             {
                 std::set<IDirectInputEffect*>& seenEffects = *((std::set<IDirectInputEffect*>*)pvRef);
 
@@ -1709,8 +1783,9 @@ namespace XidiTest
                 seenEffects.insert(peff);
                 return DIENUM_STOP;
             },
-            (LPVOID)&actualSeenEffects, 0));
+            (LPVOID)&actualSeenEffects, 0);
 
+        TEST_ASSERT(DI_OK == enumCreatedEffectObjectsResult);
         for (const auto& actualSeenEffect : actualSeenEffects)
             TEST_ASSERT(true == expectedSeenEffects.contains(actualSeenEffect));
     }
@@ -1738,14 +1813,15 @@ namespace XidiTest
                 testEffect->Release();
         }
 
-        TEST_ASSERT(DI_OK == diController.EnumCreatedEffectObjects([](LPDIRECTINPUTEFFECT peff, LPVOID pvRef) -> BOOL
+        const HRESULT enumCreatedEffectObjectsResult = diController.EnumCreatedEffectObjects([](LPDIRECTINPUTEFFECT peff, LPVOID pvRef) -> BOOL
             {
                 std::set<IDirectInputEffect*>& seenEffects = *((std::set<IDirectInputEffect*>*)pvRef);
                 seenEffects.insert(peff);
                 return DIENUM_CONTINUE;
             },
-            (LPVOID)&actualSeenEffects, 0));
+            (LPVOID)&actualSeenEffects, 0);
 
+        TEST_ASSERT(DI_OK == enumCreatedEffectObjectsResult);
         TEST_ASSERT(actualSeenEffects == expectedSeenEffects);
     }
 
@@ -1770,7 +1846,7 @@ namespace XidiTest
             expectedSeenEffects.insert(testEffect);
         }
 
-        TEST_ASSERT(DI_OK == diController.EnumCreatedEffectObjects([](LPDIRECTINPUTEFFECT peff, LPVOID pvRef) -> BOOL
+        HRESULT enumCreatedEffectObjectsResult = diController.EnumCreatedEffectObjects([](LPDIRECTINPUTEFFECT peff, LPVOID pvRef) -> BOOL
             {
                 std::set<IDirectInputEffect*>& seenEffects = *((std::set<IDirectInputEffect*>*)pvRef);
                 seenEffects.insert(peff);
@@ -1779,16 +1855,19 @@ namespace XidiTest
 
                 return DIENUM_CONTINUE;
             },
-            (LPVOID)&actualSeenEffects, 0));
+            (LPVOID)&actualSeenEffects, 0);
 
+        TEST_ASSERT(DI_OK == enumCreatedEffectObjectsResult);
         TEST_ASSERT(actualSeenEffects == expectedSeenEffects);
 
-        TEST_ASSERT(DI_OK == diController.EnumCreatedEffectObjects([](LPDIRECTINPUTEFFECT peff, LPVOID pvRef) -> BOOL
+        enumCreatedEffectObjectsResult = diController.EnumCreatedEffectObjects([](LPDIRECTINPUTEFFECT peff, LPVOID pvRef) -> BOOL
             {
                 TEST_FAILED_BECAUSE(L"Unexpected invocation of the EnumCreatedEffectObjects enumeration function.");
                 return DIENUM_CONTINUE;
             },
-            nullptr, 0));
+            nullptr, 0);
+
+        TEST_ASSERT(DI_OK == enumCreatedEffectObjectsResult);
     }
 
     // Exercises device acquisition in exclusive mode.
