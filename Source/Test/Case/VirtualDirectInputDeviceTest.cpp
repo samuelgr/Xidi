@@ -1180,6 +1180,54 @@ namespace XidiTest
             TEST_ASSERT(DI_OK == diController.GetProperty(DIPROP_GUIDANDPATH, (LPDIPROPHEADER)&actualClassGuidAndPath));
             TEST_ASSERT(actualClassGuidAndPath.guidClass == kExpectedClassGuid);
         } while (false);
+
+        // Port display name (read-only, expected to return `S_FALSE` instead of `DI_OK`)
+        do {
+            constexpr std::wstring_view kIgnoredPortDisplayName = L"IgnoredPortDisplayName";
+            constexpr DIPROPHEADER kNameHeader = {.dwSize = sizeof(DIPROPSTRING), .dwHeaderSize = sizeof(DIPROPHEADER), .dwObj = 0, .dwHow = DIPH_DEVICE};
+
+            DIPROPSTRING portDisplayName = {.diph = kNameHeader};
+            wcsncpy_s(portDisplayName.wsz, _countof(portDisplayName.wsz), kIgnoredPortDisplayName.data(), kIgnoredPortDisplayName.length());
+            TEST_ASSERT(FAILED(diController.SetProperty(DIPROP_GETPORTDISPLAYNAME, (LPCDIPROPHEADER)&portDisplayName)));
+            TEST_ASSERT(S_FALSE == diController.GetProperty(DIPROP_GETPORTDISPLAYNAME, (LPDIPROPHEADER)&portDisplayName));
+            
+            std::wstring_view obtainedPortDisplayName = portDisplayName.wsz;
+            TEST_ASSERT(kIgnoredPortDisplayName != obtainedPortDisplayName);
+            TEST_ASSERT(0 != obtainedPortDisplayName.length());
+        } while (false);
+
+        // User name (read-only, expected to return `S_FALSE`)
+        do {
+            constexpr DIPROPHEADER kNameHeader = {.dwSize = sizeof(DIPROPSTRING), .dwHeaderSize = sizeof(DIPROPHEADER), .dwObj = 0, .dwHow = DIPH_DEVICE};
+
+            DIPROPSTRING userName = {.diph = kNameHeader, .wsz = L"Ignored user name"};
+            TEST_ASSERT(FAILED(diController.SetProperty(DIPROP_USERNAME, (LPCDIPROPHEADER)&userName)));
+            TEST_ASSERT(S_FALSE == diController.GetProperty(DIPROP_USERNAME, (LPDIPROPHEADER)&userName));
+        } while (false);
+    }
+
+    // Nominal situation of setting some supported properties to valid values and reading them back, except these properties impose specific requirements on device state prior to being read or written.
+    // For read-only properties the write is expected to fail.
+    TEST_CASE(VirtualDirectInputDevice_Properties_NominalSpecial)
+    {
+        VirtualDirectInputDevice<ECharMode::W> diController(CreateTestVirtualController());
+
+        // These special properties need the device to be acquired exclusively.
+        constexpr SPhysicalState kPhysicalState = {.deviceStatus = EPhysicalDeviceStatus::Ok};
+        MockPhysicalController physicalController(kTestControllerIdentifier, &kPhysicalState, 1);
+        TEST_ASSERT(DI_OK == diController.SetCooperativeLevel(nullptr, DISCL_EXCLUSIVE | DISCL_FOREGROUND));
+        TEST_ASSERT(DI_OK == diController.SetDataFormat(&kTestFormatSpec));
+        TEST_ASSERT(DI_OK == diController.Acquire());
+
+        // Force feedback device load (read-only)
+        do {
+            constexpr DIPROPHEADER kFfLoadHeader = {.dwSize = sizeof(DIPROPDWORD), .dwHeaderSize = sizeof(DIPROPHEADER), .dwObj = 0, .dwHow = DIPH_DEVICE};
+            constexpr DIPROPDWORD kExpectedFfLoad = {.diph = kFfLoadHeader, .dwData = 0};
+            DIPROPDWORD actualFfLoad = {.diph = kFfLoadHeader, .dwData = (DWORD)-1};
+            TEST_ASSERT(FAILED(diController.SetProperty(DIPROP_FFLOAD, (LPCDIPROPHEADER)&kExpectedFfLoad)));
+            TEST_ASSERT(DI_OK == diController.GetProperty(DIPROP_FFLOAD, (LPDIPROPHEADER)&actualFfLoad));
+            TEST_ASSERT(0 == memcmp(&actualFfLoad, &kExpectedFfLoad, sizeof(kExpectedFfLoad)));
+        } while (false);
     }
 
     // Verifies that axis mode is reported as absolute and is presented as read/write but in practice is read-only.

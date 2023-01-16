@@ -63,7 +63,7 @@
 #define LOG_PROPERTY_INVOCATION_DIPROPRANGE_AND_RETURN(result, severity, rguidprop, ppropval)   LOG_PROPERTY_INVOCATION_AND_RETURN(result, severity, rguidprop, L", value = { lMin = %ld, lMax = %ld }", ((LPDIPROPRANGE)ppropval)->lMin, ((LPDIPROPRANGE)ppropval)->lMax)
 
 /// Logs a DirectInput property-related method where the value is provided in a DIPROPSTRING structure and returns.
-#define LOG_PROPERTY_INVOCATION_DIPROPSTRING_AND_RETURN(result, severity, rguidprop, ppropval)  LOG_PROPERTY_INVOCATION_AND_RETURN(result, severity, rguidprop, L", value = { wsz = %s }", ((LPDIPROPSTRING)ppropval)->wsz)
+#define LOG_PROPERTY_INVOCATION_DIPROPSTRING_AND_RETURN(result, severity, rguidprop, ppropval)  LOG_PROPERTY_INVOCATION_AND_RETURN(result, severity, rguidprop, L", value = { wsz = \"%s\" }", ((LPDIPROPSTRING)ppropval)->wsz)
 
 
 namespace Xidi
@@ -244,14 +244,10 @@ namespace Xidi
         // Look for reasons why the property header might be invalid and reject it if any are found.
         switch ((size_t)&rguidProp)
         {
-        case ((size_t)&DIPROP_AXISMODE):
         case ((size_t)&DIPROP_DEADZONE):
         case ((size_t)&DIPROP_GRANULARITY):
         case ((size_t)&DIPROP_SATURATION):
-#if DIRECTINPUT_VERSION >= 0x0800
-        case ((size_t)&DIPROP_VIDPID):
-#endif
-            // Axis mode, deadzone, granularity, saturation, and vendor/product ID all use DIPROPDWORD.
+            // These properties use DIPROPDWORD.
             if (sizeof(DIPROPDWORD) != pdiph->dwSize)
             {
                 Message::OutputFormatted(Message::ESeverity::Warning, L"Rejected invalid property header for %s: Incorrect size for DIPROPDWORD (expected %u, got %u).", PropertyGuidString(rguidProp), (unsigned int)sizeof(DIPROPDWORD), (unsigned int)pdiph->dwSize);
@@ -260,10 +256,15 @@ namespace Xidi
             break;
 
         case ((size_t)&DIPROP_AUTOCENTER):
+        case ((size_t)&DIPROP_AXISMODE):
         case ((size_t)&DIPROP_BUFFERSIZE):
         case ((size_t)&DIPROP_FFGAIN):
+        case ((size_t)&DIPROP_FFLOAD):
         case ((size_t)&DIPROP_JOYSTICKID):
-            // Autocenter, buffer size, force feedback gain, and joystick ID all use DIPROPDWORD and are exclusively device-wide properties.
+#if DIRECTINPUT_VERSION >= 0x0800
+        case ((size_t)&DIPROP_VIDPID):
+#endif
+            // These properties use DIPROPDWORD and are exclusively device-wide properties.
             if (DIPH_DEVICE != pdiph->dwHow)
             {
                 Message::OutputFormatted(Message::ESeverity::Warning, L"Rejected invalid property header for %s: Incorrect object identification method for this property (expected %s, got %s).", PropertyGuidString(rguidProp), IdentificationMethodString(DIPH_DEVICE), IdentificationMethodString(pdiph->dwHow));
@@ -279,7 +280,7 @@ namespace Xidi
         case ((size_t)&DIPROP_RANGE):
         case ((size_t)&DIPROP_LOGICALRANGE):
         case ((size_t)&DIPROP_PHYSICALRANGE):
-            // Range-related properties use DIPROPRANGE.
+            // These properties use DIPROPRANGE.
             if (sizeof(DIPROPRANGE) != pdiph->dwSize)
             {
                 Message::OutputFormatted(Message::ESeverity::Warning, L"Rejected invalid property header for %s: Incorrect size for DIPROPRANGE (expected %u, got %u).", PropertyGuidString(rguidProp), (unsigned int)sizeof(DIPROPRANGE), (unsigned int)pdiph->dwSize);
@@ -287,9 +288,13 @@ namespace Xidi
             }
             break;
 
+        case ((size_t)&DIPROP_GETPORTDISPLAYNAME):
         case ((size_t)&DIPROP_INSTANCENAME):
         case ((size_t)&DIPROP_PRODUCTNAME):
-            // Instance and product name properties use DIPROPSTRING and are exclusively device-wide properties.
+#if DIRECTINPUT_VERSION >= 0x0800
+        case ((size_t)&DIPROP_USERNAME):
+#endif
+            // These properties use DIPROPSTRING and are exclusively device-wide properties.
             if (DIPH_DEVICE != pdiph->dwHow)
             {
                 Message::OutputFormatted(Message::ESeverity::Warning, L"Rejected invalid property header for %s: Incorrect object identification method for this property (expected %s, got %s).", PropertyGuidString(rguidProp), IdentificationMethodString(DIPH_DEVICE), IdentificationMethodString(pdiph->dwHow));
@@ -303,7 +308,7 @@ namespace Xidi
             break;
 
         case ((size_t)&DIPROP_GUIDANDPATH):
-            // GUID-and-path uses DIPROPGUIDANDPATH and is exclusively a device-wide property.
+            // This property uses DIPROPGUIDANDPATH and is exclusively a device-wide property.
             if (DIPH_DEVICE != pdiph->dwHow)
             {
                 Message::OutputFormatted(Message::ESeverity::Warning, L"Rejected invalid property header for %s: Incorrect object identification method for this property (expected %s, got %s).", PropertyGuidString(rguidProp), IdentificationMethodString(DIPH_DEVICE), IdentificationMethodString(pdiph->dwHow));
@@ -1614,14 +1619,10 @@ namespace Xidi
         switch ((size_t)&rguidProp)
         {
         case ((size_t)&DIPROP_AXISMODE):
-            if (Controller::EElementType::WholeController != element.type)
-                LOG_PROPERTY_INVOCATION_NO_VALUE_AND_RETURN(DIERR_INVALIDPARAM, kMethodSeverity, rguidProp);
             ((LPDIPROPDWORD)pdiph)->dwData = DIPROPAXISMODE_ABS;
             LOG_PROPERTY_INVOCATION_DIPROPDWORD_AND_RETURN(DI_OK, kMethodSeverity, rguidProp, pdiph);
 
         case ((size_t)&DIPROP_AUTOCENTER):
-            if (Controller::EElementType::WholeController != element.type)
-                LOG_PROPERTY_INVOCATION_NO_VALUE_AND_RETURN(DIERR_INVALIDPARAM, kMethodSeverity, rguidProp);
             ((LPDIPROPDWORD)pdiph)->dwData = unusedProperties.autocenter;
             LOG_PROPERTY_INVOCATION_DIPROPDWORD_AND_RETURN(DI_OK, kMethodSeverity, rguidProp, pdiph);
 
@@ -1638,6 +1639,24 @@ namespace Xidi
         case ((size_t)&DIPROP_FFGAIN):
             ((LPDIPROPDWORD)pdiph)->dwData = controller->GetForceFeedbackGain();
             LOG_PROPERTY_INVOCATION_DIPROPDWORD_AND_RETURN(DI_OK, kMethodSeverity, rguidProp, pdiph);
+
+        case ((size_t)&DIPROP_FFLOAD):
+            do {
+                Controller::ForceFeedback::Device* forceFeedbackDevice = AutoAcquireAndGetForceFeedbackDevice();
+                if (nullptr == forceFeedbackDevice)
+                    LOG_PROPERTY_INVOCATION_DIPROPDWORD_AND_RETURN(DIERR_NOTEXCLUSIVEACQUIRED, kMethodSeverity, rguidProp, pdiph);
+
+                // There is no practical limit on the number of force feedback effects that be loaded to a virtual force feedback device.
+                // If the device has no effects then it is zero percent loaded, otherwise it is ceiling(a small quantity greater than 0) = 1 percent loaded.
+                ((LPDIPROPDWORD)pdiph)->dwData = ((true == forceFeedbackDevice->IsDeviceEmpty()) ? 0 : 1);
+            } while (false);
+            LOG_PROPERTY_INVOCATION_DIPROPDWORD_AND_RETURN(DI_OK, kMethodSeverity, rguidProp, pdiph);
+
+        case ((size_t)&DIPROP_GETPORTDISPLAYNAME):
+            // Port display name is not particularly important but it is the same for all virtual controllers. Xidi just reports its own product name as the port display name.
+            // Per DirectInput documentation the return code for this one particular property is always `S_FALSE`.
+            wcsncpy_s(((LPDIPROPSTRING)pdiph)->wsz, _countof(((LPDIPROPSTRING)pdiph)->wsz), Strings::kStrProductName.data(), Strings::kStrProductName.length());
+            LOG_PROPERTY_INVOCATION_DIPROPSTRING_AND_RETURN(S_FALSE, kMethodSeverity, rguidProp, pdiph);
 
         case ((size_t)&DIPROP_GRANULARITY):
             switch (element.type)
@@ -1663,7 +1682,7 @@ namespace Xidi
             LOG_PROPERTY_INVOCATION_DIPROPSTRING_AND_RETURN(DI_OK, kMethodSeverity, rguidProp, pdiph);
 
         case ((size_t)&DIPROP_JOYSTICKID):
-            ((LPDIPROPDWORD)pdiph)->dwData = controller->GetIdentifier();
+            ((LPDIPROPDWORD)pdiph)->dwData = (DWORD)controller->GetIdentifier();
             LOG_PROPERTY_INVOCATION_DIPROPDWORD_AND_RETURN(DI_OK, kMethodSeverity, rguidProp, pdiph);
 
         case ((size_t)&DIPROP_LOGICALRANGE):
@@ -1699,9 +1718,13 @@ namespace Xidi
             LOG_PROPERTY_INVOCATION_DIPROPDWORD_AND_RETURN(DI_OK, kMethodSeverity, rguidProp, pdiph);
 
 #if DIRECTINPUT_VERSION >= 0x0800
+        case ((size_t)&DIPROP_USERNAME):
+            // Xidi does not support action maps, so the user name property cannot be set on a virtual controller.
+            // Per DirectInput documentation the return code is `S_FALSE` when a user name is not assigned to a DirectInput device.
+            ((LPDIPROPSTRING)pdiph)->wsz[0] = L'\0';
+            LOG_PROPERTY_INVOCATION_DIPROPSTRING_AND_RETURN(S_FALSE, kMethodSeverity, rguidProp, pdiph);
+
         case ((size_t)&DIPROP_VIDPID):
-            if (Controller::EElementType::WholeController != element.type)
-                LOG_PROPERTY_INVOCATION_NO_VALUE_AND_RETURN(DIERR_INVALIDPARAM, kMethodSeverity, rguidProp);
             ((LPDIPROPDWORD)pdiph)->dwData = ((DWORD)VirtualControllerProductId(controller->GetIdentifier()) << 16) | ((DWORD)kVirtualControllerVendorId);
             LOG_PROPERTY_INVOCATION_DIPROPDWORD_AND_RETURN(DI_OK, kMethodSeverity, rguidProp, pdiph);
 #endif

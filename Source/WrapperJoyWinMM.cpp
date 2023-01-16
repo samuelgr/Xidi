@@ -222,7 +222,7 @@ namespace Xidi
 
             return DIENUM_CONTINUE;
         }
-        
+
         /// Fills in the system device info data structure with information from the registry and from DirectInput.
         static void CreateSystemDeviceInfo(void)
         {
