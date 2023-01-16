@@ -3,7 +3,7 @@
  *   DirectInput interface for XInput controllers.
  *****************************************************************************
  * Authored by Samuel Grossman
- * Copyright (c) 2016-2022
+ * Copyright (c) 2016-2023
  *************************************************************************//**
  * @file SetHooksWinMM.cpp
  *   Implementation of all functionality for setting WinMM hooks.
