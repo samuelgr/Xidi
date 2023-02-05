@@ -147,30 +147,29 @@ namespace XidiTest
     // -------- INTERNAL FUNCTIONS ----------------------------------------- //
 
     /// Creates and returns a smart pointer to a mock physical controller object set up correctly for force feedback but with neutral state.
+    /// @param [in] mapper Read-only reference to the mapper object to use, defaults to the test mapper at the top of this file.
     /// @return Initialized mock physical controller object.
-    static inline std::unique_ptr<MockPhysicalController> CreateMockPhysicalController(void)
+    static inline std::unique_ptr<MockPhysicalController> CreateMockPhysicalController(const Mapper& mapper = kTestMapper)
     {
-        return std::make_unique<MockPhysicalController>(kTestControllerIdentifier, &kNeutralPhysicalState, 1);
+        return std::make_unique<MockPhysicalController>(kTestControllerIdentifier, mapper, &kNeutralPhysicalState, 1);
     }
 
     /// Creates and returns a DirectInput device object that by default uses the mapper at the top of this file.
     /// @param [in] controllerIdentifier Identifier of the controller to use when creating the underlying virtual controller object, defaults to the identifier at the top of this file.
-    /// @param [in] mapper Read-only reference to the mapper object to use, defaults to the test mapper at the top of this file.
     /// @return Smart pointer to a new virtual DirectInput device object.
-    static inline std::unique_ptr<VirtualDirectInputDevice<ECharMode::W>> CreateTestDirectInputDevice(TControllerIdentifier controllerIdentifier = kTestControllerIdentifier, const Mapper& mapper = kTestMapper)
+    static inline std::unique_ptr<VirtualDirectInputDevice<ECharMode::W>> CreateTestDirectInputDevice(TControllerIdentifier controllerIdentifier = kTestControllerIdentifier)
     {
-        return std::make_unique<VirtualDirectInputDevice<ECharMode::W>>(std::make_unique<VirtualController>(controllerIdentifier, mapper));
+        return std::make_unique<VirtualDirectInputDevice<ECharMode::W>>(std::make_unique<VirtualController>(controllerIdentifier));
     }
 
     /// Creates and returns a DirectInput device object that by default uses the mapper and data packet format at the top of this file.
     /// The new object has its data format set and is acquired in exclusive mode before being returned, so it is immediately ready for force feedback effect operations.
     /// @param [in] mockPhysicalController Read-only reference to a mock physical controller object.
-    /// @param [in] mapper Read-only reference to the mapper object to use, defaults to the test mapper at the top of this file.
     /// @param [in] dataFormatSpec Pointer to a read-only DirectInput data packet format specification, defaults to using the data packet structure at the top of this file.
     /// @return Smart pointer to a new virtual DirectInput device object.
-    static inline std::unique_ptr<VirtualDirectInputDevice<ECharMode::W>> CreateAndAcquireTestDirectInputDevice(const MockPhysicalController& mockPhysicalController, const Mapper& mapper = kTestMapper, LPCDIDATAFORMAT dataFormatSpec = &kTestFormatSpec)
+    static inline std::unique_ptr<VirtualDirectInputDevice<ECharMode::W>> CreateAndAcquireTestDirectInputDevice(const MockPhysicalController& mockPhysicalController, LPCDIDATAFORMAT dataFormatSpec = &kTestFormatSpec)
     {
-        std::unique_ptr<VirtualDirectInputDevice<ECharMode::W>> newDirectInputDevice = CreateTestDirectInputDevice(mockPhysicalController.GetControllerIdentifier(), mapper);
+        std::unique_ptr<VirtualDirectInputDevice<ECharMode::W>> newDirectInputDevice = CreateTestDirectInputDevice(mockPhysicalController.GetControllerIdentifier());
         TEST_ASSERT(DI_OK == newDirectInputDevice->SetDataFormat(dataFormatSpec));
         TEST_ASSERT(DI_OK == newDirectInputDevice->SetCooperativeLevel(nullptr, DISCL_EXCLUSIVE | DISCL_FOREGROUND));
         TEST_ASSERT(DI_OK == newDirectInputDevice->Acquire());

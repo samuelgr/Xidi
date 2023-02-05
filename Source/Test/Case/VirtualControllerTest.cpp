@@ -173,7 +173,9 @@ namespace XidiTest
         // Output monotonicity check variable.
         int32_t lastOutputAxisValue = rangeMin;
 
-        VirtualController controller(0, kTestSingleAxisMapper);
+        MockPhysicalController physicalController(0, kTestMapper);
+        VirtualController controller(0);
+
         TEST_ASSERT(true == controller.SetAxisDeadzone(kTestSingleAxis, deadzone));
         TEST_ASSERT(true == controller.SetAxisRange(kTestSingleAxis, rangeMin, rangeMax));
         TEST_ASSERT(true == controller.SetAxisSaturation(kTestSingleAxis, saturation));
@@ -246,7 +248,9 @@ namespace XidiTest
 
         for (auto mapper : mappers)
         {
-            VirtualController controller(0, *mapper);
+            MockPhysicalController physicalController(0, *mapper);
+            VirtualController controller(0);
+
             TEST_ASSERT(mapper->GetCapabilities() == controller.GetCapabilities());
         }
     }
@@ -271,12 +275,13 @@ namespace XidiTest
             {.button = 0b1000},    // Y
         };
 
-        VirtualController controller(kControllerIndex, kTestMapper);
+        MockPhysicalController physicalController(kControllerIndex, kTestMapper);
+        VirtualController controller(kControllerIndex);
         controller.SetAllAxisRange(Controller::kAnalogValueMin, Controller::kAnalogValueMax);
 
         for (int i = 0; i < _countof(kExpectedStates); ++i)
         {
-            controller.RefreshState(kPhysicalStates[i]);
+            controller.RefreshState(kTestMapper.MapStatePhysicalToVirtual(kPhysicalStates[i], kControllerIndex));
 
             const Controller::SState kActualState = controller.GetState();
             TEST_ASSERT(kActualState == kExpectedStates[i]);
@@ -292,7 +297,8 @@ namespace XidiTest
         constexpr int32_t kExpectedNeutralAnalogValue = (VirtualController::kRangeMinDefault + VirtualController::kRangeMaxDefault) / 2;
         constexpr Controller::SState kExpectedState = {.axis = {kExpectedNeutralAnalogValue, kExpectedNeutralAnalogValue, 0, kExpectedNeutralAnalogValue, kExpectedNeutralAnalogValue, 0}};
 
-        VirtualController controller(kControllerIndex, kTestMapper);
+        MockPhysicalController physicalController(kControllerIndex, kTestMapper);
+        VirtualController controller(kControllerIndex);
 
         const Controller::SState kActualState = controller.GetState();
         TEST_ASSERT(kActualState == kExpectedState);
@@ -314,12 +320,14 @@ namespace XidiTest
             {.button = 0b0101}      // A, X
         };
 
-        VirtualController controller(kControllerIndex, kTestMapper);
+        MockPhysicalController physicalController(kControllerIndex, kTestMapper);
+        VirtualController controller(kControllerIndex);
+
         controller.SetAllAxisRange(Controller::kAnalogValueMin, Controller::kAnalogValueMax);
 
         for (const auto& expectedState : kExpectedStates)
         {
-            controller.RefreshState(kPhysicalState);
+            controller.RefreshState(kTestMapper.MapStatePhysicalToVirtual(kPhysicalState, kControllerIndex));
 
             const Controller::SState actualState = controller.GetState();
             TEST_ASSERT(actualState == expectedState);
@@ -359,12 +367,14 @@ namespace XidiTest
             {.button = 0b1100}      // X, Y
         };
 
-        VirtualController controller(kControllerIndex, kTestMapper);
+        MockPhysicalController physicalController(kControllerIndex, kTestMapper);
+        VirtualController controller(kControllerIndex);
+
         controller.SetAllAxisRange(Controller::kAnalogValueMin, Controller::kAnalogValueMax);
 
         for (int i = 0; i < _countof(kExpectedStates); ++i)
         {
-            controller.RefreshState(kPhysicalStates[i]);
+            controller.RefreshState(kTestMapper.MapStatePhysicalToVirtual(kPhysicalStates[i], kControllerIndex));
 
             const Controller::SState kActualState = controller.GetState();
             TEST_ASSERT(kActualState == kExpectedStates[i]);
@@ -374,7 +384,9 @@ namespace XidiTest
     // Verifies that attempting to obtain a controller lock results in an object that does, in fact, own the mutex with which it is associated.
     TEST_CASE(VirtualController_Lock)
     {
-        VirtualController controller(0, kTestSingleAxisMapper);
+        MockPhysicalController physicalController(0, kTestMapper);
+        VirtualController controller(0);
+
         auto lock = controller.Lock();
         TEST_ASSERT(true == lock.owns_lock());
     }
@@ -465,7 +477,9 @@ namespace XidiTest
         constexpr uint32_t kTestDeadzoneValue = VirtualController::kAxisDeadzoneDefault / 2;
         constexpr EAxis kTestDeadzoneAxis = EAxis::RotX;
 
-        VirtualController controller(0, kTestMapper);
+        MockPhysicalController physicalController(0, kTestMapper);
+        VirtualController controller(0);
+
         TEST_ASSERT(true == controller.SetAxisDeadzone(kTestDeadzoneAxis, kTestDeadzoneValue));
         
         for (int i = 0; i < (int)EAxis::Count; ++i)
@@ -488,7 +502,9 @@ namespace XidiTest
         constexpr uint32_t kTestDeadzoneValue = VirtualController::kAxisDeadzoneMax + 1;
         constexpr EAxis kTestDeadzoneAxis = EAxis::RotX;
 
-        VirtualController controller(0, kTestMapper);
+        MockPhysicalController physicalController(0, kTestMapper);
+        VirtualController controller(0);
+
         TEST_ASSERT(false == controller.SetAxisDeadzone(kTestDeadzoneAxis, kTestDeadzoneValue));
 
         for (int i = 0; i < (int)EAxis::Count; ++i)
@@ -504,7 +520,10 @@ namespace XidiTest
     TEST_CASE(VirtualController_SetProperty_ForceFeedbackGainValid)
     {
         constexpr uint32_t kTestFfGainValue = VirtualController::kFfGainDefault / 2;
-        VirtualController controller(0, kTestMapper);
+
+        MockPhysicalController physicalController(0, kTestMapper);
+        VirtualController controller(0);
+
         TEST_ASSERT(true == controller.SetForceFeedbackGain(kTestFfGainValue));
     }
 
@@ -512,7 +531,10 @@ namespace XidiTest
     TEST_CASE(VirtualController_SetProperty_ForceFeedbackGainInvalid)
     {
         constexpr uint32_t kTestFfGainValue = VirtualController::kFfGainMax + 1;
-        VirtualController controller(0, kTestMapper);
+
+        MockPhysicalController physicalController(0, kTestMapper);
+        VirtualController controller(0);
+
         TEST_ASSERT(false == controller.SetForceFeedbackGain(kTestFfGainValue));
     }
 
@@ -522,7 +544,9 @@ namespace XidiTest
         constexpr std::pair<int32_t, int32_t> kTestRangeValue = std::make_pair(-100, 50000);
         constexpr EAxis kTestRangeAxis = EAxis::Y;
 
-        VirtualController controller(0, kTestMapper);
+        MockPhysicalController physicalController(0, kTestMapper);
+        VirtualController controller(0);
+
         TEST_ASSERT(true == controller.SetAxisRange(kTestRangeAxis, kTestRangeValue.first, kTestRangeValue.second));
 
         for (int i = 0; i < (int)EAxis::Count; ++i)
@@ -545,7 +569,9 @@ namespace XidiTest
         constexpr std::pair<int32_t, int32_t> kTestRangeValue = std::make_pair(50000, 50000);
         constexpr EAxis kTestRangeAxis = EAxis::Y;
 
-        VirtualController controller(0, kTestMapper);
+        MockPhysicalController physicalController(0, kTestMapper);
+        VirtualController controller(0);
+
         TEST_ASSERT(false == controller.SetAxisRange(kTestRangeAxis, kTestRangeValue.first, kTestRangeValue.second));
 
         for (int i = 0; i < (int)EAxis::Count; ++i)
@@ -563,7 +589,9 @@ namespace XidiTest
         constexpr uint32_t kTestSaturationValue = VirtualController::kAxisSaturationDefault / 2;
         constexpr EAxis kTestSaturationAxis = EAxis::RotY;
 
-        VirtualController controller(0, kTestMapper);
+        MockPhysicalController physicalController(0, kTestMapper);
+        VirtualController controller(0);
+
         TEST_ASSERT(true == controller.SetAxisSaturation(kTestSaturationAxis, kTestSaturationValue));
 
         for (int i = 0; i < (int)EAxis::Count; ++i)
@@ -586,7 +614,9 @@ namespace XidiTest
         constexpr uint32_t kTestSaturationValue = VirtualController::kAxisSaturationMax + 1;
         constexpr EAxis kTestSaturationAxis = EAxis::RotY;
 
-        VirtualController controller(0, kTestMapper);
+        MockPhysicalController physicalController(0, kTestMapper);
+        VirtualController controller(0);
+
         TEST_ASSERT(false == controller.SetAxisSaturation(kTestSaturationAxis, kTestSaturationValue));
 
         for (int i = 0; i < (int)EAxis::Count; ++i)
@@ -613,9 +643,10 @@ namespace XidiTest
         constexpr Controller::SState kExpectedStateBefore = {.axis = {kTestOldAxisRangeExpectedNeutralValue, kTestOldAxisRangeExpectedNeutralValue, 0, kTestOldAxisRangeExpectedNeutralValue, kTestOldAxisRangeExpectedNeutralValue, 0}};
         constexpr Controller::SState kExpectedStateAfter = {.axis = {kTestNewAxisRangeExpectedNeutralValue, kTestNewAxisRangeExpectedNeutralValue, 0, kTestNewAxisRangeExpectedNeutralValue, kTestNewAxisRangeExpectedNeutralValue, 0}};
 
-        VirtualController controller(0, kTestMapper);
+        MockPhysicalController physicalController(0, kTestMapper);
+        VirtualController controller(0);
 
-        controller.RefreshState(kPhysicalState);
+        controller.RefreshState(kTestMapper.MapStatePhysicalToVirtual(kPhysicalState, 0));
         controller.SetAllAxisRange(kTestOldAxisRangeMin, kTestOldAxisRangeMax);
         const Controller::SState kActualStateBefore = controller.GetState();
         TEST_ASSERT(kActualStateBefore == kExpectedStateBefore);
@@ -632,7 +663,9 @@ namespace XidiTest
     // Verifies that by default buffered events are disabled.
     TEST_CASE(VirtualController_EventBuffer_DefaultDisabled)
     {
-        VirtualController controller(0, kTestMapper);
+        MockPhysicalController physicalController(0, kTestMapper);
+        VirtualController controller(0);
+
         TEST_ASSERT(0 == controller.GetEventBufferCapacity());
     }
 
@@ -641,7 +674,9 @@ namespace XidiTest
     {
         constexpr uint32_t kEventBufferCapacity = 64;
 
-        VirtualController controller(0, kTestMapper);
+        MockPhysicalController physicalController(0, kTestMapper);
+        VirtualController controller(0);
+
         controller.SetEventBufferCapacity(kEventBufferCapacity);
         TEST_ASSERT(kEventBufferCapacity == controller.GetEventBufferCapacity());
     }
@@ -658,11 +693,13 @@ namespace XidiTest
             {.deviceStatus = EPhysicalDeviceStatus::Ok}
         };
 
-        VirtualController controller(kControllerIndex, kTestMapper);
+        MockPhysicalController physicalController(kControllerIndex, kTestMapper);
+        VirtualController controller(kControllerIndex);
+
         controller.SetEventBufferCapacity(kEventBufferCapacity);
 
         for (int i = 0; i < _countof(kPhysicalStates); ++i)
-            controller.RefreshState(kPhysicalStates[i]);
+            controller.RefreshState(kTestMapper.MapStatePhysicalToVirtual(kPhysicalStates[i], kControllerIndex));
 
         TEST_ASSERT(0 == controller.GetEventBufferCount());
     }
@@ -696,7 +733,9 @@ namespace XidiTest
         // First iteration tests only a single state change, second iteration tests two state changes, and so on.
         for (unsigned int i = 1; i <= _countof(kPhysicalStates); ++i)
         {
-            VirtualController controller(kControllerIndex, kTestMapper);
+            MockPhysicalController physicalController(kControllerIndex, kTestMapper);
+            VirtualController controller(kControllerIndex);
+
             controller.SetAllAxisRange(Controller::kAnalogValueMin, Controller::kAnalogValueMax);
             controller.SetEventBufferCapacity(kEventBufferCapacity);
 
@@ -704,7 +743,7 @@ namespace XidiTest
             TEST_ASSERT(0 == lastEventCount);
             for (unsigned int j = 0; j < i; ++j)
             {
-                controller.RefreshState(kPhysicalStates[j]);
+                controller.RefreshState(kTestMapper.MapStatePhysicalToVirtual(kPhysicalStates[j], kControllerIndex));
                 
                 TEST_ASSERT(controller.GetEventBufferCount() > lastEventCount);
                 lastEventCount = controller.GetEventBufferCount();
@@ -751,7 +790,9 @@ namespace XidiTest
         // First iteration tests only a single state change, second iteration tests two state changes, and so on.
         for (unsigned int i = 1; i <= _countof(kPhysicalStates); ++i)
         {
-            VirtualController controller(kControllerIndex, kTestMapper);
+            MockPhysicalController physicalController(kControllerIndex, kTestMapper);
+            VirtualController controller(kControllerIndex);
+
             controller.SetAllAxisRange(Controller::kAnalogValueMin, Controller::kAnalogValueMax);
             controller.SetEventBufferCapacity(kEventBufferCapacity);
             controller.EventFilterRemoveElement({.type = EElementType::Axis, .axis = EAxis::X});
@@ -761,7 +802,7 @@ namespace XidiTest
             TEST_ASSERT(0 == lastEventCount);
             for (unsigned int j = 0; j < i; ++j)
             {
-                controller.RefreshState(kPhysicalStates[j]);
+                controller.RefreshState(kTestMapper.MapStatePhysicalToVirtual(kPhysicalStates[j], kControllerIndex));
 
                 TEST_ASSERT(controller.GetEventBufferCount() >= lastEventCount);
                 lastEventCount = controller.GetEventBufferCount();
@@ -797,9 +838,9 @@ namespace XidiTest
         const HANDLE kStateChangeEvent = CreateEvent(nullptr, FALSE, FALSE, nullptr);
         TEST_ASSERT((nullptr != kStateChangeEvent) && (INVALID_HANDLE_VALUE != kStateChangeEvent));
 
-        MockPhysicalController physicalController(kControllerIndex, kPhysicalStates, _countof(kPhysicalStates));
+        MockPhysicalController physicalController(kControllerIndex, kTestMapper, kPhysicalStates, _countof(kPhysicalStates));
 
-        VirtualController controller(kControllerIndex, kTestMapper);
+        VirtualController controller(kControllerIndex);
         controller.SetStateChangeEvent(kStateChangeEvent);
 
         for (int i = 1; i < _countof(kPhysicalStates); ++i)
@@ -833,9 +874,9 @@ namespace XidiTest
         const HANDLE kStateChangeEvent = CreateEvent(nullptr, FALSE, FALSE, nullptr);
         TEST_ASSERT((nullptr != kStateChangeEvent) && (INVALID_HANDLE_VALUE != kStateChangeEvent));
 
-        MockPhysicalController physicalController(kControllerIndex, kPhysicalStates, _countof(kPhysicalStates));
+        MockPhysicalController physicalController(kControllerIndex, kTestMapper, kPhysicalStates, _countof(kPhysicalStates));
 
-        VirtualController controller(kControllerIndex, kTestMapper);
+        VirtualController controller(kControllerIndex);
         controller.SetStateChangeEvent(kStateChangeEvent);
 
         for (int i = 1; i < _countof(kPhysicalStates); i += 2)
@@ -857,10 +898,10 @@ namespace XidiTest
         constexpr TControllerIdentifier kControllerIndex = 1;
         constexpr SPhysicalState kPhysicalState = {.deviceStatus = EPhysicalDeviceStatus::Ok};
 
-        MockPhysicalController physicalController(kControllerIndex, &kPhysicalState, 1);
+        MockPhysicalController physicalController(kControllerIndex, kTestMapper, &kPhysicalState, 1);
         const Controller::ForceFeedback::Device* const kForceFeedbackDeviceAddress = &physicalController.GetForceFeedbackDevice();
 
-        VirtualController controller(kControllerIndex, kTestMapper);
+        VirtualController controller(kControllerIndex);
 
         TEST_ASSERT(false == controller.ForceFeedbackIsRegistered());
         TEST_ASSERT(nullptr == controller.ForceFeedbackGetDevice());
@@ -882,11 +923,11 @@ namespace XidiTest
         constexpr TControllerIdentifier kControllerIndex = 1;
         constexpr SPhysicalState kPhysicalState = {.deviceStatus = EPhysicalDeviceStatus::Ok};
 
-        MockPhysicalController physicalController(kControllerIndex, &kPhysicalState, 1);
+        MockPhysicalController physicalController(kControllerIndex, kTestMapper, &kPhysicalState, 1);
         const Controller::ForceFeedback::Device* const kForceFeedbackDeviceAddress = &physicalController.GetForceFeedbackDevice();
 
-        VirtualController controller(kControllerIndex, kTestMapper);
-        VirtualController controller2(kControllerIndex, kTestMapper);
+        VirtualController controller(kControllerIndex);
+        VirtualController controller2(kControllerIndex);
 
         TEST_ASSERT(false == controller.ForceFeedbackIsRegistered());
         TEST_ASSERT(false == controller2.ForceFeedbackIsRegistered());
@@ -903,10 +944,10 @@ namespace XidiTest
         constexpr TControllerIdentifier kControllerIndex = 1;
         constexpr SPhysicalState kPhysicalState = {.deviceStatus = EPhysicalDeviceStatus::Ok};
 
-        MockPhysicalController physicalController(kControllerIndex, &kPhysicalState, 1);
+        MockPhysicalController physicalController(kControllerIndex, kTestMapper, &kPhysicalState, 1);
         const Controller::ForceFeedback::Device* const kForceFeedbackDeviceAddress = &physicalController.GetForceFeedbackDevice();
 
-        VirtualController controller(kControllerIndex, kTestMapper);
+        VirtualController controller(kControllerIndex);
 
         for (int i = 0; i < 100; ++i)
             TEST_ASSERT(true == controller.ForceFeedbackRegister());
@@ -921,10 +962,10 @@ namespace XidiTest
         constexpr TControllerIdentifier kControllerIndex = 1;
         constexpr SPhysicalState kPhysicalState = {.deviceStatus = EPhysicalDeviceStatus::Ok};
 
-        MockPhysicalController physicalController(kControllerIndex, &kPhysicalState, 1);
+        MockPhysicalController physicalController(kControllerIndex, kTestMapper, &kPhysicalState, 1);
         const Controller::ForceFeedback::Device* const kForceFeedbackDeviceAddress = &physicalController.GetForceFeedbackDevice();
 
-        VirtualController* controller = new VirtualController(kControllerIndex, kTestMapper);
+        VirtualController* controller = new VirtualController(kControllerIndex);
         TEST_ASSERT(true == controller->ForceFeedbackRegister());
         TEST_ASSERT(true == physicalController.IsVirtualControllerRegisteredForForceFeedback(controller));
 

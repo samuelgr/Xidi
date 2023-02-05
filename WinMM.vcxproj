@@ -24,6 +24,7 @@
     <ClInclude Include="Include\Xidi\Internal\ApiGUID.h" />
     <ClInclude Include="Include\Xidi\Internal\ApiWindows.h" />
     <ClInclude Include="Include\Xidi\Internal\ApiXidi.h" />
+    <ClInclude Include="Include\Xidi\Internal\ConcurrencyWrapper.h" />
     <ClInclude Include="Include\Xidi\Internal\Configuration.h" />
     <ClInclude Include="Include\Xidi\Internal\ControllerTypes.h" />
     <ClInclude Include="Include\Xidi\Internal\DataFormat.h" />

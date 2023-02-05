@@ -132,6 +132,9 @@
     <ClInclude Include="Include\Xidi\Internal\ImportApiXInput.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="Include\Xidi\Internal\ConcurrencyWrapper.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Source\ControllerIdentification.cpp">

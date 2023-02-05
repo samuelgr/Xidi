@@ -408,14 +408,7 @@ namespace Xidi
 
                         if (0 != (kActiveVirtualControllerMask & ((uint64_t)1 << i)))
                         {
-                            const Controller::Mapper* mapper = Controller::Mapper::GetConfigured(i);
-                            if (nullptr == mapper)
-                            {
-                                Message::OutputFormatted(Message::ESeverity::Error, L"Virtual controller %u will not function because a mapper could not be located for it.", (unsigned int)i);
-                                mapper = Controller::Mapper::GetNull();
-                            }
-
-                            controllers[i] = new Controller::VirtualController(i, *mapper);
+                            controllers[i] = new Controller::VirtualController(i);
                             controllers[i]->SetAllAxisDeadzone(kAxisDeadzone);
                             controllers[i]->SetAllAxisSaturation(kAxisSaturation);
                             controllers[i]->SetAllAxisRange(kAxisRangeMin, kAxisRangeMax);

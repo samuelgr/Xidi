@@ -303,10 +303,6 @@ namespace Xidi
             /// Default state is all controller elements are included in the filter.
             EventFilter eventFilter;
 
-            /// Mapper to use for filling a virtual controller state object based on an XInput controller state.
-            /// Not owned by, and must outlive, this object. Since in general mappers are created as constants, this constraint is reasonable.
-            const Mapper& mapper;
-
             /// All properties associated with this virtual controller.
             SProperties properties;
 
@@ -338,8 +334,8 @@ namespace Xidi
             // -------- CONSTRUCTION AND DESTRUCTION ----------------------- //
 
             /// Initialization constructor.
-            /// Requires a complete set of metadata for describing the virtual controller to be created.
-            VirtualController(TControllerIdentifier controllerId, const Mapper& mapper);
+            /// Requires a controller identifier.
+            VirtualController(TControllerIdentifier controllerId);
 
             /// Copy constructor.
             /// Should never be invoked.
@@ -398,15 +394,6 @@ namespace Xidi
                 return (nullptr != physicalControllerForceFeedbackBuffer);
             }
 
-            /// Maps from virtual force feedback effect magnitude component to physical force feedback actuator values.
-            /// Simply delegates to the associated mapper object.
-            /// @param [in] virtualEffectComponents Virtual force feedback vector expressed as a magnitude component vector.
-            /// @return Physical force feedback vector expressed as a per-actuator component vector.
-            inline ForceFeedback::SPhysicalActuatorComponents ForceFeedbackMapVirtualToPhysical(ForceFeedback::TOrderedMagnitudeComponents virtualMagnitudeComponents) const
-            {
-                return mapper.MapForceFeedbackVirtualToPhysical(virtualMagnitudeComponents, properties.device.ffGain);
-            }
-
             /// Attempts to registers this object for force feedback operations with its associated physical controller.
             /// Only one virtual controller object can ever be registered for force feedback operations at any given time.
             /// This is conceptually equivalent to acquiring a device in "exclusive" mode.
@@ -419,11 +406,8 @@ namespace Xidi
 
             /// Retrieves and returns the capabilities of this virtual controller.
             /// Controller capabilities act as metadata that are used internally and can be presented to applications.
-            /// @return Read-only capabilities data structure reference.
-            inline SCapabilities GetCapabilities(void) const
-            {
-                return mapper.GetCapabilities();
-            }
+            /// @return Data structure representing the capabilities of this virtual controller.
+            SCapabilities GetCapabilities(void) const;
 
             /// Retrieves and returns the deadzone property of the specified axis.
             /// @param [in] axis Target axis.
@@ -531,9 +515,9 @@ namespace Xidi
 
             /// Refreshes the virtual controller's state using the supplied new state data.
             /// Primarily intended to be called by a background thread, but exposed externally for testing.
-            /// @param [in] newStateData Physical controller state data to apply to this virtual controller's internal state view.
+            /// @param [in] newRawVirtualStateData Raw virtual controller state data to apply to this virtual controller's internal state view.
             /// @return `true` if the state of the controller changed as a result of applying the new state data, `false` otherwise.
-            bool RefreshState(SPhysicalState newStateData);
+            bool RefreshState(SState newRawVirtualStateData);
 
             /// Sets the deadzone property for a single axis.
             /// @param [in] axis Target axis.

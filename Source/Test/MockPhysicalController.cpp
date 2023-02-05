@@ -12,6 +12,7 @@
 
 #include "ApiWindows.h"
 #include "ForceFeedbackDevice.h"
+#include "Mapper.h"
 #include "MockPhysicalController.h"
 #include "PhysicalController.h"
 #include "TestCase.h"
@@ -47,13 +48,10 @@ namespace XidiTest
     // -------- CONSTRUCTION AND DESTRUCTION ------------------------------- //
     // See "MockPhysicalController.h" for documentation.
 
-    MockPhysicalController::MockPhysicalController(TControllerIdentifier controllerIdentifier, const SPhysicalState* mockPhysicalStates, size_t mockPhysicalStateCount) : kControllerIdentifier(controllerIdentifier), kMockPhysicalStates(mockPhysicalStates), kMockPhysicalStateCount(mockPhysicalStateCount), currentPhysicalStateIndex(0), advanceRequested(false), forceFeedbackDevice(0), forceFeedbackRegistration()
+    MockPhysicalController::MockPhysicalController(TControllerIdentifier controllerIdentifier, const Mapper& mapper, const SPhysicalState* mockPhysicalStates, size_t mockPhysicalStateCount) : kControllerIdentifier(controllerIdentifier), kMockPhysicalStates(mockPhysicalStates), kMockPhysicalStateCount(mockPhysicalStateCount), currentPhysicalStateIndex(0), advanceRequested(false), forceFeedbackDevice(0), mapper(mapper), forceFeedbackRegistration()
     {
         if (controllerIdentifier >= kPhysicalControllerCount)
             TEST_FAILED_BECAUSE(L"%s: Invalid controller identifier (%u).", __FUNCTIONW__, controllerIdentifier);
-
-        if (1 > mockPhysicalStateCount)
-            TEST_FAILED_BECAUSE(L"%s: Attempting to create a mock physical controller with identifier %u having 0 valid states.", __FUNCTIONW__, controllerIdentifier);
 
         std::unique_lock lock(mockPhysicalStateGuard[controllerIdentifier]);
 
@@ -77,15 +75,35 @@ namespace XidiTest
 
     void MockPhysicalController::AdvancePhysicalState(void)
     {
+        if (kMockPhysicalStateCount == currentPhysicalStateIndex)
+            TEST_FAILED_BECAUSE(L"%s: Test implementation error due to out-of-bounds physical state advancement for physical controller with identifier %u.", __FUNCTIONW__, kControllerIdentifier);
+
         currentPhysicalStateIndex += 1;
         advanceRequested = false;
     }
 
     // --------
 
+    SCapabilities MockPhysicalController::GetControllerCapabilities(void) const
+    {
+        return mapper.GetCapabilities();
+    }
+
+    // --------
+
     SPhysicalState MockPhysicalController::GetCurrentPhysicalState(void) const
     {
-        return kMockPhysicalStates[currentPhysicalStateIndex];
+        if (nullptr != kMockPhysicalStates)
+            return kMockPhysicalStates[currentPhysicalStateIndex];
+
+        return kDefaultPhysicalState;
+    }
+
+    // --------
+
+    SState MockPhysicalController::GetCurrentRawVirtualState(void) const
+    {
+        return mapper.MapStatePhysicalToVirtual(GetCurrentPhysicalState(), kControllerIdentifier);
     }
 
     // --------
@@ -115,6 +133,21 @@ namespace Xidi
         // -------- FUNCTIONS ---------------------------------------------- //
         // See "PhysicalController.h" for documentation.
 
+        SCapabilities GetControllerCapabilities(TControllerIdentifier controllerIdentifier)
+        {
+            if (controllerIdentifier >= kPhysicalControllerCount)
+                TEST_FAILED_BECAUSE(L"%s: Invalid controller identifier (%u).", __FUNCTIONW__, controllerIdentifier);
+
+            std::shared_lock lock(mockPhysicalStateGuard[controllerIdentifier]);
+
+            if (nullptr != mockPhysicalController[controllerIdentifier])
+                return mockPhysicalController[controllerIdentifier]->GetControllerCapabilities();
+            else
+                TEST_FAILED_BECAUSE(L"%s: No mock physical controller associated with identifier %u.", __FUNCTIONW__, controllerIdentifier);
+        }
+
+        // --------
+
         SPhysicalState GetCurrentPhysicalControllerState(TControllerIdentifier controllerIdentifier)
         {
             if (controllerIdentifier >= kPhysicalControllerCount)
@@ -125,7 +158,22 @@ namespace Xidi
             if (nullptr != mockPhysicalController[controllerIdentifier])
                 return mockPhysicalController[controllerIdentifier]->GetCurrentPhysicalState();
             else
-                return kDefaultPhysicalState;
+                TEST_FAILED_BECAUSE(L"%s: No mock physical controller associated with identifier %u.", __FUNCTIONW__, controllerIdentifier);
+        }
+
+        // --------
+
+        SState GetCurrentRawVirtualControllerState(TControllerIdentifier controllerIdentifier)
+        {
+            if (controllerIdentifier >= kPhysicalControllerCount)
+                TEST_FAILED_BECAUSE(L"%s: Invalid controller identifier (%u).", __FUNCTIONW__, controllerIdentifier);
+
+            std::shared_lock lock(mockPhysicalStateGuard[controllerIdentifier]);
+
+            if (nullptr != mockPhysicalController[controllerIdentifier])
+                return mockPhysicalController[controllerIdentifier]->GetCurrentRawVirtualState();
+            else
+                TEST_FAILED_BECAUSE(L"%s: No mock physical controller associated with identifier %u.", __FUNCTIONW__, controllerIdentifier);
         }
 
         // --------
@@ -181,8 +229,48 @@ namespace Xidi
                         if (mockPhysicalController[controllerIdentifier]->IsAdvanceStateRequested())
                         {
                             mockPhysicalController[controllerIdentifier]->AdvancePhysicalState();
-                            state = mockPhysicalController[controllerIdentifier]->GetCurrentPhysicalState();
-                            return true;
+                            
+                            SPhysicalState newState = mockPhysicalController[controllerIdentifier]->GetCurrentPhysicalState();
+                            if (newState != state)
+                            {
+                                state = newState;
+                                return true;
+                            }
+                        }
+                    }
+                }
+            }
+
+            return false;
+        }
+
+        // --------
+
+        bool WaitForRawVirtualControllerStateChange(TControllerIdentifier controllerIdentifier, SState& state, std::stop_token stopToken)
+        {
+            if (controllerIdentifier >= kPhysicalControllerCount)
+                TEST_FAILED_BECAUSE(L"%s: Invalid controller identifier (%u).", __FUNCTIONW__, controllerIdentifier);
+
+            while (false == stopToken.stop_requested())
+            {
+                Sleep(1);
+
+                if (nullptr != mockPhysicalController[controllerIdentifier])
+                {
+                    std::unique_lock lock(mockPhysicalStateGuard[controllerIdentifier]);
+
+                    if (nullptr != mockPhysicalController[controllerIdentifier])
+                    {
+                        if (mockPhysicalController[controllerIdentifier]->IsAdvanceStateRequested())
+                        {
+                            mockPhysicalController[controllerIdentifier]->AdvancePhysicalState();
+                            
+                            SState newState = mockPhysicalController[controllerIdentifier]->GetCurrentRawVirtualState();
+                            if (newState != state)
+                            {
+                                state = newState;
+                                return true;
+                            }
                         }
                     }
                 }

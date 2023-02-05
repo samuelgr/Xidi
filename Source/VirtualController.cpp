@@ -51,14 +51,14 @@ namespace Xidi
         /// @param [in] thisController Controller object for which state is to be monitored.
         /// @param [in] initialState Initial physical state of the controller. Used as the basis for looking for changes.
         /// @param [in] stopMonitoringToken Used to indicate that the monitoring should stop and the thread should exit.
-        static void MonitorPhysicalControllerState(VirtualController* thisController, const SPhysicalState& initialState, std::stop_token stopMonitoringToken)
+        static void MonitorPhysicalControllerState(VirtualController* thisController, const SState& initialState, std::stop_token stopMonitoringToken)
         {
             const TControllerIdentifier kControllerIdentifier = thisController->GetIdentifier();
-            SPhysicalState state = initialState;
+            SState state = initialState;
 
             while (false == stopMonitoringToken.stop_requested())
             {
-                if (true == WaitForPhysicalControllerStateChange(kControllerIdentifier, state, stopMonitoringToken))
+                if (true == WaitForRawVirtualControllerStateChange(kControllerIdentifier, state, stopMonitoringToken))
                 {
                     if (true == thisController->RefreshState(state))
                         thisController->SignalStateChangeEvent();
@@ -140,10 +140,10 @@ namespace Xidi
         // -------- CONSTRUCTION AND DESTRUCTION --------------------------- //
         // See "VirtualController.h" for documentation.
 
-        VirtualController::VirtualController(TControllerIdentifier controllerId, const Mapper& mapper) : kControllerIdentifier(controllerId), controllerMutex(), eventBuffer(), eventFilter(), mapper(mapper), properties(), stateRaw(), stateProcessed(), stateChangeEventHandle(NULL), physicalControllerMonitor(), physicalControllerMonitorStop(), physicalControllerForceFeedbackBuffer()
+        VirtualController::VirtualController(TControllerIdentifier controllerId) : kControllerIdentifier(controllerId), controllerMutex(), eventBuffer(), eventFilter(), properties(), stateRaw(), stateProcessed(), stateChangeEventHandle(NULL), physicalControllerMonitor(), physicalControllerMonitorStop(), physicalControllerForceFeedbackBuffer()
         {
-            const SPhysicalState initialState = GetCurrentPhysicalControllerState(kControllerIdentifier);
-            
+            const SState initialState = GetCurrentRawVirtualControllerState(kControllerIdentifier);
+
             RefreshState(initialState);
             ReapplyProperties();
 
@@ -170,11 +170,11 @@ namespace Xidi
 
         void VirtualController::ApplyProperties(SState& controllerState) const
         {
-            const SCapabilities controllerCapabilities = mapper.GetCapabilities();
+            const SCapabilities kCapabilities = GetCapabilities();
 
-            for (int i = 0; i < controllerCapabilities.numAxes; ++i)
+            for (int i = 0; i < kCapabilities.numAxes; ++i)
             {
-                const EAxis axis = controllerCapabilities.axisCapabilities[i].type;
+                const EAxis axis = kCapabilities.axisCapabilities[i].type;
                 controllerState[axis] = TransformAxisValue(controllerState[axis], properties[axis]);
             }
         }
@@ -203,6 +203,13 @@ namespace Xidi
 
         // --------
 
+        SCapabilities VirtualController::GetCapabilities(void) const
+        {
+            return GetControllerCapabilities(kControllerIdentifier);
+        }
+
+        // --------
+
         SState VirtualController::GetState(void)
         {
             auto lock = Lock();
@@ -227,22 +234,15 @@ namespace Xidi
 
         // --------
 
-        bool VirtualController::RefreshState(SPhysicalState newPhysicalState)
+        bool VirtualController::RefreshState(SState newStateRaw)
         {
-            const SState newStateRaw = (EPhysicalDeviceStatus::Ok == newPhysicalState.deviceStatus) ? mapper.MapStatePhysicalToVirtual(newPhysicalState, (uint32_t)kControllerIdentifier) : mapper.MapNeutralPhysicalToVirtual((uint32_t)kControllerIdentifier);
-
-            // Depending on what XInput controller elements the mapper is configured to take into consideration, there may not be a virtual controller state change here.
-            // For example, an axis mapped to a button may have been moved, but if that does not affect the button pressed or unpressed decision then there is no change worth continuing with.
-            if (newStateRaw == stateRaw)
-                return false;
-
             auto lock = Lock();
             stateRaw = newStateRaw;
 
             SState newStateProcessed = newStateRaw;
             ApplyProperties(newStateProcessed);
 
-            // Based on the mapper and the applied properties, a change in XInput controller state might not necessarily mean a change in virtual controller state.
+            // Based on the mapper and the applied properties, a change in raw virtual controller state might not necessarily mean a change in processed virtual controller state.
             // For example, deadzone might result in filtering out changes in analog stick position, or if a particular XInput controller element is ignored by the mapper then a change in that element does not influence the virtual controller state.
             if (newStateProcessed == stateProcessed)
                 return false;

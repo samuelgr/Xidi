@@ -11,6 +11,7 @@
  *****************************************************************************/
 
 #include "ApiWindows.h"
+#include "ConcurrencyWrapper.h"
 #include "ControllerTypes.h"
 #include "ForceFeedbackDevice.h"
 #include "Globals.h"
@@ -21,10 +22,9 @@
 #include "PhysicalController.h"
 #include "VirtualController.h"
 
-#include <condition_variable>
 #include <cstdint>
+#include <mutex>
 #include <set>
-#include <shared_mutex>
 #include <stop_token>
 #include <thread>
 
@@ -33,86 +33,13 @@ namespace Xidi
 {
     namespace Controller
     {
-        // -------- INTERNAL TYPES ----------------------------------------- //
-
-        /// Wraps controller state data in a way that is concurrency-safe following a single-producer multiple-consumer threading model.
-        /// @tparam StateType Controller state data structure type.
-        template <typename StateType> class ConcurrencySafeStateDataWrapper
-        {
-        private:
-            // -------- INSTANCE VARIABLES --------------------------------- //
-
-            /// State data itself.
-            StateType stateData;
-
-            /// Condition variable used to wait for updates to the state data.
-            std::condition_variable_any stateUpdateNotifier;
-
-            /// Mutex for protecting against concurrent accesses to the state data structure.
-            std::shared_mutex stateMutex;
-
-
-        public:
-            // -------- INSTANCE METHODS ----------------------------------- //
-
-            /// Retrieves and returns the stored state data in a concurrency-safe way.
-            /// @return Stored state data.
-            inline StateType GetStateData(void)
-            {
-                std::shared_lock lock(stateMutex);
-                return stateData;
-            }
-
-            /// Writes to the stored state data in a concurrency-safe way.
-            /// @param [in] newStateData New state data to be stored.
-            inline void SetStateData(const StateType& newStateData)
-            {
-                std::unique_lock lock(stateMutex);
-                stateData = newStateData;
-            }
-
-            /// Updates the stored state data in a concurrency-safe way and notifies all waiting threads of the state change.
-            /// Operations are conditional on the new state data being different than the currently-stored state data.
-            /// @param [in] newStateData New state data to be stored.
-            inline void UpdateStateData(const StateType& newStateData)
-            {
-                // This unguarded read is safe because by design only one thread, the one that produces updated state data, ever invokes this method.
-                // All other threads use guarded reads.
-                if (newStateData != stateData)
-                {
-                    SetStateData(newStateData);
-                    stateUpdateNotifier.notify_all();
-                }
-            }
-
-            /// Waits for the stored state data to be updated.
-            /// This function is fully concurrency-safe. If needed, the caller can interrupt the wait using a stop token.
-            /// @param [in,out] externalStateData On input, used to identify the last-known state data for the calling thread. On output, filled in with the updated state data.
-            /// @param [in] stopToken Token that allows the weight to be interrupted.
-            /// @return `true` if the wait succeeded and the state data structure was updated, `false` if no updates were made due to invalid parameter or interrupted wait.
-            inline bool WaitForStateDataChange(StateType& externalStateData, std::stop_token stopToken)
-            {
-                std::shared_lock lock(stateMutex);
-
-                stateUpdateNotifier.wait(lock, stopToken, [this, &externalStateData]() -> bool
-                    {
-                        return (stateData != externalStateData);
-                    }
-                );
-
-                if (stopToken.stop_requested())
-                    return false;
-
-                externalStateData = stateData;
-                return true;
-            }
-        };
-
-
         // -------- INTERNAL VARIABLES ------------------------------------- //
 
-        /// State data for each of the possible physical controllers.
-        static ConcurrencySafeStateDataWrapper<SPhysicalState> physicalControllerState[kPhysicalControllerCount];
+        /// Raw physical state data for each of the possible physical controllers.
+        static ConcurrencyWrapper<SPhysicalState> physicalControllerState[kPhysicalControllerCount];
+
+        /// State data for each of the possible physical controllers after it is passed through a mapper but without any further processing.
+        static ConcurrencyWrapper<SState> rawVirtualControllerState[kPhysicalControllerCount];
 
         /// Per-controller force feedback device buffer objects.
         /// These objects are not safe for dynamic initialization, so they are initialized later by pointer.
@@ -127,10 +54,18 @@ namespace Xidi
 
         // -------- INTERNAL FUNCTIONS ------------------------------------- //
         
+        /// Computes an opaque source identifier from a given controller identifier.
+        /// @param [in] controllerIdentifier Identifier of the physical controller for which an identifier is needed.
+        /// @return Opaque identifier that can be passed to mappers.
+        static inline uint32_t OpaqueControllerSourceIdentifier(TControllerIdentifier controllerIdentifier)
+        {
+            return (uint32_t)controllerIdentifier;
+        }
+
         /// Reads physical controller state.
         /// @param [in] controllerIdentifier Identifier of the controller on which to operate.
         /// @return Physical state of the identified controller.
-        SPhysicalState ReadPhysicalControllerState(TControllerIdentifier controllerIdentifier)
+        static SPhysicalState ReadPhysicalControllerState(TControllerIdentifier controllerIdentifier)
         {
             constexpr uint16_t kUnusedButtonMask = ~((uint16_t)((1u << (unsigned int)EPhysicalButton::UnusedGuide) | (1u << (unsigned int)EPhysicalButton::UnusedShare)));
 
@@ -175,7 +110,7 @@ namespace Xidi
         /// @param [in] controllerIdentifier Identifier of the controller on which to operate.
         /// @param [in] vibration Physical actuator vibration vector.
         /// @return `true` if successful, `false` otherwise.
-        bool WritePhysicalControllerVibration(TControllerIdentifier controllerIdentifier, ForceFeedback::SPhysicalActuatorComponents vibration)
+        static bool WritePhysicalControllerVibration(TControllerIdentifier controllerIdentifier, ForceFeedback::SPhysicalActuatorComponents vibration)
         {
             // Impulse triggers are ignored because the XInput API does not support them.
             XINPUT_VIBRATION xinputVibration = {.wLeftMotorSpeed = (WORD)vibration.leftMotor, .wRightMotorSpeed = (WORD)vibration.rightMotor};
@@ -244,7 +179,7 @@ namespace Xidi
         /// @param [in] controllerIdentifier Identifier of the controller on which to operate.
         static void PollForPhysicalControllerStateChanges(TControllerIdentifier controllerIdentifier)
         {
-            SPhysicalState newPhysicalState = {.deviceStatus = EPhysicalDeviceStatus::Ok};
+            SPhysicalState newPhysicalState = physicalControllerState[controllerIdentifier].Get();
 
             while (true)
             {
@@ -253,7 +188,17 @@ namespace Xidi
                 else
                     Sleep(kPhysicalErrorBackoffPeriodMilliseconds);
 
-                physicalControllerState[controllerIdentifier].UpdateStateData(ReadPhysicalControllerState(controllerIdentifier));
+                newPhysicalState = ReadPhysicalControllerState(controllerIdentifier);
+
+                if (true == physicalControllerState[controllerIdentifier].Update(newPhysicalState))
+                {
+                    const SState newRawVirtualState = ((EPhysicalDeviceStatus::Ok == newPhysicalState.deviceStatus)
+                        ? Mapper::GetConfigured(controllerIdentifier)->MapStatePhysicalToVirtual(newPhysicalState, OpaqueControllerSourceIdentifier(controllerIdentifier))
+                        : Mapper::GetConfigured(controllerIdentifier)->MapNeutralPhysicalToVirtual(OpaqueControllerSourceIdentifier(controllerIdentifier))
+                    );
+
+                    rawVirtualControllerState[controllerIdentifier].Update(newRawVirtualState);
+                }
             }
         }
 
@@ -318,7 +263,13 @@ namespace Xidi
                 {
                     // Initialize controller state data structures.
                     for (auto controllerIdentifier = 0; controllerIdentifier < _countof(physicalControllerState); ++controllerIdentifier)
-                        physicalControllerState[controllerIdentifier].SetStateData(ReadPhysicalControllerState(controllerIdentifier));
+                    {
+                        const SPhysicalState initialPhysicalState = ReadPhysicalControllerState(controllerIdentifier);
+                        const SState initialRawVirtualState = Mapper::GetConfigured(controllerIdentifier)->MapStatePhysicalToVirtual(initialPhysicalState, OpaqueControllerSourceIdentifier(controllerIdentifier));
+
+                        physicalControllerState[controllerIdentifier].Set(initialPhysicalState);
+                        rawVirtualControllerState[controllerIdentifier].Set(initialRawVirtualState);
+                    }
 
                     // Ensure the system timer resolution is suitable for the desired polling frequency.
                     TIMECAPS timeCaps;
@@ -369,10 +320,26 @@ namespace Xidi
         // -------- FUNCTIONS ---------------------------------------------- //
         // See "PhysicalController.h" for documentation.
 
+        SCapabilities GetControllerCapabilities(TControllerIdentifier controllerIdentifier)
+        {
+            Initialize();
+            return Mapper::GetConfigured(controllerIdentifier)->GetCapabilities();
+        }
+
+        // --------
+
         SPhysicalState GetCurrentPhysicalControllerState(TControllerIdentifier controllerIdentifier)
         {
             Initialize();
-            return physicalControllerState[controllerIdentifier].GetStateData();
+            return physicalControllerState[controllerIdentifier].Get();
+        }
+
+        // --------
+
+        SState GetCurrentRawVirtualControllerState(TControllerIdentifier controllerIdentifier)
+        {
+            Initialize();
+            return rawVirtualControllerState[controllerIdentifier].Get();
         }
 
         // --------
@@ -418,7 +385,19 @@ namespace Xidi
             if (controllerIdentifier >= kPhysicalControllerCount)
                 return false;
 
-            return physicalControllerState[controllerIdentifier].WaitForStateDataChange(state, stopToken);
+            return physicalControllerState[controllerIdentifier].WaitForUpdate(state, stopToken);
+        }
+
+        // --------
+
+        bool WaitForRawVirtualControllerStateChange(TControllerIdentifier controllerIdentifier, SState& state, std::stop_token stopToken)
+        {
+            Initialize();
+
+            if (controllerIdentifier >= kPhysicalControllerCount)
+                return false;
+
+            return rawVirtualControllerState[controllerIdentifier].WaitForUpdate(state, stopToken);
         }
     }
 }

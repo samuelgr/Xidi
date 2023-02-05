@@ -13,6 +13,7 @@
 #pragma once
 
 #include "ForceFeedbackDevice.h"
+#include "Mapper.h"
 #include "PhysicalController.h"
 #include "VirtualController.h"
 
@@ -57,6 +58,9 @@ namespace XidiTest
         /// Initialized to use a base timestamp of 0.
         ForceFeedback::Device forceFeedbackDevice;
 
+        /// Mapper to use with this mock physical controller object for mapping physical to raw virtual states.
+        const Mapper& mapper;
+
         /// Virtual controllers registered for force feedback.
         std::set<const VirtualController*> forceFeedbackRegistration;
 
@@ -65,8 +69,8 @@ namespace XidiTest
         // -------- CONSTRUCTION AND DESTRUCTION ----------------------- //
 
         /// Initialization constructor.
-        /// Requires specification of controller identifier and all applicable physical states.
-        MockPhysicalController(TControllerIdentifier controllerIdentifier, const SPhysicalState* mockPhysicalStates, size_t mockPhysicalStateCount);
+        /// Requires specification of controller identifier and mapper. Physical states are optional and default to completely neutral if unspecified.
+        MockPhysicalController(TControllerIdentifier controllerIdentifier, const Mapper& mapper, const SPhysicalState* mockPhysicalStates = nullptr, size_t mockPhysicalStateCount = 0);
 
         /// Copy constructor. Should never be invoked.
         MockPhysicalController(const MockPhysicalController& other) = delete;
@@ -88,9 +92,17 @@ namespace XidiTest
             forceFeedbackRegistration.erase(controllerToUnregister);
         }
 
+        /// Retrieves and returns the capabilities implemented by the mapper associated with this mock physical controller.
+        /// @return Mapper-derived capabilities data structure.
+        SCapabilities GetControllerCapabilities(void) const;
+
         /// Retrieves and returns the current physical state.
         /// @return Current physical state being reported to the test cases that request it.
         SPhysicalState GetCurrentPhysicalState(void) const;
+
+        /// Retrieves and returns the current raw virtual state, which is derived on-the-fly from the raw virtual state.
+        /// @return Current raw virtual state being reported to the test cases that request it.
+        SState GetCurrentRawVirtualState(void) const;
 
         /// Provides access to the force feedback device object.
         /// @return Reference to the force feedback device object.
