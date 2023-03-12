@@ -16,6 +16,7 @@
 #include "Globals.h"
 #include "Mouse.h"
 #include "Message.h"
+#include "Strings.h"
 
 #include <array>
 #include <bitset>
@@ -285,12 +286,13 @@ namespace Xidi
             /// @return Appropriate number of pixels represented by the mouse movement units.
             static int MouseMovementUnitsToPixels(int mouseMovementUnits)
             {
-                constexpr double kFastestPixelsPerSecond = 2160;
-
                 constexpr double kMillisecondsPerSecond = 1000.0;
                 constexpr double kPollingPeriodsPerSecond = (kMillisecondsPerSecond / (double)kMouseUpdatePeriodMilliseconds);
-                constexpr double kFastestPixelsPerPollingPeriod = kFastestPixelsPerSecond / kPollingPeriodsPerSecond;
-                constexpr double kConversionScalingFactor = kFastestPixelsPerPollingPeriod / ((kMouseMovementUnitsMax - kMouseMovementUnitsMin) / 2.0);
+
+                const double kSpeedScalingFactor = (double)Globals::GetConfigurationData().GetFirstIntegerValue(Strings::kStrConfigurationSectionProperties, Strings::kStrConfigurationSettingPropertiesMouseSpeedScalingFactorPercent).value_or(100) / 100.0;
+                const double kFastestPixelsPerSecond = 2000.0 * kSpeedScalingFactor;
+                const double kFastestPixelsPerPollingPeriod = kFastestPixelsPerSecond / kPollingPeriodsPerSecond;
+                const double kConversionScalingFactor = kFastestPixelsPerPollingPeriod / ((kMouseMovementUnitsMax - kMouseMovementUnitsMin) / 2.0);
 
                 return (int)((double)(mouseMovementUnits - kMouseMovementUnitsNeutral) * kConversionScalingFactor);
             }

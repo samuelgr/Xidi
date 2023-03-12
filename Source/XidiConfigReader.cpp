@@ -70,6 +70,9 @@ namespace Xidi
         ConfigurationFileLayoutSection(Strings::kStrConfigurationSectionMapper, {
             ConfigurationFileLayoutNameAndValueType(Strings::kStrConfigurationSettingMapperType, EValueType::String),
         }),
+        ConfigurationFileLayoutSection(Strings::kStrConfigurationSectionProperties, {
+            ConfigurationFileLayoutNameAndValueType(Strings::kStrConfigurationSettingPropertiesMouseSpeedScalingFactorPercent, EValueType::Integer),
+        }),
         ConfigurationFileLayoutSection(Strings::kStrConfigurationSectionWorkarounds, {
             ConfigurationFileLayoutNameAndValueType(Strings::kStrConfigurationSettingWorkaroundsActiveVirtualControllerMask, EValueType::Integer),
             ConfigurationFileLayoutNameAndValueType(Strings::kStrConfigurationSettingWorkaroundsPollReturnCode, EValueType::Integer),

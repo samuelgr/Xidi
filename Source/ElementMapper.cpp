@@ -47,7 +47,7 @@ namespace Xidi
             if (0 == deadzoneHundredthsOfPercent)
                 return analogValue;
             
-            const double kDeadzonePercentage = (double)deadzoneHundredthsOfPercent / 1000.0;
+            const double kDeadzonePercentage = (double)deadzoneHundredthsOfPercent / 100.0;
             const double kDeadzone = (((double)kAnalogValueMax - (double)kAnalogValueMin) / 2.0) / (100.0 / kDeadzonePercentage);
 
             int16_t analogValueTransformed = kAnalogValueNeutral;
@@ -65,7 +65,7 @@ namespace Xidi
             if (0 == deadzoneHundredthsOfPercent)
                 return triggerValue;
 
-            const double kDeadzonePercentage = (double)deadzoneHundredthsOfPercent / 1000.0;
+            const double kDeadzonePercentage = (double)deadzoneHundredthsOfPercent / 100.0;
             const double kDeadzone = ((double)kTriggerValueMax - (double)kTriggerValueMin) / (100.0 / kDeadzonePercentage);
 
             uint8_t triggerValueTransformed = kTriggerValueMin;

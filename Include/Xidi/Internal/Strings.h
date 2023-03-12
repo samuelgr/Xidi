@@ -74,8 +74,10 @@ namespace Xidi
         /// Configuration file setting for overriding import for WinMM.
         inline constexpr std::wstring_view kStrConfigurationSettingImportWinMM = kStrLibraryNameWinMM;
 
+
         /// Configuration file setting separator for generating per-controller setting strings.
         inline constexpr wchar_t kCharConfigurationSettingSeparator = L'.';
+
 
         /// Configuration file section name for log-related settings.
         inline constexpr std::wstring_view kStrConfigurationSectionLog = L"Log";
@@ -86,11 +88,13 @@ namespace Xidi
         /// Configuration file setting for specifying the logging verbosity level.
         inline constexpr std::wstring_view kStrConfigurationSettingLogLevel = L"Level";
 
+
         /// Configuration file section name for mapper-related settings.
         inline constexpr std::wstring_view kStrConfigurationSectionMapper = L"Mapper";
 
         /// Configuration file setting for specifying the mapper type.
         inline constexpr std::wstring_view kStrConfigurationSettingMapperType = L"Type";
+
 
         /// Prefix for configuration file sections that define custom mappers.
         inline constexpr std::wstring_view kStrConfigurationSectionCustomMapperPrefix = L"CustomMapper";
@@ -100,6 +104,14 @@ namespace Xidi
 
         /// Configuration file setting for specifying a custom mapper template.
         inline constexpr std::wstring_view kStrConfigurationSettingCustomMapperTemplate = L"Template";
+
+
+        /// Configuration file section name for customizing the various properties that govern behavior of virtual controllers.
+        inline constexpr std::wstring_view kStrConfigurationSectionProperties = L"Properties";
+
+        /// Configuration file setting for customizing the mouse speed. Expressed as a percentage that is used to scale the default mouse speed.
+        inline constexpr std::wstring_view kStrConfigurationSettingPropertiesMouseSpeedScalingFactorPercent = L"MouseSpeedScalingFactorPercent";
+
 
         /// Configuration file section name for specifying behavioral tweaks to work around bugs in games.
         inline constexpr std::wstring_view kStrConfigurationSectionWorkarounds = L"Workarounds";

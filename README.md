@@ -33,6 +33,7 @@ The remainder of this document is organized as follows.
 - [What to Expect in a Game](#what-to-expect-in-a-game)
 - [Configuring Xidi](#configuring-xidi)
    - [Mapper](#mapper)
+   - [Properties](#properties)   
    - [Log](#log)
    - [Import](#import)
    - [CustomMapper](#custommapper)
@@ -124,20 +125,24 @@ An example configuration file is shown below, containing default values for all 
 
 ```ini
 [Mapper]
-Type                = StandardGamepad
-Type.1              = StandardGamepad
-Type.2              = StandardGamepad
-Type.3              = StandardGamepad
-Type.4              = StandardGamepad
+Type                                = StandardGamepad
+Type.1                              = StandardGamepad
+Type.2                              = StandardGamepad
+Type.3                              = StandardGamepad
+Type.4                              = StandardGamepad
+
+[Properties]
+; *(unreleased)*
+MouseSpeedScalingFactorPercent      = 100
 
 [Log]
-Enabled             = no
-Level               = 1
+Enabled                             = no
+Level                               = 1
 
 [Import]
-dinput.dll          = C:\Windows\system32\dinput.dll
-dinput8.dll         = C:\Windows\system32\dinput8.dll
-winmm.dll           = C:\Windows\system32\winmm.dll
+dinput.dll                          = C:\Windows\system32\dinput.dll
+dinput8.dll                         = C:\Windows\system32\dinput8.dll
+winmm.dll                           = C:\Windows\system32\winmm.dll
 
 [CustomMapper]
 ; This section does not exist by default.
@@ -156,6 +161,15 @@ This section controls the mapping scheme Xidi uses when mapping between XInput a
 - **Type.2** specifies the type of mapper that Xidi should use for controller 2, overriding the default.
 - **Type.3** specifies the type of mapper that Xidi should use for controller 3, overriding the default.
 - **Type.4** specifies the type of mapper that Xidi should use for controller 4, overriding the default.
+
+
+## Properties
+
+*(unreleased)*
+
+This section allows for customization and fine-tuning of various virtual controller behaviors, particularly as they pertain to input and output processing.
+
+- **MouseSpeedScalingFactorPercent** modifies the speed of the mouse cursor when a Xidi virtual controller element is configured to emulate mouse movement. Xidi has a built-in default mouse speed, and changing this setting allows that speed to be scaled up or down. The value is expressed as a desired percentage of the default speed. For example, `25` means that the mouse speed should be one-quarter of the default, and `400` means that the mouse speed should be four times the default.
 
 
 ## Log
