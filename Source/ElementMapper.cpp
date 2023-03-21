@@ -39,40 +39,48 @@ namespace Xidi
 
         // -------- INTERNAL FUNCTIONS ------------------------------------- //
 
-        /// Applies a deadzone transformation to a raw analog value.
+        /// Applies deadzone and saturation transformations to a raw analog value.
         /// @param [in] analogValue Analog value for which a deadzone should be applied.
         /// @param [in] deadzoneHudnredthsOfPercent Hundredths of a percent of the analog range for which the deadzone should be applied.
-        static int16_t ApplyRawAnalogDeadzone(int16_t analogValue, unsigned int deadzoneHundredthsOfPercent)
+        static int16_t ApplyRawAnalogTransform(int16_t analogValue, unsigned int deadzonePercent, unsigned int saturationPercent)
         {
-            if (0 == deadzoneHundredthsOfPercent)
+            if ((0 == deadzonePercent) && (100 == saturationPercent))
                 return analogValue;
-            
-            const double kDeadzonePercentage = (double)deadzoneHundredthsOfPercent / 100.0;
-            const double kDeadzone = (((double)kAnalogValueMax - (double)kAnalogValueMin) / 2.0) / (100.0 / kDeadzonePercentage);
 
-            int16_t analogValueTransformed = kAnalogValueNeutral;
-            if (std::abs((double)analogValue) > kDeadzone)
-                analogValueTransformed = (int16_t)std::copysign(((std::abs((double)analogValue) - kDeadzone) * (100.0 / (100.0 - (double)kDeadzonePercentage))), (double)analogValue);
+            const int16_t kDeadzoneCutoff = ((kAnalogValueMax - kAnalogValueNeutral) * deadzonePercent) / 100;
+            if (std::abs(analogValue) <= kDeadzoneCutoff)
+                return kAnalogValueNeutral;
 
-            return analogValueTransformed;
+            const int16_t kSaturationCutoff = ((kAnalogValueMax - kAnalogValueNeutral) * saturationPercent) / 100;;
+            if (std::abs(analogValue) >= kSaturationCutoff)
+                return ((analogValue >= 0) ? kAnalogValueMax : kAnalogValueMin);
+
+            const double kTransformedAnalogBase = ((analogValue >= 0) ? ((double)analogValue - (double)kDeadzoneCutoff) : ((double)analogValue + (double)kDeadzoneCutoff));
+            const double kTransformationScaleFactor = ((double)(kAnalogValueMax - kAnalogValueNeutral)) / ((double)(kSaturationCutoff - kDeadzoneCutoff));
+
+            return kAnalogValueNeutral + (int16_t)(kTransformedAnalogBase * kTransformationScaleFactor);
         }
 
-        /// Applies a deadzone transformation to a raw trigger value.
+        /// Applies deadzone and saturation transformations to a raw trigger value.
         /// @param [in] analogValue Analog value for which a deadzone should be applied.
         /// @param [in] deadzoneHudnredthsOfPercent Hundredths of a percent of the analog range for which the deadzone should be applied.
-        static uint8_t ApplyRawTriggerDeadzone(uint8_t triggerValue, unsigned int deadzoneHundredthsOfPercent)
+        static uint8_t ApplyRawTriggerTransform(uint8_t triggerValue, unsigned int deadzonePercent, unsigned int saturationPercent)
         {
-            if (0 == deadzoneHundredthsOfPercent)
+            if ((0 == deadzonePercent) && (100 == saturationPercent))
                 return triggerValue;
 
-            const double kDeadzonePercentage = (double)deadzoneHundredthsOfPercent / 100.0;
-            const double kDeadzone = ((double)kTriggerValueMax - (double)kTriggerValueMin) / (100.0 / kDeadzonePercentage);
+            const uint8_t kDeadzoneCutoff = (uint8_t)((((unsigned int)kTriggerValueMax - (unsigned int)kTriggerValueMin) * deadzonePercent) / 100);
+            if (triggerValue <= kDeadzoneCutoff)
+                return kTriggerValueMin;
 
-            uint8_t triggerValueTransformed = kTriggerValueMin;
-            if (triggerValue > kDeadzone)
-                triggerValueTransformed = (uint8_t)(((double)triggerValue - kDeadzone) * (100.0 / (100.0 - (double)kDeadzonePercentage)));
+            const uint8_t kSaturationCutoff = (uint8_t)((((unsigned int)kTriggerValueMax - (unsigned int)kTriggerValueMin) * saturationPercent) / 100);
+            if (triggerValue >= kSaturationCutoff)
+                return kTriggerValueMax;
 
-            return triggerValueTransformed;
+            const float kTransformedTriggerBase = (float)triggerValue - (float)kDeadzoneCutoff;
+            const float kTransformationScaleFactor = ((float)(kTriggerValueMax - kTriggerValueMin)) / ((float)(kSaturationCutoff - kDeadzoneCutoff));
+
+            return kTriggerValueMin + (uint8_t)(kTransformedTriggerBase * kTransformationScaleFactor);
         }
 
         /// Determines if an analog reading is considered "pressed" as a digital button in the negative direction.
@@ -523,8 +531,9 @@ namespace Xidi
         {
             constexpr double kAnalogToMouseScalingFactor = (double)(Mouse::kMouseMovementUnitsMax - Mouse::kMouseMovementUnitsMin) / (double)(kAnalogValueMax - kAnalogValueMin);
             
-            constexpr unsigned int kAnalogMouseDeadzoneHundredthsPercent = 750;
-            const int16_t analogValueForContribution = ApplyRawAnalogDeadzone(analogValue, kAnalogMouseDeadzoneHundredthsPercent);
+            constexpr unsigned int kAnalogMouseDeadzonePercent = 8;
+            constexpr unsigned int kAnalogMouseSaturationPercent = 92;
+            const int16_t analogValueForContribution = ApplyRawAnalogTransform(analogValue, kAnalogMouseDeadzonePercent, kAnalogMouseSaturationPercent);
 
             const double kMouseAxisValueRaw = ((double)(analogValueForContribution - kAnalogValueNeutral) * kAnalogToMouseScalingFactor);
             const double kMouseAxisValueTransformed = kMouseAxisValueRaw;
@@ -582,8 +591,9 @@ namespace Xidi
             constexpr double kPositiveStepSize = (double)Mouse::kMouseMovementUnitsMax / (double)(kTriggerValueMax - kTriggerValueMin);
             constexpr double kNegativeStepSize = (double)Mouse::kMouseMovementUnitsMin / (double)(kTriggerValueMax - kTriggerValueMin);
             
-            constexpr unsigned int kTriggerMouseDeadzoneHundredthsPercent = 750;
-            const uint8_t triggerValueForContribution = ApplyRawTriggerDeadzone(triggerValue, kTriggerMouseDeadzoneHundredthsPercent);
+            constexpr unsigned int kTriggerMouseDeadzonePercent = 8;
+            constexpr unsigned int kTriggerMouseSaturationPercent = 92;
+            const uint8_t triggerValueForContribution = ApplyRawTriggerTransform(triggerValue, kTriggerMouseDeadzonePercent, kTriggerMouseSaturationPercent);
 
             int mouseAxisValueToContribute = 0;
 
