@@ -134,6 +134,7 @@ Type.4                              = StandardGamepad
 [Properties]
 ; *(unreleased)*
 MouseSpeedScalingFactorPercent      = 100
+UseBuiltInProperties                = yes
 
 [Log]
 Enabled                             = no
@@ -170,6 +171,8 @@ This section controls the mapping scheme Xidi uses when mapping between XInput a
 This section allows for customization and fine-tuning of various virtual controller behaviors, particularly as they pertain to input and output processing.
 
 - **MouseSpeedScalingFactorPercent** modifies the speed of the mouse cursor when a Xidi virtual controller element is configured to emulate mouse movement. Xidi has a built-in default mouse speed, and changing this setting allows that speed to be scaled up or down. The value is expressed as a desired percentage of the default speed. For example, `25` means that the mouse speed should be one-quarter of the default, and `400` means that the mouse speed should be four times the default.
+
+- **UseBuiltInProperties** allows certain built-in axis properties to be enabled or disabled. By default Xidi adds a small deadzone and saturation to all virtual controller axes via WinMM and to any analog sticks or triggers that are used to emulate mouse movement. This is done to ensure a better user experience where such properties are not normally exposed for customization. Setting this to `no` disables these built-in deadzone and saturation properties.
 
 
 ## Log

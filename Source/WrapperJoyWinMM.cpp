@@ -401,7 +401,9 @@ namespace Xidi
             static std::once_flag initializationFlag;
             std::call_once(initializationFlag, []() -> void
                 {
+                    const bool kEnableAxisProperites = Globals::GetConfigurationData().GetFirstBooleanValue(Strings::kStrConfigurationSectionProperties, Strings::kStrConfigurationSettingsPropertiesUseBuiltinProperties).value_or(true);
                     const uint64_t kActiveVirtualControllerMask = Globals::GetConfigurationData().GetFirstIntegerValue(Strings::kStrConfigurationSectionWorkarounds, Strings::kStrConfigurationSettingWorkaroundsActiveVirtualControllerMask).value_or(UINT64_MAX);
+
                     for (Controller::TControllerIdentifier i = 0; i < _countof(controllers); ++i)
                     {
                         controllers[i] = nullptr;
@@ -409,9 +411,13 @@ namespace Xidi
                         if (0 != (kActiveVirtualControllerMask & ((uint64_t)1 << i)))
                         {
                             controllers[i] = new Controller::VirtualController(i);
-                            controllers[i]->SetAllAxisDeadzone(kAxisDeadzone);
-                            controllers[i]->SetAllAxisSaturation(kAxisSaturation);
                             controllers[i]->SetAllAxisRange(kAxisRangeMin, kAxisRangeMax);
+
+                            if (kEnableAxisProperites)
+                            {
+                                controllers[i]->SetAllAxisDeadzone(kAxisDeadzone);
+                                controllers[i]->SetAllAxisSaturation(kAxisSaturation);
+                            }
                         }
                     }
 

@@ -72,6 +72,7 @@ namespace Xidi
         }),
         ConfigurationFileLayoutSection(Strings::kStrConfigurationSectionProperties, {
             ConfigurationFileLayoutNameAndValueType(Strings::kStrConfigurationSettingPropertiesMouseSpeedScalingFactorPercent, EValueType::Integer),
+            ConfigurationFileLayoutNameAndValueType(Strings::kStrConfigurationSettingsPropertiesUseBuiltinProperties, EValueType::Boolean),
         }),
         ConfigurationFileLayoutSection(Strings::kStrConfigurationSectionWorkarounds, {
             ConfigurationFileLayoutNameAndValueType(Strings::kStrConfigurationSettingWorkaroundsActiveVirtualControllerMask, EValueType::Integer),

@@ -13,8 +13,10 @@
 
 #include "ControllerTypes.h"
 #include "ElementMapper.h"
+#include "Globals.h"
 #include "Keyboard.h"
 #include "Mouse.h"
+#include "Strings.h"
 
 #include <cmath>
 #include <cstdint>
@@ -529,11 +531,13 @@ namespace Xidi
 
         void MouseAxisMapper::ContributeFromAnalogValue(SState& controllerState, int16_t analogValue, uint32_t sourceIdentifier) const
         {
+            static const bool kEnableMouseAxisProperites = Globals::GetConfigurationData().GetFirstBooleanValue(Strings::kStrConfigurationSectionProperties, Strings::kStrConfigurationSettingsPropertiesUseBuiltinProperties).value_or(true);
+
             constexpr double kAnalogToMouseScalingFactor = (double)(Mouse::kMouseMovementUnitsMax - Mouse::kMouseMovementUnitsMin) / (double)(kAnalogValueMax - kAnalogValueMin);
             
             constexpr unsigned int kAnalogMouseDeadzonePercent = 8;
             constexpr unsigned int kAnalogMouseSaturationPercent = 92;
-            const int16_t analogValueForContribution = ApplyRawAnalogTransform(analogValue, kAnalogMouseDeadzonePercent, kAnalogMouseSaturationPercent);
+            const int16_t analogValueForContribution = (kEnableMouseAxisProperites ? ApplyRawAnalogTransform(analogValue, kAnalogMouseDeadzonePercent, kAnalogMouseSaturationPercent) : analogValue);
 
             const double kMouseAxisValueRaw = ((double)(analogValueForContribution - kAnalogValueNeutral) * kAnalogToMouseScalingFactor);
             const double kMouseAxisValueTransformed = kMouseAxisValueRaw;
@@ -587,13 +591,15 @@ namespace Xidi
 
         void MouseAxisMapper::ContributeFromTriggerValue(SState& controllerState, uint8_t triggerValue, uint32_t sourceIdentifier) const
         {
+            static const bool kEnableMouseAxisProperites = Globals::GetConfigurationData().GetFirstBooleanValue(Strings::kStrConfigurationSectionProperties, Strings::kStrConfigurationSettingsPropertiesUseBuiltinProperties).value_or(true);
+
             constexpr double kBidirectionalStepSize = (double)(Mouse::kMouseMovementUnitsMax - Mouse::kMouseMovementUnitsMin) / (double)(kTriggerValueMax - kTriggerValueMin);
             constexpr double kPositiveStepSize = (double)Mouse::kMouseMovementUnitsMax / (double)(kTriggerValueMax - kTriggerValueMin);
             constexpr double kNegativeStepSize = (double)Mouse::kMouseMovementUnitsMin / (double)(kTriggerValueMax - kTriggerValueMin);
             
             constexpr unsigned int kTriggerMouseDeadzonePercent = 8;
             constexpr unsigned int kTriggerMouseSaturationPercent = 92;
-            const uint8_t triggerValueForContribution = ApplyRawTriggerTransform(triggerValue, kTriggerMouseDeadzonePercent, kTriggerMouseSaturationPercent);
+            const uint8_t triggerValueForContribution = (kEnableMouseAxisProperites ? ApplyRawTriggerTransform(triggerValue, kTriggerMouseDeadzonePercent, kTriggerMouseSaturationPercent) : triggerValue);
 
             int mouseAxisValueToContribute = 0;
 

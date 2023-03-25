@@ -112,6 +112,9 @@ namespace Xidi
         /// Configuration file setting for customizing the mouse speed. Expressed as a percentage that is used to scale the default mouse speed.
         inline constexpr std::wstring_view kStrConfigurationSettingPropertiesMouseSpeedScalingFactorPercent = L"MouseSpeedScalingFactorPercent";
 
+        /// Configuration file setting for enabling or disabling built-in properties like deadzone and saturation, which are used for interfaces that do not normally allow for customization.
+        inline constexpr std::wstring_view kStrConfigurationSettingsPropertiesUseBuiltinProperties = L"UseBuiltInProperties";
+
 
         /// Configuration file section name for specifying behavioral tweaks to work around bugs in games.
         inline constexpr std::wstring_view kStrConfigurationSectionWorkarounds = L"Workarounds";
