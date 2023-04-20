@@ -174,6 +174,8 @@ namespace Xidi
             /// See DirectInput documentation for the meaning of each individual field.
             struct SAxisProperties
             {
+                bool transformationsEnabled;                                ///< Specifies whether or not the transformations identified by this object should be enabled for the corresponding axis (in other words, should the axis properties be applied or ignored).
+
                 uint32_t deadzone;                                          ///< Deadzone of the axis, expressed as a percentage of the physical range around its center point. Can be from 0 (no deadzone) to 10000 (100% of the physical range is dead).
                 int32_t deadzoneRawCutoffPositive;                          ///< Highest raw analog value on the positive side of the axis that falls within the deadzone region. Values at or below this should report neutral.
                 int32_t deadzoneRawCutoffNegative;                          ///< Lowest raw analog value on the negative side of the axis that fallw within the deadzone region. Values at or above this should report neutral.
@@ -214,6 +216,14 @@ namespace Xidi
                     saturationRawCutoffNegative = kAnalogValueNeutral - (((kAnalogValueNeutral - kAnalogValueMin) * (int32_t)newSaturation) / kAxisSaturationMax);
                 }
 
+                /// Sets whether or not the transformations identified by this object should be enabled for the corresponding axis.
+                /// A value of `true` indicates that axis properties should be applied and a value of `false` indicates they should be ignored.
+                /// @param [in] newTransformationsEnabled Whether or not transformations should be enabled.
+                constexpr inline void SetTransformationsEnabled(bool newTransformationsEnabled)
+                {
+                    transformationsEnabled = newTransformationsEnabled;
+                }
+
                 /// Default constructor.
                 /// Initializes fields to appropriate default values.
                 constexpr inline SAxisProperties(void)
@@ -221,6 +231,7 @@ namespace Xidi
                     SetDeadzone(kAxisDeadzoneDefault);
                     SetRange(kRangeMinDefault, kRangeMaxDefault);
                     SetSaturation(kAxisSaturationDefault);
+                    SetTransformationsEnabled(true);
                 }
 
                 /// Simple check for equality.
@@ -433,6 +444,14 @@ namespace Xidi
                 return properties[axis].saturation;
             }
 
+            /// Retrieves and returns whether or not values read from the physical controller for the specified axis will be transformed by properties such as deadzone, saturation, and range.
+            /// @param [in] axis Target axis.
+            /// @return Whether or not transformationso are enabled for the target axis.
+            inline bool GetAxisTransformationsEnabled(EAxis axis) const
+            {
+                return properties[axis].transformationsEnabled;
+            }
+
             /// Retrieves and returns the capacity of the event buffer in number of events.
             /// @return Capacity of the event buffer.
             inline uint32_t GetEventBufferCapacity(void) const
@@ -538,6 +557,11 @@ namespace Xidi
             /// @return `true` if the new saturation value was successfully validated and set, `false` otherwise.
             bool SetAxisSaturation(EAxis axis, uint32_t saturation);
 
+            /// Enables or disables transformation of raw values read from the physical device using properties like deadzone, saturation, and range for the specified axis.
+            /// @param [in] axis Target axis.
+            /// @param [in] transformationsEnabled Whether or not transformations should be enabled for the target axis.
+            void SetAxisTransformationsEnabled(EAxis axis, bool transformationsEnabled);
+
             /// Sets the deadzone property for all axes.
             /// @param [in] deadzone Desired deadzone value.
             /// @return `true` if the new deadzone value was successfully validated and set, `false` otherwise.
@@ -553,6 +577,10 @@ namespace Xidi
             /// @param [in] saturation Desired saturation value.
             /// @return `true` if the new saturation value was successfully validated and set, `false` otherwise.
             bool SetAllAxisSaturation(uint32_t saturation);
+
+            /// Enables or disables transformation of raw values read from the physical device using properties like deadzone, saturation, and range for all axes.
+            /// @param [in] transformationsEnabled Whether or not transformations should be enabled for the target axis.
+            void SetAllAxisTransformationsEnabled(bool transformationsEnabled);
 
             /// Sets the event buffer capacity.
             /// @param [in] capacity Desired event buffer capacity in number of events.

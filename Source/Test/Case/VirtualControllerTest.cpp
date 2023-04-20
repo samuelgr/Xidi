@@ -141,7 +141,7 @@ namespace XidiTest
     {
         Controller::SState controllerState;
         ZeroMemory(&controllerState, sizeof(controllerState));
-        controllerState[EAxis::X] = inputAxisValue;
+        controllerState[kTestSingleAxis] = inputAxisValue;
 
         controller.ApplyProperties(controllerState);
         return controllerState[kTestSingleAxis];
@@ -465,6 +465,32 @@ namespace XidiTest
         TestVirtualControllerApplyAxisProperties(-100, 0);
         TestVirtualControllerApplyAxisProperties(-100, 0, DeadzoneValueByPercentage(10), SaturationValueByPercentage(90));
         TestVirtualControllerApplyAxisProperties(-10000000, 0, DeadzoneValueByPercentage(25), SaturationValueByPercentage(75));
+    }
+
+    // Transformations are disabled. Properties are set but they should be ignored.
+    TEST_CASE(VirtualController_ApplyAxisProperties_TransformationsDisabled)
+    {
+        constexpr uint32_t kTestDeadzone = DeadzoneValueByPercentage(40);
+        constexpr uint32_t kTestSaturation = SaturationValueByPercentage(60);
+        constexpr std::pair<int32_t, int32_t> kTestRange = std::make_pair(-10, 10);
+
+        MockPhysicalController physicalController(0, kTestMapper);
+        VirtualController controller(0);
+
+        TEST_ASSERT(true == controller.GetAxisTransformationsEnabled(kTestSingleAxis));
+        controller.SetAxisTransformationsEnabled(kTestSingleAxis, false);
+        TEST_ASSERT(false == controller.GetAxisTransformationsEnabled(kTestSingleAxis));
+
+        TEST_ASSERT(true == controller.SetAxisDeadzone(kTestSingleAxis, kTestDeadzone));
+        TEST_ASSERT(true == controller.SetAxisRange(kTestSingleAxis, kTestRange.first, kTestRange.second));
+        TEST_ASSERT(true == controller.SetAxisSaturation(kTestSingleAxis, kTestSaturation));
+
+        for (int32_t inputAxisValue = Controller::kAnalogValueMin; inputAxisValue <= Controller::kAnalogValueMax; ++inputAxisValue)
+        {
+            const int32_t& expectedAxisValue = inputAxisValue;
+            const int32_t actualAxisValue = GetAxisPropertiesApplyResult(controller, inputAxisValue);
+            TEST_ASSERT(actualAxisValue == expectedAxisValue);
+        }
     }
 
 

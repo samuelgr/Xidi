@@ -244,6 +244,7 @@ namespace Xidi
         // Look for reasons why the property header might be invalid and reject it if any are found.
         switch ((size_t)&rguidProp)
         {
+        case ((size_t)&DIPROP_CALIBRATIONMODE):
         case ((size_t)&DIPROP_DEADZONE):
         case ((size_t)&DIPROP_GRANULARITY):
         case ((size_t)&DIPROP_SATURATION):
@@ -1630,6 +1631,12 @@ namespace Xidi
             ((LPDIPROPDWORD)pdiph)->dwData = controller->GetEventBufferCapacity();
             LOG_PROPERTY_INVOCATION_DIPROPDWORD_AND_RETURN(DI_OK, kMethodSeverity, rguidProp, pdiph);
 
+        case ((size_t)&DIPROP_CALIBRATIONMODE):
+            if (Controller::EElementType::Axis != element.type)
+                LOG_PROPERTY_INVOCATION_NO_VALUE_AND_RETURN(DIERR_INVALIDPARAM, kMethodSeverity, rguidProp);
+            ((LPDIPROPDWORD)pdiph)->dwData = ((true == controller->GetAxisTransformationsEnabled(element.axis)) ? DIPROPCALIBRATIONMODE_COOKED : DIPROPCALIBRATIONMODE_RAW);
+            LOG_PROPERTY_INVOCATION_DIPROPDWORD_AND_RETURN(DI_OK, kMethodSeverity, rguidProp, pdiph);
+
         case ((size_t)&DIPROP_DEADZONE):
             if (Controller::EElementType::Axis != element.type)
                 LOG_PROPERTY_INVOCATION_NO_VALUE_AND_RETURN(DIERR_INVALIDPARAM, kMethodSeverity, rguidProp);
@@ -1940,6 +1947,35 @@ namespace Xidi
 
         case ((size_t)&DIPROP_BUFFERSIZE):
             LOG_PROPERTY_INVOCATION_DIPROPDWORD_AND_RETURN(((true == controller->SetEventBufferCapacity(((LPDIPROPDWORD)pdiph)->dwData)) ? DI_OK : DIERR_INVALIDPARAM), kMethodSeverity, rguidProp, pdiph);
+
+        case ((size_t)&DIPROP_CALIBRATIONMODE):
+            do {
+                bool transformationsEnabled = true;
+
+                switch (((LPDIPROPDWORD)pdiph)->dwData)
+                {
+                case DIPROPCALIBRATIONMODE_COOKED:
+                    transformationsEnabled = true;
+                    break;
+                case DIPROPCALIBRATIONMODE_RAW:
+                    transformationsEnabled = false;
+                    break;
+                default:
+                    LOG_PROPERTY_INVOCATION_DIPROPDWORD_AND_RETURN(DIERR_INVALIDPARAM, kMethodSeverity, rguidProp, pdiph);
+                }
+
+                switch (element.type)
+                {
+                case Controller::EElementType::Axis:
+                    controller->SetAxisTransformationsEnabled(element.axis, transformationsEnabled);
+                    LOG_PROPERTY_INVOCATION_DIPROPDWORD_AND_RETURN(DI_OK, kMethodSeverity, rguidProp, pdiph);
+                case Controller::EElementType::WholeController:
+                    controller->SetAllAxisTransformationsEnabled(transformationsEnabled);
+                    LOG_PROPERTY_INVOCATION_DIPROPDWORD_AND_RETURN(DI_OK, kMethodSeverity, rguidProp, pdiph);
+                default:
+                    LOG_PROPERTY_INVOCATION_DIPROPDWORD_AND_RETURN(DIERR_INVALIDPARAM, kMethodSeverity, rguidProp, pdiph);
+                }
+            } while (false);
 
         case ((size_t)&DIPROP_DEADZONE):
             switch (element.type)

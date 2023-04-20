@@ -1106,6 +1106,16 @@ namespace XidiTest
             TEST_ASSERT(0 == memcmp(&actualBufferSize, &kExpectedBufferSize, sizeof(kExpectedBufferSize)));
         } while (false);
 
+        // Calibration mode
+        do {
+            constexpr DIPROPHEADER kCalibrationModeHeader = {.dwSize = sizeof(DIPROPDWORD), .dwHeaderSize = sizeof(DIPROPHEADER), .dwObj = DIDFT_MAKEINSTANCE(0) | DIDFT_ABSAXIS, .dwHow = DIPH_BYID};
+            constexpr DIPROPDWORD kExpectedCalibrationMode = {.diph = kCalibrationModeHeader, .dwData = DIPROPCALIBRATIONMODE_RAW};
+            DIPROPDWORD actualCalibrationMode = {.diph = kCalibrationModeHeader, .dwData = (DWORD)-1};
+            TEST_ASSERT(DI_OK == diController.SetProperty(DIPROP_CALIBRATIONMODE, (LPCDIPROPHEADER)&kExpectedCalibrationMode));
+            TEST_ASSERT(DI_OK == diController.GetProperty(DIPROP_CALIBRATIONMODE, (LPDIPROPHEADER)&actualCalibrationMode));
+            TEST_ASSERT(0 == memcmp(&actualCalibrationMode, &kExpectedCalibrationMode, sizeof(kExpectedCalibrationMode)));
+        } while (false);
+
         // Deadzone
         do {
             constexpr DIPROPHEADER kDeadzoneHeader = {.dwSize = sizeof(DIPROPDWORD), .dwHeaderSize = sizeof(DIPROPHEADER), .dwObj = DIDFT_MAKEINSTANCE(0) | DIDFT_ABSAXIS, .dwHow = DIPH_BYID};
@@ -1312,6 +1322,15 @@ namespace XidiTest
             TEST_ASSERT(0 == memcmp(&actualBufferSize, &kExpectedBufferSize, sizeof(kExpectedBufferSize)));
         } while (false);
 
+        // Calibration mode
+        do {
+            constexpr DIPROPHEADER kCalibrationModeHeader = {.dwSize = sizeof(DIPROPDWORD), .dwHeaderSize = sizeof(DIPROPHEADER), .dwObj = DIDFT_MAKEINSTANCE(0) | DIDFT_ABSAXIS, .dwHow = DIPH_BYID};
+            constexpr DIPROPDWORD kExpectedCalibrationMode = {.diph = kCalibrationModeHeader, .dwData = DIPROPCALIBRATIONMODE_COOKED};
+            DIPROPDWORD actualCalibrationMode = {.diph = kCalibrationModeHeader, .dwData = (DWORD)-1};
+            TEST_ASSERT(DI_OK == diController.GetProperty(DIPROP_CALIBRATIONMODE, (LPDIPROPHEADER)&actualCalibrationMode));
+            TEST_ASSERT(0 == memcmp(&actualCalibrationMode, &kExpectedCalibrationMode, sizeof(kExpectedCalibrationMode)));
+        } while (false);
+
         // Deadzone
         do {
             constexpr DIPROPHEADER kDeadzoneHeader = {.dwSize = sizeof(DIPROPDWORD), .dwHeaderSize = sizeof(DIPROPHEADER), .dwObj = DIDFT_MAKEINSTANCE(0) | DIDFT_ABSAXIS, .dwHow = DIPH_BYID};
@@ -1362,6 +1381,14 @@ namespace XidiTest
             DIPROPSTRING propBufferSize = {.diph = kBufferSizeHeader};
             TEST_ASSERT(DIERR_INVALIDPARAM == diController.SetProperty(DIPROP_BUFFERSIZE, (LPCDIPROPHEADER)&propBufferSize));
             TEST_ASSERT(DIERR_INVALIDPARAM == diController.GetProperty(DIPROP_BUFFERSIZE, (LPDIPROPHEADER)&propBufferSize));
+        } while (false);
+
+        // Calibration mode
+        do {
+            constexpr DIPROPHEADER kCalibrationModeHeader = {.dwSize = sizeof(DIPROPSTRING), .dwHeaderSize = sizeof(DIPROPHEADER), .dwObj = DIDFT_MAKEINSTANCE(0) | DIDFT_ABSAXIS, .dwHow = DIPH_BYID};
+            DIPROPSTRING propCalibrationMode = {.diph = kCalibrationModeHeader};
+            TEST_ASSERT(DIERR_INVALIDPARAM == diController.SetProperty(DIPROP_CALIBRATIONMODE, (LPCDIPROPHEADER)&propCalibrationMode));
+            TEST_ASSERT(DIERR_INVALIDPARAM == diController.GetProperty(DIPROP_CALIBRATIONMODE, (LPDIPROPHEADER)&propCalibrationMode));
         } while (false);
 
         // Deadzone
@@ -1451,6 +1478,10 @@ namespace XidiTest
         // Buffer size
         TEST_ASSERT(FAILED(diController.SetProperty(DIPROP_BUFFERSIZE, nullptr)));
         TEST_ASSERT(FAILED(diController.GetProperty(DIPROP_BUFFERSIZE, nullptr)));
+
+        // Calibration mode
+        TEST_ASSERT(FAILED(diController.SetProperty(DIPROP_CALIBRATIONMODE, nullptr)));
+        TEST_ASSERT(FAILED(diController.GetProperty(DIPROP_CALIBRATIONMODE, nullptr)));
 
         // Deadzone
         TEST_ASSERT(FAILED(diController.SetProperty(DIPROP_DEADZONE, nullptr)));

@@ -116,6 +116,9 @@ namespace Xidi
         /// @return Axis value that results from applying the transformation.
         static int32_t TransformAxisValue(int32_t axisValueRaw, const VirtualController::SAxisProperties& axisProperties)
         {
+            if (true != axisProperties.transformationsEnabled)
+                return axisValueRaw;
+
             if (axisValueRaw > kAnalogValueNeutral)
             {
                 if (axisValueRaw <= axisProperties.deadzoneRawCutoffPositive)
@@ -305,6 +308,17 @@ namespace Xidi
 
         // --------
 
+        void VirtualController::SetAxisTransformationsEnabled(EAxis axis, bool transformationsEnabled)
+        {
+            auto lock = Lock();
+
+            properties[axis].SetTransformationsEnabled(transformationsEnabled);
+
+            ReapplyProperties();
+        }
+
+        // --------
+
         bool VirtualController::SetAllAxisDeadzone(uint32_t deadzone)
         {
             if ((deadzone >= kAxisDeadzoneMin) && (deadzone <= kAxisDeadzoneMax))
@@ -355,6 +369,18 @@ namespace Xidi
             }
 
             return false;
+        }
+
+        // --------
+
+        void VirtualController::SetAllAxisTransformationsEnabled(bool transformationsEnabled)
+        {
+            auto lock = Lock();
+
+            for (auto& axis : properties.axis)
+                axis.SetTransformationsEnabled(transformationsEnabled);
+
+            ReapplyProperties();
         }
 
         // --------
