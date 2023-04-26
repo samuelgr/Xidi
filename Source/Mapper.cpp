@@ -80,17 +80,17 @@ namespace Xidi
                     
                     for (const auto& knownMapper : knownMappers)
                     {
-                        const std::wstring_view kKnownMapperName = knownMapper.first;
-                        const SCapabilities kKnownMapperCapabilities = knownMapper.second->GetCapabilities();
+                        const std::wstring_view knownMapperName = knownMapper.first;
+                        const SCapabilities knownMapperCapabilities = knownMapper.second->GetCapabilities();
 
-                        Message::OutputFormatted(kDumpSeverity, L"  %s:", kKnownMapperName.data());
+                        Message::OutputFormatted(kDumpSeverity, L"  %s:", knownMapperName.data());
                         
-                        Message::OutputFormatted(kDumpSeverity, L"    numAxes = %u", (unsigned int)kKnownMapperCapabilities.numAxes);
-                        for (unsigned int i = 0; i < kKnownMapperCapabilities.numAxes; ++i)
-                            Message::OutputFormatted(kDumpSeverity, L"      axisCapabilities[%u] = { type = %s, supportsForceFeedback = %s }", i, Strings::AxisTypeString(kKnownMapperCapabilities.axisCapabilities[i].type), ((true == kKnownMapperCapabilities.axisCapabilities[i].supportsForceFeedback) ? L"true" : L"false"));
+                        Message::OutputFormatted(kDumpSeverity, L"    numAxes = %u", (unsigned int)knownMapperCapabilities.numAxes);
+                        for (unsigned int i = 0; i < knownMapperCapabilities.numAxes; ++i)
+                            Message::OutputFormatted(kDumpSeverity, L"      axisCapabilities[%u] = { type = %s, supportsForceFeedback = %s }", i, Strings::AxisTypeString(knownMapperCapabilities.axisCapabilities[i].type), ((true == knownMapperCapabilities.axisCapabilities[i].supportsForceFeedback) ? L"true" : L"false"));
 
-                        Message::OutputFormatted(kDumpSeverity, L"    numButtons = %u", (unsigned int)kKnownMapperCapabilities.numButtons);
-                        Message::OutputFormatted(kDumpSeverity, L"    hasPov = %s", ((true == kKnownMapperCapabilities.hasPov) ? L"true" : L"false"));
+                        Message::OutputFormatted(kDumpSeverity, L"    numButtons = %u", (unsigned int)knownMapperCapabilities.numButtons);
+                        Message::OutputFormatted(kDumpSeverity, L"    hasPov = %s", ((true == knownMapperCapabilities.hasPov) ? L"true" : L"false"));
                     }
 
                     Message::Output(kDumpSeverity, L"End dump of all known mappers.");
@@ -293,10 +293,10 @@ namespace Xidi
                     if (ForceFeedback::kEffectForceMagnitudeZero == virtualEffectComponents[(int)actuatorElement.singleAxis.axis])
                         return 0;
 
-                    const bool kActuatorDirectionIsNegative = std::signbit(virtualEffectComponents[(int)actuatorElement.singleAxis.axis]);
-                    if ((EAxisDirection::Positive == actuatorElement.singleAxis.direction) && (true == kActuatorDirectionIsNegative))
+                    const bool actuatorDirectionIsNegative = std::signbit(virtualEffectComponents[(int)actuatorElement.singleAxis.axis]);
+                    if ((EAxisDirection::Positive == actuatorElement.singleAxis.direction) && (true == actuatorDirectionIsNegative))
                         return 0;
-                    if ((EAxisDirection::Negative == actuatorElement.singleAxis.direction) && (false == kActuatorDirectionIsNegative))
+                    if ((EAxisDirection::Negative == actuatorElement.singleAxis.direction) && (false == actuatorDirectionIsNegative))
                         return 0;
 
                     virtualActuatorStrengthRaw = virtualEffectComponents[(int)actuatorElement.singleAxis.axis];
@@ -315,13 +315,13 @@ namespace Xidi
             constexpr ForceFeedback::TEffectValue kVirtualMagnitudeRange = ForceFeedback::kEffectForceMagnitudeMaximum - ForceFeedback::kEffectForceMagnitudeZero;
             constexpr ForceFeedback::TEffectValue kScalingFactor = kPhysicalActuatorRange / kVirtualMagnitudeRange;
 
-            const ForceFeedback::TEffectValue kGainMultiplier = gain / ForceFeedback::kEffectModifierMaximum;
-            const ForceFeedback::TEffectValue kVirtualActuatorStrengthMax = (ForceFeedback::kEffectForceMagnitudeMaximum - ForceFeedback::kEffectForceMagnitudeZero) * kGainMultiplier;
+            const ForceFeedback::TEffectValue gainMultiplier = gain / ForceFeedback::kEffectModifierMaximum;
+            const ForceFeedback::TEffectValue virtualActuatorStrengthMax = (ForceFeedback::kEffectForceMagnitudeMaximum - ForceFeedback::kEffectForceMagnitudeZero) * gainMultiplier;
 
-            const ForceFeedback::TEffectValue kVirtualActuatorStrength = std::min(kVirtualActuatorStrengthMax, kGainMultiplier * std::abs(virtualActuatorStrengthRaw - ForceFeedback::kEffectForceMagnitudeZero));
-            const long kPhysicalActuatorStrength = std::lround(kVirtualActuatorStrength * kScalingFactor);
+            const ForceFeedback::TEffectValue virtualActuatorStrength = std::min(virtualActuatorStrengthMax, gainMultiplier * std::abs(virtualActuatorStrengthRaw - ForceFeedback::kEffectForceMagnitudeZero));
+            const long physicalActuatorStrength = std::lround(virtualActuatorStrength * kScalingFactor);
 
-            return (ForceFeedback::TPhysicalActuatorValue)kPhysicalActuatorStrength;
+            return (ForceFeedback::TPhysicalActuatorValue)physicalActuatorStrength;
         }
 
         /// Computes the opaque source identifier that is to be passed to an element mapper.

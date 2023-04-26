@@ -126,7 +126,7 @@ namespace Xidi
         /// Any controllers that support XInput are removed from the mapping.
         static void CreateJoyIndexMap(void)
         {
-            const uint64_t kActiveVirtualControllerMask = Globals::GetConfigurationData().GetFirstIntegerValue(Strings::kStrConfigurationSectionWorkarounds, Strings::kStrConfigurationSettingWorkaroundsActiveVirtualControllerMask).value_or(UINT64_MAX);
+            const uint64_t activeVirtualControllerMask = Globals::GetConfigurationData().GetFirstIntegerValue(Strings::kStrConfigurationSectionWorkarounds, Strings::kStrConfigurationSettingWorkaroundsActiveVirtualControllerMask).value_or(UINT64_MAX);
 
             const size_t numDevicesFromSystem = joySystemDeviceInfo.size();
             const size_t numXInputVirtualDevices = _countof(controllers);
@@ -154,7 +154,7 @@ namespace Xidi
 
                 for (int i = 0; i < (int)numXInputVirtualDevices; ++i)
                 {
-                    if (0 != (kActiveVirtualControllerMask & ((uint64_t)1 << i)))
+                    if (0 != (activeVirtualControllerMask & ((uint64_t)1 << i)))
                     {
                         Message::OutputFormatted(Message::ESeverity::Debug, L"    [%u]: Xidi virtual controller %u", (unsigned int)joyIndexMap.size(), (unsigned int)(i + 1));
                         joyIndexMap.push_back(-(i + 1));
@@ -168,7 +168,7 @@ namespace Xidi
 
                 for (int i = 0; i < (int)numXInputVirtualDevices; ++i)
                 {
-                    if (0 != (kActiveVirtualControllerMask & ((uint64_t)1 << i)))
+                    if (0 != (activeVirtualControllerMask & ((uint64_t)1 << i)))
                     {
                         Message::OutputFormatted(Message::ESeverity::Debug, L"    [%u]: Xidi virtual controller %u", (unsigned int)joyIndexMap.size(), (unsigned int)(i + 1));
                         joyIndexMap.push_back(-(i + 1));
@@ -401,19 +401,19 @@ namespace Xidi
             static std::once_flag initializationFlag;
             std::call_once(initializationFlag, []() -> void
                 {
-                    const bool kEnableAxisProperites = Globals::GetConfigurationData().GetFirstBooleanValue(Strings::kStrConfigurationSectionProperties, Strings::kStrConfigurationSettingsPropertiesUseBuiltinProperties).value_or(true);
-                    const uint64_t kActiveVirtualControllerMask = Globals::GetConfigurationData().GetFirstIntegerValue(Strings::kStrConfigurationSectionWorkarounds, Strings::kStrConfigurationSettingWorkaroundsActiveVirtualControllerMask).value_or(UINT64_MAX);
+                    const bool enableAxisProperites = Globals::GetConfigurationData().GetFirstBooleanValue(Strings::kStrConfigurationSectionProperties, Strings::kStrConfigurationSettingsPropertiesUseBuiltinProperties).value_or(true);
+                    const uint64_t activeVirtualControllerMask = Globals::GetConfigurationData().GetFirstIntegerValue(Strings::kStrConfigurationSectionWorkarounds, Strings::kStrConfigurationSettingWorkaroundsActiveVirtualControllerMask).value_or(UINT64_MAX);
 
                     for (Controller::TControllerIdentifier i = 0; i < _countof(controllers); ++i)
                     {
                         controllers[i] = nullptr;
 
-                        if (0 != (kActiveVirtualControllerMask & ((uint64_t)1 << i)))
+                        if (0 != (activeVirtualControllerMask & ((uint64_t)1 << i)))
                         {
                             controllers[i] = new Controller::VirtualController(i);
                             controllers[i]->SetAllAxisRange(kAxisRangeMin, kAxisRangeMax);
 
-                            if (kEnableAxisProperites)
+                            if (enableAxisProperites)
                             {
                                 controllers[i]->SetAllAxisDeadzone(kAxisDeadzone);
                                 controllers[i]->SetAllAxisSaturation(kAxisSaturation);
@@ -569,19 +569,19 @@ namespace Xidi
                 // Querying an XInput controller.
                 const Controller::TControllerIdentifier xJoyID = (Controller::TControllerIdentifier)((-realJoyID) - 1);
 
-                const Controller::SState kJoyStateData = controllers[xJoyID]->GetState();
+                const Controller::SState joyStateData = controllers[xJoyID]->GetState();
 
-                pji->wXpos = (WORD)kJoyStateData[Controller::EAxis::X];
-                pji->wYpos = (WORD)kJoyStateData[Controller::EAxis::Y];
-                pji->wZpos = (WORD)kJoyStateData[Controller::EAxis::Z];
+                pji->wXpos = (WORD)joyStateData[Controller::EAxis::X];
+                pji->wYpos = (WORD)joyStateData[Controller::EAxis::Y];
+                pji->wZpos = (WORD)joyStateData[Controller::EAxis::Z];
                 pji->wButtons = 0;
-                if (true == kJoyStateData.button[0])
+                if (true == joyStateData.button[0])
                     pji->wButtons |= JOY_BUTTON1;
-                if (true == kJoyStateData.button[1])
+                if (true == joyStateData.button[1])
                     pji->wButtons |= JOY_BUTTON2;
-                if (true == kJoyStateData.button[2])
+                if (true == joyStateData.button[2])
                     pji->wButtons |= JOY_BUTTON3;
-                if (true == kJoyStateData.button[3])
+                if (true == joyStateData.button[3])
                     pji->wButtons |= JOY_BUTTON4;
 
                 const MMRESULT result = JOYERR_NOERROR;
@@ -617,23 +617,23 @@ namespace Xidi
                     return result;
                 }
 
-                const Controller::SState kJoyStateData = controllers[xJoyID]->GetState();
-                const EPovValue kJoyStateDataPovValue = DataFormat::DirectInputPovValue(kJoyStateData.povDirection);
+                const Controller::SState joyStateData = controllers[xJoyID]->GetState();
+                const EPovValue joyStateDataPovValue = DataFormat::DirectInputPovValue(joyStateData.povDirection);
 
                 // Fill in the provided structure.
                 // WinMM uses only 16 bits to indicate that the dpad is centered, whereas it is safe to use all 32 in DirectInput, hence the conversion (forgetting this can introduce bugs into games).
-                pji->dwPOV = (EPovValue::Center == kJoyStateDataPovValue ? (DWORD)(JOY_POVCENTERED) : (DWORD)kJoyStateDataPovValue);
-                pji->dwXpos = kJoyStateData[Controller::EAxis::X];
-                pji->dwYpos = kJoyStateData[Controller::EAxis::Y];
-                pji->dwZpos = kJoyStateData[Controller::EAxis::Z];
-                pji->dwRpos = kJoyStateData[Controller::EAxis::RotZ];
-                pji->dwUpos = kJoyStateData[Controller::EAxis::RotY];
-                pji->dwVpos = kJoyStateData[Controller::EAxis::RotX];
+                pji->dwPOV = (EPovValue::Center == joyStateDataPovValue ? (DWORD)(JOY_POVCENTERED) : (DWORD)joyStateDataPovValue);
+                pji->dwXpos = joyStateData[Controller::EAxis::X];
+                pji->dwYpos = joyStateData[Controller::EAxis::Y];
+                pji->dwZpos = joyStateData[Controller::EAxis::Z];
+                pji->dwRpos = joyStateData[Controller::EAxis::RotZ];
+                pji->dwUpos = joyStateData[Controller::EAxis::RotY];
+                pji->dwVpos = joyStateData[Controller::EAxis::RotX];
                 pji->dwButtons = 0;
 
-                for (size_t i = 0; i < kJoyStateData.button.size(); ++i)
+                for (size_t i = 0; i < joyStateData.button.size(); ++i)
                 {
-                    if (true == kJoyStateData.button[i])
+                    if (true == joyStateData.button[i])
                         pji->dwButtons |= (1 << i);
                 }
 

@@ -54,11 +54,11 @@ namespace XidiTest
         if (kMockSystemDevices.cend() == systemDeviceIter)
             return DIERR_DEVICENOTREG;
 
-        const auto kNewDeviceResult = createdDevices.emplace(std::make_unique<MockDirectInputDevice>(*systemDeviceIter));
-        if (false == kNewDeviceResult.second)
+        const auto newDeviceResult = createdDevices.emplace(std::make_unique<MockDirectInputDevice>(*systemDeviceIter));
+        if (false == newDeviceResult.second)
             TEST_FAILED_BECAUSE(L"Failed to register a new MockDirectInputDevice object.");
 
-        *lplpDirectInputDevice = kNewDeviceResult.first->get();
+        *lplpDirectInputDevice = newDeviceResult.first->get();
         return DI_OK;
     }
 
@@ -66,14 +66,14 @@ namespace XidiTest
 
     HRESULT STDMETHODCALLTYPE MockDirectInput::EnumDevices(DWORD dwDevType, DirectInputType<kDirectInputTestCharMode>::EnumDevicesCallbackType lpCallback, LPVOID pvRef, DWORD dwFlags)
     {
-        for (const auto& kMockSystemDevice : kMockSystemDevices)
+        for (const auto& mockSystemDevice : kMockSystemDevices)
         {
-            if ((0 == dwDevType) || ((dwDevType & kMockSystemDevice.instance.dwDevType) == dwDevType))
+            if ((0 == dwDevType) || ((dwDevType & mockSystemDevice.instance.dwDevType) == dwDevType))
             {
                 // Flag constants allowed for enumeration filters (DIEDFL_*) are equal to flag constants for capabilities (DIDC_*).
-                if ((0 == dwFlags) || ((dwFlags & kMockSystemDevice.capabilities.dwFlags) == dwFlags))
+                if ((0 == dwFlags) || ((dwFlags & mockSystemDevice.capabilities.dwFlags) == dwFlags))
                 {
-                    if (DIENUM_CONTINUE != lpCallback(&kMockSystemDevice.instance, pvRef))
+                    if (DIENUM_CONTINUE != lpCallback(&mockSystemDevice.instance, pvRef))
                         return DI_OK;
                 }
             }

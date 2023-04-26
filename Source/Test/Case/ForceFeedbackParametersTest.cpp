@@ -94,8 +94,8 @@ namespace XidiTest
 
         // Since we might be dealing with floating point quantities, there could be some imprecision, so allow a maximum error as specified at the top of this function.
         // A difference in sign would produce a negative ratio, which would return false.
-        const double kRatioSimilarity = (double)valueA / (double)valueB;
-        return (kRatioSimilarity >= (1.0 - kMaxRelativeError) && kRatioSimilarity <= (1.0 + kMaxRelativeError));
+        const double ratioSimilarity = (double)valueA / (double)valueB;
+        return (ratioSimilarity >= (1.0 - kMaxRelativeError) && ratioSimilarity <= (1.0 + kMaxRelativeError));
     }
 
     /// Specialization for checking if two magnitude component vectors are approximately equal.
@@ -119,7 +119,7 @@ namespace XidiTest
     /// @param [in] numCoordinates Number of coordinates contained in both arrays.
     static void CheckCartesianDirectionEquivalence(const TEffectValue* coordinatesA, const TEffectValue* coordinatesB, int numCoordinates)
     {
-        std::optional<double> expectedRatio;
+        std::optional<double> maybeExpectedRatio;
 
         // All non-zero coordinates need to follow the same ratio and all zero coordinates need to be exactly equal.
         // We don't know what that ratio is, however, until we start comparing individual components one at a time.
@@ -132,15 +132,15 @@ namespace XidiTest
             }
             else
             {
-                if (false == expectedRatio.has_value())
+                if (false == maybeExpectedRatio.has_value())
                 {
-                    expectedRatio = coordinatesB[i] / coordinatesA[i];
+                    maybeExpectedRatio = coordinatesB[i] / coordinatesA[i];
                 }
                 else
                 {
-                    const double kExpectedRatio = expectedRatio.value();
-                    const double kActualRatio = coordinatesB[i] / coordinatesA[i];
-                    TEST_ASSERT(true == ApproximatelyEqual(kActualRatio, kExpectedRatio));
+                    const double expectedRatio = maybeExpectedRatio.value();
+                    const double actualRatio = coordinatesB[i] / coordinatesA[i];
+                    TEST_ASSERT(true == ApproximatelyEqual(actualRatio, expectedRatio));
                 }
             }
         }
@@ -157,10 +157,10 @@ namespace XidiTest
 
         if (true == testData.polar.has_value())
         {
-            const auto kExpectedCartesianToPolar = testData.polar.value();
+            const auto expectedCartesianToPolar = testData.polar.value();
             TEffectValue actualCartesianToPolar = 0;
             TEST_ASSERT(1 == vectorCartesian.GetPolarCoordinates(&actualCartesianToPolar, 1));
-            TEST_ASSERT(actualCartesianToPolar == kExpectedCartesianToPolar);
+            TEST_ASSERT(actualCartesianToPolar == expectedCartesianToPolar);
         }
         else
         {
@@ -168,10 +168,10 @@ namespace XidiTest
             TEST_ASSERT(0 == vectorCartesian.GetPolarCoordinates(&unusedCartesianToPolar, 1));
         }
 
-        const auto kExpectedCartesianToSpherical = testData.spherical;
+        const auto expectedCartesianToSpherical = testData.spherical;
         decltype(testData.spherical) actualCartesianToSpherical;
         TEST_ASSERT((int)actualCartesianToSpherical.size() == vectorCartesian.GetSphericalCoordinates(&actualCartesianToSpherical[0], (int)actualCartesianToSpherical.size()));
-        TEST_ASSERT(actualCartesianToSpherical == kExpectedCartesianToSpherical);
+        TEST_ASSERT(actualCartesianToSpherical == expectedCartesianToSpherical);
 
         // Conversion from polar (optional, not always valid)
         if (testData.polar.has_value())
@@ -179,32 +179,32 @@ namespace XidiTest
             DirectionVector vectorPolar;
             TEST_ASSERT(true == vectorPolar.SetDirectionUsingPolar(&testData.polar.value(), 1));
 
-            const auto kExpectedPolarToCartesian = testData.cartesian;
+            const auto expectedPolarToCartesian = testData.cartesian;
             decltype(testData.cartesian) actualPolarToCartesian;
             TEST_ASSERT((int)actualPolarToCartesian.size() == vectorPolar.GetCartesianCoordinates(&actualPolarToCartesian[0], (int)actualPolarToCartesian.size()));
-            CheckCartesianDirectionEquivalence(&kExpectedPolarToCartesian[0], &actualPolarToCartesian[0], (int)kNumAxes);
+            CheckCartesianDirectionEquivalence(&expectedPolarToCartesian[0], &actualPolarToCartesian[0], (int)kNumAxes);
 
-            const auto kExpectedPolarToSpherical = testData.spherical;
+            const auto expectedPolarToSpherical = testData.spherical;
             decltype(testData.spherical) actualPolarToSpherical;
             TEST_ASSERT((int)actualPolarToSpherical.size() == vectorPolar.GetSphericalCoordinates(&actualPolarToSpherical[0], (int)actualPolarToSpherical.size()));
-            TEST_ASSERT(actualPolarToSpherical == kExpectedPolarToSpherical);
+            TEST_ASSERT(actualPolarToSpherical == expectedPolarToSpherical);
         }
 
         // Conversion from spherical
         DirectionVector vectorSpherical;
         TEST_ASSERT(true == vectorSpherical.SetDirectionUsingSpherical(&testData.spherical[0], (int)testData.spherical.size()));
 
-        const auto kExpectedSphericalToCartesian = testData.cartesian;
+        const auto expectedSphericalToCartesian = testData.cartesian;
         decltype(testData.cartesian) actualSphericalToCartesian;
         TEST_ASSERT((int)actualSphericalToCartesian.size() == vectorSpherical.GetCartesianCoordinates(&actualSphericalToCartesian[0], (int)actualSphericalToCartesian.size()));
-        CheckCartesianDirectionEquivalence(&kExpectedSphericalToCartesian[0], &actualSphericalToCartesian[0], (int)kNumAxes);
+        CheckCartesianDirectionEquivalence(&expectedSphericalToCartesian[0], &actualSphericalToCartesian[0], (int)kNumAxes);
 
         if (true == testData.polar.has_value())
         {
-            const auto kExpectedSphericalToPolar = testData.polar.value();
+            const auto expectedSphericalToPolar = testData.polar.value();
             TEffectValue actualSphericalToPolar = 0;
             TEST_ASSERT(1 == vectorSpherical.GetPolarCoordinates(&actualSphericalToPolar, 1));
-            TEST_ASSERT(actualSphericalToPolar == kExpectedSphericalToPolar);
+            TEST_ASSERT(actualSphericalToPolar == expectedSphericalToPolar);
         }
         else
         {
@@ -222,9 +222,9 @@ namespace XidiTest
         DirectionVector vector;
         TEST_ASSERT(true == vector.SetDirectionUsingCartesian(&testData.directionCartesian[0], (int)testData.directionCartesian.size()));
 
-        const TMagnitudeComponents& kExpectedMagnitudeComponents = testData.magnitudeComponents;
-        const TMagnitudeComponents kActualMagnitudeComponents = vector.ComputeMagnitudeComponents(magnitude);
-        TEST_ASSERT(true == ApproximatelyEqual(kActualMagnitudeComponents, kExpectedMagnitudeComponents));
+        const TMagnitudeComponents& expectedMagnitudeComponents = testData.magnitudeComponents;
+        const TMagnitudeComponents actualMagnitudeComponents = vector.ComputeMagnitudeComponents(magnitude);
+        TEST_ASSERT(true == ApproximatelyEqual(actualMagnitudeComponents, expectedMagnitudeComponents));
     }
 
 
@@ -236,15 +236,15 @@ namespace XidiTest
     {
         constexpr TEffectValue kTestCoordinates[] = {-100000000, -10000, -100, -1, 1, 100, 10000, 100000000};
         
-        for (const auto kTestCoordinate : kTestCoordinates)
+        for (const auto testCoordinate : kTestCoordinates)
         {
             DirectionVector vector;
-            TEST_ASSERT(true == vector.SetDirectionUsingCartesian(&kTestCoordinate, 1));
+            TEST_ASSERT(true == vector.SetDirectionUsingCartesian(&testCoordinate, 1));
 
             // Simple retrieval should succeed without any transformation.
             std::array<TEffectValue, kEffectAxesMaximumNumber> actualOutputCoordinates = {0};
             TEST_ASSERT(1 == vector.GetCartesianCoordinates(&actualOutputCoordinates[0], (int)actualOutputCoordinates.size()));
-            TEST_ASSERT(actualOutputCoordinates[0] == kTestCoordinate);
+            TEST_ASSERT(actualOutputCoordinates[0] == testCoordinate);
 
             // All conversions should fail, so there should be no output written to the actual output coordinate variable.
             constexpr std::array<TEffectValue, kEffectAxesMaximumNumber> kExpectedOutputCoordinates = {55, 66};
@@ -266,27 +266,27 @@ namespace XidiTest
         constexpr TEffectValue kTestMagnitudes[] = {-1000, -10, 0, 100, 10000};
         constexpr TEffectValue kTestCoordinates[] = {-100000000, -10000, -100, -1, 1, 100, 10000, 100000000};
 
-        for (const auto kTestMagnitude : kTestMagnitudes)
+        for (const auto testMagnitude : kTestMagnitudes)
         {
             // Verify that a zero-coordinate spherical specification works and also produces the same single axis vector as above.
             do {
                 DirectionVector vector;
                 TEST_ASSERT(true == vector.SetDirectionUsingSpherical(nullptr, 0));
 
-                const TMagnitudeComponents kExpectedOutput = {kTestMagnitude};
-                const TMagnitudeComponents kActualOutput = vector.ComputeMagnitudeComponents(kTestMagnitude);
-                TEST_ASSERT(kActualOutput == kExpectedOutput);
+                const TMagnitudeComponents expectedOutput = {testMagnitude};
+                const TMagnitudeComponents actualOutput = vector.ComputeMagnitudeComponents(testMagnitude);
+                TEST_ASSERT(actualOutput == expectedOutput);
             } while (false);
 
             // Verify all the specified Cartesian test coordinates.
-            for (const auto kTestCoordinate : kTestCoordinates)
+            for (const auto testCoordinate : kTestCoordinates)
             {
                 DirectionVector vector;
-                TEST_ASSERT(true == vector.SetDirectionUsingCartesian(&kTestCoordinate, 1));
+                TEST_ASSERT(true == vector.SetDirectionUsingCartesian(&testCoordinate, 1));
 
-                const TMagnitudeComponents kExpectedOutput = {((kTestCoordinate > 0) ? kTestMagnitude : -kTestMagnitude)};
-                const TMagnitudeComponents kActualOutput = vector.ComputeMagnitudeComponents(kTestMagnitude);
-                TEST_ASSERT(kActualOutput == kExpectedOutput);
+                const TMagnitudeComponents expectedOutput = {((testCoordinate > 0) ? testMagnitude : -testMagnitude)};
+                const TMagnitudeComponents actualOutput = vector.ComputeMagnitudeComponents(testMagnitude);
+                TEST_ASSERT(actualOutput == expectedOutput);
             }
         }
     }
@@ -323,8 +323,8 @@ namespace XidiTest
             {.cartesian = {kSqrt3, -1},     .polar = (TEffectValue)6000,    .spherical = {33000}}
         };
 
-        for (const auto& kTest : kTestData)
-            DirectionVectorCoordinateConversionTest(kTest);
+        for (const auto& testData : kTestData)
+            DirectionVectorCoordinateConversionTest(testData);
     }
 
     // Exercises computation of a force's magnitude components using two-axis direction vectors.
@@ -360,8 +360,8 @@ namespace XidiTest
             {.directionCartesian = {kSqrt3, -1},                            .magnitudeComponents = {kTestMagnitude * kCos30, -kTestMagnitude * kSin30}}
         };
 
-        for (const auto& kTest : kTestData)
-            DirectionVectorMagnitudeComponentsTest(kTestMagnitude, kTest);
+        for (const auto& testData : kTestData)
+            DirectionVectorMagnitudeComponentsTest(kTestMagnitude, testData);
     }
 
     // Exercises coordinate system setting, getting, and converting with three-axis direction vectors.
@@ -399,8 +399,8 @@ namespace XidiTest
             {.cartesian = {kSqrt3, 1, 2 / kSqrt3},                          .spherical = {3000, 3000}}
         };
 
-        for (const auto& kTest : kTestData)
-            DirectionVectorCoordinateConversionTest(kTest);
+        for (const auto& testData : kTestData)
+            DirectionVectorCoordinateConversionTest(testData);
     }
 
     // Exercises computation of a force's magnitude components using three-axis direction vectors.
@@ -438,8 +438,8 @@ namespace XidiTest
             {.directionCartesian = {kSqrt3, 1, 2 / kSqrt3},                 .magnitudeComponents = {kTestMagnitude * kCos30 * kCos30, kTestMagnitude * kCos30 * kSin30, kTestMagnitude * kSin30}}
         };
 
-        for (const auto& kTest : kTestData)
-            DirectionVectorMagnitudeComponentsTest(kTestMagnitude, kTest);
+        for (const auto& testData : kTestData)
+            DirectionVectorMagnitudeComponentsTest(kTestMagnitude, testData);
     }
 
     // Exercises various ways of setting directions using invalid coordinates.
@@ -468,8 +468,8 @@ namespace XidiTest
             TEST_ASSERT(false == vector.SetDirectionUsingPolar(&inputCoordinates[0], i));
         }
 
-        for (const auto kInvalidAngleCoordinate : kInvalidAngleCoordinates)
-            TEST_ASSERT(false == vector.SetDirectionUsingPolar(&kInvalidAngleCoordinate, 1));
+        for (const auto invalidAngleCoordinate : kInvalidAngleCoordinates)
+            TEST_ASSERT(false == vector.SetDirectionUsingPolar(&invalidAngleCoordinate, 1));
 
         // Various ways of sending invalid spherical coordinates.
         // First we use some valid angle values but with an invalid number of coordinates (the allowed range is 0 to one less than maximum allowed axes).
@@ -477,8 +477,8 @@ namespace XidiTest
         for (int i = kEffectAxesMaximumNumber; i <= (int)inputCoordinates.size(); ++i)
             TEST_ASSERT(false == vector.SetDirectionUsingSpherical(&inputCoordinates[0], i));
 
-        for (const auto kInvalidAngleCoordinate : kInvalidAngleCoordinates)
-            TEST_ASSERT(false == vector.SetDirectionUsingSpherical(&kInvalidAngleCoordinate, 1));
+        for (const auto invalidAngleCoordinate : kInvalidAngleCoordinates)
+            TEST_ASSERT(false == vector.SetDirectionUsingSpherical(&invalidAngleCoordinate, 1));
 
         // Finally, verify that the vector reports not having any direction set, since all of the above attempts should have failed.
         TEST_ASSERT(false == vector.HasDirection());
@@ -515,9 +515,9 @@ namespace XidiTest
         TEST_ASSERT(true == vector.IsOmnidirectional());
 
         constexpr TEffectValue kTestMagnitude = 5432;
-        constexpr TMagnitudeComponents kExpectedMagnitudeComponents = { kTestMagnitude, kTestMagnitude, kTestMagnitude };
-        const TMagnitudeComponents kActualMagnitudeComponents = vector.ComputeMagnitudeComponents(kTestMagnitude);
-        TEST_ASSERT(kActualMagnitudeComponents == kExpectedMagnitudeComponents);
+        const TMagnitudeComponents expectedMagnitudeComponents = {kTestMagnitude, kTestMagnitude, kTestMagnitude};
+        const TMagnitudeComponents actualMagnitudeComponents = vector.ComputeMagnitudeComponents(kTestMagnitude);
+        TEST_ASSERT(actualMagnitudeComponents == expectedMagnitudeComponents);
     }
 
     // Verifies that direction vector objects exit omnidirectional mode once the direction is changed to something else.

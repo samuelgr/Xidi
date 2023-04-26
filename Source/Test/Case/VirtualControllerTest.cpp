@@ -165,10 +165,10 @@ namespace XidiTest
         const int32_t rangeNeutral = ((rangeMin + rangeMax) / 2);
         
         // Cutoff points between regions.
-        const int32_t kRawSaturationCutoffNegative = Controller::kAnalogValueNeutral + ((int32_t)((double)(Controller::kAnalogValueMin - Controller::kAnalogValueNeutral) * ((double)saturation / (double)VirtualController::kAxisSaturationMax)));
-        const int32_t kRawDeadzoneCutoffNegative = Controller::kAnalogValueNeutral + ((int32_t)((double)(Controller::kAnalogValueMin - Controller::kAnalogValueNeutral) * ((double)deadzone / (double)VirtualController::kAxisDeadzoneMax)));
-        const int32_t kRawDeadzoneCutoffPositive = Controller::kAnalogValueNeutral + ((int32_t)((double)(Controller::kAnalogValueMax - Controller::kAnalogValueNeutral) * ((double)deadzone / (double)VirtualController::kAxisDeadzoneMax)));
-        const int32_t kRawSaturationCutoffPositive = Controller::kAnalogValueNeutral + ((int32_t)((double)(Controller::kAnalogValueMax - Controller::kAnalogValueNeutral) * ((double)saturation / (double)VirtualController::kAxisSaturationMax)));
+        const int32_t rawSaturationCutoffNegative = Controller::kAnalogValueNeutral + ((int32_t)((double)(Controller::kAnalogValueMin - Controller::kAnalogValueNeutral) * ((double)saturation / (double)VirtualController::kAxisSaturationMax)));
+        const int32_t rawDeadzoneCutoffNegative = Controller::kAnalogValueNeutral + ((int32_t)((double)(Controller::kAnalogValueMin - Controller::kAnalogValueNeutral) * ((double)deadzone / (double)VirtualController::kAxisDeadzoneMax)));
+        const int32_t rawDeadzoneCutoffPositive = Controller::kAnalogValueNeutral + ((int32_t)((double)(Controller::kAnalogValueMax - Controller::kAnalogValueNeutral) * ((double)deadzone / (double)VirtualController::kAxisDeadzoneMax)));
+        const int32_t rawSaturationCutoffPositive = Controller::kAnalogValueNeutral + ((int32_t)((double)(Controller::kAnalogValueMax - Controller::kAnalogValueNeutral) * ((double)saturation / (double)VirtualController::kAxisSaturationMax)));
 
         // Output monotonicity check variable.
         int32_t lastOutputAxisValue = rangeMin;
@@ -184,7 +184,7 @@ namespace XidiTest
         TEST_ASSERT(controller.GetAxisSaturation(kTestSingleAxis) == saturation);
         
         // Region 1
-        for (int32_t inputAxisValue = Controller::kAnalogValueMin; inputAxisValue < kRawSaturationCutoffNegative; ++inputAxisValue)
+        for (int32_t inputAxisValue = Controller::kAnalogValueMin; inputAxisValue < rawSaturationCutoffNegative; ++inputAxisValue)
         {
             const int32_t expectedOutputAxisValue = rangeMin;
             const int32_t actualOutputAxisValue = GetAxisPropertiesApplyResult(controller, inputAxisValue);
@@ -195,10 +195,10 @@ namespace XidiTest
 
         // Region 2
         // Allow for a small amount of mathematical imprecision by checking for an absolute value difference instead of equality.
-        for (int32_t inputAxisValue = kRawSaturationCutoffNegative; inputAxisValue < kRawDeadzoneCutoffNegative; ++inputAxisValue)
+        for (int32_t inputAxisValue = rawSaturationCutoffNegative; inputAxisValue < rawDeadzoneCutoffNegative; ++inputAxisValue)
         {
-            const double kRegionStepSize = (double)(rangeNeutral - rangeMin) / (double)(kRawDeadzoneCutoffNegative - kRawSaturationCutoffNegative);
-            const double expectedOutputAxisValue = (double)rangeMin + ((double)(inputAxisValue - kRawSaturationCutoffNegative) * kRegionStepSize);
+            const double regionStepSize = (double)(rangeNeutral - rangeMin) / (double)(rawDeadzoneCutoffNegative - rawSaturationCutoffNegative);
+            const double expectedOutputAxisValue = (double)rangeMin + ((double)(inputAxisValue - rawSaturationCutoffNegative) * regionStepSize);
             const int32_t actualOutputAxisValue = GetAxisPropertiesApplyResult(controller, inputAxisValue);
             TEST_ASSERT(abs(actualOutputAxisValue - expectedOutputAxisValue) <= 1.0);
             TEST_ASSERT(actualOutputAxisValue >= lastOutputAxisValue);
@@ -206,7 +206,7 @@ namespace XidiTest
         }
 
         // Region 3
-        for (int32_t inputAxisValue = kRawDeadzoneCutoffNegative; inputAxisValue <= kRawDeadzoneCutoffPositive; ++inputAxisValue)
+        for (int32_t inputAxisValue = rawDeadzoneCutoffNegative; inputAxisValue <= rawDeadzoneCutoffPositive; ++inputAxisValue)
         {
             const int32_t expectedOutputAxisValue = rangeNeutral;
             const int32_t actualOutputAxisValue = GetAxisPropertiesApplyResult(controller, inputAxisValue);
@@ -217,10 +217,10 @@ namespace XidiTest
 
         // Region 4
         // Allow for a small amount of mathematical imprecision by checking for an absolute value difference instead of equality.
-        for (int32_t inputAxisValue = (1 + kRawDeadzoneCutoffPositive); inputAxisValue <= kRawSaturationCutoffPositive; ++inputAxisValue)
+        for (int32_t inputAxisValue = (1 + rawDeadzoneCutoffPositive); inputAxisValue <= rawSaturationCutoffPositive; ++inputAxisValue)
         {
-            const double kRegionStepSize = (double)(rangeMax - rangeNeutral) / (double)(kRawSaturationCutoffPositive - kRawDeadzoneCutoffPositive);
-            const double expectedOutputAxisValue = (double)rangeNeutral + ((double)(inputAxisValue - kRawDeadzoneCutoffPositive) * kRegionStepSize);
+            const double regionStepSize = (double)(rangeMax - rangeNeutral) / (double)(rawSaturationCutoffPositive - rawDeadzoneCutoffPositive);
+            const double expectedOutputAxisValue = (double)rangeNeutral + ((double)(inputAxisValue - rawDeadzoneCutoffPositive) * regionStepSize);
             const int32_t actualOutputAxisValue = GetAxisPropertiesApplyResult(controller, inputAxisValue);
             TEST_ASSERT(abs(actualOutputAxisValue - expectedOutputAxisValue) <= 1.0);
             TEST_ASSERT(actualOutputAxisValue >= lastOutputAxisValue);
@@ -228,7 +228,7 @@ namespace XidiTest
         }
 
         // Region 5
-        for (int32_t inputAxisValue = (1 + kRawSaturationCutoffPositive); inputAxisValue <= Controller::kAnalogValueMax; ++inputAxisValue)
+        for (int32_t inputAxisValue = (1 + rawSaturationCutoffPositive); inputAxisValue <= Controller::kAnalogValueMax; ++inputAxisValue)
         {
             const int32_t expectedOutputAxisValue = rangeMax;
             const int32_t actualOutputAxisValue = GetAxisPropertiesApplyResult(controller, inputAxisValue);
@@ -283,8 +283,8 @@ namespace XidiTest
         {
             controller.RefreshState(kTestMapper.MapStatePhysicalToVirtual(kPhysicalStates[i], kControllerIndex));
 
-            const Controller::SState kActualState = controller.GetState();
-            TEST_ASSERT(kActualState == kExpectedStates[i]);
+            const Controller::SState actualState = controller.GetState();
+            TEST_ASSERT(actualState == kExpectedStates[i]);
         }
     }
 
@@ -300,8 +300,8 @@ namespace XidiTest
         MockPhysicalController physicalController(kControllerIndex, kTestMapper);
         VirtualController controller(kControllerIndex);
 
-        const Controller::SState kActualState = controller.GetState();
-        TEST_ASSERT(kActualState == kExpectedState);
+        const Controller::SState actualState = controller.GetState();
+        TEST_ASSERT(actualState == kExpectedState);
 
     }
 
@@ -376,8 +376,8 @@ namespace XidiTest
         {
             controller.RefreshState(kTestMapper.MapStatePhysicalToVirtual(kPhysicalStates[i], kControllerIndex));
 
-            const Controller::SState kActualState = controller.GetState();
-            TEST_ASSERT(kActualState == kExpectedStates[i]);
+            const Controller::SState actualState = controller.GetState();
+            TEST_ASSERT(actualState == kExpectedStates[i]);
         }
     }
 
@@ -674,12 +674,12 @@ namespace XidiTest
 
         controller.RefreshState(kTestMapper.MapStatePhysicalToVirtual(kPhysicalState, 0));
         controller.SetAllAxisRange(kTestOldAxisRangeMin, kTestOldAxisRangeMax);
-        const Controller::SState kActualStateBefore = controller.GetState();
-        TEST_ASSERT(kActualStateBefore == kExpectedStateBefore);
+        const Controller::SState actualStateBefore = controller.GetState();
+        TEST_ASSERT(actualStateBefore == kExpectedStateBefore);
 
         controller.SetAllAxisRange(kTestNewAxisRangeMin, kTestNewAxisRangeMax);
-        const Controller::SState kActualStateAfter = controller.GetState();
-        TEST_ASSERT(kActualStateAfter == kExpectedStateAfter);
+        const Controller::SState actualStateAfter = controller.GetState();
+        TEST_ASSERT(actualStateAfter == kExpectedStateAfter);
     }
 
 
@@ -861,18 +861,18 @@ namespace XidiTest
             {.deviceStatus = EPhysicalDeviceStatus::Ok}
         };
 
-        const HANDLE kStateChangeEvent = CreateEvent(nullptr, FALSE, FALSE, nullptr);
-        TEST_ASSERT((nullptr != kStateChangeEvent) && (INVALID_HANDLE_VALUE != kStateChangeEvent));
+        const HANDLE stateChangeEvent = CreateEvent(nullptr, FALSE, FALSE, nullptr);
+        TEST_ASSERT((nullptr != stateChangeEvent) && (INVALID_HANDLE_VALUE != stateChangeEvent));
 
         MockPhysicalController physicalController(kControllerIndex, kTestMapper, kPhysicalStates, _countof(kPhysicalStates));
 
         VirtualController controller(kControllerIndex);
-        controller.SetStateChangeEvent(kStateChangeEvent);
+        controller.SetStateChangeEvent(stateChangeEvent);
 
         for (int i = 1; i < _countof(kPhysicalStates); ++i)
         {
             physicalController.RequestAdvancePhysicalState();
-            TEST_ASSERT(WAIT_OBJECT_0 == WaitForSingleObject(kStateChangeEvent, kTestStateChangeEventTimeoutMilliseconds));
+            TEST_ASSERT(WAIT_OBJECT_0 == WaitForSingleObject(stateChangeEvent, kTestStateChangeEventTimeoutMilliseconds));
         }
     }
 
@@ -897,21 +897,21 @@ namespace XidiTest
         };
         static_assert(0 != (_countof(kPhysicalStates) % 2), "An even number of states is required beyond the initial physical state.");
 
-        const HANDLE kStateChangeEvent = CreateEvent(nullptr, FALSE, FALSE, nullptr);
-        TEST_ASSERT((nullptr != kStateChangeEvent) && (INVALID_HANDLE_VALUE != kStateChangeEvent));
+        const HANDLE stateChangeEvent = CreateEvent(nullptr, FALSE, FALSE, nullptr);
+        TEST_ASSERT((nullptr != stateChangeEvent) && (INVALID_HANDLE_VALUE != stateChangeEvent));
 
         MockPhysicalController physicalController(kControllerIndex, kTestMapper, kPhysicalStates, _countof(kPhysicalStates));
 
         VirtualController controller(kControllerIndex);
-        controller.SetStateChangeEvent(kStateChangeEvent);
+        controller.SetStateChangeEvent(stateChangeEvent);
 
         for (int i = 1; i < _countof(kPhysicalStates); i += 2)
         {
             physicalController.RequestAdvancePhysicalState();
-            TEST_ASSERT(WAIT_OBJECT_0 == WaitForSingleObject(kStateChangeEvent, kTestStateChangeEventTimeoutMilliseconds));
+            TEST_ASSERT(WAIT_OBJECT_0 == WaitForSingleObject(stateChangeEvent, kTestStateChangeEventTimeoutMilliseconds));
 
             physicalController.RequestAdvancePhysicalState();
-            TEST_ASSERT(WAIT_TIMEOUT == WaitForSingleObject(kStateChangeEvent, kTestStateChangeEventTimeoutMilliseconds));
+            TEST_ASSERT(WAIT_TIMEOUT == WaitForSingleObject(stateChangeEvent, kTestStateChangeEventTimeoutMilliseconds));
         }
     }
 

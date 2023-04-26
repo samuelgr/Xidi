@@ -3104,8 +3104,8 @@ namespace Xidi
 
                 std::call_once(initFlag, []() -> void
                     {
-                        for (const auto& kReplaceableFunction : kReplaceableFunctions)
-                            initSet.insert(kReplaceableFunction.first);
+                        for (const auto& replaceableFunction : kReplaceableFunctions)
+                            initSet.insert(replaceableFunction.first);
                     }
                 );
 
@@ -3118,21 +3118,21 @@ namespace Xidi
             {
                 Initialize();
 
-                const std::wstring_view kLibraryPath = GetImportLibraryPathWinMM();
+                std::wstring_view libraryPath = GetImportLibraryPathWinMM();
                 size_t numReplaced = 0;
 
-                for (const auto& kNewImportFunction : importFunctionTable)
+                for (const auto& newImportFunction : importFunctionTable)
                 {
-                    if (true == kReplaceableFunctions.contains(kNewImportFunction.first))
+                    if (true == kReplaceableFunctions.contains(newImportFunction.first))
                     {
-                        Message::OutputFormatted(Message::ESeverity::Debug, L"Import function \"%s\" has been replaced.", kNewImportFunction.first.data());
-                        importTable.ptr[kReplaceableFunctions.at(kNewImportFunction.first)] = kNewImportFunction.second;
+                        Message::OutputFormatted(Message::ESeverity::Debug, L"Import function \"%s\" has been replaced.", newImportFunction.first.data());
+                        importTable.ptr[kReplaceableFunctions.at(newImportFunction.first)] = newImportFunction.second;
                         numReplaced += 1;
                     }
                 }
 
                 if (numReplaced > 0)
-                    Message::OutputFormatted(Message::ESeverity::Warning, L"%d function(s) previously imported from %s have been replaced. Previously imported versions will not be used.", (int)numReplaced, kLibraryPath.data());
+                    Message::OutputFormatted(Message::ESeverity::Warning, L"%d function(s) previously imported from %s have been replaced. Previously imported versions will not be used.", (int)numReplaced, libraryPath.data());
 
                 return numReplaced;
             }

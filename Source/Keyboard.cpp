@@ -210,8 +210,8 @@ namespace Xidi
                 {
                     Sleep(kKeyboardUpdatePeriodMilliseconds);
 
-                    const bool kHaveInputFocus = Globals::DoesCurrentProcessHaveInputFocus();
-                    const bool kTerminationRequested = keyboardUpdateStopToken.stop_requested();
+                    const bool haveInputFocus = Globals::DoesCurrentProcessHaveInputFocus();
+                    const bool terminationRequested = keyboardUpdateStopToken.stop_requested();
 
                     do {
                         auto lock = keyboardTracker->Lock();
@@ -219,7 +219,7 @@ namespace Xidi
                         TState nextKeyboardState = keyboardTracker->SnapshotRelativeTo(previousKeyboardState);
 
                         // If the current process does not have input focus or this thread is exiting then all pressed keys should be submitted to the system as released.
-                        if ((false == kHaveInputFocus) || (true == kTerminationRequested))
+                        if ((false == haveInputFocus) || (true == terminationRequested))
                             nextKeyboardState.clear();
 
                         const TState transitionedKeys = nextKeyboardState ^ previousKeyboardState;
@@ -249,7 +249,7 @@ namespace Xidi
                         keyboardEvents.clear();
                     }
 
-                    if (true == kTerminationRequested)
+                    if (true == terminationRequested)
                         break;
                 }
             }

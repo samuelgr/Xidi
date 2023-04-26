@@ -130,10 +130,10 @@ namespace XidiTest
         for (TEffectTimeMs t = 0; t < kTestEffectDuration; ++t)
         {
             // Time input, and hence magnitude output, should only increase in multiples of the specified sample period.
-            const TEffectValue kExpectedMagnitude = (TEffectValue)(t / kTestEffectSamplePeriod) * kTestEffectSamplePeriod;
-            const TEffectValue kActualMagnitude = effect.ComputeMagnitude(t);
+            const TEffectValue expectedMagnitude = (TEffectValue)(t / kTestEffectSamplePeriod) * kTestEffectSamplePeriod;
+            const TEffectValue actualMagnitude = effect.ComputeMagnitude(t);
 
-            TEST_ASSERT(kActualMagnitude == kExpectedMagnitude);
+            TEST_ASSERT(actualMagnitude == expectedMagnitude);
         }
     }
 
@@ -330,18 +330,18 @@ namespace XidiTest
         constexpr TMagnitudeComponents kTestMagnitudeComponents = {55, 66, 77, 88};
         constexpr auto kExpectedComponentValue = kTestMagnitudeComponents[0];
 
-        for (const auto kTestAxis : kTestAxes)
+        for (const auto testAxis : kTestAxes)
         {
             MockEffect effect;
             
-            const TEffectValue kCartesianCoordinates[] = {1};
-            TEST_ASSERT(true == effect.Direction().SetDirectionUsingCartesian(kCartesianCoordinates, _countof(kCartesianCoordinates)));
+            const TEffectValue cartesianCoordinates[] = {1};
+            TEST_ASSERT(true == effect.Direction().SetDirectionUsingCartesian(cartesianCoordinates, _countof(cartesianCoordinates)));
 
-            const SAssociatedAxes kAssociatedAxes = {.count = 1, .type = {kTestAxis}};
-            TEST_ASSERT(true == effect.SetAssociatedAxes(kAssociatedAxes));
+            const SAssociatedAxes associatedAxes = {.count = 1, .type = {testAxis}};
+            TEST_ASSERT(true == effect.SetAssociatedAxes(associatedAxes));
 
             TOrderedMagnitudeComponents expectedOrderedMagnitudeComponents = {};
-            expectedOrderedMagnitudeComponents[(int)kTestAxis] = kExpectedComponentValue;
+            expectedOrderedMagnitudeComponents[(int)testAxis] = kExpectedComponentValue;
 
             TOrderedMagnitudeComponents actualOrderedMagnitudeComponents = effect.OrderMagnitudeComponents(kTestMagnitudeComponents);
             TEST_ASSERT(actualOrderedMagnitudeComponents == expectedOrderedMagnitudeComponents);

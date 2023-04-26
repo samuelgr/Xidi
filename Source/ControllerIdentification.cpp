@@ -272,7 +272,7 @@ namespace Xidi
         std::unique_ptr<DeviceInstanceType> instanceInfo = std::make_unique<DeviceInstanceType>();
         uint32_t numControllersToEnumerate = Controller::kPhysicalControllerCount;
 
-        const uint64_t kActiveVirtualControllerMask = Globals::GetConfigurationData().GetFirstIntegerValue(Strings::kStrConfigurationSectionWorkarounds, Strings::kStrConfigurationSettingWorkaroundsActiveVirtualControllerMask).value_or(UINT64_MAX);
+        const uint64_t activeVirtualControllerMask = Globals::GetConfigurationData().GetFirstIntegerValue(Strings::kStrConfigurationSectionWorkarounds, Strings::kStrConfigurationSettingWorkaroundsActiveVirtualControllerMask).value_or(UINT64_MAX);
 
         for (uint32_t idx = 0; idx < numControllersToEnumerate; ++idx)
         {
@@ -282,7 +282,7 @@ namespace Xidi
             *instanceInfo = {.dwSize = sizeof(*instanceInfo)};
             FillVirtualControllerInfo(*instanceInfo, idx);
 
-            if (0 != (kActiveVirtualControllerMask & ((uint64_t)1 << idx)))
+            if (0 != (activeVirtualControllerMask & ((uint64_t)1 << idx)))
             {
                 Message::OutputFormatted(Message::ESeverity::Info, L"Enumerate: Presenting Xidi virtual controller %u to the application.", (1 + idx));
 

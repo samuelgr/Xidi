@@ -208,15 +208,15 @@ namespace XidiTest
         auto physicalController = CreateMockPhysicalController();
         auto diDevice = CreateAndAcquireTestDirectInputDevice(*physicalController);
 
-        for (const auto kTestGuid : kTestGuids)
+        for (const auto testGuid : kTestGuids)
         {
-            auto diEffect = CreateTestDirectInputEffect(*diDevice, *kTestGuid);
+            auto diEffect = CreateTestDirectInputEffect(*diDevice, *testGuid);
             
-            const GUID& kExpectedGuid = *kTestGuid;
+            const GUID& expectedGuid = *testGuid;
             GUID actualGuid = {};
 
             TEST_ASSERT(DI_OK == diEffect->GetEffectGuid(&actualGuid));
-            TEST_ASSERT(actualGuid == kExpectedGuid);
+            TEST_ASSERT(actualGuid == expectedGuid);
         }
     }
 
@@ -327,7 +327,7 @@ namespace XidiTest
         
         // For this test it is necessary to manipulate raw pointers just like a real DirectInput application would.
         auto diEffect = CreateTestDirectInputEffect(*diDevice).release();
-        const TEffectIdentifier kForceFeedbackEffectIdentifier = diEffect->UnderlyingEffect().Identifier();
+        const TEffectIdentifier forceFeedbackEffectIdentifier = diEffect->UnderlyingEffect().Identifier();
 
         // Any reference to the effect will become invalid when the effect is deleted using COM methods.
         do
@@ -341,12 +341,12 @@ namespace XidiTest
 
         TEST_ASSERT(DI_OK == diEffect->Download());
         TEST_ASSERT(DI_OK == diEffect->StartInternal(1, 0, 0));
-        TEST_ASSERT(true == ffDevice.IsEffectPlaying(kForceFeedbackEffectIdentifier));
-        TEST_ASSERT(true == ffDevice.IsEffectOnDevice(kForceFeedbackEffectIdentifier));
+        TEST_ASSERT(true == ffDevice.IsEffectPlaying(forceFeedbackEffectIdentifier));
+        TEST_ASSERT(true == ffDevice.IsEffectOnDevice(forceFeedbackEffectIdentifier));
 
         TEST_ASSERT(0 == diEffect->Release());
-        TEST_ASSERT(false == ffDevice.IsEffectPlaying(kForceFeedbackEffectIdentifier));
-        TEST_ASSERT(false == ffDevice.IsEffectOnDevice(kForceFeedbackEffectIdentifier));
+        TEST_ASSERT(false == ffDevice.IsEffectPlaying(forceFeedbackEffectIdentifier));
+        TEST_ASSERT(false == ffDevice.IsEffectOnDevice(forceFeedbackEffectIdentifier));
     }
 
 
@@ -363,13 +363,13 @@ namespace XidiTest
         MockEffectWithTypeSpecificParameters& ffEffect = (MockEffectWithTypeSpecificParameters&)diEffect->UnderlyingEffect();
 
         DWORD axes[] = {offsetof(STestDataPacket, axisX), offsetof(STestDataPacket, axisY)};
-        const DIEFFECT kParameters = {.dwSize = sizeof(DIEFFECT), .dwFlags = DIEFF_OBJECTOFFSETS, .cAxes = _countof(axes), .rgdwAxes = axes};
-        TEST_ASSERT(DI_DOWNLOADSKIPPED == diEffect->SetParametersInternal(&kParameters, (DIEP_AXES | DIEP_NODOWNLOAD)));
+        const DIEFFECT effectParameters = {.dwSize = sizeof(DIEFFECT), .dwFlags = DIEFF_OBJECTOFFSETS, .cAxes = _countof(axes), .rgdwAxes = axes};
+        TEST_ASSERT(DI_DOWNLOADSKIPPED == diEffect->SetParametersInternal(&effectParameters, (DIEP_AXES | DIEP_NODOWNLOAD)));
 
         TEST_ASSERT(true == ffEffect.HasAssociatedAxes());
         constexpr SAssociatedAxes kExpectedAssociatedAxes = {.count = _countof(axes), .type = {EAxis::X, EAxis::Y}};
-        const SAssociatedAxes kActualAssociatedAxes = ffEffect.GetAssociatedAxes().value();
-        TEST_ASSERT(kActualAssociatedAxes == kExpectedAssociatedAxes);
+        const SAssociatedAxes actualAssociatedAxes = ffEffect.GetAssociatedAxes().value();
+        TEST_ASSERT(actualAssociatedAxes == kExpectedAssociatedAxes);
     }
 
     // Associated axes, identified by object ID.
@@ -382,13 +382,13 @@ namespace XidiTest
         MockEffectWithTypeSpecificParameters& ffEffect = (MockEffectWithTypeSpecificParameters&)diEffect->UnderlyingEffect();
 
         DWORD axes[] = {ObjectIdForAxis(EAxis::X), ObjectIdForAxis(EAxis::Y)};
-        const DIEFFECT kParameters = {.dwSize = sizeof(DIEFFECT), .dwFlags = DIEFF_OBJECTIDS, .cAxes = _countof(axes), .rgdwAxes = axes};
-        TEST_ASSERT(DI_DOWNLOADSKIPPED == diEffect->SetParametersInternal(&kParameters, (DIEP_AXES | DIEP_NODOWNLOAD)));
+        const DIEFFECT effectParameters = {.dwSize = sizeof(DIEFFECT), .dwFlags = DIEFF_OBJECTIDS, .cAxes = _countof(axes), .rgdwAxes = axes};
+        TEST_ASSERT(DI_DOWNLOADSKIPPED == diEffect->SetParametersInternal(&effectParameters, (DIEP_AXES | DIEP_NODOWNLOAD)));
 
         TEST_ASSERT(true == ffEffect.HasAssociatedAxes());
         constexpr SAssociatedAxes kExpectedAssociatedAxes = {.count = _countof(axes), .type = {EAxis::X, EAxis::Y}};
-        const SAssociatedAxes kActualAssociatedAxes = ffEffect.GetAssociatedAxes().value();
-        TEST_ASSERT(kActualAssociatedAxes == kExpectedAssociatedAxes);
+        const SAssociatedAxes actualAssociatedAxes = ffEffect.GetAssociatedAxes().value();
+        TEST_ASSERT(actualAssociatedAxes == kExpectedAssociatedAxes);
     }
 
     // Associated axes, without any identification method specified. This should fail.
@@ -401,8 +401,8 @@ namespace XidiTest
         MockEffectWithTypeSpecificParameters& ffEffect = (MockEffectWithTypeSpecificParameters&)diEffect->UnderlyingEffect();
 
         DWORD axes[] = {offsetof(STestDataPacket, axisX), offsetof(STestDataPacket, axisY)};
-        const DIEFFECT kParameters = {.dwSize = sizeof(DIEFFECT), .dwFlags = 0, .cAxes = _countof(axes), .rgdwAxes = axes};
-        TEST_ASSERT(DIERR_INVALIDPARAM == diEffect->SetParametersInternal(&kParameters, (DIEP_AXES | DIEP_NODOWNLOAD)));
+        const DIEFFECT effectParameters = {.dwSize = sizeof(DIEFFECT), .dwFlags = 0, .cAxes = _countof(axes), .rgdwAxes = axes};
+        TEST_ASSERT(DIERR_INVALIDPARAM == diEffect->SetParametersInternal(&effectParameters, (DIEP_AXES | DIEP_NODOWNLOAD)));
         TEST_ASSERT(false == ffEffect.HasAssociatedAxes());
     }
 
@@ -416,8 +416,8 @@ namespace XidiTest
         MockEffectWithTypeSpecificParameters& ffEffect = (MockEffectWithTypeSpecificParameters&)diEffect->UnderlyingEffect();
 
         DWORD axes[] = {offsetof(STestDataPacket, axisZ)};
-        const DIEFFECT kParameters = {.dwSize = sizeof(DIEFFECT), .dwFlags = DIEFF_OBJECTOFFSETS, .cAxes = _countof(axes), .rgdwAxes = axes};
-        TEST_ASSERT(DIERR_INVALIDPARAM == diEffect->SetParametersInternal(&kParameters, (DIEP_AXES | DIEP_NODOWNLOAD)));
+        const DIEFFECT effectParameters = {.dwSize = sizeof(DIEFFECT), .dwFlags = DIEFF_OBJECTOFFSETS, .cAxes = _countof(axes), .rgdwAxes = axes};
+        TEST_ASSERT(DIERR_INVALIDPARAM == diEffect->SetParametersInternal(&effectParameters, (DIEP_AXES | DIEP_NODOWNLOAD)));
         TEST_ASSERT(false == ffEffect.HasAssociatedAxes());
     }
 
@@ -431,8 +431,8 @@ namespace XidiTest
         MockEffectWithTypeSpecificParameters& ffEffect = (MockEffectWithTypeSpecificParameters&)diEffect->UnderlyingEffect();
 
         LONG directionCartesian[] = {1, 1};
-        const DIEFFECT kParameters = {.dwSize = sizeof(DIEFFECT), .dwFlags = DIEFF_CARTESIAN, .cAxes = 2, .rglDirection = directionCartesian };
-        TEST_ASSERT(DI_DOWNLOADSKIPPED == diEffect->SetParametersInternal(&kParameters, (DIEP_DIRECTION | DIEP_NODOWNLOAD)));
+        const DIEFFECT effectParameters = {.dwSize = sizeof(DIEFFECT), .dwFlags = DIEFF_CARTESIAN, .cAxes = 2, .rglDirection = directionCartesian };
+        TEST_ASSERT(DI_DOWNLOADSKIPPED == diEffect->SetParametersInternal(&effectParameters, (DIEP_DIRECTION | DIEP_NODOWNLOAD)));
 
         TEST_ASSERT(true == ffEffect.HasDirection());
         TEST_ASSERT(2 == ffEffect.Direction().GetNumAxes());
@@ -453,8 +453,8 @@ namespace XidiTest
         MockEffectWithTypeSpecificParameters& ffEffect = (MockEffectWithTypeSpecificParameters&)diEffect->UnderlyingEffect();
 
         LONG directionPolar[] = {4500};
-        const DIEFFECT kParameters = {.dwSize = sizeof(DIEFFECT), .dwFlags = DIEFF_POLAR, .cAxes = 2, .rglDirection = directionPolar};
-        TEST_ASSERT(DI_DOWNLOADSKIPPED == diEffect->SetParametersInternal(&kParameters, (DIEP_DIRECTION | DIEP_NODOWNLOAD)));
+        const DIEFFECT effectParameters = {.dwSize = sizeof(DIEFFECT), .dwFlags = DIEFF_POLAR, .cAxes = 2, .rglDirection = directionPolar};
+        TEST_ASSERT(DI_DOWNLOADSKIPPED == diEffect->SetParametersInternal(&effectParameters, (DIEP_DIRECTION | DIEP_NODOWNLOAD)));
 
         TEST_ASSERT(true == ffEffect.HasDirection());
         TEST_ASSERT(2 == ffEffect.Direction().GetNumAxes());
@@ -475,8 +475,8 @@ namespace XidiTest
         MockEffectWithTypeSpecificParameters& ffEffect = (MockEffectWithTypeSpecificParameters&)diEffect->UnderlyingEffect();
 
         LONG directionSpherical[] = {13500};
-        const DIEFFECT kParameters = {.dwSize = sizeof(DIEFFECT), .dwFlags = DIEFF_SPHERICAL, .cAxes = 2, .rglDirection = directionSpherical};
-        TEST_ASSERT(DI_DOWNLOADSKIPPED == diEffect->SetParametersInternal(&kParameters, (DIEP_DIRECTION | DIEP_NODOWNLOAD)));
+        const DIEFFECT effectParameters = {.dwSize = sizeof(DIEFFECT), .dwFlags = DIEFF_SPHERICAL, .cAxes = 2, .rglDirection = directionSpherical};
+        TEST_ASSERT(DI_DOWNLOADSKIPPED == diEffect->SetParametersInternal(&effectParameters, (DIEP_DIRECTION | DIEP_NODOWNLOAD)));
 
         TEST_ASSERT(true == ffEffect.HasDirection());
         TEST_ASSERT(2 == ffEffect.Direction().GetNumAxes());
@@ -497,8 +497,8 @@ namespace XidiTest
         MockEffectWithTypeSpecificParameters& ffEffect = (MockEffectWithTypeSpecificParameters&)diEffect->UnderlyingEffect();
 
         LONG directionCartesian[] = {0, 0};
-        const DIEFFECT kParameters = {.dwSize = sizeof(DIEFFECT), .dwFlags = DIEFF_CARTESIAN, .cAxes = 2, .rglDirection = directionCartesian};
-        TEST_ASSERT(DI_DOWNLOADSKIPPED == diEffect->SetParametersInternal(&kParameters, (DIEP_DIRECTION | DIEP_NODOWNLOAD)));
+        const DIEFFECT effectParameters = {.dwSize = sizeof(DIEFFECT), .dwFlags = DIEFF_CARTESIAN, .cAxes = 2, .rglDirection = directionCartesian};
+        TEST_ASSERT(DI_DOWNLOADSKIPPED == diEffect->SetParametersInternal(&effectParameters, (DIEP_DIRECTION | DIEP_NODOWNLOAD)));
 
         TEST_ASSERT(true == ffEffect.HasDirection());
         TEST_ASSERT(true == ffEffect.Direction().IsOmnidirectional());
@@ -538,13 +538,13 @@ namespace XidiTest
 
         constexpr SEnvelope kEnvelope = {.attackTime = 111, .attackLevel = 222, .fadeTime = 333, .fadeLevel = 444};
         DIENVELOPE diEnvelope = {.dwSize = sizeof(DIENVELOPE), .dwAttackLevel = (DWORD)kEnvelope.attackLevel, .dwAttackTime = (DWORD)kEnvelope.attackTime * 1000, .dwFadeLevel = (DWORD)kEnvelope.fadeLevel, .dwFadeTime = (DWORD)kEnvelope.fadeTime * 1000};
-        const DIEFFECT kParameters = {.dwSize = sizeof(DIEFFECT), .lpEnvelope = &diEnvelope};
-        TEST_ASSERT(DI_DOWNLOADSKIPPED == diEffect->SetParametersInternal(&kParameters, (DIEP_ENVELOPE | DIEP_NODOWNLOAD)));
+        const DIEFFECT effectParameters = {.dwSize = sizeof(DIEFFECT), .lpEnvelope = &diEnvelope};
+        TEST_ASSERT(DI_DOWNLOADSKIPPED == diEffect->SetParametersInternal(&effectParameters, (DIEP_ENVELOPE | DIEP_NODOWNLOAD)));
 
         TEST_ASSERT(true == ffEffect.HasEnvelope());
         TEST_ASSERT(kEnvelope == ffEffect.GetEnvelope());
 
-        const DIEFFECT kParametersClearEnvelope = {.dwSize = sizeof(DIEFFECT), .lpEnvelope = nullptr};
+        constexpr DIEFFECT kParametersClearEnvelope = {.dwSize = sizeof(DIEFFECT), .lpEnvelope = nullptr};
         TEST_ASSERT(DI_DOWNLOADSKIPPED == diEffect->SetParametersInternal(&kParametersClearEnvelope, (DIEP_ENVELOPE | DIEP_NODOWNLOAD)));
 
         TEST_ASSERT(false == ffEffect.HasEnvelope());
@@ -661,9 +661,9 @@ namespace XidiTest
 
         TEST_ASSERT(true == ffEffect.HasTypeSpecificParameters());
 
-        const SMockTypeSpecificParameters kExpectedTypeSpecificParameters = {.valid = true, .param1 = invalidTypeSpecificParameters.param1, .param2 = invalidTypeSpecificParameters.param2};
-        const SMockTypeSpecificParameters kActualTypeSpecificParameters = ffEffect.GetTypeSpecificParameters().value();
-        TEST_ASSERT(kActualTypeSpecificParameters == kExpectedTypeSpecificParameters);
+        const SMockTypeSpecificParameters expectedTypeSpecificParameters = {.valid = true, .param1 = invalidTypeSpecificParameters.param1, .param2 = invalidTypeSpecificParameters.param2};
+        const SMockTypeSpecificParameters actualTypeSpecificParameters = ffEffect.GetTypeSpecificParameters().value();
+        TEST_ASSERT(actualTypeSpecificParameters == expectedTypeSpecificParameters);
     }
 
     // Specifies a complete set of parameters and automatically downloads, but does not start, the effect.
@@ -681,7 +681,7 @@ namespace XidiTest
         LONG directionCartesian[] = {1, 1};
         SMockTypeSpecificParameters typeSpecificParams = {.valid = true};
 
-        const DIEFFECT kParameters = {
+        const DIEFFECT effectParameters = {
             .dwSize = sizeof(DIEFFECT),
             .dwFlags = (DIEFF_CARTESIAN | DIEFF_OBJECTIDS),
             .dwDuration = 1000000,
@@ -692,7 +692,7 @@ namespace XidiTest
             .lpvTypeSpecificParams = (LPVOID)&typeSpecificParams
         };
 
-        TEST_ASSERT(DI_OK == diEffect->SetParametersInternal(&kParameters, (DIEP_DURATION | DIEP_AXES | DIEP_DIRECTION | DIEP_TYPESPECIFICPARAMS), 0));
+        TEST_ASSERT(DI_OK == diEffect->SetParametersInternal(&effectParameters, (DIEP_DURATION | DIEP_AXES | DIEP_DIRECTION | DIEP_TYPESPECIFICPARAMS), 0));
         TEST_ASSERT(true == ffDevice.IsEffectOnDevice(ffEffect.Identifier()));
         TEST_ASSERT(false == ffDevice.IsEffectPlaying(ffEffect.Identifier()));
     }
@@ -712,7 +712,7 @@ namespace XidiTest
         LONG directionCartesian[] = {1, 1};
         SMockTypeSpecificParameters typeSpecificParams = {.valid = true};
 
-        const DIEFFECT kParameters = {
+        const DIEFFECT effectParameters = {
             .dwSize = sizeof(DIEFFECT),
             .dwFlags = (DIEFF_CARTESIAN | DIEFF_OBJECTIDS),
             .dwDuration = 1000000,
@@ -723,7 +723,7 @@ namespace XidiTest
             .lpvTypeSpecificParams = (LPVOID)&typeSpecificParams
         };
 
-        TEST_ASSERT(DI_OK == diEffect->SetParametersInternal(&kParameters, (DIEP_DURATION | DIEP_AXES | DIEP_DIRECTION | DIEP_TYPESPECIFICPARAMS | DIEP_START), 0));
+        TEST_ASSERT(DI_OK == diEffect->SetParametersInternal(&effectParameters, (DIEP_DURATION | DIEP_AXES | DIEP_DIRECTION | DIEP_TYPESPECIFICPARAMS | DIEP_START), 0));
         TEST_ASSERT(true == ffDevice.IsEffectOnDevice(ffEffect.Identifier()));
         TEST_ASSERT(true == ffDevice.IsEffectPlaying(ffEffect.Identifier()));
     }
@@ -804,14 +804,14 @@ namespace XidiTest
         MockEffectWithTypeSpecificParameters& ffEffect = (MockEffectWithTypeSpecificParameters&)diEffect->UnderlyingEffect();
         ffEffect.SetAssociatedAxes({.count = 2, .type = {EAxis::X, EAxis::Y}});
 
-        const DWORD kExpectedAxes[] = {offsetof(STestDataPacket, axisX), offsetof(STestDataPacket, axisY)};
-        DWORD actualAxes[_countof(kExpectedAxes)] = {};
+        const DWORD expectedAxes[] = {offsetof(STestDataPacket, axisX), offsetof(STestDataPacket, axisY)};
+        DWORD actualAxes[_countof(expectedAxes)] = {};
 
         DIEFFECT parameters = {.dwSize = sizeof(DIEFFECT), .dwFlags = DIEFF_OBJECTOFFSETS, .cAxes = _countof(actualAxes), .rgdwAxes = actualAxes};
         TEST_ASSERT(DI_OK == diEffect->GetParameters(&parameters, DIEP_AXES));
         
         for (int i = 0; i < _countof(actualAxes); ++i)
-            TEST_ASSERT(actualAxes[i] == kExpectedAxes[i]);
+            TEST_ASSERT(actualAxes[i] == expectedAxes[i]);
     }
 
     // Associated axes, identified by object ID.
@@ -824,14 +824,14 @@ namespace XidiTest
         MockEffectWithTypeSpecificParameters& ffEffect = (MockEffectWithTypeSpecificParameters&)diEffect->UnderlyingEffect();
         ffEffect.SetAssociatedAxes({.count = 2, .type = {EAxis::X, EAxis::Y}});
 
-        const DWORD kExpectedAxes[] = {ObjectIdForAxis(EAxis::X), ObjectIdForAxis(EAxis::Y)};
-        DWORD actualAxes[_countof(kExpectedAxes)] = {};
+        const DWORD expectedAxes[] = {ObjectIdForAxis(EAxis::X), ObjectIdForAxis(EAxis::Y)};
+        DWORD actualAxes[_countof(expectedAxes)] = {};
 
         DIEFFECT parameters = {.dwSize = sizeof(DIEFFECT), .dwFlags = DIEFF_OBJECTIDS, .cAxes = _countof(actualAxes), .rgdwAxes = actualAxes};
         TEST_ASSERT(DI_OK == diEffect->GetParameters(&parameters, DIEP_AXES));
         
         for (int i = 0; i < _countof(actualAxes); ++i)
-            TEST_ASSERT(actualAxes[i] == kExpectedAxes[i]);
+            TEST_ASSERT(actualAxes[i] == expectedAxes[i]);
     }
 
     // Associated axes, without any identification method specified. This should fail.

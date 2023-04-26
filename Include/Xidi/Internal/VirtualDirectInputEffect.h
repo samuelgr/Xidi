@@ -238,11 +238,11 @@ namespace Xidi
             if (nullptr == peff->lpvTypeSpecificParams)
                 return nullptr;
 
-            const DirectInputTypeSpecificParameterType& kDirectInputTypeSpecificParams = *((DirectInputTypeSpecificParameterType*)peff->lpvTypeSpecificParams);
-            const TypeSpecificParameterType kTypeSpecificParameters = ConvertFromDirectInput(kDirectInputTypeSpecificParams);
+            const DirectInputTypeSpecificParameterType& directInputTypeSpecificParams = *((DirectInputTypeSpecificParameterType*)peff->lpvTypeSpecificParams);
+            const TypeSpecificParameterType typeSpecificParameters = ConvertFromDirectInput(directInputTypeSpecificParams);
 
             std::unique_ptr<Controller::ForceFeedback::Effect> updatedEffect = TypedUnderlyingEffect().Clone();
-            if (false == ((Controller::ForceFeedback::EffectWithTypeSpecificParameters<TypeSpecificParameterType>*)updatedEffect.get())->SetTypeSpecificParameters(kTypeSpecificParameters))
+            if (false == ((Controller::ForceFeedback::EffectWithTypeSpecificParameters<TypeSpecificParameterType>*)updatedEffect.get())->SetTypeSpecificParameters(typeSpecificParameters))
                 return nullptr;
 
             return std::move(updatedEffect);

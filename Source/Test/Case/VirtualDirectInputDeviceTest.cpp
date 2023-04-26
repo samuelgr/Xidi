@@ -158,12 +158,12 @@ namespace XidiTest
             TEST_ASSERT((int)objectData[i].dwSequence > lastSequence);
             lastSequence = objectData[i].dwSequence;
 
-            const size_t kDataAddress = (size_t)&testDataPacket + (size_t)objectData[i].dwOfs;
+            const size_t dataAddress = (size_t)&testDataPacket + (size_t)objectData[i].dwOfs;
 
             if (objectData[i].dwOfs >= offsetof(STestDataPacket, button))
-                *((TButtonValue*)kDataAddress) = (TButtonValue)objectData[i].dwData;
+                *((TButtonValue*)dataAddress) = (TButtonValue)objectData[i].dwData;
             else
-                *((TAxisValue*)kDataAddress) = (TAxisValue)objectData[i].dwData;
+                *((TAxisValue*)dataAddress) = (TAxisValue)objectData[i].dwData;
         }
 
         return lastSequence;
@@ -200,22 +200,22 @@ namespace XidiTest
     /// @param [in] dwObj DirectInput methodology-specific ID of the object for which the property should be retrieved or set.
     static void TestUnusedPropertyDword(REFGUID rguidProp, DWORD defaultPropertyValue, DWORD testPropertyValue, DWORD dwHow, DWORD dwObj = 0)
     {
-        const DIPROPHEADER kUnusedPropertyDwordHeader = {.dwSize = sizeof(DIPROPDWORD), .dwHeaderSize = sizeof(DIPROPHEADER), .dwObj = dwObj, .dwHow = dwHow};
+        const DIPROPHEADER unusedPropertyDwordHeader = {.dwSize = sizeof(DIPROPDWORD), .dwHeaderSize = sizeof(DIPROPHEADER), .dwObj = dwObj, .dwHow = dwHow};
 
         MockPhysicalController physicalController(kTestControllerIdentifier, kTestMapper);
         VirtualDirectInputDevice<ECharMode::W> diController(CreateTestVirtualController());
 
         // Check that the default value is correct.
-        DIPROPDWORD unusedPropertyValue = {.diph = kUnusedPropertyDwordHeader};
+        DIPROPDWORD unusedPropertyValue = {.diph = unusedPropertyDwordHeader};
         TEST_ASSERT(SUCCEEDED(diController.GetProperty(rguidProp, (LPDIPROPHEADER)&unusedPropertyValue)));
         TEST_ASSERT(defaultPropertyValue == unusedPropertyValue.dwData);
 
         // Verify that setting the test value succeeds.
-        unusedPropertyValue = {.diph = kUnusedPropertyDwordHeader, .dwData = testPropertyValue};
+        unusedPropertyValue = {.diph = unusedPropertyDwordHeader, .dwData = testPropertyValue};
         TEST_ASSERT(SUCCEEDED(diController.SetProperty(rguidProp, (LPDIPROPHEADER)&unusedPropertyValue)));
 
         // Verify that retrieving the value results in the test value.
-        unusedPropertyValue = {.diph = kUnusedPropertyDwordHeader};
+        unusedPropertyValue = {.diph = unusedPropertyDwordHeader};
         TEST_ASSERT(SUCCEEDED(diController.GetProperty(rguidProp, (LPDIPROPHEADER)&unusedPropertyValue)));
         TEST_ASSERT(testPropertyValue == unusedPropertyValue.dwData);
     }
@@ -390,13 +390,13 @@ namespace XidiTest
             {
                 TEST_ASSERT(nullptr == pvRef);
 
-                const DWORD kButtonNumber = (DWORD)DIDFT_GETINSTANCE(lpddoi->dwType);
-                const DWORD kActualOffset = lpddoi->dwOfs;
-                const DWORD kExpectedOffset = (kButtonNumber < _countof(STestDataPacket::button)
-                    ? (offsetof(STestDataPacket, button) + (kButtonNumber * sizeof(STestDataPacket::button[0])))
+                const DWORD buttonNumber = (DWORD)DIDFT_GETINSTANCE(lpddoi->dwType);
+                const DWORD actualOffset = lpddoi->dwOfs;
+                const DWORD expectedOffset = (buttonNumber < _countof(STestDataPacket::button)
+                    ? (offsetof(STestDataPacket, button) + (buttonNumber * sizeof(STestDataPacket::button[0])))
                     : DataFormat::kInvalidOffsetValue);
                 
-                TEST_ASSERT(kActualOffset == kExpectedOffset);
+                TEST_ASSERT(actualOffset == expectedOffset);
 
                 return DIENUM_CONTINUE;
             },
@@ -526,7 +526,7 @@ namespace XidiTest
     // Verified by simple numeric consistency check of the number of times the callback is invoked.
     TEST_CASE(VirtualDirectInputDevice_EnumObjects_AllObjects)
     {
-        const int kExpectedNumCallbacks = 2 + kTestMapper.GetCapabilities().numAxes + kTestMapper.GetCapabilities().numButtons + ((true == kTestMapper.GetCapabilities().HasPov()) ? 1 : 0);
+        const int expectedNumCallbacks = 2 + kTestMapper.GetCapabilities().numAxes + kTestMapper.GetCapabilities().numButtons + ((true == kTestMapper.GetCapabilities().HasPov()) ? 1 : 0);
         int actualNumCallbacks = 0;
 
         MockPhysicalController physicalController(kTestControllerIdentifier, kTestMapper);
@@ -539,14 +539,14 @@ namespace XidiTest
             (LPVOID)&actualNumCallbacks, DIDFT_ALL);
 
         TEST_ASSERT(DI_OK == enumObjectsResult);
-        TEST_ASSERT(actualNumCallbacks == kExpectedNumCallbacks);
+        TEST_ASSERT(actualNumCallbacks == expectedNumCallbacks);
     }
 
     // Only axes, buttons, and POV are to be enumerated, so all controller elements should be enumerated but HID collections should be skipped.
     // Verified by simple numeric consistency check of the number of times the callback is invoked.
     TEST_CASE(VirtualDirectInputDevice_EnumObjects_AllObjectsExceptHidCollections)
     {
-        const int kExpectedNumCallbacks = kTestMapper.GetCapabilities().numAxes + kTestMapper.GetCapabilities().numButtons + ((true == kTestMapper.GetCapabilities().HasPov()) ? 1 : 0);
+        const int expectedNumCallbacks = kTestMapper.GetCapabilities().numAxes + kTestMapper.GetCapabilities().numButtons + ((true == kTestMapper.GetCapabilities().HasPov()) ? 1 : 0);
         int actualNumCallbacks = 0;
 
         MockPhysicalController physicalController(kTestControllerIdentifier, kTestMapper);
@@ -559,13 +559,13 @@ namespace XidiTest
             (LPVOID)&actualNumCallbacks, DIDFT_AXIS | DIDFT_BUTTON | DIDFT_POV);
 
         TEST_ASSERT(DI_OK == enumObjectsResult);
-        TEST_ASSERT(actualNumCallbacks == kExpectedNumCallbacks);
+        TEST_ASSERT(actualNumCallbacks == expectedNumCallbacks);
     }
 
     // Only HID collections are to be enumerated, so only two callbacks are expected.
     TEST_CASE(VirtualDirectInputDevice_EnumObjects_OnlyHidCollections)
     {
-        const int kExpectedNumCallbacks = 2;
+        const int expectedNumCallbacks = 2;
         int actualNumCallbacks = 0;
 
         MockPhysicalController physicalController(kTestControllerIdentifier, kTestMapper);
@@ -582,14 +582,14 @@ namespace XidiTest
             (LPVOID)&actualNumCallbacks, DIDFT_COLLECTION);
 
         TEST_ASSERT(DI_OK == enumObjectsResult);
-        TEST_ASSERT(actualNumCallbacks == kExpectedNumCallbacks);
+        TEST_ASSERT(actualNumCallbacks == expectedNumCallbacks);
     }
 
     // Application tells DirectInput to stop enumerating objects early, so DirectInput is expected to obey.
     // Verified by checking that the callback is only invoked once.
     TEST_CASE(VirtualDirectInputDevice_EnumObjects_StopEarly)
     {
-        const int kExpectedNumCallbacks = 1;
+        const int expectedNumCallbacks = 1;
         int actualNumCallbacks = 0;
 
         MockPhysicalController physicalController(kTestControllerIdentifier, kTestMapper);
@@ -602,7 +602,7 @@ namespace XidiTest
             (LPVOID)&actualNumCallbacks, DIDFT_ALL);
 
         TEST_ASSERT(DI_OK == enumObjectsResult);
-        TEST_ASSERT(actualNumCallbacks == kExpectedNumCallbacks);
+        TEST_ASSERT(actualNumCallbacks == expectedNumCallbacks);
     }
 
 
@@ -616,7 +616,7 @@ namespace XidiTest
         MockPhysicalController physicalController(kTestControllerIdentifier, kTestMapper);
         VirtualDirectInputDevice<ECharMode::W> diController(CreateTestVirtualController());
 
-        const DIDEVCAPS kExpectedCapabilities = {
+        const DIDEVCAPS expectedCapabilities = {
             .dwSize = sizeof(DIDEVCAPS),
             .dwFlags = (DIDC_ATTACHED | DIDC_EMULATED | DIDC_FORCEFEEDBACK | DIDC_FFFADE | DIDC_FFATTACK | DIDC_STARTDELAY),
             .dwDevType = DINPUT_DEVTYPE_XINPUT_GAMEPAD,
@@ -630,7 +630,7 @@ namespace XidiTest
         actualCapabilities.dwSize = sizeof(DIDEVCAPS);
 
         TEST_ASSERT(DI_OK == diController.GetCapabilities(&actualCapabilities));
-        TEST_ASSERT(0 == memcmp(&actualCapabilities, &kExpectedCapabilities, sizeof(DIDEVCAPS_DX3)));
+        TEST_ASSERT(0 == memcmp(&actualCapabilities, &expectedCapabilities, sizeof(DIDEVCAPS_DX3)));
 
         TEST_ASSERT(0 != actualCapabilities.dwFFMinTimeResolution);
         TEST_ASSERT(0 == (actualCapabilities.dwFFMinTimeResolution % VirtualDirectInputEffect<ECharMode::W>::kTimeScalingFactor));
@@ -965,30 +965,30 @@ namespace XidiTest
             {
                 VirtualDirectInputDevice<ECharMode::W>& diController = *((VirtualDirectInputDevice<ECharMode::W>*)pvRef);
 
-                const DIDEVICEOBJECTINSTANCE& kExpectedObjectInstance = *lpddoi;
+                const DIDEVICEOBJECTINSTANCE& expectedObjectInstance = *lpddoi;
                 DIDEVICEOBJECTINSTANCE actualObjectInstance;
 
                 // First identify the enumerated object by offset.
                 // Based on the test data packet at the top of this file, not all elements have offsets, so this part of the test case is not always valid.
-                if (DataFormat::kInvalidOffsetValue != kExpectedObjectInstance.dwOfs)
+                if (DataFormat::kInvalidOffsetValue != expectedObjectInstance.dwOfs)
                 {
                     ZeroMemory(&actualObjectInstance, sizeof(actualObjectInstance));
                     actualObjectInstance.dwSize = sizeof(DIDEVICEOBJECTINSTANCE);
-                    TEST_ASSERT(DI_OK == diController.GetObjectInfo(&actualObjectInstance, kExpectedObjectInstance.dwOfs, DIPH_BYOFFSET));
-                    TEST_ASSERT(0 == memcmp(&actualObjectInstance, &kExpectedObjectInstance, sizeof(kExpectedObjectInstance)));
+                    TEST_ASSERT(DI_OK == diController.GetObjectInfo(&actualObjectInstance, expectedObjectInstance.dwOfs, DIPH_BYOFFSET));
+                    TEST_ASSERT(0 == memcmp(&actualObjectInstance, &expectedObjectInstance, sizeof(expectedObjectInstance)));
                 }
 
                 // Next try by instance type and ID.
                 ZeroMemory(&actualObjectInstance, sizeof(actualObjectInstance));
                 actualObjectInstance.dwSize = sizeof(DIDEVICEOBJECTINSTANCE);
-                TEST_ASSERT(DI_OK == diController.GetObjectInfo(&actualObjectInstance, kExpectedObjectInstance.dwType, DIPH_BYID));
-                TEST_ASSERT(0 == memcmp(&actualObjectInstance, &kExpectedObjectInstance, sizeof(kExpectedObjectInstance)));
+                TEST_ASSERT(DI_OK == diController.GetObjectInfo(&actualObjectInstance, expectedObjectInstance.dwType, DIPH_BYID));
+                TEST_ASSERT(0 == memcmp(&actualObjectInstance, &expectedObjectInstance, sizeof(expectedObjectInstance)));
 
                 // Finally try by HID usage data.
                 ZeroMemory(&actualObjectInstance, sizeof(actualObjectInstance));
                 actualObjectInstance.dwSize = sizeof(DIDEVICEOBJECTINSTANCE);
-                TEST_ASSERT(DI_OK == diController.GetObjectInfo(&actualObjectInstance, DIMAKEUSAGEDWORD(kExpectedObjectInstance.wUsagePage, kExpectedObjectInstance.wUsage), DIPH_BYUSAGE));
-                TEST_ASSERT(0 == memcmp(&actualObjectInstance, &kExpectedObjectInstance, sizeof(kExpectedObjectInstance)));
+                TEST_ASSERT(DI_OK == diController.GetObjectInfo(&actualObjectInstance, DIMAKEUSAGEDWORD(expectedObjectInstance.wUsagePage, expectedObjectInstance.wUsage), DIPH_BYUSAGE));
+                TEST_ASSERT(0 == memcmp(&actualObjectInstance, &expectedObjectInstance, sizeof(expectedObjectInstance)));
 
                 return DIENUM_CONTINUE;
             },
@@ -1538,24 +1538,24 @@ namespace XidiTest
     {
         const GUID kExpectedSupportedGuids[] = {GUID_ConstantForce, GUID_RampForce, GUID_Square, GUID_Sine, GUID_Triangle, GUID_SawtoothUp, GUID_SawtoothDown};
 
-        for (const auto& kExpectedSupportedGuid : kExpectedSupportedGuids)
+        for (const auto& expectedSupportedGuid : kExpectedSupportedGuids)
         {
-            TEST_ASSERT(true == VirtualDirectInputDevice<ECharMode::A>::ForceFeedbackEffectCanCreateObject(kExpectedSupportedGuid));
-            TEST_ASSERT(true == VirtualDirectInputDevice<ECharMode::W>::ForceFeedbackEffectCanCreateObject(kExpectedSupportedGuid));
+            TEST_ASSERT(true == VirtualDirectInputDevice<ECharMode::A>::ForceFeedbackEffectCanCreateObject(expectedSupportedGuid));
+            TEST_ASSERT(true == VirtualDirectInputDevice<ECharMode::W>::ForceFeedbackEffectCanCreateObject(expectedSupportedGuid));
         }
 
-        for (const auto& kExpectedSupportedGuid : kExpectedSupportedGuids)
+        for (const auto& expectedSupportedGuid : kExpectedSupportedGuids)
         {
             MockPhysicalController physicalController(kTestControllerIdentifier, kTestMapper);
             VirtualDirectInputDevice<ECharMode::W> diController(CreateTestVirtualController());
             IDirectInputEffect* createdEffect = nullptr;
             
-            TEST_ASSERT(DI_OK == diController.CreateEffect(kExpectedSupportedGuid, nullptr, &createdEffect, nullptr));
+            TEST_ASSERT(DI_OK == diController.CreateEffect(expectedSupportedGuid, nullptr, &createdEffect, nullptr));
             TEST_ASSERT(nullptr != createdEffect);
 
             GUID createdEffectGuid = {};
             TEST_ASSERT(DI_OK == createdEffect->GetEffectGuid(&createdEffectGuid));
-            TEST_ASSERT(kExpectedSupportedGuid == createdEffectGuid);
+            TEST_ASSERT(expectedSupportedGuid == createdEffectGuid);
         }
     }
 
@@ -1577,7 +1577,7 @@ namespace XidiTest
         LONG directionCartesian[] = {1, 1};
         DICONSTANTFORCE constantForceParams = {.lMagnitude = 5000};
 
-        const DIEFFECT kParameters = {
+        const DIEFFECT effectParameters = {
             .dwSize = sizeof(DIEFFECT),
             .dwFlags = (DIEFF_CARTESIAN | DIEFF_OBJECTOFFSETS),
             .dwDuration = 1000000,
@@ -1589,7 +1589,7 @@ namespace XidiTest
         };
 
         VirtualDirectInputEffect<ECharMode::W>* diEffect = nullptr;
-        TEST_ASSERT(DI_OK == diController.CreateEffect(GUID_ConstantForce, &kParameters, (LPDIRECTINPUTEFFECT*)&diEffect, nullptr));
+        TEST_ASSERT(DI_OK == diController.CreateEffect(GUID_ConstantForce, &effectParameters, (LPDIRECTINPUTEFFECT*)&diEffect, nullptr));
         TEST_ASSERT(true == forceFeedbackDevice->IsEffectOnDevice(diEffect->UnderlyingEffect().Identifier()));
     }
 
@@ -1611,7 +1611,7 @@ namespace XidiTest
         LONG directionCartesian[] = {1, 1};
         DICONSTANTFORCE constantForceParams = {.lMagnitude = 5000};
 
-        const DIEFFECT kParameters = {
+        const DIEFFECT effectParameters = {
             .dwSize = sizeof(DIEFFECT),
             .dwFlags = (DIEFF_CARTESIAN | DIEFF_OBJECTOFFSETS),
             .dwDuration = 1000000,
@@ -1623,7 +1623,7 @@ namespace XidiTest
         };
 
         VirtualDirectInputEffect<ECharMode::W>* diEffect = nullptr;
-        TEST_ASSERT(DI_OK == diController.CreateEffect(GUID_ConstantForce, &kParameters, (LPDIRECTINPUTEFFECT*)&diEffect, nullptr));
+        TEST_ASSERT(DI_OK == diController.CreateEffect(GUID_ConstantForce, &effectParameters, (LPDIRECTINPUTEFFECT*)&diEffect, nullptr));
         TEST_ASSERT(false == forceFeedbackDevice->IsEffectOnDevice(diEffect->UnderlyingEffect().Identifier()));
     }
 
@@ -1633,10 +1633,10 @@ namespace XidiTest
         const std::set<GUID> kExpectedSeenGuids = {GUID_ConstantForce, GUID_RampForce, GUID_Square, GUID_Sine, GUID_Triangle, GUID_SawtoothUp, GUID_SawtoothDown, GUID_CustomForce};
         std::set<GUID> actualSeenGuids;
 
-        for (const auto& kExpectedSeenGuid : kExpectedSeenGuids)
+        for (const auto& expectedSeenGuid : kExpectedSeenGuids)
         {
-            if (false == VirtualDirectInputDevice<ECharMode::W>::ForceFeedbackEffectCanCreateObject(kExpectedSeenGuid))
-                actualSeenGuids.insert(kExpectedSeenGuid);
+            if (false == VirtualDirectInputDevice<ECharMode::W>::ForceFeedbackEffectCanCreateObject(expectedSeenGuid))
+                actualSeenGuids.insert(expectedSeenGuid);
         }
 
         constexpr DWORD kExpectedEffectTypeFlags = (DIEFT_FFATTACK | DIEFT_FFFADE);
@@ -1703,10 +1703,10 @@ namespace XidiTest
         const std::set<GUID> kExpectedSeenGuids = {GUID_ConstantForce};
         std::set<GUID> actualSeenGuids;
 
-        for (const auto& kExpectedSeenGuid : kExpectedSeenGuids)
+        for (const auto& expectedSeenGuid : kExpectedSeenGuids)
         {
-            if (false == VirtualDirectInputDevice<ECharMode::W>::ForceFeedbackEffectCanCreateObject(kExpectedSeenGuid))
-                actualSeenGuids.insert(kExpectedSeenGuid);
+            if (false == VirtualDirectInputDevice<ECharMode::W>::ForceFeedbackEffectCanCreateObject(expectedSeenGuid))
+                actualSeenGuids.insert(expectedSeenGuid);
         }
 
         constexpr DWORD kExpectedEffectType = DIEFT_CONSTANTFORCE;
@@ -1739,10 +1739,10 @@ namespace XidiTest
         const std::set<GUID> kExpectedSeenGuids = {GUID_RampForce};
         std::set<GUID> actualSeenGuids;
 
-        for (const auto& kExpectedSeenGuid : kExpectedSeenGuids)
+        for (const auto& expectedSeenGuid : kExpectedSeenGuids)
         {
-            if (false == VirtualDirectInputDevice<ECharMode::W>::ForceFeedbackEffectCanCreateObject(kExpectedSeenGuid))
-                actualSeenGuids.insert(kExpectedSeenGuid);
+            if (false == VirtualDirectInputDevice<ECharMode::W>::ForceFeedbackEffectCanCreateObject(expectedSeenGuid))
+                actualSeenGuids.insert(expectedSeenGuid);
         }
 
         constexpr DWORD kExpectedEffectType = DIEFT_RAMPFORCE;
@@ -1775,10 +1775,10 @@ namespace XidiTest
         const std::set<GUID> kExpectedSeenGuids = {GUID_Square, GUID_Sine, GUID_Triangle, GUID_SawtoothUp, GUID_SawtoothDown};
         std::set<GUID> actualSeenGuids;
 
-        for (const auto& kExpectedSeenGuid : kExpectedSeenGuids)
+        for (const auto& expectedSeenGuid : kExpectedSeenGuids)
         {
-            if (false == VirtualDirectInputDevice<ECharMode::W>::ForceFeedbackEffectCanCreateObject(kExpectedSeenGuid))
-                actualSeenGuids.insert(kExpectedSeenGuid);
+            if (false == VirtualDirectInputDevice<ECharMode::W>::ForceFeedbackEffectCanCreateObject(expectedSeenGuid))
+                actualSeenGuids.insert(expectedSeenGuid);
         }
 
         constexpr DWORD kExpectedEffectType = DIEFT_PERIODIC;
@@ -1811,10 +1811,10 @@ namespace XidiTest
         const std::set<GUID> kExpectedSeenGuids = {GUID_CustomForce};
         std::set<GUID> actualSeenGuids;
 
-        for (const auto& kExpectedSeenGuid : kExpectedSeenGuids)
+        for (const auto& expectedSeenGuid : kExpectedSeenGuids)
         {
-            if (false == VirtualDirectInputDevice<ECharMode::W>::ForceFeedbackEffectCanCreateObject(kExpectedSeenGuid))
-                actualSeenGuids.insert(kExpectedSeenGuid);
+            if (false == VirtualDirectInputDevice<ECharMode::W>::ForceFeedbackEffectCanCreateObject(expectedSeenGuid))
+                actualSeenGuids.insert(expectedSeenGuid);
         }
 
         constexpr DWORD kExpectedEffectType = DIEFT_CUSTOMFORCE;

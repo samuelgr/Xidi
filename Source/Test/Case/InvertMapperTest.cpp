@@ -90,8 +90,8 @@ namespace XidiTest
             constexpr int kExpectedContributionCount = 1;
             int actualContributionCount = 0;
 
-            const int32_t kExpectedContributionValue = kAnalogValueMax - (analogValue - kAnalogValueMin);
-            const InvertMapper mapper(std::make_unique<MockElementMapper>(MockElementMapper::EExpectedSource::Analog, (int16_t)kExpectedContributionValue, &actualContributionCount));
+            const int32_t expectedContributionValue = kAnalogValueMax - (analogValue - kAnalogValueMin);
+            const InvertMapper mapper(std::make_unique<MockElementMapper>(MockElementMapper::EExpectedSource::Analog, (int16_t)expectedContributionValue, &actualContributionCount));
 
             mapper.ContributeFromAnalogValue(unusedControllerState, (int16_t)analogValue);
             TEST_ASSERT(actualContributionCount == kExpectedContributionCount);
@@ -109,8 +109,8 @@ namespace XidiTest
             constexpr int kExpectedContributionCount = 1;
             int actualContributionCount = 0;
 
-            const bool kExpectedContributionValue = !buttonValue;
-            const InvertMapper mapper(std::make_unique<MockElementMapper>(MockElementMapper::EExpectedSource::Button, kExpectedContributionValue, &actualContributionCount));
+            const bool expectedContributionValue = !buttonValue;
+            const InvertMapper mapper(std::make_unique<MockElementMapper>(MockElementMapper::EExpectedSource::Button, expectedContributionValue, &actualContributionCount));
 
             mapper.ContributeFromButtonValue(unusedControllerState, buttonValue);
             TEST_ASSERT(actualContributionCount == kExpectedContributionCount);
@@ -126,8 +126,8 @@ namespace XidiTest
             constexpr int kExpectedContributionCount = 1;
             int actualContributionCount = 0;
 
-            const int32_t kExpectedContributionValue = kTriggerValueMax - ((int32_t)triggerValue - kTriggerValueMin);
-            const InvertMapper mapper(std::make_unique<MockElementMapper>(MockElementMapper::EExpectedSource::Trigger, (uint8_t)kExpectedContributionValue, &actualContributionCount));
+            const int32_t expectedContributionValue = kTriggerValueMax - ((int32_t)triggerValue - kTriggerValueMin);
+            const InvertMapper mapper(std::make_unique<MockElementMapper>(MockElementMapper::EExpectedSource::Trigger, (uint8_t)expectedContributionValue, &actualContributionCount));
 
             mapper.ContributeFromTriggerValue(unusedControllerState, (uint8_t)triggerValue);
             TEST_ASSERT(actualContributionCount == kExpectedContributionCount);

@@ -91,9 +91,9 @@ namespace XidiTest
             TEST_ASSERT(true == Device.IsEffectPlaying(effect.Identifier()));
             TEST_ASSERT(true == Device.IsDevicePlayingAnyEffects());
 
-            const TOrderedMagnitudeComponents kExpectedMagnitudeComponents = effect.ComputeOrderedMagnitudeComponents(t);
-            const TOrderedMagnitudeComponents kActualMagnitudeComponents = Device.PlayEffects(t);
-            TEST_ASSERT(kActualMagnitudeComponents == kExpectedMagnitudeComponents);
+            const TOrderedMagnitudeComponents expectedMagnitudeComponents = effect.ComputeOrderedMagnitudeComponents(t);
+            const TOrderedMagnitudeComponents actualMagnitudeComponents = Device.PlayEffects(t);
+            TEST_ASSERT(actualMagnitudeComponents == expectedMagnitudeComponents);
         }
 
         TEST_ASSERT(true == Device.IsEffectOnDevice(effect.Identifier()));
@@ -126,11 +126,11 @@ namespace XidiTest
             TEST_ASSERT(true == Device.IsEffectOnDevice(effect.Identifier()));
             TEST_ASSERT(true == Device.IsEffectPlaying(effect.Identifier()));
 
-            const TOrderedMagnitudeComponents kExpectedMagnitudeComponents = effect.ComputeOrderedMagnitudeComponents(t);
+            const TOrderedMagnitudeComponents expectedMagnitudeComponents = effect.ComputeOrderedMagnitudeComponents(t);
 
-            const TEffectTimeMs kPlayEffectsTime = (TEffectTimeMs)(((uint64_t)t + (uint64_t)kTestTimestampBase) & (uint64_t)std::numeric_limits<TEffectTimeMs>::max());
-            const TOrderedMagnitudeComponents kActualMagnitudeComponents = Device.PlayEffects(kPlayEffectsTime);
-            TEST_ASSERT(kActualMagnitudeComponents == kExpectedMagnitudeComponents);
+            const TEffectTimeMs playEffectsTime = (TEffectTimeMs)(((uint64_t)t + (uint64_t)kTestTimestampBase) & (uint64_t)std::numeric_limits<TEffectTimeMs>::max());
+            const TOrderedMagnitudeComponents actualMagnitudeComponents = Device.PlayEffects(playEffectsTime);
+            TEST_ASSERT(actualMagnitudeComponents == expectedMagnitudeComponents);
         }
 
         TEST_ASSERT(true == Device.IsEffectOnDevice(effect.Identifier()));
@@ -158,9 +158,9 @@ namespace XidiTest
             TEST_ASSERT(true == Device.IsEffectOnDevice(effect.Identifier()));
             TEST_ASSERT(true == Device.IsEffectPlaying(effect.Identifier()));
 
-            const TOrderedMagnitudeComponents kExpectedMagnitudeComponents = effect.ComputeOrderedMagnitudeComponents(t);
-            const TOrderedMagnitudeComponents kActualMagnitudeComponents = Device.PlayEffects(t);
-            TEST_ASSERT(kActualMagnitudeComponents == kExpectedMagnitudeComponents);
+            const TOrderedMagnitudeComponents expectedMagnitudeComponents = effect.ComputeOrderedMagnitudeComponents(t);
+            const TOrderedMagnitudeComponents actualMagnitudeComponents = Device.PlayEffects(t);
+            TEST_ASSERT(actualMagnitudeComponents == expectedMagnitudeComponents);
         }
 
         TEST_ASSERT(false == Device.IsDeviceOutputMuted());
@@ -172,9 +172,9 @@ namespace XidiTest
             TEST_ASSERT(true == Device.IsEffectOnDevice(effect.Identifier()));
             TEST_ASSERT(true == Device.IsEffectPlaying(effect.Identifier()));
 
-            const TOrderedMagnitudeComponents kExpectedMagnitudeComponents = {};
-            const TOrderedMagnitudeComponents kActualMagnitudeComponents = Device.PlayEffects(t);
-            TEST_ASSERT(kActualMagnitudeComponents == kExpectedMagnitudeComponents);
+            const TOrderedMagnitudeComponents expectedMagnitudeComponents = {};
+            const TOrderedMagnitudeComponents actualMagnitudeComponents = Device.PlayEffects(t);
+            TEST_ASSERT(actualMagnitudeComponents == expectedMagnitudeComponents);
         }
 
         TEST_ASSERT(true == Device.IsEffectOnDevice(effect.Identifier()));
@@ -203,9 +203,9 @@ namespace XidiTest
             TEST_ASSERT(true == Device.IsEffectOnDevice(effect.Identifier()));
             TEST_ASSERT(true == Device.IsEffectPlaying(effect.Identifier()));
 
-            const TOrderedMagnitudeComponents kExpectedMagnitudeComponents = effect.ComputeOrderedMagnitudeComponents(t);
-            const TOrderedMagnitudeComponents kActualMagnitudeComponents = Device.PlayEffects(t);
-            TEST_ASSERT(kActualMagnitudeComponents == kExpectedMagnitudeComponents);
+            const TOrderedMagnitudeComponents expectedMagnitudeComponents = effect.ComputeOrderedMagnitudeComponents(t);
+            const TOrderedMagnitudeComponents actualMagnitudeComponents = Device.PlayEffects(t);
+            TEST_ASSERT(actualMagnitudeComponents == expectedMagnitudeComponents);
         }
 
         TEST_ASSERT(false == Device.IsDeviceOutputPaused());
@@ -217,8 +217,8 @@ namespace XidiTest
             TEST_ASSERT(true == Device.IsEffectOnDevice(effect.Identifier()));
             TEST_ASSERT(true == Device.IsEffectPlaying(effect.Identifier()));
 
-            const TOrderedMagnitudeComponents kExpectedMagnitudeComponents = {};
-            const TOrderedMagnitudeComponents kActualMagnitudeComponents = Device.PlayEffects((kTestEffectDuration / 2) + t);
+            const TOrderedMagnitudeComponents expectedMagnitudeComponents = {};
+            const TOrderedMagnitudeComponents actualMagnitudeComponents = Device.PlayEffects((kTestEffectDuration / 2) + t);
         }
 
         TEST_ASSERT(true == Device.IsEffectOnDevice(effect.Identifier()));
@@ -233,9 +233,9 @@ namespace XidiTest
             TEST_ASSERT(true == Device.IsEffectOnDevice(effect.Identifier()));
             TEST_ASSERT(true == Device.IsEffectPlaying(effect.Identifier()));
 
-            const TOrderedMagnitudeComponents kExpectedMagnitudeComponents = effect.ComputeOrderedMagnitudeComponents((kTestEffectDuration / 2) + t);
-            const TOrderedMagnitudeComponents kActualMagnitudeComponents = Device.PlayEffects((kTestEffectDuration / 2) + kTestEffectPauseDuration + t);
-            TEST_ASSERT(kActualMagnitudeComponents == kExpectedMagnitudeComponents);
+            const TOrderedMagnitudeComponents expectedMagnitudeComponents = effect.ComputeOrderedMagnitudeComponents((kTestEffectDuration / 2) + t);
+            const TOrderedMagnitudeComponents actualMagnitudeComponents = Device.PlayEffects((kTestEffectDuration / 2) + kTestEffectPauseDuration + t);
+            TEST_ASSERT(actualMagnitudeComponents == expectedMagnitudeComponents);
         }
 
         TEST_ASSERT(true == Device.IsEffectOnDevice(effect.Identifier()));
@@ -266,9 +266,9 @@ namespace XidiTest
             TEST_ASSERT(true == Device.IsEffectOnDevice(effect.Identifier()));
             TEST_ASSERT(false == Device.IsEffectPlaying(effect.Identifier()));
 
-            const TOrderedMagnitudeComponents kExpectedMagnitudeComponents = {};
-            const TOrderedMagnitudeComponents kActualMagnitudeComponents = Device.PlayEffects(t);
-            TEST_ASSERT(kActualMagnitudeComponents == kExpectedMagnitudeComponents);
+            const TOrderedMagnitudeComponents expectedMagnitudeComponents = {};
+            const TOrderedMagnitudeComponents actualMagnitudeComponents = Device.PlayEffects(t);
+            TEST_ASSERT(actualMagnitudeComponents == expectedMagnitudeComponents);
         }
 
         // Effect is playing now that the start delay period has passed. The "t == 0" case was covered by the final iteration of the previous loop.
@@ -278,9 +278,9 @@ namespace XidiTest
             TEST_ASSERT(true == Device.IsEffectOnDevice(effect.Identifier()));
             TEST_ASSERT(true == Device.IsEffectPlaying(effect.Identifier()));
 
-            const TOrderedMagnitudeComponents kExpectedMagnitudeComponents = effect.ComputeOrderedMagnitudeComponents(t);
-            const TOrderedMagnitudeComponents kActualMagnitudeComponents = Device.PlayEffects(t + kTestEffectStartDelay);
-            TEST_ASSERT(kActualMagnitudeComponents == kExpectedMagnitudeComponents);
+            const TOrderedMagnitudeComponents expectedMagnitudeComponents = effect.ComputeOrderedMagnitudeComponents(t);
+            const TOrderedMagnitudeComponents actualMagnitudeComponents = Device.PlayEffects(t + kTestEffectStartDelay);
+            TEST_ASSERT(actualMagnitudeComponents == expectedMagnitudeComponents);
         }
 
         TEST_ASSERT(true == Device.IsEffectOnDevice(effect.Identifier()));
@@ -304,18 +304,18 @@ namespace XidiTest
             TEST_ASSERT(true == Device.IsEffectOnDevice(effect.Identifier()));
             TEST_ASSERT(true == Device.IsEffectPlaying(effect.Identifier()));
 
-            const TOrderedMagnitudeComponents kExpectedMagnitudeComponents = effect.ComputeOrderedMagnitudeComponents(t);
-            const TOrderedMagnitudeComponents kActualMagnitudeComponents = Device.PlayEffects(t);
-            TEST_ASSERT(kActualMagnitudeComponents == kExpectedMagnitudeComponents);
+            const TOrderedMagnitudeComponents expectedMagnitudeComponents = effect.ComputeOrderedMagnitudeComponents(t);
+            const TOrderedMagnitudeComponents actualMagnitudeComponents = Device.PlayEffects(t);
+            TEST_ASSERT(actualMagnitudeComponents == expectedMagnitudeComponents);
         }
 
         TEST_ASSERT(true == Device.StopEffect(effect.Identifier()));
         TEST_ASSERT(true == Device.IsEffectOnDevice(effect.Identifier()));
         TEST_ASSERT(false == Device.IsEffectPlaying(effect.Identifier()));
 
-        const TOrderedMagnitudeComponents kExpectedMagnitudeComponents = {};
-        const TOrderedMagnitudeComponents kActualMagnitudeComponents = Device.PlayEffects(kTestEffectDuration / 4);
-        TEST_ASSERT(kActualMagnitudeComponents == kExpectedMagnitudeComponents);
+        const TOrderedMagnitudeComponents expectedMagnitudeComponents = {};
+        const TOrderedMagnitudeComponents actualMagnitudeComponents = Device.PlayEffects(kTestEffectDuration / 4);
+        TEST_ASSERT(actualMagnitudeComponents == expectedMagnitudeComponents);
     }
 
     // A single effect is started and then stopped some time before the duration has elapsed.
@@ -336,18 +336,18 @@ namespace XidiTest
             TEST_ASSERT(true == Device.IsEffectOnDevice(effect.Identifier()));
             TEST_ASSERT(true == Device.IsEffectPlaying(effect.Identifier()));
 
-            const TOrderedMagnitudeComponents kExpectedMagnitudeComponents = effect.ComputeOrderedMagnitudeComponents(t);
-            const TOrderedMagnitudeComponents kActualMagnitudeComponents = Device.PlayEffects(t);
-            TEST_ASSERT(kActualMagnitudeComponents == kExpectedMagnitudeComponents);
+            const TOrderedMagnitudeComponents expectedMagnitudeComponents = effect.ComputeOrderedMagnitudeComponents(t);
+            const TOrderedMagnitudeComponents actualMagnitudeComponents = Device.PlayEffects(t);
+            TEST_ASSERT(actualMagnitudeComponents == expectedMagnitudeComponents);
         }
 
         Device.StopAllEffects();
         TEST_ASSERT(true == Device.IsEffectOnDevice(effect.Identifier()));
         TEST_ASSERT(false == Device.IsEffectPlaying(effect.Identifier()));
 
-        const TOrderedMagnitudeComponents kExpectedMagnitudeComponents = {};
-        const TOrderedMagnitudeComponents kActualMagnitudeComponents = Device.PlayEffects(kTestEffectDuration / 4);
-        TEST_ASSERT(kActualMagnitudeComponents == kExpectedMagnitudeComponents);
+        const TOrderedMagnitudeComponents expectedMagnitudeComponents = {};
+        const TOrderedMagnitudeComponents actualMagnitudeComponents = Device.PlayEffects(kTestEffectDuration / 4);
+        TEST_ASSERT(actualMagnitudeComponents == expectedMagnitudeComponents);
     }
 
     // A single effect is started and then stopped some time before the duration has elapsed.
@@ -368,18 +368,18 @@ namespace XidiTest
             TEST_ASSERT(true == Device.IsEffectOnDevice(effect.Identifier()));
             TEST_ASSERT(true == Device.IsEffectPlaying(effect.Identifier()));
 
-            const TOrderedMagnitudeComponents kExpectedMagnitudeComponents = effect.ComputeOrderedMagnitudeComponents(t);
-            const TOrderedMagnitudeComponents kActualMagnitudeComponents = Device.PlayEffects(t);
-            TEST_ASSERT(kActualMagnitudeComponents == kExpectedMagnitudeComponents);
+            const TOrderedMagnitudeComponents expectedMagnitudeComponents = effect.ComputeOrderedMagnitudeComponents(t);
+            const TOrderedMagnitudeComponents actualMagnitudeComponents = Device.PlayEffects(t);
+            TEST_ASSERT(actualMagnitudeComponents == expectedMagnitudeComponents);
         }
 
         Device.Clear();
         TEST_ASSERT(false == Device.IsEffectOnDevice(effect.Identifier()));
         TEST_ASSERT(false == Device.IsEffectPlaying(effect.Identifier()));
 
-        const TOrderedMagnitudeComponents kExpectedMagnitudeComponents = {};
-        const TOrderedMagnitudeComponents kActualMagnitudeComponents = Device.PlayEffects(kTestEffectDuration / 4);
-        TEST_ASSERT(kActualMagnitudeComponents == kExpectedMagnitudeComponents);
+        const TOrderedMagnitudeComponents expectedMagnitudeComponents = {};
+        const TOrderedMagnitudeComponents actualMagnitudeComponents = Device.PlayEffects(kTestEffectDuration / 4);
+        TEST_ASSERT(actualMagnitudeComponents == expectedMagnitudeComponents);
     }
 
     // A single effect is started and then its duration is shortened sometime before the effect stops on its own.
@@ -400,9 +400,9 @@ namespace XidiTest
             TEST_ASSERT(true == Device.IsEffectOnDevice(effect.Identifier()));
             TEST_ASSERT(true == Device.IsEffectPlaying(effect.Identifier()));
 
-            const TOrderedMagnitudeComponents kExpectedMagnitudeComponents = effect.ComputeOrderedMagnitudeComponents(t);
-            const TOrderedMagnitudeComponents kActualMagnitudeComponents = Device.PlayEffects(t);
-            TEST_ASSERT(kActualMagnitudeComponents == kExpectedMagnitudeComponents);
+            const TOrderedMagnitudeComponents expectedMagnitudeComponents = effect.ComputeOrderedMagnitudeComponents(t);
+            const TOrderedMagnitudeComponents actualMagnitudeComponents = Device.PlayEffects(t);
+            TEST_ASSERT(actualMagnitudeComponents == expectedMagnitudeComponents);
         }
 
         TEST_ASSERT(true == effect.SetDuration(kTestEffectDuration / 4));
@@ -410,9 +410,9 @@ namespace XidiTest
 
         // At this point the effect is still playing.
         // Next time a magnitude is requested, at half-duration, it will be stopped and the magnitude should be 0.
-        const TOrderedMagnitudeComponents kExpectedMagnitudeComponents = {};
-        const TOrderedMagnitudeComponents kActualMagnitudeComponents = Device.PlayEffects(kTestEffectDuration / 4);
-        TEST_ASSERT(kActualMagnitudeComponents == kExpectedMagnitudeComponents);
+        const TOrderedMagnitudeComponents expectedMagnitudeComponents = {};
+        const TOrderedMagnitudeComponents actualMagnitudeComponents = Device.PlayEffects(kTestEffectDuration / 4);
+        TEST_ASSERT(actualMagnitudeComponents == expectedMagnitudeComponents);
         TEST_ASSERT(true == Device.IsEffectOnDevice(effect.Identifier()));
         TEST_ASSERT(false == Device.IsEffectPlaying(effect.Identifier()));
     }
@@ -440,17 +440,17 @@ namespace XidiTest
                 TEST_ASSERT(true == Device.IsEffectOnDevice(effect.Identifier()));
                 TEST_ASSERT(true == Device.IsEffectPlaying(effect.Identifier()));
 
-                const TOrderedMagnitudeComponents kExpectedMagnitudeComponents = effect.ComputeOrderedMagnitudeComponents(t);
-                const TOrderedMagnitudeComponents kActualMagnitudeComponents = Device.PlayEffects(t + kTimeBase);
-                TEST_ASSERT(kActualMagnitudeComponents == kExpectedMagnitudeComponents);
+                const TOrderedMagnitudeComponents expectedMagnitudeComponents = effect.ComputeOrderedMagnitudeComponents(t);
+                const TOrderedMagnitudeComponents actualMagnitudeComponents = Device.PlayEffects(t + kTimeBase);
+                TEST_ASSERT(actualMagnitudeComponents == expectedMagnitudeComponents);
             }
         }
 
         // At this point the effect is still playing.
         // However, it should stop next time a magnitude is requested.
-        const TOrderedMagnitudeComponents kExpectedMagnitudeComponents = {};
-        const TOrderedMagnitudeComponents kActualMagnitudeComponents = Device.PlayEffects(kTestEffectDuration * kTestNumIterations);
-        TEST_ASSERT(kActualMagnitudeComponents == kExpectedMagnitudeComponents);
+        const TOrderedMagnitudeComponents expectedMagnitudeComponents = {};
+        const TOrderedMagnitudeComponents actualMagnitudeComponents = Device.PlayEffects(kTestEffectDuration * kTestNumIterations);
+        TEST_ASSERT(actualMagnitudeComponents == expectedMagnitudeComponents);
         TEST_ASSERT(true == Device.IsEffectOnDevice(effect.Identifier()));
         TEST_ASSERT(false == Device.IsEffectPlaying(effect.Identifier()));
     }
@@ -477,9 +477,9 @@ namespace XidiTest
             TEST_ASSERT(true == Device.IsEffectOnDevice(effect.Identifier()));
             TEST_ASSERT(false == Device.IsEffectPlaying(effect.Identifier()));
 
-            const TOrderedMagnitudeComponents kExpectedMagnitudeComponents = {};
-            const TOrderedMagnitudeComponents kActualMagnitudeComponents = Device.PlayEffects(t);
-            TEST_ASSERT(kActualMagnitudeComponents == kExpectedMagnitudeComponents);
+            const TOrderedMagnitudeComponents expectedMagnitudeComponents = {};
+            const TOrderedMagnitudeComponents actualMagnitudeComponents = Device.PlayEffects(t);
+            TEST_ASSERT(actualMagnitudeComponents == expectedMagnitudeComponents);
         }
 
         // Now the effect should play for the requested number of iterations.
@@ -492,17 +492,17 @@ namespace XidiTest
                 TEST_ASSERT(true == Device.IsEffectOnDevice(effect.Identifier()));
                 TEST_ASSERT(true == Device.IsEffectPlaying(effect.Identifier()));
 
-                const TOrderedMagnitudeComponents kExpectedMagnitudeComponents = effect.ComputeOrderedMagnitudeComponents(t);
-                const TOrderedMagnitudeComponents kActualMagnitudeComponents = Device.PlayEffects(t + kTimeBase);
-                TEST_ASSERT(kActualMagnitudeComponents == kExpectedMagnitudeComponents);
+                const TOrderedMagnitudeComponents expectedMagnitudeComponents = effect.ComputeOrderedMagnitudeComponents(t);
+                const TOrderedMagnitudeComponents actualMagnitudeComponents = Device.PlayEffects(t + kTimeBase);
+                TEST_ASSERT(actualMagnitudeComponents == expectedMagnitudeComponents);
             }
         }
 
         // At this point the effect is still playing.
         // However, it should stop next time a magnitude is requested.
-        const TOrderedMagnitudeComponents kExpectedMagnitudeComponents = {};
-        const TOrderedMagnitudeComponents kActualMagnitudeComponents = Device.PlayEffects((kTestEffectDuration * kTestNumIterations) + kTestEffectStartDelay);
-        TEST_ASSERT(kActualMagnitudeComponents == kExpectedMagnitudeComponents);
+        const TOrderedMagnitudeComponents expectedMagnitudeComponents = {};
+        const TOrderedMagnitudeComponents actualMagnitudeComponents = Device.PlayEffects((kTestEffectDuration * kTestNumIterations) + kTestEffectStartDelay);
+        TEST_ASSERT(actualMagnitudeComponents == expectedMagnitudeComponents);
         TEST_ASSERT(true == Device.IsEffectOnDevice(effect.Identifier()));
         TEST_ASSERT(false == Device.IsEffectPlaying(effect.Identifier()));
     }
@@ -536,8 +536,8 @@ namespace XidiTest
                 expectedMagnitudeComponents += effect.ComputeOrderedMagnitudeComponents(t);
             }
 
-            const TOrderedMagnitudeComponents kActualMagnitudeComponents = Device.PlayEffects(t);
-            TEST_ASSERT(kActualMagnitudeComponents == expectedMagnitudeComponents);
+            const TOrderedMagnitudeComponents actualMagnitudeComponents = Device.PlayEffects(t);
+            TEST_ASSERT(actualMagnitudeComponents == expectedMagnitudeComponents);
         }
 
         for (const MockEffect& effect : effects)
@@ -575,8 +575,8 @@ namespace XidiTest
             for (const MockEffect& effect : effects)
                 expectedMagnitudeComponents += effect.ComputeOrderedMagnitudeComponents(t);
 
-            const TOrderedMagnitudeComponents kActualMagnitudeComponents = Device.PlayEffects(t);
-            TEST_ASSERT(kActualMagnitudeComponents == expectedMagnitudeComponents);
+            const TOrderedMagnitudeComponents actualMagnitudeComponents = Device.PlayEffects(t);
+            TEST_ASSERT(actualMagnitudeComponents == expectedMagnitudeComponents);
         }
 
         for (const MockEffect& effect : effects)
@@ -618,8 +618,8 @@ namespace XidiTest
                     expectedMagnitudeComponents += effect.ComputeOrderedMagnitudeComponents(t - effect.GetStartDelay());
             }
 
-            const TOrderedMagnitudeComponents kActualMagnitudeComponents = Device.PlayEffects(t);
-            TEST_ASSERT(kActualMagnitudeComponents == expectedMagnitudeComponents);
+            const TOrderedMagnitudeComponents actualMagnitudeComponents = Device.PlayEffects(t);
+            TEST_ASSERT(actualMagnitudeComponents == expectedMagnitudeComponents);
         }
 
         for (const MockEffect& effect : effects)

@@ -34,49 +34,49 @@ namespace XidiTest
 
     /// Verifies that the two supplied element mappers are equivalent to one another and flags a test failure if not.
     /// Only works for simple element mappers that uniquely target zero or one specific controller elements and have no side effects.
-    /// @param [in] kElementMapperA One side of the comparison.
-    /// @param [in] kElementMapperB Another side of the comparison.
-    static void VerifyElementMappersAreEquivalent(const IElementMapper& kElementMapperA, const IElementMapper& kElementMapperB)
+    /// @param [in] elementMapperA One side of the comparison.
+    /// @param [in] elementMapperB Another side of the comparison.
+    static void VerifyElementMappersAreEquivalent(const IElementMapper& elementMapperA, const IElementMapper& elementMapperB)
     {
-        TEST_ASSERT(kElementMapperA.GetTargetElementCount() == kElementMapperB.GetTargetElementCount());
+        TEST_ASSERT(elementMapperA.GetTargetElementCount() == elementMapperB.GetTargetElementCount());
 
-        for (int i = 0; i < kElementMapperA.GetTargetElementCount(); ++i)
-            TEST_ASSERT(kElementMapperA.GetTargetElementAt(i) == kElementMapperB.GetTargetElementAt(i));
+        for (int i = 0; i < elementMapperA.GetTargetElementCount(); ++i)
+            TEST_ASSERT(elementMapperA.GetTargetElementAt(i) == elementMapperB.GetTargetElementAt(i));
     }
 
     /// Verifies that the two supplied element maps are equivalent to one another and flags a test failure if not.
     /// Only works for simple element mappers that uniquely target zero or one specific controller elements and have no side effects.
-    /// @param [in] kElementMapA One side of the comparison.
-    /// @param [in] kElementMapB Another side of the comparison.
-    static void VerifyElementMapsAreEquivalent(const Mapper::UElementMap& kElementMapA, const Mapper::UElementMap& kElementMapB)
+    /// @param [in] elementMapA One side of the comparison.
+    /// @param [in] elementMapB Another side of the comparison.
+    static void VerifyElementMapsAreEquivalent(const Mapper::UElementMap& elementMapA, const Mapper::UElementMap& elementMapB)
     {
         for (unsigned int i = 0; i < _countof(Mapper::UElementMap::all); ++i)
         {
-            if (nullptr != kElementMapA.all[i])
+            if (nullptr != elementMapA.all[i])
             {
-                TEST_ASSERT(nullptr != kElementMapB.all[i]);
-                VerifyElementMappersAreEquivalent(*kElementMapA.all[i], *kElementMapB.all[i]);
+                TEST_ASSERT(nullptr != elementMapB.all[i]);
+                VerifyElementMappersAreEquivalent(*elementMapA.all[i], *elementMapB.all[i]);
             }
             else
             {
-                TEST_ASSERT(nullptr == kElementMapB.all[i]);
+                TEST_ASSERT(nullptr == elementMapB.all[i]);
             }
         }
     }
 
     /// Verifies that the two supplied force feedback actuator maps are equivalent to one another and flags a test failure if not.
-    /// @param [in] kElementMapA One side of the comparison.
-    /// @param [in] kElementMapB Another side of the comparison.
-    static void VerifyForceFeedbackActuatorMapsAreEquivalent(const Mapper::UForceFeedbackActuatorMap& kActuatorMapA, const Mapper::UForceFeedbackActuatorMap& kActuatorMapB)
+    /// @param [in] actuatorMapA One side of the comparison.
+    /// @param [in] actuatorMapB Another side of the comparison.
+    static void VerifyForceFeedbackActuatorMapsAreEquivalent(const Mapper::UForceFeedbackActuatorMap& actuatorMapA, const Mapper::UForceFeedbackActuatorMap& actuatorMapB)
     {
         for (unsigned int i = 0; i < _countof(Mapper::UForceFeedbackActuatorMap::all); ++i)
-            TEST_ASSERT(kActuatorMapA.all[i] == kActuatorMapB.all[i]);
+            TEST_ASSERT(actuatorMapA.all[i] == actuatorMapB.all[i]);
     }
 
     /// Verifies that the supplied element map is empty and flags a test failure if not.
-    static void VerifyElementMapIsEmpty(const Mapper::UElementMap& kElementMapToCheck)
+    static void VerifyElementMapIsEmpty(const Mapper::UElementMap& elementMapToCheck)
     {
-        for (const auto& elementMapper : kElementMapToCheck.all)
+        for (const auto& elementMapper : elementMapToCheck.all)
             TEST_ASSERT(elementMapper == nullptr);
     }
 
@@ -86,21 +86,21 @@ namespace XidiTest
     /// Any element map indices not present in the container are expected to be empty.
     /// A test failure is flagged if a mismatch is found.
     /// @tparam StdIndexContainer Standard searchable container type holding the element map indices to check. Any indices less than 0 are ignored.
-    /// @param [in] kElementMapLayout Container holding the element map indices and acting as a layout descriptor.
-    /// @param [in] kElementMapper Element mapper to be used for equivalence checking at each index of the layout descriptor.
-    /// @param [in] kElementMapSpecToCheck Element map descriptor object being checked for matching with the expected spec.
-    template <typename StdIndexContainer> static void VerifyElementMapSpecMatchesSpec(const StdIndexContainer& kElementMapLayout, const IElementMapper& kElementMapper, const MapperBuilder::TElementMapSpec& kElementMapSpecToCheck)
+    /// @param [in] elementMapLayout Container holding the element map indices and acting as a layout descriptor.
+    /// @param [in] elementMapper Element mapper to be used for equivalence checking at each index of the layout descriptor.
+    /// @param [in] elementMapSpecToCheck Element map descriptor object being checked for matching with the expected spec.
+    template <typename StdIndexContainer> static void VerifyElementMapSpecMatchesSpec(const StdIndexContainer& elementMapLayout, const IElementMapper& elementMapper, const MapperBuilder::TElementMapSpec& elementMapSpecToCheck)
     {
         for (unsigned int i = 0; i < _countof(Mapper::UElementMap::all); ++i)
         {
-            if (kElementMapLayout.contains(i))
+            if (elementMapLayout.contains(i))
             {
-                TEST_ASSERT(true == kElementMapSpecToCheck.contains(i));
-                VerifyElementMappersAreEquivalent(kElementMapper, *kElementMapSpecToCheck.at(i));
+                TEST_ASSERT(true == elementMapSpecToCheck.contains(i));
+                VerifyElementMappersAreEquivalent(elementMapper, *elementMapSpecToCheck.at(i));
             }
             else
             {
-                TEST_ASSERT(false == kElementMapSpecToCheck.contains(i));
+                TEST_ASSERT(false == elementMapSpecToCheck.contains(i));
             }
         }
     }
@@ -111,21 +111,21 @@ namespace XidiTest
     /// Any element map indices not present in the container are expected to be empty.
     /// A test failure is flagged if a mismatch is found.
     /// @tparam StdIndexContainer Standard searchable container type holding the element map indices to check. Any indices less than 0 are ignored.
-    /// @param [in] kElementMapLayout Container holding the element map indices and acting as a layout descriptor.
-    /// @param [in] kElementMapper Element mapper to be used for equivalence checking at each index of the layout descriptor.
-    /// @param [in] kElementMapToCheck Element map object being checked for matching with the spec.
-    template <typename StdIndexContainer> static void VerifyElementMapMatchesSpec(const StdIndexContainer& kElementMapLayout, const IElementMapper& kElementMapper, const Mapper::UElementMap& kElementMapToCheck)
+    /// @param [in] elementMapLayout Container holding the element map indices and acting as a layout descriptor.
+    /// @param [in] elementMapper Element mapper to be used for equivalence checking at each index of the layout descriptor.
+    /// @param [in] elementMapToCheck Element map object being checked for matching with the spec.
+    template <typename StdIndexContainer> static void VerifyElementMapMatchesSpec(const StdIndexContainer& elementMapLayout, const IElementMapper& elementMapper, const Mapper::UElementMap& elementMapToCheck)
     {
         for (unsigned int i = 0; i < _countof(Mapper::UElementMap::all); ++i)
         {
-            if (kElementMapLayout.contains(i))
+            if (elementMapLayout.contains(i))
             {
-                TEST_ASSERT(nullptr != kElementMapToCheck.all[i]);
-                VerifyElementMappersAreEquivalent(kElementMapper, *kElementMapToCheck.all[i]);
+                TEST_ASSERT(nullptr != elementMapToCheck.all[i]);
+                VerifyElementMappersAreEquivalent(elementMapper, *elementMapToCheck.all[i]);
             }
             else
             {
-                TEST_ASSERT(nullptr == kElementMapToCheck.all[i]);
+                TEST_ASSERT(nullptr == elementMapToCheck.all[i]);
             }
         }
     }
@@ -193,9 +193,9 @@ namespace XidiTest
         TEST_ASSERT(nullptr != kElementMapSpec);
         TEST_ASSERT(true == kElementMapSpec->empty());
 
-        const std::optional<std::wstring_view> kMaybeTemplateName = builder.GetBlueprintTemplate(kMapperName);
-        TEST_ASSERT(true == kMaybeTemplateName.has_value());
-        TEST_ASSERT(true == kMaybeTemplateName.value().empty());
+        const std::optional<std::wstring_view> maybeTemplateName = builder.GetBlueprintTemplate(kMapperName);
+        TEST_ASSERT(true == maybeTemplateName.has_value());
+        TEST_ASSERT(true == maybeTemplateName.value().empty());
     }
 
     // Verifies that element mappers can be set in the nominal case of valid controller elements being specified.
@@ -455,8 +455,8 @@ namespace XidiTest
         TEST_ASSERT(nullptr != mapper);
         TEST_ASSERT(Mapper::GetByName(kMapperName) == mapper.get());
 
-        const Mapper::UElementMap& kActualElementMap = mapper->ElementMap();
-        VerifyElementMapsAreEquivalent(kActualElementMap, expectedElementMap);
+        const Mapper::UElementMap& actualElementMap = mapper->ElementMap();
+        VerifyElementMapsAreEquivalent(actualElementMap, expectedElementMap);
     }
 
     // Verifies that a mapper with a template and some changes applied can be built and registered, in this case the changes being element removal.
@@ -486,8 +486,8 @@ namespace XidiTest
         TEST_ASSERT(nullptr != mapper);
         TEST_ASSERT(Mapper::GetByName(kMapperName) == mapper.get());
 
-        const Mapper::UElementMap& kActualElementMap = mapper->ElementMap();
-        VerifyElementMapsAreEquivalent(kActualElementMap, expectedElementMap);
+        const Mapper::UElementMap& actualElementMap = mapper->ElementMap();
+        VerifyElementMapsAreEquivalent(actualElementMap, expectedElementMap);
     }
 
     // Verifies that a mapper with a template and no modification can be built and registered.
@@ -551,13 +551,13 @@ namespace XidiTest
 
         for (int i = 0; i < _countof(kMapperNames); ++i)
         {
-            const int kNameIndex = i;
-            const int kTemplateIndex = i + 1;
+            const int nameIndex = i;
+            const int templateIndex = i + 1;
 
-            TEST_ASSERT(true == builder.CreateBlueprint(kMapperNames[kNameIndex]));
+            TEST_ASSERT(true == builder.CreateBlueprint(kMapperNames[nameIndex]));
 
-            if (kTemplateIndex < _countof(kMapperNames))
-                TEST_ASSERT(true == builder.SetBlueprintTemplate(kMapperNames[kNameIndex], kMapperNames[kTemplateIndex]));
+            if (templateIndex < _countof(kMapperNames))
+                TEST_ASSERT(true == builder.SetBlueprintTemplate(kMapperNames[nameIndex], kMapperNames[templateIndex]));
         }
 
         TEST_ASSERT(nullptr != builder.Build(kMapperNames[0]));
@@ -620,11 +620,11 @@ namespace XidiTest
 
         for (int i = 0; i < _countof(kMapperNames); ++i)
         {
-            const int kNameIndex = i;
-            const int kTemplateIndex = (i + 1) % _countof(kMapperNames);
+            const int nameIndex = i;
+            const int templateIndex = (i + 1) % _countof(kMapperNames);
 
-            TEST_ASSERT(true == builder.CreateBlueprint(kMapperNames[kNameIndex]));
-            TEST_ASSERT(true == builder.SetBlueprintTemplate(kMapperNames[kNameIndex], kMapperNames[kTemplateIndex]));
+            TEST_ASSERT(true == builder.CreateBlueprint(kMapperNames[nameIndex]));
+            TEST_ASSERT(true == builder.SetBlueprintTemplate(kMapperNames[nameIndex], kMapperNames[templateIndex]));
         }
 
         for (int i = 0; i < _countof(kMapperNames); ++i)
@@ -642,9 +642,9 @@ namespace XidiTest
         std::unique_ptr<const Mapper> mapper(builder.Build(kMapperName));
         TEST_ASSERT(nullptr != mapper);
 
-        const Mapper::UForceFeedbackActuatorMap& kExpectedActuatorMap = Mapper::kDefaultForceFeedbackActuatorMap;
-        const Mapper::UForceFeedbackActuatorMap& kActualActuatorMap = mapper->GetForceFeedbackActuatorMap();
-        VerifyForceFeedbackActuatorMapsAreEquivalent(kActualActuatorMap, kExpectedActuatorMap);
+        const Mapper::UForceFeedbackActuatorMap& expectedActuatorMap = Mapper::kDefaultForceFeedbackActuatorMap;
+        const Mapper::UForceFeedbackActuatorMap& actualActuatorMap = mapper->GetForceFeedbackActuatorMap();
+        VerifyForceFeedbackActuatorMapsAreEquivalent(actualActuatorMap, expectedActuatorMap);
     }
 
     // Verifies that a mapper's force feedback actuator map is built completely from scratch without any default actuators if no template is used and a change to the actuator map is specified.
@@ -668,9 +668,9 @@ namespace XidiTest
         std::unique_ptr<const Mapper> mapper(builder.Build(kMapperName));
         TEST_ASSERT(nullptr != mapper);
 
-        const Mapper::UForceFeedbackActuatorMap kExpectedActuatorMap({.leftImpulseTrigger = kActuatorElement});
-        const Mapper::UForceFeedbackActuatorMap& kActualActuatorMap = mapper->GetForceFeedbackActuatorMap();
-        VerifyForceFeedbackActuatorMapsAreEquivalent(kActualActuatorMap, kExpectedActuatorMap);
+        const Mapper::UForceFeedbackActuatorMap expectedActuatorMap({.leftImpulseTrigger = kActuatorElement});
+        const Mapper::UForceFeedbackActuatorMap& actualActuatorMap = mapper->GetForceFeedbackActuatorMap();
+        VerifyForceFeedbackActuatorMapsAreEquivalent(actualActuatorMap, expectedActuatorMap);
     }
 
     // Verifies that a mapper's force feedback actuator map is built in combination with a template's actuator map if a template is specified.
@@ -699,7 +699,7 @@ namespace XidiTest
         Mapper::UForceFeedbackActuatorMap expectedActuatorMap = Mapper::GetByName(kTemplateMapperName)->GetForceFeedbackActuatorMap();
         expectedActuatorMap.named.leftImpulseTrigger = kActuatorElement;
 
-        const Mapper::UForceFeedbackActuatorMap& kActualActuatorMap = mapper->GetForceFeedbackActuatorMap();
-        VerifyForceFeedbackActuatorMapsAreEquivalent(kActualActuatorMap, expectedActuatorMap);
+        const Mapper::UForceFeedbackActuatorMap& actualActuatorMap = mapper->GetForceFeedbackActuatorMap();
+        VerifyForceFeedbackActuatorMapsAreEquivalent(actualActuatorMap, expectedActuatorMap);
     }
 }

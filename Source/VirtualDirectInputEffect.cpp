@@ -30,9 +30,9 @@
 /// Logs a DirectInput interface method invocation and returns.
 #define LOG_INVOCATION_AND_RETURN(result, severity) \
     do { \
-        const HRESULT kResult = (result); \
-        Message::OutputFormatted(severity, L"Invoked %s on force feedback effect with identifier %llu associated with Xidi virtual controller %u, result = 0x%08x.", __FUNCTIONW__ L"()", (unsigned long long)UnderlyingEffect().Identifier(), (1 + associatedDevice.GetVirtualController().GetIdentifier()), kResult); \
-        return kResult; \
+        const HRESULT hresult = (result); \
+        Message::OutputFormatted(severity, L"Invoked %s on force feedback effect with identifier %llu associated with Xidi virtual controller %u, result = 0x%08x.", __FUNCTIONW__ L"()", (unsigned long long)UnderlyingEffect().Identifier(), (1 + associatedDevice.GetVirtualController().GetIdentifier()), hresult); \
+        return hresult; \
     } while (false)
 
 
@@ -476,18 +476,18 @@ namespace Xidi
 
             for (int i = 0; i < newAssociatedAxes.count; ++i)
             {
-                const std::optional<Controller::SElementIdentifier> kMaybeElement = associatedDevice.IdentifyElement(peff->rgdwAxes[i], identifyElementMethod);
-                if (false == kMaybeElement.has_value())
+                const std::optional<Controller::SElementIdentifier> maybeElement = associatedDevice.IdentifyElement(peff->rgdwAxes[i], identifyElementMethod);
+                if (false == maybeElement.has_value())
                     return DIERR_INVALIDPARAM;
                 
-                const Controller::SElementIdentifier kElement = kMaybeElement.value();
-                if (Controller::EElementType::Axis != kElement.type)
+                const Controller::SElementIdentifier element = maybeElement.value();
+                if (Controller::EElementType::Axis != element.type)
                     return DIERR_INVALIDPARAM;
 
-                if (false == associatedDevice.GetVirtualController().GetCapabilities().ForceFeedbackIsSupportedForAxis(kElement.axis))
+                if (false == associatedDevice.GetVirtualController().GetCapabilities().ForceFeedbackIsSupportedForAxis(element.axis))
                     return DIERR_INVALIDPARAM;
 
-                newAssociatedAxes.type[i] = kElement.axis;
+                newAssociatedAxes.type[i] = element.axis;
             }
 
             if (false == updatedEffect->SetAssociatedAxes(newAssociatedAxes))
@@ -549,14 +549,14 @@ namespace Xidi
                 if (sizeof(DIENVELOPE) != peff->lpEnvelope->dwSize)
                     return DIERR_INVALIDPARAM;
 
-                const Controller::ForceFeedback::SEnvelope kNewEnvelope = {
+                const Controller::ForceFeedback::SEnvelope newEnvelope = {
                     .attackTime = ConvertTimeFromDirectInput(peff->lpEnvelope->dwAttackTime),
                     .attackLevel = (Controller::ForceFeedback::TEffectValue)peff->lpEnvelope->dwAttackLevel,
                     .fadeTime = ConvertTimeFromDirectInput(peff->lpEnvelope->dwFadeTime),
                     .fadeLevel = (Controller::ForceFeedback::TEffectValue)peff->lpEnvelope->dwFadeLevel
                 };
 
-                if (false == updatedEffect->SetEnvelope(kNewEnvelope))
+                if (false == updatedEffect->SetEnvelope(newEnvelope))
                     return DIERR_INVALIDPARAM;
             }
         }
@@ -600,9 +600,9 @@ namespace Xidi
             }
 
             // If the download operation fails the parameters have still been updated but the caller needs to be provided the reason for the failure.
-            const HRESULT kDownloadResult = DownloadEffectToDevice(*effect, *forceFeedbackDevice);
-            if (DI_OK != kDownloadResult)
-                return kDownloadResult;
+            const HRESULT downloadResult = DownloadEffectToDevice(*effect, *forceFeedbackDevice);
+            if (DI_OK != downloadResult)
+                return downloadResult;
         }
 
         // Default behavior is to update an effect without changing its play state. Playing effects are updated on-the-fly, and non-playing effects are not started.
@@ -654,9 +654,9 @@ namespace Xidi
             // The download operation was not skipped by the caller.
             // If the effect exists on the device its parameters will get updated, otherwise the effect will be downloaded.
             // If for some reason the download attempt fails then the effect cannot be played.
-            const HRESULT kDownloadResult = DownloadEffectToDevice(*effect, *forceFeedbackDevice);
-            if (DI_OK != kDownloadResult)
-                return kDownloadResult;
+            const HRESULT downloadResult = DownloadEffectToDevice(*effect, *forceFeedbackDevice);
+            if (DI_OK != downloadResult)
+                return downloadResult;
         }
 
         if (0 != (dwFlags & DIES_SOLO))
@@ -835,10 +835,10 @@ namespace Xidi
             if (false == effect->HasAssociatedAxes())
                 LOG_INVOCATION_AND_RETURN(DIERR_INVALIDPARAM, kMethodSeverity);
 
-            const Controller::ForceFeedback::SAssociatedAxes& kAssociatedAxes = effect->GetAssociatedAxes().value();
-            if (peff->cAxes < (DWORD)kAssociatedAxes.count)
+            const Controller::ForceFeedback::SAssociatedAxes& associatedAxes = effect->GetAssociatedAxes().value();
+            if (peff->cAxes < (DWORD)associatedAxes.count)
             {
-                peff->cAxes = (DWORD)kAssociatedAxes.count;
+                peff->cAxes = (DWORD)associatedAxes.count;
                 axesInsufficientBuffer = true;
             }
             else
@@ -849,31 +849,31 @@ namespace Xidi
                 switch (peff->dwFlags & (DIEFF_OBJECTIDS | DIEFF_OBJECTOFFSETS))
                 {
                 case DIEFF_OBJECTIDS:
-                    for (int i = 0; i < kAssociatedAxes.count; ++i)
+                    for (int i = 0; i < associatedAxes.count; ++i)
                     {
-                        const std::optional<DWORD> kMaybeObjectId = associatedDevice.IdentifyObjectById({.type = Controller::EElementType::Axis, .axis = kAssociatedAxes.type[i]});
-                        if (false == kMaybeObjectId.has_value())
+                        const std::optional<DWORD> maybeObjectId = associatedDevice.IdentifyObjectById({.type = Controller::EElementType::Axis, .axis = associatedAxes.type[i]});
+                        if (false == maybeObjectId.has_value())
                         {
                             // This should never happen. It means an axis object was successfully set on a force feedback effect but it could not be mapped back to its object ID.
                             Message::OutputFormatted(Message::ESeverity::Error, L"Internal error while mapping force feedback axes to object IDs on Xidi virtual controller %u.", (1 + associatedDevice.GetVirtualController().GetIdentifier()));
                             LOG_INVOCATION_AND_RETURN(DIERR_GENERIC, kMethodSeverity);
                         }
 
-                        peff->rgdwAxes[i] = kMaybeObjectId.value();
+                        peff->rgdwAxes[i] = maybeObjectId.value();
                     }
                     break;
 
                 case DIEFF_OBJECTOFFSETS:
-                    for (int i = 0; i < kAssociatedAxes.count; ++i)
+                    for (int i = 0; i < associatedAxes.count; ++i)
                     {
-                        const std::optional<DWORD> kMaybeOffset = associatedDevice.IdentifyObjectByOffset({.type = Controller::EElementType::Axis, .axis = kAssociatedAxes.type[i]});
-                        if (false == kMaybeOffset.has_value())
+                        const std::optional<DWORD> maybeOffset = associatedDevice.IdentifyObjectByOffset({.type = Controller::EElementType::Axis, .axis = associatedAxes.type[i]});
+                        if (false == maybeOffset.has_value())
                         {
                             // This can happen if the application's data format is not set or if it somehow changed and now does not contain one of the axes that are associated with this effect object.
                             LOG_INVOCATION_AND_RETURN(DIERR_INVALIDPARAM, kMethodSeverity);
                         }
 
-                        peff->rgdwAxes[i] = kMaybeOffset.value();
+                        peff->rgdwAxes[i] = maybeOffset.value();
                     }
                     break;
 
@@ -890,10 +890,10 @@ namespace Xidi
             if (false == effect->HasDirection())
                 LOG_INVOCATION_AND_RETURN(DIERR_INVALIDPARAM, kMethodSeverity);
 
-            const Controller::ForceFeedback::DirectionVector& kDirectionVector = effect->Direction();
-            if (peff->cAxes < (DWORD)kDirectionVector.GetNumAxes())
+            const Controller::ForceFeedback::DirectionVector& directionVector = effect->Direction();
+            if (peff->cAxes < (DWORD)directionVector.GetNumAxes())
             {
-                peff->cAxes = (DWORD)kDirectionVector.GetNumAxes();
+                peff->cAxes = (DWORD)directionVector.GetNumAxes();
                 directionInsufficientBuffer = true;
             }
             else
@@ -904,8 +904,8 @@ namespace Xidi
                 if (0 == (peff->dwFlags & (DIEFF_CARTESIAN | DIEFF_POLAR | DIEFF_SPHERICAL)))
                     LOG_INVOCATION_AND_RETURN(DIERR_INVALIDPARAM, kMethodSeverity);
 
-                const std::optional<Controller::ForceFeedback::ECoordinateSystem> kMaybeCoordinateSystem = PickCoordinateSystem(kDirectionVector, peff->dwFlags);
-                if (false == kMaybeCoordinateSystem.has_value())
+                const std::optional<Controller::ForceFeedback::ECoordinateSystem> maybeCoordinateSystem = PickCoordinateSystem(directionVector, peff->dwFlags);
+                if (false == maybeCoordinateSystem.has_value())
                     LOG_INVOCATION_AND_RETURN(DIERR_INVALIDPARAM, kMethodSeverity);
 
                 Controller::ForceFeedback::TEffectValue coordinates[Controller::ForceFeedback::kEffectAxesMaximumNumber] = {};
@@ -915,20 +915,20 @@ namespace Xidi
                 // First the coordinate system flags are all cleared, then in the switch block below a single system is added back into the flags.
                 peff->dwFlags = (peff->dwFlags & ~(DIEFF_CARTESIAN | DIEFF_POLAR | DIEFF_SPHERICAL));
 
-                switch (kMaybeCoordinateSystem.value())
+                switch (maybeCoordinateSystem.value())
                 {
                 case Controller::ForceFeedback::ECoordinateSystem::Cartesian:
-                    numCoordinates = kDirectionVector.GetCartesianCoordinates(coordinates, _countof(coordinates));
+                    numCoordinates = directionVector.GetCartesianCoordinates(coordinates, _countof(coordinates));
                     peff->dwFlags |= DIEFF_CARTESIAN;
                     break;
 
                 case Controller::ForceFeedback::ECoordinateSystem::Polar:
-                    numCoordinates = kDirectionVector.GetPolarCoordinates(coordinates, _countof(coordinates));
+                    numCoordinates = directionVector.GetPolarCoordinates(coordinates, _countof(coordinates));
                     peff->dwFlags |= DIEFF_POLAR;
                     break;
 
                 case Controller::ForceFeedback::ECoordinateSystem::Spherical:
-                    numCoordinates = kDirectionVector.GetSphericalCoordinates(coordinates, _countof(coordinates));
+                    numCoordinates = directionVector.GetSphericalCoordinates(coordinates, _countof(coordinates));
                     peff->dwFlags |= DIEFF_SPHERICAL;
                     break;
                 }
@@ -936,7 +936,7 @@ namespace Xidi
                 if (0 == numCoordinates)
                 {
                     // This should never happen. It means the direction is supposedly present and the coordinate system selected is supposedly valid but coordinate values were unable to be retrieved.
-                    Message::OutputFormatted(Message::ESeverity::Error, L"Internal error while retrieving direction components using coordinate system %d on Xidi virtual controller %u.", (int)(kMaybeCoordinateSystem.value()), (1 + associatedDevice.GetVirtualController().GetIdentifier()));
+                    Message::OutputFormatted(Message::ESeverity::Error, L"Internal error while retrieving direction components using coordinate system %d on Xidi virtual controller %u.", (int)(maybeCoordinateSystem.value()), (1 + associatedDevice.GetVirtualController().GetIdentifier()));
                     LOG_INVOCATION_AND_RETURN(DIERR_GENERIC, kMethodSeverity);
                 }
 
@@ -968,11 +968,11 @@ namespace Xidi
                 if (sizeof(DIENVELOPE) != peff->lpEnvelope->dwSize)
                     LOG_INVOCATION_AND_RETURN(DIERR_INVALIDPARAM, kMethodSeverity);
 
-                const Controller::ForceFeedback::SEnvelope kEnvelope = effect->GetEnvelope().value();
-                peff->lpEnvelope->dwAttackLevel = (DWORD)kEnvelope.attackLevel;
-                peff->lpEnvelope->dwAttackTime = ConvertTimeToDirectInput(kEnvelope.attackTime);
-                peff->lpEnvelope->dwFadeLevel = (DWORD)kEnvelope.fadeLevel;
-                peff->lpEnvelope->dwFadeTime = ConvertTimeToDirectInput(kEnvelope.fadeTime);
+                const Controller::ForceFeedback::SEnvelope envelope = effect->GetEnvelope().value();
+                peff->lpEnvelope->dwAttackLevel = (DWORD)envelope.attackLevel;
+                peff->lpEnvelope->dwAttackTime = ConvertTimeToDirectInput(envelope.attackTime);
+                peff->lpEnvelope->dwFadeLevel = (DWORD)envelope.fadeLevel;
+                peff->lpEnvelope->dwFadeTime = ConvertTimeToDirectInput(envelope.fadeTime);
             }
         }
 
@@ -999,8 +999,8 @@ namespace Xidi
             }
         }
 
-        const HRESULT kOverallResult = ((true == (axesInsufficientBuffer || directionInsufficientBuffer || typeSpecificInsufficientBuffer)) ? DIERR_MOREDATA : DI_OK);
-        LOG_INVOCATION_AND_RETURN(kOverallResult, kMethodSeverity);
+        const HRESULT overallResult = ((true == (axesInsufficientBuffer || directionInsufficientBuffer || typeSpecificInsufficientBuffer)) ? DIERR_MOREDATA : DI_OK);
+        LOG_INVOCATION_AND_RETURN(overallResult, kMethodSeverity);
     }
 
     // --------

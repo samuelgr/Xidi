@@ -83,12 +83,12 @@ namespace Xidi
             /// @return Inverse tangent in hundredths of degrees of the numerator divided by the denominator.
             inline TEffectValue TrigonometryArcTanOfRatio(TEffectValue numerator, TEffectValue denominator)
             {
-                const TEffectValue kRawAngle = NearestMultiple(AngleRadiansToDegreeHundredths(std::atan2(numerator, denominator)), kMathRoundingPrecision);
+                const TEffectValue rawAngle = NearestMultiple(AngleRadiansToDegreeHundredths(std::atan2(numerator, denominator)), kMathRoundingPrecision);
 
-                if (kRawAngle < 0)
-                    return kRawAngle + 36000;
+                if (rawAngle < 0)
+                    return rawAngle + 36000;
                 else
-                    return kRawAngle;
+                    return rawAngle;
             }
         }
     }

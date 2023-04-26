@@ -177,11 +177,11 @@ namespace Xidi
 
         bool MapperBuilder::ClearBlueprintElementMapper(std::wstring_view mapperName, std::wstring_view elementString)
         {
-            const std::optional<unsigned int> kMaybeControllerElementIndex = MapperParser::FindControllerElementIndex(elementString);
-            if (false == kMaybeControllerElementIndex.has_value())
+            const std::optional<unsigned int> maybeControllerElementIndex = MapperParser::FindControllerElementIndex(elementString);
+            if (false == maybeControllerElementIndex.has_value())
                 return false;
 
-            return ClearBlueprintElementMapper(mapperName, kMaybeControllerElementIndex.value());
+            return ClearBlueprintElementMapper(mapperName, maybeControllerElementIndex.value());
         }
 
         // --------
@@ -206,11 +206,11 @@ namespace Xidi
 
         bool MapperBuilder::ClearBlueprintForceFeedbackActuator(std::wstring_view mapperName, std::wstring_view ffActuatorString)
         {
-            const std::optional<unsigned int> kMaybeForceFeedbackActuatorIndex = MapperParser::FindForceFeedbackActuatorIndex(ffActuatorString);
-            if (false == kMaybeForceFeedbackActuatorIndex.has_value())
+            const std::optional<unsigned int> maybeForceFeedbackActuatorIndex = MapperParser::FindForceFeedbackActuatorIndex(ffActuatorString);
+            if (false == maybeForceFeedbackActuatorIndex.has_value())
                 return false;
 
-            return ClearBlueprintForceFeedbackActuator(mapperName, kMaybeForceFeedbackActuatorIndex.value());
+            return ClearBlueprintForceFeedbackActuator(mapperName, maybeForceFeedbackActuatorIndex.value());
         }
 
         // --------
@@ -294,11 +294,11 @@ namespace Xidi
 
         bool MapperBuilder::SetBlueprintElementMapper(std::wstring_view mapperName, std::wstring_view elementString, std::unique_ptr<IElementMapper>&& elementMapper)
         {
-            const std::optional<unsigned int> kMaybeControllerElementIndex = MapperParser::FindControllerElementIndex(elementString);
-            if (false == kMaybeControllerElementIndex.has_value())
+            const std::optional<unsigned int> maybeControllerElementIndex = MapperParser::FindControllerElementIndex(elementString);
+            if (false == maybeControllerElementIndex.has_value())
                 return false;
 
-            return SetBlueprintElementMapper(mapperName, kMaybeControllerElementIndex.value(), std::move(elementMapper));
+            return SetBlueprintElementMapper(mapperName, maybeControllerElementIndex.value(), std::move(elementMapper));
         }
 
         // --------
@@ -320,11 +320,11 @@ namespace Xidi
 
         bool MapperBuilder::SetBlueprintForceFeedbackActuator(std::wstring_view mapperName, std::wstring_view ffActuatorString, ForceFeedback::SActuatorElement ffActuator)
         {
-            const std::optional<unsigned int> kMaybeForceFeedbackActuatorIndex = MapperParser::FindForceFeedbackActuatorIndex(ffActuatorString);
-            if (false == kMaybeForceFeedbackActuatorIndex.has_value())
+            const std::optional<unsigned int> maybeForceFeedbackActuatorIndex = MapperParser::FindForceFeedbackActuatorIndex(ffActuatorString);
+            if (false == maybeForceFeedbackActuatorIndex.has_value())
                 return false;
 
-            return SetBlueprintForceFeedbackActuator(mapperName, kMaybeForceFeedbackActuatorIndex.value(), ffActuator);
+            return SetBlueprintForceFeedbackActuator(mapperName, maybeForceFeedbackActuatorIndex.value(), ffActuator);
         }
 
         // --------

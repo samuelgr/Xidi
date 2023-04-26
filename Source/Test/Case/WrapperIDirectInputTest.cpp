@@ -261,9 +261,9 @@ namespace XidiTest
             if ((deviceInstance.guidProduct != expectedVirtualControllerGuid) || (deviceInstance.guidInstance != expectedVirtualControllerGuid))
                 return false;
 
-            static const SHidUsageData kExpectedHidUsageData = HidUsageDataForControllerElement({.type = Controller::EElementType::WholeController});
+            static const SHidUsageData expectedHidUsageData = HidUsageDataForControllerElement({.type = Controller::EElementType::WholeController});
             const SHidUsageData actualHidUsageData = {.usagePage = deviceInstance.wUsagePage, .usage = deviceInstance.wUsage};
-            if (actualHidUsageData != kExpectedHidUsageData)
+            if (actualHidUsageData != expectedHidUsageData)
                 return false;
 
             return true;

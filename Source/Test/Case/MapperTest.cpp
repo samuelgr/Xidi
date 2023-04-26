@@ -89,14 +89,14 @@ namespace XidiTest
     static TPhysicalActuatorValue ForceFeedbackActuatorValueVirtualToPhysical(TEffectValue virtualValue, TEffectValue gain = ForceFeedback::kEffectForceMagnitudeMaximum)
     {
         constexpr double kScalingFactor = (std::numeric_limits<TPhysicalActuatorValue>::max() / 10000.0);
-        const double kGainMultiplier = gain / 10000.0;
+        const double gainMultiplier = gain / 10000.0;
 
-        const long kPhysicalValue = std::lround(kGainMultiplier * std::abs(virtualValue * kScalingFactor));
+        const long physicalValue = std::lround(gainMultiplier * std::abs(virtualValue * kScalingFactor));
 
-        if (kPhysicalValue >= std::numeric_limits<TPhysicalActuatorValue>::max())
+        if (physicalValue >= std::numeric_limits<TPhysicalActuatorValue>::max())
             return (TPhysicalActuatorValue)std::numeric_limits<TPhysicalActuatorValue>::max();
 
-        return (TPhysicalActuatorValue)kPhysicalValue;
+        return (TPhysicalActuatorValue)physicalValue;
     }
     
 
@@ -119,17 +119,17 @@ namespace XidiTest
     /// @return Expected capabilities from the test case merged with the minimum allowed capabilities.
     static consteval SCapabilities MakeExpectedCapabilities(SCapabilities baseExpectedCapabilities)
     {
-        const SCapabilities kMinCapabilities = MinimalCapabilities();
+        const SCapabilities minCapabilities = MinimalCapabilities();
 
-        SCapabilities expectedCapabilities = {.numButtons = std::max(kMinCapabilities.numButtons, baseExpectedCapabilities.numButtons), .hasPov = (kMinCapabilities.HasPov() || baseExpectedCapabilities.HasPov())};
+        SCapabilities expectedCapabilities = {.numButtons = std::max(minCapabilities.numButtons, baseExpectedCapabilities.numButtons), .hasPov = (minCapabilities.HasPov() || baseExpectedCapabilities.HasPov())};
         for (int i = 0; i < (int)EAxis::Count; ++i)
         {
-            const bool kSupportsForceFeedback = (baseExpectedCapabilities.ForceFeedbackIsSupportedForAxis((EAxis)i) || kMinCapabilities.ForceFeedbackIsSupportedForAxis((EAxis)i));
+            const bool supportsForceFeedback = (baseExpectedCapabilities.ForceFeedbackIsSupportedForAxis((EAxis)i) || minCapabilities.ForceFeedbackIsSupportedForAxis((EAxis)i));
 
             if (baseExpectedCapabilities.HasAxis((EAxis)i))
-                expectedCapabilities.AppendAxis({.type = baseExpectedCapabilities.axisCapabilities[baseExpectedCapabilities.FindAxis((EAxis)i)].type, .supportsForceFeedback = kSupportsForceFeedback});
-            else if (kMinCapabilities.HasAxis((EAxis)i))
-                expectedCapabilities.AppendAxis(kMinCapabilities.axisCapabilities[kMinCapabilities.FindAxis((EAxis)i)]);
+                expectedCapabilities.AppendAxis({.type = baseExpectedCapabilities.axisCapabilities[baseExpectedCapabilities.FindAxis((EAxis)i)].type, .supportsForceFeedback = supportsForceFeedback});
+            else if (minCapabilities.HasAxis((EAxis)i))
+                expectedCapabilities.AppendAxis(minCapabilities.axisCapabilities[minCapabilities.FindAxis((EAxis)i)]);
         }
 
         return expectedCapabilities;
@@ -145,26 +145,26 @@ namespace XidiTest
 
         std::unordered_set<uint32_t> seenSourceIdentifiers;
 
-        for (const auto& kTestMapper : kTestMappers)
+        for (const auto& testMapper : kTestMappers)
         {
             for (int mappingIter = 0; mappingIter < 10; ++mappingIter)
             {
                 // Test will fail if any individual element mapper gets a different opaque source identifier between mapping attempts.
                 // If that happens it means that the same controller element on the same controller got a different opaque source identifier, which violates the guarantee about opaque source identifiers.
-                kTestMapper.MapStatePhysicalToVirtual({}, kOpaqueSourceIdentifier);
-                kTestMapper.MapNeutralPhysicalToVirtual(kOpaqueSourceIdentifier);
+                testMapper.MapStatePhysicalToVirtual({}, kOpaqueSourceIdentifier);
+                testMapper.MapNeutralPhysicalToVirtual(kOpaqueSourceIdentifier);
             }
         }
 
         // Scanning element-by-element through the element map should show the same opaque source identifier for each element across all the mapper objects.
         for (uint32_t elementMapIdx = 0; elementMapIdx < _countof(Mapper::UElementMap::all); ++elementMapIdx)
         {
-            const uint32_t kExpectedSourceIdentifier = static_cast<const MockElementMapper*>(kTestMappers[0].ElementMap().all[elementMapIdx].get())->GetSourceIdentifier().value();
+            const uint32_t expectedSourceIdentifier = static_cast<const MockElementMapper*>(kTestMappers[0].ElementMap().all[elementMapIdx].get())->GetSourceIdentifier().value();
 
-            for (const auto& kTestMapper : kTestMappers)
+            for (const auto& testMapper : kTestMappers)
             {
-                const uint32_t kActualSourceIdentifier = static_cast<const MockElementMapper*>(kTestMapper.ElementMap().all[elementMapIdx].get())->GetSourceIdentifier().value();
-                TEST_ASSERT(kActualSourceIdentifier == kExpectedSourceIdentifier);
+                const uint32_t actualSourceIdentifier = static_cast<const MockElementMapper*>(testMapper.ElementMap().all[elementMapIdx].get())->GetSourceIdentifier().value();
+                TEST_ASSERT(actualSourceIdentifier == expectedSourceIdentifier);
             }
         }
     }
@@ -172,22 +172,22 @@ namespace XidiTest
     /// Verifies that all opaque source identifiers on the same controller but for different elements are different.
     TEST_CASE(Mapper_OpaqueSourceIdentifier_DifferentAcrossControllerElements)
     {
-        const Mapper kTestMapper(kFullyMockedMapper);
-        kTestMapper.MapNeutralPhysicalToVirtual(kOpaqueSourceIdentifier);
+        const Mapper testMapper(kFullyMockedMapper);
+        testMapper.MapNeutralPhysicalToVirtual(kOpaqueSourceIdentifier);
 
         std::unordered_set<uint32_t> seenSourceIdentifiers;
 
-        const Mapper::UElementMap& kTestMapperElementMap = kTestMapper.ElementMap();
-        for (uint32_t elementMapIdx = 0; elementMapIdx < _countof(kTestMapperElementMap.all); ++elementMapIdx)
+        const Mapper::UElementMap& testMapperElementMap = testMapper.ElementMap();
+        for (uint32_t elementMapIdx = 0; elementMapIdx < _countof(testMapperElementMap.all); ++elementMapIdx)
         {
-            if (nullptr != kTestMapperElementMap.all[elementMapIdx])
+            if (nullptr != testMapperElementMap.all[elementMapIdx])
             {
-                const uint32_t kSourceIdentifier = static_cast<const MockElementMapper*>(kTestMapperElementMap.all[elementMapIdx].get())->GetSourceIdentifier().value();
+                const uint32_t sourceIdentifier = static_cast<const MockElementMapper*>(testMapperElementMap.all[elementMapIdx].get())->GetSourceIdentifier().value();
 
                 // Every time through this loop there should be a different opaque source identifier.
                 // Any duplicates will not cause an insertion into the set, so the number of actual items in the set will be less than expected by the end.
-                const bool kSourceIdentifierIsUnique = seenSourceIdentifiers.insert(kSourceIdentifier).second;
-                TEST_ASSERT(true == kSourceIdentifierIsUnique);
+                const bool sourceIdentifierIsUnique = seenSourceIdentifiers.insert(sourceIdentifier).second;
+                TEST_ASSERT(true == sourceIdentifierIsUnique);
             }
         }
     }
@@ -212,23 +212,23 @@ namespace XidiTest
 
         std::unordered_set<uint32_t> seenSourceIdentifiers;
 
-        for (const auto& kTestRecord : kTestRecords)
+        for (const auto& testRecord : kTestRecords)
         {
             // Sets the opaque source identifier within each individual test mapper.
             // Since the opaque controller identifier is different these whould all produce different values.
-            kTestRecord.mapper.MapNeutralPhysicalToVirtual(kTestRecord.opaqueControllerIdentifier);
+            testRecord.mapper.MapNeutralPhysicalToVirtual(testRecord.opaqueControllerIdentifier);
 
-            const Mapper::UElementMap& kTestMapperElementMap = kTestRecord.mapper.ElementMap();
-            for (uint32_t elementMapIdx = 0; elementMapIdx < _countof(kTestMapperElementMap.all); ++elementMapIdx)
+            const Mapper::UElementMap& testMapperElementMap = testRecord.mapper.ElementMap();
+            for (uint32_t elementMapIdx = 0; elementMapIdx < _countof(testMapperElementMap.all); ++elementMapIdx)
             {
-                if (nullptr != kTestMapperElementMap.all[elementMapIdx])
+                if (nullptr != testMapperElementMap.all[elementMapIdx])
                 {
-                    const uint32_t kSourceIdentifier = static_cast<const MockElementMapper*>(kTestMapperElementMap.all[elementMapIdx].get())->GetSourceIdentifier().value();
+                    const uint32_t sourceIdentifier = static_cast<const MockElementMapper*>(testMapperElementMap.all[elementMapIdx].get())->GetSourceIdentifier().value();
 
                     // Every time through this loop there should be a different opaque source identifier.
                     // Any duplicates will not cause an insertion into the set, so the number of actual items in the set will be less than expected by the end.
-                    const bool kSourceIdentifierIsUnique = seenSourceIdentifiers.insert(kSourceIdentifier).second;
-                    TEST_ASSERT(true == kSourceIdentifierIsUnique);
+                    const bool sourceIdentifierIsUnique = seenSourceIdentifiers.insert(sourceIdentifier).second;
+                    TEST_ASSERT(true == sourceIdentifierIsUnique);
                 }
             }
         }
@@ -489,7 +489,7 @@ namespace XidiTest
     // Nothing should be present on the virtual controller.
     TEST_CASE(Mapper_Capabilities_EmptyMapper)
     {
-        constexpr SCapabilities kExpectedCapabilities = MakeExpectedCapabilities({
+        constexpr SCapabilities expectedCapabilities = MakeExpectedCapabilities({
             .numAxes = 0,
             .numButtons = 0,
             .hasPov = false
@@ -499,15 +499,15 @@ namespace XidiTest
             // Empty.
         });
 
-        const SCapabilities kActualCapabilities = mapper.GetCapabilities();
-        TEST_ASSERT(kActualCapabilities == kExpectedCapabilities);
+        const SCapabilities actualCapabilities = mapper.GetCapabilities();
+        TEST_ASSERT(actualCapabilities == expectedCapabilities);
     }
 
     // Null mapper.
     // Nothing should be present on the virtual controller.
     TEST_CASE(Mapper_Capabilities_NullMapper)
     {
-        constexpr SCapabilities kExpectedCapabilities = MakeExpectedCapabilities({
+        constexpr SCapabilities expectedCapabilities = MakeExpectedCapabilities({
             .numAxes = 0,
             .numButtons = 0,
             .hasPov = false
@@ -515,15 +515,15 @@ namespace XidiTest
 
         const Mapper* mapper = Mapper::GetNull();
 
-        const SCapabilities kActualCapabilities = mapper->GetCapabilities();
-        TEST_ASSERT(kActualCapabilities == kExpectedCapabilities);
+        const SCapabilities actualCapabilities = mapper->GetCapabilities();
+        TEST_ASSERT(actualCapabilities == expectedCapabilities);
     }
 
     // Mapper with only buttons, and they are disjoint.
     // Virtual controller should have only buttons, and the number present is based on the highest button to which an element mapper writes.
     TEST_CASE(Mapper_Capabilities_DisjointButtons)
     {
-        constexpr SCapabilities kExpectedCapabilities = MakeExpectedCapabilities({
+        constexpr SCapabilities expectedCapabilities = MakeExpectedCapabilities({
             .numAxes = 0,
             .numButtons = 10,
             .hasPov = false
@@ -536,15 +536,15 @@ namespace XidiTest
             .buttonLB = std::make_unique<ButtonMapper>(EButton::B4)
         });
 
-        const SCapabilities kActualCapabilities = mapper.GetCapabilities();
-        TEST_ASSERT(kActualCapabilities == kExpectedCapabilities);
+        const SCapabilities actualCapabilities = mapper.GetCapabilities();
+        TEST_ASSERT(actualCapabilities == expectedCapabilities);
     }
 
     // Mapper with only buttons, and all mappers write to the same button.
     // Virtual controller should have only buttons, and the number present is based on the button to which all element mappers write.
     TEST_CASE(Mapper_Capabilities_SingleButton)
     {
-        constexpr SCapabilities kExpectedCapabilities = MakeExpectedCapabilities({
+        constexpr SCapabilities expectedCapabilities = MakeExpectedCapabilities({
             .numAxes = 0,
             .numButtons = 6,
             .hasPov = false
@@ -556,15 +556,15 @@ namespace XidiTest
             .buttonStart = std::make_unique<ButtonMapper>(EButton::B6)
         });
 
-        const SCapabilities kActualCapabilities = mapper.GetCapabilities();
-        TEST_ASSERT(kActualCapabilities == kExpectedCapabilities);
+        const SCapabilities actualCapabilities = mapper.GetCapabilities();
+        TEST_ASSERT(actualCapabilities == expectedCapabilities);
     }
 
     // Mapper with only axes.
     // Virtual controller should have only axes based on the axes to which the element mappers write.
     TEST_CASE(Mapper_Capabilities_MultipleAxes)
     {
-        constexpr SCapabilities kExpectedCapabilities = MakeExpectedCapabilities({
+        constexpr SCapabilities expectedCapabilities = MakeExpectedCapabilities({
             .axisCapabilities = {
                 {.type = EAxis::Y},
                 {.type = EAxis::RotX}
@@ -581,15 +581,15 @@ namespace XidiTest
             .buttonRS = std::make_unique<AxisMapper>(EAxis::Y)
         });
 
-        const SCapabilities kActualCapabilities = mapper.GetCapabilities();
-        TEST_ASSERT(kActualCapabilities == kExpectedCapabilities);
+        const SCapabilities actualCapabilities = mapper.GetCapabilities();
+        TEST_ASSERT(actualCapabilities == expectedCapabilities);
     }
 
     // Mapper with only a POV, and only part of it receives values from mappers.
     // Virtual controller should have only a POV and nothing else.
     TEST_CASE(Mapper_Capabilities_IncompletePov)
     {
-        constexpr SCapabilities kExpectedCapabilities = MakeExpectedCapabilities({
+        constexpr SCapabilities expectedCapabilities = MakeExpectedCapabilities({
             .numAxes = 0,
             .numButtons = 0,
             .hasPov = true
@@ -599,15 +599,15 @@ namespace XidiTest
             .stickRightX = std::make_unique<PovMapper>(EPovDirection::Left)
         });
 
-        const SCapabilities kActualCapabilities = mapper.GetCapabilities();
-        TEST_ASSERT(kActualCapabilities == kExpectedCapabilities);
+        const SCapabilities actualCapabilities = mapper.GetCapabilities();
+        TEST_ASSERT(actualCapabilities == expectedCapabilities);
     }
 
     // Mapper with only a complete POV.
     // Virtual controller should have only a POV and nothing else.
     TEST_CASE(Mapper_Capabilities_CompletePov)
     {
-        constexpr SCapabilities kExpectedCapabilities = MakeExpectedCapabilities({
+        constexpr SCapabilities expectedCapabilities = MakeExpectedCapabilities({
             .numAxes = 0,
             .numButtons = 0,
             .hasPov = true
@@ -624,8 +624,8 @@ namespace XidiTest
             .buttonRS = std::make_unique<PovMapper>(EPovDirection::Down)
         });
 
-        const SCapabilities kActualCapabilities = mapper.GetCapabilities();
-        TEST_ASSERT(kActualCapabilities == kExpectedCapabilities);
+        const SCapabilities actualCapabilities = mapper.GetCapabilities();
+        TEST_ASSERT(actualCapabilities == expectedCapabilities);
     }
 
     // Mapper with multiple virtual elements all coming from the same XInput controller element using a SplitMapper.
@@ -633,7 +633,7 @@ namespace XidiTest
     TEST_CASE(Mapper_Capabilities_SplitMapper)
     {
         constexpr EAxis kTestAxis = EAxis::Z;
-        constexpr SCapabilities kExpectedCapabilities = MakeExpectedCapabilities({
+        constexpr SCapabilities expectedCapabilities = MakeExpectedCapabilities({
             .axisCapabilities = {{.type = kTestAxis}},
             .numAxes = 1,
             .numButtons = 0,
@@ -648,8 +648,8 @@ namespace XidiTest
                     SElementIdentifier({.type = EElementType::Pov})))
         });
 
-        const SCapabilities kActualCapabilities = mapper.GetCapabilities();
-        TEST_ASSERT(kActualCapabilities == kExpectedCapabilities);
+        const SCapabilities actualCapabilities = mapper.GetCapabilities();
+        TEST_ASSERT(actualCapabilities == expectedCapabilities);
     }
 
     // Mapper that is empty except for defining force feedback actuators on an axis using single axis mode.
@@ -657,7 +657,7 @@ namespace XidiTest
     TEST_CASE(Mapper_Capabilities_ForceFeedbackOnly_SingleAxis)
     {
         constexpr EAxis kTestAxis = EAxis::Z;
-        constexpr SCapabilities kExpectedCapabilities = MakeExpectedCapabilities({
+        constexpr SCapabilities expectedCapabilities = MakeExpectedCapabilities({
             .axisCapabilities = {{.type = kTestAxis, .supportsForceFeedback = true}},
             .numAxes = 1,
             .numButtons = 0,
@@ -669,8 +669,8 @@ namespace XidiTest
         };
 
         const Mapper mapper({}, kTestActuatorMap);
-        const SCapabilities kActualCapabilities = mapper.GetCapabilities();
-        TEST_ASSERT(kActualCapabilities == kExpectedCapabilities);
+        const SCapabilities actualCapabilities = mapper.GetCapabilities();
+        TEST_ASSERT(actualCapabilities == expectedCapabilities);
     }
 
     // Mapper that is empty except for defining force feedback actuators on an axis using magnitude projection mode.
@@ -680,7 +680,7 @@ namespace XidiTest
         constexpr EAxis kTestAxisFirst = EAxis::Z;
         constexpr EAxis kTestAxisSecond = EAxis::RotZ;
 
-        constexpr SCapabilities kExpectedCapabilities = MakeExpectedCapabilities({
+        constexpr SCapabilities expectedCapabilities = MakeExpectedCapabilities({
             .axisCapabilities = {{.type = kTestAxisFirst, .supportsForceFeedback = true}, {.type = kTestAxisSecond, .supportsForceFeedback = true}},
             .numAxes = 2,
             .numButtons = 0,
@@ -692,14 +692,14 @@ namespace XidiTest
         };
 
         const Mapper mapper({}, kTestActuatorMap);
-        const SCapabilities kActualCapabilities = mapper.GetCapabilities();
-        TEST_ASSERT(kActualCapabilities == kExpectedCapabilities);
+        const SCapabilities actualCapabilities = mapper.GetCapabilities();
+        TEST_ASSERT(actualCapabilities == expectedCapabilities);
     }
 
     // StandardGamepad, a known and documented mapper.
     TEST_CASE(Mapper_Capabilities_StandardGamepad)
     {
-        constexpr SCapabilities kExpectedCapabilities = MakeExpectedCapabilities({
+        constexpr SCapabilities expectedCapabilities = MakeExpectedCapabilities({
             .axisCapabilities = {
                 {.type = EAxis::X, .supportsForceFeedback = true},
                 {.type = EAxis::Y, .supportsForceFeedback = true},
@@ -714,14 +714,14 @@ namespace XidiTest
         const Mapper* const mapper = Mapper::GetByName(L"StandardGamepad");
         TEST_ASSERT(nullptr != mapper);
 
-        const SCapabilities kActualCapabilities = mapper->GetCapabilities();
-        TEST_ASSERT(kActualCapabilities == kExpectedCapabilities);
+        const SCapabilities actualCapabilities = mapper->GetCapabilities();
+        TEST_ASSERT(actualCapabilities == expectedCapabilities);
     }
 
     // DigitalGamepad, a known and documented mapper.
     TEST_CASE(Mapper_Capabilities_DigitalGamepad)
     {
-        constexpr SCapabilities kExpectedCapabilities = MakeExpectedCapabilities({
+        constexpr SCapabilities expectedCapabilities = MakeExpectedCapabilities({
             .axisCapabilities = {
                 {.type = EAxis::X, .supportsForceFeedback = true},
                 {.type = EAxis::Y, .supportsForceFeedback = true},
@@ -736,14 +736,14 @@ namespace XidiTest
         const Mapper* const mapper = Mapper::GetByName(L"DigitalGamepad");
         TEST_ASSERT(nullptr != mapper);
 
-        const SCapabilities kActualCapabilities = mapper->GetCapabilities();
-        TEST_ASSERT(kActualCapabilities == kExpectedCapabilities);
+        const SCapabilities actualCapabilities = mapper->GetCapabilities();
+        TEST_ASSERT(actualCapabilities == expectedCapabilities);
     }
 
     // ExtendedGamepad, a known and documented mapper.
     TEST_CASE(Mapper_Capabilities_ExtendedGamepad)
     {
-        constexpr SCapabilities kExpectedCapabilities = MakeExpectedCapabilities({
+        constexpr SCapabilities expectedCapabilities = MakeExpectedCapabilities({
             .axisCapabilities = {
                 {.type = EAxis::X, .supportsForceFeedback = true},
                 {.type = EAxis::Y, .supportsForceFeedback = true},
@@ -760,14 +760,14 @@ namespace XidiTest
         const Mapper* const mapper = Mapper::GetByName(L"ExtendedGamepad");
         TEST_ASSERT(nullptr != mapper);
 
-        const SCapabilities kActualCapabilities = mapper->GetCapabilities();
-        TEST_ASSERT(kActualCapabilities == kExpectedCapabilities);
+        const SCapabilities actualCapabilities = mapper->GetCapabilities();
+        TEST_ASSERT(actualCapabilities == expectedCapabilities);
     }
 
     // XInputNative, a known and documented mapper.
     TEST_CASE(Mapper_Capabilities_XInputNative)
     {
-        constexpr SCapabilities kExpectedCapabilities = MakeExpectedCapabilities({
+        constexpr SCapabilities expectedCapabilities = MakeExpectedCapabilities({
             .axisCapabilities = {
                 {.type = EAxis::X, .supportsForceFeedback = true},
                 {.type = EAxis::Y, .supportsForceFeedback = true},
@@ -784,14 +784,14 @@ namespace XidiTest
         const Mapper* const mapper = Mapper::GetByName(L"XInputNative");
         TEST_ASSERT(nullptr != mapper);
 
-        const SCapabilities kActualCapabilities = mapper->GetCapabilities();
-        TEST_ASSERT(kActualCapabilities == kExpectedCapabilities);
+        const SCapabilities actualCapabilities = mapper->GetCapabilities();
+        TEST_ASSERT(actualCapabilities == expectedCapabilities);
     }
 
     // XInputSharedTriggers, a known and documented mapper.
     TEST_CASE(Mapper_Capabilities_XInputSharedTriggers)
     {
-        constexpr SCapabilities kExpectedCapabilities = MakeExpectedCapabilities({
+        constexpr SCapabilities expectedCapabilities = MakeExpectedCapabilities({
             .axisCapabilities = {
                 {.type = EAxis::X, .supportsForceFeedback = true},
                 {.type = EAxis::Y, .supportsForceFeedback = true},
@@ -807,8 +807,8 @@ namespace XidiTest
         const Mapper* const mapper = Mapper::GetByName(L"XInputSharedTriggers");
         TEST_ASSERT(nullptr != mapper);
 
-        const SCapabilities kActualCapabilities = mapper->GetCapabilities();
-        TEST_ASSERT(kActualCapabilities == kExpectedCapabilities);
+        const SCapabilities actualCapabilities = mapper->GetCapabilities();
+        TEST_ASSERT(actualCapabilities == expectedCapabilities);
     }
 
 
@@ -819,7 +819,7 @@ namespace XidiTest
     // The X and Y axes are removed.
     TEST_CASE(Mapper_Clone_StandardGamepad)
     {
-        constexpr SCapabilities kExpectedCapabilities = MakeExpectedCapabilities({
+        constexpr SCapabilities expectedCapabilities = MakeExpectedCapabilities({
             .axisCapabilities = {
                 {.type = EAxis::X, .supportsForceFeedback = true},
                 {.type = EAxis::Y, .supportsForceFeedback = true},
@@ -837,15 +837,15 @@ namespace XidiTest
         clonedElementMap.named.stickLeftY = nullptr;
 
         const Mapper mapper(std::move(clonedElementMap.named), clonedForceFeedbackActuatorMap.named);
-        const SCapabilities kActualCapabilities = mapper.GetCapabilities();
-        TEST_ASSERT(kActualCapabilities == kExpectedCapabilities);
+        const SCapabilities actualCapabilities = mapper.GetCapabilities();
+        TEST_ASSERT(actualCapabilities == expectedCapabilities);
     }
 
     // DigitalGamepad, a known and documented mapper.
     // The Z and RotZ axes are removed.
     TEST_CASE(Mapper_Clone_DigitalGamepad)
     {
-        constexpr SCapabilities kExpectedCapabilities = MakeExpectedCapabilities({
+        constexpr SCapabilities expectedCapabilities = MakeExpectedCapabilities({
             .axisCapabilities = {
                 {.type = EAxis::X, .supportsForceFeedback = true},
                 {.type = EAxis::Y, .supportsForceFeedback = true}
@@ -861,15 +861,15 @@ namespace XidiTest
         clonedElementMap.named.stickRightY = nullptr;
 
         const Mapper mapper(std::move(clonedElementMap.named), clonedForceFeedbackActuatorMap.named);
-        const SCapabilities kActualCapabilities = mapper.GetCapabilities();
-        TEST_ASSERT(kActualCapabilities == kExpectedCapabilities);
+        const SCapabilities actualCapabilities = mapper.GetCapabilities();
+        TEST_ASSERT(actualCapabilities == expectedCapabilities);
     }
 
     // ExtendedGamepad, a known and documented mapper.
     // The RotX and RotY axes are removed.
     TEST_CASE(Mapper_Clone_ExtendedGamepad)
     {
-        constexpr SCapabilities kExpectedCapabilities = MakeExpectedCapabilities({
+        constexpr SCapabilities expectedCapabilities = MakeExpectedCapabilities({
             .axisCapabilities = {
                 {.type = EAxis::X, .supportsForceFeedback = true},
                 {.type = EAxis::Y, .supportsForceFeedback = true},
@@ -887,15 +887,15 @@ namespace XidiTest
         clonedElementMap.named.triggerRT = nullptr;
 
         const Mapper mapper(std::move(clonedElementMap.named), clonedForceFeedbackActuatorMap.named);
-        const SCapabilities kActualCapabilities = mapper.GetCapabilities();
-        TEST_ASSERT(kActualCapabilities == kExpectedCapabilities);
+        const SCapabilities actualCapabilities = mapper.GetCapabilities();
+        TEST_ASSERT(actualCapabilities == expectedCapabilities);
     }
 
     // XInputNative, a known and documented mapper.
     // The POV is removed.
     TEST_CASE(Mapper_Clone_XInputNative)
     {
-        constexpr SCapabilities kExpectedCapabilities = MakeExpectedCapabilities({
+        constexpr SCapabilities expectedCapabilities = MakeExpectedCapabilities({
             .axisCapabilities = {
                 {.type = EAxis::X, .supportsForceFeedback = true},
                 {.type = EAxis::Y, .supportsForceFeedback = true},
@@ -917,15 +917,15 @@ namespace XidiTest
         clonedElementMap.named.dpadRight = nullptr;
 
         const Mapper mapper(std::move(clonedElementMap.named), clonedForceFeedbackActuatorMap.named);
-        const SCapabilities kActualCapabilities = mapper.GetCapabilities();
-        TEST_ASSERT(kActualCapabilities == kExpectedCapabilities);
+        const SCapabilities actualCapabilities = mapper.GetCapabilities();
+        TEST_ASSERT(actualCapabilities == expectedCapabilities);
     }
 
     // XInputSharedTriggers, a known and documented mapper.
     // The Z axis is removed.
     TEST_CASE(Mapper_Clone_XInputSharedTriggers)
     {
-        constexpr SCapabilities kExpectedCapabilities = MakeExpectedCapabilities({
+        constexpr SCapabilities expectedCapabilities = MakeExpectedCapabilities({
             .axisCapabilities = {
                 {.type = EAxis::X, .supportsForceFeedback = true},
                 {.type = EAxis::Y, .supportsForceFeedback = true},
@@ -944,8 +944,8 @@ namespace XidiTest
         clonedElementMap.named.triggerRT = nullptr; 
 
         const Mapper mapper(std::move(clonedElementMap.named), clonedForceFeedbackActuatorMap.named);
-        const SCapabilities kActualCapabilities = mapper.GetCapabilities();
-        TEST_ASSERT(kActualCapabilities == kExpectedCapabilities);
+        const SCapabilities actualCapabilities = mapper.GetCapabilities();
+        TEST_ASSERT(actualCapabilities == expectedCapabilities);
     }
 
 
@@ -980,11 +980,11 @@ namespace XidiTest
     {
         constexpr int32_t kInvertedInputValue = kAnalogValueMin;
         constexpr int32_t kNonInvertedInputValue = kAnalogValueMax;
-        constexpr int32_t kExpectedOutputValue = kAnalogValueMax;
+        constexpr int32_t expectedOutputValue = kAnalogValueMax;
         
         SState expectedState;
         ZeroMemory(&expectedState, sizeof(expectedState));
-        expectedState[EAxis::X] = kExpectedOutputValue;
+        expectedState[EAxis::X] = expectedOutputValue;
 
         const Mapper mapper({
             .stickLeftX = std::make_unique<AxisMapper>(EAxis::X),
@@ -1006,11 +1006,11 @@ namespace XidiTest
     {
         constexpr int32_t kInvertedInputValue = kAnalogValueMax;
         constexpr int32_t kNonInvertedInputValue = kAnalogValueMin;
-        constexpr int32_t kExpectedOutputValue = kAnalogValueMin;
+        constexpr int32_t expectedOutputValue = kAnalogValueMin;
         
         SState expectedState;
         ZeroMemory(&expectedState, sizeof(expectedState));
-        expectedState[EAxis::RotX] = kExpectedOutputValue;
+        expectedState[EAxis::RotX] = expectedOutputValue;
 
         const Mapper mapper({
             .stickLeftX = std::make_unique<AxisMapper>(EAxis::RotX),
@@ -1071,7 +1071,7 @@ namespace XidiTest
             .rightImpulseTrigger = {.isPresent = true, .mode = EActuatorMode::SingleAxis, .singleAxis = {.axis = EAxis::RotZ, .direction = EAxisDirection::Both}}
         };
 
-        const SPhysicalActuatorComponents kExpectedActuatorComponents = {
+        const SPhysicalActuatorComponents expectedActuatorComponents = {
             .leftMotor = ForceFeedbackActuatorValueVirtualToPhysical(kTestMagnitudeVector[(int)EAxis::X]),
             .rightMotor = ForceFeedbackActuatorValueVirtualToPhysical(kTestMagnitudeVector[(int)EAxis::Y]),
             .rightImpulseTrigger = ForceFeedbackActuatorValueVirtualToPhysical(kTestMagnitudeVector[(int)EAxis::RotZ])
@@ -1079,8 +1079,8 @@ namespace XidiTest
 
         const Mapper mapper({}, kTestActuatorMap);
 
-        const SPhysicalActuatorComponents kActualActuatorComponents = mapper.MapForceFeedbackVirtualToPhysical(kTestMagnitudeVector);
-        TEST_ASSERT(kActualActuatorComponents == kExpectedActuatorComponents);
+        const SPhysicalActuatorComponents actualActuatorComponents = mapper.MapForceFeedbackVirtualToPhysical(kTestMagnitudeVector);
+        TEST_ASSERT(actualActuatorComponents == expectedActuatorComponents);
     }
 
     // Nominal case of some actuators mapped in magnitude projection mode.
@@ -1097,15 +1097,15 @@ namespace XidiTest
             .rightImpulseTrigger = {.isPresent = false}
         };
 
-        const SPhysicalActuatorComponents kExpectedActuatorComponents = {
+        const SPhysicalActuatorComponents expectedActuatorComponents = {
             .leftMotor = ForceFeedbackActuatorValueVirtualToPhysical(kTestMagnitudeVector[(int)EAxis::X] * kSqrt2),
             .rightMotor = ForceFeedbackActuatorValueVirtualToPhysical(kTestMagnitudeVector[(int)EAxis::Y] * kSqrt2)
         };
 
         const Mapper mapper({}, kTestActuatorMap);
 
-        const SPhysicalActuatorComponents kActualActuatorComponents = mapper.MapForceFeedbackVirtualToPhysical(kTestMagnitudeVector);
-        TEST_ASSERT(kActualActuatorComponents == kExpectedActuatorComponents);
+        const SPhysicalActuatorComponents actualActuatorComponents = mapper.MapForceFeedbackVirtualToPhysical(kTestMagnitudeVector);
+        TEST_ASSERT(actualActuatorComponents == expectedActuatorComponents);
     }
 
     // Slightly more complex case of some actuators mapped and in all cases using only a single axis direction.
@@ -1120,7 +1120,7 @@ namespace XidiTest
             .rightImpulseTrigger = {.isPresent = true, .mode = EActuatorMode::SingleAxis, .singleAxis = {.axis = EAxis::RotZ, .direction = EAxisDirection::Negative}}
         };
 
-        const SPhysicalActuatorComponents kExpectedActuatorComponents = {
+        const SPhysicalActuatorComponents expectedActuatorComponents = {
             .leftMotor = ((kTestMagnitudeVector[(int)EAxis::X] > 0) ? ForceFeedbackActuatorValueVirtualToPhysical(kTestMagnitudeVector[(int)EAxis::X]) : (TPhysicalActuatorValue)0),
             .rightMotor = ((kTestMagnitudeVector[(int)EAxis::Y] > 0) ? ForceFeedbackActuatorValueVirtualToPhysical(kTestMagnitudeVector[(int)EAxis::Y]) : (TPhysicalActuatorValue)0),
             .rightImpulseTrigger = ((kTestMagnitudeVector[(int)EAxis::RotZ] < 0) ? ForceFeedbackActuatorValueVirtualToPhysical(kTestMagnitudeVector[(int)EAxis::RotZ]) : (TPhysicalActuatorValue)0)
@@ -1128,8 +1128,8 @@ namespace XidiTest
 
         const Mapper mapper({}, kTestActuatorMap);
 
-        const SPhysicalActuatorComponents kActualActuatorComponents = mapper.MapForceFeedbackVirtualToPhysical(kTestMagnitudeVector);
-        TEST_ASSERT(kActualActuatorComponents == kExpectedActuatorComponents);
+        const SPhysicalActuatorComponents actualActuatorComponents = mapper.MapForceFeedbackVirtualToPhysical(kTestMagnitudeVector);
+        TEST_ASSERT(actualActuatorComponents == expectedActuatorComponents);
     }
 
     // Saturation test in which the input magnitude vector is at extreme values and needs to be saturated.
@@ -1148,14 +1148,14 @@ namespace XidiTest
 
         const Mapper mapper({}, kTestActuatorMap);
 
-        const SPhysicalActuatorComponents kExpectedActuatorComponents = {
+        const SPhysicalActuatorComponents expectedActuatorComponents = {
             .leftMotor = std::numeric_limits<TPhysicalActuatorValue>::max()
         };
 
-        for (const auto& kTestMagnitudeVector : kTestMagnitudeVectors)
+        for (const auto& testMagnitudeVector : kTestMagnitudeVectors)
         {
-            const SPhysicalActuatorComponents kActualActuatorComponents = mapper.MapForceFeedbackVirtualToPhysical(kTestMagnitudeVector);
-            TEST_ASSERT(kActualActuatorComponents == kExpectedActuatorComponents);
+            const SPhysicalActuatorComponents actualActuatorComponents = mapper.MapForceFeedbackVirtualToPhysical(testMagnitudeVector);
+            TEST_ASSERT(actualActuatorComponents == expectedActuatorComponents);
         }
     }
 
@@ -1172,14 +1172,14 @@ namespace XidiTest
 
         const Mapper mapper({}, kTestActuatorMap);
 
-        for (const auto kTestGainValue : kTestGainValues)
+        for (const auto testGainValue : kTestGainValues)
         {
-            const SPhysicalActuatorComponents kExpectedActuatorComponents = {
-                .leftMotor = ForceFeedbackActuatorValueVirtualToPhysical(kTestMagnitudeVector[0], kTestGainValue)
+            const SPhysicalActuatorComponents expectedActuatorComponents = {
+                .leftMotor = ForceFeedbackActuatorValueVirtualToPhysical(kTestMagnitudeVector[0], testGainValue)
             };
 
-            const SPhysicalActuatorComponents kActualActuatorComponents = mapper.MapForceFeedbackVirtualToPhysical(kTestMagnitudeVector, kTestGainValue);
-            TEST_ASSERT(kActualActuatorComponents == kExpectedActuatorComponents);
+            const SPhysicalActuatorComponents actualActuatorComponents = mapper.MapForceFeedbackVirtualToPhysical(kTestMagnitudeVector, testGainValue);
+            TEST_ASSERT(actualActuatorComponents == expectedActuatorComponents);
         }
     }
 
@@ -1201,19 +1201,19 @@ namespace XidiTest
 
         const Mapper mapper({}, kTestActuatorMap);
 
-        for (const auto kTestGainValue : kTestGainValues)
+        for (const auto testGainValue : kTestGainValues)
         {
-            const TEffectValue kTestGainMultiplier = kTestGainValue / 10000;
-            const TEffectValue kExpectedActuatorValue = (TEffectValue)std::numeric_limits<TPhysicalActuatorValue>::max() * kTestGainMultiplier;
+            const TEffectValue testGainMultiplier = testGainValue / 10000;
+            const TEffectValue expectedActuatorValue = (TEffectValue)std::numeric_limits<TPhysicalActuatorValue>::max() * testGainMultiplier;
 
-            const SPhysicalActuatorComponents kExpectedActuatorComponents = {
-                .leftMotor = (TPhysicalActuatorValue)std::lround(kExpectedActuatorValue)
+            const SPhysicalActuatorComponents expectedActuatorComponents = {
+                .leftMotor = (TPhysicalActuatorValue)std::lround(expectedActuatorValue)
             };
 
-            for (const auto& kTestMagnitudeVector : kTestMagnitudeVectors)
+            for (const auto& testMagnitudeVector : kTestMagnitudeVectors)
             {
-                const SPhysicalActuatorComponents kActualActuatorComponents = mapper.MapForceFeedbackVirtualToPhysical(kTestMagnitudeVector, kTestGainValue);
-                TEST_ASSERT(kActualActuatorComponents == kExpectedActuatorComponents);
+                const SPhysicalActuatorComponents actualActuatorComponents = mapper.MapForceFeedbackVirtualToPhysical(testMagnitudeVector, testGainValue);
+                TEST_ASSERT(actualActuatorComponents == expectedActuatorComponents);
             }
         }
     }

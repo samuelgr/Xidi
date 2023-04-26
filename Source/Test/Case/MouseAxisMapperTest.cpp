@@ -227,17 +227,17 @@ namespace XidiTest
         maybeMouseMovementContribution = mockMouse.GetMovementContributionFromSource(kTargetAxis, kOpaqueSourceIdentifier);
         TEST_ASSERT(true == maybeMouseMovementContribution.has_value());
         TEST_ASSERT(maybeMouseMovementContribution.value() < kMouseMovementUnitsNeutral);
-        const int kPositiveMovementOffset = maybeMouseMovementContribution.value() - kMouseMovementUnitsNeutral;
+        const int positiveMovementOffset = maybeMouseMovementContribution.value() - kMouseMovementUnitsNeutral;
 
         // Verify that motion is in the positive direction when the button is pressed.
         mapper.ContributeFromButtonValue(unusedState, true, kOpaqueSourceIdentifier);
         maybeMouseMovementContribution = mockMouse.GetMovementContributionFromSource(kTargetAxis, kOpaqueSourceIdentifier);
         TEST_ASSERT(true == maybeMouseMovementContribution.has_value());
         TEST_ASSERT(maybeMouseMovementContribution.value() > kMouseMovementUnitsNeutral);
-        const int kNegativeMovementOffset = kMouseMovementUnitsNeutral - maybeMouseMovementContribution.value();
+        const int negativeMovementOffset = kMouseMovementUnitsNeutral - maybeMouseMovementContribution.value();
 
         // Verify that motions in both directions are equal in magnitude in response to a button press.
-        TEST_ASSERT(kPositiveMovementOffset == kNegativeMovementOffset);
+        TEST_ASSERT(positiveMovementOffset == negativeMovementOffset);
     }
 
     // Same as above, but for a half axis in the positive direction.
@@ -304,13 +304,13 @@ namespace XidiTest
         std::optional<int> maybeMouseMovementContribution;
         
         mapperPositive.ContributeFromButtonValue(unusedState, true, kOpaqueSourceIdentifier);
-        const int kPositiveMagnitude = mockMouse.GetMovementContributionFromSource(kTargetAxis, kOpaqueSourceIdentifier).value() - kMouseMovementUnitsNeutral;
+        const int positiveMagnitude = mockMouse.GetMovementContributionFromSource(kTargetAxis, kOpaqueSourceIdentifier).value() - kMouseMovementUnitsNeutral;
         
         mapperNegative.ContributeFromButtonValue(unusedState, true, kOpaqueSourceIdentifier);
-        const int kNegativeMagnitude = kMouseMovementUnitsNeutral - mockMouse.GetMovementContributionFromSource(kTargetAxis, kOpaqueSourceIdentifier).value();
+        const int negativeMagnitude = kMouseMovementUnitsNeutral - mockMouse.GetMovementContributionFromSource(kTargetAxis, kOpaqueSourceIdentifier).value();
 
         // Verify that the magnitudes in each direction are the same.
-        TEST_ASSERT(kPositiveMagnitude == kNegativeMagnitude);
+        TEST_ASSERT(positiveMagnitude == negativeMagnitude);
     }
 
     // Verifies the nominal behavior in which a mouse axis mapper is asked to contribute some arbitrary trigger value to a mouse movement axis.

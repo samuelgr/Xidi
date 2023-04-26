@@ -244,7 +244,7 @@ namespace Xidi
                 /// @return `true` if the direction initialization operation succeeded, `false` otherwise.
                 inline bool InitializeDefaultDirection(void)
                 {
-                    static const TEffectValue kDefaultCartesianCoordinates[] = {1};
+                    static constexpr TEffectValue kDefaultCartesianCoordinates[] = {1};
                     return commonParameters.direction.SetDirectionUsingCartesian(kDefaultCartesianCoordinates, _countof(kDefaultCartesianCoordinates));
                 }
 
@@ -262,13 +262,13 @@ namespace Xidi
                 /// @return Ordered magnitude component vector that corresponds to the unordered magnitude component vector provided as input assuming this effect is completely defined, and any other value otherwise.
                 inline TOrderedMagnitudeComponents OrderMagnitudeComponents(TMagnitudeComponents unorderedMagnitudeComponents) const
                 {
-                    const SAssociatedAxes& kAssociatedAxes = commonParameters.associatedAxes.value();
+                    const SAssociatedAxes& associatedAxes = commonParameters.associatedAxes.value();
 
                     TOrderedMagnitudeComponents orderedMagnitudeComponents = {};
 
                     // Compare with the number of axes in the direction vector because it is allowed to be less, but not greater, than the number of axes in the associated axis array.
                     for (int i = 0; i < commonParameters.direction.GetNumAxes(); ++i)
-                        orderedMagnitudeComponents[(int)kAssociatedAxes.type[i]] = unorderedMagnitudeComponents[i];
+                        orderedMagnitudeComponents[(int)associatedAxes.type[i]] = unorderedMagnitudeComponents[i];
 
                     return orderedMagnitudeComponents;
                 }

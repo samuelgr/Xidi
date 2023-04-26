@@ -478,11 +478,11 @@ namespace Xidi
                 unsigned int charIndex = kNumDigitsMax;
                 while (i > 0)
                 {
-                    const IntegerType kQuotient = (i / 10);
-                    const IntegerType kRemainder = (i % 10);
+                    const IntegerType quotient = (i / 10);
+                    const IntegerType remainder = (i % 10);
 
-                    i = kQuotient;
-                    digits[--charIndex] = (L'0' + (wchar_t)kRemainder);
+                    i = quotient;
+                    digits[--charIndex] = (L'0' + (wchar_t)remainder);
                 }
 
                 return (*this += &digits[charIndex]);

@@ -156,13 +156,13 @@ namespace Xidi
 
             bool DirectionVector::SetDirectionUsingCartesian(const TEffectValue* coordinates, int numCoordinates)
             {
-                const int kNewNumAxes = numCoordinates;
-                if (false == IsAxisCountValid(kNewNumAxes))
+                const int newNumAxes = numCoordinates;
+                if (false == IsAxisCountValid(newNumAxes))
                     return false;
 
                 // If all the components are 0 then direction is considered unimportant and the vector is marked as being omnidirectional.
                 bool cartesianDirectionIsNonZero = false;
-                for (int i = 0; i < kNewNumAxes; ++i)
+                for (int i = 0; i < newNumAxes; ++i)
                 {
                     if (0 != coordinates[i])
                     {
@@ -173,25 +173,25 @@ namespace Xidi
 
                 if (false == cartesianDirectionIsNonZero)
                 {
-                    SetOmnidirectional(kNewNumAxes, ECoordinateSystem::Cartesian);
+                    SetOmnidirectional(newNumAxes, ECoordinateSystem::Cartesian);
                     return true;
                 }
 
-                numAxes = kNewNumAxes;
+                numAxes = newNumAxes;
                 isOmnidirectional = false;
                 originalCoordinateSystem = ECoordinateSystem::Cartesian;
 
                 // Set the Cartesian coordinate representation.
-                for (int i = 0; i < kNewNumAxes; ++i)
+                for (int i = 0; i < newNumAxes; ++i)
                     cartesian[i] = coordinates[i];
 
                 // Convert to polar if that makes sense.
                 // The conversion is a little bit tricky because the polar angle is measured from (0,-1) in the direction of (1,0).
-                if (2 == kNewNumAxes)
+                if (2 == newNumAxes)
                     polar = TrigonometryArcTanOfRatio(cartesian[0], -cartesian[1]);
 
                 // Convert to spherical if that makes sense.
-                if (2 <= kNewNumAxes)
+                if (2 <= newNumAxes)
                 {
                     // This algorithm basically adds one dimension at a time to the spherical coordinate representation. It works with successive 90-degree triangles, one for each dimension being added.
                     // Each time we add a dimension we get an angle and we need to compute the angle using inverse tangent with base and height dimensions as input.
@@ -203,7 +203,7 @@ namespace Xidi
                     TEffectValue dimensionalBase = cartesian[0];
                     spherical[0] = TrigonometryArcTanOfRatio(cartesian[1], dimensionalBase);
 
-                    for (int i = 1; i < (kNewNumAxes - 1); ++i)
+                    for (int i = 1; i < (newNumAxes - 1); ++i)
                     {
                         dimensionalBase = sqrt(pow(dimensionalBase, (TEffectValue)2) + pow(cartesian[i], (TEffectValue)2));
                         spherical[i] = TrigonometryArcTanOfRatio(cartesian[i + 1], dimensionalBase);
@@ -217,14 +217,14 @@ namespace Xidi
 
             bool DirectionVector::SetDirectionUsingPolar(const TEffectValue* coordinates, int numCoordinates)
             {
-                const int kNewNumAxes = 1 + numCoordinates;
-                if (2 != kNewNumAxes)
+                const int newNumAxes = 1 + numCoordinates;
+                if (2 != newNumAxes)
                     return false;
 
                 if (false == IsAngleValid(coordinates[0]))
                     return false;
 
-                numAxes = kNewNumAxes;
+                numAxes = newNumAxes;
                 isOmnidirectional = false;
                 originalCoordinateSystem = ECoordinateSystem::Polar;
 
@@ -252,8 +252,8 @@ namespace Xidi
 
             bool DirectionVector::SetDirectionUsingSpherical(const TEffectValue* coordinates, int numCoordinates)
             {
-                const int kNewNumAxes = 1 + numCoordinates;
-                if (false == IsAxisCountValid(kNewNumAxes))
+                const int newNumAxes = 1 + numCoordinates;
+                if (false == IsAxisCountValid(newNumAxes))
                     return false;
 
                 for (int i = 0; i < numCoordinates; ++i)
@@ -262,7 +262,7 @@ namespace Xidi
                         return false;
                 }
 
-                numAxes = kNewNumAxes;
+                numAxes = newNumAxes;
                 isOmnidirectional = false;
                 originalCoordinateSystem = ECoordinateSystem::Spherical;
 
@@ -277,7 +277,7 @@ namespace Xidi
                         spherical[i] = coordinates[i];
 
                     // Convert to polar if that makes sense.
-                    if (2 == kNewNumAxes)
+                    if (2 == newNumAxes)
                     {
                         // As with converting from polar to spherical, this is just an arithmetic transformation.
                         polar = spherical[0] - 27000;

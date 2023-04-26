@@ -62,10 +62,10 @@ namespace XidiTest
 
         for (TEffectTimeMs t = 0; t <= (10 * MockPeriodicEffect::kDegreeHundredthsPerCycle); t += 100)
         {
-            const TEffectValue kExpectedPhase = (TEffectValue)(t % MockPeriodicEffect::kDegreeHundredthsPerCycle);
-            const TEffectValue kActualPhase = (TEffectValue)effect.ComputePhase(t);
+            const TEffectValue expectedPhase = (TEffectValue)(t % MockPeriodicEffect::kDegreeHundredthsPerCycle);
+            const TEffectValue actualPhase = (TEffectValue)effect.ComputePhase(t);
 
-            TEST_ASSERT(kActualPhase == kExpectedPhase);
+            TEST_ASSERT(actualPhase == expectedPhase);
         }
     }
 
@@ -77,16 +77,16 @@ namespace XidiTest
 
         MockPeriodicEffect effect;
 
-        for (const auto kTestPhaseOffset : kTestPhaseOffsets)
+        for (const auto testPhaseOffset : kTestPhaseOffsets)
         {
-            TEST_ASSERT(true == effect.SetTypeSpecificParameters({.phase = (TEffectValue)kTestPhaseOffset, .period = MockPeriodicEffect::kDegreeHundredthsPerCycle}));
+            TEST_ASSERT(true == effect.SetTypeSpecificParameters({.phase = (TEffectValue)testPhaseOffset, .period = MockPeriodicEffect::kDegreeHundredthsPerCycle}));
 
             for (TEffectTimeMs t = 0; t <= MockPeriodicEffect::kDegreeHundredthsPerCycle; t += 100)
             {
-                const TEffectValue kExpectedPhase = (TEffectValue)((t + kTestPhaseOffset) % MockPeriodicEffect::kDegreeHundredthsPerCycle);
-                const TEffectValue kActualPhase = (TEffectValue)effect.ComputePhase(t);
+                const TEffectValue expectedPhase = (TEffectValue)((t + testPhaseOffset) % MockPeriodicEffect::kDegreeHundredthsPerCycle);
+                const TEffectValue actualPhase = (TEffectValue)effect.ComputePhase(t);
 
-                TEST_ASSERT(kActualPhase == kExpectedPhase);
+                TEST_ASSERT(actualPhase == expectedPhase);
             }
         }
     }
@@ -101,13 +101,13 @@ namespace XidiTest
         MockPeriodicEffect effect;
         TEST_ASSERT(true == effect.SetDuration(kTestEffectDuration));
      
-        for (const auto kTestEffectOffset : kTestEffectOffsets)
+        for (const auto testEffectOffset : kTestEffectOffsets)
         {
-            TEST_ASSERT(true == effect.SetTypeSpecificParameters({.amplitude = kTestEffectAmplitude, .offset = kTestEffectOffset, .period = kTestEffectDuration}));
+            TEST_ASSERT(true == effect.SetTypeSpecificParameters({.amplitude = kTestEffectAmplitude, .offset = testEffectOffset, .period = kTestEffectDuration}));
 
-            const TEffectValue kExpectedMagnitude = kTestEffectOffset + (kTestEffectAmplitude * effect.WaveformAmplitude(kTestEffectEvaluationTime));
-            const TEffectValue kActualMagnitude = effect.ComputeMagnitude(kTestEffectEvaluationTime);
-            TEST_ASSERT(kActualMagnitude == kExpectedMagnitude);
+            const TEffectValue expectedMagnitude = testEffectOffset + (kTestEffectAmplitude * effect.WaveformAmplitude(kTestEffectEvaluationTime));
+            const TEffectValue actualMagnitude = effect.ComputeMagnitude(kTestEffectEvaluationTime);
+            TEST_ASSERT(actualMagnitude == expectedMagnitude);
         }
     }
 
@@ -126,13 +126,13 @@ namespace XidiTest
         TEST_ASSERT(true == effect.SetDuration(kTestEffectDuration));
         TEST_ASSERT(true == effect.SetEnvelope(kTestEffectEnvelope));
 
-        for (const auto kTestEffectOffset : kTestEffectOffsets)
+        for (const auto testEffectOffset : kTestEffectOffsets)
         {
-            TEST_ASSERT(true == effect.SetTypeSpecificParameters({.amplitude = kTestEffectAmplitude, .offset = kTestEffectOffset, .period = kTestEffectDuration}));
+            TEST_ASSERT(true == effect.SetTypeSpecificParameters({.amplitude = kTestEffectAmplitude, .offset = testEffectOffset, .period = kTestEffectDuration}));
 
-            const TEffectValue kExpectedMagnitude = kTestEffectOffset + (kTestEffectAmplitude * kTestEffectEnvelopeMultiplier * effect.WaveformAmplitude(kTestEffectEvaluationTime));
-            const TEffectValue kActualMagnitude = effect.ComputeMagnitude(kTestEffectEvaluationTime);
-            TEST_ASSERT(kActualMagnitude == kExpectedMagnitude);
+            const TEffectValue expectedMagnitude = testEffectOffset + (kTestEffectAmplitude * kTestEffectEnvelopeMultiplier * effect.WaveformAmplitude(kTestEffectEvaluationTime));
+            const TEffectValue actualMagnitude = effect.ComputeMagnitude(kTestEffectEvaluationTime);
+            TEST_ASSERT(actualMagnitude == expectedMagnitude);
         }
     }
 
@@ -154,10 +154,10 @@ namespace XidiTest
 
         SawtoothDownEffect effect;
 
-        for (const auto kTest : kTestData)
+        for (const auto testData : kTestData)
         {
-            const TEffectValue kActualWaveformAmplitude = effect.WaveformAmplitude(kTest.inputPhase);
-            TEST_ASSERT(true == TEffectValueEqual(kActualWaveformAmplitude, kTest.expectedWaveformAmplitude));
+            const TEffectValue actualWaveformAmplitude = effect.WaveformAmplitude(testData.inputPhase);
+            TEST_ASSERT(true == TEffectValueEqual(actualWaveformAmplitude, testData.expectedWaveformAmplitude));
         }
     }
 
@@ -179,10 +179,10 @@ namespace XidiTest
 
         SawtoothUpEffect effect;
 
-        for (const auto kTest : kTestData)
+        for (const auto testData : kTestData)
         {
-            const TEffectValue kActualWaveformAmplitude = effect.WaveformAmplitude(kTest.inputPhase);
-            TEST_ASSERT(true == TEffectValueEqual(kActualWaveformAmplitude, kTest.expectedWaveformAmplitude));
+            const TEffectValue actualWaveformAmplitude = effect.WaveformAmplitude(testData.inputPhase);
+            TEST_ASSERT(true == TEffectValueEqual(actualWaveformAmplitude, testData.expectedWaveformAmplitude));
         }
     }
 
@@ -206,10 +206,10 @@ namespace XidiTest
 
         SineWaveEffect effect;
 
-        for (const auto kTest : kTestData)
+        for (const auto testData : kTestData)
         {
-            const TEffectValue kActualWaveformAmplitude = effect.WaveformAmplitude(kTest.inputPhase);
-            TEST_ASSERT(true == TEffectValueEqual(kActualWaveformAmplitude, kTest.expectedWaveformAmplitude));
+            const TEffectValue actualWaveformAmplitude = effect.WaveformAmplitude(testData.inputPhase);
+            TEST_ASSERT(true == TEffectValueEqual(actualWaveformAmplitude, testData.expectedWaveformAmplitude));
         }
     }
 
@@ -231,10 +231,10 @@ namespace XidiTest
 
         SquareWaveEffect effect;
 
-        for (const auto kTest : kTestData)
+        for (const auto testData : kTestData)
         {
-            const TEffectValue kActualWaveformAmplitude = effect.WaveformAmplitude(kTest.inputPhase);
-            TEST_ASSERT(true == TEffectValueEqual(kActualWaveformAmplitude, kTest.expectedWaveformAmplitude));
+            const TEffectValue actualWaveformAmplitude = effect.WaveformAmplitude(testData.inputPhase);
+            TEST_ASSERT(true == TEffectValueEqual(actualWaveformAmplitude, testData.expectedWaveformAmplitude));
         }
     }
 
@@ -256,10 +256,10 @@ namespace XidiTest
 
         TriangleWaveEffect effect;
 
-        for (const auto kTest : kTestData)
+        for (const auto testData : kTestData)
         {
-            const TEffectValue kActualWaveformAmplitude = effect.WaveformAmplitude(kTest.inputPhase);
-            TEST_ASSERT(true == TEffectValueEqual(kActualWaveformAmplitude, kTest.expectedWaveformAmplitude));
+            const TEffectValue actualWaveformAmplitude = effect.WaveformAmplitude(testData.inputPhase);
+            TEST_ASSERT(true == TEffectValueEqual(actualWaveformAmplitude, testData.expectedWaveformAmplitude));
         }
     }
 }

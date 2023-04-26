@@ -394,7 +394,7 @@ namespace XidiTest
             L"Axis(RotX, +), Pov(Down)",
             L"Pov(Up), Pov(Down), Pov(Left), Pov(Right)"
         };
-        const std::vector<SElementIdentifier> kExpectedElements[] = {
+        const std::vector<SElementIdentifier> expectedElements[] = {
             {},
             {{.type = EElementType::Button, .button = EButton::B1}, {.type = EElementType::Button, .button = EButton::B2}, {.type = EElementType::Button, .button = EButton::B3}, {.type = EElementType::Button, .button = EButton::B4}},
             {{.type = EElementType::Axis, .axis = EAxis::X}, {.type = EElementType::Axis, .axis = EAxis::RotX}},
@@ -402,24 +402,24 @@ namespace XidiTest
             {{.type = EElementType::Axis, .axis = EAxis::RotX}, {.type = EElementType::Pov}},
             {{.type = EElementType::Pov}, {.type = EElementType::Pov}, {.type = EElementType::Pov}, {.type = EElementType::Pov}}
         };
-        static_assert(_countof(kExpectedElements) == _countof(kCompoundMapperTestStrings), "Mismatch between input and expected output array lengths.");
+        static_assert(_countof(expectedElements) == _countof(kCompoundMapperTestStrings), "Mismatch between input and expected output array lengths.");
 
         for (int i = 0; i < _countof(kCompoundMapperTestStrings); ++i)
         {
             ElementMapperOrError maybeCompoundMapper = MapperParser::MakeCompoundMapper(kCompoundMapperTestStrings[i]);
 
             TEST_ASSERT(true == maybeCompoundMapper.HasValue());
-            TEST_ASSERT(kExpectedElements[i].size() == maybeCompoundMapper.Value()->GetTargetElementCount());
+            TEST_ASSERT(expectedElements[i].size() == maybeCompoundMapper.Value()->GetTargetElementCount());
 
-            for (unsigned int j = 0; j < kExpectedElements[i].size(); ++j)
+            for (unsigned int j = 0; j < expectedElements[i].size(); ++j)
             {
-                const SElementIdentifier kExpectedElement = kExpectedElements[i][j];
+                const SElementIdentifier expectedElement = expectedElements[i][j];
 
-                const std::optional<SElementIdentifier> kMaybeActualElement = maybeCompoundMapper.Value()->GetTargetElementAt(j);
-                TEST_ASSERT(true == kMaybeActualElement.has_value());
+                const std::optional<SElementIdentifier> maybeActualElement = maybeCompoundMapper.Value()->GetTargetElementAt(j);
+                TEST_ASSERT(true == maybeActualElement.has_value());
 
-                const SElementIdentifier kActualElement = kMaybeActualElement.value();
-                TEST_ASSERT(kActualElement == kExpectedElement);
+                const SElementIdentifier actualElement = maybeActualElement.value();
+                TEST_ASSERT(actualElement == expectedElement);
             }
         }
     }
@@ -484,13 +484,13 @@ namespace XidiTest
             L"   Button(10) ",
             L"Axis(RotX, +)"
         };
-        constexpr SElementIdentifier kExpectedElements[] = {
+        constexpr SElementIdentifier expectedElements[] = {
             {.type = EElementType::Axis,   .axis = EAxis::X},
             {.type = EElementType::Pov},
             {.type = EElementType::Button, .button = EButton::B10},
             {.type = EElementType::Axis,   .axis = EAxis::RotX},
         };
-        static_assert(_countof(kExpectedElements) == _countof(kInvertMapperTestStrings), "Mismatch between input and expected output array lengths.");
+        static_assert(_countof(expectedElements) == _countof(kInvertMapperTestStrings), "Mismatch between input and expected output array lengths.");
 
         for (int i = 0; i < _countof(kInvertMapperTestStrings); ++i)
         {
@@ -498,7 +498,7 @@ namespace XidiTest
 
             TEST_ASSERT(true == maybeInvertMapper.HasValue());
             TEST_ASSERT(1 == maybeInvertMapper.Value()->GetTargetElementCount());
-            TEST_ASSERT(kExpectedElements[i] == maybeInvertMapper.Value()->GetTargetElementAt(0));
+            TEST_ASSERT(expectedElements[i] == maybeInvertMapper.Value()->GetTargetElementAt(0));
         }
     }
 
@@ -538,9 +538,9 @@ namespace XidiTest
 
             TEST_ASSERT(nullptr != dynamic_cast<KeyboardMapper*>(maybeKeyboardMapper.Value().get()));
 
-            const TKeyIdentifier kExpectedTargetKey = keyboardMapperTestItem.second;
-            const TKeyIdentifier kActualTargetKey = dynamic_cast<KeyboardMapper*>(maybeKeyboardMapper.Value().get())->GetTargetKey();
-            TEST_ASSERT(kActualTargetKey == kExpectedTargetKey);
+            const TKeyIdentifier expectedTargetKey = keyboardMapperTestItem.second;
+            const TKeyIdentifier actualTargetKey = dynamic_cast<KeyboardMapper*>(maybeKeyboardMapper.Value().get())->GetTargetKey();
+            TEST_ASSERT(actualTargetKey == expectedTargetKey);
         }
     }
 
@@ -625,9 +625,9 @@ namespace XidiTest
 
             TEST_ASSERT(nullptr != dynamic_cast<MouseButtonMapper*>(maybeMouseButtonMapper.Value().get()));
 
-            const EMouseButton kExpectedTargetMouseButton = mouseButtonMapperTestItem.second;
-            const EMouseButton kActualTargetMouseButton = dynamic_cast<MouseButtonMapper*>(maybeMouseButtonMapper.Value().get())->GetMouseButton();
-            TEST_ASSERT(kActualTargetMouseButton == kExpectedTargetMouseButton);
+            const EMouseButton expectedTargetMouseButton = mouseButtonMapperTestItem.second;
+            const EMouseButton actualTargetMouseButton = dynamic_cast<MouseButtonMapper*>(maybeMouseButtonMapper.Value().get())->GetMouseButton();
+            TEST_ASSERT(actualTargetMouseButton == expectedTargetMouseButton);
         }
     }
 
@@ -701,12 +701,12 @@ namespace XidiTest
             L" Pov(  Up  )  ,   Button  ( 10   ) ",
             L"Axis(RotX, +), Pov(Down)"
         };
-        constexpr std::pair<SElementIdentifier, SElementIdentifier> kExpectedElements[] = {
+        constexpr std::pair<SElementIdentifier, SElementIdentifier> expectedElements[] = {
             {{.type = EElementType::Axis,   .axis = EAxis::X},      {.type = EElementType::Axis,    .axis = EAxis::RotX}},
             {{.type = EElementType::Pov},                           {.type = EElementType::Button,  .button = EButton::B10}},
             {{.type = EElementType::Axis,   .axis = EAxis::RotX},   {.type = EElementType::Pov}}
         };
-        static_assert(_countof(kExpectedElements) == _countof(kSplitMapperTestStrings), "Mismatch between input and expected output array lengths.");
+        static_assert(_countof(expectedElements) == _countof(kSplitMapperTestStrings), "Mismatch between input and expected output array lengths.");
 
         for (int i = 0; i < _countof(kSplitMapperTestStrings); ++i)
         {
@@ -714,8 +714,8 @@ namespace XidiTest
 
             TEST_ASSERT(true == maybeSplitMapper.HasValue());
             TEST_ASSERT(2 == maybeSplitMapper.Value()->GetTargetElementCount());
-            TEST_ASSERT(kExpectedElements[i].first == maybeSplitMapper.Value()->GetTargetElementAt(0));
-            TEST_ASSERT(kExpectedElements[i].second == maybeSplitMapper.Value()->GetTargetElementAt(1));
+            TEST_ASSERT(expectedElements[i].first == maybeSplitMapper.Value()->GetTargetElementAt(0));
+            TEST_ASSERT(expectedElements[i].second == maybeSplitMapper.Value()->GetTargetElementAt(1));
         }
     }
 
@@ -766,24 +766,24 @@ namespace XidiTest
             L"Axis(Z, +)",
             L"Axis(RX, negative), Button(3)"
         };
-        const SElementMapperParseResult kExpectedParseResults[] = {
+        const SElementMapperParseResult expectedParseResults[] = {
             {.maybeElementMapper = std::make_unique<AxisMapper>(EAxis::X)},
             {.maybeElementMapper = std::make_unique<AxisMapper>(EAxis::Y, EAxisDirection::Both)},
             {.maybeElementMapper = std::make_unique<AxisMapper>(EAxis::Z, EAxisDirection::Positive)},
             {.maybeElementMapper = std::make_unique<AxisMapper>(EAxis::RotX, EAxisDirection::Negative), .remainingString = L"Button(3)"},
         };
-        static_assert(_countof(kExpectedParseResults) == _countof(kTestStrings), "Mismatch between input and expected output array lengths.");
+        static_assert(_countof(expectedParseResults) == _countof(kTestStrings), "Mismatch between input and expected output array lengths.");
 
         for (int i = 0; i < _countof(kTestStrings); ++i)
         {
             SElementMapperParseResult actualParseResult = MapperParser::ParseSingleElementMapper(kTestStrings[i]);
-            VerifyParseResultsAreEquivalent(actualParseResult, kExpectedParseResults[i]);
+            VerifyParseResultsAreEquivalent(actualParseResult, expectedParseResults[i]);
 
             TEST_ASSERT(nullptr != dynamic_cast<AxisMapper*>(actualParseResult.maybeElementMapper.Value().get()));
 
-            const EAxisDirection kExpectedDirection = dynamic_cast<AxisMapper*>(kExpectedParseResults[i].maybeElementMapper.Value().get())->GetAxisDirection();
-            const EAxisDirection kActualDirection = dynamic_cast<AxisMapper*>(actualParseResult.maybeElementMapper.Value().get())->GetAxisDirection();
-            TEST_ASSERT(kActualDirection == kExpectedDirection);
+            const EAxisDirection expectedDirection = dynamic_cast<AxisMapper*>(expectedParseResults[i].maybeElementMapper.Value().get())->GetAxisDirection();
+            const EAxisDirection actualDirection = dynamic_cast<AxisMapper*>(actualParseResult.maybeElementMapper.Value().get())->GetAxisDirection();
+            TEST_ASSERT(actualDirection == expectedDirection);
         }
     }
 
@@ -795,17 +795,17 @@ namespace XidiTest
             L"  Button   (    10   )  ",
             L"Button(1), Button(3)"
         };
-        const SElementMapperParseResult kExpectedParseResults[] = {
+        const SElementMapperParseResult expectedParseResults[] = {
             {.maybeElementMapper = std::make_unique<ButtonMapper>(EButton::B10)},
             {.maybeElementMapper = std::make_unique<ButtonMapper>(EButton::B10)},
             {.maybeElementMapper = std::make_unique<ButtonMapper>(EButton::B1),     .remainingString = L"Button(3)"}
         };
-        static_assert(_countof(kExpectedParseResults) == _countof(kTestStrings), "Mismatch between input and expected output array lengths.");
+        static_assert(_countof(expectedParseResults) == _countof(kTestStrings), "Mismatch between input and expected output array lengths.");
 
         for (int i = 0; i < _countof(kTestStrings); ++i)
         {
             SElementMapperParseResult actualParseResult = MapperParser::ParseSingleElementMapper(kTestStrings[i]);
-            VerifyParseResultsAreEquivalent(actualParseResult, kExpectedParseResults[i]);
+            VerifyParseResultsAreEquivalent(actualParseResult, expectedParseResults[i]);
         }
     }
 
@@ -819,7 +819,7 @@ namespace XidiTest
             L"Compound( Button(1), Button(2), Button(3), Button(4), Button(5), Button(6), Button(7), Button(8) )",
             L"Compound( Button(1), Button(2), Button(3), Button(4), Keyboard(5), Keyboard(6), Keyboard(7), Keyboard(8) )"
         };
-        const SElementMapperParseResult kExpectedParseResults[] = {
+        const SElementMapperParseResult expectedParseResults[] = {
             {.maybeElementMapper = std::make_unique<CompoundMapper>(CompoundMapper::TElementMappers())},
             {.maybeElementMapper = std::make_unique<CompoundMapper>(CompoundMapper::TElementMappers({
                 std::make_unique<ButtonMapper>(EButton::B10),
@@ -847,20 +847,20 @@ namespace XidiTest
                 std::make_unique<KeyboardMapper>(DIK_7),
                 std::make_unique<KeyboardMapper>(DIK_8)}))}
         };
-        static_assert(_countof(kExpectedParseResults) == _countof(kTestStrings), "Mismatch between input and expected output array lengths.");
+        static_assert(_countof(expectedParseResults) == _countof(kTestStrings), "Mismatch between input and expected output array lengths.");
 
         for (int i = 0; i < _countof(kTestStrings); ++i)
         {
             SElementMapperParseResult actualParseResult = MapperParser::ParseSingleElementMapper(kTestStrings[i]);
-            VerifyParseResultsAreEquivalent(actualParseResult, kExpectedParseResults[i]);
+            VerifyParseResultsAreEquivalent(actualParseResult, expectedParseResults[i]);
 
             TEST_ASSERT(nullptr != dynamic_cast<CompoundMapper*>(actualParseResult.maybeElementMapper.Value().get()));
 
-            const CompoundMapper::TElementMappers& kExpectedElementMappers = dynamic_cast<CompoundMapper*>(kExpectedParseResults[i].maybeElementMapper.Value().get())->GetElementMappers();
-            const CompoundMapper::TElementMappers& kActualElementMappers = dynamic_cast<CompoundMapper*>(actualParseResult.maybeElementMapper.Value().get())->GetElementMappers();
+            const CompoundMapper::TElementMappers& expectedElementMappers = dynamic_cast<CompoundMapper*>(expectedParseResults[i].maybeElementMapper.Value().get())->GetElementMappers();
+            const CompoundMapper::TElementMappers& actualElementMappers = dynamic_cast<CompoundMapper*>(actualParseResult.maybeElementMapper.Value().get())->GetElementMappers();
 
-            for (size_t j = 0; j < kExpectedElementMappers.size(); ++j)
-                VerifyElementMapperPointersAreEquivalent(kActualElementMappers[j].get(), kExpectedElementMappers[j].get());
+            for (size_t j = 0; j < expectedElementMappers.size(); ++j)
+                VerifyElementMapperPointersAreEquivalent(actualElementMappers[j].get(), expectedElementMappers[j].get());
         }
     }
 
@@ -874,24 +874,24 @@ namespace XidiTest
             L"DigitalAxis(Z, +)",
             L"DigitalAxis(RX, negative), Button(3)"
         };
-        const SElementMapperParseResult kExpectedParseResults[] = {
+        const SElementMapperParseResult expectedParseResults[] = {
             {.maybeElementMapper = std::make_unique<DigitalAxisMapper>(EAxis::X)},
             {.maybeElementMapper = std::make_unique<DigitalAxisMapper>(EAxis::Y, EAxisDirection::Both)},
             {.maybeElementMapper = std::make_unique<DigitalAxisMapper>(EAxis::Z, EAxisDirection::Positive)},
             {.maybeElementMapper = std::make_unique<DigitalAxisMapper>(EAxis::RotX, EAxisDirection::Negative), .remainingString = L"Button(3)"},
         };
-        static_assert(_countof(kExpectedParseResults) == _countof(kTestStrings), "Mismatch between input and expected output array lengths.");
+        static_assert(_countof(expectedParseResults) == _countof(kTestStrings), "Mismatch between input and expected output array lengths.");
 
         for (int i = 0; i < _countof(kTestStrings); ++i)
         {
             SElementMapperParseResult actualParseResult = MapperParser::ParseSingleElementMapper(kTestStrings[i]);
-            VerifyParseResultsAreEquivalent(actualParseResult, kExpectedParseResults[i]);
+            VerifyParseResultsAreEquivalent(actualParseResult, expectedParseResults[i]);
 
             TEST_ASSERT(nullptr != dynamic_cast<DigitalAxisMapper*>(actualParseResult.maybeElementMapper.Value().get()));
 
-            const EAxisDirection kExpectedDirection = dynamic_cast<DigitalAxisMapper*>(kExpectedParseResults[i].maybeElementMapper.Value().get())->GetAxisDirection();
-            const EAxisDirection kActualDirection = dynamic_cast<DigitalAxisMapper*>(actualParseResult.maybeElementMapper.Value().get())->GetAxisDirection();
-            TEST_ASSERT(kActualDirection == kExpectedDirection);
+            const EAxisDirection expectedDirection = dynamic_cast<DigitalAxisMapper*>(expectedParseResults[i].maybeElementMapper.Value().get())->GetAxisDirection();
+            const EAxisDirection actualDirection = dynamic_cast<DigitalAxisMapper*>(actualParseResult.maybeElementMapper.Value().get())->GetAxisDirection();
+            TEST_ASSERT(actualDirection == expectedDirection);
         }
     }
 
@@ -903,25 +903,25 @@ namespace XidiTest
             L"Invert(Pov(Right))",
             L"Invert( Split(Button(10), Button(12)) )"
         };
-        const SElementMapperParseResult kExpectedParseResults[] = {
+        const SElementMapperParseResult expectedParseResults[] = {
             {.maybeElementMapper = std::make_unique<InvertMapper>(std::make_unique<AxisMapper>(EAxis::X))},
             {.maybeElementMapper = std::make_unique<InvertMapper>(std::make_unique<PovMapper>(EPovDirection::Right))},
             {.maybeElementMapper = std::make_unique<InvertMapper>(std::make_unique<SplitMapper>(
                 std::make_unique<ButtonMapper>(EButton::B10),
                 std::make_unique<ButtonMapper>(EButton::B12)))}
         };
-        static_assert(_countof(kExpectedParseResults) == _countof(kTestStrings), "Mismatch between input and expected output array lengths.");
+        static_assert(_countof(expectedParseResults) == _countof(kTestStrings), "Mismatch between input and expected output array lengths.");
 
         for (int i = 0; i < _countof(kTestStrings); ++i)
         {
             SElementMapperParseResult actualParseResult = MapperParser::ParseSingleElementMapper(kTestStrings[i]);
-            VerifyParseResultsAreEquivalent(actualParseResult, kExpectedParseResults[i]);
+            VerifyParseResultsAreEquivalent(actualParseResult, expectedParseResults[i]);
 
             TEST_ASSERT(nullptr != dynamic_cast<InvertMapper*>(actualParseResult.maybeElementMapper.Value().get()));
 
-            const IElementMapper* kExpectedElementMapper = kExpectedParseResults[i].maybeElementMapper.Value().get();
-            const IElementMapper* kActualElementMapper = dynamic_cast<InvertMapper*>(actualParseResult.maybeElementMapper.Value().get())->GetElementMapper();
-            VerifyElementMapperPointersAreEquivalent(kActualElementMapper, kExpectedElementMapper);
+            const IElementMapper* expectedElementMapper = expectedParseResults[i].maybeElementMapper.Value().get();
+            const IElementMapper* actualElementMapper = dynamic_cast<InvertMapper*>(actualParseResult.maybeElementMapper.Value().get())->GetElementMapper();
+            VerifyElementMapperPointersAreEquivalent(actualElementMapper, expectedElementMapper);
         }
     }
 
@@ -944,7 +944,7 @@ namespace XidiTest
             L"Keyboard(03)",
             L"Keyboard(012), Button(3)"
         };
-        const SElementMapperParseResult kExpectedParseResults[] = {
+        const SElementMapperParseResult expectedParseResults[] = {
             {.maybeElementMapper = std::make_unique<KeyboardMapper>(10)},
             {.maybeElementMapper = std::make_unique<KeyboardMapper>(10)},
             {.maybeElementMapper = std::make_unique<KeyboardMapper>(10)},
@@ -959,18 +959,18 @@ namespace XidiTest
             {.maybeElementMapper = std::make_unique<KeyboardMapper>(3)},
             {.maybeElementMapper = std::make_unique<KeyboardMapper>(10),            .remainingString = L"Button(3)"}
         };
-        static_assert(_countof(kExpectedParseResults) == _countof(kTestStrings), "Mismatch between input and expected output array lengths.");
+        static_assert(_countof(expectedParseResults) == _countof(kTestStrings), "Mismatch between input and expected output array lengths.");
 
         for (int i = 0; i < _countof(kTestStrings); ++i)
         {
             SElementMapperParseResult actualParseResult = MapperParser::ParseSingleElementMapper(kTestStrings[i]);
-            VerifyParseResultsAreEquivalent(actualParseResult, kExpectedParseResults[i]);
+            VerifyParseResultsAreEquivalent(actualParseResult, expectedParseResults[i]);
 
             TEST_ASSERT(nullptr != dynamic_cast<KeyboardMapper*>(actualParseResult.maybeElementMapper.Value().get()));
 
-            const TKeyIdentifier kExpectedTargetKey = dynamic_cast<KeyboardMapper*>(kExpectedParseResults[i].maybeElementMapper.Value().get())->GetTargetKey();
-            const TKeyIdentifier kActualTargetKey = dynamic_cast<KeyboardMapper*>(actualParseResult.maybeElementMapper.Value().get())->GetTargetKey();
-            TEST_ASSERT(kActualTargetKey == kExpectedTargetKey);
+            const TKeyIdentifier expectedTargetKey = dynamic_cast<KeyboardMapper*>(expectedParseResults[i].maybeElementMapper.Value().get())->GetTargetKey();
+            const TKeyIdentifier actualTargetKey = dynamic_cast<KeyboardMapper*>(actualParseResult.maybeElementMapper.Value().get())->GetTargetKey();
+            TEST_ASSERT(actualTargetKey == expectedTargetKey);
         }
     }
 
@@ -982,23 +982,23 @@ namespace XidiTest
             L"Pov(Left)",
             L"POV(Dn)"
         };
-        const SElementMapperParseResult kExpectedParseResults[] = {
+        const SElementMapperParseResult expectedParseResults[] = {
             {.maybeElementMapper = std::make_unique<PovMapper>(EPovDirection::Up)},
             {.maybeElementMapper = std::make_unique<PovMapper>(EPovDirection::Left)},
             {.maybeElementMapper = std::make_unique<PovMapper>(EPovDirection::Down)},
         };
-        static_assert(_countof(kExpectedParseResults) == _countof(kTestStrings), "Mismatch between input and expected output array lengths.");
+        static_assert(_countof(expectedParseResults) == _countof(kTestStrings), "Mismatch between input and expected output array lengths.");
 
         for (int i = 0; i < _countof(kTestStrings); ++i)
         {
             SElementMapperParseResult actualParseResult = MapperParser::ParseSingleElementMapper(kTestStrings[i]);
-            VerifyParseResultsAreEquivalent(actualParseResult, kExpectedParseResults[i]);
+            VerifyParseResultsAreEquivalent(actualParseResult, expectedParseResults[i]);
 
             TEST_ASSERT(nullptr != dynamic_cast<PovMapper*>(actualParseResult.maybeElementMapper.Value().get()));
 
-            const EPovDirection kExpectedDirection = dynamic_cast<PovMapper*>(kExpectedParseResults[i].maybeElementMapper.Value().get())->GetDirection();
-            const EPovDirection kActualDirection = dynamic_cast<PovMapper*>(actualParseResult.maybeElementMapper.Value().get())->GetDirection();
-            TEST_ASSERT(kActualDirection == kExpectedDirection);
+            const EPovDirection expectedDirection = dynamic_cast<PovMapper*>(expectedParseResults[i].maybeElementMapper.Value().get())->GetDirection();
+            const EPovDirection actualDirection = dynamic_cast<PovMapper*>(actualParseResult.maybeElementMapper.Value().get())->GetDirection();
+            TEST_ASSERT(actualDirection == expectedDirection);
         }
     }
 
@@ -1010,17 +1010,17 @@ namespace XidiTest
             L"  Null  ",
             L"  Null  , Null  , Button(2) "
         };
-        const SElementMapperParseResult kExpectedParseResults[] = {
+        const SElementMapperParseResult expectedParseResults[] = {
             {.maybeElementMapper = nullptr},
             {.maybeElementMapper = nullptr},
             {.maybeElementMapper = nullptr,     .remainingString = L"Null  , Button(2)"}
         };
-        static_assert(_countof(kExpectedParseResults) == _countof(kTestStrings), "Mismatch between input and expected output array lengths.");
+        static_assert(_countof(expectedParseResults) == _countof(kTestStrings), "Mismatch between input and expected output array lengths.");
 
         for (int i = 0; i < _countof(kTestStrings); ++i)
         {
             SElementMapperParseResult actualParseResult = MapperParser::ParseSingleElementMapper(kTestStrings[i]);
-            VerifyParseResultsAreEquivalent(actualParseResult, kExpectedParseResults[i]);
+            VerifyParseResultsAreEquivalent(actualParseResult, expectedParseResults[i]);
         }
     }
 
@@ -1033,7 +1033,7 @@ namespace XidiTest
             L"Split(    Split(  Null,      Button(2)  ), Null    )",
             L"Split( Null, Null )"
         };
-        const SElementMapperParseResult kExpectedParseResults[] = {
+        const SElementMapperParseResult expectedParseResults[] = {
             {.maybeElementMapper = std::make_unique<SplitMapper>(
                 std::make_unique<AxisMapper>(EAxis::X),
                 std::make_unique<AxisMapper>(EAxis::Y))},
@@ -1053,18 +1053,18 @@ namespace XidiTest
                 nullptr,
                 nullptr)}
         };
-        static_assert(_countof(kExpectedParseResults) == _countof(kTestStrings), "Mismatch between input and expected output array lengths.");
+        static_assert(_countof(expectedParseResults) == _countof(kTestStrings), "Mismatch between input and expected output array lengths.");
 
         for (int i = 0; i < _countof(kTestStrings); ++i)
         {
             SElementMapperParseResult actualParseResult = MapperParser::ParseSingleElementMapper(kTestStrings[i]);
-            VerifyParseResultsAreEquivalent(actualParseResult, kExpectedParseResults[i]);
+            VerifyParseResultsAreEquivalent(actualParseResult, expectedParseResults[i]);
 
             TEST_ASSERT(nullptr != dynamic_cast<SplitMapper*>(actualParseResult.maybeElementMapper.Value().get()));
 
-            const SplitMapper* const kExpectedSplitMapper = dynamic_cast<SplitMapper*>(kExpectedParseResults[i].maybeElementMapper.Value().get());
-            const SplitMapper* const kActualSplitMapper = dynamic_cast<SplitMapper*>(actualParseResult.maybeElementMapper.Value().get());
-            VerifySplitMapperPointersAreEquivalent(kActualSplitMapper, kExpectedSplitMapper);
+            const SplitMapper* const expectedSplitMapper = dynamic_cast<SplitMapper*>(expectedParseResults[i].maybeElementMapper.Value().get());
+            const SplitMapper* const actualSplitMapper = dynamic_cast<SplitMapper*>(actualParseResult.maybeElementMapper.Value().get());
+            VerifySplitMapperPointersAreEquivalent(actualSplitMapper, expectedSplitMapper);
         }
     }
 
@@ -1094,12 +1094,12 @@ namespace XidiTest
             L"Pov(Up, Left, Right)",
             L"Pov(AnyDir)"
         };
-        const SElementMapperParseResult kExpectedParseResult = {.maybeElementMapper = L"Test error message."};
+        const SElementMapperParseResult expectedParseResult = {.maybeElementMapper = L"Test error message."};
 
         for (int i = 0; i < _countof(kTestStrings); ++i)
         {
             SElementMapperParseResult actualParseResult = MapperParser::ParseSingleElementMapper(kTestStrings[i]);
-            VerifyParseResultsAreEquivalent(actualParseResult, kExpectedParseResult);
+            VerifyParseResultsAreEquivalent(actualParseResult, expectedParseResult);
         }
     }
 
@@ -1113,19 +1113,19 @@ namespace XidiTest
            L"Button(3)",
            L"  Button   (    5    )  "
         };
-        const std::unique_ptr<IElementMapper> kExpectedElementMappers[] = {
+        const std::unique_ptr<IElementMapper> expectedElementMappers[] = {
             nullptr,
             nullptr,
             std::make_unique<ButtonMapper>(EButton::B3),
             std::make_unique<ButtonMapper>(EButton::B5)
         };
-        static_assert(_countof(kExpectedElementMappers) == _countof(kTestStrings), "Mismatch between input and expected output array lengths.");
+        static_assert(_countof(expectedElementMappers) == _countof(kTestStrings), "Mismatch between input and expected output array lengths.");
 
         for (int i = 0; i < _countof(kTestStrings); ++i)
         {
-            const ElementMapperOrError kMaybeActualElementMapper = MapperParser::ElementMapperFromString(kTestStrings[i]);
-            TEST_ASSERT(true == kMaybeActualElementMapper.HasValue());
-            VerifyElementMapperPointersAreEquivalent(kMaybeActualElementMapper.Value().get(), kExpectedElementMappers[i].get());
+            const ElementMapperOrError maybeActualElementMapper = MapperParser::ElementMapperFromString(kTestStrings[i]);
+            TEST_ASSERT(true == maybeActualElementMapper.HasValue());
+            VerifyElementMapperPointersAreEquivalent(maybeActualElementMapper.Value().get(), expectedElementMappers[i].get());
         }
     }
 
@@ -1137,7 +1137,7 @@ namespace XidiTest
            L"Split(Null, Null)",
            L"Split(Split(Null, Null), Split(Button(3), Button(4)))"
         };
-        const std::unique_ptr<IElementMapper> kExpectedElementMappers[] = {
+        const std::unique_ptr<IElementMapper> expectedElementMappers[] = {
             std::make_unique<SplitMapper>(
                 nullptr,
                 nullptr),
@@ -1149,13 +1149,13 @@ namespace XidiTest
                     std::make_unique<ButtonMapper>(EButton::B3),
                     std::make_unique<ButtonMapper>(EButton::B4)))
         };
-        static_assert(_countof(kExpectedElementMappers) == _countof(kTestStrings), "Mismatch between input and expected output array lengths.");
+        static_assert(_countof(expectedElementMappers) == _countof(kTestStrings), "Mismatch between input and expected output array lengths.");
 
         for (int i = 0; i < _countof(kTestStrings); ++i)
         {
-            const ElementMapperOrError kMaybeActualElementMapper = MapperParser::ElementMapperFromString(kTestStrings[i]);
-            TEST_ASSERT(true == kMaybeActualElementMapper.HasValue());
-            VerifyElementMapperPointersAreEquivalent(kMaybeActualElementMapper.Value().get(), kExpectedElementMappers[i].get());
+            const ElementMapperOrError maybeActualElementMapper = MapperParser::ElementMapperFromString(kTestStrings[i]);
+            TEST_ASSERT(true == maybeActualElementMapper.HasValue());
+            VerifyElementMapperPointersAreEquivalent(maybeActualElementMapper.Value().get(), expectedElementMappers[i].get());
         }
     }
 
@@ -1171,8 +1171,8 @@ namespace XidiTest
 
         for (int i = 0; i < _countof(kTestStrings); ++i)
         {
-            const ElementMapperOrError kMaybeActualElementMapper = MapperParser::ElementMapperFromString(kTestStrings[i]);
-            TEST_ASSERT(true == kMaybeActualElementMapper.HasError());
+            const ElementMapperOrError maybeActualElementMapper = MapperParser::ElementMapperFromString(kTestStrings[i]);
+            TEST_ASSERT(true == maybeActualElementMapper.HasError());
         }
     }
 
@@ -1185,8 +1185,8 @@ namespace XidiTest
 
         for (int i = 0; i < _countof(kTestStrings); ++i)
         {
-            const ElementMapperOrError kMaybeActualElementMapper = MapperParser::ElementMapperFromString(kTestStrings[i]);
-            TEST_ASSERT(true == kMaybeActualElementMapper.HasError());
+            const ElementMapperOrError maybeActualElementMapper = MapperParser::ElementMapperFromString(kTestStrings[i]);
+            TEST_ASSERT(true == maybeActualElementMapper.HasError());
         }
     }
 
@@ -1201,7 +1201,7 @@ namespace XidiTest
             L"MagnitudeProjection(Y, RotY)",
             L"MagnitudeProjection(RotY, Y)"
         };
-        constexpr SActuatorElement kExpectedForceFeedbackActuators[] = {
+        constexpr SActuatorElement expectedForceFeedbackActuators[] = {
             Mapper::kDefaultForceFeedbackActuator,
             {
                 .isPresent = false
@@ -1239,15 +1239,15 @@ namespace XidiTest
                 }
             }
         };
-        static_assert(_countof(kExpectedForceFeedbackActuators) == _countof(kTestStrings), "Mismatch between input and expected output array lengths.");
+        static_assert(_countof(expectedForceFeedbackActuators) == _countof(kTestStrings), "Mismatch between input and expected output array lengths.");
 
         for (int i = 0; i < _countof(kTestStrings); ++i)
         {
-            const ForceFeedbackActuatorOrError kMaybeActualForceFeedbackActuator = MapperParser::ForceFeedbackActuatorFromString(kTestStrings[i]);
-            TEST_ASSERT(true == kMaybeActualForceFeedbackActuator.HasValue());
+            const ForceFeedbackActuatorOrError maybeActualForceFeedbackActuator = MapperParser::ForceFeedbackActuatorFromString(kTestStrings[i]);
+            TEST_ASSERT(true == maybeActualForceFeedbackActuator.HasValue());
 
-            const SActuatorElement kActualForceFeedbackActuator = kMaybeActualForceFeedbackActuator.Value();
-            TEST_ASSERT(kActualForceFeedbackActuator == kExpectedForceFeedbackActuators[i]);
+            const SActuatorElement actualForceFeedbackActuator = maybeActualForceFeedbackActuator.Value();
+            TEST_ASSERT(actualForceFeedbackActuator == expectedForceFeedbackActuators[i]);
         }
     }
 
@@ -1266,8 +1266,8 @@ namespace XidiTest
 
         for (int i = 0; i < _countof(kTestStrings); ++i)
         {
-            const ForceFeedbackActuatorOrError kMaybeActualForceFeedbackActuator = MapperParser::ForceFeedbackActuatorFromString(kTestStrings[i]);
-            TEST_ASSERT(false == kMaybeActualForceFeedbackActuator.HasValue());
+            const ForceFeedbackActuatorOrError maybeActualForceFeedbackActuator = MapperParser::ForceFeedbackActuatorFromString(kTestStrings[i]);
+            TEST_ASSERT(false == maybeActualForceFeedbackActuator.HasValue());
         }
     }
 }

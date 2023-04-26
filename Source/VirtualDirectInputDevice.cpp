@@ -40,17 +40,17 @@
 /// Logs a DirectInput interface method invocation and returns.
 #define LOG_INVOCATION_AND_RETURN(result, severity) \
     do { \
-        const HRESULT kResult = (result); \
-        Message::OutputFormatted(severity, L"Invoked %s on Xidi virtual controller %u, result = 0x%08x.", __FUNCTIONW__ L"()", (1 + controller->GetIdentifier()), kResult); \
-        return kResult; \
+        const HRESULT hresult = (result); \
+        Message::OutputFormatted(severity, L"Invoked %s on Xidi virtual controller %u, result = 0x%08x.", __FUNCTIONW__ L"()", (1 + controller->GetIdentifier()), hresult); \
+        return hresult; \
     } while (false)
 
 /// Logs a DirectInput property-related method invocation and returns.
 #define LOG_PROPERTY_INVOCATION_AND_RETURN(result, severity, rguidprop, propvalfmt, ...) \
     do { \
-        const HRESULT kResult = (result); \
-        Message::OutputFormatted(severity, L"Invoked function %s on Xidi virtual controller %u, result = 0x%08x, property = %s" propvalfmt L".", __FUNCTIONW__ L"()", (1 + controller->GetIdentifier()), kResult, PropertyGuidString(rguidprop), ##__VA_ARGS__); \
-        return kResult; \
+        const HRESULT hresult = (result); \
+        Message::OutputFormatted(severity, L"Invoked function %s on Xidi virtual controller %u, result = 0x%08x, property = %s" propvalfmt L".", __FUNCTIONW__ L"()", (1 + controller->GetIdentifier()), hresult, PropertyGuidString(rguidprop), ##__VA_ARGS__); \
+        return hresult; \
     } while (false)
 
 /// Logs a DirectInput property-related method without a value and returns.
@@ -896,9 +896,9 @@ namespace Xidi
 
     template <ECharMode charMode> std::optional<DWORD> VirtualDirectInputDevice<charMode>::IdentifyObjectById(Controller::SElementIdentifier element) const
     {
-        const DWORD kObjectId = GetObjectId(controller->GetCapabilities(), element);
-        if (0 != kObjectId)
-            return kObjectId;
+        const DWORD objectId = GetObjectId(controller->GetCapabilities(), element);
+        if (0 != objectId)
+            return objectId;
 
         return std::nullopt;
     }
@@ -1037,8 +1037,8 @@ namespace Xidi
             // Success of this method does not depend on whether or not a download completed successfully.
             // If it failed because the device is full, then the effect can still exist even if it is not physically on the device.
             // Likewise, if the device is not exclusively acquired, then the device just needs to be acquired before the effect can be downloaded.
-            const DWORD kParameterFlags = ((sizeof(DIEFFECT_DX5) == lpeff->dwSize) ? DIEP_ALLPARAMS_DX5 : DIEP_ALLPARAMS);
-            switch (newEffect->SetParametersInternal(lpeff, kParameterFlags))
+            const DWORD parameterFlags = ((sizeof(DIEFFECT_DX5) == lpeff->dwSize) ? DIEP_ALLPARAMS_DX5 : DIEP_ALLPARAMS);
+            switch (newEffect->SetParametersInternal(lpeff, parameterFlags))
             {
             case DI_OK:
             case DI_DOWNLOADSKIPPED:
@@ -1106,23 +1106,23 @@ namespace Xidi
             LOG_INVOCATION_AND_RETURN(DI_OK, kMethodSeverity);
         }
 
-        const bool kWillEnumerateConstantForce = ((DIEFT_ALL == dwEffType) || (DIEFT_CONSTANTFORCE == DIEFT_GETTYPE(dwEffType)));
-        const bool kWillEnumerateRampForce = ((DIEFT_ALL == dwEffType) || (DIEFT_RAMPFORCE == DIEFT_GETTYPE(dwEffType)));
-        const bool kWillEnumeratePeriodic = ((DIEFT_ALL == dwEffType) || (DIEFT_PERIODIC == DIEFT_GETTYPE(dwEffType)));
-        const bool kWillEnumerateCustomForce = ((DIEFT_ALL == dwEffType) || (DIEFT_CUSTOMFORCE == DIEFT_GETTYPE(dwEffType)));
+        const bool willEnumerateConstantForce = ((DIEFT_ALL == dwEffType) || (DIEFT_CONSTANTFORCE == DIEFT_GETTYPE(dwEffType)));
+        const bool willEnumerateRampForce = ((DIEFT_ALL == dwEffType) || (DIEFT_RAMPFORCE == DIEFT_GETTYPE(dwEffType)));
+        const bool willEnumeratePeriodic = ((DIEFT_ALL == dwEffType) || (DIEFT_PERIODIC == DIEFT_GETTYPE(dwEffType)));
+        const bool willEnumerateCustomForce = ((DIEFT_ALL == dwEffType) || (DIEFT_CUSTOMFORCE == DIEFT_GETTYPE(dwEffType)));
 
-        if ((true == kWillEnumerateConstantForce) || (true == kWillEnumerateCustomForce) || (true == kWillEnumeratePeriodic) || (true == kWillEnumerateRampForce))
+        if ((true == willEnumerateConstantForce) || (true == willEnumerateCustomForce) || (true == willEnumeratePeriodic) || (true == willEnumerateRampForce))
         {
             std::unique_ptr<DirectInputDeviceType<charMode>::EffectInfoType> effectDescriptor = std::make_unique<DirectInputDeviceType<charMode>::EffectInfoType>();
 
-            if (true == kWillEnumerateConstantForce)
+            if (true == willEnumerateConstantForce)
             {
                 const GUID* kEffectGuids[] = {&GUID_ConstantForce};
-                for (const auto kEffectGuid : kEffectGuids)
+                for (const auto effectGuid : kEffectGuids)
                 {
-                    if (true == ForceFeedbackEffectCanCreateObject(*kEffectGuid))
+                    if (true == ForceFeedbackEffectCanCreateObject(*effectGuid))
                     {
-                        *effectDescriptor = {.dwSize = sizeof(*effectDescriptor), .guid = *kEffectGuid, .dwEffType = ForceFeedbackEffectType(*kEffectGuid).value()};
+                        *effectDescriptor = {.dwSize = sizeof(*effectDescriptor), .guid = *effectGuid, .dwEffType = ForceFeedbackEffectType(*effectGuid).value()};
                         FillForceFeedbackEffectInfo<charMode>(effectDescriptor.get());
                         switch (lpCallback(effectDescriptor.get(), pvRef))
                         {
@@ -1137,14 +1137,14 @@ namespace Xidi
                 }
             }
 
-            if (true == kWillEnumerateRampForce)
+            if (true == willEnumerateRampForce)
             {
                 const GUID* kEffectGuids[] = {&GUID_RampForce};
-                for (const auto kEffectGuid : kEffectGuids)
+                for (const auto effectGuid : kEffectGuids)
                 {
-                    if (true == ForceFeedbackEffectCanCreateObject(*kEffectGuid))
+                    if (true == ForceFeedbackEffectCanCreateObject(*effectGuid))
                     {
-                        *effectDescriptor = {.dwSize = sizeof(*effectDescriptor), .guid = *kEffectGuid, .dwEffType = ForceFeedbackEffectType(*kEffectGuid).value()};
+                        *effectDescriptor = {.dwSize = sizeof(*effectDescriptor), .guid = *effectGuid, .dwEffType = ForceFeedbackEffectType(*effectGuid).value()};
                         FillForceFeedbackEffectInfo<charMode>(effectDescriptor.get());
                         switch (lpCallback(effectDescriptor.get(), pvRef))
                         {
@@ -1159,14 +1159,14 @@ namespace Xidi
                 }
             }
 
-            if (true == kWillEnumeratePeriodic)
+            if (true == willEnumeratePeriodic)
             {
                 const GUID* kEffectGuids[] = {&GUID_Square, &GUID_Sine, &GUID_Triangle, &GUID_SawtoothUp, &GUID_SawtoothDown};
-                for (const auto kEffectGuid : kEffectGuids)
+                for (const auto effectGuid : kEffectGuids)
                 {
-                    if (true == ForceFeedbackEffectCanCreateObject(*kEffectGuid))
+                    if (true == ForceFeedbackEffectCanCreateObject(*effectGuid))
                     {
-                        *effectDescriptor = {.dwSize = sizeof(*effectDescriptor), .guid = *kEffectGuid, .dwEffType = ForceFeedbackEffectType(*kEffectGuid).value()};
+                        *effectDescriptor = {.dwSize = sizeof(*effectDescriptor), .guid = *effectGuid, .dwEffType = ForceFeedbackEffectType(*effectGuid).value()};
                         FillForceFeedbackEffectInfo<charMode>(effectDescriptor.get());
                         switch (lpCallback(effectDescriptor.get(), pvRef))
                         {
@@ -1181,14 +1181,14 @@ namespace Xidi
                 }
             }
 
-            if (true == kWillEnumerateCustomForce)
+            if (true == willEnumerateCustomForce)
             {
                 const GUID* kEffectGuids[] = {&GUID_CustomForce};
-                for (const auto kEffectGuid : kEffectGuids)
+                for (const auto effectGuid : kEffectGuids)
                 {
-                    if (true == ForceFeedbackEffectCanCreateObject(*kEffectGuid))
+                    if (true == ForceFeedbackEffectCanCreateObject(*effectGuid))
                     {
-                        *effectDescriptor = {.dwSize = sizeof(*effectDescriptor), .guid = *kEffectGuid, .dwEffType = ForceFeedbackEffectType(*kEffectGuid).value()};
+                        *effectDescriptor = {.dwSize = sizeof(*effectDescriptor), .guid = *effectGuid, .dwEffType = ForceFeedbackEffectType(*effectGuid).value()};
                         FillForceFeedbackEffectInfo<charMode>(effectDescriptor.get());
                         switch (lpCallback(effectDescriptor.get(), pvRef))
                         {
@@ -1226,86 +1226,87 @@ namespace Xidi
             LOG_INVOCATION_AND_RETURN(DIERR_INVALIDPARAM, kMethodSeverity);
 
         // Force feedback effect triggers are not supported, so no objects will match.
-        const bool kForceFeedbackEffectTriggersOnly = (0 != (dwFlags & DIDFT_FFEFFECTTRIGGER));
-        if (true == kForceFeedbackEffectTriggersOnly)
+        const bool forceFeedbackEffectTriggersOnly = (0 != (dwFlags & DIDFT_FFEFFECTTRIGGER));
+        if (true == forceFeedbackEffectTriggersOnly)
             LOG_INVOCATION_AND_RETURN(DI_OK, kMethodSeverity);
 
-        const bool kForceFeedbackActuatorsOnly = (0 != (dwFlags & DIDFT_FFACTUATOR));
-        const bool kOutsideHidCollectionOnly = (0 != (dwFlags & DIDFT_NOCOLLECTION));
-        const bool kWillEnumerateAxes = ((DIDFT_ALL == dwFlags) || (0 != (dwFlags & DIDFT_ABSAXIS)));
-        const bool kWillEnumerateButtons = ((false == kForceFeedbackActuatorsOnly) && (false == kOutsideHidCollectionOnly) && ((DIDFT_ALL == dwFlags) || (0 != (dwFlags & DIDFT_PSHBUTTON))));
-        const bool kWillEnumeratePov = ((false == kForceFeedbackActuatorsOnly) && (false == kOutsideHidCollectionOnly) && ((DIDFT_ALL == dwFlags) || (0 != (dwFlags & DIDFT_POV))));
-        const bool kWillEnumerateHidCollections = ((false == kForceFeedbackActuatorsOnly) && (false == kOutsideHidCollectionOnly) && ((DIDFT_ALL == dwFlags) || (0 != (dwFlags & DIDFT_COLLECTION))));
+        const bool forceFeedbackActuatorsOnly = (0 != (dwFlags & DIDFT_FFACTUATOR));
+        const bool outsideHidCollectionOnly = (0 != (dwFlags & DIDFT_NOCOLLECTION));
 
-        if ((true == kWillEnumerateAxes) || (true == kWillEnumerateButtons) || (true == kWillEnumeratePov) || (true == kWillEnumerateHidCollections))
+        const bool willEnumerateAxes = ((DIDFT_ALL == dwFlags) || (0 != (dwFlags & DIDFT_ABSAXIS)));
+        const bool willEnumerateButtons = ((false == forceFeedbackActuatorsOnly) && (false == outsideHidCollectionOnly) && ((DIDFT_ALL == dwFlags) || (0 != (dwFlags & DIDFT_PSHBUTTON))));
+        const bool willEnumeratePov = ((false == forceFeedbackActuatorsOnly) && (false == outsideHidCollectionOnly) && ((DIDFT_ALL == dwFlags) || (0 != (dwFlags & DIDFT_POV))));
+        const bool willEnumerateHidCollections = ((false == forceFeedbackActuatorsOnly) && (false == outsideHidCollectionOnly) && ((DIDFT_ALL == dwFlags) || (0 != (dwFlags & DIDFT_COLLECTION))));
+
+        if ((true == willEnumerateAxes) || (true == willEnumerateButtons) || (true == willEnumeratePov) || (true == willEnumerateHidCollections))
         {
             std::unique_ptr<DirectInputDeviceType<charMode>::DeviceObjectInstanceType> objectDescriptor = std::make_unique<DirectInputDeviceType<charMode>::DeviceObjectInstanceType>();
             const Controller::SCapabilities controllerCapabilities = controller->GetCapabilities();
 
-            if (true == kWillEnumerateAxes)
+            if (true == willEnumerateAxes)
             {
                 for (int i = 0; i < controllerCapabilities.numAxes; ++i)
                 {
-                    if ((true == kForceFeedbackActuatorsOnly) && (false == controllerCapabilities.axisCapabilities[i].supportsForceFeedback))
+                    if ((true == forceFeedbackActuatorsOnly) && (false == controllerCapabilities.axisCapabilities[i].supportsForceFeedback))
                         continue;
 
-                    const Controller::EAxis kAxis = controllerCapabilities.axisCapabilities[i].type;
-                    const Controller::SElementIdentifier kAxisIdentifier = {.type = Controller::EElementType::Axis, .axis = kAxis};
-                    const TOffset kAxisOffset = ((true == IsApplicationDataFormatSet()) ? dataFormat->GetOffsetForElement(kAxisIdentifier).value_or(DataFormat::kInvalidOffsetValue) : NativeOffsetForElement(kAxisIdentifier));
+                    const Controller::EAxis axis = controllerCapabilities.axisCapabilities[i].type;
+                    const Controller::SElementIdentifier axisIdentifier = {.type = Controller::EElementType::Axis, .axis = axis};
+                    const TOffset axisOffset = ((true == IsApplicationDataFormatSet()) ? dataFormat->GetOffsetForElement(axisIdentifier).value_or(DataFormat::kInvalidOffsetValue) : NativeOffsetForElement(axisIdentifier));
 
                     *objectDescriptor = {.dwSize = sizeof(*objectDescriptor)};
-                    FillObjectInstanceInfo<charMode>(controllerCapabilities, kAxisIdentifier, kAxisOffset, objectDescriptor.get());
+                    FillObjectInstanceInfo<charMode>(controllerCapabilities, axisIdentifier, axisOffset, objectDescriptor.get());
 
-                    const bool kContinueEnumerating = (DIENUM_STOP != lpCallback(objectDescriptor.get(), pvRef));
-                    if (!kAlwaysContinueEnumerating && !kContinueEnumerating)
+                    const bool continueEnumerating = (DIENUM_STOP != lpCallback(objectDescriptor.get(), pvRef));
+                    if (!kAlwaysContinueEnumerating && !continueEnumerating)
                         LOG_INVOCATION_AND_RETURN(DI_OK, kMethodSeverity);
                 }
             }
 
-            if (true == kWillEnumerateButtons)
+            if (true == willEnumerateButtons)
             {
                 for (int i = 0; i < controllerCapabilities.numButtons; ++i)
                 {
-                    const Controller::EButton kButton = (Controller::EButton)i;
-                    const Controller::SElementIdentifier kButtonIdentifier = {.type = Controller::EElementType::Button, .button = kButton};
-                    const TOffset kButtonOffset = ((true == IsApplicationDataFormatSet()) ? dataFormat->GetOffsetForElement(kButtonIdentifier).value_or(DataFormat::kInvalidOffsetValue) : NativeOffsetForElement(kButtonIdentifier));
+                    const Controller::EButton button = (Controller::EButton)i;
+                    const Controller::SElementIdentifier buttonIdentifier = {.type = Controller::EElementType::Button, .button = button};
+                    const TOffset buttonOffset = ((true == IsApplicationDataFormatSet()) ? dataFormat->GetOffsetForElement(buttonIdentifier).value_or(DataFormat::kInvalidOffsetValue) : NativeOffsetForElement(buttonIdentifier));
 
                     *objectDescriptor = {.dwSize = sizeof(*objectDescriptor)};
-                    FillObjectInstanceInfo<charMode>(controllerCapabilities, kButtonIdentifier, kButtonOffset, objectDescriptor.get());
+                    FillObjectInstanceInfo<charMode>(controllerCapabilities, buttonIdentifier, buttonOffset, objectDescriptor.get());
 
-                    const bool kContinueEnumerating = (DIENUM_STOP != lpCallback(objectDescriptor.get(), pvRef));
-                    if (!kAlwaysContinueEnumerating && !kContinueEnumerating)
+                    const bool continueEnumerating = (DIENUM_STOP != lpCallback(objectDescriptor.get(), pvRef));
+                    if (!kAlwaysContinueEnumerating && !continueEnumerating)
                         LOG_INVOCATION_AND_RETURN(DI_OK, kMethodSeverity);
                 }
             }
 
-            if (true == kWillEnumeratePov)
+            if (true == willEnumeratePov)
             {
                 if (true == controllerCapabilities.HasPov())
                 {
-                    const Controller::SElementIdentifier kPovIdentifier = {.type = Controller::EElementType::Pov};
-                    const TOffset kPovOffset = ((true == IsApplicationDataFormatSet()) ? dataFormat->GetOffsetForElement(kPovIdentifier).value_or(DataFormat::kInvalidOffsetValue) : NativeOffsetForElement(kPovIdentifier));
+                    const Controller::SElementIdentifier povIdentifier = {.type = Controller::EElementType::Pov};
+                    const TOffset povOffset = ((true == IsApplicationDataFormatSet()) ? dataFormat->GetOffsetForElement(povIdentifier).value_or(DataFormat::kInvalidOffsetValue) : NativeOffsetForElement(povIdentifier));
 
                     *objectDescriptor = {.dwSize = sizeof(*objectDescriptor)};
-                    FillObjectInstanceInfo<charMode>(controllerCapabilities, kPovIdentifier, kPovOffset, objectDescriptor.get());
+                    FillObjectInstanceInfo<charMode>(controllerCapabilities, povIdentifier, povOffset, objectDescriptor.get());
 
-                    const bool kContinueEnumerating = (DIENUM_STOP != lpCallback(objectDescriptor.get(), pvRef));
-                    if (!kAlwaysContinueEnumerating && !kContinueEnumerating)
+                    const bool continueEnumerating = (DIENUM_STOP != lpCallback(objectDescriptor.get(), pvRef));
+                    if (!kAlwaysContinueEnumerating && !continueEnumerating)
                         LOG_INVOCATION_AND_RETURN(DI_OK, kMethodSeverity);
                 }
             }
 
-            if (true == kWillEnumerateHidCollections)
+            if (true == willEnumerateHidCollections)
             {
                 constexpr uint16_t kHidCollectionsToEnumerate[] = {kVirtualControllerHidCollectionForEntireDevice, kVirtualControllerHidCollectionForIndividualElements};
 
-                for (auto hidCollectionNumber : kHidCollectionsToEnumerate)
+                for (const auto hidCollectionNumber : kHidCollectionsToEnumerate)
                 {
                     *objectDescriptor = {.dwSize = sizeof(*objectDescriptor)};
                     FillHidCollectionInstanceInfo<charMode>(hidCollectionNumber, objectDescriptor.get());
 
-                    const bool kContinueEnumerating = (DIENUM_STOP != lpCallback(objectDescriptor.get(), pvRef));
-                    if (!kAlwaysContinueEnumerating && !kContinueEnumerating)
+                    const bool continueEnumerating = (DIENUM_STOP != lpCallback(objectDescriptor.get(), pvRef));
+                    if (!kAlwaysContinueEnumerating && !continueEnumerating)
                         LOG_INVOCATION_AND_RETURN(DI_OK, kMethodSeverity);
                 }
             }
@@ -1404,13 +1405,13 @@ namespace Xidi
             LOG_INVOCATION_AND_RETURN(DIERR_NOTBUFFERED, kMethodSeverityForError);
 
         auto lock = controller->Lock();
-        const DWORD kNumEventsAffected = std::min(*pdwInOut, (DWORD)controller->GetEventBufferCount());
-        const bool kEventBufferOverflowed = controller->IsEventBufferOverflowed();
-        const bool kShouldPopEvents = (0 == (dwFlags & DIGDD_PEEK));
+        const DWORD numEventsAffected = std::min(*pdwInOut, (DWORD)controller->GetEventBufferCount());
+        const bool eventBufferOverflowed = controller->IsEventBufferOverflowed();
+        const bool shouldPopEvents = (0 == (dwFlags & DIGDD_PEEK));
 
         if (nullptr != rgdod)
         {
-            for (DWORD i = 0; i < kNumEventsAffected; ++i)
+            for (DWORD i = 0; i < numEventsAffected; ++i)
             {
                 const Controller::StateChangeEventBuffer::SEvent& event = controller->GetEventBufferEvent(i);
                 ZeroMemory(&rgdod[i], sizeof(rgdod[i]));
@@ -1439,11 +1440,11 @@ namespace Xidi
             }
         }
 
-        if (true == kShouldPopEvents)
-            controller->PopEventBufferOldestEvents(kNumEventsAffected);
+        if (true == shouldPopEvents)
+            controller->PopEventBufferOldestEvents(numEventsAffected);
 
-        *pdwInOut = kNumEventsAffected;
-        LOG_INVOCATION_AND_RETURN(((true == kEventBufferOverflowed) ? DI_BUFFEROVERFLOW : DI_OK), kMethodSeverity);
+        *pdwInOut = numEventsAffected;
+        LOG_INVOCATION_AND_RETURN(((true == eventBufferOverflowed) ? DI_BUFFEROVERFLOW : DI_OK), kMethodSeverity);
     }
 
     // ---------
@@ -1505,12 +1506,12 @@ namespace Xidi
         if (sizeof(*pdei) != pdei->dwSize)
             LOG_INVOCATION_AND_RETURN(DIERR_INVALIDPARAM, kMethodSeverity);
 
-        const std::optional<DWORD> kMaybeEffectType = ForceFeedbackEffectType(rguid);
-        if (false == kMaybeEffectType.has_value())
+        const std::optional<DWORD> maybeEffectType = ForceFeedbackEffectType(rguid);
+        if (false == maybeEffectType.has_value())
             LOG_INVOCATION_AND_RETURN(DIERR_INVALIDPARAM, kMethodSeverity);
 
-        const DWORD kEffectType = kMaybeEffectType.value();
-        *pdei = {.dwSize = sizeof(*pdei), .guid = rguid, .dwEffType = kEffectType};
+        const DWORD effectType = maybeEffectType.value();
+        *pdei = {.dwSize = sizeof(*pdei), .guid = rguid, .dwEffType = effectType};
         FillForceFeedbackEffectInfo<charMode>(pdei);
 
         LOG_INVOCATION_AND_RETURN(DI_OK, kMethodSeverity);
@@ -1542,16 +1543,16 @@ namespace Xidi
         else
             forceFeedbackDeviceState |= DIGFFS_ACTUATORSON;
 
-        const bool kDeviceIsEmpty = forceFeedbackDevice->IsDeviceEmpty();
-        const bool kDeviceIsPaused = forceFeedbackDevice->IsDeviceOutputPaused();
+        const bool deviceIsEmpty = forceFeedbackDevice->IsDeviceEmpty();
+        const bool deviceIsPaused = forceFeedbackDevice->IsDeviceOutputPaused();
 
-        if (true == kDeviceIsEmpty)
+        if (true == deviceIsEmpty)
         {
             // If the device is empty it could also be paused.
 
             forceFeedbackDeviceState |= DIGFFS_EMPTY;
 
-            if (true == kDeviceIsPaused)
+            if (true == deviceIsPaused)
                 forceFeedbackDeviceState |= DIGFFS_PAUSED;
         }
         else
@@ -1559,7 +1560,7 @@ namespace Xidi
             // If the device is not empty, then it could either be playing effects, stopped (playing no effects), or paused (whether or not effects are playing is irrelevant).
             // DirectInput documentation defines "stopped" state as being mutually exclusive with "paused" state, with the latter taking priority.
 
-            if (true == kDeviceIsPaused)
+            if (true == deviceIsPaused)
                 forceFeedbackDeviceState |= DIGFFS_PAUSED;
             else if (false == forceFeedbackDevice->IsDevicePlayingAnyEffects())
                 forceFeedbackDeviceState |= DIGFFS_STOPPED;
@@ -1712,9 +1713,9 @@ namespace Xidi
                 if (Controller::EElementType::Axis != element.type)
                     LOG_PROPERTY_INVOCATION_NO_VALUE_AND_RETURN(DIERR_INVALIDPARAM, kMethodSeverity, rguidProp);
 
-                const std::pair kRange = controller->GetAxisRange(element.axis);
-                ((LPDIPROPRANGE)pdiph)->lMin = kRange.first;
-                ((LPDIPROPRANGE)pdiph)->lMax = kRange.second;
+                const std::pair axisRange = controller->GetAxisRange(element.axis);
+                ((LPDIPROPRANGE)pdiph)->lMin = axisRange.first;
+                ((LPDIPROPRANGE)pdiph)->lMax = axisRange.second;
             } while (false);
             LOG_PROPERTY_INVOCATION_DIPROPRANGE_AND_RETURN(DI_OK, kMethodSeverity, rguidProp, pdiph);
 
@@ -1871,22 +1872,22 @@ namespace Xidi
         
         for (int i = 0; i < (int)Controller::EAxis::Count; ++i)
         {
-            const Controller::SElementIdentifier kElement = {.type = Controller::EElementType::Axis, .axis = (Controller::EAxis)i};
-            if (false == newDataFormat->HasElement(kElement))
-                controller->EventFilterRemoveElement(kElement);
+            const Controller::SElementIdentifier element = {.type = Controller::EElementType::Axis, .axis = (Controller::EAxis)i};
+            if (false == newDataFormat->HasElement(element))
+                controller->EventFilterRemoveElement(element);
         }
 
         for (int i = 0; i < (int)Controller::EButton::Count; ++i)
         {
-            const Controller::SElementIdentifier kElement = {.type = Controller::EElementType::Button, .button = (Controller::EButton)i};
-            if (false == newDataFormat->HasElement(kElement))
-                controller->EventFilterRemoveElement(kElement);
+            const Controller::SElementIdentifier element = {.type = Controller::EElementType::Button, .button = (Controller::EButton)i};
+            if (false == newDataFormat->HasElement(element))
+                controller->EventFilterRemoveElement(element);
         }
 
         do {
-            const Controller::SElementIdentifier kElement = {.type = Controller::EElementType::Pov};
-            if (false == newDataFormat->HasElement(kElement))
-                controller->EventFilterRemoveElement(kElement);
+            const Controller::SElementIdentifier element = {.type = Controller::EElementType::Pov};
+            if (false == newDataFormat->HasElement(element))
+                controller->EventFilterRemoveElement(element);
         } while (false);
 
         dataFormat = std::move(newDataFormat);

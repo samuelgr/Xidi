@@ -46,9 +46,9 @@ namespace XidiTest
 
         for (TEffectTimeMs t = 0; t < kTestEffectDuration; ++t)
         {
-            const TEffectValue kExpectedMagnitude = (TEffectValue)t;
-            const TEffectValue kActualMagnitude = effect.ComputeMagnitude(t);
-            TEST_ASSERT(kActualMagnitude == kExpectedMagnitude);
+            const TEffectValue expectedMagnitude = (TEffectValue)t;
+            const TEffectValue actualMagnitude = effect.ComputeMagnitude(t);
+            TEST_ASSERT(actualMagnitude == expectedMagnitude);
         }
     }
 

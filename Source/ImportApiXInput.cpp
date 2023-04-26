@@ -77,16 +77,16 @@ namespace Xidi
                     // Try loading each possible DLL, in order from most preferred to least preferred.
                     constexpr std::array kXInputLibraryNamesOrdered = {L"xinput1_4.dll", L"xinput1_3.dll", L"xinput1_2.dll", L"xinput1_1.dll", L"xinput9_1_0.dll"};
 
-                    for (const auto& kXInputLibraryName : kXInputLibraryNamesOrdered)
+                    for (const auto& xinputLibraryName : kXInputLibraryNamesOrdered)
                     {
                         // Initialize the import table.
                         ZeroMemory(&importTable, sizeof(importTable));
 
-                        Message::OutputFormatted(Message::ESeverity::Info, L"Attempting to import XInput functions from %s.", kXInputLibraryName);
-                        HMODULE loadedLibrary = LoadLibraryEx(kXInputLibraryName, nullptr, 0);                        
+                        Message::OutputFormatted(Message::ESeverity::Info, L"Attempting to import XInput functions from %s.", xinputLibraryName);
+                        HMODULE loadedLibrary = LoadLibraryEx(xinputLibraryName, nullptr, 0);
                         if (nullptr == loadedLibrary)
                         {
-                            Message::OutputFormatted(Message::ESeverity::Warning, L"Failed to import XInput functions from %s.", kXInputLibraryName);
+                            Message::OutputFormatted(Message::ESeverity::Warning, L"Failed to import XInput functions from %s.", xinputLibraryName);
                             continue;
                         }
 
@@ -94,11 +94,11 @@ namespace Xidi
                         FARPROC procAddress = nullptr;
 
                         procAddress = GetProcAddress(loadedLibrary, "XInputGetState");
-                        if (nullptr == procAddress) TerminateProcessBecauseImportFailed(kXInputLibraryName, L"XInputGetState");
+                        if (nullptr == procAddress) TerminateProcessBecauseImportFailed(xinputLibraryName, L"XInputGetState");
                         importTable.named.XInputGetState = (DWORD(WINAPI*)(DWORD, XINPUT_STATE*))procAddress;
 
                         procAddress = GetProcAddress(loadedLibrary, "XInputSetState");
-                        if (nullptr == procAddress) TerminateProcessBecauseImportFailed(kXInputLibraryName, L"XInputSetState");
+                        if (nullptr == procAddress) TerminateProcessBecauseImportFailed(xinputLibraryName, L"XInputSetState");
                         importTable.named.XInputSetState = (DWORD(WINAPI*)(DWORD, XINPUT_VIBRATION*))procAddress;
 
                         // Initialization complete.

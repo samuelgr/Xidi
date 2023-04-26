@@ -96,15 +96,15 @@ namespace Xidi
             {
                 std::unique_lock lock(mutex);
 
-                const TEffectTimeMs kRelativeTimestampPlayback = RelativeTimestamp(timestampBase, timestamp);
+                const TEffectTimeMs relativeTimestampPlayback = RelativeTimestamp(timestampBase, timestamp);
 
                 if (true == stateEffectsArePaused)
                 {
-                    timestampBase += (kRelativeTimestampPlayback - timestampRelativeLastPlay);
+                    timestampBase += (relativeTimestampPlayback - timestampRelativeLastPlay);
                     return {};
                 }
 
-                timestampRelativeLastPlay = kRelativeTimestampPlayback;
+                timestampRelativeLastPlay = relativeTimestampPlayback;
 
                 TOrderedMagnitudeComponents playbackResult = {};
 
@@ -115,18 +115,18 @@ namespace Xidi
 
                     // Effects with start delays would be added to the playing effects data structure with start times in the future.
                     // This check skips playback of effects that have not officially started playing due to a start delay parameter.
-                    if (kRelativeTimestampPlayback >= effectData.startTime)
+                    if (relativeTimestampPlayback >= effectData.startTime)
                     {
-                        const TEffectTimeMs kEffectPlayTime = kRelativeTimestampPlayback - effectData.startTime;
+                        const TEffectTimeMs effectPlayTime = relativeTimestampPlayback - effectData.startTime;
 
-                        if (kEffectPlayTime >= effectData.effect->GetDuration())
+                        if (effectPlayTime >= effectData.effect->GetDuration())
                         {
                             // An iteration of the effect has finished playing.
                             // If there are iterations left then repeat the effect, otherwise remove it from playback.
                             if (effectData.numIterationsLeft > 0)
                             {
                                 effectData.numIterationsLeft -= 1;
-                                effectData.startTime = kRelativeTimestampPlayback;
+                                effectData.startTime = relativeTimestampPlayback;
 
                                 if (false == stateEffectsAreMuted)
                                     playbackResult += effectData.effect->ComputeOrderedMagnitudeComponents(0);
@@ -146,7 +146,7 @@ namespace Xidi
                             // Effect is currently playing.
                             // This is as simple as computing its magnitude components and adding them to the result.
                             if (false == stateEffectsAreMuted)
-                                playbackResult += effectData.effect->ComputeOrderedMagnitudeComponents(kEffectPlayTime);
+                                playbackResult += effectData.effect->ComputeOrderedMagnitudeComponents(effectPlayTime);
                         }
                     }
 

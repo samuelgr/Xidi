@@ -49,18 +49,18 @@ namespace Xidi
             if ((0 == deadzonePercent) && (100 == saturationPercent))
                 return analogValue;
 
-            const int16_t kDeadzoneCutoff = ((kAnalogValueMax - kAnalogValueNeutral) * deadzonePercent) / 100;
-            if (std::abs(analogValue) <= kDeadzoneCutoff)
+            const int16_t deadzoneCutoff = ((kAnalogValueMax - kAnalogValueNeutral) * deadzonePercent) / 100;
+            if (std::abs(analogValue) <= deadzoneCutoff)
                 return kAnalogValueNeutral;
 
-            const int16_t kSaturationCutoff = ((kAnalogValueMax - kAnalogValueNeutral) * saturationPercent) / 100;;
-            if (std::abs(analogValue) >= kSaturationCutoff)
+            const int16_t saturationCutoff = ((kAnalogValueMax - kAnalogValueNeutral) * saturationPercent) / 100;;
+            if (std::abs(analogValue) >= saturationCutoff)
                 return ((analogValue >= 0) ? kAnalogValueMax : kAnalogValueMin);
 
-            const double kTransformedAnalogBase = ((analogValue >= 0) ? ((double)analogValue - (double)kDeadzoneCutoff) : ((double)analogValue + (double)kDeadzoneCutoff));
-            const double kTransformationScaleFactor = ((double)(kAnalogValueMax - kAnalogValueNeutral)) / ((double)(kSaturationCutoff - kDeadzoneCutoff));
+            const double transformedAnalogBase = ((analogValue >= 0) ? ((double)analogValue - (double)deadzoneCutoff) : ((double)analogValue + (double)deadzoneCutoff));
+            const double transformationScaleFactor = ((double)(kAnalogValueMax - kAnalogValueNeutral)) / ((double)(saturationCutoff - deadzoneCutoff));
 
-            return kAnalogValueNeutral + (int16_t)(kTransformedAnalogBase * kTransformationScaleFactor);
+            return kAnalogValueNeutral + (int16_t)(transformedAnalogBase * transformationScaleFactor);
         }
 
         /// Applies deadzone and saturation transformations to a raw trigger value.
@@ -71,18 +71,18 @@ namespace Xidi
             if ((0 == deadzonePercent) && (100 == saturationPercent))
                 return triggerValue;
 
-            const uint8_t kDeadzoneCutoff = (uint8_t)((((unsigned int)kTriggerValueMax - (unsigned int)kTriggerValueMin) * deadzonePercent) / 100);
-            if (triggerValue <= kDeadzoneCutoff)
+            const uint8_t deadzoneCutoff = (uint8_t)((((unsigned int)kTriggerValueMax - (unsigned int)kTriggerValueMin) * deadzonePercent) / 100);
+            if (triggerValue <= deadzoneCutoff)
                 return kTriggerValueMin;
 
-            const uint8_t kSaturationCutoff = (uint8_t)((((unsigned int)kTriggerValueMax - (unsigned int)kTriggerValueMin) * saturationPercent) / 100);
-            if (triggerValue >= kSaturationCutoff)
+            const uint8_t saturationCutoff = (uint8_t)((((unsigned int)kTriggerValueMax - (unsigned int)kTriggerValueMin) * saturationPercent) / 100);
+            if (triggerValue >= saturationCutoff)
                 return kTriggerValueMax;
 
-            const float kTransformedTriggerBase = (float)triggerValue - (float)kDeadzoneCutoff;
-            const float kTransformationScaleFactor = ((float)(kTriggerValueMax - kTriggerValueMin)) / ((float)(kSaturationCutoff - kDeadzoneCutoff));
+            const float transformedTriggerBase = (float)triggerValue - (float)deadzoneCutoff;
+            const float transformationScaleFactor = ((float)(kTriggerValueMax - kTriggerValueMin)) / ((float)(saturationCutoff - deadzoneCutoff));
 
-            return kTriggerValueMin + (uint8_t)(kTransformedTriggerBase * kTransformationScaleFactor);
+            return kTriggerValueMin + (uint8_t)(transformedTriggerBase * transformationScaleFactor);
         }
 
         /// Determines if an analog reading is considered "pressed" as a digital button in the negative direction.
@@ -339,12 +339,12 @@ namespace Xidi
             {
                 if (nullptr != elementMapper)
                 {
-                    const int kElementCount = elementMapper->GetTargetElementCount();
+                    const int elementCount = elementMapper->GetTargetElementCount();
 
-                    if (index < (indexOffset + kElementCount))
+                    if (index < (indexOffset + elementCount))
                         return elementMapper->GetTargetElementAt(index - indexOffset);
 
-                    indexOffset += kElementCount;
+                    indexOffset += elementCount;
                 }   
             }
 
@@ -407,8 +407,8 @@ namespace Xidi
         {
             if (nullptr != elementMapper)
             {
-                const int32_t kInvertedAnalogValue = (kAnalogValueMax + kAnalogValueMin) - (int32_t)analogValue;
-                elementMapper->ContributeFromAnalogValue(controllerState, (int16_t)kInvertedAnalogValue, sourceIdentifier);
+                const int32_t invertedAnalogValue = (kAnalogValueMax + kAnalogValueMin) - (int32_t)analogValue;
+                elementMapper->ContributeFromAnalogValue(controllerState, (int16_t)invertedAnalogValue, sourceIdentifier);
             }
         }
 
@@ -418,8 +418,8 @@ namespace Xidi
         {
             if (nullptr != elementMapper)
             {
-                const bool kInvertedButtonValue = !buttonPressed;
-                elementMapper->ContributeFromButtonValue(controllerState, kInvertedButtonValue, sourceIdentifier);
+                const bool invertedButtonValue = !buttonPressed;
+                elementMapper->ContributeFromButtonValue(controllerState, invertedButtonValue, sourceIdentifier);
             }
         }
 
@@ -429,8 +429,8 @@ namespace Xidi
         {
             if (nullptr != elementMapper)
             {
-                const int32_t kInvertedTriggerValue = (kTriggerValueMax + kTriggerValueMin) - (int32_t)triggerValue;
-                elementMapper->ContributeFromTriggerValue(controllerState, (uint8_t)kInvertedTriggerValue, sourceIdentifier);
+                const int32_t invertedTriggerValue = (kTriggerValueMax + kTriggerValueMin) - (int32_t)triggerValue;
+                elementMapper->ContributeFromTriggerValue(controllerState, (uint8_t)invertedTriggerValue, sourceIdentifier);
             }
         }
 
@@ -539,10 +539,10 @@ namespace Xidi
             constexpr unsigned int kAnalogMouseSaturationPercent = 92;
             const int16_t analogValueForContribution = (kEnableMouseAxisProperites ? ApplyRawAnalogTransform(analogValue, kAnalogMouseDeadzonePercent, kAnalogMouseSaturationPercent) : analogValue);
 
-            const double kMouseAxisValueRaw = ((double)(analogValueForContribution - kAnalogValueNeutral) * kAnalogToMouseScalingFactor);
-            const double kMouseAxisValueTransformed = kMouseAxisValueRaw;
+            const double mouseAxisValueRaw = ((double)(analogValueForContribution - kAnalogValueNeutral) * kAnalogToMouseScalingFactor);
+            const double mouseAxisValueTransformed = mouseAxisValueRaw;
 
-            int mouseAxisValueToContribute = (int)kMouseAxisValueTransformed;
+            int mouseAxisValueToContribute = (int)mouseAxisValueTransformed;
 
             switch (direction)
             {
@@ -836,22 +836,22 @@ namespace Xidi
 
         int SplitMapper::GetTargetElementCount(void) const
         {
-            const int kPositiveElementCount = ((nullptr != positiveMapper) ? positiveMapper->GetTargetElementCount() : 0);
-            const int kNegativeElementCount = ((nullptr != negativeMapper) ? negativeMapper->GetTargetElementCount() : 0);
+            const int positiveElementCount = ((nullptr != positiveMapper) ? positiveMapper->GetTargetElementCount() : 0);
+            const int negativeElementCount = ((nullptr != negativeMapper) ? negativeMapper->GetTargetElementCount() : 0);
 
-            return kPositiveElementCount + kNegativeElementCount;
+            return positiveElementCount + negativeElementCount;
         }
 
         // --------
 
         std::optional<SElementIdentifier> SplitMapper::GetTargetElementAt(int index) const
         {
-            const int kPositiveElementCount = ((nullptr != positiveMapper) ? positiveMapper->GetTargetElementCount() : 0);
+            const int positiveElementCount = ((nullptr != positiveMapper) ? positiveMapper->GetTargetElementCount() : 0);
 
-            if (index >= kPositiveElementCount)
+            if (index >= positiveElementCount)
             {
                 if (nullptr != negativeMapper)
-                    return negativeMapper->GetTargetElementAt(index - kPositiveElementCount);
+                    return negativeMapper->GetTargetElementAt(index - positiveElementCount);
             }
             else
             {

@@ -38,16 +38,16 @@ namespace XidiTest
     {
         constexpr TEffectValue kTestMagnitudes[] = {kEffectForceMagnitudeMinimum, kEffectForceMagnitudeZero, kEffectForceMagnitudeMaximum};
 
-        for (const auto kTestMagnitude : kTestMagnitudes)
+        for (const auto testMagnitude : kTestMagnitudes)
         {
             ConstantForceEffect effect;
             effect.InitializeDefaultAssociatedAxes();
             effect.InitializeDefaultDirection();
             effect.SetDuration(kTestEffectDuration);
-            effect.SetTypeSpecificParameters({.magnitude = kTestMagnitude});
+            effect.SetTypeSpecificParameters({.magnitude = testMagnitude});
 
             for (TEffectTimeMs t = 0; t < kTestEffectDuration; ++t)
-                TEST_ASSERT(kTestMagnitude == effect.ComputeMagnitude(t));
+                TEST_ASSERT(testMagnitude == effect.ComputeMagnitude(t));
         }
     }
 
@@ -57,18 +57,18 @@ namespace XidiTest
     {
         constexpr TEffectValue kTestMagnitudes[] = {kEffectForceMagnitudeMinimum, kEffectForceMagnitudeZero, kEffectForceMagnitudeMaximum};
 
-        for (const auto kTestMagnitude : kTestMagnitudes)
+        for (const auto testMagnitude : kTestMagnitudes)
         {
             ConstantForceEffect effect;
             effect.InitializeDefaultAssociatedAxes();
             effect.InitializeDefaultDirection();
             effect.SetDuration(kTestEffectDuration);
-            effect.SetTypeSpecificParameters({.magnitude = kTestMagnitude});
+            effect.SetTypeSpecificParameters({.magnitude = testMagnitude});
 
             effect.SetGain(kTestEffectGain);
 
             for (TEffectTimeMs t = 0; t < kTestEffectDuration; ++t)
-                TEST_ASSERT((kTestMagnitude * kTestEffectGain / kEffectModifierRelativeDenominator) == effect.ComputeMagnitude(t));
+                TEST_ASSERT((testMagnitude * kTestEffectGain / kEffectModifierRelativeDenominator) == effect.ComputeMagnitude(t));
         }
     }
 
@@ -153,11 +153,11 @@ namespace XidiTest
             ConstantForceEffect effect;
             TEST_ASSERT(true == effect.SetTypeSpecificParameters({.magnitude = kInputMagnitudes[i]}));
 
-            const auto kMaybeActualMagnitude = effect.GetTypeSpecificParameters();
-            TEST_ASSERT(true == kMaybeActualMagnitude.has_value());
+            const auto maybeActualMagnitude = effect.GetTypeSpecificParameters();
+            TEST_ASSERT(true == maybeActualMagnitude.has_value());
 
-            const TEffectValue kActualMagnitude = kMaybeActualMagnitude.value().magnitude;
-            TEST_ASSERT(kActualMagnitude == kExpectedMagnitudes[i]);
+            const TEffectValue actualMagnitude = maybeActualMagnitude.value().magnitude;
+            TEST_ASSERT(actualMagnitude == kExpectedMagnitudes[i]);
         }
     }
 }

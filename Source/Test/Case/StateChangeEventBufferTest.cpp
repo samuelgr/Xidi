@@ -161,14 +161,14 @@ namespace XidiTest
         // Check that the number of events actually maintained in the buffer is one less than its capacity.
         // This is documented buffer behavior intended for consistency with IDirectInputDevice8::GetDeviceData.
         constexpr uint32_t kExpectedEventCount = kEventBufferCapacity - 1;
-        const uint32_t kActualEventCount = testEventBuffer.GetCount();
-        TEST_ASSERT(kActualEventCount == kExpectedEventCount);
+        const uint32_t actualEventCount = testEventBuffer.GetCount();
+        TEST_ASSERT(actualEventCount == kExpectedEventCount);
 
         // Check the events themselves. The contents of the buffer should be the most-recently-appended events.
         for (int i = 0; i < kExpectedEventCount; ++i)
         {
-            const int kEventIndex = (_countof(kTestEventData) - kExpectedEventCount) + i;
-            TEST_ASSERT(testEventBuffer[i].data == kTestEventData[kEventIndex]);
+            const int eventIndex = (_countof(kTestEventData) - kExpectedEventCount) + i;
+            TEST_ASSERT(testEventBuffer[i].data == kTestEventData[eventIndex]);
         }
     }
 
@@ -189,14 +189,14 @@ namespace XidiTest
         testEventBuffer.SetCapacity(kEventBufferFinalCapacity);
         TEST_ASSERT(true == testEventBuffer.IsOverflowed());
 
-        constexpr uint32_t kExpectedEventCount = kEventBufferFinalCapacity - 1;
-        const uint32_t kActualEventCount = testEventBuffer.GetCount();
-        TEST_ASSERT(kActualEventCount == kExpectedEventCount);
+        const uint32_t expectedEventCount = kEventBufferFinalCapacity - 1;
+        const uint32_t actualEventCount = testEventBuffer.GetCount();
+        TEST_ASSERT(actualEventCount == expectedEventCount);
 
-        for (int i = 0; i < kExpectedEventCount; ++i)
+        for (int i = 0; i < expectedEventCount; ++i)
         {
-            const int kEventIndex = (_countof(kTestEventData) - kExpectedEventCount) + i;
-            TEST_ASSERT(testEventBuffer[i].data == kTestEventData[kEventIndex]);
+            const int eventIndex = (_countof(kTestEventData) - expectedEventCount) + i;
+            TEST_ASSERT(testEventBuffer[i].data == kTestEventData[eventIndex]);
         }
     }
 

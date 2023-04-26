@@ -455,17 +455,17 @@ namespace Xidi
                         // For there to be a successful element selection, the application must be requesting either the first instance or any instance of an axis of the specified type.
                         // Note that this behavior is based on the assumption that an axis instance number specified along with a GUID type is a relative constraint rather than an absolute constraint.
                         // For example, suppose the GUID is `GUID_XAxis` and the instance is number is `N`. A relative constraint says "match the Nth X axis" whereas an absolute constraint says "match the Nth axis on the controller, but only if it happens to be an X axis."
-                        const int kRequestedInstanceIndex = DIDFT_GETINSTANCE(objectFormatSpec.dwType);
-                        if (0 == kRequestedInstanceIndex || kWildcardInstanceIndex == kRequestedInstanceIndex)
+                        const int requestedInstanceIndex = DIDFT_GETINSTANCE(objectFormatSpec.dwType);
+                        if (0 == requestedInstanceIndex || kWildcardInstanceIndex == requestedInstanceIndex)
                             maybeSelectedElement = buildHelper.GetSpecificElement({.type = Controller::EElementType::Axis, .axis = maybeAxisType.value()});
                     }
                     else
                     {
-                        const int kRequestedInstanceIndex = DIDFT_GETINSTANCE(objectFormatSpec.dwType);
-                        if (kWildcardInstanceIndex == kRequestedInstanceIndex)
+                        const int requestedInstanceIndex = DIDFT_GETINSTANCE(objectFormatSpec.dwType);
+                        if (kWildcardInstanceIndex == requestedInstanceIndex)
                             maybeSelectedElement = buildHelper.GetNextAvailableOfType(Controller::EElementType::Axis);
-                        else if ((kRequestedInstanceIndex >= 0) && (kRequestedInstanceIndex < _countof(controllerCapabilities.axisCapabilities)))
-                            maybeSelectedElement = buildHelper.GetSpecificElement({.type = Controller::EElementType::Axis, .axis = controllerCapabilities.axisCapabilities[kRequestedInstanceIndex].type});
+                        else if ((requestedInstanceIndex >= 0) && (requestedInstanceIndex < _countof(controllerCapabilities.axisCapabilities)))
+                            maybeSelectedElement = buildHelper.GetSpecificElement({.type = Controller::EElementType::Axis, .axis = controllerCapabilities.axisCapabilities[requestedInstanceIndex].type});
                     }
                 } while (false);
 
@@ -484,11 +484,11 @@ namespace Xidi
                     }
 
                     // Applications can request the next available button or a specific button by number.
-                    const int kRequestedInstanceIndex = DIDFT_GETINSTANCE(objectFormatSpec.dwType);
-                    if (kWildcardInstanceIndex == kRequestedInstanceIndex)
+                    const int requestedInstanceIndex = DIDFT_GETINSTANCE(objectFormatSpec.dwType);
+                    if (kWildcardInstanceIndex == requestedInstanceIndex)
                         maybeSelectedElement = buildHelper.GetNextAvailableOfType(Controller::EElementType::Button);
                     else
-                        maybeSelectedElement = buildHelper.GetSpecificElement({.type = Controller::EElementType::Button, .button = (Controller::EButton)kRequestedInstanceIndex});
+                        maybeSelectedElement = buildHelper.GetSpecificElement({.type = Controller::EElementType::Button, .button = (Controller::EButton)requestedInstanceIndex });
                 } while (false);
 
                 // For debugging.
@@ -506,10 +506,10 @@ namespace Xidi
                     }
 
                     // Either zero or one POV elements exist on the virtual controller.
-                    const int kRequestedInstanceIndex = DIDFT_GETINSTANCE(objectFormatSpec.dwType);
-                    if (kWildcardInstanceIndex == kRequestedInstanceIndex)
+                    const int requestedInstanceIndex = DIDFT_GETINSTANCE(objectFormatSpec.dwType);
+                    if (kWildcardInstanceIndex == requestedInstanceIndex)
                         maybeSelectedElement = buildHelper.GetNextAvailableOfType(Controller::EElementType::Pov);
-                    else if (0 == kRequestedInstanceIndex)
+                    else if (0 == requestedInstanceIndex)
                         maybeSelectedElement = buildHelper.GetSpecificElement({.type = Controller::EElementType::Pov});
 
                     // Unselected POV offsets are tracked separately because they need to be initialized to a non-zero value when writing a data packet.

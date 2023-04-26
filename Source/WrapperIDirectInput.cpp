@@ -146,8 +146,8 @@ namespace Xidi
         {
             // Not a virtual controller GUID, so just create the device as requested by the application.
             // However, first dump some information about the device.
-            const HRESULT kCreateDeviceResult = underlyingDIObject->CreateDevice(rguid, lplpDirectInputDevice, pUnkOuter);
-            if (DI_OK == kCreateDeviceResult)
+            const HRESULT createDeviceResult = underlyingDIObject->CreateDevice(rguid, lplpDirectInputDevice, pUnkOuter);
+            if (DI_OK == createDeviceResult)
             {
                 if (GUID_SysKeyboard == rguid)
                 {
@@ -160,9 +160,9 @@ namespace Xidi
                 else
                 {
                     typename DirectInputType<charMode>::DeviceInstanceType deviceInfo = { .dwSize = sizeof(typename DirectInputType<charMode>::DeviceInstanceType) };
-                    const HRESULT kDeviceInfoResult = (*lplpDirectInputDevice)->GetDeviceInfo(&deviceInfo);
+                    const HRESULT deviceInfoResult = (*lplpDirectInputDevice)->GetDeviceInfo(&deviceInfo);
 
-                    if (DI_OK == kDeviceInfoResult)
+                    if (DI_OK == deviceInfoResult)
                         OutputProductName<charMode>(Message::ESeverity::Info, L"Binding to non-XInput device \"%s\". Xidi will not handle communication with it.", &deviceInfo);
                     else
                         Message::Output(Message::ESeverity::Info, L"Binding to an unknown non-XInput device. Xidi will not handle communication with it.");
@@ -170,22 +170,22 @@ namespace Xidi
             }
             else
             {
-                Message::OutputFormatted(Message::ESeverity::Info, L"Failed (code %u) to bind to a non-XInput device.", (unsigned int)kCreateDeviceResult);
+                Message::OutputFormatted(Message::ESeverity::Info, L"Failed (code %u) to bind to a non-XInput device.", (unsigned int)createDeviceResult);
             }
 
-            return kCreateDeviceResult;
+            return createDeviceResult;
         }
         else
         {
-            const Controller::TControllerIdentifier kVirtualControllerId = maybeVirtualControllerId.value();
+            const Controller::TControllerIdentifier virtualControllerId = maybeVirtualControllerId.value();
 
             // Is a virtual controller GUID, so create a virtual controller wrapped with a DirectInput interface.
-            Message::OutputFormatted(Message::ESeverity::Info, L"Binding to Xidi virtual controller %u.", (kVirtualControllerId + 1));
+            Message::OutputFormatted(Message::ESeverity::Info, L"Binding to Xidi virtual controller %u.", (virtualControllerId + 1));
 
             if (nullptr != pUnkOuter)
                 Message::Output(Message::ESeverity::Warning, L"Application requested COM aggregation, which is not implemented, while binding to a Xidi virtual controller.");
 
-            *lplpDirectInputDevice = new VirtualDirectInputDevice<charMode>(std::make_unique<Controller::VirtualController>(kVirtualControllerId));
+            *lplpDirectInputDevice = new VirtualDirectInputDevice<charMode>(std::make_unique<Controller::VirtualController>(virtualControllerId));
             return DI_OK;
         }
     }
@@ -202,7 +202,7 @@ namespace Xidi
         const DWORD gameControllerDevClass = DIDEVTYPE_JOYSTICK;
 #endif
 
-        const bool kForceFeedbackControllersOnly = (0 != (dwFlags & DIEDFL_FORCEFEEDBACK));
+        const bool forceFeedbackControllersOnly = (0 != (dwFlags & DIEDFL_FORCEFEEDBACK));
 
         SEnumDevicesCallbackInfo<charMode> callbackInfo;
         callbackInfo.instance = this;
@@ -235,7 +235,7 @@ namespace Xidi
             // These will be the first controllers seen by the application.
             if (systemHasXInputDevices)
             {
-                callbackInfo.callbackReturnCode = EnumerateVirtualControllers(lpCallback, pvRef, kForceFeedbackControllersOnly);
+                callbackInfo.callbackReturnCode = EnumerateVirtualControllers(lpCallback, pvRef, forceFeedbackControllersOnly);
 
                 if (DIENUM_STOP == callbackInfo.callbackReturnCode)
                 {
@@ -259,7 +259,7 @@ namespace Xidi
             // These will be the last controllers seen by the application.
             if (!systemHasXInputDevices)
             {
-                callbackInfo.callbackReturnCode = EnumerateVirtualControllers(lpCallback, pvRef, kForceFeedbackControllersOnly);
+                callbackInfo.callbackReturnCode = EnumerateVirtualControllers(lpCallback, pvRef, forceFeedbackControllersOnly);
 
                 if (DIENUM_STOP == callbackInfo.callbackReturnCode)
                 {

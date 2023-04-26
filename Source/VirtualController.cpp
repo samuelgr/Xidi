@@ -53,12 +53,12 @@ namespace Xidi
         /// @param [in] stopMonitoringToken Used to indicate that the monitoring should stop and the thread should exit.
         static void MonitorPhysicalControllerState(VirtualController* thisController, const SState& initialState, std::stop_token stopMonitoringToken)
         {
-            const TControllerIdentifier kControllerIdentifier = thisController->GetIdentifier();
+            const TControllerIdentifier controllerIdentifier = thisController->GetIdentifier();
             SState state = initialState;
 
             while (false == stopMonitoringToken.stop_requested())
             {
-                if (true == WaitForRawVirtualControllerStateChange(kControllerIdentifier, state, stopMonitoringToken))
+                if (true == WaitForRawVirtualControllerStateChange(controllerIdentifier, state, stopMonitoringToken))
                 {
                     if (true == thisController->RefreshState(state))
                         thisController->SignalStateChangeEvent();
@@ -76,16 +76,16 @@ namespace Xidi
         {
             if (true == eventBuffer.IsEnabled())
             {
-                const uint32_t kTimestamp = ImportApiWinMM::timeGetTime();
+                const uint32_t timestamp = ImportApiWinMM::timeGetTime();
 
                 for (unsigned int i = 0; i < oldState.axis.size(); ++i)
                 {
                     if (oldState.axis[i] != newState.axis[i])
                     {
-                        const SElementIdentifier kAxisElement = {.type = EElementType::Axis, .axis = (EAxis)i};
+                        const SElementIdentifier axisElement = {.type = EElementType::Axis, .axis = (EAxis)i};
 
-                        if (eventFilter.Contains(kAxisElement))
-                            eventBuffer.AppendEvent({.element = kAxisElement, .value = {.axis = newState.axis[i]}}, kTimestamp);
+                        if (eventFilter.Contains(axisElement))
+                            eventBuffer.AppendEvent({.element = axisElement, .value = {.axis = newState.axis[i]}}, timestamp);
                     }
                 }
 
@@ -93,19 +93,19 @@ namespace Xidi
                 {
                     if (oldState.button[i] != newState.button[i])
                     {
-                        const SElementIdentifier kButtonElement = {.type = EElementType::Button, .button = (EButton)i};
+                        const SElementIdentifier buttonElement = {.type = EElementType::Button, .button = (EButton)i};
 
-                        if (eventFilter.Contains(kButtonElement))
-                            eventBuffer.AppendEvent({.element = kButtonElement, .value = {.button = newState.button[i]}}, kTimestamp);
+                        if (eventFilter.Contains(buttonElement))
+                            eventBuffer.AppendEvent({.element = buttonElement, .value = {.button = newState.button[i]}}, timestamp);
                     }
                 }
 
                 if (oldState.povDirection.all != newState.povDirection.all)
                 {
-                    const SElementIdentifier kPovElement = {.type = EElementType::Pov};
+                    const SElementIdentifier povElement = {.type = EElementType::Pov};
 
-                    if (eventFilter.Contains(kPovElement))
-                        eventBuffer.AppendEvent({.element = kPovElement, .value = {.povDirection = {.all = newState.povDirection.all}}}, kTimestamp);
+                    if (eventFilter.Contains(povElement))
+                        eventBuffer.AppendEvent({.element = povElement, .value = {.povDirection = {.all = newState.povDirection.all}}}, timestamp);
                 }
             }
         }
@@ -173,11 +173,11 @@ namespace Xidi
 
         void VirtualController::ApplyProperties(SState& controllerState) const
         {
-            const SCapabilities kCapabilities = GetCapabilities();
+            const SCapabilities capabilities = GetCapabilities();
 
-            for (int i = 0; i < kCapabilities.numAxes; ++i)
+            for (int i = 0; i < capabilities.numAxes; ++i)
             {
-                const EAxis axis = kCapabilities.axisCapabilities[i].type;
+                const EAxis axis = capabilities.axisCapabilities[i].type;
                 controllerState[axis] = TransformAxisValue(controllerState[axis], properties[axis]);
             }
         }

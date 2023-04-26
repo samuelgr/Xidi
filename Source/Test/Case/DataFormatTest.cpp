@@ -237,12 +237,12 @@ namespace XidiTest
             controllerState[Controller::EPovDirection::Left] = povTestData.povLeft;
             controllerState[Controller::EPovDirection::Right] = povTestData.povRight;
 
-            const EPovValue kExpectedPovValue = povTestData.expectedPovValue;
-            const EPovValue kActualPovValue = DataFormat::DirectInputPovValue(controllerState.povDirection);
+            const EPovValue expectedPovValue = povTestData.expectedPovValue;
+            const EPovValue actualPovValue = DataFormat::DirectInputPovValue(controllerState.povDirection);
 
-            if (kActualPovValue != kExpectedPovValue)
+            if (actualPovValue != expectedPovValue)
             {
-                PrintFormatted(L"Wrong POV direction for states up=%s down=%s left=%s right=%s (expected %d, got %d).", ((true == povTestData.povUp) ? L"true" : L"false"), ((true == povTestData.povDown) ? L"true" : L"false"), ((true == povTestData.povLeft) ? L"true" : L"false"), ((true == povTestData.povRight) ? L"true" : L"false"), (int)kExpectedPovValue, (int)kActualPovValue);
+                PrintFormatted(L"Wrong POV direction for states up=%s down=%s left=%s right=%s (expected %d, got %d).", ((true == povTestData.povUp) ? L"true" : L"false"), ((true == povTestData.povDown) ? L"true" : L"false"), ((true == povTestData.povLeft) ? L"true" : L"false"), ((true == povTestData.povRight) ? L"true" : L"false"), (int)expectedPovValue, (int)actualPovValue);
                 numFailingInputs += 1;
             }
         }
@@ -316,16 +316,16 @@ namespace XidiTest
             ZeroMemory(&expectedDataPacket, sizeof(expectedDataPacket));
 
             TEST_ASSERT(true == dataFormat->GetElementForOffset(testObjectFormatSpec[i].dwOfs).has_value());
-            const SElementIdentifier kTestElement = dataFormat->GetElementForOffset(testObjectFormatSpec[i].dwOfs).value();
+            const SElementIdentifier testElement = dataFormat->GetElementForOffset(testObjectFormatSpec[i].dwOfs).value();
 
-            switch (kTestElement.type)
+            switch (testElement.type)
             {
             case EElementType::Axis:
-                *((TAxisValue*)(((size_t)&expectedDataPacket) + (size_t)testObjectFormatSpec[i].dwOfs)) = kTestControllerState[kTestElement.axis];
+                *((TAxisValue*)(((size_t)&expectedDataPacket) + (size_t)testObjectFormatSpec[i].dwOfs)) = kTestControllerState[testElement.axis];
                 break;
 
             case EElementType::Button:
-                *((TButtonValue*)(((size_t)&expectedDataPacket) + (size_t)testObjectFormatSpec[i].dwOfs)) = ((true == kTestControllerState[kTestElement.button]) ? DataFormat::kButtonValuePressed : DataFormat::kButtonValueNotPressed);
+                *((TButtonValue*)(((size_t)&expectedDataPacket) + (size_t)testObjectFormatSpec[i].dwOfs)) = ((true == kTestControllerState[testElement.button]) ? DataFormat::kButtonValuePressed : DataFormat::kButtonValueNotPressed);
                 break;
 
             case EElementType::Pov:
@@ -1439,8 +1439,8 @@ namespace XidiTest
             }
         };
 
-        for (const auto& kTestFormatSpec : kTestFormatSpecs)
-            TestDataFormatCreateFailure(kTestFormatSpec, kTestMapperWithPov.GetCapabilities());
+        for (const auto& testFormatSpec : kTestFormatSpecs)
+            TestDataFormatCreateFailure(testFormatSpec, kTestMapperWithPov.GetCapabilities());
     }
 
     // Flags are unsupported.

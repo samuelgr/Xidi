@@ -122,11 +122,11 @@ namespace Xidi
                     {L"NEGATIVE",       EAxisDirection::Negative}
                 };
 
-                const auto kDirectionIter = kDirectionStrings.find(directionString);
-                if (kDirectionStrings.cend() == kDirectionIter)
+                const auto directionIter = kDirectionStrings.find(directionString);
+                if (kDirectionStrings.cend() == directionIter)
                     return std::nullopt;
 
-                return kDirectionIter->second;
+                return directionIter->second;
             }
 
             /// Attempts to map a string to an axis type enumerator. This generic version does nothing.
@@ -182,11 +182,11 @@ namespace Xidi
                     {L"RotZ",           EAxis::RotZ}
                 };
 
-                const auto kAxisIter = kAxisStrings.find(axisString);
-                if (kAxisStrings.cend() == kAxisIter)
+                const auto axisIter = kAxisStrings.find(axisString);
+                if (kAxisStrings.cend() == axisIter)
                     return std::nullopt;
 
-                return kAxisIter->second;
+                return axisIter->second;
             }
 
             /// Attempts to map a string to an axis type enumerator, specialized for mouse axes.
@@ -233,11 +233,11 @@ namespace Xidi
                     {L"WheelVertical",      Mouse::EMouseAxis::WheelVertical}
                 };
 
-                const auto kMouseAxisIter = kMouseAxisStrings.find(axisString);
-                if (kMouseAxisStrings.cend() == kMouseAxisIter)
+                const auto mouseAxisIter = kMouseAxisStrings.find(axisString);
+                if (kMouseAxisStrings.cend() == mouseAxisIter)
                     return std::nullopt;
 
-                return kMouseAxisIter->second;
+                return mouseAxisIter->second;
             }
 
             /// Identifies the end position of the first parameter in the supplied string which should be a parameter list.
@@ -321,11 +321,11 @@ namespace Xidi
                 if (true == paramParts.first.empty())
                     return L"Missing or unparseable axis";
 
-                const std::optional<AxisEnumType> kMaybeAxis = AxisTypeFromString<AxisEnumType>(paramParts.first);
-                if (false == kMaybeAxis.has_value())
+                const std::optional<AxisEnumType> maybeAxis = AxisTypeFromString<AxisEnumType>(paramParts.first);
+                if (false == maybeAxis.has_value())
                     return Strings::FormatString(L"%s: Unrecognized axis", std::wstring(paramParts.first).c_str()).Data();
 
-                const AxisEnumType kAxis = kMaybeAxis.value();
+                const AxisEnumType axis = maybeAxis.value();
 
                 // Second parameter is optional. It is a string that specifies the axis direction, with the default being both.
                 EAxisDirection axisDirection = EAxisDirection::Both;
@@ -334,18 +334,18 @@ namespace Xidi
                 if (false == paramParts.first.empty())
                 {
                     // It is an error for a second parameter to be present but invalid.
-                    const std::optional<EAxisDirection> kMaybeAxisDirection = AxisDirectionFromString(paramParts.first);
-                    if (false == kMaybeAxisDirection.has_value())
+                    const std::optional<EAxisDirection> maybeAxisDirection = AxisDirectionFromString(paramParts.first);
+                    if (false == maybeAxisDirection.has_value())
                         return Strings::FormatString(L"%s: Unrecognized axis direction", std::wstring(paramParts.first).c_str()).Data();
 
-                    axisDirection = kMaybeAxisDirection.value();
+                    axisDirection = maybeAxisDirection.value();
                 }
 
                 // No further parameters allowed.
                 if (false == paramParts.remaining.empty())
                     return Strings::FormatString(L"\"%s\" is extraneous", std::wstring(paramParts.remaining).c_str()).Data();
 
-                return SAxisParams<AxisEnumType>({.axis = kAxis, .direction = axisDirection});
+                return SAxisParams<AxisEnumType>({.axis = axis, .direction = axisDirection});
             }
 
             /// Parses a relatively small unsigned integer value from the supplied input string.
@@ -672,11 +672,11 @@ namespace Xidi
             /// @return Trimmed version of the input string, which may be empty if the input string is entirely whitespace.
             static inline std::wstring_view TrimWhitespaceBack(std::wstring_view stringToTrim)
             {
-                const size_t kLastNonWhitespacePosition = stringToTrim.find_last_not_of(kCharSetWhitespace);
-                if (std::wstring_view::npos == kLastNonWhitespacePosition)
+                const size_t lastNonWhitespacePosition = stringToTrim.find_last_not_of(kCharSetWhitespace);
+                if (std::wstring_view::npos == lastNonWhitespacePosition)
                     return std::wstring_view();
 
-                return stringToTrim.substr(0, 1 + kLastNonWhitespacePosition);
+                return stringToTrim.substr(0, 1 + lastNonWhitespacePosition);
             }
 
             /// Trims all whitespace from the front of the supplied string.
@@ -684,11 +684,11 @@ namespace Xidi
             /// @return Trimmed version of the input string, which may be empty if the input string is entirely whitespace.
             static inline std::wstring_view TrimWhitespaceFront(std::wstring_view stringToTrim)
             {
-                const size_t kFirstNonWhitespacePosition = stringToTrim.find_first_not_of(kCharSetWhitespace);
-                if (std::wstring_view::npos == kFirstNonWhitespacePosition)
+                const size_t firstNonWhitespacePosition = stringToTrim.find_first_not_of(kCharSetWhitespace);
+                if (std::wstring_view::npos == firstNonWhitespacePosition)
                     return std::wstring_view();
 
-                return stringToTrim.substr(kFirstNonWhitespacePosition);
+                return stringToTrim.substr(firstNonWhitespacePosition);
             }
 
             /// Trims all whitespace from the front and back of the supplied string.
@@ -759,8 +759,8 @@ namespace Xidi
 
             ElementMapperOrError ElementMapperFromString(std::wstring_view elementMapperString)
             {
-                const std::optional<unsigned int>kMaybeRecursionDepth = ComputeRecursionDepth(elementMapperString);
-                if (false == kMaybeRecursionDepth.has_value())
+                const std::optional<unsigned int>maybeRecursionDepth = ComputeRecursionDepth(elementMapperString);
+                if (false == maybeRecursionDepth.has_value())
                     return Strings::FormatString(L"Syntax error: Unbalanced parentheses").Data();
 
                 const unsigned int kRecursionDepth = ComputeRecursionDepth(elementMapperString).value();
@@ -780,8 +780,8 @@ namespace Xidi
 
             ForceFeedbackActuatorOrError ForceFeedbackActuatorFromString(std::wstring_view ffActuatorString)
             {
-                const std::optional<unsigned int>kMaybeRecursionDepth = ComputeRecursionDepth(ffActuatorString);
-                if (false == kMaybeRecursionDepth.has_value())
+                const std::optional<unsigned int>maybeRecursionDepth = ComputeRecursionDepth(ffActuatorString);
+                if (false == maybeRecursionDepth.has_value())
                     return Strings::FormatString(L"Syntax error: Unbalanced parentheses").Data();
 
                 const unsigned int kRecursionDepth = ComputeRecursionDepth(ffActuatorString).value();
@@ -835,9 +835,9 @@ namespace Xidi
                 // Example: "Axis(X)" means the type is "Axis"
                 // Example: "Split(Null, Pov(Up))" means the type is "Split"
                 // Example: "Null, Pov(Up)" (parameters in the above example) means the type is "Null"
-                const size_t kSeparatorPosition = elementMapperString.find_first_of(kCharSetElementMapperTypeSeparator);
+                const size_t separatorPosition = elementMapperString.find_first_of(kCharSetElementMapperTypeSeparator);
 
-                if (std::wstring_view::npos == kSeparatorPosition)
+                if (std::wstring_view::npos == separatorPosition)
                 {
                     // No separator characters were found at all.
                     // Example: "Null" in which case we got to the end of the string with no separator character identified.
@@ -845,41 +845,41 @@ namespace Xidi
                     // The entire string is consumed and is the type. There are no parameters and no remaining parts to the string.
                     return SStringParts({.type = TrimWhitespace(elementMapperString)});
                 }
-                else if (kCharElementMapperBeginParams != elementMapperString[kSeparatorPosition])
+                else if (kCharElementMapperBeginParams != elementMapperString[separatorPosition])
                 {
                     // A separator character was found but it does not begin a parameter list.
                     // Example: "Null, Pov(Up)" in which case we parsed the "Null" and stopped at the comma.
 
                     // The only possible separator character in this situation is a comma, otherwise it is an error.
-                    if (kCharElementMapperParamSeparator != elementMapperString[kSeparatorPosition])
+                    if (kCharElementMapperParamSeparator != elementMapperString[separatorPosition])
                         return std::nullopt;
 
                     // Type string goes up to the separator character and the remaining part of the string comes afterwards.
-                    const std::wstring_view kTypeString = TrimWhitespace(elementMapperString.substr(0, kSeparatorPosition));
-                    const std::wstring_view kRemainingString = TrimWhitespace(elementMapperString.substr(1 + kSeparatorPosition));
+                    const std::wstring_view typeString = TrimWhitespace(elementMapperString.substr(0, separatorPosition));
+                    const std::wstring_view remainingString = TrimWhitespace(elementMapperString.substr(1 + separatorPosition));
 
                     // If the remaining string is empty, it means the comma is a dangling comma which is a syntax error.
-                    if (true == kRemainingString.empty())
+                    if (true == remainingString.empty())
                         return std::nullopt;
 
-                    return SStringParts({.type = kTypeString, .remaining = kRemainingString});
+                    return SStringParts({.type = typeString, .remaining = remainingString });
                 }
                 else
                 {
                     // A separator character was found and it does begin a parameter list.
                     // Example: "Axis(X)" and "Split(Null, Pov(Up))" in both of which cases we stopped at the open parenthesis character.
-                    const size_t kParamListStartPos = 1 + kSeparatorPosition;
-                    const size_t kParamListLength = FindParamListEndPosition(elementMapperString.substr(kParamListStartPos));
-                    const size_t kParamListEndPos = kParamListLength + kParamListStartPos;
+                    const size_t paramListStartPos = 1 + separatorPosition;
+                    const size_t paramListLength = FindParamListEndPosition(elementMapperString.substr(paramListStartPos));
+                    const size_t paramListEndPos = paramListLength + paramListStartPos;
 
                     // It is an error if a parameter list starting character was found with no matching end character.
-                    if (std::wstring_view::npos == kParamListLength)
+                    if (std::wstring_view::npos == paramListLength)
                         return std::nullopt;
                                         
                     // Figure out what part of the string is remaining. It is possible that there is nothing left or that we stopped at a comma.
                     // Example: "Axis(X)" in which case "Axis" is the type, "X" is the parameter string, and there is nothing left as a remainder. This is true whether or not there are dangling whitespace characters at the end of the input.
                     // Example: "Split(Button(1), Button(2)), Split(Button(3), Button(4))" in which case "Split" is the type, "Button(1), Button(2)" is the parameter string, and we need to skip over the comma to obtain "Split(Button(3), Button(4))" as the remaining string.
-                    std::wstring_view possibleRemainingString = TrimWhitespaceFront(elementMapperString.substr(1 + kParamListEndPos));
+                    std::wstring_view possibleRemainingString = TrimWhitespaceFront(elementMapperString.substr(1 + paramListEndPos));
                     if (false == possibleRemainingString.empty())
                     {
                         // The only possible separator that would have given rise to this situation is a comma.
@@ -893,16 +893,16 @@ namespace Xidi
                             return std::nullopt;
                     }
                     
-                    const std::wstring_view kTypeString = TrimWhitespace(elementMapperString.substr(0, kSeparatorPosition));
-                    const std::wstring_view kParamString = TrimWhitespace(elementMapperString.substr(kParamListStartPos, kParamListLength));
+                    const std::wstring_view typeString = TrimWhitespace(elementMapperString.substr(0, separatorPosition));
+                    const std::wstring_view paramString = TrimWhitespace(elementMapperString.substr(paramListStartPos, paramListLength));
 
                     // Empty parameter lists are not allowed.
-                    if (true == kParamString.empty())
+                    if (true == paramString.empty())
                         return std::nullopt;
 
-                    const std::wstring_view kRemainingString = possibleRemainingString;
+                    const std::wstring_view remainingString = possibleRemainingString;
 
-                    return SStringParts({.type = kTypeString, .params = kParamString, .remaining = kRemainingString});
+                    return SStringParts({.type = typeString, .params = paramString, .remaining = remainingString});
                 }
             }
 
@@ -925,51 +925,51 @@ namespace Xidi
 
             std::optional<SParamStringParts> ExtractParameterListStringParts(std::wstring_view paramListString)
             {
-                const size_t kFirstParamEndPosition = FindFirstParameterEndPosition(paramListString);
+                const size_t firstParamEndPosition = FindFirstParameterEndPosition(paramListString);
 
-                if (std::wstring_view::npos == kFirstParamEndPosition)
+                if (std::wstring_view::npos == firstParamEndPosition)
                     return std::nullopt;
                 
-                const std::wstring_view kFirstParamString = TrimWhitespace(paramListString.substr(0, kFirstParamEndPosition));
+                const std::wstring_view firstParamString = TrimWhitespace(paramListString.substr(0, firstParamEndPosition));
 
-                if (paramListString.length() == kFirstParamEndPosition)
+                if (paramListString.length() == firstParamEndPosition)
                 {
                     // Entire input string was consumed and no comma was located.
-                    return SParamStringParts({.first = kFirstParamString});
+                    return SParamStringParts({.first = firstParamString});
                 }
                 
-                const std::wstring_view kRemainingString = TrimWhitespace(paramListString.substr(1 + kFirstParamEndPosition));
+                const std::wstring_view remainingString = TrimWhitespace(paramListString.substr(1 + firstParamEndPosition));
 
-                if (true == kRemainingString.empty())
+                if (true == remainingString.empty())
                 {
                     // A comma was located but nothing appears after it.
                     // This is an error because it indicates a dangling comma.
                     return std::nullopt;
                 }
 
-                return SParamStringParts({.first = kFirstParamString, .remaining = kRemainingString});
+                return SParamStringParts({.first = firstParamString, .remaining = remainingString});
             }
 
             // --------
 
             ElementMapperOrError MakeAxisMapper(std::wstring_view params)
             {
-                const AxisParamsOrError<EAxis> kMaybeAxisMapperParams = ParseAxisParams<EAxis>(params);
-                if (true == kMaybeAxisMapperParams.HasError())
-                    return Strings::FormatString(L"Axis: %s", kMaybeAxisMapperParams.Error().c_str()).Data();
+                const AxisParamsOrError<EAxis> maybeAxisMapperParams = ParseAxisParams<EAxis>(params);
+                if (true == maybeAxisMapperParams.HasError())
+                    return Strings::FormatString(L"Axis: %s", maybeAxisMapperParams.Error().c_str()).Data();
 
-                return std::make_unique<AxisMapper>(kMaybeAxisMapperParams.Value().axis, kMaybeAxisMapperParams.Value().direction);
+                return std::make_unique<AxisMapper>(maybeAxisMapperParams.Value().axis, maybeAxisMapperParams.Value().direction);
             }
 
             // --------
 
             ElementMapperOrError MakeButtonMapper(std::wstring_view params)
             {
-                const std::optional<unsigned int> kMaybeButtonNumber = ParseUnsignedInteger(params, 10);
-                if (false == kMaybeButtonNumber.has_value())
+                const std::optional<unsigned int> maybeButtonNumber = ParseUnsignedInteger(params, 10);
+                if (false == maybeButtonNumber.has_value())
                     return Strings::FormatString(L"Button: Parameter \"%s\" must be a number between 1 and %u", std::wstring(params).c_str(), (unsigned int)EButton::Count).Data();
 
-                const unsigned int kButtonNumber = kMaybeButtonNumber.value() - 1;
+                const unsigned int kButtonNumber = maybeButtonNumber.value() - 1;
                 if (kButtonNumber >= (unsigned int)EButton::Count)
                     return Strings::FormatString(L"Button: Parameter \"%s\" must be a number between 1 and %u", std::wstring(params).c_str(), (unsigned int)EButton::Count).Data();
 
@@ -1009,11 +1009,11 @@ namespace Xidi
 
             ElementMapperOrError MakeDigitalAxisMapper(std::wstring_view params)
             {
-                const AxisParamsOrError<EAxis> kMaybeAxisMapperParams = ParseAxisParams<EAxis>(params);
-                if (true == kMaybeAxisMapperParams.HasError())
-                    return Strings::FormatString(L"DigitalAxis: %s", kMaybeAxisMapperParams.Error().c_str()).Data();
+                const AxisParamsOrError<EAxis> maybeAxisMapperParams = ParseAxisParams<EAxis>(params);
+                if (true == maybeAxisMapperParams.HasError())
+                    return Strings::FormatString(L"DigitalAxis: %s", maybeAxisMapperParams.Error().c_str()).Data();
 
-                return std::make_unique<DigitalAxisMapper>(kMaybeAxisMapperParams.Value().axis, kMaybeAxisMapperParams.Value().direction);
+                return std::make_unique<DigitalAxisMapper>(maybeAxisMapperParams.Value().axis, maybeAxisMapperParams.Value().direction);
             }
 
             // --------
@@ -1054,11 +1054,11 @@ namespace Xidi
 
             ElementMapperOrError MakeMouseAxisMapper(std::wstring_view params)
             {
-                const AxisParamsOrError<Mouse::EMouseAxis> kMaybeMouseAxisMapperParams = ParseAxisParams<Mouse::EMouseAxis>(params);
-                if (true == kMaybeMouseAxisMapperParams.HasError())
-                    return Strings::FormatString(L"MouseAxis: %s", kMaybeMouseAxisMapperParams.Error().c_str()).Data();
+                const AxisParamsOrError<Mouse::EMouseAxis> maybeMouseAxisMapperParams = ParseAxisParams<Mouse::EMouseAxis>(params);
+                if (true == maybeMouseAxisMapperParams.HasError())
+                    return Strings::FormatString(L"MouseAxis: %s", maybeMouseAxisMapperParams.Error().c_str()).Data();
 
-                return std::make_unique<MouseAxisMapper>(kMaybeMouseAxisMapperParams.Value().axis, kMaybeMouseAxisMapperParams.Value().direction);
+                return std::make_unique<MouseAxisMapper>(maybeMouseAxisMapperParams.Value().axis, maybeMouseAxisMapperParams.Value().direction);
             }
 
             // --------
@@ -1069,8 +1069,8 @@ namespace Xidi
                 if (false == maybeMouseButton.has_value())
                     return Strings::FormatString(L"MouseButton: \"%s\" must map to a valid mouse button", std::wstring(params).c_str()).Data();
 
-                const Mouse::EMouseButton kMouseButton = maybeMouseButton.value();
-                return std::make_unique<MouseButtonMapper>(kMouseButton);
+                const Mouse::EMouseButton mouseButton = maybeMouseButton.value();
+                return std::make_unique<MouseButtonMapper>(mouseButton);
             }
 
             // --------
@@ -1123,11 +1123,11 @@ namespace Xidi
                     {L"RIGHT",          EPovDirection::Right},
                 };
 
-                const auto kPovDirectionIter = kPovDirectionStrings.find(params);
-                if (kPovDirectionStrings.cend() == kPovDirectionIter)
+                const auto povDirectionIter = kPovDirectionStrings.find(params);
+                if (kPovDirectionStrings.cend() == povDirectionIter)
                     return Strings::FormatString(L"Pov: %s: Unrecognized POV direction", std::wstring(params).c_str()).Data();
 
-                return std::make_unique<PovMapper>(kPovDirectionIter->second);
+                return std::make_unique<PovMapper>(povDirectionIter->second);
             }
 
             // --------
@@ -1158,9 +1158,9 @@ namespace Xidi
                 if (false == params.empty())
                     return Strings::FormatString(L"Default: \"%s\" is extraneous", std::wstring(params).c_str()).Data();
 
-                const ForceFeedback::SActuatorElement kActuatorElement = Mapper::kDefaultForceFeedbackActuator;
+                const ForceFeedback::SActuatorElement actuatorElement = Mapper::kDefaultForceFeedbackActuator;
                 
-                return kActuatorElement;
+                return actuatorElement;
             }
 
             // --------
@@ -1170,29 +1170,29 @@ namespace Xidi
                 if (false == params.empty())
                     return Strings::FormatString(L"Disabled: \"%s\" is extraneous", std::wstring(params).c_str()).Data();
 
-                const ForceFeedback::SActuatorElement kActuatorElement = {.isPresent = false};
+                const ForceFeedback::SActuatorElement actuatorElement = {.isPresent = false};
 
-                return kActuatorElement;
+                return actuatorElement;
             }
 
             // --------
 
             ForceFeedbackActuatorOrError MakeForceFeedbackActuatorSingleAxis(std::wstring_view params)
             {
-                const AxisParamsOrError<EAxis> kMaybeAxisMapperParams = ParseAxisParams<EAxis>(params);
-                if (true == kMaybeAxisMapperParams.HasError())
-                    return Strings::FormatString(L"SingleAxis: %s", kMaybeAxisMapperParams.Error().c_str()).Data();
+                const AxisParamsOrError<EAxis> maybeAxisMapperParams = ParseAxisParams<EAxis>(params);
+                if (true == maybeAxisMapperParams.HasError())
+                    return Strings::FormatString(L"SingleAxis: %s", maybeAxisMapperParams.Error().c_str()).Data();
 
-                const ForceFeedback::SActuatorElement kActuatorElement = {
+                const ForceFeedback::SActuatorElement actuatorElement = {
                     .isPresent = true,
                     .mode = ForceFeedback::EActuatorMode::SingleAxis,
                     .singleAxis = {
-                        .axis = kMaybeAxisMapperParams.Value().axis,
-                        .direction = kMaybeAxisMapperParams.Value().direction
+                        .axis = maybeAxisMapperParams.Value().axis,
+                        .direction = maybeAxisMapperParams.Value().direction
                     }
                 };
 
-                return kActuatorElement;
+                return actuatorElement;
             }
 
             // --------
@@ -1205,39 +1205,39 @@ namespace Xidi
                 if (true == paramParts.first.empty())
                     return L"MagnitudeProjection: Missing or unparseable first axis";
 
-                const std::optional<EAxis> kMaybeAxisFirst = AxisTypeFromString<EAxis>(paramParts.first);
-                if (false == kMaybeAxisFirst.has_value())
+                const std::optional<EAxis> maybeAxisFirst = AxisTypeFromString<EAxis>(paramParts.first);
+                if (false == maybeAxisFirst.has_value())
                     return Strings::FormatString(L"MagnitudeProjection: %s: Unrecognized first axis", std::wstring(paramParts.first).c_str()).Data();
 
-                const EAxis kAxisFirst = kMaybeAxisFirst.value();
+                const EAxis axisFirst = maybeAxisFirst.value();
 
                 // Second parameter is required. It is a string that specifies the second axis in the projection.
                 paramParts = ExtractParameterListStringParts(paramParts.remaining).value_or(SParamStringParts());
                 if (true == paramParts.first.empty())
                     return L"MagnitudeProjection: Missing or unparseable second axis";
 
-                const std::optional<EAxis> kMaybeAxisSecond = AxisTypeFromString<EAxis>(paramParts.first);
-                if (false == kMaybeAxisSecond.has_value())
+                const std::optional<EAxis> maybeAxisSecond = AxisTypeFromString<EAxis>(paramParts.first);
+                if (false == maybeAxisSecond.has_value())
                     return Strings::FormatString(L"MagnitudeProjection: %s: Unrecognized second axis", std::wstring(paramParts.first).c_str()).Data();
 
-                const EAxis kAxisSecond = kMaybeAxisSecond.value();
-                if (kAxisFirst == kAxisSecond)
+                const EAxis axisSecond = maybeAxisSecond.value();
+                if (axisFirst == axisSecond)
                     return L"MagnitudeProjection: Axes must be different";
 
                 // No further parameters allowed.
                 if (false == paramParts.remaining.empty())
                     return Strings::FormatString(L"\"%s\" is extraneous", std::wstring(paramParts.remaining).c_str()).Data();
 
-                const ForceFeedback::SActuatorElement kActuatorElement = {
+                const ForceFeedback::SActuatorElement actuatorElement = {
                     .isPresent = true,
                     .mode = ForceFeedback::EActuatorMode::MagnitudeProjection,
                     .magnitudeProjection = {
-                        .axisFirst = kAxisFirst,
-                        .axisSecond = kAxisSecond
+                        .axisFirst = axisFirst,
+                        .axisSecond = axisSecond
                     }
                 };
 
-                return kActuatorElement;
+                return actuatorElement;
             }
 
             // --------
@@ -1297,19 +1297,19 @@ namespace Xidi
                     {L"Split",                  &MakeSplitMapper}
                 };
 
-                const std::optional<SStringParts> kMaybeElementMapperStringParts = ExtractElementMapperStringParts(elementMapperString);
-                if (false == kMaybeElementMapperStringParts.has_value())
+                const std::optional<SStringParts> maybeElementMapperStringParts = ExtractElementMapperStringParts(elementMapperString);
+                if (false == maybeElementMapperStringParts.has_value())
                     return {.maybeElementMapper = Strings::FormatString(L"\"%s\" contains a syntax error", std::wstring(elementMapperString).c_str()).Data()};
 
-                const SStringParts& kElementMapperStringParts = kMaybeElementMapperStringParts.value();
-                if (true == kElementMapperStringParts.type.empty())
+                const SStringParts& elementMapperStringParts = maybeElementMapperStringParts.value();
+                if (true == elementMapperStringParts.type.empty())
                     return {.maybeElementMapper = L"Missing or unparseable element mapper type."};
 
-                const auto kMakeElementMapperIter = kMakeElementMapperFunctions.find(kElementMapperStringParts.type);
-                if (kMakeElementMapperFunctions.cend() == kMakeElementMapperIter)
-                    return {.maybeElementMapper = Strings::FormatString(L"%s: Unrecognized element mapper type", std::wstring(kElementMapperStringParts.type).c_str()).Data()};
+                const auto makeElementMapperIter = kMakeElementMapperFunctions.find(elementMapperStringParts.type);
+                if (kMakeElementMapperFunctions.cend() == makeElementMapperIter)
+                    return {.maybeElementMapper = Strings::FormatString(L"%s: Unrecognized element mapper type", std::wstring(elementMapperStringParts.type).c_str()).Data()};
 
-                return {.maybeElementMapper = kMakeElementMapperIter->second(kElementMapperStringParts.params), .remainingString = kElementMapperStringParts.remaining};
+                return {.maybeElementMapper = makeElementMapperIter->second(elementMapperStringParts.params), .remainingString = elementMapperStringParts.remaining};
             }
 
             // --------
@@ -1344,19 +1344,19 @@ namespace Xidi
                     {L"MagnitudeProjection",    &MakeForceFeedbackActuatorMagnitudeProjection}
                 };
 
-                const std::optional<SStringParts> kMaybeForceFeedbackActuatorStringParts = ExtractForceFeedbackActuatorStringParts(ffActuatorString);
-                if (false == kMaybeForceFeedbackActuatorStringParts.has_value())
+                const std::optional<SStringParts> maybeForceFeedbackActuatorStringParts = ExtractForceFeedbackActuatorStringParts(ffActuatorString);
+                if (false == maybeForceFeedbackActuatorStringParts.has_value())
                     return Strings::FormatString(L"\"%s\" contains a syntax error", std::wstring(ffActuatorString).c_str()).Data();
 
-                const SStringParts& kForceFeedbackActuatorStringParts = kMaybeForceFeedbackActuatorStringParts.value();
+                const SStringParts& kForceFeedbackActuatorStringParts = maybeForceFeedbackActuatorStringParts.value();
                 if (true == kForceFeedbackActuatorStringParts.type.empty())
                     return L"Missing or unparseable element mapper type.";
 
-                const auto kMakeForceFeedbackActuatorIter = kMakeForceFeedbackActuatorFunctions.find(kForceFeedbackActuatorStringParts.type);
-                if (kMakeForceFeedbackActuatorFunctions.cend() == kMakeForceFeedbackActuatorIter)
+                const auto makeForceFeedbackActuatorIter = kMakeForceFeedbackActuatorFunctions.find(kForceFeedbackActuatorStringParts.type);
+                if (kMakeForceFeedbackActuatorFunctions.cend() == makeForceFeedbackActuatorIter)
                     return Strings::FormatString(L"%s: Unrecognized force feedback actuator mode", std::wstring(kForceFeedbackActuatorStringParts.type).c_str()).Data();
 
-                return kMakeForceFeedbackActuatorIter->second(kForceFeedbackActuatorStringParts.params);
+                return makeForceFeedbackActuatorIter->second(kForceFeedbackActuatorStringParts.params);
             }
         }
     }

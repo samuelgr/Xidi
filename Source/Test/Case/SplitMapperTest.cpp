@@ -362,16 +362,16 @@ namespace XidiTest
             ZeroMemory(&tempStateBuffer, sizeof(tempStateBuffer));
             axisMapper.ContributeFromAnalogValue(tempStateBuffer, (int16_t)analogValue);
 
-            const int32_t kExpectedAxisValue = tempStateBuffer[kTargetAxis];
+            const int32_t expectedAxisValue = tempStateBuffer[kTargetAxis];
 
             ZeroMemory(&tempStateBuffer, sizeof(tempStateBuffer));
             splitMapper.ContributeFromAnalogValue(tempStateBuffer, (int16_t)analogValue);
 
-            const int32_t kActualAxisValue = (analogValue >= kAnalogValueNeutral) ? tempStateBuffer[kTargetSplitAxes.positive] : tempStateBuffer[kTargetSplitAxes.negative];
-            const int32_t kSupposedlyUntouchedAxisValue = (analogValue >= kAnalogValueNeutral) ? tempStateBuffer[kTargetSplitAxes.negative] : tempStateBuffer[kTargetSplitAxes.positive];
+            const int32_t actualAxisValue = (analogValue >= kAnalogValueNeutral) ? tempStateBuffer[kTargetSplitAxes.positive] : tempStateBuffer[kTargetSplitAxes.negative];
+            const int32_t supposedlyUntouchedAxisValue = (analogValue >= kAnalogValueNeutral) ? tempStateBuffer[kTargetSplitAxes.negative] : tempStateBuffer[kTargetSplitAxes.positive];
 
-            TEST_ASSERT(kActualAxisValue == kExpectedAxisValue);
-            TEST_ASSERT(0 == kSupposedlyUntouchedAxisValue);
+            TEST_ASSERT(actualAxisValue == expectedAxisValue);
+            TEST_ASSERT(0 == supposedlyUntouchedAxisValue);
         }
     }
 }

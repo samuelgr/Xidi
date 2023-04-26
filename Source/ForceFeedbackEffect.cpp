@@ -141,9 +141,9 @@ namespace Xidi
 
             TEffectValue PeriodicEffect::ComputePhase(TEffectTimeMs rawTime) const
             {
-                const TEffectValue kRawTimeInPeriods = (TEffectValue)rawTime / (TEffectValue)GetTypeSpecificParameters().value().period;
+                const TEffectValue rawTimeInPeriods = (TEffectValue)rawTime / (TEffectValue)GetTypeSpecificParameters().value().period;
 
-                TEffectValue currentPhase = std::round(((kRawTimeInPeriods - floorf(kRawTimeInPeriods)) * 36000) + GetTypeSpecificParameters().value().phase);
+                TEffectValue currentPhase = std::round(((rawTimeInPeriods - floorf(rawTimeInPeriods)) * 36000) + GetTypeSpecificParameters().value().phase);
                 if (currentPhase >= 36000)
                     currentPhase -= 36000;
 
@@ -154,22 +154,22 @@ namespace Xidi
 
             TEffectValue ConstantForceEffect::ComputeRawMagnitude(TEffectTimeMs rawTime) const
             {
-                const TEffectValue kMagnitude = GetTypeSpecificParameters().value().magnitude;
+                const TEffectValue magnitude = GetTypeSpecificParameters().value().magnitude;
 
-                if (kMagnitude >= 0)
-                    return ApplyEnvelope(rawTime, kMagnitude);
+                if (magnitude >= 0)
+                    return ApplyEnvelope(rawTime, magnitude);
                 else
-                    return -ApplyEnvelope(rawTime, -kMagnitude);
+                    return -ApplyEnvelope(rawTime, -magnitude);
             }
 
             // --------
 
             TEffectValue PeriodicEffect::ComputeRawMagnitude(TEffectTimeMs rawTime) const
             {
-                const TEffectValue kModifiedAmplitude = ApplyEnvelope(rawTime, GetTypeSpecificParameters().value().amplitude);
-                const TEffectValue kRawMagnitude = (kModifiedAmplitude * WaveformAmplitude(ComputePhase(rawTime))) + GetTypeSpecificParameters().value().offset;
+                const TEffectValue modifiedAmplitude = ApplyEnvelope(rawTime, GetTypeSpecificParameters().value().amplitude);
+                const TEffectValue rawMagnitude = (modifiedAmplitude * WaveformAmplitude(ComputePhase(rawTime))) + GetTypeSpecificParameters().value().offset;
 
-                return std::min(kEffectForceMagnitudeMaximum, std::max(kEffectForceMagnitudeMinimum, kRawMagnitude));
+                return std::min(kEffectForceMagnitudeMaximum, std::max(kEffectForceMagnitudeMinimum, rawMagnitude));
             }
 
             // --------
@@ -177,15 +177,15 @@ namespace Xidi
             TEffectValue RampForceEffect::ComputeRawMagnitude(TEffectTimeMs rawTime) const
             {
                 const SRampForceParameters& rampParameters = GetTypeSpecificParameters().value();
-                const TEffectValue kSlope = (rampParameters.magnitudeEnd - rampParameters.magnitudeStart) / GetDuration().value();
-                const TEffectValue kIntercept = rampParameters.magnitudeStart;
+                const TEffectValue slope = (rampParameters.magnitudeEnd - rampParameters.magnitudeStart) / GetDuration().value();
+                const TEffectValue intercept = rampParameters.magnitudeStart;
 
-                const TEffectValue kMagnitude = ((rawTime * kSlope) + kIntercept);
+                const TEffectValue magnitude = ((rawTime * slope) + intercept);
 
-                if (kMagnitude >= 0)
-                    return ApplyEnvelope(rawTime, kMagnitude);
+                if (magnitude >= 0)
+                    return ApplyEnvelope(rawTime, magnitude);
                 else
-                    return -ApplyEnvelope(rawTime, -kMagnitude);
+                    return -ApplyEnvelope(rawTime, -magnitude);
             }
 
             // --------

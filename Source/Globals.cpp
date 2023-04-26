@@ -129,13 +129,13 @@ namespace Xidi
         /// Enables the log, if it is configured in the configuration file.
         static void EnableLogIfConfigured(void)
         {
-            const bool kLogEnabled = GetConfigurationData().GetFirstBooleanValue(Strings::kStrConfigurationSectionLog, Strings::kStrConfigurationSettingLogEnabled).value_or(false);
-            const int64_t kLogLevel = GetConfigurationData().GetFirstIntegerValue(Strings::kStrConfigurationSectionLog, Strings::kStrConfigurationSettingLogLevel).value_or(0);
+            const bool logEnabled = GetConfigurationData().GetFirstBooleanValue(Strings::kStrConfigurationSectionLog, Strings::kStrConfigurationSettingLogEnabled).value_or(false);
+            const int64_t logLevel = GetConfigurationData().GetFirstIntegerValue(Strings::kStrConfigurationSectionLog, Strings::kStrConfigurationSettingLogLevel).value_or(0);
 
-            if ((true == kLogEnabled) && (kLogLevel > 0))
+            if ((true == logEnabled) && (logLevel > 0))
             {
                 // Offset the requested severity so that 0 = disabled, 1 = error, 2 = warning, etc.
-                const Message::ESeverity configuredSeverity = (Message::ESeverity)(kLogLevel + (int64_t)Message::ESeverity::LowerBoundConfigurableValue);
+                const Message::ESeverity configuredSeverity = (Message::ESeverity)(logLevel + (int64_t)Message::ESeverity::LowerBoundConfigurableValue);
                 EnableLog(configuredSeverity);
             }
         }

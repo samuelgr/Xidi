@@ -289,12 +289,12 @@ namespace Xidi
                 constexpr double kMillisecondsPerSecond = 1000.0;
                 constexpr double kPollingPeriodsPerSecond = (kMillisecondsPerSecond / (double)kMouseUpdatePeriodMilliseconds);
 
-                const double kSpeedScalingFactor = (double)Globals::GetConfigurationData().GetFirstIntegerValue(Strings::kStrConfigurationSectionProperties, Strings::kStrConfigurationSettingPropertiesMouseSpeedScalingFactorPercent).value_or(100) / 100.0;
-                const double kFastestPixelsPerSecond = 2000.0 * kSpeedScalingFactor;
-                const double kFastestPixelsPerPollingPeriod = kFastestPixelsPerSecond / kPollingPeriodsPerSecond;
-                const double kConversionScalingFactor = kFastestPixelsPerPollingPeriod / ((kMouseMovementUnitsMax - kMouseMovementUnitsMin) / 2.0);
+                const double speedScalingFactor = (double)Globals::GetConfigurationData().GetFirstIntegerValue(Strings::kStrConfigurationSectionProperties, Strings::kStrConfigurationSettingPropertiesMouseSpeedScalingFactorPercent).value_or(100) / 100.0;
+                const double fastestPixelsPerSecond = 2000.0 * speedScalingFactor;
+                const double fastestPixelsPerPollingPeriod = fastestPixelsPerSecond / kPollingPeriodsPerSecond;
+                const double conversionScalingFactor = fastestPixelsPerPollingPeriod / ((kMouseMovementUnitsMax - kMouseMovementUnitsMin) / 2.0);
 
-                return (int)((double)(mouseMovementUnits - kMouseMovementUnitsNeutral) * kConversionScalingFactor);
+                return (int)((double)(mouseMovementUnits - kMouseMovementUnitsNeutral) * conversionScalingFactor);
             }
 
             /// Periodically checks for changes between the previous and next views of the virtual mouse button states.
@@ -312,8 +312,8 @@ namespace Xidi
                 {
                     Sleep(kMouseUpdatePeriodMilliseconds);
 
-                    const bool kHaveInputFocus = Globals::DoesCurrentProcessHaveInputFocus();
-                    const bool kTerminationRequested = mouseUpdateStopToken.stop_requested();
+                    const bool haveInputFocus = Globals::DoesCurrentProcessHaveInputFocus();
+                    const bool terminationRequested = mouseUpdateStopToken.stop_requested();
 
                     // Mouse buttons
                     do {
@@ -322,7 +322,7 @@ namespace Xidi
                         TButtonState nextMouseButtonState = mouseTracker->ButtonSnapshotRelativeTo(previousMouseButtonState);
 
                         // If the current process does not have input focus or this thread is exiting then all pressed keys should be submitted to the system as released.
-                        if ((false == kHaveInputFocus) || (true == kTerminationRequested))
+                        if ((false == haveInputFocus) || (true == terminationRequested))
                             nextMouseButtonState.clear();
 
                         const TButtonState transitionedButtons = nextMouseButtonState ^ previousMouseButtonState;
@@ -339,7 +339,7 @@ namespace Xidi
                     } while (false);
 
                     // Mouse movement
-                    if ((true == kHaveInputFocus) && (false == kTerminationRequested))
+                    if ((true == haveInputFocus) && (false == terminationRequested))
                     {
                         const std::array<TMouseMovementContributions, (unsigned int)EMouseAxis::Count>& mouseMovementContributions = mouseTracker->MovementContributions();
 
@@ -371,7 +371,7 @@ namespace Xidi
                         mouseEvents.clear();
                     }
 
-                    if (true == kTerminationRequested)
+                    if (true == terminationRequested)
                         break;
                 }
             }
