@@ -34,6 +34,7 @@ shift
 
 set version_info_extra_args=
 set build_output_subdirectory=Release
+set digitally_sign_binaries=no
 set assume_always_yes=no
 
 echo.
@@ -56,6 +57,8 @@ if "%0"=="" (
         goto :try_help_message_and_exit
     )
     shift
+) else if "%0"=="/s" (
+    set digitally_sign_binaries=yes
 ) else if "%0"=="/y" (
     set assume_always_yes=yes
 ) else (
@@ -116,11 +119,30 @@ if not yes==%assume_always_yes% (
     if not !ERRORLEVEL!==1 exit /b 2
 )
 
+if not yes==%digitally_sign_binaries% (
+    set is_official_build=no
+
+    for /f "usebackq tokens=3" %%V in (`findstr GIT_VERSION_COMMIT_DISTANCE %version_info_file%`) do set git_commit_distance=%%~V
+    if "!git_commit_distance!"=="0" (
+        for /f "usebackq tokens=3" %%V in (`findstr GIT_VERSION_IS_DIRTY %version_info_file%`) do set git_is_dirty=%%~V
+        if "!git_is_dirty!"=="0" (
+            set is_official_build=yes
+        )
+    )
+    if !is_official_build!==yes (
+        if not yes==%assume_always_yes% (
+            echo.
+            choice /M "Sign binaries?"
+            if !ERRORLEVEL!==1 set digitally_sign_binaries=yes
+        )
+    )
+)
+
 if exist %output_dir% (
     echo.
     echo Output directory exists and will be overwritten.
     if not yes==%assume_always_yes% (
-        choice /M "Still proceed?"
+        choice /M "Proceed anyway?"
         if not !ERRORLEVEL!==1 exit /b 2
     )
     rd /S /Q %output_dir%
@@ -140,7 +162,7 @@ for %%F in (%files_release%) do (
     )
 )
 for %%P in (%project_platforms%) do (
-	if not ""=="%files_release_build%!files_release_build_%%P!" (
+    if not ""=="%files_release_build%!files_release_build_%%P!" (
         md %output_dir%\%%P
 
         for %%F in (%files_release_build% !files_release_build_%%P!) do (
@@ -197,7 +219,7 @@ popd
 if "yes"=="%files_are_missing%" (
     echo.
     echo Missing files:
-    
+
     pushd %script_dir%
     for %%F in (%files_release% %files_sdk_lib% %files_sdk_include%) do (
         if not exist %%F (
@@ -221,7 +243,89 @@ if "yes"=="%files_are_missing%" (
         )
     )
     popd
+    if "yes"=="%digitally_sign_binaries%" (
+        echo.
+        echo Digital signatures were requested but output files are missing.
+        if not yes==%assume_always_yes% (
+            choice /M "Sign anyway?"
+            if not !ERRORLEVEL!==1 set digitally_sign_binaries=no
+        )
+    )
 )
+
+if yes==%digitally_sign_binaries% (
+    pushd %output_dir%
+
+    set signtool_flags=/fdchw /tdchw /f "%CODE_SIGN_CERTIFICATE_PFX_FILE%" /fd "%CODE_SIGN_DIGEST_ALGORITHM%"
+    set uses_timestamp_countersignature=no
+    if not "%CODE_SIGN_CERTIFICATE_PFX_PASSWORD%"=="" (
+        set signtool_flags=!signtool_flags! /p %CODE_SIGN_CERTIFICATE_PFX_PASSWORD%
+    )
+    if not "%CODE_SIGN_TIMESTAMP_SERVER%"=="" (
+        set signtool_flags=!signtool_flags! /tr "%CODE_SIGN_TIMESTAMP_SERVER%" /td "%CODE_SIGN_DIGEST_ALGORITHM%"
+        set uses_timestamp_countersignature=yes
+    )
+
+    set vcvars_batch_file=
+    set found_signtool=no
+    if exist "%ProgramFiles%\Microsoft Visual Studio\2022" (
+        pushd "%ProgramFiles%\Microsoft Visual Studio\2022"
+        for /f "usebackq tokens=*" %%B in (`dir /S /B vcvars64.bat`) do set vcvars_batch_file=%%B
+        popd
+    )
+    if not "!vcvars_batch_file!"=="" (
+        call "!vcvars_batch_file!" >NUL 2>NUL
+
+        where signtool > NUL 2>NUL
+        if !ERRORLEVEL!==0 (
+            set found_signtool=yes
+        )
+    )
+
+    if "!found_signtool!"=="yes" (
+        echo.
+        echo Digitally signing files:
+
+        set sign_suffixes=exe dll
+
+        set sign_search_paths=
+        for %%E in (!sign_suffixes!) do (
+            set sign_search_paths="*.%%E" !sign_search_paths!
+        )
+        for %%P in (%project_platforms%) do (
+            for %%E in (!sign_suffixes!) do (
+                set sign_search_paths="%%P\*.%%E" !sign_search_paths!
+            )
+        )
+
+        set signed_a_file=no
+        for %%B in (!sign_search_paths!) do (
+            set signed_a_file=yes
+
+            signtool sign !signtool_flags! %%B >%%B.signtool.log.txt 2>&1
+            if !ERRORLEVEL!==0 (
+                del %%B.signtool.log.txt >NUL 2>NUL
+                echo     %%B
+
+                if "yes"=="!uses_timestamp_countersignature!" (
+                    timeout /t 15 /nobreak >NUL 2>NUL
+                )
+            ) else (
+                echo     %%B ^(failed^)
+            )
+        )
+
+        if "no"=="!signed_a_file!" (
+            echo     ^(none^)
+        )
+    ) else (
+        echo.
+        echo Unable to digitally sign files because "signtool" could not be located.
+    )
+
+    popd
+)
+
 
 :exit
 echo.
@@ -238,7 +342,7 @@ echo Try "/?" for help.
 goto :exit_with_error
 
 :usage
-echo Usage: %script_invocation% [/d] [/o ^<output-dir^>] [/y]
+echo Usage: %script_invocation% ^<args^>
 echo   /d
 echo     Use the debug build instead of the release build.
 echo   /o ^<output-dir^>
@@ -247,6 +351,9 @@ echo     Other directories in the hierarchy will be created as needed,
 echo     and final output will go in a subdirectory of the specified
 echo     output directory. Default output directory is the current user's
 echo     desktop.
+echo   /s
+echo     Attempt to digitally sign binary files that are packaged for
+echo     release. This applies to files with extensions DLL and EXE.
 echo   /y
 echo     Run non-interactively and assume "Y" is the response to all input
 echo     prompts, including overwriting the output directory if it exists.
