@@ -89,6 +89,10 @@ namespace Xidi
     private:
         // -------- INSTANCE VARIABLES ------------------------------------- //
 
+        /// Unique internal object identifier.
+        /// Used for logging purposes to distinguish between multiple objects associated with the same virtual controller.
+        const unsigned int kObjectId;
+
         /// Virtual controller with which to interface.
         std::unique_ptr<Controller::VirtualController> controller;
 
@@ -170,7 +174,7 @@ namespace Xidi
         /// Retrieves and returns the configured cooperative level that defines how access to the underlying physical device is shared with other objects.
         /// The cooperative level defaults to shared but can be updated by the application via an interface method.
         /// @return Configured cooperative level of this object.
-        inline ECooperativeLevel GetCooperativeLevel(void)
+        inline ECooperativeLevel GetCooperativeLevel(void) const
         {
             return cooperativeLevel;
         }
@@ -179,7 +183,7 @@ namespace Xidi
         /// Returned reference remains valid only as long as this object exists.
         /// Primarily intended for testing.
         /// @return Reference to the underlying virtual controller object.
-        inline Controller::VirtualController& GetVirtualController(void)
+        inline Controller::VirtualController& GetVirtualController(void) const
         {
             return *controller;
         }
@@ -206,6 +210,14 @@ namespace Xidi
         inline bool IsApplicationDataFormatSet(void) const
         {
             return (nullptr != dataFormat);
+        }
+
+        /// Retrieves and returns the unique internal identifier associated with this interface object.
+        /// Intended for logging and debugging use.
+        /// @return Unique internal identifier of this object.
+        inline unsigned int ObjectIdentifier(void) const
+        {
+            return kObjectId;
         }
 
 

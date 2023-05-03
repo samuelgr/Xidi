@@ -180,12 +180,13 @@ namespace Xidi
             const Controller::TControllerIdentifier virtualControllerId = maybeVirtualControllerId.value();
 
             // Is a virtual controller GUID, so create a virtual controller wrapped with a DirectInput interface.
-            Message::OutputFormatted(Message::ESeverity::Info, L"Binding to Xidi virtual controller %u.", (virtualControllerId + 1));
+            VirtualDirectInputDevice<charMode>* const newDirectInputDeviceInterfaceObject = new VirtualDirectInputDevice<charMode>(std::make_unique<Controller::VirtualController>(virtualControllerId));
+            *lplpDirectInputDevice = newDirectInputDeviceInterfaceObject;
 
+            Message::OutputFormatted(Message::ESeverity::Info, L"Binding to Xidi virtual controller %u with interface object %u.", (virtualControllerId + 1), newDirectInputDeviceInterfaceObject->ObjectIdentifier());
             if (nullptr != pUnkOuter)
                 Message::Output(Message::ESeverity::Warning, L"Application requested COM aggregation, which is not implemented, while binding to a Xidi virtual controller.");
 
-            *lplpDirectInputDevice = new VirtualDirectInputDevice<charMode>(std::make_unique<Controller::VirtualController>(virtualControllerId));
             return DI_OK;
         }
     }

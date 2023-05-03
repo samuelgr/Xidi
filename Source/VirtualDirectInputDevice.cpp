@@ -41,7 +41,7 @@
 #define LOG_INVOCATION_AND_RETURN(result, severity) \
     do { \
         const HRESULT hresult = (result); \
-        Message::OutputFormatted(severity, L"Invoked %s on Xidi virtual controller %u, result = 0x%08x.", __FUNCTIONW__ L"()", (1 + controller->GetIdentifier()), hresult); \
+        Message::OutputFormatted(severity, L"Invoked %s on interface object %u associated with Xidi virtual controller %u, result = 0x%08x.", __FUNCTIONW__ L"()", kObjectId, (1 + controller->GetIdentifier()), hresult); \
         return hresult; \
     } while (false)
 
@@ -49,7 +49,7 @@
 #define LOG_PROPERTY_INVOCATION_AND_RETURN(result, severity, rguidprop, propvalfmt, ...) \
     do { \
         const HRESULT hresult = (result); \
-        Message::OutputFormatted(severity, L"Invoked function %s on Xidi virtual controller %u, result = 0x%08x, property = %s" propvalfmt L".", __FUNCTIONW__ L"()", (1 + controller->GetIdentifier()), hresult, PropertyGuidString(rguidprop), ##__VA_ARGS__); \
+        Message::OutputFormatted(severity, L"Invoked function %s on interface object %u associated with Xidi virtual controller %u, result = 0x%08x, property = %s" propvalfmt L".", __FUNCTIONW__ L"()", kObjectId, (1 + controller->GetIdentifier()), hresult, PropertyGuidString(rguidprop), ##__VA_ARGS__); \
         return hresult; \
     } while (false)
 
@@ -73,6 +73,12 @@ namespace Xidi
     /// Alias for a pointer to a function that, when invoked, constructs a force feedback effect object using the specified GUID type and associated virtual DirectInput device.
     /// @tparam charMode Selects between ASCII ("A" suffix) and Unicode ("W") suffix versions of types and interfaces.
     template <ECharMode charMode> using TForceFeedbackEffectCreatorFunc = std::unique_ptr<VirtualDirectInputEffect<charMode>>(*)(REFGUID, VirtualDirectInputDevice<charMode>&);
+
+
+    // -------- INTERNAL VARIABLES ----------------------------------------- //
+
+    /// Generator for unique internal object identifiers for each #VirtualDirectInputDevice object that is created.
+    static std::atomic<unsigned int> nextVirtualDirectInputDeviceObjectId = 0;
 
 
     // -------- INTERNAL FUNCTIONS ----------------------------------------- //
@@ -687,7 +693,7 @@ namespace Xidi
     // -------- CONSTRUCTION AND DESTRUCTION ------------------------------- //
     // See "VirtualDirectInputDevice.h" for documentation.
 
-    template <ECharMode charMode> VirtualDirectInputDevice<charMode>::VirtualDirectInputDevice(std::unique_ptr<Controller::VirtualController>&& controller) : controller(std::move(controller)), cooperativeLevel(ECooperativeLevel::Shared), dataFormat(), effectRegistry(), refCount(1), unusedProperties()
+    template <ECharMode charMode> VirtualDirectInputDevice<charMode>::VirtualDirectInputDevice(std::unique_ptr<Controller::VirtualController>&& controller) : kObjectId(nextVirtualDirectInputDeviceObjectId++), controller(std::move(controller)), cooperativeLevel(ECooperativeLevel::Shared), dataFormat(), effectRegistry(), refCount(1), unusedProperties()
     {
         // Nothing to do here.
     }
