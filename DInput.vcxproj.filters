@@ -135,6 +135,9 @@
     <ClInclude Include="Include\Xidi\Internal\ConcurrencyWrapper.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="Include\Xidi\Internal\ControllerMath.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Source\ControllerIdentification.cpp">
@@ -234,6 +237,9 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="Source\ImportApiXInput.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\ControllerMath.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

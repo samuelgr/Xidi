@@ -12,6 +12,7 @@
  *****************************************************************************/
 
 #include "ControllerTypes.h"
+#include "ControllerMath.h"
 #include "ElementMapper.h"
 #include "Globals.h"
 #include "Keyboard.h"
@@ -27,98 +28,7 @@ namespace Xidi
 {
     namespace Controller
     {
-        // -------- INTERNAL CONSTANTS ------------------------------------- //
-
-        /// Threshold value used to determine if a trigger is considered "pressed" or not as a digital button.
-        static constexpr uint8_t kTriggerPressedThreshold = 40;
-
-        /// Threshold negative direction value used to determine if an analog stick is considered "pressed" or not as a digital button.
-        static constexpr int16_t kAnalogPressedThresholdNegative = -14750;
-
-        /// Threshold positive direction value used to determine if an analog stick is considered "pressed" or not as a digital button.
-        static constexpr int16_t kAnalogPressedThresholdPositive = 14750;
-
-
-        // -------- INTERNAL FUNCTIONS ------------------------------------- //
-
-        /// Applies deadzone and saturation transformations to a raw analog value.
-        /// @param [in] analogValue Analog value for which a deadzone should be applied.
-        /// @param [in] deadzoneHudnredthsOfPercent Hundredths of a percent of the analog range for which the deadzone should be applied.
-        static int16_t ApplyRawAnalogTransform(int16_t analogValue, unsigned int deadzonePercent, unsigned int saturationPercent)
-        {
-            if ((0 == deadzonePercent) && (100 == saturationPercent))
-                return analogValue;
-
-            const int16_t deadzoneCutoff = ((kAnalogValueMax - kAnalogValueNeutral) * deadzonePercent) / 100;
-            if (std::abs(analogValue) <= deadzoneCutoff)
-                return kAnalogValueNeutral;
-
-            const int16_t saturationCutoff = ((kAnalogValueMax - kAnalogValueNeutral) * saturationPercent) / 100;;
-            if (std::abs(analogValue) >= saturationCutoff)
-                return ((analogValue >= 0) ? kAnalogValueMax : kAnalogValueMin);
-
-            const double transformedAnalogBase = ((analogValue >= 0) ? ((double)analogValue - (double)deadzoneCutoff) : ((double)analogValue + (double)deadzoneCutoff));
-            const double transformationScaleFactor = ((double)(kAnalogValueMax - kAnalogValueNeutral)) / ((double)(saturationCutoff - deadzoneCutoff));
-
-            return kAnalogValueNeutral + (int16_t)(transformedAnalogBase * transformationScaleFactor);
-        }
-
-        /// Applies deadzone and saturation transformations to a raw trigger value.
-        /// @param [in] analogValue Analog value for which a deadzone should be applied.
-        /// @param [in] deadzoneHudnredthsOfPercent Hundredths of a percent of the analog range for which the deadzone should be applied.
-        static uint8_t ApplyRawTriggerTransform(uint8_t triggerValue, unsigned int deadzonePercent, unsigned int saturationPercent)
-        {
-            if ((0 == deadzonePercent) && (100 == saturationPercent))
-                return triggerValue;
-
-            const uint8_t deadzoneCutoff = (uint8_t)((((unsigned int)kTriggerValueMax - (unsigned int)kTriggerValueMin) * deadzonePercent) / 100);
-            if (triggerValue <= deadzoneCutoff)
-                return kTriggerValueMin;
-
-            const uint8_t saturationCutoff = (uint8_t)((((unsigned int)kTriggerValueMax - (unsigned int)kTriggerValueMin) * saturationPercent) / 100);
-            if (triggerValue >= saturationCutoff)
-                return kTriggerValueMax;
-
-            const float transformedTriggerBase = (float)triggerValue - (float)deadzoneCutoff;
-            const float transformationScaleFactor = ((float)(kTriggerValueMax - kTriggerValueMin)) / ((float)(saturationCutoff - deadzoneCutoff));
-
-            return kTriggerValueMin + (uint8_t)(transformedTriggerBase * transformationScaleFactor);
-        }
-
-        /// Determines if an analog reading is considered "pressed" as a digital button in the negative direction.
-        /// @param [in] analogValue Analog reading from the XInput controller.
-        /// @return `true` if the virtual button is considered pressed, `false` otherwise.
-        static inline bool IsAnalogPressedNegative(int16_t analogValue)
-        {
-            return (analogValue <= kAnalogPressedThresholdNegative);
-        }
-
-        /// Determines if an analog reading is considered "pressed" as a digital button in the positive direction.
-        /// @param [in] analogValue Analog reading from the XInput controller.
-        /// @return `true` if the virtual button is considered pressed, `false` otherwise.
-        static inline bool IsAnalogPressedPositive(int16_t analogValue)
-        {
-            return (analogValue >= kAnalogPressedThresholdPositive);
-        }
-
-        /// Determines if an analog reading is considered "pressed" as a digital button.
-        /// @param [in] analogValue Analog reading from the XInput controller.
-        /// @return `true` if the virtual button is considered pressed, `false` otherwise.
-        static inline bool IsAnalogPressed(int16_t analogValue)
-        {
-            return (IsAnalogPressedNegative(analogValue) || IsAnalogPressedPositive(analogValue));
-        }
-
-        /// Determines if a trigger reading is considered "pressed" as a digital button.
-        /// @param [in] triggerValue Trigger reading from the XInput controller.
-        /// @return `true` if the virtual button is considered pressed, `false` otherwise.
-        static inline bool IsTriggerPressed(uint8_t triggerValue)
-        {
-            return (triggerValue >= kTriggerPressedThreshold);
-        }
-
-
-        // -------- CONCRETE INSTANCE METHODS -------------------------- //
+        // -------- CONCRETE INSTANCE METHODS ------------------------------ //
         // See "ElementMapper.h" for documentation.
 
         std::unique_ptr<IElementMapper> AxisMapper::Clone(void) const
@@ -229,7 +139,7 @@ namespace Xidi
 
         void ButtonMapper::ContributeFromAnalogValue(SState& controllerState, int16_t analogValue, uint32_t sourceIdentifier) const
         {
-            controllerState[button] = (controllerState[button] || IsAnalogPressed(analogValue));
+            controllerState[button] = (controllerState[button] || Math::IsAnalogPressed(analogValue));
         }
 
         // --------
@@ -243,7 +153,7 @@ namespace Xidi
 
         void ButtonMapper::ContributeFromTriggerValue(SState& controllerState, uint8_t triggerValue, uint32_t sourceIdentifier) const
         {
-            controllerState[button] = (controllerState[button] || IsTriggerPressed(triggerValue));
+            controllerState[button] = (controllerState[button] || Math::IsTriggerPressed(triggerValue));
         }
 
         // --------
@@ -367,19 +277,19 @@ namespace Xidi
             switch (direction)
             {
             case EAxisDirection::Both:
-                if (IsAnalogPressedNegative(analogValue))
+                if (Math::IsAnalogPressedNegative(analogValue))
                     axisValueToContribute = kAnalogValueMin;
-                else if (IsAnalogPressedPositive(analogValue))
+                else if (Math::IsAnalogPressedPositive(analogValue))
                     axisValueToContribute = kAnalogValueMax;
                 break;
 
             case EAxisDirection::Positive:
-                if (IsAnalogPressedPositive(analogValue))
+                if (Math::IsAnalogPressedPositive(analogValue))
                     axisValueToContribute = kAnalogValueMax;
                 break;
 
             case EAxisDirection::Negative:
-                if (IsAnalogPressedNegative(analogValue))
+                if (Math::IsAnalogPressedNegative(analogValue))
                     axisValueToContribute = kAnalogValueMin;
                 break;
             }
@@ -391,7 +301,7 @@ namespace Xidi
 
         void DigitalAxisMapper::ContributeFromTriggerValue(SState& controllerState, uint8_t triggerValue, uint32_t sourceIdentifier) const
         {
-            ContributeFromButtonValue(controllerState, IsTriggerPressed(triggerValue), sourceIdentifier);
+            ContributeFromButtonValue(controllerState, Math::IsTriggerPressed(triggerValue), sourceIdentifier);
         }
 
         // --------
@@ -473,7 +383,7 @@ namespace Xidi
 
         void KeyboardMapper::ContributeFromAnalogValue(SState& controllerState, int16_t analogValue, uint32_t sourceIdentifier) const
         {
-            if (true == IsAnalogPressed(analogValue))
+            if (true == Math::IsAnalogPressed(analogValue))
                 Keyboard::SubmitKeyPressedState(key);
             else
                 Keyboard::SubmitKeyReleasedState(key);
@@ -493,7 +403,7 @@ namespace Xidi
 
         void KeyboardMapper::ContributeFromTriggerValue(SState& controllerState, uint8_t triggerValue, uint32_t sourceIdentifier) const
         {
-            if (true == IsTriggerPressed(triggerValue))
+            if (true == Math::IsTriggerPressed(triggerValue))
                 Keyboard::SubmitKeyPressedState(key);
             else
                 Keyboard::SubmitKeyReleasedState(key);
@@ -537,7 +447,7 @@ namespace Xidi
             
             constexpr unsigned int kAnalogMouseDeadzonePercent = 8;
             constexpr unsigned int kAnalogMouseSaturationPercent = 92;
-            const int16_t analogValueForContribution = (kEnableMouseAxisProperites ? ApplyRawAnalogTransform(analogValue, kAnalogMouseDeadzonePercent, kAnalogMouseSaturationPercent) : analogValue);
+            const int16_t analogValueForContribution = (kEnableMouseAxisProperites ? Math::ApplyRawAnalogTransform(analogValue, kAnalogMouseDeadzonePercent, kAnalogMouseSaturationPercent) : analogValue);
 
             const double mouseAxisValueRaw = ((double)(analogValueForContribution - kAnalogValueNeutral) * kAnalogToMouseScalingFactor);
             const double mouseAxisValueTransformed = mouseAxisValueRaw;
@@ -599,7 +509,7 @@ namespace Xidi
             
             constexpr unsigned int kTriggerMouseDeadzonePercent = 8;
             constexpr unsigned int kTriggerMouseSaturationPercent = 92;
-            const uint8_t triggerValueForContribution = (kEnableMouseAxisProperites ? ApplyRawTriggerTransform(triggerValue, kTriggerMouseDeadzonePercent, kTriggerMouseSaturationPercent) : triggerValue);
+            const uint8_t triggerValueForContribution = (kEnableMouseAxisProperites ? Math::ApplyRawTriggerTransform(triggerValue, kTriggerMouseDeadzonePercent, kTriggerMouseSaturationPercent) : triggerValue);
 
             int mouseAxisValueToContribute = 0;
 
@@ -653,7 +563,7 @@ namespace Xidi
 
         void MouseButtonMapper::ContributeFromAnalogValue(SState& controllerState, int16_t analogValue, uint32_t sourceIdentifier) const
         {
-            if (true == IsAnalogPressed(analogValue))
+            if (true == Math::IsAnalogPressed(analogValue))
                 Mouse::SubmitMouseButtonPressedState(mouseButton);
             else
                 Mouse::SubmitMouseButtonReleasedState(mouseButton);
@@ -673,7 +583,7 @@ namespace Xidi
 
         void MouseButtonMapper::ContributeFromTriggerValue(SState& controllerState, uint8_t triggerValue, uint32_t sourceIdentifier) const
         {
-            if (true == IsTriggerPressed(triggerValue))
+            if (true == Math::IsTriggerPressed(triggerValue))
                 Mouse::SubmitMouseButtonPressedState(mouseButton);
             else
                 Mouse::SubmitMouseButtonReleasedState(mouseButton);
@@ -711,7 +621,7 @@ namespace Xidi
 
         void PovMapper::ContributeFromAnalogValue(SState& controllerState, int16_t analogValue, uint32_t sourceIdentifier) const
         {
-            if (true == IsAnalogPressed(analogValue))
+            if (true == Math::IsAnalogPressed(analogValue))
                 controllerState.povDirection.components[(int)povDirection] = true;
         }
 
@@ -727,7 +637,7 @@ namespace Xidi
 
         void PovMapper::ContributeFromTriggerValue(SState& controllerState, uint8_t triggerValue, uint32_t sourceIdentifier) const
         {
-            if (true == IsTriggerPressed(triggerValue))
+            if (true == Math::IsTriggerPressed(triggerValue))
                 controllerState.povDirection.components[(int)povDirection] = true;
         }
 

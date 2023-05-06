@@ -147,6 +147,9 @@
     <ClInclude Include="Include\Xidi\Internal\Test\MockMouse.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="Include\Xidi\Internal\ControllerMath.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Source\Test\Harness.cpp">
@@ -324,6 +327,9 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="Source\Test\Case\WrapperIDirectInputTest.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\ControllerMath.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

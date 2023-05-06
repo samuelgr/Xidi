@@ -115,6 +115,7 @@
     <ClInclude Include="Include\Xidi\Internal\ApiXidi.h" />
     <ClInclude Include="Include\Xidi\Internal\Configuration.h" />
     <ClInclude Include="Include\Xidi\Internal\ControllerIdentification.h" />
+    <ClInclude Include="Include\Xidi\Internal\ControllerMath.h" />
     <ClInclude Include="Include\Xidi\Internal\ControllerTypes.h" />
     <ClInclude Include="Include\Xidi\Internal\DataFormat.h" />
     <ClInclude Include="Include\Xidi\Internal\ElementMapper.h" />
@@ -160,6 +161,7 @@
     <ClCompile Include="Source\ApiXidi.cpp" />
     <ClCompile Include="Source\Configuration.cpp" />
     <ClCompile Include="Source\ControllerIdentification.cpp" />
+    <ClCompile Include="Source\ControllerMath.cpp" />
     <ClCompile Include="Source\DataFormat.cpp" />
     <ClCompile Include="Source\ElementMapper.cpp" />
     <ClCompile Include="Source\ForceFeedbackDevice.cpp" />

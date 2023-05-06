@@ -252,6 +252,16 @@ namespace Xidi
 
             // -------- CLASS METHODS -------------------------------------- //
 
+            /// Applies deadzone and saturation transformations to a raw analog value.
+            /// @param [in] analogValue Analog value for which a deadzone should be applied.
+            /// @param [in] deadzoneHudnredthsOfPercent Hundredths of a percent of the analog range for which the deadzone should be applied.
+            //static int16_t ApplyRawAnalogTransform(int16_t analogValue, unsigned int deadzonePercent, unsigned int saturationPercent);
+
+            /// Applies deadzone and saturation transformations to a raw trigger value.
+            /// @param [in] analogValue Analog value for which a deadzone should be applied.
+            /// @param [in] deadzoneHudnredthsOfPercent Hundredths of a percent of the analog range for which the deadzone should be applied.
+            //static uint8_t ApplyRawTriggerTransform(uint8_t triggerValue, unsigned int deadzonePercent, unsigned int saturationPercent);
+
             /// Dumps information about all registered mappers.
             static void DumpRegisteredMappers(void);
 
