@@ -25,24 +25,33 @@
 // -------- MACROS --------------------------------------------------------- //
 
 // Strings that need to be available in multiple formats (ASCII and Unicode).
-#define XIDI_AXIS_NAME_X                    "X Axis"
-#define XIDI_AXIS_NAME_Y                    "Y Axis"
-#define XIDI_AXIS_NAME_Z                    "Z Axis"
-#define XIDI_AXIS_NAME_RX                   "RotX Axis"
-#define XIDI_AXIS_NAME_RY                   "RotY Axis"
-#define XIDI_AXIS_NAME_RZ                   "RotZ Axis"
-#define XIDI_AXIS_NAME_UNKNOWN              "Unknown Axis"
-#define XIDI_BUTTON_NAME_FORMAT             "Button %u"
-#define XIDI_POV_NAME                       "POV"
-#define XIDI_WHOLE_CONTROLLER_NAME          "Whole Controller"
-#define XIDI_EFFECT_NAME_CONSTANT_FORCE     "Constant Force"
-#define XIDI_EFFECT_NAME_RAMP_FORCE         "Ramp Force"
-#define XIDI_EFFECT_NAME_SQUARE             "Square Wave"
-#define XIDI_EFFECT_NAME_SINE               "Sine Wave"
-#define XIDI_EFFECT_NAME_TRIANGLE           "Triangle Wave"
-#define XIDI_EFFECT_NAME_SAWTOOTH_UP        "Sawtooth Up"
-#define XIDI_EFFECT_NAME_SAWTOOTH_DOWN      "Sawtooth Down"
-#define XIDI_EFFECT_NAME_CUSTOM_FORCE       "Custom Force"
+#define XIDI_AXIS_NAME_X                                    "X Axis"
+#define XIDI_AXIS_NAME_Y                                    "Y Axis"
+#define XIDI_AXIS_NAME_Z                                    "Z Axis"
+#define XIDI_AXIS_NAME_RX                                   "RotX Axis"
+#define XIDI_AXIS_NAME_RY                                   "RotY Axis"
+#define XIDI_AXIS_NAME_RZ                                   "RotZ Axis"
+#define XIDI_AXIS_NAME_UNKNOWN                              "Unknown Axis"
+#define XIDI_BUTTON_NAME_FORMAT                             "Button %u"
+#define XIDI_POV_NAME                                       "POV"
+#define XIDI_WHOLE_CONTROLLER_NAME                          "Whole Controller"
+#define XIDI_EFFECT_NAME_CONSTANT_FORCE                     "Constant Force"
+#define XIDI_EFFECT_NAME_RAMP_FORCE                         "Ramp Force"
+#define XIDI_EFFECT_NAME_SQUARE                             "Square Wave"
+#define XIDI_EFFECT_NAME_SINE                               "Sine Wave"
+#define XIDI_EFFECT_NAME_TRIANGLE                           "Triangle Wave"
+#define XIDI_EFFECT_NAME_SAWTOOTH_UP                        "Sawtooth Up"
+#define XIDI_EFFECT_NAME_SAWTOOTH_DOWN                      "Sawtooth Down"
+#define XIDI_EFFECT_NAME_CUSTOM_FORCE                       "Custom Force"
+
+// String prefixes and suffixes that need to be consumed as they are but also combined into longer literals.
+// All exist as wide-character strings only.
+#define XIDI_CONFIG_PROPERTIES_PREFIX_DEADZONE_PERCENT      L"DeadzonePercent"
+#define XIDI_CONFIG_PROPERTIES_PREFIX_SATURATION_PERCENT    L"SaturationPercent"
+#define XIDI_CONFIG_PROPERTIES_SUFFIX_STICK_LEFT            L"StickLeft"
+#define XIDI_CONFIG_PROPERTIES_SUFFIX_STICK_RIGHT           L"StickRight"
+#define XIDI_CONFIG_PROPERTIES_SUFFIX_TRIGGER_LT            L"TriggerLT"
+#define XIDI_CONFIG_PROPERTIES_SUFFIX_TRIGGER_RT            L"TriggerRT"
 
 
 namespace Xidi
@@ -114,6 +123,30 @@ namespace Xidi
 
         /// Configuration file setting for enabling or disabling built-in properties like deadzone and saturation, which are used for interfaces that do not normally allow for customization.
         inline constexpr std::wstring_view kStrConfigurationSettingsPropertiesUseBuiltinProperties = L"UseBuiltInProperties";
+
+        /// Configuration file setting for adding extra deadzone to the left analog stick, expressed as a percentage of the analog range.
+        inline constexpr std::wstring_view kStrConfigurationSettingsPropertiesDeadzonePercentStickLeft = XIDI_CONFIG_PROPERTIES_PREFIX_DEADZONE_PERCENT XIDI_CONFIG_PROPERTIES_SUFFIX_STICK_LEFT;
+
+        /// Configuration file setting for adding extra deadzone to the right analog stick, expressed as a percentage of the analog range.
+        inline constexpr std::wstring_view kStrConfigurationSettingsPropertiesDeadzonePercentStickRight = XIDI_CONFIG_PROPERTIES_PREFIX_DEADZONE_PERCENT XIDI_CONFIG_PROPERTIES_SUFFIX_STICK_RIGHT;
+
+        /// Configuration file setting for adding extra deadzone to the left analog trigger, expressed as a percentage of the analog range.
+        inline constexpr std::wstring_view kStrConfigurationSettingsPropertiesDeadzonePercentTriggerLT = XIDI_CONFIG_PROPERTIES_PREFIX_DEADZONE_PERCENT XIDI_CONFIG_PROPERTIES_SUFFIX_TRIGGER_LT;
+
+        /// Configuration file setting for adding extra deadzone to the right analog trigger, expressed as a percentage of the analog range.
+        inline constexpr std::wstring_view kStrConfigurationSettingsPropertiesDeadzonePercentTriggerRT = XIDI_CONFIG_PROPERTIES_PREFIX_DEADZONE_PERCENT XIDI_CONFIG_PROPERTIES_SUFFIX_TRIGGER_RT;
+
+        /// Configuration file setting for adding extra saturation to the left analog stick, expressed as a percentage of the analog range.
+        inline constexpr std::wstring_view kStrConfigurationSettingsPropertiesSaturationPercentStickLeft = XIDI_CONFIG_PROPERTIES_PREFIX_SATURATION_PERCENT XIDI_CONFIG_PROPERTIES_SUFFIX_STICK_LEFT;
+
+        /// Configuration file setting for adding extra saturation to the right analog stick, expressed as a percentage of the analog range.
+        inline constexpr std::wstring_view kStrConfigurationSettingsPropertiesSaturationPercentStickRight = XIDI_CONFIG_PROPERTIES_PREFIX_SATURATION_PERCENT XIDI_CONFIG_PROPERTIES_SUFFIX_STICK_RIGHT;
+
+        /// Configuration file setting for adding extra saturation to the left analog trigger, expressed as a percentage of the analog range.
+        inline constexpr std::wstring_view kStrConfigurationSettingsPropertiesSaturationPercentTriggerLT = XIDI_CONFIG_PROPERTIES_PREFIX_SATURATION_PERCENT XIDI_CONFIG_PROPERTIES_SUFFIX_TRIGGER_LT;
+
+        /// Configuration file setting for adding extra saturation to the right analog trigger, expressed as a percentage of the analog range.
+        inline constexpr std::wstring_view kStrConfigurationSettingsPropertiesSaturationPercentTriggerRT = XIDI_CONFIG_PROPERTIES_PREFIX_SATURATION_PERCENT XIDI_CONFIG_PROPERTIES_SUFFIX_TRIGGER_RT;
 
 
         /// Configuration file section name for specifying behavioral tweaks to work around bugs in games.

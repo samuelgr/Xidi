@@ -13,6 +13,7 @@
 #include "ApiBitSet.h"
 #include "ApiWindows.h"
 #include "Configuration.h"
+#include "ControllerMath.h"
 #include "ControllerTypes.h"
 #include "ElementMapper.h"
 #include "ForceFeedbackTypes.h"
@@ -521,27 +522,71 @@ namespace Xidi
             };
         }
 
+        // --------
+
         SState Mapper::MapStatePhysicalToVirtual(SPhysicalState physicalState, uint32_t sourceControllerIdentifier) const
         {
+            // These properties are read from the configuration file and can be used to apply extra transformations to raw analog values read from physical controllers.
+            // By default, deadzone percentage is set to 0 and saturation percentage is set to 100 to avoid any reduction in full analog range of motion, since most often applications will themselves apply a deadzone and saturation via virtual controller properties.
+            // However not all applications do this, and some interfaces like WinMM do not even support application-supplied properties.
+            static const unsigned int kDeadzonePercentStickLeft = (unsigned int)Globals::GetConfigurationData().GetFirstIntegerValue(Strings::kStrConfigurationSectionProperties, Strings::kStrConfigurationSettingsPropertiesDeadzonePercentStickLeft).value_or(0);
+            static const unsigned int kDeadzonePercentStickRight = (unsigned int)Globals::GetConfigurationData().GetFirstIntegerValue(Strings::kStrConfigurationSectionProperties, Strings::kStrConfigurationSettingsPropertiesDeadzonePercentStickRight).value_or(0);
+            static const unsigned int kDeadzonePercentTriggerLT = (unsigned int)Globals::GetConfigurationData().GetFirstIntegerValue(Strings::kStrConfigurationSectionProperties, Strings::kStrConfigurationSettingsPropertiesDeadzonePercentTriggerLT).value_or(0);
+            static const unsigned int kDeadzonePercentTriggerRT = (unsigned int)Globals::GetConfigurationData().GetFirstIntegerValue(Strings::kStrConfigurationSectionProperties, Strings::kStrConfigurationSettingsPropertiesDeadzonePercentTriggerRT).value_or(0);
+            static const unsigned int kSaturationPercentStickLeft = (unsigned int)Globals::GetConfigurationData().GetFirstIntegerValue(Strings::kStrConfigurationSectionProperties, Strings::kStrConfigurationSettingsPropertiesSaturationPercentStickLeft).value_or(100);
+            static const unsigned int kSaturationPercentStickRight = (unsigned int)Globals::GetConfigurationData().GetFirstIntegerValue(Strings::kStrConfigurationSectionProperties, Strings::kStrConfigurationSettingsPropertiesSaturationPercentStickRight).value_or(100);
+            static const unsigned int kSaturationPercentTriggerLT = (unsigned int)Globals::GetConfigurationData().GetFirstIntegerValue(Strings::kStrConfigurationSectionProperties, Strings::kStrConfigurationSettingsPropertiesSaturationPercentTriggerLT).value_or(100);
+            static const unsigned int kSaturationPercentTriggerRT = (unsigned int)Globals::GetConfigurationData().GetFirstIntegerValue(Strings::kStrConfigurationSectionProperties, Strings::kStrConfigurationSettingsPropertiesSaturationPercentTriggerRT).value_or(100);
+
             SState controllerState = {};
 
             // Left and right stick values need to be saturated at the virtual controller range due to a very slight difference between XInput range and virtual controller range.
             // This difference (-32768 extreme negative for XInput vs -32767 extreme negative for Xidi) does not affect functionality when filtered by saturation.
             // Vertical analog axes additionally need to be inverted because XInput presents up as positive and down as negative whereas Xidi needs to do the opposite.
 
-            if (nullptr != elements.named.stickLeftX) elements.named.stickLeftX->ContributeFromAnalogValue(controllerState, FilterAnalogStickValue(physicalState[EPhysicalStick::LeftX]), SourceIdentifierForElementMapper(sourceControllerIdentifier, ELEMENT_MAP_INDEX_OF(stickLeftX)));
-            if (nullptr != elements.named.stickLeftY) elements.named.stickLeftY->ContributeFromAnalogValue(controllerState, FilterAndInvertAnalogStickValue(physicalState[EPhysicalStick::LeftY]), SourceIdentifierForElementMapper(sourceControllerIdentifier, ELEMENT_MAP_INDEX_OF(stickLeftY)));
+            if (nullptr != elements.named.stickLeftX)
+                elements.named.stickLeftX->ContributeFromAnalogValue(
+                    controllerState,
+                    Math::ApplyRawAnalogTransform(FilterAnalogStickValue(physicalState[EPhysicalStick::LeftX]), kDeadzonePercentStickLeft, kSaturationPercentStickLeft),
+                    SourceIdentifierForElementMapper(sourceControllerIdentifier, ELEMENT_MAP_INDEX_OF(stickLeftX))
+                );
+            if (nullptr != elements.named.stickLeftY)
+                elements.named.stickLeftY->ContributeFromAnalogValue(
+                    controllerState,
+                    Math::ApplyRawAnalogTransform(FilterAndInvertAnalogStickValue(physicalState[EPhysicalStick::LeftY]), kDeadzonePercentStickLeft, kSaturationPercentStickLeft),
+                    SourceIdentifierForElementMapper(sourceControllerIdentifier, ELEMENT_MAP_INDEX_OF(stickLeftY))
+                );
 
-            if (nullptr != elements.named.stickRightX) elements.named.stickRightX->ContributeFromAnalogValue(controllerState, FilterAnalogStickValue(physicalState[EPhysicalStick::RightX]), SourceIdentifierForElementMapper(sourceControllerIdentifier, ELEMENT_MAP_INDEX_OF(stickRightX)));
-            if (nullptr != elements.named.stickRightY) elements.named.stickRightY->ContributeFromAnalogValue(controllerState, FilterAndInvertAnalogStickValue(physicalState[EPhysicalStick::RightY]), SourceIdentifierForElementMapper(sourceControllerIdentifier, ELEMENT_MAP_INDEX_OF(stickRightY)));
+            if (nullptr != elements.named.stickRightX)
+                elements.named.stickRightX->ContributeFromAnalogValue(
+                    controllerState,
+                    Math::ApplyRawAnalogTransform(FilterAnalogStickValue(physicalState[EPhysicalStick::RightX]), kDeadzonePercentStickRight, kSaturationPercentStickRight),
+                    SourceIdentifierForElementMapper(sourceControllerIdentifier, ELEMENT_MAP_INDEX_OF(stickRightX))
+                );
+            if (nullptr != elements.named.stickRightY)
+                elements.named.stickRightY->ContributeFromAnalogValue(
+                    controllerState,
+                    Math::ApplyRawAnalogTransform(FilterAndInvertAnalogStickValue(physicalState[EPhysicalStick::RightY]), kDeadzonePercentStickRight, kSaturationPercentStickRight),
+                    SourceIdentifierForElementMapper(sourceControllerIdentifier, ELEMENT_MAP_INDEX_OF(stickRightY))
+                );
 
             if (nullptr != elements.named.dpadUp) elements.named.dpadUp->ContributeFromButtonValue(controllerState, physicalState[EPhysicalButton::DpadUp], SourceIdentifierForElementMapper(sourceControllerIdentifier, ELEMENT_MAP_INDEX_OF(dpadUp)));
             if (nullptr != elements.named.dpadDown) elements.named.dpadDown->ContributeFromButtonValue(controllerState, physicalState[EPhysicalButton::DpadDown], SourceIdentifierForElementMapper(sourceControllerIdentifier, ELEMENT_MAP_INDEX_OF(dpadDown)));
             if (nullptr != elements.named.dpadLeft) elements.named.dpadLeft->ContributeFromButtonValue(controllerState, physicalState[EPhysicalButton::DpadLeft], SourceIdentifierForElementMapper(sourceControllerIdentifier, ELEMENT_MAP_INDEX_OF(dpadLeft)));
             if (nullptr != elements.named.dpadRight) elements.named.dpadRight->ContributeFromButtonValue(controllerState, physicalState[EPhysicalButton::DpadRight], SourceIdentifierForElementMapper(sourceControllerIdentifier, ELEMENT_MAP_INDEX_OF(dpadRight)));
 
-            if (nullptr != elements.named.triggerLT) elements.named.triggerLT->ContributeFromTriggerValue(controllerState, physicalState[EPhysicalTrigger::LT], SourceIdentifierForElementMapper(sourceControllerIdentifier, ELEMENT_MAP_INDEX_OF(triggerLT)));
-            if (nullptr != elements.named.triggerRT) elements.named.triggerRT->ContributeFromTriggerValue(controllerState, physicalState[EPhysicalTrigger::RT], SourceIdentifierForElementMapper(sourceControllerIdentifier, ELEMENT_MAP_INDEX_OF(triggerRT)));
+            if (nullptr != elements.named.triggerLT)
+                elements.named.triggerLT->ContributeFromTriggerValue(
+                    controllerState,
+                    Math::ApplyRawTriggerTransform(physicalState[EPhysicalTrigger::LT], kDeadzonePercentTriggerLT, kSaturationPercentTriggerLT),
+                    SourceIdentifierForElementMapper(sourceControllerIdentifier, ELEMENT_MAP_INDEX_OF(triggerLT))
+                );
+            if (nullptr != elements.named.triggerRT)
+                elements.named.triggerRT->ContributeFromTriggerValue(
+                    controllerState,
+                    Math::ApplyRawTriggerTransform(physicalState[EPhysicalTrigger::RT], kDeadzonePercentTriggerRT, kSaturationPercentTriggerRT),
+                    SourceIdentifierForElementMapper(sourceControllerIdentifier, ELEMENT_MAP_INDEX_OF(triggerRT))
+                );
 
             if (nullptr != elements.named.buttonA) elements.named.buttonA->ContributeFromButtonValue(controllerState, physicalState[EPhysicalButton::A], SourceIdentifierForElementMapper(sourceControllerIdentifier, ELEMENT_MAP_INDEX_OF(buttonA)));
             if (nullptr != elements.named.buttonB) elements.named.buttonB->ContributeFromButtonValue(controllerState, physicalState[EPhysicalButton::B], SourceIdentifierForElementMapper(sourceControllerIdentifier, ELEMENT_MAP_INDEX_OF(buttonB)));

@@ -73,6 +73,14 @@ namespace Xidi
         ConfigurationFileLayoutSection(Strings::kStrConfigurationSectionProperties, {
             ConfigurationFileLayoutNameAndValueType(Strings::kStrConfigurationSettingPropertiesMouseSpeedScalingFactorPercent, EValueType::Integer),
             ConfigurationFileLayoutNameAndValueType(Strings::kStrConfigurationSettingsPropertiesUseBuiltinProperties, EValueType::Boolean),
+            ConfigurationFileLayoutNameAndValueType(Strings::kStrConfigurationSettingsPropertiesDeadzonePercentStickLeft, EValueType::Integer),
+            ConfigurationFileLayoutNameAndValueType(Strings::kStrConfigurationSettingsPropertiesDeadzonePercentStickRight, EValueType::Integer),
+            ConfigurationFileLayoutNameAndValueType(Strings::kStrConfigurationSettingsPropertiesDeadzonePercentTriggerLT, EValueType::Integer),
+            ConfigurationFileLayoutNameAndValueType(Strings::kStrConfigurationSettingsPropertiesDeadzonePercentTriggerRT, EValueType::Integer),
+            ConfigurationFileLayoutNameAndValueType(Strings::kStrConfigurationSettingsPropertiesSaturationPercentStickLeft, EValueType::Integer),
+            ConfigurationFileLayoutNameAndValueType(Strings::kStrConfigurationSettingsPropertiesSaturationPercentStickRight, EValueType::Integer),
+            ConfigurationFileLayoutNameAndValueType(Strings::kStrConfigurationSettingsPropertiesSaturationPercentTriggerLT, EValueType::Integer),
+            ConfigurationFileLayoutNameAndValueType(Strings::kStrConfigurationSettingsPropertiesSaturationPercentTriggerRT, EValueType::Integer),
         }),
         ConfigurationFileLayoutSection(Strings::kStrConfigurationSectionWorkarounds, {
             ConfigurationFileLayoutNameAndValueType(Strings::kStrConfigurationSettingWorkaroundsActiveVirtualControllerMask, EValueType::Integer),
@@ -195,6 +203,32 @@ namespace Xidi
 
     EAction XidiConfigReader::ActionForValue(std::wstring_view section, std::wstring_view name, TIntegerView value)
     {
+#ifndef XIDI_SKIP_MAPPERS
+        if (Strings::kStrConfigurationSectionProperties == section)
+        {
+            if (name.starts_with(XIDI_CONFIG_PROPERTIES_PREFIX_DEADZONE_PERCENT))
+            {
+                // Deadzone percentages must be in the range of 0 to 45 inclusive.
+                // This ensures they make semantic sense and cannot cross the minimum possible saturation percentage.
+
+                if ((value < 0) || (value > 45))
+                    return EAction::Error;
+                else
+                    return EAction::Process;
+            }
+            else if (name.starts_with(XIDI_CONFIG_PROPERTIES_PREFIX_SATURATION_PERCENT))
+            {
+                // Saturation percentages must be in the range of 55 to 100 inclusive.
+                // This ensures they make semantic sense and cannot cross the maximum possible deadzone percentage.
+
+                if ((value < 55) || (value > 100))
+                    return EAction::Error;
+                else
+                    return EAction::Process;
+            }
+        }
+#endif
+
         if (value >= 0)
             return EAction::Process;
 

@@ -132,9 +132,16 @@ Type.3                              = StandardGamepad
 Type.4                              = StandardGamepad
 
 [Properties]
-; *(unreleased)*
 MouseSpeedScalingFactorPercent      = 100
 UseBuiltInProperties                = yes
+DeadzonePercentStickLeft            = 0
+DeadzonePercentStickRight           = 0
+DeadzonePercentTriggerLT            = 0
+DeadzonePercentTriggerRT            = 0
+SaturationPercentStickLeft          = 100
+SaturationPercentStickRight         = 100
+SaturationPercentTriggerLT          = 100
+SaturationPercentTriggerRT          = 100
 
 [Log]
 Enabled                             = no
@@ -166,13 +173,15 @@ This section controls the mapping scheme Xidi uses when mapping between XInput a
 
 ## Properties
 
-*(unreleased)*
-
 This section allows for customization and fine-tuning of various virtual controller behaviors, particularly as they pertain to input and output processing.
 
 - **MouseSpeedScalingFactorPercent** modifies the speed of the mouse cursor when a Xidi virtual controller element is configured to emulate mouse movement. Xidi has a built-in default mouse speed, and changing this setting allows that speed to be scaled up or down. The value is expressed as a desired percentage of the default speed. For example, `25` means that the mouse speed should be one-quarter of the default, and `400` means that the mouse speed should be four times the default.
 
 - **UseBuiltInProperties** allows certain built-in axis properties to be enabled or disabled. By default Xidi adds a small deadzone and saturation to all virtual controller axes via WinMM and to any analog sticks or triggers that are used to emulate mouse movement. This is done to ensure a better user experience where such properties are not normally exposed for customization. Setting this to `no` disables these built-in deadzone and saturation properties.
+
+- **DeadzonePercentStickLeft**, **DeadzonePercentStickRight**, **DeadzonePercentTriggerLT**, and **DeadzonePercentTriggerRT** respectively allow the analog deadzone of the left stick, right stick, left trigger, and right trigger to be customized. Deadzone is expressed as percentage of the analog range of motion. If the analog position is less than this percentage away from the neutral position then Xidi reports a neutral reading to the application. It is not generally necessary to customize deadzone because DirectInput applications often use axis properties to do so, and for WinMM, Xidi internally uses its own default properties unless these are disabled. *Any customization done via these configuration file settings is in addition to whatever deadzone the application already sets.*
+
+- **SaturationPercentStickLeft**, **SaturationPercentStickRight**, **SaturationPercentTriggerLT**, and **SaturationPercentTriggerRT** respectively allow the analog saturation of the left stick, right stick, left trigger, and right trigger to be customized. Saturation is expressed as percentage of the analog range of motion. If the analog position is greater than this percentage away from the neutral position then Xidi reports an extreme reading to the application. As with deadzone, it is not generally necessary to customize saturation, and *any customization done via these configuration file settings is in addition to whatever saturation the application already sets.*
 
 
 ## Log
