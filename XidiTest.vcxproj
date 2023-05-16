@@ -143,8 +143,12 @@
     <ClInclude Include="Include\Xidi\Internal\Strings.h" />
     <ClInclude Include="Include\Xidi\Internal\TemporaryBuffer.h" />
     <ClInclude Include="Include\Xidi\Test\Harness.h" />
+    <ClInclude Include="Include\Xidi\Test\MockDirectInput.h" />
+    <ClInclude Include="Include\Xidi\Test\MockDirectInputDevice.h" />
     <ClInclude Include="Include\Xidi\Test\MockElementMapper.h" />
+    <ClInclude Include="Include\Xidi\Test\MockForceFeedbackEffect.h" />
     <ClInclude Include="Include\Xidi\Test\MockKeyboard.h" />
+    <ClInclude Include="Include\Xidi\Test\MockMouse.h" />
     <ClInclude Include="Include\Xidi\Test\MockPhysicalController.h" />
     <ClInclude Include="Include\Xidi\Test\TestCase.h" />
     <ClInclude Include="Include\Xidi\Test\Utilities.h" />
