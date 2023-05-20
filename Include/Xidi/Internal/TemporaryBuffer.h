@@ -11,6 +11,7 @@
 
 #pragma once
 
+#include <cassert>
 #include <cstddef>
 #include <cstdint>
 #include <initializer_list>
@@ -126,14 +127,18 @@ namespace Xidi
         }
 
         /// Array indexing operator, constant version.
+        /// In debug builds this will check that the index is within bounds of the buffer capacity.
         inline const T& operator[](size_t index) const
         {
+            assert(index < Capacity());
             return Data()[index];
         }
 
         /// Array indexing operator, mutable version.
+        /// In debug builds this will check that the index is within bounds of the buffer capacity.
         inline T& operator[](size_t index)
         {
+            assert(index < Capacity());
             return Data()[index];
         }
 
@@ -173,11 +178,150 @@ namespace Xidi
     /// Optimized for efficiency. Performs no boundary checks.
     template <typename T> class TemporaryVector : public TemporaryBuffer<T>
     {
+    public:
+        // -------- TYPE DEFINITIONS --------------------------------------- //
+
+        /// Iterator type used to denote a position within a temporary vector object.
+        template <typename DataType> class Iterator
+        {
+        private:
+            /// Pointer directly to the temporary vector's underlying data.
+            /// This implementation takes advantage of the fact that temporary vectors do not dynamically resize and reallocate.
+            DataType* buffer;
+
+            /// Index within the temporary vector data buffer.
+            int index;
+
+        public:
+            // -------- CONSTRUCTION AND DESTRUCTION ----------------------- //
+
+            /// Initialization constructor.
+            /// Requires a buffer and an index to initialize this iterator.
+            constexpr inline Iterator(DataType* buffer, unsigned int index) : buffer(buffer), index(index)
+            {
+                // Nothing to do here.
+            }
+
+
+            // -------- OPERATORS ------------------------------------------ //
+
+            /// Dereferencing operator.
+            /// Allows the underlying data to be accessed directly via the iterator.
+            constexpr inline DataType& operator*(void) const
+            {
+                return buffer[index];
+            }
+
+            /// Pre-increment operator.
+            constexpr inline Iterator& operator++(void)
+            {
+                index += 1;
+                return *this;
+            }
+
+            /// Post-increment operator.
+            constexpr inline Iterator operator++(void) const
+            {
+                Iterator orig = *this;
+                index += 1;
+                return orig;
+            }
+
+            /// Pre-decrement operator.
+            constexpr inline Iterator& operator--(void)
+            {
+                index -= 1;
+                return *this;
+            }
+
+            /// Post-increment operator.
+            constexpr inline Iterator operator--(void) const
+            {
+                Iterator orig = *this;
+                index -= 1;
+                return orig;
+            }
+
+            /// Equality comparison operator.
+            /// In debug builds this will check that the two iterators reference the same object.
+            constexpr inline bool operator==(const Iterator& other) const
+            {
+                assert(buffer == other.buffer);
+                return (index == other.index);
+            }
+
+            /// Less-than comparison operator.
+            /// In debug builds this will check that the two iterators reference the same object.
+            constexpr inline bool operator<(const Iterator& rhs) const
+            {
+                assert(buffer == rhs.buffer);
+                return (index < rhs.index);
+            }
+
+            /// Less-or-equal comparison operator.
+            /// In debug builds this will check that the two iterators reference the same object.
+            constexpr inline bool operator<=(const Iterator& rhs) const
+            {
+                assert(buffer == rhs.buffer);
+                return (index <= rhs.index);
+            }
+
+            /// Greater-than comparison operator.
+            /// In debug builds this will check that the two iterators reference the same object.
+            constexpr inline bool operator>(const Iterator& rhs) const
+            {
+                assert(buffer == rhs.buffer);
+                return (index > rhs.index);
+            }
+
+            /// Greater-or-equal comparison operator.
+            /// In debug builds this will check that the two iterators reference the same object.
+            constexpr inline bool operator>=(const Iterator& rhs) const
+            {
+                assert(buffer == rhs.buffer);
+                return (index >= rhs.index);
+            }
+
+            /// Addition operator.
+            /// Allows arbitrary addition to the index but no changes to the buffer pointer.
+            constexpr inline Iterator operator+(int indexIncrement) const
+            {
+                return Iterator(buffer, index + indexIncrement);
+            }
+
+            /// Addition-assignment operator.
+            /// Allows arbitrary addition to the index but no changes to the buffer pointer.
+            constexpr inline Iterator& operator+=(int indexIncrement)
+            {
+                index += indexIncrement;
+                return *this;
+            }
+
+            /// Subtraction operator.
+            /// Allows arbitrary subtraction from the index but no changes to the buffer pointer.
+            constexpr inline Iterator operator-(int indexIncrement) const
+            {
+                return Iterator(buffer, index - indexIncrement);
+            }
+
+            /// Subtraction-assignment operator.
+            /// Allows arbitrary subtraction from the index but no changes to the buffer pointer.
+            constexpr inline Iterator& operator-=(int indexIncrement)
+            {
+                index -= indexIncrement;
+                return *this;
+            }
+        };
+
+        typedef Iterator<T> TIterator;
+        typedef Iterator<const T> TConstIterator;
+
+
     protected:
         // -------- INSTANCE VARIABLES ------------------------------------- //
 
         /// Number of elements held by this container.
-        unsigned int size;
+        int size;
 
 
     public:
@@ -221,7 +365,7 @@ namespace Xidi
         {
             Clear();
 
-            for (unsigned int i = 0; i < other.size; ++i)
+            for (int i = 0; i < other.size; ++i)
                 EmplaceBack(other[i]);
 
             return *this;
@@ -252,13 +396,51 @@ namespace Xidi
             if (other.size != size)
                 return false;
 
-            for (unsigned int i = 0; i < size; ++i)
+            for (int i = 0; i < size; ++i)
             {
                 if (other[i] != (*this)[i])
                     return false;
             }
 
             return true;
+        }
+
+        // -------- ITERATORS ---------------------------------------------- //
+
+        /// Explicit constant-typed beginning iterator.
+        inline TConstIterator cbegin(void) const
+        {
+            return TConstIterator(this->Data(), 0);
+        }
+
+        /// Explicit constant-typed one-past-the-end iterator.
+        inline TConstIterator cend(void) const
+        {
+            return TConstIterator(this->Data(), size);
+        }
+
+        /// Implicit constant-typed beginning iterator.
+        inline TConstIterator begin(void) const
+        {
+            return cbegin();
+        }
+
+        /// Implicit constant-typed one-past-the-end iterator.
+        inline TConstIterator end(void) const
+        {
+            return cend();
+        }
+
+        /// Implicit mutable-typed beginning iterator.
+        inline TIterator begin(void)
+        {
+            return TIterator(this->Data(), 0);
+        }
+
+        /// Implicit mutable-typed one-past-the-end iterator.
+        inline TIterator end(void)
+        {
+            return TIterator(this->Data(), size);
         }
 
 
