@@ -162,6 +162,9 @@
     <ClInclude Include="Include\Xidi\Test\MockMouse.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="Include\Xidi\Internal\DebugAssert.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Source\Test\Harness.cpp">

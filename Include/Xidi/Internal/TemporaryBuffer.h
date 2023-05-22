@@ -11,7 +11,8 @@
 
 #pragma once
 
-#include <cassert>
+#include "DebugAssert.h"
+
 #include <cstddef>
 #include <cstdint>
 #include <initializer_list>
@@ -130,7 +131,7 @@ namespace Xidi
         /// In debug builds this will check that the index is within bounds of the buffer capacity.
         inline const T& operator[](size_t index) const
         {
-            assert(index < Capacity());
+            DebugAssert(index < Capacity(), "Index is out of bounds.");
             return Data()[index];
         }
 
@@ -138,7 +139,7 @@ namespace Xidi
         /// In debug builds this will check that the index is within bounds of the buffer capacity.
         inline T& operator[](size_t index)
         {
-            assert(index < Capacity());
+            DebugAssert(index < Capacity(), "Index is out of bounds.");
             return Data()[index];
         }
 
@@ -246,7 +247,7 @@ namespace Xidi
             /// In debug builds this will check that the two iterators reference the same object.
             constexpr inline bool operator==(const Iterator& other) const
             {
-                assert(buffer == other.buffer);
+                DebugAssert(buffer == other.buffer, "Iterators point to different instances.");
                 return (index == other.index);
             }
 
@@ -254,7 +255,7 @@ namespace Xidi
             /// In debug builds this will check that the two iterators reference the same object.
             constexpr inline bool operator<(const Iterator& rhs) const
             {
-                assert(buffer == rhs.buffer);
+                DebugAssert(buffer == rhs.buffer, "Iterators point to different instances.");
                 return (index < rhs.index);
             }
 
@@ -262,7 +263,7 @@ namespace Xidi
             /// In debug builds this will check that the two iterators reference the same object.
             constexpr inline bool operator<=(const Iterator& rhs) const
             {
-                assert(buffer == rhs.buffer);
+                DebugAssert(buffer == rhs.buffer, "Iterators point to different instances.");
                 return (index <= rhs.index);
             }
 
@@ -270,7 +271,7 @@ namespace Xidi
             /// In debug builds this will check that the two iterators reference the same object.
             constexpr inline bool operator>(const Iterator& rhs) const
             {
-                assert(buffer == rhs.buffer);
+                DebugAssert(buffer == rhs.buffer, "Iterators point to different instances.");
                 return (index > rhs.index);
             }
 
@@ -278,7 +279,7 @@ namespace Xidi
             /// In debug builds this will check that the two iterators reference the same object.
             constexpr inline bool operator>=(const Iterator& rhs) const
             {
-                assert(buffer == rhs.buffer);
+                DebugAssert(buffer == rhs.buffer, "Iterators point to different instances.");
                 return (index >= rhs.index);
             }
 

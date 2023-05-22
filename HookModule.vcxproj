@@ -139,6 +139,7 @@
     <ClInclude Include="Include\Xidi\Internal\ApiWindows.h" />
     <ClInclude Include="Include\Xidi\Internal\ApiXidi.h" />
     <ClInclude Include="Include\Xidi\Internal\Configuration.h" />
+    <ClInclude Include="Include\Xidi\Internal\DebugAssert.h" />
     <ClInclude Include="Include\Xidi\Internal\Globals.h" />
     <ClInclude Include="Include\Xidi\Internal\SetHooks.h" />
     <ClInclude Include="Include\Xidi\Internal\Message.h" />

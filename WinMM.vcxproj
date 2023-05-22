@@ -29,6 +29,7 @@
     <ClInclude Include="Include\Xidi\Internal\ControllerMath.h" />
     <ClInclude Include="Include\Xidi\Internal\ControllerTypes.h" />
     <ClInclude Include="Include\Xidi\Internal\DataFormat.h" />
+    <ClInclude Include="Include\Xidi\Internal\DebugAssert.h" />
     <ClInclude Include="Include\Xidi\Internal\ElementMapper.h" />
     <ClInclude Include="Include\Xidi\Internal\ExportApiWinMM.h" />
     <ClInclude Include="Include\Xidi\Internal\ForceFeedbackDevice.h" />
