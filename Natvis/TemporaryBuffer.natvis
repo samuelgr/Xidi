@@ -3,7 +3,7 @@
 <AutoVisualizer xmlns="http://schemas.microsoft.com/vstudio/debugger/natvis/2010">
 
     <Type Name="::Xidi::TemporaryString">
-        <DisplayString Condition="nullptr != buffer">{(wchar_t*)buffer,na}</DisplayString>
+        <DisplayString Condition="nullptr != buffer">{(wchar_t*)buffer,[size]na}</DisplayString>
         <DisplayString Condition="nullptr == buffer">unallocated</DisplayString>
         <StringView>(wchar_t*)buffer,na</StringView>
         <Expand>
