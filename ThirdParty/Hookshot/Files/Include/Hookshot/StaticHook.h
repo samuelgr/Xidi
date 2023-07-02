@@ -24,6 +24,7 @@
 #include "Hookshot.h"
 
 #include <type_traits>
+#include <utility>
 
 
 // -------- MACROS --------------------------------------------------------- //
@@ -53,20 +54,32 @@
     { \
     public: \
         static ReturnType callingConvention Hook(ArgumentTypes...); \
-        static ReturnType callingConvention Original(ArgumentTypes... args) { return ((ReturnType(callingConvention *)(ArgumentTypes...))StaticHookBase<kOriginalFunctionName, kOriginalFunctionAddress>::GetOriginalFunction())(args...); } \
+        static ReturnType callingConvention Original(ArgumentTypes... args) { return ((ReturnType(callingConvention *)(ArgumentTypes...))StaticHookBase<kOriginalFunctionName, kOriginalFunctionAddress>::GetOriginalFunction())(std::forward<ArgumentTypes>(args)...); } \
         static EResult SetHook(IHookshot* const hookshot) { return StaticHookBase<kOriginalFunctionName, kOriginalFunctionAddress>::SetHook(hookshot, &Hook); } \
         static EResult DisableHook(IHookshot* const hookshot) { return hookshot->DisableHookFunction(&Hook); } \
         static EResult EnableHook(IHookshot* const hookshot) { return hookshot->ReplaceHookFunction(kOriginalFunctionAddress, &Hook); } \
+        static const wchar_t* GetFunctionName(void) { return kOriginalFunctionName; } \
+        static StaticHookProxy GetProxy(void) { return {.SetHook = &SetHook, .DisableHook = &DisableHook, .EnableHook = &EnableHook, .GetFunctionName = &GetFunctionName}; } \
     };
 
 namespace Hookshot
 {
+    /// Proxy object for manipulating a specific static hook using an object interface.
+    /// Simply contains a table of functions that can be invoked.
+    struct StaticHookProxy
+    {
+        EResult(*SetHook)(IHookshot* const hookshot);
+        EResult(*DisableHook)(IHookshot* const hookshot);
+        EResult(*EnableHook)(IHookshot* const hookshot);
+        const wchar_t*(*GetFunctionName)(void);
+    };
+
     /// Base class for all static hooks.
     /// Used to hide implementation details from external users.
     template <const wchar_t* kOriginalFunctionName, void* const kOriginalFunctionAddress> class StaticHookBase
     {
     private:
-        static const void* originalFunction;
+        inline static const void* originalFunction = nullptr;
 
     protected:
         static inline const void* GetOriginalFunction(void)
@@ -87,8 +100,7 @@ namespace Hookshot
             return result;
         }
     };
-    template <const wchar_t* kOriginalFunctionName, void* const kOriginalFunctionAddress> const void* StaticHookBase<kOriginalFunctionName, kOriginalFunctionAddress>::originalFunction = nullptr;
-    
+
     /// Primary static hook template. Specialized using #HOOKSHOT_STATIC_HOOK_TEMPLATE.
     template <const wchar_t* kOriginalFunctionName, void* const kOriginalFunctionAddress, typename T> class StaticHook
     {

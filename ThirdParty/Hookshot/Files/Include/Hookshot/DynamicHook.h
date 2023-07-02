@@ -24,6 +24,7 @@
 #include "Hookshot.h"
 
 #include <type_traits>
+#include <utility>
 
 
 // -------- MACROS --------------------------------------------------------- //
@@ -66,21 +67,33 @@
     { \
     public: \
         static ReturnType callingConvention Hook(ArgumentTypes...); \
-        static ReturnType callingConvention Original(ArgumentTypes... args) { return ((ReturnType(callingConvention *)(ArgumentTypes...))DynamicHookBase<kOriginalFunctionName>::GetOriginalFunction())(args...); } \
+        static ReturnType callingConvention Original(ArgumentTypes... args) { return ((ReturnType(callingConvention *)(ArgumentTypes...))DynamicHookBase<kOriginalFunctionName>::GetOriginalFunction())(std::forward<ArgumentTypes>(args)...); } \
         static EResult SetHook(IHookshot* const hookshot, void* const originalFunc) { return DynamicHookBase<kOriginalFunctionName>::SetHook(hookshot, originalFunc, &Hook); } \
         static EResult DisableHook(IHookshot* const hookshot) { return hookshot->DisableHookFunction(&Hook); } \
         static EResult EnableHook(IHookshot* const hookshot) { return hookshot->ReplaceHookFunction(DynamicHookBase<kOriginalFunctionName>::GetOriginalFunctionAddress(), &Hook); } \
+        static const wchar_t* GetFunctionName(void) { return kOriginalFunctionName; } \
+        static DynamicHookProxy GetProxy(void) { return {.SetHook = &SetHook, .DisableHook = &DisableHook, .EnableHook = &EnableHook, .GetFunctionName = &GetFunctionName}; } \
     };
 
 namespace Hookshot
 {
+    /// Proxy object for manipulating a specific dynamic hook using an object interface.
+    /// Simply contains a table of functions that can be invoked.
+    struct DynamicHookProxy
+    {
+        EResult(*SetHook)(IHookshot* const hookshot, void* const originalFunc);
+        EResult(*DisableHook)(IHookshot* const hookshot);
+        EResult(*EnableHook)(IHookshot* const hookshot);
+        const wchar_t*(*GetFunctionName)(void);
+    };
+
     /// Base class for all dynamic hooks.
     /// Used to hide implementation details from external users.
     template <const wchar_t* kOriginalFunctionName> class DynamicHookBase
     {
     private:
-        static const void* originalFunction;
-        static const void* originalFunctionAddress;
+        inline static const void* originalFunction = nullptr;
+        inline static const void* originalFunctionAddress = nullptr;
 
     protected:
         static inline const void* GetOriginalFunction(void)
@@ -109,9 +122,7 @@ namespace Hookshot
             return result;
         }
     };
-    template <const wchar_t* kOriginalFunctionName> const void* DynamicHookBase<kOriginalFunctionName>::originalFunction = nullptr;
-    template <const wchar_t* kOriginalFunctionName> const void* DynamicHookBase<kOriginalFunctionName>::originalFunctionAddress = nullptr;
-    
+
     /// Primary dynamic hook template. Specialized using #HOOKSHOT_DYNAMIC_HOOK_TEMPLATE.
     template <const wchar_t* kOriginalFunctionName, typename T> class DynamicHook
     {
