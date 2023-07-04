@@ -46,14 +46,14 @@
 /// Equivalent to #HOOKSHOT_DYNAMIC_HOOK_FROM_FUNCTION, but accepts a typed function pointer instead of a function prototype declaration.
 /// A function name to associate with the dynamic hook must also be supplied.
 #define HOOKSHOT_DYNAMIC_HOOK_FROM_POINTER(name, ptr) \
-    static constexpr wchar_t kHookName__##name[] = _CRT_WIDE(#name); \
+    inline constexpr wchar_t kHookName__##name[] = _CRT_WIDE(#name); \
     using DynamicHook_##name = ::Hookshot::DynamicHook<kHookName__##name, std::remove_pointer<decltype(ptr)>::type>
 
 /// Equivalent to #HOOKSHOT_DYNAMIC_HOOK_FROM_FUNCTION, but accepts a manually-specified function type instead of a function prototype declaration.
 /// The `typespec` parameter is syntactically the same as a type definition for a function pointer type, with or without the asterisk.
 /// A function name to associate with the dynamic hook must also be supplied.
 #define HOOKSHOT_DYNAMIC_HOOK_FROM_TYPESPEC(name, typespec) \
-    static constexpr wchar_t kHookName__##name[] = _CRT_WIDE(#name); \
+    inline constexpr wchar_t kHookName__##name[] = _CRT_WIDE(#name); \
     using DynamicHook_##name = ::Hookshot::DynamicHook<kHookName__##name, std::remove_pointer<typespec>::type>
 
 
