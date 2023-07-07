@@ -40,21 +40,21 @@
 /// Note that Hookshot might fail to create the requested hook. Therefore, the return code from `SetHook` should be checked.
 /// Once `SetHook` has been invoked successfully, further invocations have no effect and simply return EResult::NoEffect.
 #define HOOKSHOT_DYNAMIC_HOOK_FROM_FUNCTION(func) \
-    inline constexpr wchar_t kHookName__##func[] = _CRT_WIDE(#func); \
-    using DynamicHook_##func = ::Hookshot::DynamicHook<kHookName__##func, decltype(func)>
+    namespace _HookshotInternal { inline constexpr wchar_t kHookName__##func[] = _CRT_WIDE(#func); } \
+    using DynamicHook_##func = ::Hookshot::DynamicHook<_HookshotInternal::kHookName__##func, decltype(func)>
 
 /// Equivalent to #HOOKSHOT_DYNAMIC_HOOK_FROM_FUNCTION, but accepts a typed function pointer instead of a function prototype declaration.
 /// A function name to associate with the dynamic hook must also be supplied.
 #define HOOKSHOT_DYNAMIC_HOOK_FROM_POINTER(name, ptr) \
-    inline constexpr wchar_t kHookName__##name[] = _CRT_WIDE(#name); \
-    using DynamicHook_##name = ::Hookshot::DynamicHook<kHookName__##name, std::remove_pointer<decltype(ptr)>::type>
+    namespace _HookshotInternal { inline constexpr wchar_t kHookName__##name[] = _CRT_WIDE(#name); } \
+    using DynamicHook_##name = ::Hookshot::DynamicHook<_HookshotInternal::kHookName__##name, std::remove_pointer<decltype(ptr)>::type>
 
 /// Equivalent to #HOOKSHOT_DYNAMIC_HOOK_FROM_FUNCTION, but accepts a manually-specified function type instead of a function prototype declaration.
 /// The `typespec` parameter is syntactically the same as a type definition for a function pointer type, with or without the asterisk.
 /// A function name to associate with the dynamic hook must also be supplied.
 #define HOOKSHOT_DYNAMIC_HOOK_FROM_TYPESPEC(name, typespec) \
-    inline constexpr wchar_t kHookName__##name[] = _CRT_WIDE(#name); \
-    using DynamicHook_##name = ::Hookshot::DynamicHook<kHookName__##name, std::remove_pointer<typespec>::type>
+    namespace _HookshotInternal { inline constexpr wchar_t kHookName__##name[] = _CRT_WIDE(#name); } \
+    using DynamicHook_##name = ::Hookshot::DynamicHook<_HookshotInternal::kHookName__##name, std::remove_pointer<typespec>::type>
 
 
 // -------- IMPLEMENTATION DETAILS ----------------------------------------- //
@@ -66,21 +66,25 @@
     template <const wchar_t* kOriginalFunctionName, typename ReturnType, typename... ArgumentTypes> class DynamicHook<kOriginalFunctionName, ReturnType callingConventionInBrackets (ArgumentTypes...)> : public DynamicHookBase<kOriginalFunctionName> \
     { \
     public: \
+        typedef ReturnType callingConvention TFunction(ArgumentTypes...); \
+        typedef ReturnType(callingConvention* TFunctionPtr)(ArgumentTypes...); \
         static ReturnType callingConvention Hook(ArgumentTypes...); \
         static ReturnType callingConvention Original(ArgumentTypes... args) { return ((ReturnType(callingConvention *)(ArgumentTypes...))DynamicHookBase<kOriginalFunctionName>::GetOriginalFunction())(std::forward<ArgumentTypes>(args)...); } \
+        static bool IsHookSet(void) { return DynamicHookBase<kOriginalFunctionName>::IsHookSet(); } \
         static EResult SetHook(IHookshot* const hookshot, void* const originalFunc) { return DynamicHookBase<kOriginalFunctionName>::SetHook(hookshot, originalFunc, &Hook); } \
         static EResult DisableHook(IHookshot* const hookshot) { return hookshot->DisableHookFunction(&Hook); } \
         static EResult EnableHook(IHookshot* const hookshot) { return hookshot->ReplaceHookFunction(DynamicHookBase<kOriginalFunctionName>::GetOriginalFunctionAddress(), &Hook); } \
         static const wchar_t* GetFunctionName(void) { return kOriginalFunctionName; } \
-        static DynamicHookProxy GetProxy(void) { return {.SetHook = &SetHook, .DisableHook = &DisableHook, .EnableHook = &EnableHook, .GetFunctionName = &GetFunctionName}; } \
+        static DynamicHookProxy GetProxy(void) { return {.IsHookSet = &IsHookSet, .SetHook = &SetHook, .DisableHook = &DisableHook, .EnableHook = &EnableHook, .GetFunctionName = &GetFunctionName}; } \
     };
 
 namespace Hookshot
 {
-    /// Proxy object for manipulating a specific dynamic hook using an object interface.
+    /// Proxy object for manipulating a dynamic hook using an object-oriented interface.
     /// Simply contains a table of functions that can be invoked.
     struct DynamicHookProxy
     {
+        bool(*IsHookSet)(void);
         EResult(*SetHook)(IHookshot* const hookshot, void* const originalFunc);
         EResult(*DisableHook)(IHookshot* const hookshot);
         EResult(*EnableHook)(IHookshot* const hookshot);
@@ -106,9 +110,14 @@ namespace Hookshot
             return originalFunctionAddress;
         }
 
+        static inline bool IsHookSet(void)
+        {
+            return (nullptr != originalFunction);
+        }
+
         static inline EResult SetHook(IHookshot* const hookshot, void* originalFunc, const void* hookFunc)
         {
-            if (nullptr != originalFunction)
+            if (true == IsHookSet())
                 return EResult::NoEffect;
 
             const EResult result = hookshot->CreateHook(originalFunc, hookFunc);
