@@ -85,6 +85,11 @@ namespace Hookshot
     private:
         inline static const void* originalFunction = nullptr;
 
+    public:
+        StaticHookBase(void) = delete;
+        StaticHookBase(const StaticHookBase& other) = delete;
+        StaticHookBase(StaticHookBase&& other) = delete;
+
     protected:
         static inline const void* GetOriginalFunction(void)
         {

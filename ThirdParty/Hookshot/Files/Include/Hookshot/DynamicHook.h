@@ -99,6 +99,11 @@ namespace Hookshot
         inline static const void* originalFunction = nullptr;
         inline static const void* originalFunctionAddress = nullptr;
 
+    public:
+        DynamicHookBase(void) = delete;
+        DynamicHookBase(const DynamicHookBase& other) = delete;
+        DynamicHookBase(DynamicHookBase&& other) = delete;
+
     protected:
         static inline const void* GetOriginalFunction(void)
         {
