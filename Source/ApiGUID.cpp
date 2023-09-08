@@ -1,14 +1,13 @@
-/*****************************************************************************
+/***************************************************************************************************
  * Xidi
  *   DirectInput interface for XInput controllers.
- *****************************************************************************
+ ***************************************************************************************************
  * Authored by Samuel Grossman
  * Copyright (c) 2016-2023
- *************************************************************************//**
+ ***********************************************************************************************//**
  * @file ApiGUID.cpp
- *   Implementation of helpers for integrating GUID types into the standard
- *   template library.
- *****************************************************************************/
+ *   Implementation of helpers for integrating GUID types into the standard template library.
+ **************************************************************************************************/
 
 #pragma once
 
@@ -18,43 +17,33 @@
 #include <cstdint>
 #include <functional>
 
-
-// -------- OPERATORS ------------------------------------------------------ //
-// See "ApiGUID.h" for documentation.
-
 size_t std::hash<GUID>::operator()(REFGUID keyval) const
 {
-    static_assert(0 == (sizeof(GUID) % sizeof(size_t)), "GUID size is not aligned with the piece size.");
+  static_assert(
+      0 == (sizeof(GUID) % sizeof(size_t)), "GUID size is not aligned with the piece size.");
 
-    constexpr int kNumPieces = sizeof(GUID) / sizeof(size_t);
-    static_assert(kNumPieces >= 1, "GUID size is too small compared to the piece size.");
+  constexpr int kNumPieces = sizeof(GUID) / sizeof(size_t);
+  static_assert(kNumPieces >= 1, "GUID size is too small compared to the piece size.");
 
-    const size_t* rawGUID = (const size_t*)&keyval;
-    std::hash<size_t> hasher;
+  const size_t* rawGUID = (const size_t*)&keyval;
+  std::hash<size_t> hasher;
 
-    size_t hash = 0;
-    for (int i = 0; i < kNumPieces; ++i)
-        hash ^= hasher(rawGUID[i]);
+  size_t hash = 0;
+  for (int i = 0; i < kNumPieces; ++i)
+    hash ^= hasher(rawGUID[i]);
 
-    return hash;
+  return hash;
 }
-
-// --------
 
 bool std::equal_to<GUID>::operator()(REFGUID lhs, REFGUID rhs) const
 {
-    return (memcmp(&lhs, &rhs, sizeof(GUID)) == 0);
+  return (memcmp(&lhs, &rhs, sizeof(GUID)) == 0);
 }
-
-// --------
 
 bool std::less<GUID>::operator()(REFGUID lhs, REFGUID rhs) const
 {
-    return (memcmp(&lhs, &rhs, sizeof(GUID)) < 0);
+  return (memcmp(&lhs, &rhs, sizeof(GUID)) < 0);
 }
-
-
-// -------- EXPLICIT TEMPLATE INSTANTIATION -------------------------------- //
 
 template struct std::hash<GUID>;
 template struct std::equal_to<GUID>;

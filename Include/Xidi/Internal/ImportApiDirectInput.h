@@ -1,43 +1,40 @@
-/*****************************************************************************
+/***************************************************************************************************
  * Xidi
  *   DirectInput interface for XInput controllers.
- *****************************************************************************
+ ***************************************************************************************************
  * Authored by Samuel Grossman
  * Copyright (c) 2016-2023
- *************************************************************************//**
+ ***********************************************************************************************//**
  * @file ImportApiDirectInput.h
  *   Declarations of functions for accessing the DirectInput API imported from
  *   the native DirectInput library.
- *****************************************************************************/
+ **************************************************************************************************/
 
 #pragma once
 
 #include "ApiDirectInput.h"
 
-
 namespace Xidi
 {
-    namespace ImportApiDirectInput
-    {
-        // -------- FUNCTIONS ---------------------------------------------- //
+  namespace ImportApiDirectInput
+  {
+    /// Dynamically loads the DirectInput library and sets up all imported function calls.
+    void Initialize(void);
 
-        /// Dynamically loads the DirectInput library and sets up all imported function calls.
-        void Initialize(void);
-
-
-        // -------- IMPORTED FUNCTIONS ------------------------------------- //
-        // See DirectInput and COM documentation for more information.
+    // clang-format off
 
 #if DIRECTINPUT_VERSION >= 0x0800
-        HRESULT DirectInput8Create(HINSTANCE hinst, DWORD dwVersion, REFIID riidltf, LPVOID* ppvOut, LPUNKNOWN punkOuter);
+    HRESULT DirectInput8Create(HINSTANCE hinst, DWORD dwVersion, REFIID riidltf, LPVOID* ppvOut, LPUNKNOWN punkOuter);
 #else
-        HRESULT DirectInputCreateA(HINSTANCE hinst, DWORD dwVersion, LPDIRECTINPUTA* ppDI, LPUNKNOWN punkOuter);
-        HRESULT DirectInputCreateW(HINSTANCE hinst, DWORD dwVersion, LPDIRECTINPUTW* ppDI, LPUNKNOWN punkOuter);
-        HRESULT DirectInputCreateEx(HINSTANCE hinst, DWORD dwVersion, REFIID riidltf, LPVOID* ppvOut, LPUNKNOWN punkOuter);
+    HRESULT DirectInputCreateA(HINSTANCE hinst, DWORD dwVersion, LPDIRECTINPUTA* ppDI, LPUNKNOWN punkOuter);
+    HRESULT DirectInputCreateW(HINSTANCE hinst, DWORD dwVersion, LPDIRECTINPUTW* ppDI, LPUNKNOWN punkOuter);
+    HRESULT DirectInputCreateEx(HINSTANCE hinst, DWORD dwVersion, REFIID riidltf, LPVOID* ppvOut, LPUNKNOWN punkOuter);
 #endif
-        HRESULT DllRegisterServer(void);
-        HRESULT DllUnregisterServer(void);
-        HRESULT DllCanUnloadNow(void);
-        HRESULT DllGetClassObject(REFCLSID rclsid, REFIID riid, LPVOID* ppv);
-    }
-}
+    HRESULT DllRegisterServer(void);
+    HRESULT DllUnregisterServer(void);
+    HRESULT DllCanUnloadNow(void);
+    HRESULT DllGetClassObject(REFCLSID rclsid, REFIID riid, LPVOID* ppv);
+
+    // clang-format on
+  } // namespace ImportApiDirectInput
+} // namespace Xidi
