@@ -11,6 +11,7 @@
 
 #pragma once
 
+#include <guiddef.h>
 #include <sal.h>
 
 #include <cstddef>
@@ -131,8 +132,10 @@ namespace Xidi
 
     /// Configuration file setting for adding extra deadzone to the right analog stick, expressed as
     /// a percentage of the analog range.
-    inline constexpr std::wstring_view kStrConfigurationSettingsPropertiesDeadzonePercentStickRight =
-        XIDI_CONFIG_PROPERTIES_PREFIX_DEADZONE_PERCENT XIDI_CONFIG_PROPERTIES_SUFFIX_STICK_RIGHT;
+    inline constexpr std::wstring_view
+        kStrConfigurationSettingsPropertiesDeadzonePercentStickRight =
+            XIDI_CONFIG_PROPERTIES_PREFIX_DEADZONE_PERCENT
+                XIDI_CONFIG_PROPERTIES_SUFFIX_STICK_RIGHT;
 
     /// Configuration file setting for adding extra deadzone to the left analog trigger, expressed
     /// as a percentage of the analog range.
@@ -146,8 +149,10 @@ namespace Xidi
 
     /// Configuration file setting for adding extra saturation to the left analog stick, expressed
     /// as a percentage of the analog range.
-    inline constexpr std::wstring_view kStrConfigurationSettingsPropertiesSaturationPercentStickLeft =
-        XIDI_CONFIG_PROPERTIES_PREFIX_SATURATION_PERCENT XIDI_CONFIG_PROPERTIES_SUFFIX_STICK_LEFT;
+    inline constexpr std::wstring_view
+        kStrConfigurationSettingsPropertiesSaturationPercentStickLeft =
+            XIDI_CONFIG_PROPERTIES_PREFIX_SATURATION_PERCENT
+                XIDI_CONFIG_PROPERTIES_SUFFIX_STICK_LEFT;
 
     /// Configuration file setting for adding extra saturation to the right analog stick, expressed
     /// as a percentage of the analog range.
@@ -158,13 +163,17 @@ namespace Xidi
 
     /// Configuration file setting for adding extra saturation to the left analog trigger, expressed
     /// as a percentage of the analog range.
-    inline constexpr std::wstring_view kStrConfigurationSettingsPropertiesSaturationPercentTriggerLT =
-        XIDI_CONFIG_PROPERTIES_PREFIX_SATURATION_PERCENT XIDI_CONFIG_PROPERTIES_SUFFIX_TRIGGER_LT;
+    inline constexpr std::wstring_view
+        kStrConfigurationSettingsPropertiesSaturationPercentTriggerLT =
+            XIDI_CONFIG_PROPERTIES_PREFIX_SATURATION_PERCENT
+                XIDI_CONFIG_PROPERTIES_SUFFIX_TRIGGER_LT;
 
     /// Configuration file setting for adding extra saturation to the right analog trigger,
     /// expressed as a percentage of the analog range.
-    inline constexpr std::wstring_view kStrConfigurationSettingsPropertiesSaturationPercentTriggerRT =
-        XIDI_CONFIG_PROPERTIES_PREFIX_SATURATION_PERCENT XIDI_CONFIG_PROPERTIES_SUFFIX_TRIGGER_RT;
+    inline constexpr std::wstring_view
+        kStrConfigurationSettingsPropertiesSaturationPercentTriggerRT =
+            XIDI_CONFIG_PROPERTIES_PREFIX_SATURATION_PERCENT
+                XIDI_CONFIG_PROPERTIES_SUFFIX_TRIGGER_RT;
 
     /// Configuration file section name for specifying behavioral tweaks to work around bugs in
     /// games.
@@ -260,6 +269,12 @@ namespace Xidi
     /// the arguments that follow.
     /// @return Resulting string after all formatting is applied.
     TemporaryString FormatString(_Printf_format_string_ const wchar_t* format, ...);
+
+    /// Generates a string representation of a GUID, in the format
+    /// "{XXXXXXXX-XXXX-XXXX-XXXX-XXXXXXXXXXXX}" where X is a hexadecimal digit.
+    /// @param guid GUID for which a string is desired.
+    /// @return Resulting string representation for the specified GUID.
+    TemporaryString GuidToString(const GUID& guid);
 
     /// Retrieves a string used to represent a per-controller mapper type configuration setting.
     /// These are initialized on first invocation and returned subsequently as read-only views.

@@ -501,6 +501,23 @@ namespace Xidi
       return buf;
     }
 
+    TemporaryString GuidToString(const GUID& guid)
+    {
+      return FormatString(
+          L"{%08x-%04hx-%04hx-%02hhx%02hhx-%02hhx%02hhx%02hhx%02hhx%02hhx%02hhx}",
+          guid.Data1,
+          guid.Data2,
+          guid.Data3,
+          guid.Data4[0],
+          guid.Data4[1],
+          guid.Data4[2],
+          guid.Data4[3],
+          guid.Data4[4],
+          guid.Data4[5],
+          guid.Data4[6],
+          guid.Data4[7]);
+    }
+
     std::wstring_view MapperTypeConfigurationNameString(
         Controller::TControllerIdentifier controllerIdentifier)
     {
