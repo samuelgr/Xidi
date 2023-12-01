@@ -22,47 +22,13 @@
 #include "ControllerIdentification.h"
 #include "Mapper.h"
 #include "Message.h"
+#include "Strings.h"
+#include "TemporaryBuffer.h"
 #include "VirtualController.h"
 #include "VirtualDirectInputDevice.h"
 
 namespace Xidi
 {
-  /// Templated helper for printing product names during a device enumeration operation.
-  /// @tparam charMode Specifies whether to use underlying Unicode or not.
-  /// @param [in] severity Desired message severity.
-  /// @param [in] baseMessage Base message text, should contain a format specifier for the product
-  /// name.
-  /// @param [in] deviceInstance Device instance whose product name should be printed.
-  template <ECharMode charMode> static inline void OutputProductName(
-      Message::ESeverity severity,
-      const wchar_t* baseMessage,
-      const typename DirectInputType<charMode>::DeviceInstanceType* deviceInstance);
-
-  template <> static inline void OutputProductName<ECharMode::A>(
-      Message::ESeverity severity,
-      const wchar_t* baseMessage,
-      const typename DirectInputType<ECharMode::A>::DeviceInstanceType* deviceInstance)
-  {
-    WCHAR productName[_countof(deviceInstance->tszProductName) + 1];
-    ZeroMemory(productName, sizeof(productName));
-    mbstowcs_s(
-        nullptr,
-        productName,
-        _countof(productName) - 1,
-        deviceInstance->tszProductName,
-        _countof(deviceInstance->tszProductName));
-    Message::OutputFormatted(severity, baseMessage, productName);
-  }
-
-  template <> static inline void OutputProductName<ECharMode::W>(
-      Message::ESeverity severity,
-      const wchar_t* baseMessage,
-      const typename DirectInputType<ECharMode::W>::DeviceInstanceType* deviceInstance)
-  {
-    LPCWSTR productName = deviceInstance->tszProductName;
-    Message::OutputFormatted(severity, baseMessage, productName);
-  }
-
   /// Contains all information required to intercept callbacks to EnumDevices.
   template <ECharMode charMode> struct SEnumDevicesCallbackInfo
   {
@@ -180,23 +146,32 @@ namespace Xidi
               .dwSize = sizeof(typename DirectInputType<charMode>::DeviceInstanceType)};
           const HRESULT deviceInfoResult = (*lplpDirectInputDevice)->GetDeviceInfo(&deviceInfo);
 
-          if (DI_OK == deviceInfoResult)
-            OutputProductName<charMode>(
-                Message::ESeverity::Info,
-                L"Binding to non-XInput device \"%s\". Xidi will not handle communication with it.",
-                &deviceInfo);
-          else
-            Message::Output(
-                Message::ESeverity::Info,
-                L"Binding to an unknown non-XInput device. Xidi will not handle communication with it.");
+          if (Message::WillOutputMessageOfSeverity(Message::ESeverity::Info))
+          {
+            if (DI_OK == deviceInfoResult)
+            {
+              Message::OutputFormatted(
+                  Message::ESeverity::Info,
+                  L"Binding to non-XInput device \"%s\" with instance GUID %s. Xidi will not handle communication with it.",
+                  TemporaryString(deviceInfo.tszProductName).AsCString(),
+                  Strings::GuidToString(deviceInfo.guidInstance).AsCString());
+            }
+            else
+            {
+              Message::OutputFormatted(
+                  Message::ESeverity::Info,
+                  L"Binding to an unknown non-XInput device with instance GUID %s. Xidi will not handle communication with it.",
+                  Strings::GuidToString(deviceInfo.guidInstance).AsCString());
+            }
+          }
         }
       }
       else
       {
         Message::OutputFormatted(
             Message::ESeverity::Info,
-            L"Failed (code %u) to bind to a non-XInput device.",
-            (unsigned int)createDeviceResult);
+            L"Failed (result = 0x%08x) to bind to a non-XInput device.",
+            static_cast<unsigned int>(createDeviceResult));
       }
 
       return createDeviceResult;
@@ -393,10 +368,25 @@ namespace Xidi
             callbackInfo->instance->underlyingDIObject, lpddi->guidInstance))
     {
       callbackInfo->seenInstanceIdentifiers.insert(lpddi->guidInstance);
-      OutputProductName<charMode>(
-          Message::ESeverity::Debug,
-          L"Enumerate: DirectInput device \"%s\" supports XInput and will not be presented to the application.",
-          lpddi);
+      if (Message::WillOutputMessageOfSeverity(Message::ESeverity::Debug))
+      {
+        Message::OutputFormatted(
+            Message::ESeverity::Debug,
+            L"Enumerate: DirectInput device \"%s\" with instance GUID %s supports XInput and will not be presented to the application.",
+            TemporaryString(lpddi->tszProductName).AsCString(),
+            Strings::GuidToString(lpddi->guidInstance).AsCString());
+      }
+    }
+    else
+    {
+      if (Message::WillOutputMessageOfSeverity(Message::ESeverity::Debug))
+      {
+        Message::OutputFormatted(
+            Message::ESeverity::Debug,
+            L"Enumerate: DirectInput device \"%s\" with instance GUID %s does not support XInput and may be presented to the application.",
+            TemporaryString(lpddi->tszProductName).AsCString(),
+            Strings::GuidToString(lpddi->guidInstance).AsCString());
+      }
     }
 
     return DIENUM_CONTINUE;
@@ -411,10 +401,14 @@ namespace Xidi
     // If the device has not been seen already, add it to the set and present it to the application.
     if (0 == callbackInfo->seenInstanceIdentifiers.count(lpddi->guidInstance))
     {
-      OutputProductName<charMode>(
-          Message::ESeverity::Debug,
-          L"Enumerate: DirectInput device \"%s\" is being presented to the application.",
-          lpddi);
+      if (Message::WillOutputMessageOfSeverity(Message::ESeverity::Info))
+      {
+        Message::OutputFormatted(
+            Message::ESeverity::Info,
+            L"Enumerate: Presenting DirectInput device \"%s\" (instance GUID %s) to the application.",
+            TemporaryString(lpddi->tszProductName).AsCString(),
+            Strings::GuidToString(lpddi->guidInstance).AsCString());
+      }
 
       callbackInfo->seenInstanceIdentifiers.insert(lpddi->guidInstance);
       callbackInfo->callbackReturnCode =

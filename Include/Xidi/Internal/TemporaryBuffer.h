@@ -426,6 +426,21 @@ namespace Xidi
       *this = str;
     }
 
+    inline TemporaryString(const char* str) : TemporaryVector<wchar_t>()
+    {
+      *this = std::string_view(str);
+    }
+
+    inline TemporaryString(const std::string& str) : TemporaryVector<wchar_t>()
+    {
+      *this = std::string_view(str);
+    }
+
+    inline TemporaryString(std::string_view str) : TemporaryVector<wchar_t>()
+    {
+      *this = str;
+    }
+
     inline TemporaryString(const TemporaryString& other) : TemporaryVector<wchar_t>(other)
     {
       (*this)[size] = L'\0';
@@ -465,6 +480,23 @@ namespace Xidi
       return *this;
     }
 
+    inline TemporaryString& operator=(const char* str)
+    {
+      return (*this = std::string_view(str));
+    }
+
+    inline TemporaryString& operator=(const std::string& str)
+    {
+      return (*this = std::string_view(str));
+    }
+
+    inline TemporaryString& operator=(std::string_view str)
+    {
+      Clear();
+      *this += str;
+      return *this;
+    }
+
     inline TemporaryString& operator+=(const wchar_t* str)
     {
       return (*this += std::wstring_view(str));
@@ -479,6 +511,25 @@ namespace Xidi
     {
       for (unsigned int i = 0; (i < str.size()) && (Size() < (Capacity() - 1)); ++i)
         TemporaryVector<wchar_t>::PushBack(str[i]);
+
+      (*this)[size] = L'\0';
+      return *this;
+    }
+
+    inline TemporaryString& operator+=(const char* str)
+    {
+      return (*this += std::string_view(str));
+    }
+
+    inline TemporaryString& operator+=(const std::string& str)
+    {
+      return (*this += std::string_view(str));
+    }
+
+    inline TemporaryString& operator+=(std::string_view str)
+    {
+      for (unsigned int i = 0; (i < str.size()) && (Size() < (Capacity() - 1)); ++i)
+        TemporaryVector<wchar_t>::PushBack(static_cast<wchar_t>(str[i]));
 
       (*this)[size] = L'\0';
       return *this;
