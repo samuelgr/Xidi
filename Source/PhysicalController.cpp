@@ -11,6 +11,8 @@
 
 #include "PhysicalController.h"
 
+#include <SDL.h>
+
 #include <cstdint>
 #include <mutex>
 #include <set>
@@ -63,40 +65,88 @@ namespace Xidi
       return (uint32_t)controllerIdentifier;
     }
 
+    static SDL_Event event;
+    static SDL_GameController* controller = nullptr;
+
     /// Reads physical controller state.
     /// @param [in] controllerIdentifier Identifier of the controller on which to operate.
     /// @return Physical state of the identified controller.
     static SPhysicalState ReadPhysicalControllerState(TControllerIdentifier controllerIdentifier)
     {
-      constexpr uint16_t kUnusedButtonMask = ~((
-          uint16_t)((1u << (unsigned int)EPhysicalButton::UnusedGuide) | (1u << (unsigned int)EPhysicalButton::UnusedShare)));
-
-      XINPUT_STATE xinputState;
-      DWORD xinputGetStateResult =
-          ImportApiXInput::XInputGetState(controllerIdentifier, &xinputState);
-
-      switch (xinputGetStateResult)
-      {
-        case ERROR_SUCCESS:
-          // Directly using wButtons assumes that the bit layout is the same between the internal
-          // bitset and the XInput data structure. The static assertions below this function verify
-          // this assumption and will cause a compiler error if it is wrong.
-          return {
-              .deviceStatus = EPhysicalDeviceStatus::Ok,
-              .stick =
-                  {xinputState.Gamepad.sThumbLX,
-                   xinputState.Gamepad.sThumbLY,
-                   xinputState.Gamepad.sThumbRX,
-                   xinputState.Gamepad.sThumbRY},
-              .trigger = {xinputState.Gamepad.bLeftTrigger, xinputState.Gamepad.bRightTrigger},
-              .button = (uint16_t)(xinputState.Gamepad.wButtons & kUnusedButtonMask)};
-
-        case ERROR_DEVICE_NOT_CONNECTED:
-          return {.deviceStatus = EPhysicalDeviceStatus::NotConnected};
-
-        default:
-          return {.deviceStatus = EPhysicalDeviceStatus::Error};
+      controller = SDL_GameControllerOpen(controllerIdentifier); // Open the current controller
+      if (controller == nullptr)
+      { 
+        return {.deviceStatus = EPhysicalDeviceStatus::NotConnected};
       }
+
+      SPhysicalState physicalControllerState;
+      SDL_PumpEvents();
+
+       physicalControllerState.button.set(
+           (int)EPhysicalButton::A,
+           SDL_GameControllerGetButton(controller,
+               SDL_CONTROLLER_BUTTON_A));
+      physicalControllerState.button.set(
+          (int)EPhysicalButton::B,
+          SDL_GameControllerGetButton(controller, SDL_CONTROLLER_BUTTON_B));
+       physicalControllerState.button.set(
+           (int)EPhysicalButton::X,
+           SDL_GameControllerGetButton(controller, SDL_CONTROLLER_BUTTON_X));
+      physicalControllerState.button.set(
+          (int)EPhysicalButton::Y,
+          SDL_GameControllerGetButton(controller, SDL_CONTROLLER_BUTTON_Y));
+       physicalControllerState.button.set(
+           (int)EPhysicalButton::LB,
+           SDL_GameControllerGetButton(controller, SDL_CONTROLLER_BUTTON_LEFTSHOULDER));
+      physicalControllerState.button.set(
+          (int)EPhysicalButton::RB,
+          SDL_GameControllerGetButton(controller, SDL_CONTROLLER_BUTTON_RIGHTSHOULDER));
+       physicalControllerState.button.set(
+           (int)EPhysicalButton::Back,
+           SDL_GameControllerGetButton(controller, SDL_CONTROLLER_BUTTON_BACK));
+      physicalControllerState.button.set(
+          (int)EPhysicalButton::Start,
+          SDL_GameControllerGetButton(controller, SDL_CONTROLLER_BUTTON_START));
+       physicalControllerState.button.set(
+           (int)EPhysicalButton::LS,
+           SDL_GameControllerGetButton(controller, SDL_CONTROLLER_BUTTON_LEFTSTICK));
+      physicalControllerState.button.set(
+          (int)EPhysicalButton::RS,
+          SDL_GameControllerGetButton(controller, SDL_CONTROLLER_BUTTON_RIGHTSTICK));
+
+      //Dpad
+      physicalControllerState.button.set(
+          (int)EPhysicalButton::DpadLeft,
+          SDL_GameControllerGetButton(controller, SDL_CONTROLLER_BUTTON_DPAD_LEFT));
+      physicalControllerState.button.set(
+          (int)EPhysicalButton::DpadRight,
+          SDL_GameControllerGetButton(controller, SDL_CONTROLLER_BUTTON_DPAD_RIGHT));
+      physicalControllerState.button.set(
+          (int)EPhysicalButton::DpadUp,
+          SDL_GameControllerGetButton(controller, SDL_CONTROLLER_BUTTON_DPAD_UP));
+      physicalControllerState.button.set(
+          (int)EPhysicalButton::DpadDown,
+          SDL_GameControllerGetButton(controller, SDL_CONTROLLER_BUTTON_DPAD_DOWN));
+
+      //Sticks
+      physicalControllerState.stick = {
+          SDL_GameControllerGetAxis(controller, SDL_CONTROLLER_AXIS_LEFTX),
+          SDL_GameControllerGetAxis(controller, SDL_CONTROLLER_AXIS_LEFTY),
+          SDL_GameControllerGetAxis(controller, SDL_CONTROLLER_AXIS_RIGHTX),
+          SDL_GameControllerGetAxis(controller, SDL_CONTROLLER_AXIS_RIGHTY),
+      };
+
+      //Trigger
+      physicalControllerState.trigger = {
+          static_cast<unsigned char>(SDL_GameControllerGetAxis(
+              controller, SDL_CONTROLLER_AXIS_TRIGGERLEFT)),
+          static_cast<unsigned char>(SDL_GameControllerGetAxis(
+              controller, SDL_CONTROLLER_AXIS_TRIGGERRIGHT))
+      };
+
+       physicalControllerState.deviceStatus = EPhysicalDeviceStatus::Ok;
+       SDL_GameControllerClose(controller);
+       return physicalControllerState;
     }
 
     static_assert(1u << (unsigned int)EPhysicalButton::DpadUp == XINPUT_GAMEPAD_DPAD_UP);
@@ -122,13 +172,20 @@ namespace Xidi
         TControllerIdentifier controllerIdentifier,
         ForceFeedback::SPhysicalActuatorComponents vibration)
     {
-      // Impulse triggers are ignored because the XInput API does not support them.
-      XINPUT_VIBRATION xinputVibration = {
-          .wLeftMotorSpeed = (WORD)vibration.leftMotor,
-          .wRightMotorSpeed = (WORD)vibration.rightMotor};
-      return (
-          ERROR_SUCCESS ==
-          ImportApiXInput::XInputSetState((DWORD)controllerIdentifier, &xinputVibration));
+       controller = SDL_GameControllerOpen(controllerIdentifier); // Open the current controller
+       if (controller == nullptr)
+       {
+            return false;
+       }
+
+       SDL_PumpEvents();
+
+       // 250ms seems like a good duration (atleast on the DualSense controller), maybe this number can be improved
+       // 1ms makes the controller barely vibrate
+       SDL_GameControllerRumble(
+           controller, vibration.rightMotor, vibration.leftMotor, 250);
+
+       return true;
     }
 
     /// Periodically plays force feedback effects on the physical controller actuators.
@@ -308,6 +365,11 @@ namespace Xidi
           initFlag,
           []() -> void
           {
+            if (0 != SDL_Init(SDL_INIT_GAMECONTROLLER))
+            {
+              Message::OutputFormatted(
+                  Message::ESeverity::Warning, L"Could not initialize SDL");
+            }
             // Initialize controller state data structures.
             for (auto controllerIdentifier = 0;
                  controllerIdentifier < _countof(physicalControllerState);

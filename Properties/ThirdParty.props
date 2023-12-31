@@ -1,12 +1,15 @@
 <?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
-  <ImportGroup Label="PropertySheets" Condition="'$(ThirdPartyNeedsBoost)'!=''">
-    <Import Project="$(SolutionDir)Properties\ThirdParty\Boost.props" />
-  </ImportGroup>
-  <ImportGroup Label="PropertySheets" Condition="'$(ThirdPartyNeedsHookshot)'!=''">
-    <Import Project="$(SolutionDir)Properties\ThirdParty\Hookshot.props" />
-  </ImportGroup>
-  <ImportGroup Label="PropertySheets" Condition="'$(ThirdPartyNeedsXstdBitSet)'!=''">
-    <Import Project="$(SolutionDir)Properties\ThirdParty\XstdBitSet.props" />
-  </ImportGroup>
+	<ImportGroup Label="PropertySheets" Condition="'$(ThirdPartyNeedsBoost)'!=''">
+		<Import Project="$(SolutionDir)Properties\ThirdParty\Boost.props" />
+	</ImportGroup>
+	<ImportGroup Label="PropertySheets" Condition="'$(ThirdPartyNeedsHookshot)'!=''">
+		<Import Project="$(SolutionDir)Properties\ThirdParty\Hookshot.props" />
+	</ImportGroup>
+	<ImportGroup Label="PropertySheets" Condition="'$(ThirdPartyNeedsXstdBitSet)'!=''">
+		<Import Project="$(SolutionDir)Properties\ThirdParty\XstdBitSet.props" />
+	</ImportGroup>
+	<ImportGroup Label="PropertySheets">
+		<Import Project="$(SolutionDir)Properties\ThirdParty\SDL2.props" />
+	</ImportGroup>
 </Project>

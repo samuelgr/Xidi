@@ -6,4 +6,10 @@
     <Import Project="$(SolutionDir)Properties\GitVersionInfo.props" />
     <Import Project="$(SolutionDir)Properties\BuildSettings.props" />
   </ImportGroup>
+  <ItemDefinitionGroup>
+    <Link>
+      <AdditionalLibraryDirectories>$(SolutionDir)Lib\x86;$(SolutionDir)Lib\x64;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalDependencies>$(SolutionDir)Lib\x86\SDL2.lib;$(SolutionDir)Lib\x86\SDL2main.lib;$(SolutionDir)Lib\x64\SDL2.lib;$(SolutionDir)Lib\x64\SDL2main.lib;%(AdditionalDependencies)</AdditionalDependencies>
+    </Link>
+  </ItemDefinitionGroup>
 </Project>
