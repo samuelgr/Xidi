@@ -3,7 +3,7 @@
  *   DirectInput interface for XInput controllers.
  ***************************************************************************************************
  * Authored by Samuel Grossman
- * Copyright (c) 2016-2023
+ * Copyright (c) 2016-2024
  ***********************************************************************************************//**
  * @file ApiDirectInput.cpp
  *   Pulls in all DirectInput GUID definitions to avoid linking with the DirectInput library.

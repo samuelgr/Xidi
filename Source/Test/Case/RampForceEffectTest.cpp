@@ -3,7 +3,7 @@
  *   DirectInput interface for XInput controllers.
  ***************************************************************************************************
  * Authored by Samuel Grossman
- * Copyright (c) 2016-2023
+ * Copyright (c) 2016-2024
  ***********************************************************************************************//**
  * @file RampForceEffectTest.cpp
  *   Unit tests for force feedback effects that produce a force of magnitude that changes
