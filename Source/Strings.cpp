@@ -544,6 +544,27 @@ namespace Xidi
       return initStrings[controllerIdentifier];
     }
 
+    std::wstring_view NameConfigurationNameString(
+        Controller::TControllerIdentifier controllerIdentifier)
+    {
+      static std::wstring initStrings[Controller::kPhysicalControllerCount];
+      static std::once_flag initFlag;
+
+      
+      TemporaryString perControllerNameString;
+
+      for (Controller::TControllerIdentifier i = 0; i < _countof(initStrings); ++i)
+      {
+          perControllerNameString.Clear();
+          perControllerNameString << kStrConfigurationSettingName << kCharConfigurationSettingSeparator << (1 + i);
+          initStrings[i] = perControllerNameString;
+      }
+
+      if (controllerIdentifier >= Controller::kPhysicalControllerCount) return std::wstring_view();
+
+      return initStrings[controllerIdentifier];
+    }
+
     TemporaryVector<std::wstring_view> SplitString(
         std::wstring_view stringToSplit, std::wstring_view delimiter)
     {

@@ -97,8 +97,14 @@ namespace Xidi
     /// Configuration file section name for mapper-related settings.
     inline constexpr std::wstring_view kStrConfigurationSectionMapper = L"Mapper";
 
+    /// Configuration file section name for controller names.
+    inline constexpr std::wstring_view kStrConfigurationSectionNames = L"Names";
+
     /// Configuration file setting for specifying the mapper type.
     inline constexpr std::wstring_view kStrConfigurationSettingMapperType = L"Type";
+
+    /// Configuration file setting for specifying the controller name.
+    inline constexpr std::wstring_view kStrConfigurationSettingName = L"Name";
 
     /// Prefix for configuration file sections that define custom mappers.
     inline constexpr std::wstring_view kStrConfigurationSectionCustomMapperPrefix = L"CustomMapper";
@@ -283,6 +289,15 @@ namespace Xidi
     /// @return Corresponding configuration setting string, or an empty view if the controller
     /// identifier is out of range.
     std::wstring_view MapperTypeConfigurationNameString(
+        Controller::TControllerIdentifier controllerIdentifier);
+
+    /// Retrieves a string used to represent a per-controller name configuration setting.
+    /// These are initialized on first invocation and returned subsequently as read-only views.
+    /// An empty view is returned if an invalid controller identifier is specified.
+    /// @param [in] controllerIdentifier Controller identifier for which a name is desired.
+    /// @return Corresponding configuration setting string, or an empty view if the controller
+    /// identifier is out of range.
+    std::wstring_view NameConfigurationNameString(
         Controller::TControllerIdentifier controllerIdentifier);
 
     /// Splits a string using the specified delimiter string and returns a list of views each
