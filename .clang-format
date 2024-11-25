@@ -60,10 +60,10 @@ BraceWrapping:
     SplitEmptyFunction:                                     false
     SplitEmptyRecord:                                       false
     SplitEmptyNamespace:                                    false
-# BreakAfterAttributes:                                       Always
-BreakBeforeBinaryOperators:                                 None
+BreakAfterAttributes:                                       Always
+BreakBeforeBinaryOperators:                                 NonAssignment
 BreakBeforeConceptDeclarations:                             Always
-# BreakBeforeInlineASMColon:                                  Always
+BreakBeforeInlineASMColon:                                  Always
 BreakBeforeTernaryOperators:                                true
 BreakConstructorInitializers:                               BeforeColon
 BreakInheritanceList:                                       BeforeColon
@@ -101,9 +101,9 @@ IndentRequiresClause:                                       true
 IndentWidth:                                                2
 IndentWrappedFunctionNames:                                 true
 InsertBraces:                                               false
-# InsertNewlineAtEOF:                                         true
+InsertNewlineAtEOF:                                         true
 InsertTrailingCommas:                                       Wrapped
-# KeepEmptyLinesAtEOF:                                        false
+KeepEmptyLinesAtEOF:                                        false
 KeepEmptyLinesAtTheStartOfBlocks:                           false
 LambdaBodyIndentation:                                      Signature
 MaxEmptyLinesToKeep:                                        1
@@ -156,7 +156,7 @@ SpacesInContainerLiterals:                                  false
 SpacesInLineCommentPrefix:
     Minimum:                                                1
     Maximum:                                                1
-# SpacesInParens:                                             Never
+SpacesInParens:                                             Never
 SpacesInParentheses:                                        false
 SpacesInSquareBrackets:                                     false
 UseTab:                                                     Never

@@ -15,6 +15,7 @@
 #include <cstdint>
 #include <initializer_list>
 #include <limits>
+#include <string>
 #include <string_view>
 #include <type_traits>
 #include <utility>
