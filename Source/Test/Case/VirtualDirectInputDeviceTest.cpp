@@ -91,22 +91,24 @@ namespace XidiTest
   /// Describes a layout with 4 axes, a POV, and 8 buttons, with force feedback actuators on the X
   /// and Y axes.
   static const Mapper kTestMapperWithForceFeedback(
-      {.stickLeftX = std::make_unique<AxisMapper>(EAxis::X),
-       .stickLeftY = std::make_unique<AxisMapper>(EAxis::Y),
-       .stickRightX = std::make_unique<AxisMapper>(EAxis::RotX),
-       .stickRightY = std::make_unique<AxisMapper>(EAxis::RotY),
-       .dpadUp = std::make_unique<PovMapper>(EPovDirection::Up),
-       .dpadDown = std::make_unique<PovMapper>(EPovDirection::Down),
-       .dpadLeft = std::make_unique<PovMapper>(EPovDirection::Left),
-       .dpadRight = std::make_unique<PovMapper>(EPovDirection::Right),
-       .buttonA = std::make_unique<ButtonMapper>(EButton::B1),
-       .buttonB = std::make_unique<ButtonMapper>(EButton::B2),
-       .buttonX = std::make_unique<ButtonMapper>(EButton::B3),
-       .buttonY = std::make_unique<ButtonMapper>(EButton::B4),
-       .buttonLB = std::make_unique<ButtonMapper>(EButton::B5),
-       .buttonRB = std::make_unique<ButtonMapper>(EButton::B6),
-       .buttonBack = std::make_unique<ButtonMapper>(EButton::B7),
-       .buttonStart = std::make_unique<ButtonMapper>(EButton::B8)},
+      {
+          .stickLeftX = std::make_unique<AxisMapper>(EAxis::X),
+          .stickLeftY = std::make_unique<AxisMapper>(EAxis::Y),
+          .stickRightX = std::make_unique<AxisMapper>(EAxis::RotX),
+          .stickRightY = std::make_unique<AxisMapper>(EAxis::RotY),
+          .dpadUp = std::make_unique<PovMapper>(EPovDirection::Up),
+          .dpadDown = std::make_unique<PovMapper>(EPovDirection::Down),
+          .dpadLeft = std::make_unique<PovMapper>(EPovDirection::Left),
+          .dpadRight = std::make_unique<PovMapper>(EPovDirection::Right),
+          .buttonA = std::make_unique<ButtonMapper>(EButton::B1),
+          .buttonB = std::make_unique<ButtonMapper>(EButton::B2),
+          .buttonX = std::make_unique<ButtonMapper>(EButton::B3),
+          .buttonY = std::make_unique<ButtonMapper>(EButton::B4),
+          .buttonLB = std::make_unique<ButtonMapper>(EButton::B5),
+          .buttonRB = std::make_unique<ButtonMapper>(EButton::B6),
+          .buttonBack = std::make_unique<ButtonMapper>(EButton::B7),
+          .buttonStart = std::make_unique<ButtonMapper>(EButton::B8)
+  },
       {.leftMotor =
            {.isPresent = true,
             .mode = Controller::ForceFeedback::EActuatorMode::SingleAxis,
@@ -145,7 +147,8 @@ namespace XidiTest
       {.pguid = &GUID_Button,
        .dwOfs = offsetof(STestDataPacket, button[3]),
        .dwType = DIDFT_BUTTON | DIDFT_ANYINSTANCE,
-       .dwFlags = 0}};
+       .dwFlags = 0}
+  };
 
   /// Complete application data format specification for #STestDataPacket.
   static constexpr DIDATAFORMAT kTestFormatSpec = {
@@ -848,14 +851,17 @@ namespace XidiTest
     constexpr DIPROPDWORD kBufferSizeProperty = {
         .diph =
             {.dwSize = sizeof(DIPROPDWORD),
-             .dwHeaderSize = sizeof(DIPROPHEADER),
-             .dwObj = 0,
-             .dwHow = DIPH_DEVICE},
-        .dwData = kBufferSize};
+                   .dwHeaderSize = sizeof(DIPROPHEADER),
+                   .dwObj = 0,
+                   .dwHow = DIPH_DEVICE},
+        .dwData = kBufferSize
+    };
     constexpr SPhysicalState kPhysicalState = {
         .deviceStatus = EPhysicalDeviceStatus::Ok,
         .stick = {-1234, 0, 5678, 0},
-        .button = ButtonSet({EPhysicalButton::A, EPhysicalButton::X})};
+        .button = ButtonSet({EPhysicalButton::A, EPhysicalButton::X}
+          )
+    };
 
     // Set based on the number of controller elements present in the above XINPUT_STATE structure
     // that are also contained in STestDataPacket. In this case, the right thumbstick has no
@@ -879,10 +885,11 @@ namespace XidiTest
     constexpr STestDataPacket kExpectedDataPacketResult = {
         .axisX = -1234,
         .button = {
-            DataFormat::kButtonValuePressed,
-            DataFormat::kButtonValueNotPressed,
-            DataFormat::kButtonValuePressed,
-            DataFormat::kButtonValueNotPressed}};
+                   DataFormat::kButtonValuePressed,
+                   DataFormat::kButtonValueNotPressed,
+                   DataFormat::kButtonValuePressed,
+                   DataFormat::kButtonValueNotPressed}
+    };
 
     // To get the actual data packet, retrieve buffered events from the controller and modify the
     // data packet one event at a time. First access is with DIGGD_PEEK so that no buffered events
@@ -940,14 +947,17 @@ namespace XidiTest
     constexpr DIPROPDWORD kBufferSizeProperty = {
         .diph =
             {.dwSize = sizeof(DIPROPDWORD),
-             .dwHeaderSize = sizeof(DIPROPHEADER),
-             .dwObj = 0,
-             .dwHow = DIPH_DEVICE},
-        .dwData = kBufferSize};
+                   .dwHeaderSize = sizeof(DIPROPHEADER),
+                   .dwObj = 0,
+                   .dwHow = DIPH_DEVICE},
+        .dwData = kBufferSize
+    };
     constexpr SPhysicalState kPhysicalState = {
         .deviceStatus = EPhysicalDeviceStatus::Ok,
         .stick = {-1234, 0, 5678, 0},
-        .button = ButtonSet({EPhysicalButton::A, EPhysicalButton::X})};
+        .button = ButtonSet({EPhysicalButton::A, EPhysicalButton::X}
+          )
+    };
 
     // Set based on the number of controller elements present in the above XINPUT_STATE structure
     // that are also contained in STestDataPacket. In this case, the right thumbstick has no
@@ -971,10 +981,11 @@ namespace XidiTest
     constexpr STestDataPacket kExpectedDataPacketResult = {
         .axisX = -1234,
         .button = {
-            DataFormat::kButtonValuePressed,
-            DataFormat::kButtonValueNotPressed,
-            DataFormat::kButtonValuePressed,
-            DataFormat::kButtonValueNotPressed}};
+                   DataFormat::kButtonValuePressed,
+                   DataFormat::kButtonValueNotPressed,
+                   DataFormat::kButtonValuePressed,
+                   DataFormat::kButtonValueNotPressed}
+    };
 
     // To get the actual data packet, retrieve buffered events from the controller and modify the
     // data packet one event at a time.
@@ -1036,7 +1047,9 @@ namespace XidiTest
     constexpr SPhysicalState kPhysicalState = {
         .deviceStatus = EPhysicalDeviceStatus::Ok,
         .stick = {-1234, 0, 5678, 0},
-        .button = ButtonSet({EPhysicalButton::A, EPhysicalButton::X})};
+        .button = ButtonSet({EPhysicalButton::A, EPhysicalButton::X}
+          )
+    };
 
     // Based on the mapper defined at the top of this file. POV is filled in to reflect its centered
     // state.
@@ -1044,10 +1057,11 @@ namespace XidiTest
         .axisX = -1234,
         .pov = EPovValue::Center,
         .button = {
-            DataFormat::kButtonValuePressed,
-            DataFormat::kButtonValueNotPressed,
-            DataFormat::kButtonValuePressed,
-            DataFormat::kButtonValueNotPressed}};
+                   DataFormat::kButtonValuePressed,
+                   DataFormat::kButtonValueNotPressed,
+                   DataFormat::kButtonValuePressed,
+                   DataFormat::kButtonValueNotPressed}
+    };
 
     MockPhysicalController physicalController(kTestControllerIdentifier, kTestMapper);
     VirtualDirectInputDevice<ECharMode::W> diController(CreateTestVirtualController());
@@ -1095,7 +1109,9 @@ namespace XidiTest
     constexpr SPhysicalState kPhysicalState = {
         .deviceStatus = EPhysicalDeviceStatus::Ok,
         .stick = {-1234, 0, 5678, 0},
-        .button = ButtonSet({EPhysicalButton::A, EPhysicalButton::X})};
+        .button = ButtonSet({EPhysicalButton::A, EPhysicalButton::X}
+          )
+    };
 
     MockPhysicalController physicalController(kTestControllerIdentifier, kTestMapper);
     VirtualDirectInputDevice<ECharMode::W> diController(CreateTestVirtualController());
@@ -1114,7 +1130,8 @@ namespace XidiTest
               DataFormat::kButtonValueNotPressed,
               DataFormat::kButtonValuePressed,
               DataFormat::kButtonValueNotPressed}},
-        {}};
+        {}
+    };
 
     // This entire array is passed as the data packet buffer. It should be entirely zeroed out,
     // except for those elements that are indicated in the expected result above.

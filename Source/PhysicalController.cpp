@@ -68,8 +68,9 @@ namespace Xidi
     /// @return Physical state of the identified controller.
     static SPhysicalState ReadPhysicalControllerState(TControllerIdentifier controllerIdentifier)
     {
-      constexpr uint16_t kUnusedButtonMask = ~((
-          uint16_t)((1u << (unsigned int)EPhysicalButton::UnusedGuide) | (1u << (unsigned int)EPhysicalButton::UnusedShare)));
+      constexpr uint16_t kUnusedButtonMask =
+          ~((uint16_t)((1u << (unsigned int)EPhysicalButton::UnusedGuide) |
+                       (1u << (unsigned int)EPhysicalButton::UnusedShare)));
 
       XINPUT_STATE xinputState;
       DWORD xinputGetStateResult =
@@ -85,11 +86,12 @@ namespace Xidi
               .deviceStatus = EPhysicalDeviceStatus::Ok,
               .stick =
                   {xinputState.Gamepad.sThumbLX,
-                   xinputState.Gamepad.sThumbLY,
-                   xinputState.Gamepad.sThumbRX,
-                   xinputState.Gamepad.sThumbRY},
+                          xinputState.Gamepad.sThumbLY,
+                          xinputState.Gamepad.sThumbRX,
+                          xinputState.Gamepad.sThumbRY},
               .trigger = {xinputState.Gamepad.bLeftTrigger, xinputState.Gamepad.bRightTrigger},
-              .button = (uint16_t)(xinputState.Gamepad.wButtons & kUnusedButtonMask)};
+              .button = (uint16_t)(xinputState.Gamepad.wButtons & kUnusedButtonMask)
+          };
 
         case ERROR_DEVICE_NOT_CONNECTED:
           return {.deviceStatus = EPhysicalDeviceStatus::NotConnected};

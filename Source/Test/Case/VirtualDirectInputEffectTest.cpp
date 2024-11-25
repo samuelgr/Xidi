@@ -93,7 +93,8 @@ namespace XidiTest
 
   /// GUID used to identify all test force feedback effect objects.
   static constexpr GUID kTestEffectGuid = {
-      0x12345678, 0x9abc, 0xdef0, {'X', 'I', 'D', 'I', 'T', 'E', 'S', 'T'}};
+      0x12345678, 0x9abc, 0xdef0, {'X', 'I', 'D', 'I', 'T', 'E', 'S', 'T'}
+  };
 
   /// Test value of controller identifier used throughout these test cases.
   static constexpr TControllerIdentifier kTestControllerIdentifier = 0;
@@ -102,17 +103,19 @@ namespace XidiTest
   /// Describes a layout with 3 axes, a POV, and 4 buttons, with force feedback actuators on the X
   /// and Y axes.
   static const Mapper kTestMapper(
-      {.stickLeftX = std::make_unique<AxisMapper>(EAxis::X),
-       .stickLeftY = std::make_unique<AxisMapper>(EAxis::Y),
-       .stickRightX = std::make_unique<AxisMapper>(EAxis::Z),
-       .dpadUp = std::make_unique<PovMapper>(EPovDirection::Up),
-       .dpadDown = std::make_unique<PovMapper>(EPovDirection::Down),
-       .dpadLeft = std::make_unique<PovMapper>(EPovDirection::Left),
-       .dpadRight = std::make_unique<PovMapper>(EPovDirection::Right),
-       .buttonA = std::make_unique<ButtonMapper>(EButton::B1),
-       .buttonB = std::make_unique<ButtonMapper>(EButton::B2),
-       .buttonX = std::make_unique<ButtonMapper>(EButton::B3),
-       .buttonY = std::make_unique<ButtonMapper>(EButton::B4)},
+      {
+          .stickLeftX = std::make_unique<AxisMapper>(EAxis::X),
+          .stickLeftY = std::make_unique<AxisMapper>(EAxis::Y),
+          .stickRightX = std::make_unique<AxisMapper>(EAxis::Z),
+          .dpadUp = std::make_unique<PovMapper>(EPovDirection::Up),
+          .dpadDown = std::make_unique<PovMapper>(EPovDirection::Down),
+          .dpadLeft = std::make_unique<PovMapper>(EPovDirection::Left),
+          .dpadRight = std::make_unique<PovMapper>(EPovDirection::Right),
+          .buttonA = std::make_unique<ButtonMapper>(EButton::B1),
+          .buttonB = std::make_unique<ButtonMapper>(EButton::B2),
+          .buttonX = std::make_unique<ButtonMapper>(EButton::B3),
+          .buttonY = std::make_unique<ButtonMapper>(EButton::B4)
+  },
       {.leftMotor =
            {.isPresent = true,
             .mode = EActuatorMode::SingleAxis,
@@ -155,7 +158,8 @@ namespace XidiTest
       {.pguid = &GUID_Button,
        .dwOfs = offsetof(STestDataPacket, button[3]),
        .dwType = DIDFT_BUTTON | DIDFT_ANYINSTANCE,
-       .dwFlags = 0}};
+       .dwFlags = 0}
+  };
 
   /// Complete application data format specification for #STestDataPacket.
   static constexpr DIDATAFORMAT kTestFormatSpec = {
@@ -423,7 +427,8 @@ namespace XidiTest
 
     TEST_ASSERT(true == ffEffect.HasAssociatedAxes());
     constexpr SAssociatedAxes kExpectedAssociatedAxes = {
-        .count = _countof(axes), .type = {EAxis::X, EAxis::Y}};
+        .count = _countof(axes), .type = {EAxis::X, EAxis::Y}
+    };
     const SAssociatedAxes actualAssociatedAxes = ffEffect.GetAssociatedAxes().value();
     TEST_ASSERT(actualAssociatedAxes == kExpectedAssociatedAxes);
   }
@@ -450,7 +455,8 @@ namespace XidiTest
 
     TEST_ASSERT(true == ffEffect.HasAssociatedAxes());
     constexpr SAssociatedAxes kExpectedAssociatedAxes = {
-        .count = _countof(axes), .type = {EAxis::X, EAxis::Y}};
+        .count = _countof(axes), .type = {EAxis::X, EAxis::Y}
+    };
     const SAssociatedAxes actualAssociatedAxes = ffEffect.GetAssociatedAxes().value();
     TEST_ASSERT(actualAssociatedAxes == kExpectedAssociatedAxes);
   }
@@ -1002,7 +1008,9 @@ namespace XidiTest
 
     MockEffectWithTypeSpecificParameters& ffEffect =
         (MockEffectWithTypeSpecificParameters&)diEffect->UnderlyingEffect();
-    ffEffect.SetAssociatedAxes({.count = 2, .type = {EAxis::X, EAxis::Y}});
+    ffEffect.SetAssociatedAxes({
+        .count = 2, .type = {EAxis::X, EAxis::Y}
+    });
 
     const DWORD expectedAxes[] = {
         offsetof(STestDataPacket, axisX), offsetof(STestDataPacket, axisY)};
@@ -1028,7 +1036,9 @@ namespace XidiTest
 
     MockEffectWithTypeSpecificParameters& ffEffect =
         (MockEffectWithTypeSpecificParameters&)diEffect->UnderlyingEffect();
-    ffEffect.SetAssociatedAxes({.count = 2, .type = {EAxis::X, EAxis::Y}});
+    ffEffect.SetAssociatedAxes({
+        .count = 2, .type = {EAxis::X, EAxis::Y}
+    });
 
     const DWORD expectedAxes[] = {ObjectIdForAxis(EAxis::X), ObjectIdForAxis(EAxis::Y)};
     DWORD actualAxes[_countof(expectedAxes)] = {};
@@ -1067,7 +1077,9 @@ namespace XidiTest
 
     MockEffectWithTypeSpecificParameters& ffEffect =
         (MockEffectWithTypeSpecificParameters&)diEffect->UnderlyingEffect();
-    ffEffect.SetAssociatedAxes({.count = 2, .type = {EAxis::X, EAxis::Y}});
+    ffEffect.SetAssociatedAxes({
+        .count = 2, .type = {EAxis::X, EAxis::Y}
+    });
 
     DIEFFECT parameters = {
         .dwSize = sizeof(DIEFFECT),

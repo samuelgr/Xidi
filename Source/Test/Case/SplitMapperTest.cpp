@@ -34,8 +34,9 @@ namespace XidiTest
   TEST_CASE(SplitMapper_GetTargetElement_Nominal)
   {
     constexpr SElementIdentifier kUnderlyingElements[] = {
-        {.type = EElementType::Button, .button = EButton::B2},
-        {.type = EElementType::Button, .button = EButton::B10}};
+        {.type = EElementType::Button, .button = EButton::B2 },
+        {.type = EElementType::Button, .button = EButton::B10}
+    };
 
     const SplitMapper mapper(
         std::make_unique<MockElementMapper>(kUnderlyingElements[0]),
@@ -57,8 +58,9 @@ namespace XidiTest
   TEST_CASE(SplitMapper_GetTargetElement_Clone)
   {
     constexpr SElementIdentifier kUnderlyingElements[] = {
-        {.type = EElementType::Button, .button = EButton::B2},
-        {.type = EElementType::Button, .button = EButton::B10}};
+        {.type = EElementType::Button, .button = EButton::B2 },
+        {.type = EElementType::Button, .button = EButton::B10}
+    };
 
     const SplitMapper mapperOriginal(
         std::make_unique<MockElementMapper>(kUnderlyingElements[0]),
@@ -83,8 +85,9 @@ namespace XidiTest
   TEST_CASE(SplitMapper_GetTargetElement_OneNull)
   {
     constexpr SElementIdentifier kUnderlyingElements[] = {
-        {.type = EElementType::Axis, .axis = EAxis::X},
-        {.type = EElementType::Axis, .axis = EAxis::RotY}};
+        {.type = EElementType::Axis, .axis = EAxis::X   },
+        {.type = EElementType::Axis, .axis = EAxis::RotY}
+    };
     const SplitMapper mapper[] = {
         SplitMapper(std::make_unique<MockElementMapper>(kUnderlyingElements[0]), nullptr),
         SplitMapper(nullptr, std::make_unique<MockElementMapper>(kUnderlyingElements[1]))};
@@ -121,10 +124,11 @@ namespace XidiTest
       int16_t positive;
       int16_t negative;
     } kTestValues[] = {
-        {.positive = kAnalogValueMax, .negative = kAnalogValueMin},
-        {.positive = kAnalogValueMax / 2, .negative = kAnalogValueMin / 2},
+        {.positive = kAnalogValueMax,         .negative = kAnalogValueMin        },
+        {.positive = kAnalogValueMax / 2,     .negative = kAnalogValueMin / 2    },
         {.positive = kAnalogValueNeutral + 1, .negative = kAnalogValueNeutral - 1},
-        {.positive = kAnalogValueNeutral, .negative = kAnalogValueNeutral - 1}};
+        {.positive = kAnalogValueNeutral,     .negative = kAnalogValueNeutral - 1}
+    };
 
     for (int i = 0; i < _countof(kTestValues); ++i)
     {
@@ -160,10 +164,11 @@ namespace XidiTest
       int16_t positive;
       int16_t negative;
     } kTestValues[] = {
-        {.positive = kAnalogValueMax, .negative = kAnalogValueMin},
-        {.positive = kAnalogValueMax / 2, .negative = kAnalogValueMin / 2},
+        {.positive = kAnalogValueMax,         .negative = kAnalogValueMin        },
+        {.positive = kAnalogValueMax / 2,     .negative = kAnalogValueMin / 2    },
         {.positive = kAnalogValueNeutral + 1, .negative = kAnalogValueNeutral - 1},
-        {.positive = kAnalogValueNeutral, .negative = kAnalogValueNeutral - 1}};
+        {.positive = kAnalogValueNeutral,     .negative = kAnalogValueNeutral - 1}
+    };
 
     for (int i = 0; i < _countof(kTestValues); ++i)
     {
@@ -209,7 +214,9 @@ namespace XidiTest
     {
       bool positive;
       bool negative;
-    } kTestValues[] = {{.positive = true, .negative = false}};
+    } kTestValues[] = {
+        {.positive = true, .negative = false}
+    };
 
     for (int i = 0; i < _countof(kTestValues); ++i)
     {
@@ -240,7 +247,9 @@ namespace XidiTest
     {
       bool positive;
       bool negative;
-    } kTestValues[] = {{.positive = true, .negative = false}};
+    } kTestValues[] = {
+        {.positive = true, .negative = false}
+    };
 
     for (int i = 0; i < _countof(kTestValues); ++i)
     {
@@ -283,10 +292,11 @@ namespace XidiTest
       uint8_t positive;
       uint8_t negative;
     } kTestValues[] = {
-        {.positive = kTriggerValueMax, .negative = kTriggerValueMin},
+        {.positive = kTriggerValueMax,     .negative = kTriggerValueMin    },
         {.positive = kTriggerValueMax / 2, .negative = kTriggerValueMin / 2},
         {.positive = kTriggerValueMid + 1, .negative = kTriggerValueMid - 1},
-        {.positive = kTriggerValueMid, .negative = kTriggerValueMid - 1}};
+        {.positive = kTriggerValueMid,     .negative = kTriggerValueMid - 1}
+    };
 
     for (int i = 0; i < _countof(kTestValues); ++i)
     {
@@ -322,10 +332,11 @@ namespace XidiTest
       uint8_t positive;
       uint8_t negative;
     } kTestValues[] = {
-        {.positive = kTriggerValueMax, .negative = kTriggerValueMin},
+        {.positive = kTriggerValueMax,     .negative = kTriggerValueMin    },
         {.positive = kTriggerValueMax / 2, .negative = kTriggerValueMin / 2},
         {.positive = kTriggerValueMid + 1, .negative = kTriggerValueMid - 1},
-        {.positive = kTriggerValueMid, .negative = kTriggerValueMid - 1}};
+        {.positive = kTriggerValueMid,     .negative = kTriggerValueMid - 1}
+    };
 
     for (int i = 0; i < _countof(kTestValues); ++i)
     {

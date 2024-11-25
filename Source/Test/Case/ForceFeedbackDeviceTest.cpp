@@ -126,7 +126,8 @@ namespace XidiTest
           effect.ComputeOrderedMagnitudeComponents(t);
 
       const TEffectTimeMs playEffectsTime =
-          (TEffectTimeMs)(((uint64_t)t + (uint64_t)kTestTimestampBase) & (uint64_t)std::numeric_limits<TEffectTimeMs>::max());
+          (TEffectTimeMs)(((uint64_t)t + (uint64_t)kTestTimestampBase) &
+                          (uint64_t)std::numeric_limits<TEffectTimeMs>::max());
       const TOrderedMagnitudeComponents actualMagnitudeComponents =
           Device.PlayEffects(playEffectsTime);
       TEST_ASSERT(actualMagnitudeComponents == expectedMagnitudeComponents);

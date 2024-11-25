@@ -170,7 +170,8 @@ namespace Xidi
       static constexpr ForceFeedback::SActuatorElement kDefaultForceFeedbackActuator = {
           .isPresent = true,
           .mode = ForceFeedback::EActuatorMode::MagnitudeProjection,
-          .magnitudeProjection = {.axisFirst = EAxis::X, .axisSecond = EAxis::Y}};
+          .magnitudeProjection = {.axisFirst = EAxis::X, .axisSecond = EAxis::Y}
+      };
 
       /// Default force feedback actuator map.
       /// Used whenever a force feedback actuator map is not provided.

@@ -40,8 +40,8 @@ namespace Xidi
         const double transformedAnalogBase =
             ((analogValue >= 0) ? ((double)analogValue - (double)deadzoneCutoff)
                                 : ((double)analogValue + (double)deadzoneCutoff));
-        const double transformationScaleFactor = ((double)(kAnalogValueMax - kAnalogValueNeutral))
-            / ((double)(saturationCutoff - deadzoneCutoff));
+        const double transformationScaleFactor = ((double)(kAnalogValueMax - kAnalogValueNeutral)) /
+            ((double)(saturationCutoff - deadzoneCutoff));
 
         return kAnalogValueNeutral + (int16_t)(transformedAnalogBase * transformationScaleFactor);
       }
@@ -52,20 +52,20 @@ namespace Xidi
         if ((0 == deadzonePercent) && (100 == saturationPercent)) return triggerValue;
 
         const uint8_t deadzoneCutoff =
-            (uint8_t)((((unsigned int)kTriggerValueMax - (unsigned int)kTriggerValueMin)
-                       * deadzonePercent)
-                      / 100);
+            (uint8_t)((((unsigned int)kTriggerValueMax - (unsigned int)kTriggerValueMin) *
+                       deadzonePercent) /
+                      100);
         if (triggerValue <= deadzoneCutoff) return kTriggerValueMin;
 
         const uint8_t saturationCutoff =
-            (uint8_t)((((unsigned int)kTriggerValueMax - (unsigned int)kTriggerValueMin)
-                       * saturationPercent)
-                      / 100);
+            (uint8_t)((((unsigned int)kTriggerValueMax - (unsigned int)kTriggerValueMin) *
+                       saturationPercent) /
+                      100);
         if (triggerValue >= saturationCutoff) return kTriggerValueMax;
 
         const float transformedTriggerBase = (float)triggerValue - (float)deadzoneCutoff;
-        const float transformationScaleFactor = ((float)(kTriggerValueMax - kTriggerValueMin))
-            / ((float)(saturationCutoff - deadzoneCutoff));
+        const float transformationScaleFactor = ((float)(kTriggerValueMax - kTriggerValueMin)) /
+            ((float)(saturationCutoff - deadzoneCutoff));
 
         return kTriggerValueMin + (uint8_t)(transformedTriggerBase * transformationScaleFactor);
       }

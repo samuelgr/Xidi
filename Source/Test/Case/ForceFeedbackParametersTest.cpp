@@ -347,31 +347,32 @@ namespace XidiTest
   {
     const SCoordinateConversionTestData<2> kTestData[] = {
 
-        // Single direction component
-        {.cartesian = {1, 0}, .polar = (TEffectValue)9000, .spherical = {0}},
-        {.cartesian = {1000, 0}, .polar = (TEffectValue)9000, .spherical = {0}},
-        {.cartesian = {0, 1}, .polar = (TEffectValue)18000, .spherical = {9000}},
-        {.cartesian = {0, 1000}, .polar = (TEffectValue)18000, .spherical = {9000}},
-        {.cartesian = {-1, 0}, .polar = (TEffectValue)27000, .spherical = {18000}},
-        {.cartesian = {-1000, 0}, .polar = (TEffectValue)27000, .spherical = {18000}},
-        {.cartesian = {0, -1}, .polar = (TEffectValue)0, .spherical = {27000}},
-        {.cartesian = {0, -1000}, .polar = (TEffectValue)0, .spherical = {27000}},
+  // Single direction component
+        {.cartesian = {1, 0},        .polar = (TEffectValue)9000,  .spherical = {0}    },
+        {.cartesian = {1000, 0},     .polar = (TEffectValue)9000,  .spherical = {0}    },
+        {.cartesian = {0, 1},        .polar = (TEffectValue)18000, .spherical = {9000} },
+        {.cartesian = {0, 1000},     .polar = (TEffectValue)18000, .spherical = {9000} },
+        {.cartesian = {-1, 0},       .polar = (TEffectValue)27000, .spherical = {18000}},
+        {.cartesian = {-1000, 0},    .polar = (TEffectValue)27000, .spherical = {18000}},
+        {.cartesian = {0, -1},       .polar = (TEffectValue)0,     .spherical = {27000}},
+        {.cartesian = {0, -1000},    .polar = (TEffectValue)0,     .spherical = {27000}},
 
-        // Two direction components, simple
-        {.cartesian = {1, 1}, .polar = (TEffectValue)13500, .spherical = {4500}},
-        {.cartesian = {1, -1}, .polar = (TEffectValue)4500, .spherical = {31500}},
-        {.cartesian = {-1, 1}, .polar = (TEffectValue)22500, .spherical = {13500}},
-        {.cartesian = {-1, -1}, .polar = (TEffectValue)31500, .spherical = {22500}},
+ // Two direction components, simple
+        {.cartesian = {1, 1},        .polar = (TEffectValue)13500, .spherical = {4500} },
+        {.cartesian = {1, -1},       .polar = (TEffectValue)4500,  .spherical = {31500}},
+        {.cartesian = {-1, 1},       .polar = (TEffectValue)22500, .spherical = {13500}},
+        {.cartesian = {-1, -1},      .polar = (TEffectValue)31500, .spherical = {22500}},
 
-        // Two direction components, complex
-        {.cartesian = {1, kSqrt3}, .polar = (TEffectValue)15000, .spherical = {6000}},
-        {.cartesian = {kSqrt3, 1}, .polar = (TEffectValue)12000, .spherical = {3000}},
-        {.cartesian = {-1, kSqrt3}, .polar = (TEffectValue)21000, .spherical = {12000}},
-        {.cartesian = {-kSqrt3, 1}, .polar = (TEffectValue)24000, .spherical = {15000}},
+ // Two direction components, complex
+        {.cartesian = {1, kSqrt3},   .polar = (TEffectValue)15000, .spherical = {6000} },
+        {.cartesian = {kSqrt3, 1},   .polar = (TEffectValue)12000, .spherical = {3000} },
+        {.cartesian = {-1, kSqrt3},  .polar = (TEffectValue)21000, .spherical = {12000}},
+        {.cartesian = {-kSqrt3, 1},  .polar = (TEffectValue)24000, .spherical = {15000}},
         {.cartesian = {-kSqrt3, -1}, .polar = (TEffectValue)30000, .spherical = {21000}},
         {.cartesian = {-1, -kSqrt3}, .polar = (TEffectValue)33000, .spherical = {24000}},
-        {.cartesian = {1, -kSqrt3}, .polar = (TEffectValue)3000, .spherical = {30000}},
-        {.cartesian = {kSqrt3, -1}, .polar = (TEffectValue)6000, .spherical = {33000}}};
+        {.cartesian = {1, -kSqrt3},  .polar = (TEffectValue)3000,  .spherical = {30000}},
+        {.cartesian = {kSqrt3, -1},  .polar = (TEffectValue)6000,  .spherical = {33000}}
+    };
 
     for (const auto& testData : kTestData)
       DirectionVectorCoordinateConversionTest(testData);
@@ -383,43 +384,44 @@ namespace XidiTest
     constexpr TEffectValue kTestMagnitude = 1000;
     const SMagnitudeComponentsTestData<2> kTestData[] = {
 
-        // Single direction component.
-        {.directionCartesian = {1, 0}, .magnitudeComponents = {kTestMagnitude, 0}},
-        {.directionCartesian = {1000, 0}, .magnitudeComponents = {kTestMagnitude, 0}},
-        {.directionCartesian = {0, 1}, .magnitudeComponents = {0, kTestMagnitude}},
-        {.directionCartesian = {0, 1000}, .magnitudeComponents = {0, kTestMagnitude}},
-        {.directionCartesian = {-1, 0}, .magnitudeComponents = {-kTestMagnitude, 0}},
-        {.directionCartesian = {-1000, 0}, .magnitudeComponents = {-kTestMagnitude, 0}},
-        {.directionCartesian = {0, -1}, .magnitudeComponents = {0, -kTestMagnitude}},
-        {.directionCartesian = {0, -1000}, .magnitudeComponents = {0, -kTestMagnitude}},
+  // Single direction component.
+        {.directionCartesian = {1, 0},        .magnitudeComponents = {kTestMagnitude, 0} },
+        {.directionCartesian = {1000, 0},     .magnitudeComponents = {kTestMagnitude, 0} },
+        {.directionCartesian = {0, 1},        .magnitudeComponents = {0, kTestMagnitude} },
+        {.directionCartesian = {0, 1000},     .magnitudeComponents = {0, kTestMagnitude} },
+        {.directionCartesian = {-1, 0},       .magnitudeComponents = {-kTestMagnitude, 0}},
+        {.directionCartesian = {-1000, 0},    .magnitudeComponents = {-kTestMagnitude, 0}},
+        {.directionCartesian = {0, -1},       .magnitudeComponents = {0, -kTestMagnitude}},
+        {.directionCartesian = {0, -1000},    .magnitudeComponents = {0, -kTestMagnitude}},
 
-        // Two direction components, simple
+ // Two direction components, simple
         {.directionCartesian = {1, 1},
-         .magnitudeComponents = {kTestMagnitude * kCos45, kTestMagnitude * kSin45}},
+         .magnitudeComponents = {kTestMagnitude * kCos45, kTestMagnitude * kSin45}       },
         {.directionCartesian = {1, -1},
-         .magnitudeComponents = {kTestMagnitude * kCos45, -kTestMagnitude * kSin45}},
+         .magnitudeComponents = {kTestMagnitude * kCos45, -kTestMagnitude * kSin45}      },
         {.directionCartesian = {-1, 1},
-         .magnitudeComponents = {-kTestMagnitude * kCos45, kTestMagnitude * kSin45}},
+         .magnitudeComponents = {-kTestMagnitude * kCos45, kTestMagnitude * kSin45}      },
         {.directionCartesian = {-1, -1},
-         .magnitudeComponents = {-kTestMagnitude * kCos45, -kTestMagnitude * kSin45}},
+         .magnitudeComponents = {-kTestMagnitude * kCos45, -kTestMagnitude * kSin45}     },
 
-        // Two direction components, complex
+ // Two direction components, complex
         {.directionCartesian = {1, kSqrt3},
-         .magnitudeComponents = {kTestMagnitude * kCos60, kTestMagnitude * kSin60}},
+         .magnitudeComponents = {kTestMagnitude * kCos60, kTestMagnitude * kSin60}       },
         {.directionCartesian = {kSqrt3, 1},
-         .magnitudeComponents = {kTestMagnitude * kCos30, kTestMagnitude * kSin30}},
+         .magnitudeComponents = {kTestMagnitude * kCos30, kTestMagnitude * kSin30}       },
         {.directionCartesian = {-1, kSqrt3},
-         .magnitudeComponents = {-kTestMagnitude * kCos60, kTestMagnitude * kSin60}},
+         .magnitudeComponents = {-kTestMagnitude * kCos60, kTestMagnitude * kSin60}      },
         {.directionCartesian = {-kSqrt3, 1},
-         .magnitudeComponents = {-kTestMagnitude * kCos30, kTestMagnitude * kSin30}},
+         .magnitudeComponents = {-kTestMagnitude * kCos30, kTestMagnitude * kSin30}      },
         {.directionCartesian = {-kSqrt3, -1},
-         .magnitudeComponents = {-kTestMagnitude * kCos30, -kTestMagnitude * kSin30}},
+         .magnitudeComponents = {-kTestMagnitude * kCos30, -kTestMagnitude * kSin30}     },
         {.directionCartesian = {-1, -kSqrt3},
-         .magnitudeComponents = {-kTestMagnitude * kCos60, -kTestMagnitude * kSin60}},
+         .magnitudeComponents = {-kTestMagnitude * kCos60, -kTestMagnitude * kSin60}     },
         {.directionCartesian = {1, -kSqrt3},
-         .magnitudeComponents = {kTestMagnitude * kCos60, -kTestMagnitude * kSin60}},
+         .magnitudeComponents = {kTestMagnitude * kCos60, -kTestMagnitude * kSin60}      },
         {.directionCartesian = {kSqrt3, -1},
-         .magnitudeComponents = {kTestMagnitude * kCos30, -kTestMagnitude * kSin30}}};
+         .magnitudeComponents = {kTestMagnitude * kCos30, -kTestMagnitude * kSin30}      }
+    };
 
     for (const auto& testData : kTestData)
       DirectionVectorMagnitudeComponentsTest(kTestMagnitude, testData);
@@ -431,33 +433,34 @@ namespace XidiTest
   {
     const SCoordinateConversionTestData<3> kTestData[] = {
 
-        // Single direction component
-        {.cartesian = {1, 0, 0}, .spherical = {0, 0}},
-        {.cartesian = {0, 1, 0}, .spherical = {9000, 0}},
-        {.cartesian = {0, 0, 1}, .spherical = {0, 9000}},
-        {.cartesian = {-10, 0, 0}, .spherical = {18000, 0}},
-        {.cartesian = {0, -20, 0}, .spherical = {27000, 0}},
-        {.cartesian = {0, 0, -30}, .spherical = {0, 27000}},
+  // Single direction component
+        {.cartesian = {1, 0, 0},               .spherical = {0, 0}        },
+        {.cartesian = {0, 1, 0},               .spherical = {9000, 0}     },
+        {.cartesian = {0, 0, 1},               .spherical = {0, 9000}     },
+        {.cartesian = {-10, 0, 0},             .spherical = {18000, 0}    },
+        {.cartesian = {0, -20, 0},             .spherical = {27000, 0}    },
+        {.cartesian = {0, 0, -30},             .spherical = {0, 27000}    },
 
-        // Two direction components
-        {.cartesian = {0, 1, 1}, .spherical = {9000, 4500}},
-        {.cartesian = {1, 0, 1}, .spherical = {0, 4500}},
-        {.cartesian = {1, 1, 0}, .spherical = {4500, 0}},
-        {.cartesian = {0, -1, -1}, .spherical = {27000, 31500}},
-        {.cartesian = {-1, 0, -1}, .spherical = {18000, 31500}},
-        {.cartesian = {-1, -1, 0}, .spherical = {22500, 0}},
+ // Two direction components
+        {.cartesian = {0, 1, 1},               .spherical = {9000, 4500}  },
+        {.cartesian = {1, 0, 1},               .spherical = {0, 4500}     },
+        {.cartesian = {1, 1, 0},               .spherical = {4500, 0}     },
+        {.cartesian = {0, -1, -1},             .spherical = {27000, 31500}},
+        {.cartesian = {-1, 0, -1},             .spherical = {18000, 31500}},
+        {.cartesian = {-1, -1, 0},             .spherical = {22500, 0}    },
 
-        // Three direction components, simple
-        {.cartesian = {1, 1, kSqrt2}, .spherical = {4500, 4500}},
-        {.cartesian = {1, 1, -kSqrt2}, .spherical = {4500, 31500}},
-        {.cartesian = {1, -1, kSqrt2}, .spherical = {31500, 4500}},
-        {.cartesian = {-1, -1, -kSqrt2}, .spherical = {22500, 31500}},
+ // Three direction components, simple
+        {.cartesian = {1, 1, kSqrt2},          .spherical = {4500, 4500}  },
+        {.cartesian = {1, 1, -kSqrt2},         .spherical = {4500, 31500} },
+        {.cartesian = {1, -1, kSqrt2},         .spherical = {31500, 4500} },
+        {.cartesian = {-1, -1, -kSqrt2},       .spherical = {22500, 31500}},
 
-        // Three direction components, complex
-        {.cartesian = {1, kSqrt3, kSqrt3 * 2}, .spherical = {6000, 6000}},
-        {.cartesian = {kSqrt3, 1, kSqrt3 * 2}, .spherical = {3000, 6000}},
-        {.cartesian = {1, kSqrt3, 2 / kSqrt3}, .spherical = {6000, 3000}},
-        {.cartesian = {kSqrt3, 1, 2 / kSqrt3}, .spherical = {3000, 3000}}};
+ // Three direction components, complex
+        {.cartesian = {1, kSqrt3, kSqrt3 * 2}, .spherical = {6000, 6000}  },
+        {.cartesian = {kSqrt3, 1, kSqrt3 * 2}, .spherical = {3000, 6000}  },
+        {.cartesian = {1, kSqrt3, 2 / kSqrt3}, .spherical = {6000, 3000}  },
+        {.cartesian = {kSqrt3, 1, 2 / kSqrt3}, .spherical = {3000, 3000}  }
+    };
 
     for (const auto& testData : kTestData)
       DirectionVectorCoordinateConversionTest(testData);
@@ -469,71 +472,72 @@ namespace XidiTest
     constexpr TEffectValue kTestMagnitude = -1000;
     const SMagnitudeComponentsTestData<3> kTestData[] = {
 
-        // Single direction component
-        {.directionCartesian = {1, 0, 0}, .magnitudeComponents = {kTestMagnitude, 0, 0}},
-        {.directionCartesian = {0, 1, 0}, .magnitudeComponents = {0, kTestMagnitude, 0}},
-        {.directionCartesian = {0, 0, 1}, .magnitudeComponents = {0, 0, kTestMagnitude}},
-        {.directionCartesian = {-10, 0, 0}, .magnitudeComponents = {-kTestMagnitude, 0, 0}},
-        {.directionCartesian = {0, -20, 0}, .magnitudeComponents = {0, -kTestMagnitude, 0}},
-        {.directionCartesian = {0, 0, -30}, .magnitudeComponents = {0, 0, -kTestMagnitude}},
+  // Single direction component
+        {.directionCartesian = {1, 0, 0},               .magnitudeComponents = {kTestMagnitude, 0, 0} },
+        {.directionCartesian = {0, 1, 0},               .magnitudeComponents = {0, kTestMagnitude, 0} },
+        {.directionCartesian = {0, 0, 1},               .magnitudeComponents = {0, 0, kTestMagnitude} },
+        {.directionCartesian = {-10, 0, 0},             .magnitudeComponents = {-kTestMagnitude, 0, 0}},
+        {.directionCartesian = {0, -20, 0},             .magnitudeComponents = {0, -kTestMagnitude, 0}},
+        {.directionCartesian = {0, 0, -30},             .magnitudeComponents = {0, 0, -kTestMagnitude}},
 
-        // Two direction components
+ // Two direction components
         {.directionCartesian = {0, 1, 1},
-         .magnitudeComponents = {0, kTestMagnitude * kCos45, kTestMagnitude * kSin45}},
+         .magnitudeComponents = {0, kTestMagnitude * kCos45, kTestMagnitude * kSin45}                 },
         {.directionCartesian = {1, 0, 1},
-         .magnitudeComponents = {kTestMagnitude * kCos45, 0, kTestMagnitude * kSin45}},
+         .magnitudeComponents = {kTestMagnitude * kCos45, 0, kTestMagnitude * kSin45}                 },
         {.directionCartesian = {1, 1, 0},
-         .magnitudeComponents = {kTestMagnitude * kCos45, kTestMagnitude * kSin45, 0}},
+         .magnitudeComponents = {kTestMagnitude * kCos45, kTestMagnitude * kSin45, 0}                 },
         {.directionCartesian = {0, -1, -1},
-         .magnitudeComponents = {0, -kTestMagnitude * kCos45, -kTestMagnitude * kSin45}},
+         .magnitudeComponents = {0, -kTestMagnitude * kCos45, -kTestMagnitude * kSin45}               },
         {.directionCartesian = {-1, 0, -1},
-         .magnitudeComponents = {-kTestMagnitude * kCos45, 0, -kTestMagnitude * kSin45}},
+         .magnitudeComponents = {-kTestMagnitude * kCos45, 0, -kTestMagnitude * kSin45}               },
         {.directionCartesian = {-1, -1, 0},
-         .magnitudeComponents = {-kTestMagnitude * kCos45, -kTestMagnitude * kSin45, 0}},
+         .magnitudeComponents = {-kTestMagnitude * kCos45, -kTestMagnitude * kSin45, 0}               },
 
-        // Three direction components, simple
+ // Three direction components, simple
         {.directionCartesian = {1, 1, kSqrt2},
          .magnitudeComponents =
              {kTestMagnitude * kCos45 * kCos45,
               kTestMagnitude * kCos45 * kSin45,
-              kTestMagnitude * kSin45}},
+              kTestMagnitude * kSin45}                                                                },
         {.directionCartesian = {1, 1, -kSqrt2},
          .magnitudeComponents =
              {kTestMagnitude * kCos45 * kCos45,
               kTestMagnitude * kCos45 * kSin45,
-              -kTestMagnitude * kSin45}},
+              -kTestMagnitude * kSin45}                                                               },
         {.directionCartesian = {1, -1, kSqrt2},
          .magnitudeComponents =
              {kTestMagnitude * kCos45 * kCos45,
               -kTestMagnitude * kCos45 * kSin45,
-              kTestMagnitude * kSin45}},
+              kTestMagnitude * kSin45}                                                                },
         {.directionCartesian = {-1, -1, -kSqrt2},
          .magnitudeComponents =
              {-kTestMagnitude * kCos45 * kCos45,
               -kTestMagnitude * kCos45 * kSin45,
-              -kTestMagnitude * kSin45}},
+              -kTestMagnitude * kSin45}                                                               },
 
-        // Three direction components, complex
+ // Three direction components, complex
         {.directionCartesian = {1, kSqrt3, kSqrt3 * 2},
          .magnitudeComponents =
              {kTestMagnitude * kCos60 * kCos60,
               kTestMagnitude * kCos60 * kSin60,
-              kTestMagnitude * kSin60}},
+              kTestMagnitude * kSin60}                                                                },
         {.directionCartesian = {kSqrt3, 1, kSqrt3 * 2},
          .magnitudeComponents =
              {kTestMagnitude * kCos60 * kCos30,
               kTestMagnitude * kCos60 * kSin30,
-              kTestMagnitude * kSin60}},
+              kTestMagnitude * kSin60}                                                                },
         {.directionCartesian = {1, kSqrt3, 2 / kSqrt3},
          .magnitudeComponents =
              {kTestMagnitude * kCos30 * kCos60,
               kTestMagnitude * kCos30 * kSin60,
-              kTestMagnitude * kSin30}},
+              kTestMagnitude * kSin30}                                                                },
         {.directionCartesian = {kSqrt3, 1, 2 / kSqrt3},
          .magnitudeComponents = {
              kTestMagnitude * kCos30 * kCos30,
              kTestMagnitude * kCos30 * kSin30,
-             kTestMagnitude * kSin30}}};
+             kTestMagnitude * kSin30}                                                                 }
+    };
 
     for (const auto& testData : kTestData)
       DirectionVectorMagnitudeComponentsTest(kTestMagnitude, testData);

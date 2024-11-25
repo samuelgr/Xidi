@@ -767,7 +767,8 @@ namespace XidiTest
     constexpr SActuatorElement kActuatorElement = {
         .isPresent = true,
         .mode = EActuatorMode::SingleAxis,
-        .singleAxis = {.axis = EAxis::Z, .direction = EAxisDirection::Negative}};
+        .singleAxis = {.axis = EAxis::Z, .direction = EAxisDirection::Negative}
+    };
     TEST_ASSERT(
         true ==
         builder.SetBlueprintForceFeedbackActuator(
@@ -796,7 +797,8 @@ namespace XidiTest
     constexpr SActuatorElement kActuatorElement = {
         .isPresent = true,
         .mode = EActuatorMode::SingleAxis,
-        .singleAxis = {.axis = EAxis::Z, .direction = EAxisDirection::Negative}};
+        .singleAxis = {.axis = EAxis::Z, .direction = EAxisDirection::Negative}
+    };
     TEST_ASSERT(
         true ==
         builder.SetBlueprintForceFeedbackActuator(

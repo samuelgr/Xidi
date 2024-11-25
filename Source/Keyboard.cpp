@@ -237,21 +237,23 @@ namespace Xidi
               if (nextKeyboardState.contains(transitionedKey))
               {
                 // Key with a transition is present in the next snapshot. This means it was pressed.
-                keyboardEvents.emplace_back(INPUT(
-                    {.type = INPUT_KEYBOARD,
-                     .ki = {
-                         .wScan = KeyboardEventScanCode(transitionedKey),
-                         .dwFlags = KeyboardEventFlags(transitionedKey)}}));
+                keyboardEvents.emplace_back(INPUT({
+                    .type = INPUT_KEYBOARD,
+                    .ki = {
+                           .wScan = KeyboardEventScanCode(transitionedKey),
+                           .dwFlags = KeyboardEventFlags(transitionedKey)}
+                }));
               }
               else
               {
                 // Key with a transition is present in the next snapshot. This means it was
                 // released.
-                keyboardEvents.emplace_back(INPUT(
-                    {.type = INPUT_KEYBOARD,
-                     .ki = {
-                         .wScan = KeyboardEventScanCode(transitionedKey),
-                         .dwFlags = KEYEVENTF_KEYUP | KeyboardEventFlags(transitionedKey)}}));
+                keyboardEvents.emplace_back(INPUT({
+                    .type = INPUT_KEYBOARD,
+                    .ki = {
+                           .wScan = KeyboardEventScanCode(transitionedKey),
+                           .dwFlags = KEYEVENTF_KEYUP | KeyboardEventFlags(transitionedKey)}
+                }));
               }
             }
 

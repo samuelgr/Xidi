@@ -135,10 +135,6 @@
     <ClInclude Include="Include\Xidi\Internal\MapperParser.h" />
     <ClInclude Include="Include\Xidi\Internal\Mouse.h" />
     <ClInclude Include="Include\Xidi\Internal\PhysicalController.h" />
-    <ClInclude Include="Include\Xidi\Internal\Test\MockDirectInputDevice.h" />
-    <ClInclude Include="Include\Xidi\Internal\Test\MockForceFeedbackEffect.h" />
-    <ClInclude Include="Include\Xidi\Internal\Test\MockDirectInput.h" />
-    <ClInclude Include="Include\Xidi\Internal\Test\MockMouse.h" />
     <ClInclude Include="Include\Xidi\Internal\ValueOrError.h" />
     <ClInclude Include="Include\Xidi\Internal\StateChangeEventBuffer.h" />
     <ClInclude Include="Include\Xidi\Internal\Strings.h" />

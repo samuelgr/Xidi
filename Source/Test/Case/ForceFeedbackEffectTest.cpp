@@ -379,7 +379,11 @@ namespace XidiTest
   TEST_CASE(ForceFeedbackEffect_Clone)
   {
     MockEffect effect;
-    TEST_ASSERT(true == effect.SetAssociatedAxes({.count = 2, .type = {EAxis::Z, EAxis::RotZ}}));
+    TEST_ASSERT(
+        true ==
+        effect.SetAssociatedAxes({
+            .count = 2, .type = {EAxis::Z, EAxis::RotZ}
+    }));
     TEST_ASSERT(true == effect.SetDuration(123));
     TEST_ASSERT(true == effect.SetStartDelay(456));
     TEST_ASSERT(true == effect.SetSamplePeriod(7890));
@@ -400,7 +404,11 @@ namespace XidiTest
     MockEffect effect;
     std::unique_ptr<Effect> clonedEffect = effect.Clone();
 
-    TEST_ASSERT(true == effect.SetAssociatedAxes({.count = 2, .type = {EAxis::Z, EAxis::RotZ}}));
+    TEST_ASSERT(
+        true ==
+        effect.SetAssociatedAxes({
+            .count = 2, .type = {EAxis::Z, EAxis::RotZ}
+    }));
     TEST_ASSERT(true == effect.SetDuration(123));
     TEST_ASSERT(true == effect.SetStartDelay(456));
     TEST_ASSERT(true == effect.SetSamplePeriod(7890));
@@ -423,7 +431,11 @@ namespace XidiTest
     std::unique_ptr<Effect> clonedEffect = effect.Clone();
 
     MockEffect effect2;
-    TEST_ASSERT(true == effect2.SetAssociatedAxes({.count = 2, .type = {EAxis::Z, EAxis::RotZ}}));
+    TEST_ASSERT(
+        true ==
+        effect2.SetAssociatedAxes({
+            .count = 2, .type = {EAxis::Z, EAxis::RotZ}
+    }));
     TEST_ASSERT(true == effect2.SetDuration(123));
     TEST_ASSERT(true == effect2.SetStartDelay(456));
     TEST_ASSERT(true == effect2.SetSamplePeriod(7890));

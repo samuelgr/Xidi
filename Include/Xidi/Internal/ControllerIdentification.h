@@ -31,14 +31,16 @@ namespace Xidi
       ((0x0000 << 16) | static_cast<unsigned long>(kVirtualControllerVendorId)),
       0x0000,
       0x0000,
-      {'X', 'I', 'D', 'I', 'V', 'C', 0x00, 0x00}};
+      {'X', 'I', 'D', 'I', 'V', 'C', 0x00, 0x00}
+  };
 
   /// Force feedback driver GUID for Xidi virtual controllers.
   inline constexpr GUID kVirtualControllerForceFeedbackDriverGuid = {
       ((0xffff << 16) | static_cast<unsigned long>(kVirtualControllerVendorId)),
       0x0000,
       0x0000,
-      {'X', 'I', 'D', 'I', 'F', 'F', 'D', 0x00}};
+      {'X', 'I', 'D', 'I', 'F', 'F', 'D', 0x00}
+  };
 
   /// HID collection number for the top-level virtual controller object.
   inline constexpr uint16_t kVirtualControllerHidCollectionForEntireDevice = 0;
@@ -92,11 +94,11 @@ namespace Xidi
   /// @param [out] devicePath If present, will be filled with the device identifying path, which was
   /// used to determine whether or not the controller supports XInput.
   /// @return `true` if the controller supports XInput, `false` otherwise.
-  template <typename EarliestIDirectInputType, typename EarliestIDirectInputDeviceType>
-  bool DoesDirectInputControllerSupportXInput(
-      EarliestIDirectInputType* dicontext,
-      REFGUID instanceGUID,
-      std::wstring* devicePath = nullptr);
+  template <typename EarliestIDirectInputType, typename EarliestIDirectInputDeviceType> bool
+      DoesDirectInputControllerSupportXInput(
+          EarliestIDirectInputType* dicontext,
+          REFGUID instanceGUID,
+          std::wstring* devicePath = nullptr);
 
   /// Performs a DirectInput-style controller enumeration of Xidi virtual controllers.
   /// Callback parameter type was copied and pasted from DirectInput headers and modified to be
@@ -184,7 +186,8 @@ namespace Xidi
   constexpr GUID VirtualControllerClassGuid(void)
   {
     constexpr GUID kHidClassGuid = {
-        0x745a17a0, 0x74d3, 0x11d0, {0xb6, 0xfe, 0x00, 0xa0, 0xc9, 0x0f, 0x57, 0xda}};
+        0x745a17a0, 0x74d3, 0x11d0, {0xb6, 0xfe, 0x00, 0xa0, 0xc9, 0x0f, 0x57, 0xda}
+    };
     return kHidClassGuid;
   }
 

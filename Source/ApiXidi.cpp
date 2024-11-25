@@ -57,7 +57,6 @@ namespace Xidi
         interfaceObjectRegistry[apiClass] = interfaceObject;
     }
 
-    
     IXidi::IXidi(EClass apiClass)
     {
       RegisterInterfaceObject(apiClass, this);

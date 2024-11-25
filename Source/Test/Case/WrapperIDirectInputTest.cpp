@@ -31,30 +31,30 @@ namespace XidiTest
       .supportsXInput = true,
       .instance =
           {.dwSize = sizeof(DIDEVICEINSTANCE),
-           .guidInstance =
+                     .guidInstance =
                {0xfce41180, 0x2924, 0x11ed, {0x80, 0x01, 0x44, 0x45, 0x53, 0x54, 0x00, 0x00}},
-           .guidProduct =
+                     .guidProduct =
                {0x0b12045e, 0x0000, 0x0000, {0x00, 0x00, 0x50, 0x49, 0x44, 0x56, 0x49, 0x44}},
-           .dwDevType = 0x00010215,
-           .tszInstanceName = L"Controller (Xbox One For Windows)",
-           .tszProductName = L"Controller (Xbox One For Windows)",
-           .guidFFDriver = {},
-           .wUsagePage = 1,
-           .wUsage = 5},
+                     .dwDevType = 0x00010215,
+                     .tszInstanceName = L"Controller (Xbox One For Windows)",
+                     .tszProductName = L"Controller (Xbox One For Windows)",
+                     .guidFFDriver = {},
+                     .wUsagePage = 1,
+                     .wUsage = 5},
       .capabilities =
           {.dwSize = sizeof(DIDEVCAPS),
-           .dwFlags = 0x00000005,
-           .dwDevType = 0x00010215,
-           .dwAxes = 5,
-           .dwButtons = 16,
-           .dwPOVs = 1,
-           .dwFFSamplePeriod = 0,
-           .dwFFMinTimeResolution = 0,
-           .dwFirmwareRevision = 0,
-           .dwHardwareRevision = 0,
-           .dwFFDriverVersion = 0},
+                     .dwFlags = 0x00000005,
+                     .dwDevType = 0x00010215,
+                     .dwAxes = 5,
+                     .dwButtons = 16,
+                     .dwPOVs = 1,
+                     .dwFFSamplePeriod = 0,
+                     .dwFFMinTimeResolution = 0,
+                     .dwFirmwareRevision = 0,
+                     .dwHardwareRevision = 0,
+                     .dwFFDriverVersion = 0},
       .properties = {
-          {&DIPROP_GUIDANDPATH,
+                     {&DIPROP_GUIDANDPATH,
            {.guidandpath = {
                 .diph =
                     {.dwSize = sizeof(DIPROPGUIDANDPATH),
@@ -64,7 +64,8 @@ namespace XidiTest
                 .guidClass =
                     {0x745a17a0, 0x74d3, 0x11d0, {0xb6, 0xfe, 0x00, 0xa0, 0xc9, 0x0f, 0x57, 0xda}},
                 .wszPath =
-                    L"\\\\?\\hid#vid_045e&pid_0b12&ig_00#9&2e649ca1&0&0000#{4d1e55b2-f16f-11cf-88cb-001111000030}"}}}}};
+                    L"\\\\?\\hid#vid_045e&pid_0b12&ig_00#9&2e649ca1&0&0000#{4d1e55b2-f16f-11cf-88cb-001111000030}"}}}}
+  };
 
   /// Device information taken from a real Xbox One controller attached via Bluetooth.
   /// This type of controller supports XInput.
@@ -72,30 +73,30 @@ namespace XidiTest
       .supportsXInput = true,
       .instance =
           {.dwSize = sizeof(DIDEVICEINSTANCE),
-           .guidInstance =
+                     .guidInstance =
                {0x8bf6c1d0, 0x4700, 0x11ed, {0x80, 0x02, 0x44, 0x45, 0x53, 0x54, 0x00, 0x00}},
-           .guidProduct =
+                     .guidProduct =
                {0x0b13045e, 0x0000, 0x0000, {0x00, 0x00, 0x50, 0x49, 0x44, 0x56, 0x49, 0x44}},
-           .dwDevType = 0x00010215,
-           .tszInstanceName = L"Bluetooth LE XINPUT compatible input device",
-           .tszProductName = L"Bluetooth LE XINPUT compatible input device",
-           .guidFFDriver = {},
-           .wUsagePage = 1,
-           .wUsage = 5},
+                     .dwDevType = 0x00010215,
+                     .tszInstanceName = L"Bluetooth LE XINPUT compatible input device",
+                     .tszProductName = L"Bluetooth LE XINPUT compatible input device",
+                     .guidFFDriver = {},
+                     .wUsagePage = 1,
+                     .wUsage = 5},
       .capabilities =
           {.dwSize = sizeof(DIDEVCAPS),
-           .dwFlags = 0x00000005,
-           .dwDevType = 0x00010215,
-           .dwAxes = 5,
-           .dwButtons = 16,
-           .dwPOVs = 1,
-           .dwFFSamplePeriod = 0,
-           .dwFFMinTimeResolution = 0,
-           .dwFirmwareRevision = 0,
-           .dwHardwareRevision = 0,
-           .dwFFDriverVersion = 0},
+                     .dwFlags = 0x00000005,
+                     .dwDevType = 0x00010215,
+                     .dwAxes = 5,
+                     .dwButtons = 16,
+                     .dwPOVs = 1,
+                     .dwFFSamplePeriod = 0,
+                     .dwFFMinTimeResolution = 0,
+                     .dwFirmwareRevision = 0,
+                     .dwHardwareRevision = 0,
+                     .dwFFDriverVersion = 0},
       .properties = {
-          {&DIPROP_GUIDANDPATH,
+                     {&DIPROP_GUIDANDPATH,
            {.guidandpath = {
                 .diph =
                     {.dwSize = sizeof(DIPROPGUIDANDPATH),
@@ -105,7 +106,8 @@ namespace XidiTest
                 .guidClass =
                     {0x745a17a0, 0x74d3, 0x11d0, {0xb6, 0xfe, 0x00, 0xa0, 0xc9, 0x0f, 0x57, 0xda}},
                 .wszPath =
-                    L"\\\\?\\hid#{00001812-0000-1000-8000-00805f9b34fb}&dev&vid_045e&pid_0b13&rev_0513&5cba3788986a&ig_00#c&2eaed628&0&0000#{4d1e55b2-f16f-11cf-88cb-001111000030}"}}}}};
+                    L"\\\\?\\hid#{00001812-0000-1000-8000-00805f9b34fb}&dev&vid_045e&pid_0b13&rev_0513&5cba3788986a&ig_00#c&2eaed628&0&0000#{4d1e55b2-f16f-11cf-88cb-001111000030}"}}}}
+  };
 
   /// Device information taken from a real Logitech Rumblepad controller attached via USB with the
   /// force feedback driver installed. This type of controller does not support XInput.
@@ -113,31 +115,31 @@ namespace XidiTest
       .supportsXInput = false,
       .instance =
           {.dwSize = sizeof(DIDEVICEINSTANCE),
-           .guidInstance =
+                     .guidInstance =
                {0xa45ccd20, 0x7f71, 0x11ec, {0x80, 0x01, 0x44, 0x45, 0x53, 0x54, 0x00, 0x00}},
-           .guidProduct =
+                     .guidProduct =
                {0xc218046d, 0x0000, 0x0000, {0x00, 0x00, 0x50, 0x49, 0x44, 0x56, 0x49, 0x44}},
-           .dwDevType = 0x00010214,
-           .tszInstanceName = L"Logitech RumblePad 2 USB",
-           .tszProductName = L"Logitech RumblePad 2 USB",
-           .guidFFDriver =
+                     .dwDevType = 0x00010214,
+                     .tszInstanceName = L"Logitech RumblePad 2 USB",
+                     .tszProductName = L"Logitech RumblePad 2 USB",
+                     .guidFFDriver =
                {0x8d533a48, 0x7a5f, 0x11d3, {0x82, 0x97, 0x00, 0x50, 0xda, 0x1a, 0x72, 0xd3}},
-           .wUsagePage = 1,
-           .wUsage = 4},
+                     .wUsagePage = 1,
+                     .wUsage = 4},
       .capabilities =
           {.dwSize = sizeof(DIDEVCAPS),
-           .dwFlags = 0x0000df05,
-           .dwDevType = 0x00010214,
-           .dwAxes = 4,
-           .dwButtons = 12,
-           .dwPOVs = 1,
-           .dwFFSamplePeriod = 1000,
-           .dwFFMinTimeResolution = 1000,
-           .dwFirmwareRevision = 1,
-           .dwHardwareRevision = 1,
-           .dwFFDriverVersion = 1289},
+                     .dwFlags = 0x0000df05,
+                     .dwDevType = 0x00010214,
+                     .dwAxes = 4,
+                     .dwButtons = 12,
+                     .dwPOVs = 1,
+                     .dwFFSamplePeriod = 1000,
+                     .dwFFMinTimeResolution = 1000,
+                     .dwFirmwareRevision = 1,
+                     .dwHardwareRevision = 1,
+                     .dwFFDriverVersion = 1289},
       .properties = {
-          {&DIPROP_GUIDANDPATH,
+                     {&DIPROP_GUIDANDPATH,
            {.guidandpath = {
                 .diph =
                     {.dwSize = sizeof(DIPROPGUIDANDPATH),
@@ -147,7 +149,8 @@ namespace XidiTest
                 .guidClass =
                     {0x745a17a0, 0x74d3, 0x11d0, {0xb6, 0xfe, 0x00, 0xa0, 0xc9, 0x0f, 0x57, 0xda}},
                 .wszPath =
-                    L"\\\\?\\hid#vid_046d&pid_c218#9&f82fd59&2&0000#{4d1e55b2-f16f-11cf-88cb-001111000030}"}}}}};
+                    L"\\\\?\\hid#vid_046d&pid_c218#9&f82fd59&2&0000#{4d1e55b2-f16f-11cf-88cb-001111000030}"}}}}
+  };
 
   /// Device information taken from a real Logitech Rumblepad controller attached via USB but
   /// without any drivers installed for force feedback. This type of controller does not support
@@ -156,31 +159,31 @@ namespace XidiTest
       .supportsXInput = false,
       .instance =
           {.dwSize = sizeof(DIDEVICEINSTANCE),
-           .guidInstance =
+                     .guidInstance =
                {0x4e4af2c0, 0x68d9, 0x11ed, {0x80, 0x01, 0x44, 0x45, 0x53, 0x54, 0x00, 0x00}},
-           .guidProduct =
+                     .guidProduct =
                {0xc218046d, 0x0000, 0x0000, {0x00, 0x00, 0x50, 0x49, 0x44, 0x56, 0x49, 0x44}},
-           .dwDevType = 0x00010114,
-           .tszInstanceName = L"Logitech RumblePad 2 USB (Generic Driver)",
-           .tszProductName = L"Logitech RumblePad 2 USB (Generic Driver)",
-           .guidFFDriver =
+                     .dwDevType = 0x00010114,
+                     .tszInstanceName = L"Logitech RumblePad 2 USB (Generic Driver)",
+                     .tszProductName = L"Logitech RumblePad 2 USB (Generic Driver)",
+                     .guidFFDriver =
                {0x8d533a48, 0x7a5f, 0x11d3, {0x82, 0x97, 0x00, 0x50, 0xda, 0x1a, 0x72, 0xd3}},
-           .wUsagePage = 1,
-           .wUsage = 4},
+                     .wUsagePage = 1,
+                     .wUsage = 4},
       .capabilities =
           {.dwSize = sizeof(DIDEVCAPS),
-           .dwFlags = 0x00000005,
-           .dwDevType = 0x00010114,
-           .dwAxes = 4,
-           .dwButtons = 12,
-           .dwPOVs = 1,
-           .dwFFSamplePeriod = 0,
-           .dwFFMinTimeResolution = 0,
-           .dwFirmwareRevision = 0,
-           .dwHardwareRevision = 0,
-           .dwFFDriverVersion = 0},
+                     .dwFlags = 0x00000005,
+                     .dwDevType = 0x00010114,
+                     .dwAxes = 4,
+                     .dwButtons = 12,
+                     .dwPOVs = 1,
+                     .dwFFSamplePeriod = 0,
+                     .dwFFMinTimeResolution = 0,
+                     .dwFirmwareRevision = 0,
+                     .dwHardwareRevision = 0,
+                     .dwFFDriverVersion = 0},
       .properties = {
-          {&DIPROP_GUIDANDPATH,
+                     {&DIPROP_GUIDANDPATH,
            {.guidandpath = {
                 .diph =
                     {.dwSize = sizeof(DIPROPGUIDANDPATH),
@@ -190,7 +193,8 @@ namespace XidiTest
                 .guidClass =
                     {0x745a17a0, 0x74d3, 0x11d0, {0xb6, 0xfe, 0x00, 0xa0, 0xc9, 0x0f, 0x57, 0xda}},
                 .wszPath =
-                    L"\\\\?\\hid#vid_046d&pid_c218#6&1f24a0f&0&0000#{4d1e55b2-f16f-11cf-88cb-001111000030}"}}}}};
+                    L"\\\\?\\hid#vid_046d&pid_c218#6&1f24a0f&0&0000#{4d1e55b2-f16f-11cf-88cb-001111000030}"}}}}
+  };
 
   /// Enumerates the possible orderings of DirectInput device enumeration.
   /// Specifies what enumeration order is expected during test cases.

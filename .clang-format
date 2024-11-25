@@ -61,7 +61,7 @@ BraceWrapping:
     SplitEmptyRecord:                                       false
     SplitEmptyNamespace:                                    false
 BreakAfterAttributes:                                       Always
-BreakBeforeBinaryOperators:                                 NonAssignment
+BreakBeforeBinaryOperators:                                 None
 BreakBeforeConceptDeclarations:                             Always
 BreakBeforeInlineASMColon:                                  Always
 BreakBeforeTernaryOperators:                                true

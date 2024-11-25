@@ -667,9 +667,10 @@ namespace Xidi
   EPovValue DataFormat::DirectInputPovValue(Controller::UPovDirection pov)
   {
     static constexpr EPovValue kPovDirectionValues[3][3] = {
-        {EPovValue::NW, EPovValue::N, EPovValue::NE},
-        {EPovValue::W, EPovValue::Center, EPovValue::E},
-        {EPovValue::SW, EPovValue::S, EPovValue::SE}};
+        {EPovValue::NW, EPovValue::N,      EPovValue::NE},
+        {EPovValue::W,  EPovValue::Center, EPovValue::E },
+        {EPovValue::SW, EPovValue::S,      EPovValue::SE}
+    };
 
     const int xCoord = ((true == pov.components[(int)Controller::EPovDirection::Right]) ? 1 : 0) -
         ((true == pov.components[(int)Controller::EPovDirection::Left]) ? 1 : 0);

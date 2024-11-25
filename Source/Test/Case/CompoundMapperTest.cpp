@@ -38,7 +38,8 @@ namespace XidiTest
         {.type = EElementType::Button, .button = EButton::B10},
         {.type = EElementType::Axis, .axis = EAxis::X},
         {.type = EElementType::Axis, .axis = EAxis::X},
-        {.type = EElementType::Pov}};
+        {.type = EElementType::Pov}
+    };
 
     const CompoundMapper mapper(
         {nullptr,
@@ -68,10 +69,11 @@ namespace XidiTest
   TEST_CASE(CompoundMapper_GetTargetElement_Clone)
   {
     constexpr SElementIdentifier kUnderlyingElements[] = {
-        {.type = EElementType::Button, .button = EButton::B2},
+        {.type = EElementType::Button, .button = EButton::B2 },
         {.type = EElementType::Button, .button = EButton::B10},
-        {.type = EElementType::Axis, .axis = EAxis::X},
-        {.type = EElementType::Axis, .axis = EAxis::X}};
+        {.type = EElementType::Axis,   .axis = EAxis::X      },
+        {.type = EElementType::Axis,   .axis = EAxis::X      }
+    };
 
     const CompoundMapper mapperOriginal(
         {nullptr,

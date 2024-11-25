@@ -2989,16 +2989,17 @@ namespace Xidi
     /// Maps from replaceable import function name to its pointer's positional index in the import
     /// table.
     const std::map<std::wstring_view, size_t> JoystickFunctionReplacer::kReplaceableFunctions = {
-        {L"joyConfigChanged", IMPORT_TABLE_INDEX_OF(joyConfigChanged)},
-        {L"joyGetDevCapsA", IMPORT_TABLE_INDEX_OF(joyGetDevCapsA)},
-        {L"joyGetDevCapsW", IMPORT_TABLE_INDEX_OF(joyGetDevCapsW)},
-        {L"joyGetNumDevs", IMPORT_TABLE_INDEX_OF(joyGetNumDevs)},
-        {L"joyGetPos", IMPORT_TABLE_INDEX_OF(joyGetPos)},
-        {L"joyGetPosEx", IMPORT_TABLE_INDEX_OF(joyGetPosEx)},
-        {L"joyGetThreshold", IMPORT_TABLE_INDEX_OF(joyGetThreshold)},
+        {L"joyConfigChanged",  IMPORT_TABLE_INDEX_OF(joyConfigChanged) },
+        {L"joyGetDevCapsA",    IMPORT_TABLE_INDEX_OF(joyGetDevCapsA)   },
+        {L"joyGetDevCapsW",    IMPORT_TABLE_INDEX_OF(joyGetDevCapsW)   },
+        {L"joyGetNumDevs",     IMPORT_TABLE_INDEX_OF(joyGetNumDevs)    },
+        {L"joyGetPos",         IMPORT_TABLE_INDEX_OF(joyGetPos)        },
+        {L"joyGetPosEx",       IMPORT_TABLE_INDEX_OF(joyGetPosEx)      },
+        {L"joyGetThreshold",   IMPORT_TABLE_INDEX_OF(joyGetThreshold)  },
         {L"joyReleaseCapture", IMPORT_TABLE_INDEX_OF(joyReleaseCapture)},
-        {L"joySetCapture", IMPORT_TABLE_INDEX_OF(joySetCapture)},
-        {L"joySetThreshold", IMPORT_TABLE_INDEX_OF(joySetThreshold)}};
+        {L"joySetCapture",     IMPORT_TABLE_INDEX_OF(joySetCapture)    },
+        {L"joySetThreshold",   IMPORT_TABLE_INDEX_OF(joySetThreshold)  }
+    };
 
     /// Singleton Xidi API implementation object.
     static JoystickFunctionReplacer joystickFunctionReplacer;
