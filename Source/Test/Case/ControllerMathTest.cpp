@@ -333,4 +333,128 @@ namespace XidiTest
     }
   }
 
+  // Verifies correct application of the square correction transformation, using input coordinates
+  // along only a single axis at a time. The expected result is that there should be no change in
+  // the input.
+  TEST_CASE(ControllerMath_TransformCoordinatesCircleToSquare_OneDimensional)
+  {
+    constexpr double kAmountFraction = 1.0;
+    constexpr SAnalogStickCoordinates kTestValues[] = {
+        {.x = 0,      .y = 0     },
+        {.x = 32767,  .y = 0     },
+        {.x = -32767, .y = 0     },
+        {.x = 0,      .y = 32767 },
+        {.x = 0,      .y = -32767},
+        {.x = 100,    .y = 0     },
+        {.x = -100,   .y = 0     },
+        {.x = 0,      .y = 100   },
+        {.x = 0,      .y = -100  }
+    };
+
+    for (const auto& testValue : kTestValues)
+    {
+      TEST_ASSERT(testValue == TransformCoordinatesCircleToSquare(testValue, kAmountFraction));
+    }
+  }
+
+  // Verifies correct application of the square correction transformation, using input coordinates
+  // along two axes simultaneously, but with the amount set to 0 so the transformation should be a
+  // no-op.
+  TEST_CASE(ControllerMath_TransformCoordinatesCircleToSquare_TwoDimensionalDisabled)
+  {
+    constexpr double kAmountFraction = 0.0;
+    constexpr SAnalogStickCoordinates kTestValues[] = {
+        {.x = 0,     .y = 0   },
+        {.x = 100,   .y = 4199},
+        {.x = -5000, .y = 22  }
+    };
+
+    for (const auto& testValue : kTestValues)
+    {
+      TEST_ASSERT(testValue == TransformCoordinatesCircleToSquare(testValue, kAmountFraction));
+    }
+  }
+
+  // Verifies correct application of the square correction transformation, using input coordinates
+  // along two axes simultaneously.
+  TEST_CASE(ControllerMath_TransformCoordinatesCircleToSquare_TwoDimensional)
+  {
+    constexpr double kAmountFraction = 1.0;
+
+    // Extreme diagonal coordinate within a circular range of motion. Represents the absolute value
+    // of both X and Y coordinates at a 45-degree angle from either horizontal or vertical axes.
+    // Equal to 32768 * (1 / sqrt(2)).
+    constexpr int16_t kExtremeDiagonalCircleCoord = 23170;
+
+    constexpr struct
+    {
+      SAnalogStickCoordinates rawInputCircleCoords;
+      SAnalogStickCoordinates expectedOutputSquareCoords;
+    } kTestValues[] = {
+        {.rawInputCircleCoords =
+             {.x = kExtremeDiagonalCircleCoord, .y = kExtremeDiagonalCircleCoord},
+         .expectedOutputSquareCoords = {.x = 32767, .y = 32767}  },
+        {.rawInputCircleCoords =
+             {.x = kExtremeDiagonalCircleCoord, .y = -kExtremeDiagonalCircleCoord},
+         .expectedOutputSquareCoords = {.x = 32767, .y = -32767} },
+        {.rawInputCircleCoords =
+             {.x = -kExtremeDiagonalCircleCoord, .y = kExtremeDiagonalCircleCoord},
+         .expectedOutputSquareCoords = {.x = -32767, .y = 32767} },
+        {.rawInputCircleCoords =
+             {.x = -kExtremeDiagonalCircleCoord, .y = -kExtremeDiagonalCircleCoord},
+         .expectedOutputSquareCoords = {.x = -32767, .y = -32767}},
+    };
+
+    for (const auto& testValue : kTestValues)
+    {
+      SAnalogStickCoordinates actualOutputSquareCoords =
+          TransformCoordinatesCircleToSquare(testValue.rawInputCircleCoords, kAmountFraction);
+      TEST_ASSERT(
+          SufficientlyEqual(actualOutputSquareCoords.x, testValue.expectedOutputSquareCoords.x));
+      TEST_ASSERT(
+          SufficientlyEqual(actualOutputSquareCoords.y, testValue.expectedOutputSquareCoords.y));
+    }
+  }
+
+  // Verifies correct application of the square correction transformation, using input coordinates
+  // along two axes simultaneously. Verifies that the calculations behave predictably when the input
+  // coordinates are not possible in a completely circular range of motion.
+  TEST_CASE(ControllerMath_TransformCoordinatesCircleToSquare_TwoDimensionalWithImperfectCircle)
+  {
+    constexpr double kAmountFraction = 1.0;
+
+    // Extreme diagonal coordinate within a circular range of motion, scaled up slightly so that the
+    // radius is too high for a circle of radius 32768.
+    constexpr int16_t kExtremeDiagonalCircleCoord = 26000;
+
+    constexpr struct
+    {
+      SAnalogStickCoordinates rawInputCircleCoords;
+      SAnalogStickCoordinates expectedOutputSquareCoords;
+    } kTestValues[] = {
+        {.rawInputCircleCoords =
+             {.x = kExtremeDiagonalCircleCoord, .y = kExtremeDiagonalCircleCoord},
+         .expectedOutputSquareCoords = {.x = 32767, .y = 32767}  },
+        {.rawInputCircleCoords =
+             {.x = kExtremeDiagonalCircleCoord, .y = -kExtremeDiagonalCircleCoord},
+         .expectedOutputSquareCoords = {.x = 32767, .y = -32767} },
+        {.rawInputCircleCoords =
+             {.x = -kExtremeDiagonalCircleCoord, .y = kExtremeDiagonalCircleCoord},
+         .expectedOutputSquareCoords = {.x = -32767, .y = 32767} },
+        {.rawInputCircleCoords =
+             {.x = -kExtremeDiagonalCircleCoord, .y = -kExtremeDiagonalCircleCoord},
+         .expectedOutputSquareCoords = {.x = -32767, .y = -32767}},
+    };
+
+    for (const auto& testValue : kTestValues)
+    {
+      SAnalogStickCoordinates actualOutputSquareCoords =
+          TransformCoordinatesCircleToSquare(testValue.rawInputCircleCoords, kAmountFraction);
+      TEST_ASSERT(
+          SufficientlyEqual(actualOutputSquareCoords.x, testValue.expectedOutputSquareCoords.x));
+      TEST_ASSERT(
+          SufficientlyEqual(actualOutputSquareCoords.y, testValue.expectedOutputSquareCoords.y));
+    }
+  }
+
 } // namespace XidiTest

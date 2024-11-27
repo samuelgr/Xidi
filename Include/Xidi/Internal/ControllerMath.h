@@ -31,6 +31,8 @@ namespace Xidi
       {
         int16_t x;
         int16_t y;
+
+        constexpr bool operator==(const SAnalogStickCoordinates& other) const = default;
       };
 
       /// Threshold value used to determine if a trigger is considered "pressed" or not as a digital
@@ -95,11 +97,11 @@ namespace Xidi
         return (triggerValue >= kTriggerPressedThreshold);
       }
 
-      /// Applies a rectangle correction to convert the coordinates of an analog stick reading from
-      /// circle to square. On many controllers, the analog stick range of motion follows a circular
-      /// pattern, but sometimes the application expects a square (for example, diagonals that hit
-      /// extreme coordinate values on both axes simultaneously, which is not possible with a
-      /// circular range of motion).
+      /// Applies a correction to convert the coordinates of an analog stick reading
+      /// from circle to square. On many controllers, the analog stick range of motion follows a
+      /// circular pattern, but sometimes the application expects a square (for example, diagonals
+      /// that hit extreme coordinate values on both axes simultaneously, which is not possible with
+      /// a circular range of motion).
       /// @param [in] circleCoords Physical coordinates read from the analog stick, assumed to be on
       /// a circular range of motion.
       /// @param [in] amountFraction Value between 0.0 and 1.0 that determines the amount of
