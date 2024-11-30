@@ -90,6 +90,12 @@ namespace Xidi
                   Strings::kStrConfigurationSettingsPropertiesUseBuiltinProperties,
                   EValueType::Boolean),
               ConfigurationFileLayoutNameAndValueType(
+                  Strings::kStrConfigurationSettingsPropertiesCircleToSquarePercentStickLeft,
+                  EValueType::Integer),
+              ConfigurationFileLayoutNameAndValueType(
+                  Strings::kStrConfigurationSettingsPropertiesCircleToSquarePercentStickRight,
+                  EValueType::Integer),
+              ConfigurationFileLayoutNameAndValueType(
                   Strings::kStrConfigurationSettingsPropertiesDeadzonePercentStickLeft,
                   EValueType::Integer),
               ConfigurationFileLayoutNameAndValueType(
@@ -261,6 +267,14 @@ namespace Xidi
         // percentage.
 
         if ((value < 55) || (value > 100))
+          return EAction::Error;
+        else
+          return EAction::Process;
+      }
+      else if (name.contains(L"Percent"))
+      {
+        // All other percentages must be between 0 and 100 inclusive.
+        if ((value < 0) || (value > 100))
           return EAction::Error;
         else
           return EAction::Process;

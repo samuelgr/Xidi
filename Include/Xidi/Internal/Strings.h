@@ -24,33 +24,34 @@
 #include "TemporaryBuffer.h"
 
 // Strings that need to be available in multiple formats (ASCII and Unicode).
-#define XIDI_AXIS_NAME_X                                 "X Axis"
-#define XIDI_AXIS_NAME_Y                                 "Y Axis"
-#define XIDI_AXIS_NAME_Z                                 "Z Axis"
-#define XIDI_AXIS_NAME_RX                                "RotX Axis"
-#define XIDI_AXIS_NAME_RY                                "RotY Axis"
-#define XIDI_AXIS_NAME_RZ                                "RotZ Axis"
-#define XIDI_AXIS_NAME_UNKNOWN                           "Unknown Axis"
-#define XIDI_BUTTON_NAME_FORMAT                          "Button %u"
-#define XIDI_POV_NAME                                    "POV"
-#define XIDI_WHOLE_CONTROLLER_NAME                       "Whole Controller"
-#define XIDI_EFFECT_NAME_CONSTANT_FORCE                  "Constant Force"
-#define XIDI_EFFECT_NAME_RAMP_FORCE                      "Ramp Force"
-#define XIDI_EFFECT_NAME_SQUARE                          "Square Wave"
-#define XIDI_EFFECT_NAME_SINE                            "Sine Wave"
-#define XIDI_EFFECT_NAME_TRIANGLE                        "Triangle Wave"
-#define XIDI_EFFECT_NAME_SAWTOOTH_UP                     "Sawtooth Up"
-#define XIDI_EFFECT_NAME_SAWTOOTH_DOWN                   "Sawtooth Down"
-#define XIDI_EFFECT_NAME_CUSTOM_FORCE                    "Custom Force"
+#define XIDI_AXIS_NAME_X                                       "X Axis"
+#define XIDI_AXIS_NAME_Y                                       "Y Axis"
+#define XIDI_AXIS_NAME_Z                                       "Z Axis"
+#define XIDI_AXIS_NAME_RX                                      "RotX Axis"
+#define XIDI_AXIS_NAME_RY                                      "RotY Axis"
+#define XIDI_AXIS_NAME_RZ                                      "RotZ Axis"
+#define XIDI_AXIS_NAME_UNKNOWN                                 "Unknown Axis"
+#define XIDI_BUTTON_NAME_FORMAT                                "Button %u"
+#define XIDI_POV_NAME                                          "POV"
+#define XIDI_WHOLE_CONTROLLER_NAME                             "Whole Controller"
+#define XIDI_EFFECT_NAME_CONSTANT_FORCE                        "Constant Force"
+#define XIDI_EFFECT_NAME_RAMP_FORCE                            "Ramp Force"
+#define XIDI_EFFECT_NAME_SQUARE                                "Square Wave"
+#define XIDI_EFFECT_NAME_SINE                                  "Sine Wave"
+#define XIDI_EFFECT_NAME_TRIANGLE                              "Triangle Wave"
+#define XIDI_EFFECT_NAME_SAWTOOTH_UP                           "Sawtooth Up"
+#define XIDI_EFFECT_NAME_SAWTOOTH_DOWN                         "Sawtooth Down"
+#define XIDI_EFFECT_NAME_CUSTOM_FORCE                          "Custom Force"
 
 // String prefixes and suffixes that need to be consumed as they are but also combined into longer
 // literals. All exist as wide-character strings only.
-#define XIDI_CONFIG_PROPERTIES_PREFIX_DEADZONE_PERCENT   L"DeadzonePercent"
-#define XIDI_CONFIG_PROPERTIES_PREFIX_SATURATION_PERCENT L"SaturationPercent"
-#define XIDI_CONFIG_PROPERTIES_SUFFIX_STICK_LEFT         L"StickLeft"
-#define XIDI_CONFIG_PROPERTIES_SUFFIX_STICK_RIGHT        L"StickRight"
-#define XIDI_CONFIG_PROPERTIES_SUFFIX_TRIGGER_LT         L"TriggerLT"
-#define XIDI_CONFIG_PROPERTIES_SUFFIX_TRIGGER_RT         L"TriggerRT"
+#define XIDI_CONFIG_PROPERTIES_PREFIX_CIRCLE_TO_SQUARE_PERCENT L"CircleToSquarePercent"
+#define XIDI_CONFIG_PROPERTIES_PREFIX_DEADZONE_PERCENT         L"DeadzonePercent"
+#define XIDI_CONFIG_PROPERTIES_PREFIX_SATURATION_PERCENT       L"SaturationPercent"
+#define XIDI_CONFIG_PROPERTIES_SUFFIX_STICK_LEFT               L"StickLeft"
+#define XIDI_CONFIG_PROPERTIES_SUFFIX_STICK_RIGHT              L"StickRight"
+#define XIDI_CONFIG_PROPERTIES_SUFFIX_TRIGGER_LT               L"TriggerLT"
+#define XIDI_CONFIG_PROPERTIES_SUFFIX_TRIGGER_RT               L"TriggerRT"
 
 namespace Xidi
 {
@@ -124,6 +125,22 @@ namespace Xidi
     /// saturation, which are used for interfaces that do not normally allow for customization.
     inline constexpr std::wstring_view kStrConfigurationSettingsPropertiesUseBuiltinProperties =
         L"UseBuiltInProperties";
+
+    /// Configuration file setting for correcting the left analog stick's circular field of motion
+    /// to a square field of motion, expressed as a percent of the maximum possible amount of
+    /// correction (perfect circle to perfect square).
+    inline constexpr std::wstring_view
+        kStrConfigurationSettingsPropertiesCircleToSquarePercentStickLeft =
+            XIDI_CONFIG_PROPERTIES_PREFIX_CIRCLE_TO_SQUARE_PERCENT
+                XIDI_CONFIG_PROPERTIES_SUFFIX_STICK_LEFT;
+
+    /// Configuration file setting for correcting the right analog stick's circular field of motion
+    /// to a square field of motion, expressed as a percent of the maximum possible amount of
+    /// correction (perfect circle to perfect square).
+    inline constexpr std::wstring_view
+        kStrConfigurationSettingsPropertiesCircleToSquarePercentStickRight =
+            XIDI_CONFIG_PROPERTIES_PREFIX_CIRCLE_TO_SQUARE_PERCENT
+                XIDI_CONFIG_PROPERTIES_SUFFIX_STICK_RIGHT;
 
     /// Configuration file setting for adding extra deadzone to the left analog stick, expressed as
     /// a percentage of the analog range.

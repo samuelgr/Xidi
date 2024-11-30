@@ -73,13 +73,16 @@ namespace Xidi
       SAnalogStickCoordinates TransformCoordinatesCircleToSquare(
           SAnalogStickCoordinates circleCoords, double amountFraction)
       {
+        if (0.0 == amountFraction) return circleCoords;
+
         const double x = static_cast<double>(circleCoords.x);
         const double y = static_cast<double>(circleCoords.y);
 
         const double radius = std::min(
             static_cast<double>(std::numeric_limits<int16_t>::max()), std::sqrt((x * x) + (y * y)));
         const double multiplier = radius / static_cast<double>(std::max(std::abs(x), std::abs(y)));
-        const double weightedMultiplier = std::pow(multiplier, amountFraction);
+        const double weightedMultiplier =
+            ((1.0 == amountFraction) ? multiplier : std::pow(multiplier, amountFraction));
 
         return SAnalogStickCoordinates{
             .x = static_cast<int16_t>(x * weightedMultiplier),

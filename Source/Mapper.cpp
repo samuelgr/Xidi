@@ -578,54 +578,85 @@ namespace Xidi
       // full analog range of motion, since most often applications will themselves apply a deadzone
       // and saturation via virtual controller properties. However not all applications do this, and
       // some interfaces like WinMM do not even support application-supplied properties.
-      static const unsigned int kDeadzonePercentStickLeft =
-          (unsigned int)Globals::GetConfigurationData()
+      // Furthermore, some games require an extra correction to map from a circular field of
+      // physical motion to a square field of virtual motion.
+      static const double kCircleToSquareFractionStickLeft =
+          static_cast<double>(
+              Globals::GetConfigurationData()
+                  .GetFirstIntegerValue(
+                      Strings::kStrConfigurationSectionProperties,
+                      Strings::kStrConfigurationSettingsPropertiesCircleToSquarePercentStickLeft)
+                  .value_or(0)) /
+          100.0;
+      static const double kCircleToSquareFractionStickRight =
+          static_cast<double>(
+              Globals::GetConfigurationData()
+                  .GetFirstIntegerValue(
+                      Strings::kStrConfigurationSectionProperties,
+                      Strings::kStrConfigurationSettingsPropertiesCircleToSquarePercentStickRight)
+                  .value_or(0)) /
+          100.0;
+      static const unsigned int kDeadzonePercentStickLeft = static_cast<unsigned int>(
+          Globals::GetConfigurationData()
               .GetFirstIntegerValue(
                   Strings::kStrConfigurationSectionProperties,
                   Strings::kStrConfigurationSettingsPropertiesDeadzonePercentStickLeft)
-              .value_or(0);
-      static const unsigned int kDeadzonePercentStickRight =
-          (unsigned int)Globals::GetConfigurationData()
+              .value_or(0));
+      static const unsigned int kDeadzonePercentStickRight = static_cast<unsigned int>(
+          Globals::GetConfigurationData()
               .GetFirstIntegerValue(
                   Strings::kStrConfigurationSectionProperties,
                   Strings::kStrConfigurationSettingsPropertiesDeadzonePercentStickRight)
-              .value_or(0);
-      static const unsigned int kDeadzonePercentTriggerLT =
-          (unsigned int)Globals::GetConfigurationData()
+              .value_or(0));
+      static const unsigned int kDeadzonePercentTriggerLT = static_cast<unsigned int>(
+          Globals::GetConfigurationData()
               .GetFirstIntegerValue(
                   Strings::kStrConfigurationSectionProperties,
                   Strings::kStrConfigurationSettingsPropertiesDeadzonePercentTriggerLT)
-              .value_or(0);
-      static const unsigned int kDeadzonePercentTriggerRT =
-          (unsigned int)Globals::GetConfigurationData()
+              .value_or(0));
+      static const unsigned int kDeadzonePercentTriggerRT = static_cast<unsigned int>(
+          Globals::GetConfigurationData()
               .GetFirstIntegerValue(
                   Strings::kStrConfigurationSectionProperties,
                   Strings::kStrConfigurationSettingsPropertiesDeadzonePercentTriggerRT)
-              .value_or(0);
-      static const unsigned int kSaturationPercentStickLeft =
-          (unsigned int)Globals::GetConfigurationData()
+              .value_or(0));
+      static const unsigned int kSaturationPercentStickLeft = static_cast<unsigned int>(
+          Globals::GetConfigurationData()
               .GetFirstIntegerValue(
                   Strings::kStrConfigurationSectionProperties,
                   Strings::kStrConfigurationSettingsPropertiesSaturationPercentStickLeft)
-              .value_or(100);
-      static const unsigned int kSaturationPercentStickRight =
-          (unsigned int)Globals::GetConfigurationData()
+              .value_or(100));
+      static const unsigned int kSaturationPercentStickRight = static_cast<unsigned int>(
+          Globals::GetConfigurationData()
               .GetFirstIntegerValue(
                   Strings::kStrConfigurationSectionProperties,
                   Strings::kStrConfigurationSettingsPropertiesSaturationPercentStickRight)
-              .value_or(100);
-      static const unsigned int kSaturationPercentTriggerLT =
-          (unsigned int)Globals::GetConfigurationData()
+              .value_or(100));
+      static const unsigned int kSaturationPercentTriggerLT = static_cast<unsigned int>(
+          Globals::GetConfigurationData()
               .GetFirstIntegerValue(
                   Strings::kStrConfigurationSectionProperties,
                   Strings::kStrConfigurationSettingsPropertiesSaturationPercentTriggerLT)
-              .value_or(100);
-      static const unsigned int kSaturationPercentTriggerRT =
-          (unsigned int)Globals::GetConfigurationData()
+              .value_or(100));
+      static const unsigned int kSaturationPercentTriggerRT = static_cast<unsigned int>(
+          Globals::GetConfigurationData()
               .GetFirstIntegerValue(
                   Strings::kStrConfigurationSectionProperties,
                   Strings::kStrConfigurationSettingsPropertiesSaturationPercentTriggerRT)
-              .value_or(100);
+              .value_or(100));
+
+      // If requested by the user, left and right stick values need to be transformed so that a
+      // circular field of physical motion is transformed into a square field of virtual motion.
+      const Math::SAnalogStickCoordinates stickLeftCoordinates =
+          Math::TransformCoordinatesCircleToSquare(
+              {.x = physicalState[EPhysicalStick::LeftX],
+               .y = physicalState[EPhysicalStick::LeftY]},
+              kCircleToSquareFractionStickLeft);
+      const Math::SAnalogStickCoordinates stickRightCoordinates =
+          Math::TransformCoordinatesCircleToSquare(
+              {.x = physicalState[EPhysicalStick::RightX],
+               .y = physicalState[EPhysicalStick::RightY]},
+              kCircleToSquareFractionStickRight);
 
       SState controllerState = {};
 
@@ -640,7 +671,7 @@ namespace Xidi
         elements.named.stickLeftX->ContributeFromAnalogValue(
             controllerState,
             Math::ApplyRawAnalogTransform(
-                FilterAnalogStickValue(physicalState[EPhysicalStick::LeftX]),
+                FilterAnalogStickValue(stickLeftCoordinates.x),
                 kDeadzonePercentStickLeft,
                 kSaturationPercentStickLeft),
             SourceIdentifierForElementMapper(
@@ -649,7 +680,7 @@ namespace Xidi
         elements.named.stickLeftY->ContributeFromAnalogValue(
             controllerState,
             Math::ApplyRawAnalogTransform(
-                FilterAndInvertAnalogStickValue(physicalState[EPhysicalStick::LeftY]),
+                FilterAndInvertAnalogStickValue(stickLeftCoordinates.y),
                 kDeadzonePercentStickLeft,
                 kSaturationPercentStickLeft),
             SourceIdentifierForElementMapper(
@@ -659,7 +690,7 @@ namespace Xidi
         elements.named.stickRightX->ContributeFromAnalogValue(
             controllerState,
             Math::ApplyRawAnalogTransform(
-                FilterAnalogStickValue(physicalState[EPhysicalStick::RightX]),
+                FilterAnalogStickValue(stickRightCoordinates.x),
                 kDeadzonePercentStickRight,
                 kSaturationPercentStickRight),
             SourceIdentifierForElementMapper(
@@ -668,7 +699,7 @@ namespace Xidi
         elements.named.stickRightY->ContributeFromAnalogValue(
             controllerState,
             Math::ApplyRawAnalogTransform(
-                FilterAndInvertAnalogStickValue(physicalState[EPhysicalStick::RightY]),
+                FilterAndInvertAnalogStickValue(stickRightCoordinates.y),
                 kDeadzonePercentStickRight,
                 kSaturationPercentStickRight),
             SourceIdentifierForElementMapper(

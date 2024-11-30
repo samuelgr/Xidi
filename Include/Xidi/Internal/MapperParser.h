@@ -140,7 +140,7 @@ namespace Xidi
       /// Computes the recursion depth of the specified element mapper string.
       /// Some element mappers contain other embedded element mappers, which introduces a recursive
       /// aspect to parsing element mapper strings. For simple mapper types that take parameters
-      /// identifying a controller element, the recursion depth is 1.. For a null mapper identified
+      /// identifying a controller element, the recursion depth is 1. For a null mapper identified
       /// without any parameters, the recursion depth is 0. For more complex mapper types, the
       /// recursion depth can be arbitrary. If the input string does not contain an even number of
       /// parameter list starting and ending characters, the recursion is unbalanced and the depth
