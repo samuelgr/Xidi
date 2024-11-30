@@ -296,18 +296,19 @@ namespace Xidi
       /// @return Appropriate number of pixels represented by the mouse movement units.
       static int MouseMovementUnitsToPixels(int mouseMovementUnits)
       {
+        static const double kSpeedScalingFactor =
+            static_cast<double>(
+                Globals::GetConfigurationData()
+                    .GetFirstIntegerValue(
+                        Strings::kStrConfigurationSectionProperties,
+                        Strings::kStrConfigurationSettingPropertiesMouseSpeedScalingFactorPercent)
+                    .value_or(100)) /
+            100.0;
+
         constexpr double kMillisecondsPerSecond = 1000.0;
         constexpr double kPollingPeriodsPerSecond =
             (kMillisecondsPerSecond / (double)kMouseUpdatePeriodMilliseconds);
-
-        const double speedScalingFactor =
-            (double)Globals::GetConfigurationData()
-                .GetFirstIntegerValue(
-                    Strings::kStrConfigurationSectionProperties,
-                    Strings::kStrConfigurationSettingPropertiesMouseSpeedScalingFactorPercent)
-                .value_or(100) /
-            100.0;
-        const double fastestPixelsPerSecond = 2000.0 * speedScalingFactor;
+        const double fastestPixelsPerSecond = 2000.0 * kSpeedScalingFactor;
         const double fastestPixelsPerPollingPeriod =
             fastestPixelsPerSecond / kPollingPeriodsPerSecond;
         const double conversionScalingFactor = fastestPixelsPerPollingPeriod /
@@ -329,7 +330,8 @@ namespace Xidi
           StateContributionTracker* mouseTracker, std::stop_token mouseUpdateStopToken)
       {
         std::vector<INPUT> mouseEvents;
-        mouseEvents.reserve((unsigned int)EMouseAxis::Count + (unsigned int)EMouseButton::Count);
+        mouseEvents.reserve(
+            static_cast<size_t>(EMouseAxis::Count) + static_cast<size_t>(EMouseButton::Count));
 
         TButtonState previousMouseButtonState;
 

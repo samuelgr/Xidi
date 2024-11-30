@@ -249,7 +249,14 @@ namespace Xidi
 #ifndef XIDI_SKIP_MAPPERS
     if (Strings::kStrConfigurationSectionProperties == section)
     {
-      if (name.starts_with(XIDI_CONFIG_PROPERTIES_PREFIX_DEADZONE_PERCENT))
+      if (Strings::kStrConfigurationSettingPropertiesMouseSpeedScalingFactorPercent == name)
+      {
+        // Mouse speed scaling factor percent must not be negative but it is allowed to exceed 100,
+        // which would simply mean that the mouse speed should be scaled up rather than down.
+
+        if (value < 0) return EAction::Error;
+      }
+      else if (name.starts_with(XIDI_CONFIG_PROPERTIES_PREFIX_DEADZONE_PERCENT))
       {
         // Deadzone percentages must be in the range of 0 to 45 inclusive.
         // This ensures they make semantic sense and cannot cross the minimum possible saturation
