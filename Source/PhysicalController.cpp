@@ -26,6 +26,7 @@
 #include "ImportApiXInput.h"
 #include "Mapper.h"
 #include "Message.h"
+#include "Strings.h"
 #include "VirtualController.h"
 
 namespace Xidi
@@ -116,6 +117,29 @@ namespace Xidi
     static_assert(1u << (unsigned int)EPhysicalButton::X == XINPUT_GAMEPAD_X);
     static_assert(1u << (unsigned int)EPhysicalButton::Y == XINPUT_GAMEPAD_Y);
 
+    /// Scales a vibration strength value by the specified scaling factor. If the resulting strength
+    /// exceeds the maximum possible strength it is saturated at the maximum possible strength.
+    /// @param [in] vibrationStrength Physical motor vibration strength value.
+    /// @param [in] scalingFactor Scaling factor by which to scale up or down the physical motor
+    /// vibration strength value.
+    /// @return Scaled physical motor vibration strength value that can then be sent directly to the
+    /// physical motor.
+    static ForceFeedback::TPhysicalActuatorValue ScaledVibrationStrength(
+        ForceFeedback::TPhysicalActuatorValue vibrationStrength, double scalingFactor)
+    {
+      if (0.0 == scalingFactor)
+        return 0;
+      else if (1.0 == scalingFactor)
+        return static_cast<ForceFeedback::TPhysicalActuatorValue>(vibrationStrength);
+
+      constexpr double kMaxVibrationStrength =
+          static_cast<double>(std::numeric_limits<ForceFeedback::TPhysicalActuatorValue>::max());
+      const double scaledVibrationStrength = static_cast<double>(vibrationStrength) * scalingFactor;
+
+      return static_cast<ForceFeedback::TPhysicalActuatorValue>(
+          std::min(scaledVibrationStrength, kMaxVibrationStrength));
+    }
+
     /// Writes a vibration command to a physical controller.
     /// @param [in] controllerIdentifier Identifier of the controller on which to operate.
     /// @param [in] vibration Physical actuator vibration vector.
@@ -124,10 +148,21 @@ namespace Xidi
         TControllerIdentifier controllerIdentifier,
         ForceFeedback::SPhysicalActuatorComponents vibration)
     {
+      static const double kForceFeedbackEffectStrengthScalingFactor =
+          static_cast<double>(
+              Globals::GetConfigurationData()
+                  .GetFirstIntegerValue(
+                      Strings::kStrConfigurationSectionProperties,
+                      Strings::kStrConfigurationSettingPropertiesForceFeedbackEffectStrengthPercent)
+                  .value_or(100)) /
+          100.0;
+
       // Impulse triggers are ignored because the XInput API does not support them.
       XINPUT_VIBRATION xinputVibration = {
-          .wLeftMotorSpeed = (WORD)vibration.leftMotor,
-          .wRightMotorSpeed = (WORD)vibration.rightMotor};
+          .wLeftMotorSpeed = ScaledVibrationStrength(
+              vibration.leftMotor, kForceFeedbackEffectStrengthScalingFactor),
+          .wRightMotorSpeed = ScaledVibrationStrength(
+              vibration.rightMotor, kForceFeedbackEffectStrengthScalingFactor)};
       return (
           ERROR_SUCCESS ==
           ImportApiXInput::XInputSetState((DWORD)controllerIdentifier, &xinputVibration));

@@ -84,6 +84,9 @@ namespace Xidi
           Strings::kStrConfigurationSectionProperties,
           {
               ConfigurationFileLayoutNameAndValueType(
+                  Strings::kStrConfigurationSettingPropertiesForceFeedbackEffectStrengthPercent,
+                  EValueType::Integer),
+              ConfigurationFileLayoutNameAndValueType(
                   Strings::kStrConfigurationSettingPropertiesMouseSpeedScalingFactorPercent,
                   EValueType::Integer),
               ConfigurationFileLayoutNameAndValueType(

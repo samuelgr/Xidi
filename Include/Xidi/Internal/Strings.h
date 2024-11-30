@@ -115,6 +115,13 @@ namespace Xidi
     /// of virtual controllers.
     inline constexpr std::wstring_view kStrConfigurationSectionProperties = L"Properties";
 
+    /// Configuration file setting for customizing the force feedback effect strength. Expressed as
+    /// a percentage that is used to scale the final effect values sent to the controller hardware.
+    /// This can be used to reduce, but not amplify, the strength of force feedback effects.
+    inline constexpr std::wstring_view
+        kStrConfigurationSettingPropertiesForceFeedbackEffectStrengthPercent =
+            L"ForceFeedbackEffectStrengthPercent";
+
     /// Configuration file setting for customizing the mouse speed. Expressed as a percentage that
     /// is used to scale the default mouse speed.
     inline constexpr std::wstring_view
