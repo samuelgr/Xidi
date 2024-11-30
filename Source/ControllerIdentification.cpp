@@ -139,6 +139,22 @@ namespace Xidi
         .usage = (uint16_t)EHidUsageGeneralDesktop::Gamepad};
   }
 
+  /// Determines whether or not the "friendly" names for virtual controllers should use the short
+  /// format. Default behavior is to use a long format for these names, but this default can be
+  /// overridden using a workaround in the configuration file. This function reads and caches that
+  /// configuration setting.
+  /// @return `true` if the short name format should be used, `false` otherwise.
+  static bool ShouldUseShortNameFormatForVirtualControllers(void)
+  {
+    static const bool useShortVirtualControllerNames =
+        Globals::GetConfigurationData()
+            .GetFirstBooleanValue(
+                Strings::kStrConfigurationSectionWorkarounds,
+                Strings::kStrConfigurationSettingsWorkaroundsUseShortVirtualControllerNames)
+            .value_or(false);
+    return useShortVirtualControllerNames;
+  }
+
   std::optional<bool> ApproximatelyEqualVendorAndProductId(
       std::wstring_view controllerStringA, std::wstring_view controllerStringB)
   {
@@ -427,7 +443,9 @@ namespace Xidi
     TemporaryBuffer<CHAR> xidiControllerNameFormatString;
     LoadStringA(
         Globals::GetInstanceHandle(),
-        IDS_XIDI_CONTROLLERIDENTIFICATION_CONTROLLER_NAME_FORMAT,
+        (ShouldUseShortNameFormatForVirtualControllers()
+             ? IDS_XIDI_CONTROLLERIDENTIFICATION_CONTROLLER_SHORT_NAME_FORMAT
+             : IDS_XIDI_CONTROLLERIDENTIFICATION_CONTROLLER_NAME_FORMAT),
         xidiControllerNameFormatString.Data(),
         xidiControllerNameFormatString.Capacity());
 
@@ -441,7 +459,9 @@ namespace Xidi
     TemporaryBuffer<WCHAR> xidiControllerNameFormatString;
     LoadStringW(
         Globals::GetInstanceHandle(),
-        IDS_XIDI_CONTROLLERIDENTIFICATION_CONTROLLER_NAME_FORMAT,
+        (ShouldUseShortNameFormatForVirtualControllers()
+             ? IDS_XIDI_CONTROLLERIDENTIFICATION_CONTROLLER_SHORT_NAME_FORMAT
+             : IDS_XIDI_CONTROLLERIDENTIFICATION_CONTROLLER_NAME_FORMAT),
         xidiControllerNameFormatString.Data(),
         xidiControllerNameFormatString.Capacity());
 

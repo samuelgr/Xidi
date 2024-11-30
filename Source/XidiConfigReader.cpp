@@ -125,6 +125,9 @@ namespace Xidi
               ConfigurationFileLayoutNameAndValueType(
                   Strings::kStrConfigurationSettingsWorkaroundsIgnoreEnumObjectsCallbackReturnCode,
                   EValueType::Boolean),
+              ConfigurationFileLayoutNameAndValueType(
+                  Strings::kStrConfigurationSettingsWorkaroundsUseShortVirtualControllerNames,
+                  EValueType::Boolean),
           }),
   };
 

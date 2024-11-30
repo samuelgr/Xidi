@@ -198,6 +198,13 @@ namespace Xidi
         kStrConfigurationSettingsWorkaroundsIgnoreEnumObjectsCallbackReturnCode =
             L"IgnoreEnumObjectsCallbackReturnCode";
 
+    /// Configuration file setting for a workaround that causes Xidi to use the short-form names for
+    /// virtual controllers when providing the "friendly" name to the application. Useful for
+    /// applications that truncate the "friendly" name after a small number of characters.
+    inline constexpr std::wstring_view
+        kStrConfigurationSettingsWorkaroundsUseShortVirtualControllerNames =
+            L"UseShortVirtualControllerNames";
+
     // These strings are not safe to access before run-time, and should not be used to perform
     // dynamic initialization. Views are guaranteed to be null-terminated.
 
