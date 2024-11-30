@@ -403,6 +403,9 @@ namespace XidiTest
         {.rawInputCircleCoords =
              {.x = -kExtremeDiagonalCircleCoord, .y = -kExtremeDiagonalCircleCoord},
          .expectedOutputSquareCoords = {.x = -32767, .y = -32767}},
+        {.rawInputCircleCoords =
+             {.x = kExtremeDiagonalCircleCoord / 2, .y = kExtremeDiagonalCircleCoord / 2},
+         .expectedOutputSquareCoords = {.x = 16383, .y = 16383}  },
     };
 
     for (const auto& testValue : kTestValues)
