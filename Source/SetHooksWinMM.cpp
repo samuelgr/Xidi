@@ -17,13 +17,13 @@
 
 #include <Hookshot/Hookshot.h>
 #include <Infra/Core/ProcessInfo.h>
+#include <Infra/Core/TemporaryBuffer.h>
 
 #include "ApiWindows.h"
 #include "ApiXidi.h"
 #include "Message.h"
 #include "SetHooks.h"
 #include "Strings.h"
-#include "TemporaryBuffer.h"
 
 namespace Xidi
 {
@@ -63,7 +63,7 @@ namespace Xidi
     const HMODULE systemLibraryHandle = GetModuleHandle(kApiSetJoystickName.data());
     if ((nullptr != systemLibraryHandle) && (INVALID_HANDLE_VALUE != systemLibraryHandle))
     {
-      TemporaryBuffer<wchar_t> systemModuleName;
+      Infra::TemporaryBuffer<wchar_t> systemModuleName;
       GetModuleFileName(systemLibraryHandle, systemModuleName.Data(), systemModuleName.Capacity());
       Message::OutputFormatted(
           Message::ESeverity::Debug,
@@ -126,7 +126,7 @@ namespace Xidi
     std::map<std::wstring_view, const void*> replacementImportFunctions;
     for (auto importFunctionName : replaceableImportFunctionNames)
     {
-      TemporaryBuffer<char> importFunctionNameAscii;
+      Infra::TemporaryBuffer<char> importFunctionNameAscii;
       wcstombs_s(
           nullptr,
           importFunctionNameAscii.Data(),

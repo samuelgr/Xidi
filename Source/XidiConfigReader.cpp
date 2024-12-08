@@ -16,10 +16,11 @@
 #include <optional>
 #include <string_view>
 
+#include <Infra/Core/TemporaryBuffer.h>
+
 #include "ApiWindows.h"
 #include "Configuration.h"
 #include "Strings.h"
-#include "TemporaryBuffer.h"
 
 #ifndef XIDI_SKIP_MAPPERS
 #include "ControllerTypes.h"

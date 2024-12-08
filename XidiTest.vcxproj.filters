@@ -30,9 +30,6 @@
     <ClInclude Include="Include\Xidi\Internal\Globals.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="Include\Xidi\Internal\TemporaryBuffer.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="Include\Xidi\Internal\Strings.h">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -156,9 +153,6 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="Source\Globals.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="Source\TemporaryBuffer.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="Source\Strings.cpp">

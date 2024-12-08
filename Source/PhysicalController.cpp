@@ -87,12 +87,11 @@ namespace Xidi
               .deviceStatus = EPhysicalDeviceStatus::Ok,
               .stick =
                   {xinputState.Gamepad.sThumbLX,
-                          xinputState.Gamepad.sThumbLY,
-                          xinputState.Gamepad.sThumbRX,
-                          xinputState.Gamepad.sThumbRY},
+                   xinputState.Gamepad.sThumbLY,
+                   xinputState.Gamepad.sThumbRX,
+                   xinputState.Gamepad.sThumbRY},
               .trigger = {xinputState.Gamepad.bLeftTrigger, xinputState.Gamepad.bRightTrigger},
-              .button = (uint16_t)(xinputState.Gamepad.wButtons & kUnusedButtonMask)
-          };
+              .button = (uint16_t)(xinputState.Gamepad.wButtons & kUnusedButtonMask)};
 
         case ERROR_DEVICE_NOT_CONNECTED:
           return {.deviceStatus = EPhysicalDeviceStatus::NotConnected};

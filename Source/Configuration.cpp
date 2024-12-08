@@ -26,8 +26,9 @@
 #include <string_view>
 #include <unordered_set>
 
+#include <Infra/Core/TemporaryBuffer.h>
+
 #include "Strings.h"
-#include "TemporaryBuffer.h"
 
 namespace Xidi
 {
@@ -444,7 +445,7 @@ namespace Xidi
       std::wstring_view thisSection = kSectionNameGlobal;
 
       int configLineNumber = 1;
-      TemporaryBuffer<wchar_t> configLineBuffer;
+      Infra::TemporaryBuffer<wchar_t> configLineBuffer;
       int configLineLength =
           ReadAndTrimLine(configFileHandle, configLineBuffer.Data(), configLineBuffer.Capacity());
       bool skipValueLines = false;

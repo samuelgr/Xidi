@@ -22,10 +22,10 @@
 #include <string_view>
 
 #include <Infra/Core/ProcessInfo.h>
+#include <Infra/Core/TemporaryBuffer.h>
 
 #include "ApiWindows.h"
 #include "ControllerTypes.h"
-#include "TemporaryBuffer.h"
 
 namespace Xidi
 {
@@ -140,7 +140,7 @@ namespace Xidi
           initFlag,
           []() -> void
           {
-            TemporaryBuffer<wchar_t> buf;
+            Infra::TemporaryBuffer<wchar_t> buf;
             GetModuleFileName(nullptr, buf.Data(), (DWORD)buf.Capacity());
 
             initString.assign(buf.Data());
@@ -211,7 +211,7 @@ namespace Xidi
           initFlag,
           []() -> void
           {
-            TemporaryBuffer<wchar_t> buf;
+            Infra::TemporaryBuffer<wchar_t> buf;
             GetModuleFileName(
                 Infra::ProcessInfo::GetThisModuleInstanceHandle(),
                 buf.Data(),
@@ -285,7 +285,7 @@ namespace Xidi
           initFlag,
           []() -> void
           {
-            TemporaryBuffer<wchar_t> buf;
+            Infra::TemporaryBuffer<wchar_t> buf;
             const UINT numChars = GetSystemDirectory(buf.Data(), buf.Capacity() - 1);
 
             if (L'\\' != buf[numChars - 1])
@@ -421,7 +421,7 @@ namespace Xidi
           initFlag,
           []() -> void
           {
-            TemporaryString logFilename;
+            Infra::TemporaryString logFilename;
 
             PWSTR knownFolderPath;
             const HRESULT result =
@@ -497,9 +497,9 @@ namespace Xidi
     template bool EqualsCaseInsensitive<char>(std::string_view, std::string_view);
     template bool EqualsCaseInsensitive<wchar_t>(std::wstring_view, std::wstring_view);
 
-    TemporaryString FormatString(_Printf_format_string_ const wchar_t* format, ...)
+    Infra::TemporaryString FormatString(_Printf_format_string_ const wchar_t* format, ...)
     {
-      TemporaryString buf;
+      Infra::TemporaryString buf;
 
       va_list args;
       va_start(args, format);
@@ -511,7 +511,7 @@ namespace Xidi
       return buf;
     }
 
-    TemporaryString GuidToString(const GUID& guid)
+    Infra::TemporaryString GuidToString(const GUID& guid)
     {
       return FormatString(
           L"{%08x-%04hx-%04hx-%02hhx%02hhx-%02hhx%02hhx%02hhx%02hhx%02hhx%02hhx}",
@@ -538,7 +538,7 @@ namespace Xidi
           initFlag,
           []() -> void
           {
-            TemporaryString perControllerMapperTypeString;
+            Infra::TemporaryString perControllerMapperTypeString;
 
             for (Controller::TControllerIdentifier i = 0; i < _countof(initStrings); ++i)
             {
@@ -554,10 +554,10 @@ namespace Xidi
       return initStrings[controllerIdentifier];
     }
 
-    TemporaryVector<std::wstring_view> SplitString(
+    Infra::TemporaryVector<std::wstring_view> SplitString(
         std::wstring_view stringToSplit, std::wstring_view delimiter)
     {
-      TemporaryVector<std::wstring_view> stringPieces;
+      Infra::TemporaryVector<std::wstring_view> stringPieces;
 
       auto beginIter = stringToSplit.cbegin();
       auto endIter = ((false == delimiter.empty()) ? beginIter : stringToSplit.cend());
@@ -585,10 +585,10 @@ namespace Xidi
       return stringPieces;
     }
 
-    TemporaryVector<std::wstring_view> SplitString(
+    Infra::TemporaryVector<std::wstring_view> SplitString(
         std::wstring_view stringToSplit, std::initializer_list<std::wstring_view> delimiters)
     {
-      TemporaryVector<std::wstring_view> stringPieces;
+      Infra::TemporaryVector<std::wstring_view> stringPieces;
 
       auto beginIter = stringToSplit.cbegin();
       auto endIter = ((false == std::empty(delimiters)) ? beginIter : stringToSplit.cend());
@@ -623,9 +623,9 @@ namespace Xidi
       return stringPieces;
     }
 
-    TemporaryString SystemErrorCodeString(const unsigned long systemErrorCode)
+    Infra::TemporaryString SystemErrorCodeString(const unsigned long systemErrorCode)
     {
-      TemporaryString systemErrorString;
+      Infra::TemporaryString systemErrorString;
       DWORD systemErrorLength = FormatMessage(
           FORMAT_MESSAGE_FROM_SYSTEM | FORMAT_MESSAGE_IGNORE_INSERTS,
           nullptr,

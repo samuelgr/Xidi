@@ -50,7 +50,6 @@
     <ClInclude Include="Include\Xidi\Internal\PhysicalController.h" />
     <ClInclude Include="Include\Xidi\Internal\StateChangeEventBuffer.h" />
     <ClInclude Include="Include\Xidi\Internal\Strings.h" />
-    <ClInclude Include="Include\Xidi\Internal\TemporaryBuffer.h" />
     <ClInclude Include="Include\Xidi\Internal\VirtualController.h" />
     <ClInclude Include="Include\Xidi\Internal\WrapperJoyWinMM.h" />
     <ClInclude Include="Include\Xidi\Internal\XidiConfigReader.h" />
@@ -84,7 +83,6 @@
     <ClCompile Include="Source\PhysicalController.cpp" />
     <ClCompile Include="Source\StateChangeEventBuffer.cpp" />
     <ClCompile Include="Source\Strings.cpp" />
-    <ClCompile Include="Source\TemporaryBuffer.cpp" />
     <ClCompile Include="Source\DllMain.cpp" />
     <ClCompile Include="Source\VirtualController.cpp" />
     <ClCompile Include="Source\WrapperJoyWinMM.cpp" />

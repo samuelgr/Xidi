@@ -17,6 +17,7 @@
 #include <optional>
 
 #include <Infra/Core/ProcessInfo.h>
+#include <Infra/Core/TemporaryBuffer.h>
 
 #include "ApiBitSet.h"
 #include "ApiDirectInput.h"
@@ -26,7 +27,6 @@
 #include "Mapper.h"
 #include "Message.h"
 #include "Strings.h"
-#include "TemporaryBuffer.h"
 
 namespace Xidi
 {
@@ -163,9 +163,9 @@ namespace Xidi
     static constexpr std::wstring_view kVendorIdPrefix = L"VID";
     static constexpr std::wstring_view kProductIdPrefix = L"PID";
 
-    TemporaryVector<std::wstring_view> piecesA =
+    Infra::TemporaryVector<std::wstring_view> piecesA =
         Strings::SplitString(controllerStringA, {L"_", L"&", L"#"});
-    TemporaryVector<std::wstring_view> piecesB =
+    Infra::TemporaryVector<std::wstring_view> piecesB =
         Strings::SplitString(controllerStringB, {L"_", L"&", L"#"});
 
     std::wstring_view vendorIdA, vendorIdB, productIdA, productIdB;
@@ -361,7 +361,7 @@ namespace Xidi
   template <> int FillHidCollectionName<LPSTR>(
       LPSTR buf, size_t bufcount, uint16_t hidCollectionNumber)
   {
-    TemporaryBuffer<CHAR> hidCollectionNameNameFormatString;
+    Infra::TemporaryBuffer<CHAR> hidCollectionNameNameFormatString;
 
     if (kVirtualControllerHidCollectionForEntireDevice == hidCollectionNumber)
       LoadStringA(
@@ -386,7 +386,7 @@ namespace Xidi
   template <> int FillHidCollectionName<LPWSTR>(
       LPWSTR buf, size_t bufcount, uint16_t hidCollectionNumber)
   {
-    TemporaryBuffer<WCHAR> hidCollectionNameNameFormatString;
+    Infra::TemporaryBuffer<WCHAR> hidCollectionNameNameFormatString;
 
     if (kVirtualControllerHidCollectionForEntireDevice == hidCollectionNumber)
       LoadStringW(
@@ -441,7 +441,7 @@ namespace Xidi
   template <> int FillVirtualControllerName<LPSTR>(
       LPSTR buf, size_t bufcount, Controller::TControllerIdentifier controllerIndex)
   {
-    TemporaryBuffer<CHAR> xidiControllerNameFormatString;
+    Infra::TemporaryBuffer<CHAR> xidiControllerNameFormatString;
     LoadStringA(
         Infra::ProcessInfo::GetThisModuleInstanceHandle(),
         (ShouldUseShortNameFormatForVirtualControllers()
@@ -457,7 +457,7 @@ namespace Xidi
   template <> int FillVirtualControllerName<LPWSTR>(
       LPWSTR buf, size_t bufcount, Controller::TControllerIdentifier controllerIndex)
   {
-    TemporaryBuffer<WCHAR> xidiControllerNameFormatString;
+    Infra::TemporaryBuffer<WCHAR> xidiControllerNameFormatString;
     LoadStringW(
         Infra::ProcessInfo::GetThisModuleInstanceHandle(),
         (ShouldUseShortNameFormatForVirtualControllers()

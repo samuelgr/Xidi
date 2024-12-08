@@ -127,7 +127,6 @@
     <ClCompile Include="Source\SetHooksWinMM.cpp" />
     <ClCompile Include="Source\Message.cpp" />
     <ClCompile Include="Source\Strings.cpp" />
-    <ClCompile Include="Source\TemporaryBuffer.cpp" />
     <ClCompile Include="Source\XidiConfigReader.cpp" />
   </ItemGroup>
   <ItemGroup>
@@ -140,7 +139,6 @@
     <ClInclude Include="Include\Xidi\Internal\SetHooks.h" />
     <ClInclude Include="Include\Xidi\Internal\Message.h" />
     <ClInclude Include="Include\Xidi\Internal\Strings.h" />
-    <ClInclude Include="Include\Xidi\Internal\TemporaryBuffer.h" />
     <ClInclude Include="Include\Xidi\Internal\XidiConfigReader.h" />
     <ClInclude Include="Resources\HookModule.h" />
     <ClInclude Include="Resources\Xidi.h" />

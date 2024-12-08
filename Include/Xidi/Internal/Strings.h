@@ -20,8 +20,9 @@
 #include <string>
 #include <string_view>
 
+#include <Infra/Core/TemporaryBuffer.h>
+
 #include "ControllerTypes.h"
-#include "TemporaryBuffer.h"
 
 // Strings that need to be available in multiple formats (ASCII and Unicode).
 #define XIDI_AXIS_NAME_X                                       "X Axis"
@@ -299,13 +300,13 @@ namespace Xidi
     /// @param [in] format Format string, possibly with format specifiers which must be matched with
     /// the arguments that follow.
     /// @return Resulting string after all formatting is applied.
-    TemporaryString FormatString(_Printf_format_string_ const wchar_t* format, ...);
+    Infra::TemporaryString FormatString(_Printf_format_string_ const wchar_t* format, ...);
 
     /// Generates a string representation of a GUID, in the format
     /// "{XXXXXXXX-XXXX-XXXX-XXXX-XXXXXXXXXXXX}" where X is a hexadecimal digit.
     /// @param guid GUID for which a string is desired.
     /// @return Resulting string representation for the specified GUID.
-    TemporaryString GuidToString(const GUID& guid);
+    Infra::TemporaryString GuidToString(const GUID& guid);
 
     /// Retrieves a string used to represent a per-controller mapper type configuration setting.
     /// These are initialized on first invocation and returned subsequently as read-only views.
@@ -325,7 +326,7 @@ namespace Xidi
     /// of the input string.
     /// @return Container that holds views referring to pieces of the input string split using the
     /// specified delimiter.
-    TemporaryVector<std::wstring_view> SplitString(
+    Infra::TemporaryVector<std::wstring_view> SplitString(
         std::wstring_view stringToSplit, std::wstring_view delimiter);
 
     /// Splits a string using the specified delimiter strings and returns a list of views each
@@ -337,12 +338,12 @@ namespace Xidi
     /// between pieces of the input string.
     /// @return Container that holds views referring to pieces of the input string split using the
     /// specified delimiter.
-    TemporaryVector<std::wstring_view> SplitString(
+    Infra::TemporaryVector<std::wstring_view> SplitString(
         std::wstring_view stringToSplit, std::initializer_list<std::wstring_view> delimiters);
 
     /// Generates a string representation of a system error code.
     /// @param [in] systemErrorCode System error code for which to generate a string.
     /// @return String representation of the system error code.
-    TemporaryString SystemErrorCodeString(const unsigned long systemErrorCode);
+    Infra::TemporaryString SystemErrorCodeString(const unsigned long systemErrorCode);
   } // namespace Strings
 } // namespace Xidi

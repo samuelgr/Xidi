@@ -133,7 +133,6 @@
     <ClInclude Include="Include\Xidi\Internal\PhysicalController.h" />
     <ClInclude Include="Include\Xidi\Internal\StateChangeEventBuffer.h" />
     <ClInclude Include="Include\Xidi\Internal\Strings.h" />
-    <ClInclude Include="Include\Xidi\Internal\TemporaryBuffer.h" />
     <ClInclude Include="Include\Xidi\Test\MockDirectInput.h" />
     <ClInclude Include="Include\Xidi\Test\MockDirectInputDevice.h" />
     <ClInclude Include="Include\Xidi\Test\MockElementMapper.h" />
@@ -170,7 +169,6 @@
     <ClCompile Include="Source\MapperParser.cpp" />
     <ClCompile Include="Source\StateChangeEventBuffer.cpp" />
     <ClCompile Include="Source\Strings.cpp" />
-    <ClCompile Include="Source\TemporaryBuffer.cpp" />
     <ClCompile Include="Source\Test\Case\AxisMapperTest.cpp" />
     <ClCompile Include="Source\Test\Case\ButtonMapperTest.cpp" />
     <ClCompile Include="Source\Test\Case\CompoundMapperTest.cpp" />

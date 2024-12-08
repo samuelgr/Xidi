@@ -17,13 +17,14 @@
 #include <optional>
 #include <unordered_set>
 
+#include <Infra/Core/TemporaryBuffer.h>
+
 #include "ApiDirectInput.h"
 #include "ApiGUID.h"
 #include "ControllerIdentification.h"
 #include "Mapper.h"
 #include "Message.h"
 #include "Strings.h"
-#include "TemporaryBuffer.h"
 #include "VirtualController.h"
 #include "VirtualDirectInputDevice.h"
 
@@ -153,7 +154,7 @@ namespace Xidi
               Message::OutputFormatted(
                   Message::ESeverity::Info,
                   L"Binding to non-XInput device \"%s\" with instance GUID %s. Xidi will not handle communication with it.",
-                  TemporaryString(deviceInfo.tszProductName).AsCString(),
+                  Infra::TemporaryString(deviceInfo.tszProductName).AsCString(),
                   Strings::GuidToString(deviceInfo.guidInstance).AsCString());
             }
             else
@@ -373,7 +374,7 @@ namespace Xidi
         Message::OutputFormatted(
             Message::ESeverity::Debug,
             L"Enumerate: DirectInput device \"%s\" with instance GUID %s supports XInput and will not be presented to the application.",
-            TemporaryString(lpddi->tszProductName).AsCString(),
+            Infra::TemporaryString(lpddi->tszProductName).AsCString(),
             Strings::GuidToString(lpddi->guidInstance).AsCString());
       }
     }
@@ -384,7 +385,7 @@ namespace Xidi
         Message::OutputFormatted(
             Message::ESeverity::Debug,
             L"Enumerate: DirectInput device \"%s\" with instance GUID %s does not support XInput and may be presented to the application.",
-            TemporaryString(lpddi->tszProductName).AsCString(),
+            Infra::TemporaryString(lpddi->tszProductName).AsCString(),
             Strings::GuidToString(lpddi->guidInstance).AsCString());
       }
     }
@@ -406,7 +407,7 @@ namespace Xidi
         Message::OutputFormatted(
             Message::ESeverity::Info,
             L"Enumerate: Presenting DirectInput device \"%s\" (instance GUID %s) to the application.",
-            TemporaryString(lpddi->tszProductName).AsCString(),
+            Infra::TemporaryString(lpddi->tszProductName).AsCString(),
             Strings::GuidToString(lpddi->guidInstance).AsCString());
       }
 

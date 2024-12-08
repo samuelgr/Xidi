@@ -17,12 +17,13 @@
 #include <optional>
 #include <string>
 
+#include <Infra/Core/TemporaryBuffer.h>
+
 #include "ForceFeedbackDevice.h"
 #include "ForceFeedbackEffect.h"
 #include "ForceFeedbackParameters.h"
 #include "ForceFeedbackTypes.h"
 #include "Message.h"
-#include "TemporaryBuffer.h"
 #include "VirtualDirectInputDevice.h"
 
 /// Logs a DirectInput interface method invocation and returns.
@@ -65,10 +66,10 @@ namespace Xidi
   /// individual strings for each flag that is present.
   /// @param [in] dwFlags Flags to parse.
   /// @return String representation of the flags that are set.
-  static TemporaryString ParameterTopLevelFlagsToString(DWORD dwFlags)
+  static Infra::TemporaryString ParameterTopLevelFlagsToString(DWORD dwFlags)
   {
     constexpr std::wstring_view kFlagSeparator = L" | ";
-    TemporaryString flagsString;
+    Infra::TemporaryString flagsString;
 
     if (0 != (dwFlags & DIEP_NODOWNLOAD)) flagsString << L"DIEP_NODOWNLOAD" << kFlagSeparator;
     if (0 != (dwFlags & DIEP_NORESTART)) flagsString << L"DIEP_NORESTART" << kFlagSeparator;
@@ -128,10 +129,10 @@ namespace Xidi
   /// DIEFFECT, and extracts individual strings for each flag that is present.
   /// @param [in] dwFlags Flags to parse.
   /// @return String representation of the flags that are set.
-  static const TemporaryString ParameterStructFlagsToString(DWORD dwFlags)
+  static const Infra::TemporaryString ParameterStructFlagsToString(DWORD dwFlags)
   {
     constexpr std::wstring_view kFlagSeparator = L" | ";
-    TemporaryString flagsString;
+    Infra::TemporaryString flagsString;
 
     if (0 != (dwFlags & DIEFF_CARTESIAN)) flagsString << L"DIEFF_CARTESIAN" << kFlagSeparator;
     if (0 != (dwFlags & DIEFF_POLAR)) flagsString << L"DIEFF_POLAR" << kFlagSeparator;
@@ -327,7 +328,7 @@ namespace Xidi
 
               if (true == maybeAxisElement.has_value())
               {
-                TemporaryBuffer<wchar_t> axisElementString;
+                Infra::TemporaryBuffer<wchar_t> axisElementString;
                 VirtualDirectInputDevice<ECharMode::W>::ElementToString(
                     maybeAxisElement.value(),
                     axisElementString.Data(),

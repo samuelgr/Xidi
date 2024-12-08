@@ -19,10 +19,10 @@
 #include <string>
 
 #include <Infra/Core/ProcessInfo.h>
+#include <Infra/Core/TemporaryBuffer.h>
 
 #include "ApiWindows.h"
 #include "Strings.h"
-#include "TemporaryBuffer.h"
 
 namespace Xidi
 {
@@ -188,13 +188,13 @@ namespace Xidi
     /// @param [in] message Message text.
     static void OutputInternalUsingLogFile(const ESeverity severity, const wchar_t* message)
     {
-      TemporaryString outputString;
+      Infra::TemporaryString outputString;
 
       // First compose the output string stamp.
       // Desired format is "[(current date) (current time)] [(severity)]"
       outputString << L'[';
 
-      TemporaryBuffer<wchar_t> bufferTimestamp;
+      Infra::TemporaryBuffer<wchar_t> bufferTimestamp;
 
       if (0 !=
           GetDateFormatEx(
@@ -313,7 +313,7 @@ namespace Xidi
     static void OutputFormattedInternal(
         const ESeverity severity, const wchar_t* format, va_list args)
     {
-      TemporaryBuffer<wchar_t> messageBuf;
+      Infra::TemporaryBuffer<wchar_t> messageBuf;
 
       vswprintf_s(messageBuf.Data(), messageBuf.Capacity(), format, args);
       OutputInternal(severity, messageBuf.Data());
