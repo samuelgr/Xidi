@@ -10,12 +10,12 @@
  *   testing-specific functions.
  **************************************************************************************************/
 
-#include "TestCase.h"
-
 #include "MockMouse.h"
 
 #include <mutex>
 #include <unordered_map>
+
+#include <Infra/Test/TestCase.h>
 
 #include "ControllerTypes.h"
 

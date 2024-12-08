@@ -10,7 +10,7 @@
  *   a virtual mouse axis.
  **************************************************************************************************/
 
-#include "TestCase.h"
+#include <Infra/Test/TestCase.h>
 
 #include "ControllerTypes.h"
 #include "ElementMapper.h"

@@ -9,8 +9,6 @@
  *   Unit tests for virtual controller objects.
  **************************************************************************************************/
 
-#include "TestCase.h"
-
 #include "VirtualController.h"
 
 #include <bitset>
@@ -20,6 +18,8 @@
 #include <initializer_list>
 #include <memory>
 #include <optional>
+
+#include <Infra/Test/TestCase.h>
 
 #include "ApiWindows.h"
 #include "ControllerTypes.h"
@@ -308,8 +308,7 @@ namespace XidiTest
         {.deviceStatus = EPhysicalDeviceStatus::Ok, .button = ButtonSet({EPhysicalButton::A})},
         {.deviceStatus = EPhysicalDeviceStatus::Ok, .button = ButtonSet({EPhysicalButton::B})},
         {.deviceStatus = EPhysicalDeviceStatus::Ok, .button = ButtonSet({EPhysicalButton::X})},
-        {.deviceStatus = EPhysicalDeviceStatus::Ok, .button = ButtonSet({EPhysicalButton::Y})}
-    };
+        {.deviceStatus = EPhysicalDeviceStatus::Ok, .button = ButtonSet({EPhysicalButton::Y})}};
 
     // Button assignments are based on the mapper defined at the top of this file.
     constexpr Controller::SState kExpectedStates[] = {
@@ -344,10 +343,12 @@ namespace XidiTest
         (VirtualController::kRangeMinDefault + VirtualController::kRangeMaxDefault) / 2;
     constexpr Controller::SState kExpectedState = {
         .axis = {
-                 kExpectedNeutralAnalogValue, kExpectedNeutralAnalogValue,
-                 0, kExpectedNeutralAnalogValue,
-                 kExpectedNeutralAnalogValue, 0}
-    };
+            kExpectedNeutralAnalogValue,
+            kExpectedNeutralAnalogValue,
+            0,
+            kExpectedNeutralAnalogValue,
+            kExpectedNeutralAnalogValue,
+            0}};
 
     MockPhysicalController physicalController(kControllerIndex, kTestMapper);
     VirtualController controller(kControllerIndex);
@@ -413,8 +414,7 @@ namespace XidiTest
          .button = ButtonSet({EPhysicalButton::X, EPhysicalButton::Y})},
         {.deviceStatus = EPhysicalDeviceStatus::Error},
         {.deviceStatus = EPhysicalDeviceStatus::Ok,
-         .button = ButtonSet({EPhysicalButton::X, EPhysicalButton::Y})}
-    };
+         .button = ButtonSet({EPhysicalButton::X, EPhysicalButton::Y})}};
 
     // When XInput calls fail, the controller state should be completely neutral.
     // Button assignments are based on the mapper defined at the top of this file.
@@ -782,16 +782,20 @@ namespace XidiTest
     constexpr SPhysicalState kPhysicalState = {.deviceStatus = EPhysicalDeviceStatus::Ok};
     constexpr Controller::SState kExpectedStateBefore = {
         .axis = {
-                 kTestOldAxisRangeExpectedNeutralValue, kTestOldAxisRangeExpectedNeutralValue,
-                 0, kTestOldAxisRangeExpectedNeutralValue,
-                 kTestOldAxisRangeExpectedNeutralValue, 0}
-    };
+            kTestOldAxisRangeExpectedNeutralValue,
+            kTestOldAxisRangeExpectedNeutralValue,
+            0,
+            kTestOldAxisRangeExpectedNeutralValue,
+            kTestOldAxisRangeExpectedNeutralValue,
+            0}};
     constexpr Controller::SState kExpectedStateAfter = {
         .axis = {
-                 kTestNewAxisRangeExpectedNeutralValue, kTestNewAxisRangeExpectedNeutralValue,
-                 0, kTestNewAxisRangeExpectedNeutralValue,
-                 kTestNewAxisRangeExpectedNeutralValue, 0}
-    };
+            kTestNewAxisRangeExpectedNeutralValue,
+            kTestNewAxisRangeExpectedNeutralValue,
+            0,
+            kTestNewAxisRangeExpectedNeutralValue,
+            kTestNewAxisRangeExpectedNeutralValue,
+            0}};
 
     MockPhysicalController physicalController(0, kTestMapper);
     VirtualController controller(0);
@@ -872,8 +876,7 @@ namespace XidiTest
          .stick = {-5555, 0, -6666, 0},
          .button = ButtonSet({EPhysicalButton::A, EPhysicalButton::Y, EPhysicalButton::DpadUp})},
         {.deviceStatus = EPhysicalDeviceStatus::Ok,
-         .button = ButtonSet({EPhysicalButton::DpadLeft})}
-    };
+         .button = ButtonSet({EPhysicalButton::DpadLeft})}};
 
     // Values come from the mapper at the top of this file.
     constexpr Controller::SState kExpectedControllerStates[] = {
@@ -884,8 +887,7 @@ namespace XidiTest
          .povDirection = {.components = {true, false, false, false}}},
         {.axis = {0, 0, 0, 0, 0, 0},
          .button = 0b0000,
-         .povDirection = {.components = {false, false, true, false}}}
-    };
+         .povDirection = {.components = {false, false, true, false}}}};
 
     static_assert(
         _countof(kPhysicalStates) == _countof(kExpectedControllerStates),
@@ -945,8 +947,7 @@ namespace XidiTest
          .stick = {-5555, -6666, 0, 0},
          .button = ButtonSet({EPhysicalButton::A, EPhysicalButton::Y, EPhysicalButton::DpadUp})},
         {.deviceStatus = EPhysicalDeviceStatus::Ok,
-         .button = ButtonSet({EPhysicalButton::DpadLeft})}
-    };
+         .button = ButtonSet({EPhysicalButton::DpadLeft})}};
 
     // Values come from the mapper at the top of this file.
     // Because the axes are filtered out using an event filter, their values are expected to be 0
@@ -955,8 +956,7 @@ namespace XidiTest
         {.button = 0b0001},
         {.button = 0b0001},
         {.button = 0b1001, .povDirection = {.components = {true, false, false, false}}},
-        {.button = 0b0000, .povDirection = {.components = {false, false, true, false}}}
-    };
+        {.button = 0b0000, .povDirection = {.components = {false, false, true, false}}}};
 
     static_assert(
         _countof(kPhysicalStates) == _countof(kExpectedControllerStates),
@@ -1017,8 +1017,7 @@ namespace XidiTest
         {.deviceStatus = EPhysicalDeviceStatus::Ok,
          .button = ButtonSet({EPhysicalButton::B, EPhysicalButton::DpadLeft})},
         {.deviceStatus = EPhysicalDeviceStatus::Ok, .button = ButtonSet({EPhysicalButton::B})},
-        {.deviceStatus = EPhysicalDeviceStatus::Ok}
-    };
+        {.deviceStatus = EPhysicalDeviceStatus::Ok}};
 
     const HANDLE stateChangeEvent = CreateEvent(nullptr, FALSE, FALSE, nullptr);
     TEST_ASSERT((nullptr != stateChangeEvent) && (INVALID_HANDLE_VALUE != stateChangeEvent));
@@ -1069,8 +1068,7 @@ namespace XidiTest
         {.deviceStatus = EPhysicalDeviceStatus::Ok,
          .button = ButtonSet({EPhysicalButton::A, EPhysicalButton::LB})},
         {.deviceStatus = EPhysicalDeviceStatus::Ok, .button = ButtonSet({EPhysicalButton::LB})},
-        {.deviceStatus = EPhysicalDeviceStatus::Ok}
-    };
+        {.deviceStatus = EPhysicalDeviceStatus::Ok}};
     static_assert(
         0 != (_countof(kPhysicalStates) % 2),
         "An even number of states is required beyond the initial physical state.");

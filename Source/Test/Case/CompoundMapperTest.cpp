@@ -10,13 +10,13 @@
  *   element mappers.
  **************************************************************************************************/
 
-#include "TestCase.h"
-
 #include <array>
 #include <cstdint>
 #include <memory>
 #include <optional>
 #include <utility>
+
+#include <Infra/Test/TestCase.h>
 
 #include "ApiWindows.h"
 #include "ElementMapper.h"
@@ -38,8 +38,7 @@ namespace XidiTest
         {.type = EElementType::Button, .button = EButton::B10},
         {.type = EElementType::Axis, .axis = EAxis::X},
         {.type = EElementType::Axis, .axis = EAxis::X},
-        {.type = EElementType::Pov}
-    };
+        {.type = EElementType::Pov}};
 
     const CompoundMapper mapper(
         {nullptr,
@@ -69,11 +68,10 @@ namespace XidiTest
   TEST_CASE(CompoundMapper_GetTargetElement_Clone)
   {
     constexpr SElementIdentifier kUnderlyingElements[] = {
-        {.type = EElementType::Button, .button = EButton::B2 },
+        {.type = EElementType::Button, .button = EButton::B2},
         {.type = EElementType::Button, .button = EButton::B10},
-        {.type = EElementType::Axis,   .axis = EAxis::X      },
-        {.type = EElementType::Axis,   .axis = EAxis::X      }
-    };
+        {.type = EElementType::Axis, .axis = EAxis::X},
+        {.type = EElementType::Axis, .axis = EAxis::X}};
 
     const CompoundMapper mapperOriginal(
         {nullptr,

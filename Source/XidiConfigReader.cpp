@@ -149,8 +149,7 @@ namespace Xidi
   {
     /// Map of supported configuration setting names to associated blueprint operations.
     static const std::map<std::wstring_view, EBlueprintOperation> kBlueprintOperationsMap = {
-        {Strings::kStrConfigurationSettingCustomMapperTemplate, EBlueprintOperation::SetTemplate}
-    };
+        {Strings::kStrConfigurationSettingCustomMapperTemplate, EBlueprintOperation::SetTemplate}};
 
     // If the configuration setting name identifies a valid controller element, then the value
     // should be parsed for an element mapper to be assigned to that controller element.

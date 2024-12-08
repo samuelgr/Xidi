@@ -10,13 +10,13 @@
  *   testing-specific functions.
  **************************************************************************************************/
 
-#include "TestCase.h"
-
 #include "MockPhysicalController.h"
 
 #include <shared_mutex>
 #include <stop_token>
 #include <vector>
+
+#include <Infra/Test/TestCase.h>
 
 #include "ApiWindows.h"
 #include "ForceFeedbackDevice.h"

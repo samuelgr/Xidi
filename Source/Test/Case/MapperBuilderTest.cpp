@@ -9,14 +9,14 @@
  *   Unit tests for run-time mapper object building functionality.
  **************************************************************************************************/
 
-#include "TestCase.h"
-
 #include "MapperBuilder.h"
 
 #include <memory>
 #include <optional>
 #include <set>
 #include <string_view>
+
+#include <Infra/Test/TestCase.h>
 
 #include "ControllerTypes.h"
 #include "ElementMapper.h"
@@ -767,8 +767,7 @@ namespace XidiTest
     constexpr SActuatorElement kActuatorElement = {
         .isPresent = true,
         .mode = EActuatorMode::SingleAxis,
-        .singleAxis = {.axis = EAxis::Z, .direction = EAxisDirection::Negative}
-    };
+        .singleAxis = {.axis = EAxis::Z, .direction = EAxisDirection::Negative}};
     TEST_ASSERT(
         true ==
         builder.SetBlueprintForceFeedbackActuator(
@@ -797,8 +796,7 @@ namespace XidiTest
     constexpr SActuatorElement kActuatorElement = {
         .isPresent = true,
         .mode = EActuatorMode::SingleAxis,
-        .singleAxis = {.axis = EAxis::Z, .direction = EAxisDirection::Negative}
-    };
+        .singleAxis = {.axis = EAxis::Z, .direction = EAxisDirection::Negative}};
     TEST_ASSERT(
         true ==
         builder.SetBlueprintForceFeedbackActuator(

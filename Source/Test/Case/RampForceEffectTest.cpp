@@ -10,7 +10,7 @@
  *   linearly with time.
  **************************************************************************************************/
 
-#include "TestCase.h"
+#include <Infra/Test/TestCase.h>
 
 #include "ForceFeedbackEffect.h"
 #include "ForceFeedbackParameters.h"

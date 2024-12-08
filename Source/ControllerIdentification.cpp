@@ -270,10 +270,9 @@ namespace Xidi
 
     DIPROPGUIDANDPATH devinfo = {
         .diph = {
-                 .dwSize = sizeof(DIPROPGUIDANDPATH),
-                 .dwHeaderSize = sizeof(DIPROPGUIDANDPATH::diph),
-                 .dwHow = DIPH_DEVICE}
-    };
+            .dwSize = sizeof(DIPROPGUIDANDPATH),
+            .dwHeaderSize = sizeof(DIPROPGUIDANDPATH::diph),
+            .dwHow = DIPH_DEVICE}};
 
     result = didevice->GetProperty(DIPROP_GUIDANDPATH, &devinfo.diph);
     didevice->Release();

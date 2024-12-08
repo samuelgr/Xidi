@@ -10,11 +10,11 @@
  *   analog functionality (i.e. extreme values only).
  **************************************************************************************************/
 
-#include "TestCase.h"
-
 #include <cstdint>
 #include <memory>
 #include <optional>
+
+#include <Infra/Test/TestCase.h>
 
 #include "ApiWindows.h"
 #include "ControllerTypes.h"

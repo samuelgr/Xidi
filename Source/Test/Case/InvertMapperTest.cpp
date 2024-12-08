@@ -10,12 +10,12 @@
  *   to another element mapper.
  **************************************************************************************************/
 
-#include "TestCase.h"
-
 #include <cstdint>
 #include <memory>
 #include <optional>
 #include <utility>
+
+#include <Infra/Test/TestCase.h>
 
 #include "ApiWindows.h"
 #include "ElementMapper.h"
@@ -33,9 +33,8 @@ namespace XidiTest
   TEST_CASE(InvertMapper_GetTargetElement_Nominal)
   {
     constexpr SElementIdentifier kUnderlyingElements[] = {
-        {.type = EElementType::Button, .button = EButton::B2 },
-        {.type = EElementType::Button, .button = EButton::B10}
-    };
+        {.type = EElementType::Button, .button = EButton::B2},
+        {.type = EElementType::Button, .button = EButton::B10}};
 
     const InvertMapper mapper(std::make_unique<SplitMapper>(
         std::make_unique<MockElementMapper>(kUnderlyingElements[0]),
@@ -57,9 +56,8 @@ namespace XidiTest
   TEST_CASE(InvertMapper_GetTargetElement_Clone)
   {
     constexpr SElementIdentifier kUnderlyingElements[] = {
-        {.type = EElementType::Button, .button = EButton::B2 },
-        {.type = EElementType::Button, .button = EButton::B10}
-    };
+        {.type = EElementType::Button, .button = EButton::B2},
+        {.type = EElementType::Button, .button = EButton::B10}};
 
     const InvertMapper mapperOriginal(std::make_unique<SplitMapper>(
         std::make_unique<MockElementMapper>(kUnderlyingElements[0]),

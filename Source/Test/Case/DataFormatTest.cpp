@@ -10,12 +10,13 @@
  *   their own specified data formats.
  **************************************************************************************************/
 
-#include "TestCase.h"
-
 #include "DataFormat.h"
 
 #include <memory>
 #include <optional>
+
+#include <Infra/Test/TestCase.h>
+#include <Infra/Test/Utilities.h>
 
 #include "ApiDirectInput.h"
 #include "ControllerTypes.h"
@@ -232,12 +233,12 @@ namespace XidiTest
          .povDown = false,
          .povLeft = false,
          .povRight = true,
-         .expectedPovValue = EPovValue::E     },
+         .expectedPovValue = EPovValue::E},
         {.povUp = false,
          .povDown = false,
          .povLeft = true,
          .povRight = false,
-         .expectedPovValue = EPovValue::W     },
+         .expectedPovValue = EPovValue::W},
         {.povUp = false,
          .povDown = false,
          .povLeft = true,
@@ -247,42 +248,42 @@ namespace XidiTest
          .povDown = true,
          .povLeft = false,
          .povRight = false,
-         .expectedPovValue = EPovValue::S     },
+         .expectedPovValue = EPovValue::S},
         {.povUp = false,
          .povDown = true,
          .povLeft = false,
          .povRight = true,
-         .expectedPovValue = EPovValue::SE    },
+         .expectedPovValue = EPovValue::SE},
         {.povUp = false,
          .povDown = true,
          .povLeft = true,
          .povRight = false,
-         .expectedPovValue = EPovValue::SW    },
+         .expectedPovValue = EPovValue::SW},
         {.povUp = false,
          .povDown = true,
          .povLeft = true,
          .povRight = true,
-         .expectedPovValue = EPovValue::S     },
+         .expectedPovValue = EPovValue::S},
         {.povUp = true,
          .povDown = false,
          .povLeft = false,
          .povRight = false,
-         .expectedPovValue = EPovValue::N     },
+         .expectedPovValue = EPovValue::N},
         {.povUp = true,
          .povDown = false,
          .povLeft = false,
          .povRight = true,
-         .expectedPovValue = EPovValue::NE    },
+         .expectedPovValue = EPovValue::NE},
         {.povUp = true,
          .povDown = false,
          .povLeft = true,
          .povRight = false,
-         .expectedPovValue = EPovValue::NW    },
+         .expectedPovValue = EPovValue::NW},
         {.povUp = true,
          .povDown = false,
          .povLeft = true,
          .povRight = true,
-         .expectedPovValue = EPovValue::N     },
+         .expectedPovValue = EPovValue::N},
         {.povUp = true,
          .povDown = true,
          .povLeft = false,
@@ -292,12 +293,12 @@ namespace XidiTest
          .povDown = true,
          .povLeft = false,
          .povRight = true,
-         .expectedPovValue = EPovValue::E     },
+         .expectedPovValue = EPovValue::E},
         {.povUp = true,
          .povDown = true,
          .povLeft = true,
          .povRight = false,
-         .expectedPovValue = EPovValue::W     },
+         .expectedPovValue = EPovValue::W},
         {.povUp = true,
          .povDown = true,
          .povLeft = true,
@@ -320,7 +321,7 @@ namespace XidiTest
 
       if (actualPovValue != expectedPovValue)
       {
-        PrintFormatted(
+        Infra::Test::PrintFormatted(
             L"Wrong POV direction for states up=%s down=%s left=%s right=%s (expected %d, got %d).",
             ((true == povTestData.povUp) ? L"true" : L"false"),
             ((true == povTestData.povDown) ? L"true" : L"false"),
@@ -359,8 +360,7 @@ namespace XidiTest
     constexpr Controller::SState kTestControllerState = {
         .axis = {1111, 2222, 3333, 4444, 5555, 6666},
         .button = 0b1100110011001100,
-        .povDirection = {.components = {true, false, false, true}}
-    };
+        .povDirection = {.components = {true, false, false, true}}};
 
     DIOBJECTDATAFORMAT testObjectFormatSpec[] = {
         {.pguid = &GUID_XAxis,
@@ -426,8 +426,7 @@ namespace XidiTest
         {.pguid = nullptr,
          .dwOfs = offsetof(STestDataPacket, extraPov[3]),
          .dwType = DIDFT_OPTIONAL | DIDFT_POV | DIDFT_ANYINSTANCE,
-         .dwFlags = 0}
-    };
+         .dwFlags = 0}};
 
     // Single element tests, one object format specification at a time.
     for (int i = 0; i < _countof(testObjectFormatSpec); ++i)
@@ -522,22 +521,21 @@ namespace XidiTest
           .button =
               {((true == kTestControllerState.button[0]) ? DataFormat::kButtonValuePressed
                                                          : DataFormat::kButtonValueNotPressed),
-                       ((true == kTestControllerState.button[1]) ? DataFormat::kButtonValuePressed
+               ((true == kTestControllerState.button[1]) ? DataFormat::kButtonValuePressed
                                                          : DataFormat::kButtonValueNotPressed),
-                       ((true == kTestControllerState.button[2]) ? DataFormat::kButtonValuePressed
+               ((true == kTestControllerState.button[2]) ? DataFormat::kButtonValuePressed
                                                          : DataFormat::kButtonValueNotPressed),
-                       ((true == kTestControllerState.button[3]) ? DataFormat::kButtonValuePressed
+               ((true == kTestControllerState.button[3]) ? DataFormat::kButtonValuePressed
                                                          : DataFormat::kButtonValueNotPressed),
-                       ((true == kTestControllerState.button[4]) ? DataFormat::kButtonValuePressed
+               ((true == kTestControllerState.button[4]) ? DataFormat::kButtonValuePressed
                                                          : DataFormat::kButtonValueNotPressed),
-                       ((true == kTestControllerState.button[5]) ? DataFormat::kButtonValuePressed
+               ((true == kTestControllerState.button[5]) ? DataFormat::kButtonValuePressed
                                                          : DataFormat::kButtonValueNotPressed),
-                       ((true == kTestControllerState.button[6]) ? DataFormat::kButtonValuePressed
+               ((true == kTestControllerState.button[6]) ? DataFormat::kButtonValuePressed
                                                          : DataFormat::kButtonValueNotPressed),
-                       ((true == kTestControllerState.button[7]) ? DataFormat::kButtonValuePressed
+               ((true == kTestControllerState.button[7]) ? DataFormat::kButtonValuePressed
                                                          : DataFormat::kButtonValueNotPressed)},
-          .extraPov = {EPovValue::Center, EPovValue::Center, EPovValue::Center, EPovValue::Center}
-      };
+          .extraPov = {EPovValue::Center, EPovValue::Center, EPovValue::Center, EPovValue::Center}};
 
       STestDataPacket actualDataPacket;
       FillMemory(&actualDataPacket, sizeof(actualDataPacket), 0xcd);
@@ -569,12 +567,11 @@ namespace XidiTest
         {.pguid = nullptr,
          .dwOfs = offsetof(STestDataPacket, axisValue1),
          .dwType = DIDFT_AXIS | DIDFT_ANYINSTANCE,
-         .dwFlags = 0                   },
+         .dwFlags = 0},
         {.pguid = nullptr,
          .dwOfs = offsetof(STestDataPacket, axisValue2),
          .dwType = DIDFT_AXIS | DIDFT_ANYINSTANCE,
-         .dwFlags = DIDOI_ASPECTPOSITION}
-    };
+         .dwFlags = DIDOI_ASPECTPOSITION}};
 
     const DIDATAFORMAT kTestFormatSpec = {
         .dwSize = sizeof(DIDATAFORMAT),
@@ -618,12 +615,11 @@ namespace XidiTest
         {.pguid = nullptr,
          .dwOfs = offsetof(STestDataPacket, axisValue2),
          .dwType = DIDFT_AXIS | DIDFT_ANYINSTANCE,
-         .dwFlags = 0                   },
+         .dwFlags = 0},
         {.pguid = nullptr,
          .dwOfs = offsetof(STestDataPacket, axisValue1),
          .dwType = DIDFT_AXIS | DIDFT_ANYINSTANCE,
-         .dwFlags = DIDOI_ASPECTPOSITION}
-    };
+         .dwFlags = DIDOI_ASPECTPOSITION}};
 
     const DIDATAFORMAT kTestFormatSpec = {
         .dwSize = sizeof(DIDATAFORMAT),
@@ -668,12 +664,11 @@ namespace XidiTest
         {.pguid = &GUID_RzAxis,
          .dwOfs = offsetof(STestDataPacket, axisValue1),
          .dwType = DIDFT_AXIS | DIDFT_ANYINSTANCE,
-         .dwFlags = 0                   },
+         .dwFlags = 0},
         {.pguid = &GUID_XAxis,
          .dwOfs = offsetof(STestDataPacket, axisValue2),
          .dwType = DIDFT_AXIS | DIDFT_ANYINSTANCE,
-         .dwFlags = DIDOI_ASPECTPOSITION}
-    };
+         .dwFlags = DIDOI_ASPECTPOSITION}};
 
     const DIDATAFORMAT kTestFormatSpec = {
         .dwSize = sizeof(DIDATAFORMAT),
@@ -718,12 +713,11 @@ namespace XidiTest
         {.pguid = &GUID_XAxis,
          .dwOfs = offsetof(STestDataPacket, axisValue2),
          .dwType = DIDFT_AXIS | DIDFT_ANYINSTANCE,
-         .dwFlags = 0                   },
+         .dwFlags = 0},
         {.pguid = &GUID_RzAxis,
          .dwOfs = offsetof(STestDataPacket, axisValue1),
          .dwType = DIDFT_AXIS | DIDFT_ANYINSTANCE,
-         .dwFlags = DIDOI_ASPECTPOSITION}
-    };
+         .dwFlags = DIDOI_ASPECTPOSITION}};
 
     const DIDATAFORMAT kTestFormatSpec = {
         .dwSize = sizeof(DIDATAFORMAT),
@@ -768,12 +762,11 @@ namespace XidiTest
         {.pguid = nullptr,
          .dwOfs = offsetof(STestDataPacket, axisValue1),
          .dwType = DIDFT_AXIS | DIDFT_MAKEINSTANCE(3),
-         .dwFlags = 0                   },
+         .dwFlags = 0},
         {.pguid = nullptr,
          .dwOfs = offsetof(STestDataPacket, axisValue2),
          .dwType = DIDFT_AXIS | DIDFT_MAKEINSTANCE(0),
-         .dwFlags = DIDOI_ASPECTPOSITION}
-    };
+         .dwFlags = DIDOI_ASPECTPOSITION}};
 
     const DIDATAFORMAT kTestFormatSpec = {
         .dwSize = sizeof(DIDATAFORMAT),
@@ -818,12 +811,11 @@ namespace XidiTest
         {.pguid = nullptr,
          .dwOfs = offsetof(STestDataPacket, axisValue2),
          .dwType = DIDFT_AXIS | DIDFT_MAKEINSTANCE(0),
-         .dwFlags = 0                   },
+         .dwFlags = 0},
         {.pguid = nullptr,
          .dwOfs = offsetof(STestDataPacket, axisValue1),
          .dwType = DIDFT_AXIS | DIDFT_MAKEINSTANCE(3),
-         .dwFlags = DIDOI_ASPECTPOSITION}
-    };
+         .dwFlags = DIDOI_ASPECTPOSITION}};
 
     const DIDATAFORMAT kTestFormatSpec = {
         .dwSize = sizeof(DIDATAFORMAT),
@@ -873,8 +865,7 @@ namespace XidiTest
         {.pguid = &GUID_XAxis,
          .dwOfs = offsetof(STestDataPacket, axisValue2),
          .dwType = DIDFT_AXIS | DIDFT_MAKEINSTANCE(0),
-         .dwFlags = 0                   }
-    };
+         .dwFlags = 0}};
 
     const DIDATAFORMAT kTestFormatSpec = {
         .dwSize = sizeof(DIDATAFORMAT),
@@ -924,8 +915,7 @@ namespace XidiTest
         {.pguid = &GUID_RzAxis,
          .dwOfs = offsetof(STestDataPacket, axisValue1),
          .dwType = DIDFT_AXIS | DIDFT_MAKEINSTANCE(0),
-         .dwFlags = 0                   }
-    };
+         .dwFlags = 0}};
 
     const DIDATAFORMAT kTestFormatSpec = {
         .dwSize = sizeof(DIDATAFORMAT),
@@ -977,11 +967,11 @@ namespace XidiTest
          .dwOfs = offsetof(STestDataPacket, axisValue3),
          .dwType = DIDFT_OPTIONAL | DIDFT_AXIS | DIDFT_MAKEINSTANCE(1),
          .dwFlags =
-             0       }, // GUID requests an axis type that is present, but instance index is out of bounds
+             0}, // GUID requests an axis type that is present, but instance index is out of bounds
         {.pguid = nullptr,
          .dwOfs = offsetof(STestDataPacket, axisValue1),
          .dwType = DIDFT_OPTIONAL | DIDFT_AXIS | DIDFT_MAKEINSTANCE(8),
-         .dwFlags = 0}  // No GUID type filter, and instance index is out of bounds
+         .dwFlags = 0} // No GUID type filter, and instance index is out of bounds
     };
 
     const DIDATAFORMAT kTestFormatSpec = {
@@ -1036,7 +1026,7 @@ namespace XidiTest
         {.pguid = &GUID_Button,
          .dwOfs = offsetof(STestDataPacket, buttonValue1),
          .dwType = DIDFT_OPTIONAL | DIDFT_BUTTON | DIDFT_MAKEINSTANCE(1),
-         .dwFlags = 0                   }, // Matches button 2 by specifically identifying it
+         .dwFlags = 0}, // Matches button 2 by specifically identifying it
         {.pguid = &GUID_Button,
          .dwOfs = offsetof(STestDataPacket, buttonValue2),
          .dwType = DIDFT_OPTIONAL | DIDFT_BUTTON | DIDFT_ANYINSTANCE,
@@ -1044,31 +1034,31 @@ namespace XidiTest
         {.pguid = &GUID_Button,
          .dwOfs = offsetof(STestDataPacket, buttonValue3),
          .dwType = DIDFT_OPTIONAL | DIDFT_BUTTON | DIDFT_ANYINSTANCE,
-         .dwFlags = 0                   }, // Matches button 3 because it is the next available, since button 2 was
-  // already matched
+         .dwFlags = 0}, // Matches button 3 because it is the next available, since button 2 was
+                        // already matched
         {.pguid = &GUID_Button,
          .dwOfs = offsetof(STestDataPacket, buttonValue4),
          .dwType = DIDFT_OPTIONAL | DIDFT_BUTTON | DIDFT_MAKEINSTANCE(2),
          .dwFlags = DIDOI_ASPECTPOSITION}, // No match because button 3 is specified but it was
-  // already matched
+                                           // already matched
         {.pguid = nullptr,
          .dwOfs = offsetof(STestDataPacket, buttonValue5),
          .dwType = DIDFT_OPTIONAL | DIDFT_BUTTON | DIDFT_MAKEINSTANCE(15),
-         .dwFlags = 0                   }, // Matches button 16 only in the without-POV case, otherwise the button
-  // index is out of bounds
+         .dwFlags = 0}, // Matches button 16 only in the without-POV case, otherwise the button
+                        // index is out of bounds
         {.pguid = nullptr,
          .dwOfs = offsetof(STestDataPacket, buttonValue6),
          .dwType = DIDFT_OPTIONAL | DIDFT_BUTTON | DIDFT_MAKEINSTANCE(11),
-         .dwFlags = DIDOI_ASPECTFORCE   }, // No match because the flags are not supported
+         .dwFlags = DIDOI_ASPECTFORCE}, // No match because the flags are not supported
         {.pguid = nullptr,
          .dwOfs = offsetof(STestDataPacket, buttonValue7),
          .dwType = DIDFT_OPTIONAL | DIDFT_BUTTON | DIDFT_ANYINSTANCE,
-         .dwFlags = 0                   }, // Matches button 4 because it is the next available
+         .dwFlags = 0}, // Matches button 4 because it is the next available
         {.pguid = &GUID_Slider,
          .dwOfs = offsetof(STestDataPacket, buttonValue8),
          .dwType = DIDFT_OPTIONAL | DIDFT_BUTTON | DIDFT_ANYINSTANCE,
          .dwFlags =
-             DIDOI_ASPECTPOSITION       }  // No match because the GUID type does not specify a button
+             DIDOI_ASPECTPOSITION} // No match because the GUID type does not specify a button
     };
 
     const DIDATAFORMAT kTestFormatSpec = {
@@ -1349,7 +1339,7 @@ namespace XidiTest
         {.pguid = &GUID_POV,
          .dwOfs = offsetof(STestDataPacket, povValue1),
          .dwType = DIDFT_OPTIONAL | DIDFT_POV | DIDFT_MAKEINSTANCE(1),
-         .dwFlags = 0                   }, // No match because the index is out of bounds
+         .dwFlags = 0}, // No match because the index is out of bounds
         {.pguid = &GUID_Slider,
          .dwOfs = offsetof(STestDataPacket, povValue2),
          .dwType = DIDFT_OPTIONAL | DIDFT_POV | DIDFT_ANYINSTANCE,
@@ -1357,7 +1347,7 @@ namespace XidiTest
         {.pguid = &GUID_POV,
          .dwOfs = offsetof(STestDataPacket, povValue3),
          .dwType = DIDFT_OPTIONAL | DIDFT_POV | DIDFT_ANYINSTANCE,
-         .dwFlags = DIDOI_ASPECTACCEL   }  // No match because the flags are not supported
+         .dwFlags = DIDOI_ASPECTACCEL} // No match because the flags are not supported
     };
 
     const DIDATAFORMAT kTestFormatSpec = {
@@ -1563,8 +1553,7 @@ namespace XidiTest
         {.pguid = nullptr,
          .dwOfs = DIJOFS_BUTTON(31),
          .dwType = (DIDFT_OPTIONAL | DIDFT_BUTTON | DIDFT_ANYINSTANCE),
-         .dwFlags = 0}
-    };
+         .dwFlags = 0}};
 
     const DIDATAFORMAT kTestFormatSpec = {
         .dwSize = sizeof(DIDATAFORMAT),
@@ -2276,8 +2265,7 @@ namespace XidiTest
         {.pguid = &GUID_Slider,
          .dwOfs = offsetof(DIJOYSTATE2, rglFSlider[1]),
          .dwType = (DIDFT_OPTIONAL | DIDFT_AXIS | DIDFT_ANYINSTANCE),
-         .dwFlags = 0}
-    };
+         .dwFlags = 0}};
 
     const DIDATAFORMAT kTestFormatSpec = {
         .dwSize = sizeof(DIDATAFORMAT),
@@ -2416,35 +2404,33 @@ namespace XidiTest
         {.pguid = nullptr,
          .dwOfs = offsetof(STestDataPacket, buttonValue[3]),
          .dwType = DIDFT_OPTIONAL | DIDFT_BUTTON | DIDFT_ANYINSTANCE,
-         .dwFlags = 0}
-    };
+         .dwFlags = 0}};
 
     const DIDATAFORMAT kTestFormatSpecs[] = {
         {.dwSize = sizeof(DIDATAFORMAT),
          .dwObjSize = sizeof(DIOBJECTDATAFORMAT),
          .dwFlags = DIDF_ABSAXIS,
          .dwDataSize = sizeof(STestDataPacket),
-         .dwNumObjs = 0,                              // Reason for rejection: number of objects is 0.
-         .rgodf = testObjectFormatSpec                                     },
+         .dwNumObjs = 0, // Reason for rejection: number of objects is 0.
+         .rgodf = testObjectFormatSpec},
         {
-         .dwSize = sizeof(DIDATAFORMAT),
-         .dwObjSize = sizeof(DIOBJECTDATAFORMAT),
-         .dwFlags = DIDF_ABSAXIS,
-         .dwDataSize = sizeof(STestDataPacket),
-         .dwNumObjs = _countof(testObjectFormatSpec),
-         .rgodf =
+            .dwSize = sizeof(DIDATAFORMAT),
+            .dwObjSize = sizeof(DIOBJECTDATAFORMAT),
+            .dwFlags = DIDF_ABSAXIS,
+            .dwDataSize = sizeof(STestDataPacket),
+            .dwNumObjs = _countof(testObjectFormatSpec),
+            .rgodf =
                 nullptr // Reason for rejection: object format specification array pointer is null.
         },
         {
-         .dwSize = sizeof(DIDATAFORMAT),
-         .dwObjSize = sizeof(DIOBJECTDATAFORMAT),
-         .dwFlags = DIDF_ABSAXIS,
-         .dwDataSize = sizeof(STestDataPacket),
-         .dwNumObjs = 0,                              // Reason for rejection 1: number of objects is 0.
+            .dwSize = sizeof(DIDATAFORMAT),
+            .dwObjSize = sizeof(DIOBJECTDATAFORMAT),
+            .dwFlags = DIDF_ABSAXIS,
+            .dwDataSize = sizeof(STestDataPacket),
+            .dwNumObjs = 0,  // Reason for rejection 1: number of objects is 0.
             .rgodf = nullptr // Reason for rejection 2: object format specification array pointer is
                              // null.
-        }
-    };
+        }};
 
     for (const auto& testFormatSpec : kTestFormatSpecs)
       TestDataFormatCreateFailure(testFormatSpec, kTestMapperWithPov.GetCapabilities());
@@ -2477,8 +2463,7 @@ namespace XidiTest
         {.pguid = nullptr,
          .dwOfs = offsetof(STestDataPacket, buttonValue[3]),
          .dwType = DIDFT_OPTIONAL | DIDFT_BUTTON | DIDFT_ANYINSTANCE,
-         .dwFlags = 0}
-    };
+         .dwFlags = 0}};
 
     const DIDATAFORMAT kTestFormatSpec = {
         .dwSize = sizeof(DIDATAFORMAT),
@@ -2524,7 +2509,7 @@ namespace XidiTest
         {.pguid = nullptr,
          .dwOfs = offsetof(STestDataPacket, axisValue),
          .dwType = DIDFT_RELAXIS | DIDFT_ANYINSTANCE,
-         .dwFlags = 0}  // Reason for rejection: not optional and no match based on the type filter.
+         .dwFlags = 0} // Reason for rejection: not optional and no match based on the type filter.
     };
 
     const DIDATAFORMAT kTestFormatSpec = {
@@ -2571,7 +2556,7 @@ namespace XidiTest
         {.pguid = &GUID_Slider,
          .dwOfs = offsetof(STestDataPacket, axisValue),
          .dwType = DIDFT_AXIS | DIDFT_ANYINSTANCE,
-         .dwFlags = 0}  // Reason for rejection: not optional and no match based on GUID.
+         .dwFlags = 0} // Reason for rejection: not optional and no match based on GUID.
     };
 
     const DIDATAFORMAT kTestFormatSpec = {
@@ -2618,7 +2603,7 @@ namespace XidiTest
         {.pguid = nullptr,
          .dwOfs = offsetof(STestDataPacket, axisValue),
          .dwType = DIDFT_AXIS | DIDFT_MAKEINSTANCE(8),
-         .dwFlags = 0}  // Reason for rejection: not optional and no match based on instance index.
+         .dwFlags = 0} // Reason for rejection: not optional and no match based on instance index.
     };
 
     const DIDATAFORMAT kTestFormatSpec = {
@@ -2659,8 +2644,7 @@ namespace XidiTest
         {.pguid = nullptr,
          .dwOfs = offsetof(STestDataPacket, axisValue[3]),
          .dwType = DIDFT_OPTIONAL | DIDFT_AXIS | DIDFT_ANYINSTANCE,
-         .dwFlags = 0}
-    };
+         .dwFlags = 0}};
 
     const DIDATAFORMAT kTestFormatSpec = {
         .dwSize = sizeof(DIDATAFORMAT),
@@ -2700,8 +2684,7 @@ namespace XidiTest
         {.pguid = nullptr,
          .dwOfs = offsetof(STestDataPacket, buttonValue[3]),
          .dwType = DIDFT_OPTIONAL | DIDFT_BUTTON | DIDFT_ANYINSTANCE,
-         .dwFlags = 0}
-    };
+         .dwFlags = 0}};
 
     const DIDATAFORMAT kTestFormatSpec = {
         .dwSize = sizeof(DIDATAFORMAT),
@@ -2741,8 +2724,7 @@ namespace XidiTest
         {.pguid = nullptr,
          .dwOfs = offsetof(STestDataPacket, povValue[3]),
          .dwType = DIDFT_OPTIONAL | DIDFT_POV | DIDFT_ANYINSTANCE,
-         .dwFlags = 0}
-    };
+         .dwFlags = 0}};
 
     const DIDATAFORMAT kTestFormatSpec = {
         .dwSize = sizeof(DIDATAFORMAT),
@@ -2772,66 +2754,65 @@ namespace XidiTest
 
     DIOBJECTDATAFORMAT testObjectFormatSpecs[][2] = {
         {
-         {.pguid = nullptr,
+            {.pguid = nullptr,
              .dwOfs = offsetof(UTestDataPacket, axisValue),
              .dwType = DIDFT_OPTIONAL | DIDFT_AXIS | DIDFT_ANYINSTANCE,
              .dwFlags = 0},
-         {.pguid = nullptr,
+            {.pguid = nullptr,
              .dwOfs = offsetof(UTestDataPacket, buttonValue),
              .dwType = DIDFT_OPTIONAL | DIDFT_BUTTON | DIDFT_ANYINSTANCE,
              .dwFlags = 0} // Reason for rejection: button offset conflicts with axis offset.
         },
         {
-         {.pguid = nullptr,
+            {.pguid = nullptr,
              .dwOfs = offsetof(UTestDataPacket, axisValue),
              .dwType = DIDFT_OPTIONAL | DIDFT_AXIS | DIDFT_ANYINSTANCE,
              .dwFlags = 0},
-         {.pguid = nullptr,
+            {.pguid = nullptr,
              .dwOfs = offsetof(UTestDataPacket, povValue),
              .dwType = DIDFT_OPTIONAL | DIDFT_POV | DIDFT_ANYINSTANCE,
              .dwFlags = 0} // Reason for rejection: POV offset conflicts with axis offset.
         },
         {
-         {.pguid = nullptr,
+            {.pguid = nullptr,
              .dwOfs = offsetof(UTestDataPacket, buttonValue),
              .dwType = DIDFT_OPTIONAL | DIDFT_BUTTON | DIDFT_ANYINSTANCE,
              .dwFlags = 0},
-         {.pguid = nullptr,
+            {.pguid = nullptr,
              .dwOfs = offsetof(UTestDataPacket, axisValue),
              .dwType = DIDFT_OPTIONAL | DIDFT_AXIS | DIDFT_ANYINSTANCE,
              .dwFlags = 0} // Reason for rejection: axis offset conflicts with button offset.
         },
         {
-         {.pguid = nullptr,
+            {.pguid = nullptr,
              .dwOfs = offsetof(UTestDataPacket, buttonValue),
              .dwType = DIDFT_OPTIONAL | DIDFT_BUTTON | DIDFT_ANYINSTANCE,
              .dwFlags = 0},
-         {.pguid = nullptr,
+            {.pguid = nullptr,
              .dwOfs = offsetof(UTestDataPacket, povValue),
              .dwType = DIDFT_OPTIONAL | DIDFT_POV | DIDFT_ANYINSTANCE,
              .dwFlags = 0} // Reason for rejection: POV offset conflicts with button offset.
         },
         {
-         {.pguid = nullptr,
+            {.pguid = nullptr,
              .dwOfs = offsetof(UTestDataPacket, povValue),
              .dwType = DIDFT_OPTIONAL | DIDFT_POV | DIDFT_ANYINSTANCE,
              .dwFlags = 0},
-         {.pguid = nullptr,
+            {.pguid = nullptr,
              .dwOfs = offsetof(UTestDataPacket, axisValue),
              .dwType = DIDFT_OPTIONAL | DIDFT_AXIS | DIDFT_ANYINSTANCE,
              .dwFlags = 0} // Reason for rejection: axis offset conflicts with POV offset.
         },
         {
-         {.pguid = nullptr,
+            {.pguid = nullptr,
              .dwOfs = offsetof(UTestDataPacket, povValue),
              .dwType = DIDFT_OPTIONAL | DIDFT_POV | DIDFT_ANYINSTANCE,
              .dwFlags = 0},
-         {.pguid = nullptr,
+            {.pguid = nullptr,
              .dwOfs = offsetof(UTestDataPacket, buttonValue),
              .dwType = DIDFT_OPTIONAL | DIDFT_BUTTON | DIDFT_ANYINSTANCE,
              .dwFlags = 0} // Reason for rejection: button offset conflicts with POV offset.
-        }
-    };
+        }};
 
     for (auto& testObjectFormatSpec : testObjectFormatSpecs)
     {

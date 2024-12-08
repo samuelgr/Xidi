@@ -9,11 +9,11 @@
  *   Unit tests for internal math.
  **************************************************************************************************/
 
-#include "TestCase.h"
-
 #include "ControllerMath.h"
 
 #include <algorithm>
+
+#include <Infra/Test/TestCase.h>
 
 #include "ControllerTypes.h"
 
@@ -62,15 +62,15 @@ namespace XidiTest
       int16_t rawInput;
       int16_t expectedOutput;
     } kTestValues[] = {
-        {.rawInput = -32768,                     .expectedOutput = -32768          },
-        {.rawInput = 32767,                      .expectedOutput = 32767           },
-        {.rawInput = 16383,                      .expectedOutput = 0               },
-        {.rawInput = -16383,                     .expectedOutput = 0               },
-        {.rawInput = (16383 + (16384 * 1 / 4)),  .expectedOutput = (32768 * 1 / 4) },
+        {.rawInput = -32768, .expectedOutput = -32768},
+        {.rawInput = 32767, .expectedOutput = 32767},
+        {.rawInput = 16383, .expectedOutput = 0},
+        {.rawInput = -16383, .expectedOutput = 0},
+        {.rawInput = (16383 + (16384 * 1 / 4)), .expectedOutput = (32768 * 1 / 4)},
         {.rawInput = -(16383 + (16384 * 1 / 4)), .expectedOutput = -(32768 * 1 / 4)},
-        {.rawInput = (16383 + (16384 * 1 / 2)),  .expectedOutput = (32768 * 1 / 2) },
+        {.rawInput = (16383 + (16384 * 1 / 2)), .expectedOutput = (32768 * 1 / 2)},
         {.rawInput = -(16383 + (16384 * 1 / 2)), .expectedOutput = -(32768 * 1 / 2)},
-        {.rawInput = (16383 + (16384 * 3 / 4)),  .expectedOutput = (32768 * 3 / 4) },
+        {.rawInput = (16383 + (16384 * 3 / 4)), .expectedOutput = (32768 * 3 / 4)},
         {.rawInput = -(16383 + (16384 * 3 / 4)), .expectedOutput = -(32768 * 3 / 4)},
     };
 
@@ -93,15 +93,15 @@ namespace XidiTest
       int16_t rawInput;
       int16_t expectedOutput;
     } kTestValues[] = {
-        {.rawInput = -32768,                 .expectedOutput = -32768          },
-        {.rawInput = 32767,                  .expectedOutput = 32767           },
-        {.rawInput = 16383,                  .expectedOutput = 32767           },
-        {.rawInput = -16383,                 .expectedOutput = -32767          },
-        {.rawInput = (0 + (16384 * 1 / 4)),  .expectedOutput = (32768 * 1 / 4) },
+        {.rawInput = -32768, .expectedOutput = -32768},
+        {.rawInput = 32767, .expectedOutput = 32767},
+        {.rawInput = 16383, .expectedOutput = 32767},
+        {.rawInput = -16383, .expectedOutput = -32767},
+        {.rawInput = (0 + (16384 * 1 / 4)), .expectedOutput = (32768 * 1 / 4)},
         {.rawInput = -(0 + (16384 * 1 / 4)), .expectedOutput = -(32768 * 1 / 4)},
-        {.rawInput = (0 + (16384 * 1 / 2)),  .expectedOutput = (32768 * 1 / 2) },
+        {.rawInput = (0 + (16384 * 1 / 2)), .expectedOutput = (32768 * 1 / 2)},
         {.rawInput = -(0 + (16384 * 1 / 2)), .expectedOutput = -(32768 * 1 / 2)},
-        {.rawInput = (0 + (16384 * 3 / 4)),  .expectedOutput = (32768 * 3 / 4) },
+        {.rawInput = (0 + (16384 * 3 / 4)), .expectedOutput = (32768 * 3 / 4)},
         {.rawInput = -(0 + (16384 * 3 / 4)), .expectedOutput = -(32768 * 3 / 4)},
     };
 
@@ -125,15 +125,15 @@ namespace XidiTest
       int16_t rawInput;
       int16_t expectedOutput;
     } kTestValues[] = {
-        {.rawInput = -32768,                    .expectedOutput = -32768          },
-        {.rawInput = 32767,                     .expectedOutput = 32767           },
-        {.rawInput = 16383,                     .expectedOutput = 16384           },
-        {.rawInput = -16383,                    .expectedOutput = -16384          },
-        {.rawInput = (8191 + (16384 * 1 / 4)),  .expectedOutput = (32768 * 1 / 4) },
+        {.rawInput = -32768, .expectedOutput = -32768},
+        {.rawInput = 32767, .expectedOutput = 32767},
+        {.rawInput = 16383, .expectedOutput = 16384},
+        {.rawInput = -16383, .expectedOutput = -16384},
+        {.rawInput = (8191 + (16384 * 1 / 4)), .expectedOutput = (32768 * 1 / 4)},
         {.rawInput = -(8191 + (16384 * 1 / 4)), .expectedOutput = -(32768 * 1 / 4)},
-        {.rawInput = (8191 + (16384 * 1 / 2)),  .expectedOutput = (32768 * 1 / 2) },
+        {.rawInput = (8191 + (16384 * 1 / 2)), .expectedOutput = (32768 * 1 / 2)},
         {.rawInput = -(8191 + (16384 * 1 / 2)), .expectedOutput = -(32768 * 1 / 2)},
-        {.rawInput = (8191 + (16384 * 3 / 4)),  .expectedOutput = (32768 * 3 / 4) },
+        {.rawInput = (8191 + (16384 * 3 / 4)), .expectedOutput = (32768 * 3 / 4)},
         {.rawInput = -(8191 + (16384 * 3 / 4)), .expectedOutput = -(32768 * 3 / 4)},
     };
 
@@ -172,11 +172,11 @@ namespace XidiTest
       uint8_t rawInput;
       uint8_t expectedOutput;
     } kTestValues[] = {
-        {.rawInput = 0,             .expectedOutput = 0            },
-        {.rawInput = 255,           .expectedOutput = 255          },
-        {.rawInput = (255 * 1 / 8), .expectedOutput = 0            },
-        {.rawInput = (255 * 1 / 4), .expectedOutput = 0            },
-        {.rawInput = (255 * 1 / 2), .expectedOutput = 0            },
+        {.rawInput = 0, .expectedOutput = 0},
+        {.rawInput = 255, .expectedOutput = 255},
+        {.rawInput = (255 * 1 / 8), .expectedOutput = 0},
+        {.rawInput = (255 * 1 / 4), .expectedOutput = 0},
+        {.rawInput = (255 * 1 / 2), .expectedOutput = 0},
         {.rawInput = (255 * 3 / 4), .expectedOutput = (255 * 1 / 2)},
         {.rawInput = (255 * 7 / 8), .expectedOutput = (255 * 3 / 4)},
     };
@@ -200,13 +200,13 @@ namespace XidiTest
       uint8_t rawInput;
       uint8_t expectedOutput;
     } kTestValues[] = {
-        {.rawInput = 0,             .expectedOutput = 0            },
-        {.rawInput = 255,           .expectedOutput = 255          },
+        {.rawInput = 0, .expectedOutput = 0},
+        {.rawInput = 255, .expectedOutput = 255},
         {.rawInput = (255 * 1 / 8), .expectedOutput = (255 * 1 / 4)},
         {.rawInput = (255 * 1 / 4), .expectedOutput = (255 * 1 / 2)},
-        {.rawInput = (255 * 1 / 2), .expectedOutput = 255          },
-        {.rawInput = (255 * 3 / 4), .expectedOutput = 255          },
-        {.rawInput = (255 * 7 / 8), .expectedOutput = 255          },
+        {.rawInput = (255 * 1 / 2), .expectedOutput = 255},
+        {.rawInput = (255 * 3 / 4), .expectedOutput = 255},
+        {.rawInput = (255 * 7 / 8), .expectedOutput = 255},
     };
 
     for (const auto& testValue : kTestValues)
@@ -229,13 +229,13 @@ namespace XidiTest
       uint8_t rawInput;
       uint8_t expectedOutput;
     } kTestValues[] = {
-        {.rawInput = 0,             .expectedOutput = 0            },
-        {.rawInput = 255,           .expectedOutput = 255          },
-        {.rawInput = (255 * 1 / 8), .expectedOutput = 0            },
-        {.rawInput = (255 * 1 / 4), .expectedOutput = 0            },
+        {.rawInput = 0, .expectedOutput = 0},
+        {.rawInput = 255, .expectedOutput = 255},
+        {.rawInput = (255 * 1 / 8), .expectedOutput = 0},
+        {.rawInput = (255 * 1 / 4), .expectedOutput = 0},
         {.rawInput = (255 * 1 / 2), .expectedOutput = (255 * 1 / 2)},
-        {.rawInput = (255 * 3 / 4), .expectedOutput = 255          },
-        {.rawInput = (255 * 7 / 8), .expectedOutput = 255          },
+        {.rawInput = (255 * 3 / 4), .expectedOutput = 255},
+        {.rawInput = (255 * 7 / 8), .expectedOutput = 255},
     };
 
     for (const auto& testValue : kTestValues)
@@ -257,9 +257,8 @@ namespace XidiTest
       bool expectedIsPressed;
     } kTestValues[] = {
         {.rawInput = -32768, .expectedIsPressed = false},
-        {.rawInput = 0,      .expectedIsPressed = false},
-        {.rawInput = 32767,  .expectedIsPressed = true }
-    };
+        {.rawInput = 0, .expectedIsPressed = false},
+        {.rawInput = 32767, .expectedIsPressed = true}};
 
     for (const auto& testValue : kTestValues)
     {
@@ -278,10 +277,9 @@ namespace XidiTest
       int16_t rawInput;
       bool expectedIsPressed;
     } kTestValues[] = {
-        {.rawInput = -32768, .expectedIsPressed = true },
-        {.rawInput = 0,      .expectedIsPressed = false},
-        {.rawInput = 32767,  .expectedIsPressed = false}
-    };
+        {.rawInput = -32768, .expectedIsPressed = true},
+        {.rawInput = 0, .expectedIsPressed = false},
+        {.rawInput = 32767, .expectedIsPressed = false}};
 
     for (const auto& testValue : kTestValues)
     {
@@ -300,10 +298,9 @@ namespace XidiTest
       int16_t rawInput;
       bool expectedIsPressed;
     } kTestValues[] = {
-        {.rawInput = -32768, .expectedIsPressed = true },
-        {.rawInput = 0,      .expectedIsPressed = false},
-        {.rawInput = 32767,  .expectedIsPressed = true }
-    };
+        {.rawInput = -32768, .expectedIsPressed = true},
+        {.rawInput = 0, .expectedIsPressed = false},
+        {.rawInput = 32767, .expectedIsPressed = true}};
 
     for (const auto& testValue : kTestValues)
     {
@@ -322,9 +319,7 @@ namespace XidiTest
       uint8_t rawInput;
       bool expectedIsPressed;
     } kTestValues[] = {
-        {.rawInput = 0,   .expectedIsPressed = false},
-        {.rawInput = 255, .expectedIsPressed = true }
-    };
+        {.rawInput = 0, .expectedIsPressed = false}, {.rawInput = 255, .expectedIsPressed = true}};
 
     for (const auto& testValue : kTestValues)
     {
@@ -340,16 +335,15 @@ namespace XidiTest
   {
     constexpr double kAmountFraction = 1.0;
     constexpr SAnalogStickCoordinates kTestValues[] = {
-        {.x = 0,      .y = 0     },
-        {.x = 32767,  .y = 0     },
-        {.x = -32767, .y = 0     },
-        {.x = 0,      .y = 32767 },
-        {.x = 0,      .y = -32767},
-        {.x = 100,    .y = 0     },
-        {.x = -100,   .y = 0     },
-        {.x = 0,      .y = 100   },
-        {.x = 0,      .y = -100  }
-    };
+        {.x = 0, .y = 0},
+        {.x = 32767, .y = 0},
+        {.x = -32767, .y = 0},
+        {.x = 0, .y = 32767},
+        {.x = 0, .y = -32767},
+        {.x = 100, .y = 0},
+        {.x = -100, .y = 0},
+        {.x = 0, .y = 100},
+        {.x = 0, .y = -100}};
 
     for (const auto& testValue : kTestValues)
     {
@@ -364,10 +358,7 @@ namespace XidiTest
   {
     constexpr double kAmountFraction = 0.0;
     constexpr SAnalogStickCoordinates kTestValues[] = {
-        {.x = 0,     .y = 0   },
-        {.x = 100,   .y = 4199},
-        {.x = -5000, .y = 22  }
-    };
+        {.x = 0, .y = 0}, {.x = 100, .y = 4199}, {.x = -5000, .y = 22}};
 
     for (const auto& testValue : kTestValues)
     {
@@ -393,19 +384,19 @@ namespace XidiTest
     } kTestValues[] = {
         {.rawInputCircleCoords =
              {.x = kExtremeDiagonalCircleCoord, .y = kExtremeDiagonalCircleCoord},
-         .expectedOutputSquareCoords = {.x = 32767, .y = 32767}  },
+         .expectedOutputSquareCoords = {.x = 32767, .y = 32767}},
         {.rawInputCircleCoords =
              {.x = kExtremeDiagonalCircleCoord, .y = -kExtremeDiagonalCircleCoord},
-         .expectedOutputSquareCoords = {.x = 32767, .y = -32767} },
+         .expectedOutputSquareCoords = {.x = 32767, .y = -32767}},
         {.rawInputCircleCoords =
              {.x = -kExtremeDiagonalCircleCoord, .y = kExtremeDiagonalCircleCoord},
-         .expectedOutputSquareCoords = {.x = -32767, .y = 32767} },
+         .expectedOutputSquareCoords = {.x = -32767, .y = 32767}},
         {.rawInputCircleCoords =
              {.x = -kExtremeDiagonalCircleCoord, .y = -kExtremeDiagonalCircleCoord},
          .expectedOutputSquareCoords = {.x = -32767, .y = -32767}},
         {.rawInputCircleCoords =
              {.x = kExtremeDiagonalCircleCoord / 2, .y = kExtremeDiagonalCircleCoord / 2},
-         .expectedOutputSquareCoords = {.x = 16383, .y = 16383}  },
+         .expectedOutputSquareCoords = {.x = 16383, .y = 16383}},
     };
 
     for (const auto& testValue : kTestValues)
@@ -437,13 +428,13 @@ namespace XidiTest
     } kTestValues[] = {
         {.rawInputCircleCoords =
              {.x = kExtremeDiagonalCircleCoord, .y = kExtremeDiagonalCircleCoord},
-         .expectedOutputSquareCoords = {.x = 32767, .y = 32767}  },
+         .expectedOutputSquareCoords = {.x = 32767, .y = 32767}},
         {.rawInputCircleCoords =
              {.x = kExtremeDiagonalCircleCoord, .y = -kExtremeDiagonalCircleCoord},
-         .expectedOutputSquareCoords = {.x = 32767, .y = -32767} },
+         .expectedOutputSquareCoords = {.x = 32767, .y = -32767}},
         {.rawInputCircleCoords =
              {.x = -kExtremeDiagonalCircleCoord, .y = kExtremeDiagonalCircleCoord},
-         .expectedOutputSquareCoords = {.x = -32767, .y = 32767} },
+         .expectedOutputSquareCoords = {.x = -32767, .y = 32767}},
         {.rawInputCircleCoords =
              {.x = -kExtremeDiagonalCircleCoord, .y = -kExtremeDiagonalCircleCoord},
          .expectedOutputSquareCoords = {.x = -32767, .y = -32767}},

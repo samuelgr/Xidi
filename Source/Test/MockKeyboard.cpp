@@ -10,11 +10,11 @@
  *   testing-specific functions.
  **************************************************************************************************/
 
-#include "TestCase.h"
-
 #include "MockKeyboard.h"
 
 #include <mutex>
+
+#include <Infra/Test/TestCase.h>
 
 #include "ControllerTypes.h"
 

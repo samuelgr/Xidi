@@ -9,7 +9,7 @@
  *   Unit tests for force feedback effects that produce a force that follows a periodic waveform.
  **************************************************************************************************/
 
-#include "TestCase.h"
+#include <Infra/Test/TestCase.h>
 
 #include "ForceFeedbackEffect.h"
 #include "ForceFeedbackMath.h"
@@ -162,16 +162,15 @@ namespace XidiTest
   TEST_CASE(PeriodicEffect_WaveformAmplitude_SawtoothDown)
   {
     constexpr SWaveformAmplitudeTestData kTestData[] = {
-        {.inputPhase = 0,     .expectedWaveformAmplitude = 1.0  },
-        {.inputPhase = 4500,  .expectedWaveformAmplitude = 0.75 },
-        {.inputPhase = 9000,  .expectedWaveformAmplitude = 0.5  },
-        {.inputPhase = 13500, .expectedWaveformAmplitude = 0.25 },
-        {.inputPhase = 18000, .expectedWaveformAmplitude = 0.0  },
+        {.inputPhase = 0, .expectedWaveformAmplitude = 1.0},
+        {.inputPhase = 4500, .expectedWaveformAmplitude = 0.75},
+        {.inputPhase = 9000, .expectedWaveformAmplitude = 0.5},
+        {.inputPhase = 13500, .expectedWaveformAmplitude = 0.25},
+        {.inputPhase = 18000, .expectedWaveformAmplitude = 0.0},
         {.inputPhase = 22500, .expectedWaveformAmplitude = -0.25},
-        {.inputPhase = 27000, .expectedWaveformAmplitude = -0.5 },
+        {.inputPhase = 27000, .expectedWaveformAmplitude = -0.5},
         {.inputPhase = 31500, .expectedWaveformAmplitude = -0.75},
-        {.inputPhase = 36000, .expectedWaveformAmplitude = -1.0 }
-    };
+        {.inputPhase = 36000, .expectedWaveformAmplitude = -1.0}};
 
     SawtoothDownEffect effect;
 
@@ -188,16 +187,15 @@ namespace XidiTest
   TEST_CASE(PeriodicEffect_WaveformAmplitude_SawtoothUp)
   {
     constexpr SWaveformAmplitudeTestData kTestData[] = {
-        {.inputPhase = 0,     .expectedWaveformAmplitude = -1.0 },
-        {.inputPhase = 4500,  .expectedWaveformAmplitude = -0.75},
-        {.inputPhase = 9000,  .expectedWaveformAmplitude = -0.5 },
+        {.inputPhase = 0, .expectedWaveformAmplitude = -1.0},
+        {.inputPhase = 4500, .expectedWaveformAmplitude = -0.75},
+        {.inputPhase = 9000, .expectedWaveformAmplitude = -0.5},
         {.inputPhase = 13500, .expectedWaveformAmplitude = -0.25},
-        {.inputPhase = 18000, .expectedWaveformAmplitude = 0.0  },
-        {.inputPhase = 22500, .expectedWaveformAmplitude = 0.25 },
-        {.inputPhase = 27000, .expectedWaveformAmplitude = 0.5  },
-        {.inputPhase = 31500, .expectedWaveformAmplitude = 0.75 },
-        {.inputPhase = 36000, .expectedWaveformAmplitude = 1.0  }
-    };
+        {.inputPhase = 18000, .expectedWaveformAmplitude = 0.0},
+        {.inputPhase = 22500, .expectedWaveformAmplitude = 0.25},
+        {.inputPhase = 27000, .expectedWaveformAmplitude = 0.5},
+        {.inputPhase = 31500, .expectedWaveformAmplitude = 0.75},
+        {.inputPhase = 36000, .expectedWaveformAmplitude = 1.0}};
 
     SawtoothUpEffect effect;
 
@@ -216,16 +214,15 @@ namespace XidiTest
     const TEffectValue kSin45 = TrigonometrySine(4500);
 
     const SWaveformAmplitudeTestData kTestData[] = {
-        {.inputPhase = 0,     .expectedWaveformAmplitude = 0      },
-        {.inputPhase = 4500,  .expectedWaveformAmplitude = kSin45 },
-        {.inputPhase = 9000,  .expectedWaveformAmplitude = 1.0    },
-        {.inputPhase = 13500, .expectedWaveformAmplitude = kSin45 },
-        {.inputPhase = 18000, .expectedWaveformAmplitude = 0      },
+        {.inputPhase = 0, .expectedWaveformAmplitude = 0},
+        {.inputPhase = 4500, .expectedWaveformAmplitude = kSin45},
+        {.inputPhase = 9000, .expectedWaveformAmplitude = 1.0},
+        {.inputPhase = 13500, .expectedWaveformAmplitude = kSin45},
+        {.inputPhase = 18000, .expectedWaveformAmplitude = 0},
         {.inputPhase = 22500, .expectedWaveformAmplitude = -kSin45},
-        {.inputPhase = 27000, .expectedWaveformAmplitude = -1.0   },
+        {.inputPhase = 27000, .expectedWaveformAmplitude = -1.0},
         {.inputPhase = 31500, .expectedWaveformAmplitude = -kSin45},
-        {.inputPhase = 36000, .expectedWaveformAmplitude = 0      }
-    };
+        {.inputPhase = 36000, .expectedWaveformAmplitude = 0}};
 
     SineWaveEffect effect;
 
@@ -242,10 +239,10 @@ namespace XidiTest
   TEST_CASE(PeriodicEffect_WaveformAmplitude_SquareWave)
   {
     constexpr SWaveformAmplitudeTestData kTestData[] = {
-        {.inputPhase = 0,     .expectedWaveformAmplitude = 1.0 },
-        {.inputPhase = 4500,  .expectedWaveformAmplitude = 1.0 },
-        {.inputPhase = 9000,  .expectedWaveformAmplitude = 1.0 },
-        {.inputPhase = 13500, .expectedWaveformAmplitude = 1.0 },
+        {.inputPhase = 0, .expectedWaveformAmplitude = 1.0},
+        {.inputPhase = 4500, .expectedWaveformAmplitude = 1.0},
+        {.inputPhase = 9000, .expectedWaveformAmplitude = 1.0},
+        {.inputPhase = 13500, .expectedWaveformAmplitude = 1.0},
         {.inputPhase = 18000, .expectedWaveformAmplitude = -1.0},
         {.inputPhase = 22500, .expectedWaveformAmplitude = -1.0},
         {.inputPhase = 27000, .expectedWaveformAmplitude = -1.0},
@@ -268,15 +265,15 @@ namespace XidiTest
   TEST_CASE(PeriodicEffect_WaveformAmplitude_TriangleWave)
   {
     constexpr SWaveformAmplitudeTestData kTestData[] = {
-        {.inputPhase = 0,     .expectedWaveformAmplitude = 1.0 },
-        {.inputPhase = 4500,  .expectedWaveformAmplitude = 0.5 },
-        {.inputPhase = 9000,  .expectedWaveformAmplitude = 0.0 },
+        {.inputPhase = 0, .expectedWaveformAmplitude = 1.0},
+        {.inputPhase = 4500, .expectedWaveformAmplitude = 0.5},
+        {.inputPhase = 9000, .expectedWaveformAmplitude = 0.0},
         {.inputPhase = 13500, .expectedWaveformAmplitude = -0.5},
         {.inputPhase = 18000, .expectedWaveformAmplitude = -1.0},
         {.inputPhase = 22500, .expectedWaveformAmplitude = -0.5},
-        {.inputPhase = 27000, .expectedWaveformAmplitude = 0.0 },
-        {.inputPhase = 31500, .expectedWaveformAmplitude = 0.5 },
-        {.inputPhase = 36000, .expectedWaveformAmplitude = 1.0 },
+        {.inputPhase = 27000, .expectedWaveformAmplitude = 0.0},
+        {.inputPhase = 31500, .expectedWaveformAmplitude = 0.5},
+        {.inputPhase = 36000, .expectedWaveformAmplitude = 1.0},
     };
 
     TriangleWaveEffect effect;

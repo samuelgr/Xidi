@@ -523,7 +523,7 @@ namespace Xidi
                return std::make_unique<PeriodicDirectInputEffect<charMode>>(
                    associatedDevice, Controller::ForceFeedback::SawtoothDownEffect(), rguidEffect);
              }},
-    };
+        };
 
     auto forceFeedbackEffectObjectCreatorIt = kForceFeedbackEffectObjectCreators.find(rguidEffect);
     if (kForceFeedbackEffectObjectCreators.cend() == forceFeedbackEffectObjectCreatorIt)

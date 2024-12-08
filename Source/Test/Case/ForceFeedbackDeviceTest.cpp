@@ -9,13 +9,13 @@
  *   Unit tests for force feedback device objects.
  **************************************************************************************************/
 
-#include "TestCase.h"
-
 #include "ForceFeedbackDevice.h"
 
 #include <cstdint>
 #include <limits>
 #include <optional>
+
+#include <Infra/Test/TestCase.h>
 
 #include "ForceFeedbackTypes.h"
 #include "MockForceFeedbackEffect.h"

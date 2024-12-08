@@ -9,11 +9,11 @@
  *   Unit tests for controller element mappers that contribute to a virtual keyboard key.
  **************************************************************************************************/
 
-#include "TestCase.h"
-
 #include <cstdint>
 #include <memory>
 #include <optional>
+
+#include <Infra/Test/TestCase.h>
 
 #include "ElementMapper.h"
 #include "Keyboard.h"

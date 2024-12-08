@@ -9,7 +9,7 @@
  *   Unit tests for force feedback effects that produce a force of constant magnitude.
  **************************************************************************************************/
 
-#include "TestCase.h"
+#include <Infra/Test/TestCase.h>
 
 #include "ForceFeedbackEffect.h"
 #include "ForceFeedbackParameters.h"

@@ -5,20 +5,13 @@
  * Authored by Samuel Grossman
  * Copyright (c) 2016-2024
  ***********************************************************************************************//**
- * @file TestCase.cpp
- *   Implementation of the test case interface.
+ * @file TestMain.cpp
+ *   Entry point for the test executable.
  **************************************************************************************************/
 
-#include "TestCase.h"
+#include <Infra/Test/Harness.h>
 
-#include <string_view>
-
-#include "Harness.h"
-
-namespace XidiTest
+int wmain(int argc, const wchar_t* argv[])
 {
-  ITestCase::ITestCase(std::wstring_view name)
-  {
-    Harness::RegisterTestCase(this, name);
-  }
-} // namespace XidiTest
+  return Infra::Test::Harness::RunTestsWithMatchingPrefix(((argc > 1) ? argv[1] : L""));
+}

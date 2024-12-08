@@ -136,7 +136,6 @@
     <ClInclude Include="Include\Xidi\Internal\StateChangeEventBuffer.h" />
     <ClInclude Include="Include\Xidi\Internal\Strings.h" />
     <ClInclude Include="Include\Xidi\Internal\TemporaryBuffer.h" />
-    <ClInclude Include="Include\Xidi\Test\Harness.h" />
     <ClInclude Include="Include\Xidi\Test\MockDirectInput.h" />
     <ClInclude Include="Include\Xidi\Test\MockDirectInputDevice.h" />
     <ClInclude Include="Include\Xidi\Test\MockElementMapper.h" />
@@ -144,8 +143,6 @@
     <ClInclude Include="Include\Xidi\Test\MockKeyboard.h" />
     <ClInclude Include="Include\Xidi\Test\MockMouse.h" />
     <ClInclude Include="Include\Xidi\Test\MockPhysicalController.h" />
-    <ClInclude Include="Include\Xidi\Test\TestCase.h" />
-    <ClInclude Include="Include\Xidi\Test\Utilities.h" />
     <ClInclude Include="Include\Xidi\Internal\VirtualController.h" />
     <ClInclude Include="Include\Xidi\Internal\VirtualDirectInputDevice.h" />
     <ClInclude Include="Include\Xidi\Internal\VirtualDirectInputEffect.h" />
@@ -207,9 +204,7 @@
     <ClCompile Include="Source\Test\MockKeyboard.cpp" />
     <ClCompile Include="Source\Test\MockMouse.cpp" />
     <ClCompile Include="Source\Test\MockPhysicalController.cpp" />
-    <ClCompile Include="Source\Test\Harness.cpp" />
-    <ClCompile Include="Source\Test\TestCase.cpp" />
-    <ClCompile Include="Source\Test\Utilities.cpp" />
+    <ClCompile Include="Source\Test\TestMain.cpp" />
     <ClCompile Include="Source\VirtualController.cpp" />
     <ClCompile Include="Source\VirtualDirectInputDevice.cpp" />
     <ClCompile Include="Source\VirtualDirectInputEffect.cpp" />
@@ -218,6 +213,11 @@
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="Resources\Xidi.rc" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="Modules\Infra\TestInfra.vcxproj">
+      <Project>{6abf224b-c252-4876-b2e1-8ca88e93610a}</Project>
+    </ProjectReference>
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

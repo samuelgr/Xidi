@@ -9,8 +9,6 @@
  *   Unit tests for entire controller layout mapper objects.
  **************************************************************************************************/
 
-#include "TestCase.h"
-
 #include "Mapper.h"
 
 #include <cstdint>
@@ -19,6 +17,8 @@
 #include <memory>
 #include <unordered_set>
 #include <utility>
+
+#include <Infra/Test/TestCase.h>
 
 #include "ApiBitSet.h"
 #include "ApiWindows.h"
@@ -234,16 +234,15 @@ namespace XidiTest
       Mapper mapper;
       uint32_t opaqueControllerIdentifier;
     } kTestRecords[] = {
-        {.mapper = kFullyMockedMapper, .opaqueControllerIdentifier = 0     },
-        {.mapper = kFullyMockedMapper, .opaqueControllerIdentifier = 1     },
-        {.mapper = kFullyMockedMapper, .opaqueControllerIdentifier = 2     },
-        {.mapper = kFullyMockedMapper, .opaqueControllerIdentifier = 3     },
-        {.mapper = kFullyMockedMapper, .opaqueControllerIdentifier = 4     },
-        {.mapper = kFullyMockedMapper, .opaqueControllerIdentifier = 100   },
-        {.mapper = kFullyMockedMapper, .opaqueControllerIdentifier = 2000  },
-        {.mapper = kFullyMockedMapper, .opaqueControllerIdentifier = 3033  },
-        {.mapper = kFullyMockedMapper, .opaqueControllerIdentifier = 456789}
-    };
+        {.mapper = kFullyMockedMapper, .opaqueControllerIdentifier = 0},
+        {.mapper = kFullyMockedMapper, .opaqueControllerIdentifier = 1},
+        {.mapper = kFullyMockedMapper, .opaqueControllerIdentifier = 2},
+        {.mapper = kFullyMockedMapper, .opaqueControllerIdentifier = 3},
+        {.mapper = kFullyMockedMapper, .opaqueControllerIdentifier = 4},
+        {.mapper = kFullyMockedMapper, .opaqueControllerIdentifier = 100},
+        {.mapper = kFullyMockedMapper, .opaqueControllerIdentifier = 2000},
+        {.mapper = kFullyMockedMapper, .opaqueControllerIdentifier = 3033},
+        {.mapper = kFullyMockedMapper, .opaqueControllerIdentifier = 456789}};
 
     std::unordered_set<uint32_t> seenSourceIdentifiers;
 
@@ -290,9 +289,7 @@ namespace XidiTest
         {.stickLeftX = std::make_unique<MockElementMapper>(
              MockElementMapper::EExpectedSource::Analog, kTestValue, &numContributions)});
     controllerMapper.MapStatePhysicalToVirtual(
-        {
-            .deviceStatus = EPhysicalDeviceStatus::Ok, .stick = {kTestValue, 0, 0, 0}
-    },
+        {.deviceStatus = EPhysicalDeviceStatus::Ok, .stick = {kTestValue, 0, 0, 0}},
         kOpaqueSourceIdentifier);
 
     TEST_ASSERT(1 == numContributions);
@@ -309,9 +306,7 @@ namespace XidiTest
         {.stickLeftY = std::make_unique<MockElementMapper>(
              MockElementMapper::EExpectedSource::Analog, kInvertedTestValue, &numContributions)});
     controllerMapper.MapStatePhysicalToVirtual(
-        {
-            .deviceStatus = EPhysicalDeviceStatus::Ok, .stick = {0, kTestValue, 0, 0}
-    },
+        {.deviceStatus = EPhysicalDeviceStatus::Ok, .stick = {0, kTestValue, 0, 0}},
         kOpaqueSourceIdentifier);
 
     TEST_ASSERT(1 == numContributions);
@@ -327,9 +322,7 @@ namespace XidiTest
         {.stickRightX = std::make_unique<MockElementMapper>(
              MockElementMapper::EExpectedSource::Analog, kTestValue, &numContributions)});
     controllerMapper.MapStatePhysicalToVirtual(
-        {
-            .deviceStatus = EPhysicalDeviceStatus::Ok, .stick = {0, 0, kTestValue, 0}
-    },
+        {.deviceStatus = EPhysicalDeviceStatus::Ok, .stick = {0, 0, kTestValue, 0}},
         kOpaqueSourceIdentifier);
 
     TEST_ASSERT(1 == numContributions);
@@ -346,9 +339,7 @@ namespace XidiTest
         {.stickRightY = std::make_unique<MockElementMapper>(
              MockElementMapper::EExpectedSource::Analog, kInvertedTestValue, &numContributions)});
     controllerMapper.MapStatePhysicalToVirtual(
-        {
-            .deviceStatus = EPhysicalDeviceStatus::Ok, .stick = {0, 0, 0, kTestValue}
-    },
+        {.deviceStatus = EPhysicalDeviceStatus::Ok, .stick = {0, 0, 0, kTestValue}},
         kOpaqueSourceIdentifier);
 
     TEST_ASSERT(1 == numContributions);
@@ -431,9 +422,7 @@ namespace XidiTest
         {.triggerLT = std::make_unique<MockElementMapper>(
              MockElementMapper::EExpectedSource::Trigger, kTestValue, &numContributions)});
     controllerMapper.MapStatePhysicalToVirtual(
-        {
-            .deviceStatus = EPhysicalDeviceStatus::Ok, .trigger = {kTestValue, 0}
-    },
+        {.deviceStatus = EPhysicalDeviceStatus::Ok, .trigger = {kTestValue, 0}},
         kOpaqueSourceIdentifier);
 
     TEST_ASSERT(1 == numContributions);
@@ -449,9 +438,7 @@ namespace XidiTest
         {.triggerRT = std::make_unique<MockElementMapper>(
              MockElementMapper::EExpectedSource::Trigger, kTestValue, &numContributions)});
     controllerMapper.MapStatePhysicalToVirtual(
-        {
-            .deviceStatus = EPhysicalDeviceStatus::Ok, .trigger = {0, kTestValue}
-    },
+        {.deviceStatus = EPhysicalDeviceStatus::Ok, .trigger = {0, kTestValue}},
         kOpaqueSourceIdentifier);
 
     TEST_ASSERT(1 == numContributions);
@@ -684,12 +671,11 @@ namespace XidiTest
   // Virtual controller should have only axes based on the axes to which the element mappers write.
   TEST_CASE(Mapper_Capabilities_MultipleAxes)
   {
-    constexpr SCapabilities expectedCapabilities = MakeExpectedCapabilities({
-        .axisCapabilities = {{.type = EAxis::Y}, {.type = EAxis::RotX}},
-        .numAxes = 2,
-        .numButtons = 0,
-        .hasPov = false
-    });
+    constexpr SCapabilities expectedCapabilities = MakeExpectedCapabilities(
+        {.axisCapabilities = {{.type = EAxis::Y}, {.type = EAxis::RotX}},
+         .numAxes = 2,
+         .numButtons = 0,
+         .hasPov = false});
 
     const Mapper mapper(
         {.stickRightX = std::make_unique<AxisMapper>(EAxis::Y),
@@ -770,8 +756,8 @@ namespace XidiTest
     constexpr Mapper::SForceFeedbackActuatorMap kTestActuatorMap = {
         .rightMotor =
             {.isPresent = true,
-                         .mode = EActuatorMode::SingleAxis,
-                         .singleAxis = {.axis = kTestAxis, .direction = EAxisDirection::Negative}},
+             .mode = EActuatorMode::SingleAxis,
+             .singleAxis = {.axis = kTestAxis, .direction = EAxisDirection::Negative}},
     };
 
     const Mapper mapper({}, kTestActuatorMap);
@@ -787,20 +773,19 @@ namespace XidiTest
     constexpr EAxis kTestAxisFirst = EAxis::Z;
     constexpr EAxis kTestAxisSecond = EAxis::RotZ;
 
-    constexpr SCapabilities expectedCapabilities = MakeExpectedCapabilities({
-        .axisCapabilities =
-            {{.type = kTestAxisFirst, .supportsForceFeedback = true},
-                               {.type = kTestAxisSecond, .supportsForceFeedback = true}},
-        .numAxes = 2,
-        .numButtons = 0,
-        .hasPov = false
-    });
+    constexpr SCapabilities expectedCapabilities = MakeExpectedCapabilities(
+        {.axisCapabilities =
+             {{.type = kTestAxisFirst, .supportsForceFeedback = true},
+              {.type = kTestAxisSecond, .supportsForceFeedback = true}},
+         .numAxes = 2,
+         .numButtons = 0,
+         .hasPov = false});
 
     constexpr Mapper::SForceFeedbackActuatorMap kTestActuatorMap = {
         .rightMotor =
             {.isPresent = true,
-                         .mode = EActuatorMode::MagnitudeProjection,
-                         .magnitudeProjection = {.axisFirst = kTestAxisFirst, .axisSecond = kTestAxisSecond}},
+             .mode = EActuatorMode::MagnitudeProjection,
+             .magnitudeProjection = {.axisFirst = kTestAxisFirst, .axisSecond = kTestAxisSecond}},
     };
 
     const Mapper mapper({}, kTestActuatorMap);
@@ -811,16 +796,15 @@ namespace XidiTest
   // StandardGamepad, a known and documented mapper.
   TEST_CASE(Mapper_Capabilities_StandardGamepad)
   {
-    constexpr SCapabilities expectedCapabilities = MakeExpectedCapabilities({
-        .axisCapabilities =
-            {{.type = EAxis::X, .supportsForceFeedback = true},
-                               {.type = EAxis::Y, .supportsForceFeedback = true},
-                               {.type = EAxis::Z},
-                               {.type = EAxis::RotZ}},
-        .numAxes = 4,
-        .numButtons = 12,
-        .hasPov = true
-    });
+    constexpr SCapabilities expectedCapabilities = MakeExpectedCapabilities(
+        {.axisCapabilities =
+             {{.type = EAxis::X, .supportsForceFeedback = true},
+              {.type = EAxis::Y, .supportsForceFeedback = true},
+              {.type = EAxis::Z},
+              {.type = EAxis::RotZ}},
+         .numAxes = 4,
+         .numButtons = 12,
+         .hasPov = true});
 
     const Mapper* const mapper = Mapper::GetByName(L"StandardGamepad");
     TEST_ASSERT(nullptr != mapper);
@@ -832,16 +816,15 @@ namespace XidiTest
   // DigitalGamepad, a known and documented mapper.
   TEST_CASE(Mapper_Capabilities_DigitalGamepad)
   {
-    constexpr SCapabilities expectedCapabilities = MakeExpectedCapabilities({
-        .axisCapabilities =
-            {{.type = EAxis::X, .supportsForceFeedback = true},
-                               {.type = EAxis::Y, .supportsForceFeedback = true},
-                               {.type = EAxis::Z},
-                               {.type = EAxis::RotZ}},
-        .numAxes = 4,
-        .numButtons = 12,
-        .hasPov = false
-    });
+    constexpr SCapabilities expectedCapabilities = MakeExpectedCapabilities(
+        {.axisCapabilities =
+             {{.type = EAxis::X, .supportsForceFeedback = true},
+              {.type = EAxis::Y, .supportsForceFeedback = true},
+              {.type = EAxis::Z},
+              {.type = EAxis::RotZ}},
+         .numAxes = 4,
+         .numButtons = 12,
+         .hasPov = false});
 
     const Mapper* const mapper = Mapper::GetByName(L"DigitalGamepad");
     TEST_ASSERT(nullptr != mapper);
@@ -853,18 +836,17 @@ namespace XidiTest
   // ExtendedGamepad, a known and documented mapper.
   TEST_CASE(Mapper_Capabilities_ExtendedGamepad)
   {
-    constexpr SCapabilities expectedCapabilities = MakeExpectedCapabilities({
-        .axisCapabilities =
-            {{.type = EAxis::X, .supportsForceFeedback = true},
-                               {.type = EAxis::Y, .supportsForceFeedback = true},
-                               {.type = EAxis::Z},
-                               {.type = EAxis::RotX},
-                               {.type = EAxis::RotY},
-                               {.type = EAxis::RotZ}},
-        .numAxes = 6,
-        .numButtons = 10,
-        .hasPov = true
-    });
+    constexpr SCapabilities expectedCapabilities = MakeExpectedCapabilities(
+        {.axisCapabilities =
+             {{.type = EAxis::X, .supportsForceFeedback = true},
+              {.type = EAxis::Y, .supportsForceFeedback = true},
+              {.type = EAxis::Z},
+              {.type = EAxis::RotX},
+              {.type = EAxis::RotY},
+              {.type = EAxis::RotZ}},
+         .numAxes = 6,
+         .numButtons = 10,
+         .hasPov = true});
 
     const Mapper* const mapper = Mapper::GetByName(L"ExtendedGamepad");
     TEST_ASSERT(nullptr != mapper);
@@ -876,18 +858,17 @@ namespace XidiTest
   // XInputNative, a known and documented mapper.
   TEST_CASE(Mapper_Capabilities_XInputNative)
   {
-    constexpr SCapabilities expectedCapabilities = MakeExpectedCapabilities({
-        .axisCapabilities =
-            {{.type = EAxis::X, .supportsForceFeedback = true},
-                               {.type = EAxis::Y, .supportsForceFeedback = true},
-                               {.type = EAxis::Z},
-                               {.type = EAxis::RotX},
-                               {.type = EAxis::RotY},
-                               {.type = EAxis::RotZ}},
-        .numAxes = 6,
-        .numButtons = 10,
-        .hasPov = true
-    });
+    constexpr SCapabilities expectedCapabilities = MakeExpectedCapabilities(
+        {.axisCapabilities =
+             {{.type = EAxis::X, .supportsForceFeedback = true},
+              {.type = EAxis::Y, .supportsForceFeedback = true},
+              {.type = EAxis::Z},
+              {.type = EAxis::RotX},
+              {.type = EAxis::RotY},
+              {.type = EAxis::RotZ}},
+         .numAxes = 6,
+         .numButtons = 10,
+         .hasPov = true});
 
     const Mapper* const mapper = Mapper::GetByName(L"XInputNative");
     TEST_ASSERT(nullptr != mapper);
@@ -899,17 +880,16 @@ namespace XidiTest
   // XInputSharedTriggers, a known and documented mapper.
   TEST_CASE(Mapper_Capabilities_XInputSharedTriggers)
   {
-    constexpr SCapabilities expectedCapabilities = MakeExpectedCapabilities({
-        .axisCapabilities =
-            {{.type = EAxis::X, .supportsForceFeedback = true},
-                               {.type = EAxis::Y, .supportsForceFeedback = true},
-                               {.type = EAxis::Z},
-                               {.type = EAxis::RotX},
-                               {.type = EAxis::RotY}},
-        .numAxes = 5,
-        .numButtons = 10,
-        .hasPov = true
-    });
+    constexpr SCapabilities expectedCapabilities = MakeExpectedCapabilities(
+        {.axisCapabilities =
+             {{.type = EAxis::X, .supportsForceFeedback = true},
+              {.type = EAxis::Y, .supportsForceFeedback = true},
+              {.type = EAxis::Z},
+              {.type = EAxis::RotX},
+              {.type = EAxis::RotY}},
+         .numAxes = 5,
+         .numButtons = 10,
+         .hasPov = true});
 
     const Mapper* const mapper = Mapper::GetByName(L"XInputSharedTriggers");
     TEST_ASSERT(nullptr != mapper);
@@ -924,16 +904,15 @@ namespace XidiTest
   // The X and Y axes are removed.
   TEST_CASE(Mapper_Clone_StandardGamepad)
   {
-    constexpr SCapabilities expectedCapabilities = MakeExpectedCapabilities({
-        .axisCapabilities =
-            {{.type = EAxis::X, .supportsForceFeedback = true},
-                               {.type = EAxis::Y, .supportsForceFeedback = true},
-                               {.type = EAxis::Z},
-                               {.type = EAxis::RotZ}},
-        .numAxes = 4,
-        .numButtons = 12,
-        .hasPov = true
-    });
+    constexpr SCapabilities expectedCapabilities = MakeExpectedCapabilities(
+        {.axisCapabilities =
+             {{.type = EAxis::X, .supportsForceFeedback = true},
+              {.type = EAxis::Y, .supportsForceFeedback = true},
+              {.type = EAxis::Z},
+              {.type = EAxis::RotZ}},
+         .numAxes = 4,
+         .numButtons = 12,
+         .hasPov = true});
 
     Mapper::UElementMap clonedElementMap = Mapper::GetByName(L"StandardGamepad")->CloneElementMap();
     Mapper::UForceFeedbackActuatorMap clonedForceFeedbackActuatorMap =
@@ -950,14 +929,13 @@ namespace XidiTest
   // The Z and RotZ axes are removed.
   TEST_CASE(Mapper_Clone_DigitalGamepad)
   {
-    constexpr SCapabilities expectedCapabilities = MakeExpectedCapabilities({
-        .axisCapabilities =
-            {{.type = EAxis::X, .supportsForceFeedback = true},
-                               {.type = EAxis::Y, .supportsForceFeedback = true}},
-        .numAxes = 2,
-        .numButtons = 12,
-        .hasPov = false
-    });
+    constexpr SCapabilities expectedCapabilities = MakeExpectedCapabilities(
+        {.axisCapabilities =
+             {{.type = EAxis::X, .supportsForceFeedback = true},
+              {.type = EAxis::Y, .supportsForceFeedback = true}},
+         .numAxes = 2,
+         .numButtons = 12,
+         .hasPov = false});
 
     Mapper::UElementMap clonedElementMap = Mapper::GetByName(L"DigitalGamepad")->CloneElementMap();
     Mapper::UForceFeedbackActuatorMap clonedForceFeedbackActuatorMap =
@@ -974,16 +952,15 @@ namespace XidiTest
   // The RotX and RotY axes are removed.
   TEST_CASE(Mapper_Clone_ExtendedGamepad)
   {
-    constexpr SCapabilities expectedCapabilities = MakeExpectedCapabilities({
-        .axisCapabilities =
-            {{.type = EAxis::X, .supportsForceFeedback = true},
-                               {.type = EAxis::Y, .supportsForceFeedback = true},
-                               {.type = EAxis::Z},
-                               {.type = EAxis::RotZ}},
-        .numAxes = 4,
-        .numButtons = 10,
-        .hasPov = true
-    });
+    constexpr SCapabilities expectedCapabilities = MakeExpectedCapabilities(
+        {.axisCapabilities =
+             {{.type = EAxis::X, .supportsForceFeedback = true},
+              {.type = EAxis::Y, .supportsForceFeedback = true},
+              {.type = EAxis::Z},
+              {.type = EAxis::RotZ}},
+         .numAxes = 4,
+         .numButtons = 10,
+         .hasPov = true});
 
     Mapper::UElementMap clonedElementMap = Mapper::GetByName(L"ExtendedGamepad")->CloneElementMap();
     Mapper::UForceFeedbackActuatorMap clonedForceFeedbackActuatorMap =
@@ -1000,18 +977,17 @@ namespace XidiTest
   // The POV is removed.
   TEST_CASE(Mapper_Clone_XInputNative)
   {
-    constexpr SCapabilities expectedCapabilities = MakeExpectedCapabilities({
-        .axisCapabilities =
-            {{.type = EAxis::X, .supportsForceFeedback = true},
-                               {.type = EAxis::Y, .supportsForceFeedback = true},
-                               {.type = EAxis::Z},
-                               {.type = EAxis::RotX},
-                               {.type = EAxis::RotY},
-                               {.type = EAxis::RotZ}},
-        .numAxes = 6,
-        .numButtons = 10,
-        .hasPov = false
-    });
+    constexpr SCapabilities expectedCapabilities = MakeExpectedCapabilities(
+        {.axisCapabilities =
+             {{.type = EAxis::X, .supportsForceFeedback = true},
+              {.type = EAxis::Y, .supportsForceFeedback = true},
+              {.type = EAxis::Z},
+              {.type = EAxis::RotX},
+              {.type = EAxis::RotY},
+              {.type = EAxis::RotZ}},
+         .numAxes = 6,
+         .numButtons = 10,
+         .hasPov = false});
 
     Mapper::UElementMap clonedElementMap = Mapper::GetByName(L"XInputNative")->CloneElementMap();
     Mapper::UForceFeedbackActuatorMap clonedForceFeedbackActuatorMap =
@@ -1030,16 +1006,15 @@ namespace XidiTest
   // The Z axis is removed.
   TEST_CASE(Mapper_Clone_XInputSharedTriggers)
   {
-    constexpr SCapabilities expectedCapabilities = MakeExpectedCapabilities({
-        .axisCapabilities =
-            {{.type = EAxis::X, .supportsForceFeedback = true},
-                               {.type = EAxis::Y, .supportsForceFeedback = true},
-                               {.type = EAxis::RotX},
-                               {.type = EAxis::RotY}},
-        .numAxes = 4,
-        .numButtons = 10,
-        .hasPov = true
-    });
+    constexpr SCapabilities expectedCapabilities = MakeExpectedCapabilities(
+        {.axisCapabilities =
+             {{.type = EAxis::X, .supportsForceFeedback = true},
+              {.type = EAxis::Y, .supportsForceFeedback = true},
+              {.type = EAxis::RotX},
+              {.type = EAxis::RotY}},
+         .numAxes = 4,
+         .numButtons = 10,
+         .hasPov = true});
 
     Mapper::UElementMap clonedElementMap =
         Mapper::GetByName(L"XInputSharedTriggers")->CloneElementMap();
@@ -1071,12 +1046,10 @@ namespace XidiTest
     TEST_ASSERT(actualState == expectedState);
 
     actualState = mapper.MapStatePhysicalToVirtual(
-        {
-            .deviceStatus = EPhysicalDeviceStatus::Ok,
-            .stick = {16383, -16383, -16383, 16383},
-            .trigger = {128, 128},
-            .button = 32767
-    },
+        {.deviceStatus = EPhysicalDeviceStatus::Ok,
+         .stick = {16383, -16383, -16383, 16383},
+         .trigger = {128, 128},
+         .button = 32767},
         kOpaqueSourceIdentifier);
     TEST_ASSERT(actualState == expectedState);
   }
@@ -1101,13 +1074,12 @@ namespace XidiTest
          .stickRightY = std::make_unique<AxisMapper>(EAxis::X)});
 
     SState actualState = mapper.MapStatePhysicalToVirtual(
-        {
-            .deviceStatus = EPhysicalDeviceStatus::Ok,
-            .stick =
-                {kNonInvertedInputValue,
-                        kInvertedInputValue, kNonInvertedInputValue,
-                        kInvertedInputValue}
-    },
+        {.deviceStatus = EPhysicalDeviceStatus::Ok,
+         .stick =
+             {kNonInvertedInputValue,
+              kInvertedInputValue,
+              kNonInvertedInputValue,
+              kInvertedInputValue}},
         kOpaqueSourceIdentifier);
     TEST_ASSERT(actualState == expectedState);
   }
@@ -1132,13 +1104,12 @@ namespace XidiTest
          .stickRightY = std::make_unique<AxisMapper>(EAxis::RotX)});
 
     SState actualState = mapper.MapStatePhysicalToVirtual(
-        {
-            .deviceStatus = EPhysicalDeviceStatus::Ok,
-            .stick =
-                {kNonInvertedInputValue,
-                        kInvertedInputValue, kNonInvertedInputValue,
-                        kInvertedInputValue}
-    },
+        {.deviceStatus = EPhysicalDeviceStatus::Ok,
+         .stick =
+             {kNonInvertedInputValue,
+              kInvertedInputValue,
+              kNonInvertedInputValue,
+              kInvertedInputValue}},
         kOpaqueSourceIdentifier);
     TEST_ASSERT(actualState == expectedState);
   }
@@ -1167,13 +1138,12 @@ namespace XidiTest
          .stickRightY = std::make_unique<AxisMapper>(EAxis::RotY)});
 
     SState actualState = mapper.MapStatePhysicalToVirtual(
-        {
-            .deviceStatus = EPhysicalDeviceStatus::Ok,
-            .stick =
-                {kExtremeNegativeInputValue,
-                        kExtremeNegativeInputValue, kExtremeNegativeInputValue,
-                        kExtremeNegativeInputValue}
-    },
+        {.deviceStatus = EPhysicalDeviceStatus::Ok,
+         .stick =
+             {kExtremeNegativeInputValue,
+              kExtremeNegativeInputValue,
+              kExtremeNegativeInputValue,
+              kExtremeNegativeInputValue}},
         kOpaqueSourceIdentifier);
     TEST_ASSERT(actualState == expectedState);
   }
@@ -1188,18 +1158,17 @@ namespace XidiTest
     constexpr Mapper::SForceFeedbackActuatorMap kTestActuatorMap = {
         .leftMotor =
             {.isPresent = true,
-                        .mode = EActuatorMode::SingleAxis,
-                        .singleAxis = {.axis = EAxis::X, .direction = EAxisDirection::Both}},
+             .mode = EActuatorMode::SingleAxis,
+             .singleAxis = {.axis = EAxis::X, .direction = EAxisDirection::Both}},
         .rightMotor =
             {.isPresent = true,
-                        .mode = EActuatorMode::SingleAxis,
-                        .singleAxis = {.axis = EAxis::Y, .direction = EAxisDirection::Both}},
+             .mode = EActuatorMode::SingleAxis,
+             .singleAxis = {.axis = EAxis::Y, .direction = EAxisDirection::Both}},
         .leftImpulseTrigger = {.isPresent = false},
         .rightImpulseTrigger = {
-                        .isPresent = true,
-                        .mode = EActuatorMode::SingleAxis,
-                        .singleAxis = {.axis = EAxis::RotZ, .direction = EAxisDirection::Both}}
-    };
+            .isPresent = true,
+            .mode = EActuatorMode::SingleAxis,
+            .singleAxis = {.axis = EAxis::RotZ, .direction = EAxisDirection::Both}}};
 
     const SPhysicalActuatorComponents expectedActuatorComponents = {
         .leftMotor =
@@ -1228,15 +1197,14 @@ namespace XidiTest
     constexpr Mapper::SForceFeedbackActuatorMap kTestActuatorMap = {
         .leftMotor =
             {.isPresent = true,
-                        .mode = EActuatorMode::MagnitudeProjection,
-                        .magnitudeProjection = {.axisFirst = EAxis::X, .axisSecond = EAxis::Y}},
+             .mode = EActuatorMode::MagnitudeProjection,
+             .magnitudeProjection = {.axisFirst = EAxis::X, .axisSecond = EAxis::Y}},
         .rightMotor =
             {.isPresent = true,
-                        .mode = EActuatorMode::MagnitudeProjection,
-                        .magnitudeProjection = {.axisFirst = EAxis::Y, .axisSecond = EAxis::X}},
+             .mode = EActuatorMode::MagnitudeProjection,
+             .magnitudeProjection = {.axisFirst = EAxis::Y, .axisSecond = EAxis::X}},
         .leftImpulseTrigger = {.isPresent = false},
-        .rightImpulseTrigger = {.isPresent = false}
-    };
+        .rightImpulseTrigger = {.isPresent = false}};
 
     const SPhysicalActuatorComponents expectedActuatorComponents = {
         .leftMotor = ForceFeedbackActuatorValueVirtualToPhysical(
@@ -1261,18 +1229,17 @@ namespace XidiTest
     constexpr Mapper::SForceFeedbackActuatorMap kTestActuatorMap = {
         .leftMotor =
             {.isPresent = true,
-                        .mode = EActuatorMode::SingleAxis,
-                        .singleAxis = {.axis = EAxis::X, .direction = EAxisDirection::Positive}},
+             .mode = EActuatorMode::SingleAxis,
+             .singleAxis = {.axis = EAxis::X, .direction = EAxisDirection::Positive}},
         .rightMotor =
             {.isPresent = true,
-                        .mode = EActuatorMode::SingleAxis,
-                        .singleAxis = {.axis = EAxis::Y, .direction = EAxisDirection::Positive}},
+             .mode = EActuatorMode::SingleAxis,
+             .singleAxis = {.axis = EAxis::Y, .direction = EAxisDirection::Positive}},
         .leftImpulseTrigger = {.isPresent = false},
         .rightImpulseTrigger = {
-                        .isPresent = true,
-                        .mode = EActuatorMode::SingleAxis,
-                        .singleAxis = {.axis = EAxis::RotZ, .direction = EAxisDirection::Negative}}
-    };
+            .isPresent = true,
+            .mode = EActuatorMode::SingleAxis,
+            .singleAxis = {.axis = EAxis::RotZ, .direction = EAxisDirection::Negative}}};
 
     const SPhysicalActuatorComponents expectedActuatorComponents = {
         .leftMotor =
@@ -1308,10 +1275,9 @@ namespace XidiTest
 
     constexpr Mapper::SForceFeedbackActuatorMap kTestActuatorMap = {
         .leftMotor = {
-                      .isPresent = true,
-                      .mode = EActuatorMode::SingleAxis,
-                      .singleAxis = {.axis = EAxis::X, .direction = EAxisDirection::Both}}
-    };
+            .isPresent = true,
+            .mode = EActuatorMode::SingleAxis,
+            .singleAxis = {.axis = EAxis::X, .direction = EAxisDirection::Both}}};
 
     const Mapper mapper({}, kTestActuatorMap);
 
@@ -1333,10 +1299,9 @@ namespace XidiTest
 
     constexpr Mapper::SForceFeedbackActuatorMap kTestActuatorMap = {
         .leftMotor = {
-                      .isPresent = true,
-                      .mode = EActuatorMode::SingleAxis,
-                      .singleAxis = {.axis = EAxis::X, .direction = EAxisDirection::Both}}
-    };
+            .isPresent = true,
+            .mode = EActuatorMode::SingleAxis,
+            .singleAxis = {.axis = EAxis::X, .direction = EAxisDirection::Both}}};
 
     constexpr TEffectValue kTestGainValues[] = {10000, 7500, 5000, 2500, 1000};
 
@@ -1368,10 +1333,9 @@ namespace XidiTest
 
     constexpr Mapper::SForceFeedbackActuatorMap kTestActuatorMap = {
         .leftMotor = {
-                      .isPresent = true,
-                      .mode = EActuatorMode::SingleAxis,
-                      .singleAxis = {.axis = EAxis::X, .direction = EAxisDirection::Both}}
-    };
+            .isPresent = true,
+            .mode = EActuatorMode::SingleAxis,
+            .singleAxis = {.axis = EAxis::X, .direction = EAxisDirection::Both}}};
 
     const Mapper mapper({}, kTestActuatorMap);
 

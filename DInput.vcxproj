@@ -173,7 +173,7 @@
       <PreprocessorDefinitions>DIRECTINPUT_VERSION=0x0700;WIN32;_DEBUG;_WINDOWS;_USRDLL;%(PreprocessorDefinitions)</PreprocessorDefinitions>
     </ClCompile>
     <Link>
-      <ModuleDefinitionFile>$(SolutionDir)$(TargetName).def</ModuleDefinitionFile>
+      <ModuleDefinitionFile>$(ProjectDir)$(TargetName).def</ModuleDefinitionFile>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
@@ -181,7 +181,7 @@
       <PreprocessorDefinitions>DIRECTINPUT_VERSION=0x0700;_DEBUG;_WINDOWS;_USRDLL;%(PreprocessorDefinitions)</PreprocessorDefinitions>
     </ClCompile>
     <Link>
-      <ModuleDefinitionFile>dinput.def</ModuleDefinitionFile>
+      <ModuleDefinitionFile>$(ProjectDir)$(TargetName).def</ModuleDefinitionFile>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
@@ -189,7 +189,7 @@
       <PreprocessorDefinitions>DIRECTINPUT_VERSION=0x0700;WIN32;NDEBUG;_WINDOWS;_USRDLL;%(PreprocessorDefinitions)</PreprocessorDefinitions>
     </ClCompile>
     <Link>
-      <ModuleDefinitionFile>dinput.def</ModuleDefinitionFile>
+      <ModuleDefinitionFile>$(ProjectDir)$(TargetName).def</ModuleDefinitionFile>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
@@ -197,7 +197,7 @@
       <PreprocessorDefinitions>DIRECTINPUT_VERSION=0x0700;NDEBUG;_WINDOWS;_USRDLL;%(PreprocessorDefinitions)</PreprocessorDefinitions>
     </ClCompile>
     <Link>
-      <ModuleDefinitionFile>dinput.def</ModuleDefinitionFile>
+      <ModuleDefinitionFile>$(ProjectDir)$(TargetName).def</ModuleDefinitionFile>
     </Link>
   </ItemDefinitionGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

@@ -9,8 +9,6 @@
  *   Unit tests for run-time mapper object parsing functionality.
  **************************************************************************************************/
 
-#include "TestCase.h"
-
 #include "MapperParser.h"
 
 #include <memory>
@@ -18,6 +16,8 @@
 #include <string_view>
 #include <utility>
 #include <vector>
+
+#include <Infra/Test/TestCase.h>
 
 #include "ApiDirectInput.h"
 #include "ForceFeedbackTypes.h"
@@ -120,12 +120,11 @@ namespace XidiTest
   TEST_CASE(MapperParser_ControllerElementString_Valid)
   {
     constexpr std::pair<unsigned int, std::wstring_view> kControllerElements[] = {
-        {ELEMENT_MAP_INDEX_OF(stickLeftY),  L"StickLeftY" },
-        {ELEMENT_MAP_INDEX_OF(dpadDown),    L"DpadDown"   },
-        {ELEMENT_MAP_INDEX_OF(triggerLT),   L"TriggerLT"  },
-        {ELEMENT_MAP_INDEX_OF(buttonRB),    L"ButtonRB"   },
-        {ELEMENT_MAP_INDEX_OF(buttonStart), L"ButtonStart"}
-    };
+        {ELEMENT_MAP_INDEX_OF(stickLeftY), L"StickLeftY"},
+        {ELEMENT_MAP_INDEX_OF(dpadDown), L"DpadDown"},
+        {ELEMENT_MAP_INDEX_OF(triggerLT), L"TriggerLT"},
+        {ELEMENT_MAP_INDEX_OF(buttonRB), L"ButtonRB"},
+        {ELEMENT_MAP_INDEX_OF(buttonStart), L"ButtonStart"}};
 
     for (const auto& controllerElement : kControllerElements)
     {
@@ -154,9 +153,8 @@ namespace XidiTest
   TEST_CASE(MapperParser_ForceFeedbackActuatorString_Valid)
   {
     constexpr std::pair<unsigned int, std::wstring_view> kForceFeedbackActuators[] = {
-        {FFACTUATOR_MAP_INDEX_OF(leftMotor),  L"ForceFeedback.LeftMotor" },
-        {FFACTUATOR_MAP_INDEX_OF(rightMotor), L"ForceFeedback.RightMotor"}
-    };
+        {FFACTUATOR_MAP_INDEX_OF(leftMotor), L"ForceFeedback.LeftMotor"},
+        {FFACTUATOR_MAP_INDEX_OF(rightMotor), L"ForceFeedback.RightMotor"}};
 
     for (const auto& ffActuator : kForceFeedbackActuators)
     {
@@ -185,12 +183,11 @@ namespace XidiTest
   TEST_CASE(MapperParser_RecursionDepth_Balanced)
   {
     constexpr std::pair<unsigned int, std::wstring_view> kRecursionTestItems[] = {
-        {0, L" MapperStringNoParams  "                                                      },
-        {1, L"   OuterMapper  (   Param1, Param2 )"                                         },
-        {2, L"OuterMapper( InnerMapper1( Param), InnerMapper2(Param234))"                   },
+        {0, L" MapperStringNoParams  "},
+        {1, L"   OuterMapper  (   Param1, Param2 )"},
+        {2, L"OuterMapper( InnerMapper1( Param), InnerMapper2(Param234))"},
         {3, L"Split(    Split( Button(1), Button(2)), Split(Button(3), Button(4)), Axis(Z))"},
-        {4, L" ( ()  (  ()   (  ()) () ))"                                                  }
-    };
+        {4, L" ( ()  (  ()   (  ()) () ))"}};
 
     for (auto& recursionTestItem : kRecursionTestItems)
       TEST_ASSERT(
@@ -221,10 +218,9 @@ namespace XidiTest
   TEST_CASE(MapperParser_ExtractElementMapperStringParts_Simple)
   {
     constexpr std::pair<std::wstring_view, SStringParts> kExtractPartsTestItems[] = {
-        {L"Axis(Y)",                          {.type = L"Axis", .params = L"Y"}          },
+        {L"Axis(Y)", {.type = L"Axis", .params = L"Y"}},
         {L"   Axis       (    Y    ,    + )", {.type = L"Axis", .params = L"Y    ,    +"}},
-        {L"   Null  ",                        {.type = L"Null"}                          }
-    };
+        {L"   Null  ", {.type = L"Null"}}};
 
     for (auto& extractPartsTestItem : kExtractPartsTestItems)
       TEST_ASSERT(
@@ -240,11 +236,10 @@ namespace XidiTest
   {
     constexpr std::pair<std::wstring_view, SStringParts> kExtractPartsTestItems[] = {
         {L"  Split ( Button(2), Button(3)   )",
-         {.type = L"Split", .params = L"Button(2), Button(3)"}                  },
+         {.type = L"Split", .params = L"Button(2), Button(3)"}},
         {L"Split( Split(Button(1), Button(2)), Split(Button(3), Button(4)) )",
          {.type = L"Split",
-          .params = L"Split(Button(1), Button(2)), Split(Button(3), Button(4))"}}
-    };
+          .params = L"Split(Button(1), Button(2)), Split(Button(3), Button(4))"}}};
 
     for (auto& extractPartsTestItem : kExtractPartsTestItems)
       TEST_ASSERT(
@@ -258,13 +253,12 @@ namespace XidiTest
   TEST_CASE(MapperParser_ExtractElementMapperStringParts_PartialWithRemainder)
   {
     constexpr std::pair<std::wstring_view, SStringParts> kExtractPartsTestItems[] = {
-        {L"  Null      ,   Button(2) ",                               {.type = L"Null", .remaining = L"Button(2)"}},
-        {L"  Null,   Button(2) ",                                     {.type = L"Null", .remaining = L"Button(2)"}},
+        {L"  Null      ,   Button(2) ", {.type = L"Null", .remaining = L"Button(2)"}},
+        {L"  Null,   Button(2) ", {.type = L"Null", .remaining = L"Button(2)"}},
         {L"Split(Button(1), Button(2)), Split(Button(3), Button(4))",
          {.type = L"Split",
           .params = L"Button(1), Button(2)",
-          .remaining = L"Split(Button(3), Button(4))"}                                                            }
-    };
+          .remaining = L"Split(Button(3), Button(4))"}}};
 
     for (auto& extractPartsTestItem : kExtractPartsTestItems)
       TEST_ASSERT(
@@ -293,12 +287,11 @@ namespace XidiTest
   TEST_CASE(MapperParser_ExtractForceFeedbackActuatorStringParts_Valid)
   {
     constexpr std::pair<std::wstring_view, SStringParts> kExtractPartsTestItems[] = {
-        {L"  SingleAxis( X )         ",                               {.type = L"SingleAxis", .params = L"X"}   },
-        {L"SingleAxis(Y, +)",                                         {.type = L"SingleAxis", .params = L"Y, +"}},
+        {L"  SingleAxis( X )         ", {.type = L"SingleAxis", .params = L"X"}},
+        {L"SingleAxis(Y, +)", {.type = L"SingleAxis", .params = L"Y, +"}},
         {L"     MagnitudeProjection   (   Z,    RotZ   )           ",
-         {.type = L"MagnitudeProjection", .params = L"Z,    RotZ"}                                              },
-        {L" None ",                                                   {.type = L"None"}                         }
-    };
+         {.type = L"MagnitudeProjection", .params = L"Z,    RotZ"}},
+        {L" None ", {.type = L"None"}}};
 
     for (auto& extractPartsTestItem : kExtractPartsTestItems)
       TEST_ASSERT(
@@ -328,15 +321,14 @@ namespace XidiTest
   TEST_CASE(MapperParser_ExtractParameterListStringParts_Valid)
   {
     constexpr std::pair<std::wstring_view, SParamStringParts> kExtractPartsTestItems[] = {
-        {L"Param1",                                                   {.first = L"Param1"}                        },
-        {L"Param1, Param2",                                           {.first = L"Param1", .remaining = L"Param2"}},
-        {L"A, B, C, D",                                               {.first = L"A", .remaining = L"B, C, D"}    },
+        {L"Param1", {.first = L"Param1"}},
+        {L"Param1, Param2", {.first = L"Param1", .remaining = L"Param2"}},
+        {L"A, B, C, D", {.first = L"A", .remaining = L"B, C, D"}},
         {L"A(0), B(1, 2), C(3, 4), D(5, 6)",
-         {.first = L"A(0)", .remaining = L"B(1, 2), C(3, 4), D(5, 6)"}                                            },
-        {L"   RotY   ,   +  ",                                        {.first = L"RotY", .remaining = L"+"}       },
+         {.first = L"A(0)", .remaining = L"B(1, 2), C(3, 4), D(5, 6)"}},
+        {L"   RotY   ,   +  ", {.first = L"RotY", .remaining = L"+"}},
         {L"Split(Button(1), Button(2)), Split(Button(3), Button(4))",
-         {.first = L"Split(Button(1), Button(2))", .remaining = L"Split(Button(3), Button(4))"}                   }
-    };
+         {.first = L"Split(Button(1), Button(2))", .remaining = L"Split(Button(3), Button(4))"}}};
 
     for (auto& extractPartsTestItem : kExtractPartsTestItems)
       TEST_ASSERT(
@@ -365,11 +357,11 @@ namespace XidiTest
   TEST_CASE(MapperParser_MakeAxisMapper_Nominal)
   {
     constexpr std::pair<std::wstring_view, SElementIdentifier> kAxisMapperTestItems[] = {
-        {L"x",           {.type = EElementType::Axis, .axis = EAxis::X}   },
-        {L"rX",          {.type = EElementType::Axis, .axis = EAxis::RotX}},
-        {L"RotY",        {.type = EElementType::Axis, .axis = EAxis::RotY}},
-        {L"rotz, +",     {.type = EElementType::Axis, .axis = EAxis::RotZ}},
-        {L"y, NEGATIVE", {.type = EElementType::Axis, .axis = EAxis::Y}   },
+        {L"x", {.type = EElementType::Axis, .axis = EAxis::X}},
+        {L"rX", {.type = EElementType::Axis, .axis = EAxis::RotX}},
+        {L"RotY", {.type = EElementType::Axis, .axis = EAxis::RotY}},
+        {L"rotz, +", {.type = EElementType::Axis, .axis = EAxis::RotZ}},
+        {L"y, NEGATIVE", {.type = EElementType::Axis, .axis = EAxis::Y}},
     };
 
     for (auto& axisMapperTestItem : kAxisMapperTestItems)
@@ -400,11 +392,10 @@ namespace XidiTest
   TEST_CASE(MapperParser_MakeButtonMapper_Nominal)
   {
     constexpr std::pair<std::wstring_view, SElementIdentifier> kButtonMapperTestItems[] = {
-        {L"1",  {.type = EElementType::Button, .button = EButton::B1} },
-        {L"2",  {.type = EElementType::Button, .button = EButton::B2} },
-        {L"6",  {.type = EElementType::Button, .button = EButton::B6} },
-        {L"12", {.type = EElementType::Button, .button = EButton::B12}}
-    };
+        {L"1", {.type = EElementType::Button, .button = EButton::B1}},
+        {L"2", {.type = EElementType::Button, .button = EButton::B2}},
+        {L"6", {.type = EElementType::Button, .button = EButton::B6}},
+        {L"12", {.type = EElementType::Button, .button = EButton::B12}}};
 
     for (auto& buttonMapperTestItem : kButtonMapperTestItems)
     {
@@ -455,8 +446,7 @@ namespace XidiTest
         {{.type = EElementType::Pov},
          {.type = EElementType::Pov},
          {.type = EElementType::Pov},
-         {.type = EElementType::Pov}}
-    };
+         {.type = EElementType::Pov}}};
     static_assert(
         _countof(expectedElements) == _countof(kCompoundMapperTestStrings),
         "Mismatch between input and expected output array lengths.");
@@ -507,11 +497,11 @@ namespace XidiTest
   TEST_CASE(MapperParser_MakeDigitalAxisMapper_Nominal)
   {
     constexpr std::pair<std::wstring_view, SElementIdentifier> kDigitalAxisMapperTestItems[] = {
-        {L"x",           {.type = EElementType::Axis, .axis = EAxis::X}   },
-        {L"rX",          {.type = EElementType::Axis, .axis = EAxis::RotX}},
-        {L"RotY",        {.type = EElementType::Axis, .axis = EAxis::RotY}},
-        {L"rotz, +",     {.type = EElementType::Axis, .axis = EAxis::RotZ}},
-        {L"y, NEGATIVE", {.type = EElementType::Axis, .axis = EAxis::Y}   },
+        {L"x", {.type = EElementType::Axis, .axis = EAxis::X}},
+        {L"rX", {.type = EElementType::Axis, .axis = EAxis::RotX}},
+        {L"RotY", {.type = EElementType::Axis, .axis = EAxis::RotY}},
+        {L"rotz, +", {.type = EElementType::Axis, .axis = EAxis::RotZ}},
+        {L"y, NEGATIVE", {.type = EElementType::Axis, .axis = EAxis::Y}},
     };
 
     for (auto& digitalAxisMapperTestItem : kDigitalAxisMapperTestItems)
@@ -589,12 +579,11 @@ namespace XidiTest
   TEST_CASE(MapperParser_MakeKeyboardMapper_Nominal)
   {
     constexpr std::pair<std::wstring_view, TKeyIdentifier> kKeyboardMapperTestItems[] = {
-        {L"100",       100          },
-        {L"0xcc",      0xcc         },
-        {L"070",       070          },
+        {L"100", 100},
+        {L"0xcc", 0xcc},
+        {L"070", 070},
         {L"DownArrow", DIK_DOWNARROW},
-        {L"DIK_RALT",  DIK_RALT     }
-    };
+        {L"DIK_RALT", DIK_RALT}};
 
     for (auto& keyboardMapperTestItem : kKeyboardMapperTestItems)
     {
@@ -644,8 +633,7 @@ namespace XidiTest
          .axisDirection = EAxisDirection::Negative},
         {.params = L"WheelVertical, +",
          .axis = EMouseAxis::WheelVertical,
-         .axisDirection = EAxisDirection::Positive}
-    };
+         .axisDirection = EAxisDirection::Positive}};
 
     for (auto& mouseAxisMapperTestItem : kMouseAxisMapperTestItems)
     {
@@ -684,20 +672,19 @@ namespace XidiTest
   TEST_CASE(MapperParser_MakeMouseButtonMapper_Nominal)
   {
     constexpr std::pair<std::wstring_view, EMouseButton> kMouseButtonMapperTestItems[] = {
-        {L"left",        EMouseButton::Left  },
-        {L"Left",        EMouseButton::Left  },
-        {L"LeftButton",  EMouseButton::Left  },
-        {L"middle",      EMouseButton::Middle},
-        {L"Middle",      EMouseButton::Middle},
-        {L"Wheel",       EMouseButton::Middle},
-        {L"right",       EMouseButton::Right },
-        {L"Right",       EMouseButton::Right },
-        {L"RightButton", EMouseButton::Right },
-        {L"X1",          EMouseButton::X1    },
-        {L"Back",        EMouseButton::X1    },
-        {L"X2",          EMouseButton::X2    },
-        {L"Forward",     EMouseButton::X2    }
-    };
+        {L"left", EMouseButton::Left},
+        {L"Left", EMouseButton::Left},
+        {L"LeftButton", EMouseButton::Left},
+        {L"middle", EMouseButton::Middle},
+        {L"Middle", EMouseButton::Middle},
+        {L"Wheel", EMouseButton::Middle},
+        {L"right", EMouseButton::Right},
+        {L"Right", EMouseButton::Right},
+        {L"RightButton", EMouseButton::Right},
+        {L"X1", EMouseButton::X1},
+        {L"Back", EMouseButton::X1},
+        {L"X2", EMouseButton::X2},
+        {L"Forward", EMouseButton::X2}};
 
     for (auto& mouseButtonMapperTestItem : kMouseButtonMapperTestItems)
     {
@@ -756,10 +743,9 @@ namespace XidiTest
   TEST_CASE(MapperParser_MakePovMapper_Nominal)
   {
     constexpr std::pair<std::wstring_view, SElementIdentifier> kPovMapperTestItems[] = {
-        {L"UP",   {.type = EElementType::Pov}},
-        {L"Dn",   {.type = EElementType::Pov}},
-        {L"Left", {.type = EElementType::Pov}}
-    };
+        {L"UP", {.type = EElementType::Pov}},
+        {L"Dn", {.type = EElementType::Pov}},
+        {L"Left", {.type = EElementType::Pov}}};
 
     for (auto& povMapperTestItem : kPovMapperTestItems)
     {
@@ -793,10 +779,9 @@ namespace XidiTest
         L"Axis(RotX, +), Pov(Down)"};
     constexpr std::pair<SElementIdentifier, SElementIdentifier> expectedElements[] = {
         {{.type = EElementType::Axis, .axis = EAxis::X},
-         {.type = EElementType::Axis, .axis = EAxis::RotX}                                                        },
-        {{.type = EElementType::Pov},                       {.type = EElementType::Button, .button = EButton::B10}},
-        {{.type = EElementType::Axis, .axis = EAxis::RotX}, {.type = EElementType::Pov}                           }
-    };
+         {.type = EElementType::Axis, .axis = EAxis::RotX}},
+        {{.type = EElementType::Pov}, {.type = EElementType::Button, .button = EButton::B10}},
+        {{.type = EElementType::Axis, .axis = EAxis::RotX}, {.type = EElementType::Pov}}};
     static_assert(
         _countof(expectedElements) == _countof(kSplitMapperTestStrings),
         "Mismatch between input and expected output array lengths.");
@@ -831,13 +816,12 @@ namespace XidiTest
   TEST_CASE(MapperParser_MakeSplitMapper_OneNull)
   {
     constexpr std::pair<std::wstring_view, SElementIdentifier> kSplitMapperTestItems[] = {
-        {L"Axis(X), Null",    {.type = EElementType::Axis, .axis = EAxis::X}       },
-        {L"Null, Axis(X)",    {.type = EElementType::Axis, .axis = EAxis::X}       },
-        {L"Button(3), Null",  {.type = EElementType::Button, .button = EButton::B3}},
-        {L"Null, Button(3)",  {.type = EElementType::Button, .button = EButton::B3}},
-        {L"POV(Left), Null",  {.type = EElementType::Pov}                          },
-        {L"Null, POV(Right)", {.type = EElementType::Pov}                          }
-    };
+        {L"Axis(X), Null", {.type = EElementType::Axis, .axis = EAxis::X}},
+        {L"Null, Axis(X)", {.type = EElementType::Axis, .axis = EAxis::X}},
+        {L"Button(3), Null", {.type = EElementType::Button, .button = EButton::B3}},
+        {L"Null, Button(3)", {.type = EElementType::Button, .button = EButton::B3}},
+        {L"POV(Left), Null", {.type = EElementType::Pov}},
+        {L"Null, POV(Right)", {.type = EElementType::Pov}}};
 
     for (auto& splitMapperTestItem : kSplitMapperTestItems)
     {
@@ -894,8 +878,7 @@ namespace XidiTest
         {.maybeElementMapper = std::make_unique<ButtonMapper>(EButton::B10)},
         {.maybeElementMapper = std::make_unique<ButtonMapper>(EButton::B10)},
         {.maybeElementMapper = std::make_unique<ButtonMapper>(EButton::B1),
-         .remainingString = L"Button(3)"}
-    };
+         .remainingString = L"Button(3)"}};
     static_assert(
         _countof(expectedParseResults) == _countof(kTestStrings),
         "Mismatch between input and expected output array lengths.");
@@ -1080,8 +1063,7 @@ namespace XidiTest
         {.maybeElementMapper = std::make_unique<KeyboardMapper>(0)},
         {.maybeElementMapper = std::make_unique<KeyboardMapper>(3)},
         {.maybeElementMapper = std::make_unique<KeyboardMapper>(10),
-         .remainingString = L"Button(3)"}
-    };
+         .remainingString = L"Button(3)"}};
     static_assert(
         _countof(expectedParseResults) == _countof(kTestStrings),
         "Mismatch between input and expected output array lengths.");
@@ -1146,8 +1128,7 @@ namespace XidiTest
     const SElementMapperParseResult expectedParseResults[] = {
         {.maybeElementMapper = nullptr},
         {.maybeElementMapper = nullptr},
-        {.maybeElementMapper = nullptr, .remainingString = L"Null  , Button(2)"}
-    };
+        {.maybeElementMapper = nullptr, .remainingString = L"Null  , Button(2)"}};
     static_assert(
         _countof(expectedParseResults) == _countof(kTestStrings),
         "Mismatch between input and expected output array lengths.");
@@ -1337,18 +1318,17 @@ namespace XidiTest
         Mapper::kDefaultForceFeedbackActuator,
         {.isPresent = false},
         {.isPresent = true,
-                                         .mode = EActuatorMode::SingleAxis,
-                                         .singleAxis = {.axis = EAxis::RotX, .direction = EAxisDirection::Both}},
+         .mode = EActuatorMode::SingleAxis,
+         .singleAxis = {.axis = EAxis::RotX, .direction = EAxisDirection::Both}},
         {.isPresent = true,
-                                         .mode = EActuatorMode::SingleAxis,
-                                         .singleAxis = {.axis = EAxis::RotZ, .direction = EAxisDirection::Negative}},
+         .mode = EActuatorMode::SingleAxis,
+         .singleAxis = {.axis = EAxis::RotZ, .direction = EAxisDirection::Negative}},
         {.isPresent = true,
-                                         .mode = EActuatorMode::MagnitudeProjection,
-                                         .magnitudeProjection = {.axisFirst = EAxis::Y, .axisSecond = EAxis::RotY}},
+         .mode = EActuatorMode::MagnitudeProjection,
+         .magnitudeProjection = {.axisFirst = EAxis::Y, .axisSecond = EAxis::RotY}},
         {.isPresent = true,
-                                         .mode = EActuatorMode::MagnitudeProjection,
-                                         .magnitudeProjection = {.axisFirst = EAxis::RotY, .axisSecond = EAxis::Y}}
-    };
+         .mode = EActuatorMode::MagnitudeProjection,
+         .magnitudeProjection = {.axisFirst = EAxis::RotY, .axisSecond = EAxis::Y}}};
     static_assert(
         _countof(expectedForceFeedbackActuators) == _countof(kTestStrings),
         "Mismatch between input and expected output array lengths.");

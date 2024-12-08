@@ -10,9 +10,9 @@
  *   along with additional testing-specific functions.
  **************************************************************************************************/
 
-#include "TestCase.h"
-
 #include "MockDirectInputDevice.h"
+
+#include <Infra/Test/TestCase.h>
 
 /// Fails a test because a method was invoked that is beyond the scope of tests and therefore not
 /// implemented in the mock version of the DirectInput interface.

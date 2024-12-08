@@ -11,11 +11,11 @@
 
 #pragma once
 
-#include "TestCase.h"
-
 #include <memory>
 #include <optional>
 #include <vector>
+
+#include <Infra/Test/TestCase.h>
 
 #include "ApiWindows.h"
 #include "ControllerTypes.h"
