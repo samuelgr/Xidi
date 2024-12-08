@@ -14,10 +14,11 @@
 
 #include "ApiWindows.h"
 #include "Configuration.h"
-#include "GitVersionInfo.h"
 #include "Message.h"
 #include "Strings.h"
 #include "XidiConfigReader.h"
+
+#include "GitVersionInfo.generated.h"
 
 #ifndef XIDI_SKIP_MAPPERS
 #include "Mapper.h"

@@ -13,12 +13,6 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "WinMM", "WinMM.vcxproj", "{
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "HookModule", "HookModule.vcxproj", "{DF6582A6-421B-41D4-AB47-6F731DE54E60}"
 EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Natvis", "Natvis", "{6F5436BE-1782-44C2-9755-0014C6DDC7BB}"
-	ProjectSection(SolutionItems) = preProject
-		Natvis\TemporaryBuffer.natvis = Natvis\TemporaryBuffer.natvis
-		Natvis\ValueOrError.natvis = Natvis\ValueOrError.natvis
-	EndProjectSection
-EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Win32 = Debug|Win32
