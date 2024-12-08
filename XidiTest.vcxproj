@@ -115,7 +115,6 @@
     <ClInclude Include="Include\Xidi\Internal\ControllerMath.h" />
     <ClInclude Include="Include\Xidi\Internal\ControllerTypes.h" />
     <ClInclude Include="Include\Xidi\Internal\DataFormat.h" />
-    <ClInclude Include="Include\Xidi\Internal\DebugAssert.h" />
     <ClInclude Include="Include\Xidi\Internal\ElementMapper.h" />
     <ClInclude Include="Include\Xidi\Internal\ForceFeedbackDevice.h" />
     <ClInclude Include="Include\Xidi\Internal\ForceFeedbackEffect.h" />
@@ -132,7 +131,6 @@
     <ClInclude Include="Include\Xidi\Internal\MapperParser.h" />
     <ClInclude Include="Include\Xidi\Internal\Mouse.h" />
     <ClInclude Include="Include\Xidi\Internal\PhysicalController.h" />
-    <ClInclude Include="Include\Xidi\Internal\ValueOrError.h" />
     <ClInclude Include="Include\Xidi\Internal\StateChangeEventBuffer.h" />
     <ClInclude Include="Include\Xidi\Internal\Strings.h" />
     <ClInclude Include="Include\Xidi\Internal\TemporaryBuffer.h" />
@@ -215,6 +213,9 @@
     <ResourceCompile Include="Resources\Xidi.rc" />
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="Modules\Infra\CoreInfra.vcxproj">
+      <Project>{5af31c51-1646-4bda-9407-12273b2da870}</Project>
+    </ProjectReference>
     <ProjectReference Include="Modules\Infra\TestInfra.vcxproj">
       <Project>{6abf224b-c252-4876-b2e1-8ca88e93610a}</Project>
     </ProjectReference>

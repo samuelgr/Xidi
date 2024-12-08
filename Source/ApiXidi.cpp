@@ -13,7 +13,8 @@
 
 #include <unordered_map>
 
-#include "Globals.h"
+#include <Infra/Core/ProcessInfo.h>
+
 #include "Message.h"
 #include "Strings.h"
 
@@ -68,9 +69,9 @@ namespace Xidi
     public:
 
       // IMetadata
-      Globals::SVersionInfo GetVersion(void) const override
+      Infra::ProcessInfo::SVersionInfo GetVersion(void) const override
       {
-        return Globals::GetVersion();
+        return *Infra::ProcessInfo::GetProductVersion();
       }
 
       std::wstring_view GetFormName(void) const override

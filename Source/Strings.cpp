@@ -21,9 +21,10 @@
 #include <string>
 #include <string_view>
 
+#include <Infra/Core/ProcessInfo.h>
+
 #include "ApiWindows.h"
 #include "ControllerTypes.h"
-#include "Globals.h"
 #include "TemporaryBuffer.h"
 
 namespace Xidi
@@ -81,7 +82,10 @@ namespace Xidi
           {
             const wchar_t* stringStart = nullptr;
             int stringLength = LoadString(
-                Globals::GetInstanceHandle(), IDS_XIDI_PRODUCT_NAME, (wchar_t*)&stringStart, 0);
+                Infra::ProcessInfo::GetThisModuleInstanceHandle(),
+                IDS_XIDI_PRODUCT_NAME,
+                (wchar_t*)&stringStart,
+                0);
 
             while ((stringLength > 0) && (L'\0' == stringStart[stringLength - 1]))
               stringLength -= 1;
@@ -107,7 +111,10 @@ namespace Xidi
 #ifdef IDS_XIDI_FORM_NAME
             const wchar_t* stringStart = nullptr;
             int stringLength = LoadString(
-                Globals::GetInstanceHandle(), IDS_XIDI_FORM_NAME, (wchar_t*)&stringStart, 0);
+                Infra::ProcessInfo::GetThisModuleInstanceHandle(),
+                IDS_XIDI_FORM_NAME,
+                (wchar_t*)&stringStart,
+                0);
 
             while ((stringLength > 0) && (L'\0' == stringStart[stringLength - 1]))
               stringLength -= 1;
@@ -205,7 +212,10 @@ namespace Xidi
           []() -> void
           {
             TemporaryBuffer<wchar_t> buf;
-            GetModuleFileName(Globals::GetInstanceHandle(), buf.Data(), (DWORD)buf.Capacity());
+            GetModuleFileName(
+                Infra::ProcessInfo::GetThisModuleInstanceHandle(),
+                buf.Data(),
+                (DWORD)buf.Capacity());
 
             initString.assign(buf.Data());
           });
@@ -424,8 +434,8 @@ namespace Xidi
             }
 
             logFilename << GetProductName().c_str() << L'_' << GetFormName().c_str() << L'_'
-                        << GetExecutableBaseName().c_str() << L'_' << Globals::GetCurrentProcessId()
-                        << kStrLogFileExtension;
+                        << GetExecutableBaseName().c_str() << L'_'
+                        << Infra::ProcessInfo::GetCurrentProcessId() << kStrLogFileExtension;
 
             initString.assign(logFilename);
           });

@@ -16,6 +16,8 @@
 #include <memory>
 #include <optional>
 
+#include <Infra/Core/ProcessInfo.h>
+
 #include "ApiBitSet.h"
 #include "ApiDirectInput.h"
 #include "Configuration.h"
@@ -363,13 +365,13 @@ namespace Xidi
 
     if (kVirtualControllerHidCollectionForEntireDevice == hidCollectionNumber)
       LoadStringA(
-          Globals::GetInstanceHandle(),
+          Infra::ProcessInfo::GetThisModuleInstanceHandle(),
           IDS_XIDI_CONTROLLERIDENTIFICATION_HID_COLLECTION_NAME_PLUS_CONTROLLER_TYPE_FORMAT,
           hidCollectionNameNameFormatString.Data(),
           hidCollectionNameNameFormatString.Capacity());
     else
       LoadStringA(
-          Globals::GetInstanceHandle(),
+          Infra::ProcessInfo::GetThisModuleInstanceHandle(),
           IDS_XIDI_CONTROLLERIDENTIFICATION_HID_COLLECTION_NAME_FORMAT,
           hidCollectionNameNameFormatString.Data(),
           hidCollectionNameNameFormatString.Capacity());
@@ -388,13 +390,13 @@ namespace Xidi
 
     if (kVirtualControllerHidCollectionForEntireDevice == hidCollectionNumber)
       LoadStringW(
-          Globals::GetInstanceHandle(),
+          Infra::ProcessInfo::GetThisModuleInstanceHandle(),
           IDS_XIDI_CONTROLLERIDENTIFICATION_HID_COLLECTION_NAME_PLUS_CONTROLLER_TYPE_FORMAT,
           hidCollectionNameNameFormatString.Data(),
           hidCollectionNameNameFormatString.Capacity());
     else
       LoadStringW(
-          Globals::GetInstanceHandle(),
+          Infra::ProcessInfo::GetThisModuleInstanceHandle(),
           IDS_XIDI_CONTROLLERIDENTIFICATION_HID_COLLECTION_NAME_FORMAT,
           hidCollectionNameNameFormatString.Data(),
           hidCollectionNameNameFormatString.Capacity());
@@ -441,7 +443,7 @@ namespace Xidi
   {
     TemporaryBuffer<CHAR> xidiControllerNameFormatString;
     LoadStringA(
-        Globals::GetInstanceHandle(),
+        Infra::ProcessInfo::GetThisModuleInstanceHandle(),
         (ShouldUseShortNameFormatForVirtualControllers()
              ? IDS_XIDI_CONTROLLERIDENTIFICATION_CONTROLLER_SHORT_NAME_FORMAT
              : IDS_XIDI_CONTROLLERIDENTIFICATION_CONTROLLER_NAME_FORMAT),
@@ -457,7 +459,7 @@ namespace Xidi
   {
     TemporaryBuffer<WCHAR> xidiControllerNameFormatString;
     LoadStringW(
-        Globals::GetInstanceHandle(),
+        Infra::ProcessInfo::GetThisModuleInstanceHandle(),
         (ShouldUseShortNameFormatForVirtualControllers()
              ? IDS_XIDI_CONTROLLERIDENTIFICATION_CONTROLLER_SHORT_NAME_FORMAT
              : IDS_XIDI_CONTROLLERIDENTIFICATION_CONTROLLER_NAME_FORMAT),

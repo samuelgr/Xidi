@@ -16,10 +16,10 @@
 #include <string_view>
 
 #include <Hookshot/Hookshot.h>
+#include <Infra/Core/ProcessInfo.h>
 
 #include "ApiWindows.h"
 #include "ApiXidi.h"
-#include "Globals.h"
 #include "Message.h"
 #include "SetHooks.h"
 #include "Strings.h"
@@ -186,7 +186,7 @@ namespace Xidi
           L"Failed to hook %d function(s) out of a total of %d attempted. The application will likely not function correctly in this state.",
           (int)numUnsuccessfullyHooked,
           (int)replaceableImportFunctionNames.size());
-      TerminateProcess(Globals::GetCurrentProcessHandle(), (UINT)-1);
+      TerminateProcess(Infra::ProcessInfo::GetCurrentProcessHandle(), (UINT)-1);
     }
 
     const size_t numSuccessfullyReplaced =
@@ -213,7 +213,7 @@ namespace Xidi
           L"Hooked %d function(s) but only successfully replaced the import addresses for %d of them. The application will likely not function correctly in this state.",
           (int)replacementImportFunctions.size(),
           (int)numSuccessfullyReplaced);
-      TerminateProcess(Globals::GetCurrentProcessHandle(), (UINT)-1);
+      TerminateProcess(Infra::ProcessInfo::GetCurrentProcessHandle(), (UINT)-1);
     }
   }
 } // namespace Xidi

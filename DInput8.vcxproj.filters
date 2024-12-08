@@ -105,9 +105,6 @@
     <ClInclude Include="Include\Xidi\Internal\ApiBitSet.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="Include\Xidi\Internal\ValueOrError.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="Include\Xidi\Internal\ForceFeedbackDevice.h">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -136,9 +133,6 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="Include\Xidi\Internal\ControllerMath.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="Include\Xidi\Internal\DebugAssert.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

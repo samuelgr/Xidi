@@ -16,11 +16,12 @@
 #include <optional>
 #include <string_view>
 
+#include <Infra/Core/ValueOrError.h>
+
 #include "ControllerTypes.h"
 #include "ElementMapper.h"
 #include "ForceFeedbackTypes.h"
 #include "Mapper.h"
-#include "ValueOrError.h"
 
 namespace Xidi
 {
@@ -31,13 +32,14 @@ namespace Xidi
       /// Type alias for representing either an element mapper pointer or an error message.
       /// Intended to be returned from functions that parse element mapper strings and can be used
       /// to hold semantically-rich error messages for the user.
-      using ElementMapperOrError = ValueOrError<std::unique_ptr<IElementMapper>, std::wstring>;
+      using ElementMapperOrError =
+          Infra::ValueOrError<std::unique_ptr<IElementMapper>, std::wstring>;
 
       /// Type alias for representing either a force feedback actuator or an error message.
       /// Intended to be returned from functions that parse force feedback actuator strings and can
       /// be used to hold semantically-rich error messages for the user.
       using ForceFeedbackActuatorOrError =
-          ValueOrError<ForceFeedback::SActuatorElement, std::wstring>;
+          Infra::ValueOrError<ForceFeedback::SActuatorElement, std::wstring>;
 
       /// Holds a partially-separated representation of a string that has been parsed at the very
       /// highest level. This view of the input string is separated into type and parameter

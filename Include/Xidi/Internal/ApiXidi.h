@@ -17,7 +17,7 @@
 #include <set>
 #include <string_view>
 
-#include "Globals.h"
+#include <Infra/Core/ProcessInfo.h>
 
 namespace Xidi
 {
@@ -56,7 +56,7 @@ namespace Xidi
 
       /// Retrieves and returns the version information structure of the running Xidi module.
       /// @return Filled-in version information structure.
-      virtual Globals::SVersionInfo GetVersion(void) const = 0;
+      virtual Infra::ProcessInfo::SVersionInfo GetVersion(void) const = 0;
 
       /// Retrieves and returns a string that identifies the running form of Xidi.
       /// @return String identifying the form of Xidi.

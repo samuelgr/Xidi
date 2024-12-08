@@ -18,8 +18,9 @@
 #include <mutex>
 #include <string>
 
+#include <Infra/Core/ProcessInfo.h>
+
 #include "ApiWindows.h"
-#include "Globals.h"
 #include "Strings.h"
 #include "TemporaryBuffer.h"
 
@@ -339,11 +340,14 @@ namespace Xidi
         fwprintf_s(logFileHandle, L"%s\n", kLogHeaderSeparator);
         fwprintf_s(logFileHandle, L"%s Log\n", Strings::kStrProductName.data());
         fwprintf_s(logFileHandle, L"%s\n", kLogHeaderSeparator);
-        fwprintf_s(logFileHandle, L"Version:   %s\n", Globals::GetVersion().string.data());
+        fwprintf_s(
+            logFileHandle,
+            L"Version:   %s\n",
+            Infra::ProcessInfo::GetProductVersion()->string.data());
         fwprintf_s(logFileHandle, L"Form:      %s\n", Strings::kStrFormName.data());
         fwprintf_s(
             logFileHandle, L"Program:   %s\n", Strings::kStrExecutableCompleteFilename.data());
-        fwprintf_s(logFileHandle, L"PID:       %d\n", Globals::GetCurrentProcessId());
+        fwprintf_s(logFileHandle, L"PID:       %d\n", Infra::ProcessInfo::GetCurrentProcessId());
         fwprintf_s(logFileHandle, L"%s\n", kLogHeaderSeparator);
         fflush(logFileHandle);
       }

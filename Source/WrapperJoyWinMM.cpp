@@ -20,6 +20,8 @@
 #include <utility>
 #include <vector>
 
+#include <Infra/Core/ProcessInfo.h>
+
 #include "ApiDirectInput.h"
 #include "ApiWindows.h"
 #include "ControllerIdentification.h"
@@ -386,7 +388,7 @@ namespace Xidi
       IDirectInput8* directInputInterface = nullptr;
       if (S_OK !=
           ImportApiDirectInput::DirectInput8Create(
-              Globals::GetInstanceHandle(),
+              Infra::ProcessInfo::GetThisModuleInstanceHandle(),
               DIRECTINPUT_VERSION,
               IID_IDirectInput8,
               (LPVOID*)&directInputInterface,
@@ -423,7 +425,11 @@ namespace Xidi
     template <typename StringType> static inline int FillRegistryKeyString(
         StringType buf, const size_t bufcount)
     {
-      return LoadStringT(Globals::GetInstanceHandle(), IDS_XIDI_PRODUCT_NAME, buf, (int)bufcount);
+      return LoadStringT(
+          Infra::ProcessInfo::GetThisModuleInstanceHandle(),
+          IDS_XIDI_PRODUCT_NAME,
+          buf,
+          (int)bufcount);
     }
 
     /// Places the required keys and values into the registry so that WinMM-based applications can

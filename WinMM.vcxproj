@@ -29,7 +29,6 @@
     <ClInclude Include="Include\Xidi\Internal\ControllerMath.h" />
     <ClInclude Include="Include\Xidi\Internal\ControllerTypes.h" />
     <ClInclude Include="Include\Xidi\Internal\DataFormat.h" />
-    <ClInclude Include="Include\Xidi\Internal\DebugAssert.h" />
     <ClInclude Include="Include\Xidi\Internal\ElementMapper.h" />
     <ClInclude Include="Include\Xidi\Internal\ExportApiWinMM.h" />
     <ClInclude Include="Include\Xidi\Internal\ForceFeedbackDevice.h" />
@@ -52,7 +51,6 @@
     <ClInclude Include="Include\Xidi\Internal\StateChangeEventBuffer.h" />
     <ClInclude Include="Include\Xidi\Internal\Strings.h" />
     <ClInclude Include="Include\Xidi\Internal\TemporaryBuffer.h" />
-    <ClInclude Include="Include\Xidi\Internal\ValueOrError.h" />
     <ClInclude Include="Include\Xidi\Internal\VirtualController.h" />
     <ClInclude Include="Include\Xidi\Internal\WrapperJoyWinMM.h" />
     <ClInclude Include="Include\Xidi\Internal\XidiConfigReader.h" />
@@ -98,6 +96,11 @@
   <ItemGroup>
     <ResourceCompile Include="Resources\Xidi.rc" />
     <ResourceCompile Include="Resources\WinMM.rc" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="Modules\Infra\CoreInfra.vcxproj">
+      <Project>{5af31c51-1646-4bda-9407-12273b2da870}</Project>
+    </ProjectReference>
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <ProjectGuid>{97F255C7-24CE-44F1-A897-75EDB97BC541}</ProjectGuid>

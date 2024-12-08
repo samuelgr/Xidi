@@ -15,8 +15,9 @@
 #include <array>
 #include <mutex>
 
+#include <Infra/Core/ProcessInfo.h>
+
 #include "ApiWindows.h"
-#include "Globals.h"
 #include "Message.h"
 
 namespace Xidi
@@ -55,7 +56,7 @@ namespace Xidi
           L"Import library \"%s\" is missing XInput function \"%s\".\n\nXidi cannot function without it.",
           libraryName,
           functionName);
-      TerminateProcess(Globals::GetCurrentProcessHandle(), (UINT)-1);
+      TerminateProcess(Infra::ProcessInfo::GetCurrentProcessHandle(), (UINT)-1);
     }
 
     /// Shows an error and terminates the process in the event of failure to load any XInput
@@ -65,7 +66,7 @@ namespace Xidi
       Message::Output(
           Message::ESeverity::ForcedInteractiveError,
           L"Failed to load an XInput library.\n\nXidi cannot function without it.");
-      TerminateProcess(Globals::GetCurrentProcessHandle(), (UINT)-1);
+      TerminateProcess(Infra::ProcessInfo::GetCurrentProcessHandle(), (UINT)-1);
     }
 
     void Initialize(void)

@@ -20,6 +20,8 @@
 #include <optional>
 #include <string_view>
 
+#include <Infra/Core/ValueOrError.h>
+
 #include "ApiDirectInput.h"
 #include "ControllerTypes.h"
 #include "ElementMapper.h"
@@ -28,7 +30,6 @@
 #include "Mapper.h"
 #include "Mouse.h"
 #include "Strings.h"
-#include "ValueOrError.h"
 
 namespace Xidi
 {
@@ -90,7 +91,7 @@ namespace Xidi
       /// parse failure.
       /// @tparam AxisEnumType Axis enumeration type that identifies the target axis.
       template <typename AxisEnumType> using AxisParamsOrError =
-          ValueOrError<SAxisParams<AxisEnumType>, std::wstring>;
+          Infra::ValueOrError<SAxisParams<AxisEnumType>, std::wstring>;
 
       /// Attempts to map a string to an axis direction enumerator.
       /// @param [in] directionString String supposedly representing an axis direction.

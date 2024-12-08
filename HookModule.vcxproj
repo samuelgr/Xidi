@@ -136,7 +136,6 @@
     <ClInclude Include="Include\Xidi\Internal\ApiWindows.h" />
     <ClInclude Include="Include\Xidi\Internal\ApiXidi.h" />
     <ClInclude Include="Include\Xidi\Internal\Configuration.h" />
-    <ClInclude Include="Include\Xidi\Internal\DebugAssert.h" />
     <ClInclude Include="Include\Xidi\Internal\Globals.h" />
     <ClInclude Include="Include\Xidi\Internal\SetHooks.h" />
     <ClInclude Include="Include\Xidi\Internal\Message.h" />
@@ -149,6 +148,11 @@
   <ItemGroup>
     <ResourceCompile Include="Resources\HookModule.rc" />
     <ResourceCompile Include="Resources\Xidi.rc" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="Modules\Infra\CoreInfra.vcxproj">
+      <Project>{5af31c51-1646-4bda-9407-12273b2da870}</Project>
+    </ProjectReference>
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

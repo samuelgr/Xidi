@@ -81,9 +81,6 @@
     <ClInclude Include="Include\Xidi\Internal\ApiBitSet.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="Include\Xidi\Internal\ValueOrError.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="Include\Xidi\Internal\ForceFeedbackEffect.h">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -139,9 +136,6 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="Include\Xidi\Test\MockMouse.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="Include\Xidi\Internal\DebugAssert.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

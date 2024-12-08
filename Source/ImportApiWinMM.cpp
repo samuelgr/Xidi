@@ -17,6 +17,8 @@
 #include <set>
 #include <string_view>
 
+#include <Infra/Core/ProcessInfo.h>
+
 #include "ApiWindows.h"
 #include "ApiXidi.h"
 #include "Configuration.h"
@@ -268,7 +270,7 @@ namespace Xidi
           Message::ESeverity::Error,
           L"Application has attempted to call missing WinMM import function \"%s\".",
           functionName);
-      TerminateProcess(Globals::GetCurrentProcessHandle(), (UINT)-1);
+      TerminateProcess(Infra::ProcessInfo::GetCurrentProcessHandle(), (UINT)-1);
     }
 
     void Initialize(void)
