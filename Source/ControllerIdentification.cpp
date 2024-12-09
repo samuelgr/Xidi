@@ -16,6 +16,7 @@
 #include <memory>
 #include <optional>
 
+#include <Infra/Core/Message.h>
 #include <Infra/Core/ProcessInfo.h>
 #include <Infra/Core/TemporaryBuffer.h>
 
@@ -25,7 +26,6 @@
 #include "ControllerTypes.h"
 #include "Globals.h"
 #include "Mapper.h"
-#include "Message.h"
 #include "Strings.h"
 
 namespace Xidi
@@ -262,8 +262,8 @@ namespace Xidi
 
     if (DI_OK != result)
     {
-      Message::OutputFormatted(
-          Message::ESeverity::Error,
+      Infra::Message::OutputFormatted(
+          Infra::Message::ESeverity::Error,
           L"Unable to check if device with instance GUID %s supports XInput: Failed to create the device (result = 0x%08x).",
           Strings::GuidToString(instanceGUID).AsCString(),
           static_cast<unsigned int>(result));
@@ -281,8 +281,8 @@ namespace Xidi
 
     if (DI_OK != result)
     {
-      Message::OutputFormatted(
-          Message::ESeverity::Error,
+      Infra::Message::OutputFormatted(
+          Infra::Message::ESeverity::Error,
           L"Unable to check if device with instance GUID %s supports XInput: Failed to query for property DIPROP_GUIDANDPATH (result = 0x%08x).",
           Strings::GuidToString(instanceGUID).AsCString(),
           static_cast<unsigned int>(result));
@@ -297,8 +297,8 @@ namespace Xidi
       if (nullptr != devicePath) *devicePath = devinfo.wszPath;
     }
 
-    Message::OutputFormatted(
-        Message::ESeverity::Debug,
+    Infra::Message::OutputFormatted(
+        Infra::Message::ESeverity::Debug,
         L"Device with instance GUID %s and path \"%s\" %s XInput.",
         Strings::GuidToString(instanceGUID).AsCString(),
         devinfo.wszPath,
@@ -339,10 +339,10 @@ namespace Xidi
 
       if (0 != (activeVirtualControllerMask & ((uint64_t)1 << idx)))
       {
-        if (Message::WillOutputMessageOfSeverity(Message::ESeverity::Info))
+        if (Infra::Message::WillOutputMessageOfSeverity(Infra::Message::ESeverity::Info))
         {
-          Message::OutputFormatted(
-              Message::ESeverity::Info,
+          Infra::Message::OutputFormatted(
+              Infra::Message::ESeverity::Info,
               L"Enumerate: Presenting Xidi virtual controller %u (instance GUID %s) to the application.",
               (1 + idx),
               Strings::GuidToString(instanceInfo->guidInstance).AsCString());

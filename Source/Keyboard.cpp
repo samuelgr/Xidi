@@ -18,11 +18,12 @@
 #include <thread>
 #include <vector>
 
+#include <Infra/Core/Message.h>
+
 #include "ApiBitSet.h"
 #include "ApiWindows.h"
 #include "ControllerTypes.h"
 #include "Globals.h"
-#include "Message.h"
 
 namespace Xidi
 {
@@ -296,8 +297,8 @@ namespace Xidi
           []() -> void
           {
             keyboardUpdateThread.Start();
-            Message::OutputFormatted(
-                Message::ESeverity::Info,
+            Infra::Message::OutputFormatted(
+                Infra::Message::ESeverity::Info,
                 L"Initialized the keyboard event thread. Desired update period is %u ms.",
                 kKeyboardUpdatePeriodMilliseconds);
           });

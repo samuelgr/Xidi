@@ -15,10 +15,10 @@
 #include <array>
 #include <mutex>
 
+#include <Infra/Core/Message.h>
 #include <Infra/Core/ProcessInfo.h>
 
 #include "ApiWindows.h"
-#include "Message.h"
 
 namespace Xidi
 {
@@ -51,8 +51,8 @@ namespace Xidi
     /// @param [in] functionName Name of the function whose import attempt failed.
     static void TerminateProcessBecauseImportFailed(LPCWSTR libraryName, LPCWSTR functionName)
     {
-      Message::OutputFormatted(
-          Message::ESeverity::ForcedInteractiveError,
+      Infra::Message::OutputFormatted(
+          Infra::Message::ESeverity::ForcedInteractiveError,
           L"Import library \"%s\" is missing XInput function \"%s\".\n\nXidi cannot function without it.",
           libraryName,
           functionName);
@@ -63,8 +63,8 @@ namespace Xidi
     /// library.
     static void TerminateProcessBecauseNoXInputLibraryLoaded(void)
     {
-      Message::Output(
-          Message::ESeverity::ForcedInteractiveError,
+      Infra::Message::Output(
+          Infra::Message::ESeverity::ForcedInteractiveError,
           L"Failed to load an XInput library.\n\nXidi cannot function without it.");
       TerminateProcess(Infra::ProcessInfo::GetCurrentProcessHandle(), (UINT)-1);
     }
@@ -89,15 +89,15 @@ namespace Xidi
               // Initialize the import table.
               ZeroMemory(&importTable, sizeof(importTable));
 
-              Message::OutputFormatted(
-                  Message::ESeverity::Info,
+              Infra::Message::OutputFormatted(
+                  Infra::Message::ESeverity::Info,
                   L"Attempting to import XInput functions from %s.",
                   xinputLibraryName);
               HMODULE loadedLibrary = LoadLibraryEx(xinputLibraryName, nullptr, 0);
               if (nullptr == loadedLibrary)
               {
-                Message::OutputFormatted(
-                    Message::ESeverity::Warning,
+                Infra::Message::OutputFormatted(
+                    Infra::Message::ESeverity::Warning,
                     L"Failed to import XInput functions from %s.",
                     xinputLibraryName);
                 continue;
@@ -119,8 +119,9 @@ namespace Xidi
                   reinterpret_cast<decltype(importTable.named.XInputSetState)>(procAddress);
 
               // Initialization complete.
-              Message::OutputFormatted(
-                  Message::ESeverity::Info, L"Successfully initialized imported XInput functions.");
+              Infra::Message::OutputFormatted(
+                  Infra::Message::ESeverity::Info,
+                  L"Successfully initialized imported XInput functions.");
               return;
             }
 

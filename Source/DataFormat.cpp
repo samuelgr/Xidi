@@ -18,10 +18,11 @@
 #include <set>
 #include <vector>
 
+#include <Infra/Core/Message.h>
+
 #include "ApiBitSet.h"
 #include "ApiDirectInput.h"
 #include "ControllerTypes.h"
-#include "Message.h"
 #include "Strings.h"
 
 // Handler for invalid or unselectable object data format specifications.
@@ -31,8 +32,8 @@
 #define DATAFORMAT_HANDLE_INVALID_OBJECT_SPEC(objectFormatSpec, objectIndex, reasonStr, ...)       \
   if (0 != (objectFormatSpec.dwType & DIDFT_OPTIONAL))                                             \
   {                                                                                                \
-    Message::OutputFormatted(                                                                      \
-        Message::ESeverity::Debug,                                                                 \
+    Infra::Message::OutputFormatted(                                                               \
+        Infra::Message::ESeverity::Debug,                                                          \
         L"Skipping optional object at index %d: " reasonStr,                                       \
         (int)objectIndex,                                                                          \
         ##__VA_ARGS__);                                                                            \
@@ -40,8 +41,8 @@
   }                                                                                                \
   else                                                                                             \
   {                                                                                                \
-    Message::OutputFormatted(                                                                      \
-        Message::ESeverity::Warning,                                                               \
+    Infra::Message::OutputFormatted(                                                               \
+        Infra::Message::ESeverity::Warning,                                                        \
         L"Rejecting application data format due to non-optional object at index %d: " reasonStr,   \
         (int)objectIndex,                                                                          \
         ##__VA_ARGS__);                                                                            \
@@ -280,54 +281,56 @@ namespace Xidi
   /// @param [in] appFormatSpec Application-provided DirectInput data format specification.
   static void DumpDataFormatSpecification(const DIDATAFORMAT& appFormatSpec)
   {
-    constexpr Message::ESeverity kDumpSeverity = Message::ESeverity::Debug;
+    constexpr Infra::Message::ESeverity kDumpSeverity = Infra::Message::ESeverity::Debug;
 
-    if (Message::WillOutputMessageOfSeverity(kDumpSeverity))
+    if (Infra::Message::WillOutputMessageOfSeverity(kDumpSeverity))
     {
-      Message::Output(kDumpSeverity, L"Begin dump of data format specification.");
+      Infra::Message::Output(kDumpSeverity, L"Begin dump of data format specification.");
 
       // First, dump the top-level structure members along with some preliminary validity checks.
-      Message::Output(kDumpSeverity, L"  Metadata:");
-      Message::OutputFormatted(
+      Infra::Message::Output(kDumpSeverity, L"  Metadata:");
+      Infra::Message::OutputFormatted(
           kDumpSeverity,
           L"    dwSize = %u (%s; expected %u)",
           appFormatSpec.dwSize,
           (sizeof(DIDATAFORMAT) == appFormatSpec.dwSize ? L"OK" : L"INCORRECT"),
           (unsigned int)sizeof(DIDATAFORMAT));
-      Message::OutputFormatted(
+      Infra::Message::OutputFormatted(
           kDumpSeverity,
           L"    dwObjSize = %u (%s; expected %u)",
           appFormatSpec.dwObjSize,
           (sizeof(DIOBJECTDATAFORMAT) == appFormatSpec.dwObjSize ? L"OK" : L"INCORRECT"),
           (unsigned int)sizeof(DIOBJECTDATAFORMAT));
-      Message::OutputFormatted(
+      Infra::Message::OutputFormatted(
           kDumpSeverity,
           L"    dwFlags = 0x%x (%s)",
           appFormatSpec.dwFlags,
           DataFormatFlagsString(appFormatSpec.dwFlags));
-      Message::OutputFormatted(
+      Infra::Message::OutputFormatted(
           kDumpSeverity,
           L"    dwDataSize = %u (%s)",
           appFormatSpec.dwDataSize,
           (0 == appFormatSpec.dwDataSize % 4 ? L"POSSIBLY OK; is a multiple of 4"
                                              : L"INCORRECT; must be a multiple of 4"));
-      Message::OutputFormatted(kDumpSeverity, L"    dwNumObjs = %u", appFormatSpec.dwNumObjs);
+      Infra::Message::OutputFormatted(
+          kDumpSeverity, L"    dwNumObjs = %u", appFormatSpec.dwNumObjs);
 
       // Second, dump the individual objects.
-      Message::Output(kDumpSeverity, L"  Objects:");
+      Infra::Message::Output(kDumpSeverity, L"  Objects:");
 
       if (0 == appFormatSpec.dwNumObjs)
       {
-        Message::Output(kDumpSeverity, L"    (none present)");
+        Infra::Message::Output(kDumpSeverity, L"    (none present)");
       }
       else if (nullptr == appFormatSpec.rgodf)
       {
-        Message::OutputFormatted(kDumpSeverity, L"    (%u missing)", appFormatSpec.dwNumObjs);
+        Infra::Message::OutputFormatted(
+            kDumpSeverity, L"    (%u missing)", appFormatSpec.dwNumObjs);
       }
       else
       {
         for (DWORD i = 0; i < appFormatSpec.dwNumObjs; ++i)
-          Message::OutputFormatted(
+          Infra::Message::OutputFormatted(
               kDumpSeverity,
               L"    rgodf[%4u]    { pguid = %s, dwOfs = %u, dwType = 0x%08x, dwFlags = 0x%08x }",
               i,
@@ -337,7 +340,7 @@ namespace Xidi
               appFormatSpec.rgodf[i].dwFlags);
       }
 
-      Message::Output(kDumpSeverity, L"End dump of data format specification.");
+      Infra::Message::Output(kDumpSeverity, L"End dump of data format specification.");
     }
   }
 
@@ -410,8 +413,8 @@ namespace Xidi
     // Sanity check: is data packet size is a multiple of 4, as required by DirectInput?
     if (0 != (appFormatSpec.dwDataSize % 4))
     {
-      Message::Output(
-          Message::ESeverity::Warning,
+      Infra::Message::Output(
+          Infra::Message::ESeverity::Warning,
           L"Rejecting application data format because the data packet size is not divisible by 4.");
       return nullptr;
     }
@@ -419,8 +422,8 @@ namespace Xidi
     // Sanity check: is the data packet size within bounds?
     if (kMaxDataPacketSizeBytes < appFormatSpec.dwDataSize)
     {
-      Message::OutputFormatted(
-          Message::ESeverity::Warning,
+      Infra::Message::OutputFormatted(
+          Infra::Message::ESeverity::Warning,
           L"Rejecting application data format because the data packet size is too large (%u bytes versus maximum %u bytes).",
           appFormatSpec.dwDataSize,
           kMaxDataPacketSizeBytes);
@@ -430,15 +433,15 @@ namespace Xidi
     // Sanity check: are there any objects defined?
     if (appFormatSpec.dwNumObjs < 1)
     {
-      Message::Output(
-          Message::ESeverity::Warning,
+      Infra::Message::Output(
+          Infra::Message::ESeverity::Warning,
           L"Rejecting application data format because it does not define any objects.");
       return nullptr;
     }
     else if (nullptr == appFormatSpec.rgodf)
     {
-      Message::Output(
-          Message::ESeverity::Warning,
+      Infra::Message::Output(
+          Infra::Message::ESeverity::Warning,
           L"Rejecting application data format because it does not contain any object format specifications.");
       return nullptr;
     }
@@ -452,8 +455,8 @@ namespace Xidi
       case DIDF_ABSAXIS:
         break;
       default:
-        Message::OutputFormatted(
-            Message::ESeverity::Warning,
+        Infra::Message::OutputFormatted(
+            Infra::Message::ESeverity::Warning,
             L"Rejecting application data format because its flags are unsupported (0x%08x).",
             appFormatSpec.dwFlags);
         return nullptr;
@@ -500,8 +503,8 @@ namespace Xidi
         {
           if (false == buildHelper.AllocateAtOffset<TAxisValue>(objectFormatSpec.dwOfs))
           {
-            Message::OutputFormatted(
-                Message::ESeverity::Warning,
+            Infra::Message::OutputFormatted(
+                Infra::Message::ESeverity::Warning,
                 L"Rejecting application data format due object at index %d: Failed to allocate %d byte(s) for an axis at offset %u.",
                 (int)i,
                 (int)sizeof(TAxisValue),
@@ -547,8 +550,8 @@ namespace Xidi
 
           // For debugging.
           if (true == maybeSelectedElement.has_value())
-            Message::OutputFormatted(
-                Message::ESeverity::Debug,
+            Infra::Message::OutputFormatted(
+                Infra::Message::ESeverity::Debug,
                 L"Object at index %d: Selected %s axis for offset %u.",
                 (int)i,
                 Strings::AxisTypeString(maybeSelectedElement.value().axis),
@@ -561,8 +564,8 @@ namespace Xidi
         {
           if (false == buildHelper.AllocateAtOffset<TButtonValue>(objectFormatSpec.dwOfs))
           {
-            Message::OutputFormatted(
-                Message::ESeverity::Warning,
+            Infra::Message::OutputFormatted(
+                Infra::Message::ESeverity::Warning,
                 L"Rejecting application data format due object at index %d: Failed to allocate %d byte(s) for a button at offset %u.",
                 (int)i,
                 (int)sizeof(TButtonValue),
@@ -582,8 +585,8 @@ namespace Xidi
 
           // For debugging.
           if (true == maybeSelectedElement.has_value())
-            Message::OutputFormatted(
-                Message::ESeverity::Debug,
+            Infra::Message::OutputFormatted(
+                Infra::Message::ESeverity::Debug,
                 L"Object at index %d: Selected button %d for offset %u.",
                 (int)i,
                 (1 + (int)maybeSelectedElement.value().button),
@@ -596,8 +599,8 @@ namespace Xidi
         {
           if (false == buildHelper.AllocateAtOffset<EPovValue>(objectFormatSpec.dwOfs))
           {
-            Message::OutputFormatted(
-                Message::ESeverity::Warning,
+            Infra::Message::OutputFormatted(
+                Infra::Message::ESeverity::Warning,
                 L"Rejecting application data format due object at index %d: Failed to allocate %d byte(s) for a POV at offset %u.",
                 (int)i,
                 (int)sizeof(EPovValue),
@@ -618,8 +621,8 @@ namespace Xidi
           // a non-zero value when writing a data packet.
           if (false == maybeSelectedElement.has_value())
           {
-            Message::OutputFormatted(
-                Message::ESeverity::Debug,
+            Infra::Message::OutputFormatted(
+                Infra::Message::ESeverity::Debug,
                 L"Object at index %d: Found unused POV at offset %u.",
                 (int)i,
                 objectFormatSpec.dwOfs);
@@ -628,8 +631,8 @@ namespace Xidi
 
           // For debugging.
           if (true == maybeSelectedElement.has_value())
-            Message::OutputFormatted(
-                Message::ESeverity::Debug,
+            Infra::Message::OutputFormatted(
+                Infra::Message::ESeverity::Debug,
                 L"Object at index %d: Selected POV for offset %u.",
                 (int)i,
                 objectFormatSpec.dwOfs);
@@ -655,8 +658,8 @@ namespace Xidi
       }
     }
 
-    Message::OutputFormatted(
-        Message::ESeverity::Info,
+    Infra::Message::OutputFormatted(
+        Infra::Message::ESeverity::Info,
         L"Accepted and successfully set application data format. Total data packet size is %u byte(s), and %d virtual controller element(s) were selected.",
         appFormatSpec.dwDataSize,
         numElementsSelected);

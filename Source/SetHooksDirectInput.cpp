@@ -10,15 +10,16 @@
  **************************************************************************************************/
 
 #include <Hookshot/Hookshot.h>
+#include <Infra/Core/Message.h>
 
-#include "Message.h"
 #include "SetHooks.h"
 
 namespace Xidi
 {
   void SetHooksDirectInput(Hookshot::IHookshot* hookshot)
   {
-    Message::Output(Message::ESeverity::Info, L"Beginning to set hooks for DirectInput.");
+    Infra::Message::Output(
+        Infra::Message::ESeverity::Info, L"Beginning to set hooks for DirectInput.");
     OutputSetHookResult(L"CoCreateInstance", StaticHook_CoCreateInstance::SetHook(hookshot));
   }
 } // namespace Xidi

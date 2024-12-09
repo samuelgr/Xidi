@@ -12,9 +12,10 @@
 
 #include "DirectInputClassFactory.h"
 
+#include <Infra/Core/Message.h>
+
 #include "ApiWindows.h"
 #include "ImportApiDirectInput.h"
-#include "Message.h"
 #include "WrapperIDirectInput.h"
 
 namespace Xidi
@@ -114,8 +115,8 @@ namespace Xidi
         }
         else
         {
-          Message::OutputFormatted(
-              Message::ESeverity::Warning,
+          Infra::Message::OutputFormatted(
+              Infra::Message::ESeverity::Warning,
               L"DirectInputClassFactory failed with HRESULT code 0x%08x to create an underlying DirectInput object.",
               (unsigned int)underlyingDIObjectCreateResult);
           return underlyingDIObjectCreateResult;
@@ -123,16 +124,16 @@ namespace Xidi
       }
       else
       {
-        Message::OutputFormatted(
-            Message::ESeverity::Warning,
+        Infra::Message::OutputFormatted(
+            Infra::Message::ESeverity::Warning,
             L"DirectInputClassFactory failed with HRESULT code 0x%08x to create a class factory for an underlying DirectInput object.",
             (unsigned int)underlyingObjectFactoryCreateResult);
         return underlyingObjectFactoryCreateResult;
       }
     }
 
-    Message::Output(
-        Message::ESeverity::Warning,
+    Infra::Message::Output(
+        Infra::Message::ESeverity::Warning,
         L"DirectInputClassFactory was asked to create an instance of an unsupported interface.");
     return E_NOINTERFACE;
   }

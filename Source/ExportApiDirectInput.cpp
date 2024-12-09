@@ -9,10 +9,11 @@
  *   Implementation of primary exported functions for the DirectInput library.
  **************************************************************************************************/
 
+#include <Infra/Core/Message.h>
+
 #include "ApiDirectInput.h"
 #include "DirectInputClassFactory.h"
 #include "ImportApiDirectInput.h"
-#include "Message.h"
 #include "WrapperIDirectInput.h"
 
 using namespace Xidi;
@@ -24,8 +25,8 @@ using namespace Xidi;
 /// @param [in] receivedVersion Actual version received.
 static inline void LogVersionOutOfRange(DWORD minVersion, DWORD maxVersion, DWORD receivedVersion)
 {
-  Message::OutputFormatted(
-      Message::ESeverity::Error,
+  Infra::Message::OutputFormatted(
+      Infra::Message::ESeverity::Error,
       L"Failed to create a DirectInput interface object because the version is out of range (expected 0x%04x to 0x%04x, got 0x%04x).",
       minVersion,
       maxVersion,
@@ -36,8 +37,8 @@ static inline void LogVersionOutOfRange(DWORD minVersion, DWORD maxVersion, DWOR
 /// an invalid interface parameter.
 static inline void LogInvalidInterfaceParam(void)
 {
-  Message::Output(
-      Message::ESeverity::Error,
+  Infra::Message::Output(
+      Infra::Message::ESeverity::Error,
       L"Failed to create a DirectInput interface object because the requested IID is invalid.");
 }
 
@@ -46,8 +47,8 @@ static inline void LogInvalidInterfaceParam(void)
 /// @param [in] errorCode Error code returned by the system.
 static inline void LogSystemCreateError(HRESULT errorCode)
 {
-  Message::OutputFormatted(
-      Message::ESeverity::Error,
+  Infra::Message::OutputFormatted(
+      Infra::Message::ESeverity::Error,
       L"Failed to create a DirectInput interface object because the imported function returned code 0x%08x.",
       errorCode);
 }
@@ -56,8 +57,8 @@ static inline void LogSystemCreateError(HRESULT errorCode)
 /// successfully.
 static inline void LogSystemCreateSuccess(void)
 {
-  Message::Output(
-      Message::ESeverity::Info, L"Successfully created a DirectInput interface object.");
+  Infra::Message::Output(
+      Infra::Message::ESeverity::Info, L"Successfully created a DirectInput interface object.");
 }
 
 extern "C"
@@ -226,23 +227,23 @@ extern "C"
     {
       if (IsEqualIID(IID_IClassFactory, riid))
       {
-        Message::Output(
-            Message::ESeverity::Info,
+        Infra::Message::Output(
+            Infra::Message::ESeverity::Info,
             L"DllGetClassObject is intercepting the class object request because the class ID is supported and the interface ID is correct.");
         *ppv = DirectInputClassFactory::GetInstance();
         return S_OK;
       }
       else
       {
-        Message::Output(
-            Message::ESeverity::Warning,
+        Infra::Message::Output(
+            Infra::Message::ESeverity::Warning,
             L"DllGetClassObject failed to intercept the class object request because the class ID is supported but the interface ID is incorrect.");
         return E_NOINTERFACE;
       }
     }
 
-    Message::Output(
-        Message::ESeverity::Info,
+    Infra::Message::Output(
+        Infra::Message::ESeverity::Info,
         L"DllGetClassObject is not intercepting the class object request because the class ID is unsupported.");
     return ImportApiDirectInput::DllGetClassObject(rclsid, riid, ppv);
   }

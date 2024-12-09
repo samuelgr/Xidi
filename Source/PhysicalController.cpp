@@ -17,6 +17,8 @@
 #include <stop_token>
 #include <thread>
 
+#include <Infra/Core/Message.h>
+
 #include "ApiWindows.h"
 #include "ConcurrencyWrapper.h"
 #include "ControllerTypes.h"
@@ -25,7 +27,6 @@
 #include "ImportApiWinMM.h"
 #include "ImportApiXInput.h"
 #include "Mapper.h"
-#include "Message.h"
 #include "Strings.h"
 #include "VirtualController.h"
 
@@ -274,8 +275,8 @@ namespace Xidi
     {
       if (controllerIdentifier >= kPhysicalControllerCount)
       {
-        Message::OutputFormatted(
-            Message::ESeverity::Error,
+        Infra::Message::OutputFormatted(
+            Infra::Message::ESeverity::Error,
             L"Attempted to monitor physical controller with invalid identifier %u.",
             controllerIdentifier);
         return;
@@ -299,15 +300,15 @@ namespace Xidi
                 break;
 
               case EPhysicalDeviceStatus::NotConnected:
-                Message::OutputFormatted(
-                    Message::ESeverity::Info,
+                Infra::Message::OutputFormatted(
+                    Infra::Message::ESeverity::Info,
                     L"Physical controller %u: Hardware connected.",
                     (1 + controllerIdentifier));
                 break;
 
               default:
-                Message::OutputFormatted(
-                    Message::ESeverity::Warning,
+                Infra::Message::OutputFormatted(
+                    Infra::Message::ESeverity::Warning,
                     L"Physical controller %u: Cleared previous error condition.",
                     (1 + controllerIdentifier));
                 break;
@@ -316,16 +317,16 @@ namespace Xidi
 
           case EPhysicalDeviceStatus::NotConnected:
             if (newPhysicalState.deviceStatus != oldPhysicalState.deviceStatus)
-              Message::OutputFormatted(
-                  Message::ESeverity::Info,
+              Infra::Message::OutputFormatted(
+                  Infra::Message::ESeverity::Info,
                   L"Physical controller %u: Hardware disconnected.",
                   (1 + controllerIdentifier));
             break;
 
           default:
             if (newPhysicalState.deviceStatus != oldPhysicalState.deviceStatus)
-              Message::OutputFormatted(
-                  Message::ESeverity::Warning,
+              Infra::Message::OutputFormatted(
+                  Infra::Message::ESeverity::Warning,
                   L"Physical controller %u: Encountered an error condition.",
                   (1 + controllerIdentifier));
             break;
@@ -369,20 +370,20 @@ namespace Xidi
               timeResult = ImportApiWinMM::timeBeginPeriod(timeCaps.wPeriodMin);
 
               if (MMSYSERR_NOERROR == timeResult)
-                Message::OutputFormatted(
-                    Message::ESeverity::Info,
+                Infra::Message::OutputFormatted(
+                    Infra::Message::ESeverity::Info,
                     L"Set the system timer resolution to %u ms.",
                     timeCaps.wPeriodMin);
               else
-                Message::OutputFormatted(
-                    Message::ESeverity::Warning,
+                Infra::Message::OutputFormatted(
+                    Infra::Message::ESeverity::Warning,
                     L"Failed with code %u to set the system timer resolution.",
                     timeResult);
             }
             else
             {
-              Message::OutputFormatted(
-                  Message::ESeverity::Warning,
+              Infra::Message::OutputFormatted(
+                  Infra::Message::ESeverity::Warning,
                   L"Failed with code %u to obtain system timer resolution information.",
                   timeResult);
             }
@@ -392,8 +393,8 @@ namespace Xidi
                  ++controllerIdentifier)
             {
               std::thread(PollForPhysicalControllerStateChanges, controllerIdentifier).detach();
-              Message::OutputFormatted(
-                  Message::ESeverity::Info,
+              Infra::Message::OutputFormatted(
+                  Infra::Message::ESeverity::Info,
                   L"Initialized the physical controller state polling thread for controller %u. Desired polling period is %u ms.",
                   (unsigned int)(1 + controllerIdentifier),
                   kPhysicalPollingPeriodMilliseconds);
@@ -407,8 +408,8 @@ namespace Xidi
                  ++controllerIdentifier)
             {
               std::thread(ForceFeedbackActuateEffects, controllerIdentifier).detach();
-              Message::OutputFormatted(
-                  Message::ESeverity::Info,
+              Infra::Message::OutputFormatted(
+                  Infra::Message::ESeverity::Info,
                   L"Initialized the physical controller force feedback actuation thread for controller %u. Desired actuation period is %u ms.",
                   (unsigned int)(1 + controllerIdentifier),
                   kPhysicalForceFeedbackPeriodMilliseconds);
@@ -416,14 +417,14 @@ namespace Xidi
 
             // Create and start the physical controller hardware status monitoring threads, but only
             // if the messages generated by those threads will actually be delivered as output.
-            if (Message::WillOutputMessageOfSeverity(Message::ESeverity::Warning))
+            if (Infra::Message::WillOutputMessageOfSeverity(Infra::Message::ESeverity::Warning))
             {
               for (auto controllerIdentifier = 0; controllerIdentifier < kPhysicalControllerCount;
                    ++controllerIdentifier)
               {
                 std::thread(MonitorPhysicalControllerStatus, controllerIdentifier).detach();
-                Message::OutputFormatted(
-                    Message::ESeverity::Info,
+                Infra::Message::OutputFormatted(
+                    Infra::Message::ESeverity::Info,
                     L"Initialized the physical controller hardware status monitoring thread for controller %u.",
                     (unsigned int)(1 + controllerIdentifier));
               }
@@ -456,8 +457,8 @@ namespace Xidi
 
       if (controllerIdentifier >= kPhysicalControllerCount)
       {
-        Message::OutputFormatted(
-            Message::ESeverity::Error,
+        Infra::Message::OutputFormatted(
+            Infra::Message::ESeverity::Error,
             L"Attempted to register with a physical controller for force feedback with invalid identifier %u.",
             controllerIdentifier);
         return nullptr;
@@ -476,8 +477,8 @@ namespace Xidi
 
       if (controllerIdentifier >= kPhysicalControllerCount)
       {
-        Message::OutputFormatted(
-            Message::ESeverity::Error,
+        Infra::Message::OutputFormatted(
+            Infra::Message::ESeverity::Error,
             L"Attempted to unregister with a physical controller for force feedback with invalid identifier %u.",
             controllerIdentifier);
         return;

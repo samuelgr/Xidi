@@ -15,9 +15,10 @@
 #include <map>
 #include <memory>
 
+#include <Infra/Core/Message.h>
+
 #include "Mapper.h"
 #include "MapperParser.h"
-#include "Message.h"
 
 namespace Xidi
 {
@@ -55,8 +56,8 @@ namespace Xidi
     {
       if (false == DoesBlueprintNameExist(mapperName))
       {
-        Message::OutputFormatted(
-            Message::ESeverity::Error,
+        Infra::Message::OutputFormatted(
+            Infra::Message::ESeverity::Error,
             L"Error while building mapper %s: Unrecognized name.",
             mapperName.data());
         return nullptr;
@@ -64,8 +65,8 @@ namespace Xidi
 
       if (true == Mapper::IsMapperNameKnown(mapperName))
       {
-        Message::OutputFormatted(
-            Message::ESeverity::Error,
+        Infra::Message::OutputFormatted(
+            Infra::Message::ESeverity::Error,
             L"Error while building mapper %s: Internal error: A mapper already exists with this name.",
             mapperName.data());
         return nullptr;
@@ -76,8 +77,8 @@ namespace Xidi
       if (false == blueprint.buildCanAttempt)
       {
         // If the blueprint was previously invalidated, then it cannot be built.
-        Message::OutputFormatted(
-            Message::ESeverity::Error,
+        Infra::Message::OutputFormatted(
+            Infra::Message::ESeverity::Error,
             L"Error while building mapper %s: Mapper configuration is invalid.",
             mapperName.data());
         return nullptr;
@@ -87,8 +88,8 @@ namespace Xidi
       {
         // If the build started but was never completed, then this indicates a cycle in the
         // dependency graph, which is an error.
-        Message::OutputFormatted(
-            Message::ESeverity::Error,
+        Infra::Message::OutputFormatted(
+            Infra::Message::ESeverity::Error,
             L"Error while building mapper %s: Circular template dependency.",
             mapperName.data());
         return nullptr;
@@ -113,24 +114,24 @@ namespace Xidi
           // when 1 would suffice and be more concise.
           if (false == DoesBlueprintNameExist(blueprint.templateName))
           {
-            Message::OutputFormatted(
-                Message::ESeverity::Error,
+            Infra::Message::OutputFormatted(
+                Infra::Message::ESeverity::Error,
                 L"Error while building mapper %s: Unknown template dependency %s.",
                 mapperName.data(),
                 blueprint.templateName.data());
             return nullptr;
           }
 
-          Message::OutputFormatted(
-              Message::ESeverity::Info,
+          Infra::Message::OutputFormatted(
+              Infra::Message::ESeverity::Info,
               L"Mapper %s uses mapper %s as a template. Attempting to build it.",
               mapperName.data(),
               blueprint.templateName.data());
 
           if (nullptr == Build(blueprint.templateName))
           {
-            Message::OutputFormatted(
-                Message::ESeverity::Error,
+            Infra::Message::OutputFormatted(
+                Infra::Message::ESeverity::Error,
                 L"Error while building mapper %s: Template dependency %s failed to build.",
                 mapperName.data(),
                 blueprint.templateName.data());
@@ -139,8 +140,8 @@ namespace Xidi
 
           if (false == Mapper::IsMapperNameKnown(blueprint.templateName))
           {
-            Message::OutputFormatted(
-                Message::ESeverity::Error,
+            Infra::Message::OutputFormatted(
+                Infra::Message::ESeverity::Error,
                 L"Error while building mapper %s: Internal error: Successfully built template dependency %s but failed to register the resulting mapper object.",
                 mapperName.data(),
                 blueprint.templateName.data());
@@ -153,8 +154,8 @@ namespace Xidi
         const Mapper* const kTemplateMapper = Mapper::GetByName(blueprint.templateName);
         if (nullptr == kTemplateMapper)
         {
-          Message::OutputFormatted(
-              Message::ESeverity::Error,
+          Infra::Message::OutputFormatted(
+              Infra::Message::ESeverity::Error,
               L"Error while building mapper %s: Internal error: Failed to locate the mapper object for template dependency %s.",
               mapperName.data(),
               blueprint.templateName.data());
@@ -187,8 +188,8 @@ namespace Xidi
               ffActuatorChangeFromTemplate.second;
       }
 
-      Message::OutputFormatted(
-          Message::ESeverity::Info, L"Successfully built mapper %s.", mapperName.data());
+      Infra::Message::OutputFormatted(
+          Infra::Message::ESeverity::Info, L"Successfully built mapper %s.", mapperName.data());
       return new Mapper(
           mapperName, std::move(mapperElements.named), mapperForceFeedbackActuators.named);
     }

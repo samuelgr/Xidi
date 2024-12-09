@@ -17,13 +17,13 @@
 #include <optional>
 #include <unordered_set>
 
+#include <Infra/Core/Message.h>
 #include <Infra/Core/TemporaryBuffer.h>
 
 #include "ApiDirectInput.h"
 #include "ApiGUID.h"
 #include "ControllerIdentification.h"
 #include "Mapper.h"
-#include "Message.h"
 #include "Strings.h"
 #include "VirtualController.h"
 #include "VirtualDirectInputDevice.h"
@@ -131,14 +131,14 @@ namespace Xidi
       {
         if (GUID_SysKeyboard == rguid)
         {
-          Message::Output(
-              Message::ESeverity::Info,
+          Infra::Message::Output(
+              Infra::Message::ESeverity::Info,
               L"Binding to the system keyboard device. Xidi will not handle communication with it.");
         }
         else if (GUID_SysMouse == rguid)
         {
-          Message::Output(
-              Message::ESeverity::Info,
+          Infra::Message::Output(
+              Infra::Message::ESeverity::Info,
               L"Binding to the system mouse device. Xidi will not handle communication with it.");
         }
         else
@@ -147,20 +147,20 @@ namespace Xidi
               .dwSize = sizeof(typename DirectInputType<charMode>::DeviceInstanceType)};
           const HRESULT deviceInfoResult = (*lplpDirectInputDevice)->GetDeviceInfo(&deviceInfo);
 
-          if (Message::WillOutputMessageOfSeverity(Message::ESeverity::Info))
+          if (Infra::Message::WillOutputMessageOfSeverity(Infra::Message::ESeverity::Info))
           {
             if (DI_OK == deviceInfoResult)
             {
-              Message::OutputFormatted(
-                  Message::ESeverity::Info,
+              Infra::Message::OutputFormatted(
+                  Infra::Message::ESeverity::Info,
                   L"Binding to non-XInput device \"%s\" with instance GUID %s. Xidi will not handle communication with it.",
                   Infra::TemporaryString(deviceInfo.tszProductName).AsCString(),
                   Strings::GuidToString(deviceInfo.guidInstance).AsCString());
             }
             else
             {
-              Message::OutputFormatted(
-                  Message::ESeverity::Info,
+              Infra::Message::OutputFormatted(
+                  Infra::Message::ESeverity::Info,
                   L"Binding to an unknown non-XInput device with instance GUID %s. Xidi will not handle communication with it.",
                   Strings::GuidToString(deviceInfo.guidInstance).AsCString());
             }
@@ -169,8 +169,8 @@ namespace Xidi
       }
       else
       {
-        Message::OutputFormatted(
-            Message::ESeverity::Info,
+        Infra::Message::OutputFormatted(
+            Infra::Message::ESeverity::Info,
             L"Failed (result = 0x%08x) to bind to a non-XInput device.",
             static_cast<unsigned int>(createDeviceResult));
       }
@@ -189,14 +189,14 @@ namespace Xidi
               std::make_unique<Controller::VirtualController>(virtualControllerId));
       *lplpDirectInputDevice = newDirectInputDeviceInterfaceObject;
 
-      Message::OutputFormatted(
-          Message::ESeverity::Info,
+      Infra::Message::OutputFormatted(
+          Infra::Message::ESeverity::Info,
           L"Binding to Xidi virtual controller %u with interface object %u.",
           (virtualControllerId + 1),
           newDirectInputDeviceInterfaceObject->ObjectIdentifier());
       if (nullptr != pUnkOuter)
-        Message::Output(
-            Message::ESeverity::Warning,
+        Infra::Message::Output(
+            Infra::Message::ESeverity::Warning,
             L"Application requested COM aggregation, which is not implemented, while binding to a Xidi virtual controller.");
 
       return DI_OK;
@@ -228,9 +228,10 @@ namespace Xidi
     callbackInfo.seenInstanceIdentifiers.clear();
 
     HRESULT enumResult = DI_OK;
-    Message::Output(Message::ESeverity::Debug, L"Starting to enumerate DirectInput devices.");
-    Message::OutputFormatted(
-        Message::ESeverity::Debug,
+    Infra::Message::Output(
+        Infra::Message::ESeverity::Debug, L"Starting to enumerate DirectInput devices.");
+    Infra::Message::OutputFormatted(
+        Infra::Message::ESeverity::Debug,
         L"Enumerate: dwDevType = 0x%08x, dwFlags = 0x%08x.",
         dwDevType,
         dwFlags);
@@ -253,12 +254,12 @@ namespace Xidi
       const BOOL systemHasXInputDevices = (0 != callbackInfo.seenInstanceIdentifiers.size());
 
       if (systemHasXInputDevices)
-        Message::Output(
-            Message::ESeverity::Debug,
+        Infra::Message::Output(
+            Infra::Message::ESeverity::Debug,
             L"Enumerate: System has XInput devices, so Xidi virtual controllers are being presented to the application before other controllers.");
       else
-        Message::Output(
-            Message::ESeverity::Debug,
+        Infra::Message::Output(
+            Infra::Message::ESeverity::Debug,
             L"Enumerate: System has no XInput devices, so Xidi virtual controllers are being presented to the application after other controllers.");
 
       // Second, if the system has XInput controllers, enumerate them.
@@ -270,7 +271,8 @@ namespace Xidi
 
         if (DIENUM_STOP == callbackInfo.callbackReturnCode)
         {
-          Message::Output(Message::ESeverity::Debug, L"Application has terminated enumeration.");
+          Infra::Message::Output(
+              Infra::Message::ESeverity::Debug, L"Application has terminated enumeration.");
           return enumResult;
         }
       }
@@ -283,7 +285,8 @@ namespace Xidi
 
       if (DIENUM_STOP == callbackInfo.callbackReturnCode)
       {
-        Message::Output(Message::ESeverity::Debug, L"Application has terminated enumeration.");
+        Infra::Message::Output(
+            Infra::Message::ESeverity::Debug, L"Application has terminated enumeration.");
         return enumResult;
       }
 
@@ -296,7 +299,8 @@ namespace Xidi
 
         if (DIENUM_STOP == callbackInfo.callbackReturnCode)
         {
-          Message::Output(Message::ESeverity::Debug, L"Application has terminated enumeration.");
+          Infra::Message::Output(
+              Infra::Message::ESeverity::Debug, L"Application has terminated enumeration.");
           return enumResult;
         }
       }
@@ -310,11 +314,13 @@ namespace Xidi
 
     if (DIENUM_STOP == callbackInfo.callbackReturnCode)
     {
-      Message::Output(Message::ESeverity::Debug, L"Application has terminated enumeration.");
+      Infra::Message::Output(
+          Infra::Message::ESeverity::Debug, L"Application has terminated enumeration.");
       return enumResult;
     }
 
-    Message::Output(Message::ESeverity::Debug, L"Finished enumerating DirectInput devices.");
+    Infra::Message::Output(
+        Infra::Message::ESeverity::Debug, L"Finished enumerating DirectInput devices.");
     return enumResult;
   }
 
@@ -369,10 +375,10 @@ namespace Xidi
             callbackInfo->instance->underlyingDIObject, lpddi->guidInstance))
     {
       callbackInfo->seenInstanceIdentifiers.insert(lpddi->guidInstance);
-      if (Message::WillOutputMessageOfSeverity(Message::ESeverity::Debug))
+      if (Infra::Message::WillOutputMessageOfSeverity(Infra::Message::ESeverity::Debug))
       {
-        Message::OutputFormatted(
-            Message::ESeverity::Debug,
+        Infra::Message::OutputFormatted(
+            Infra::Message::ESeverity::Debug,
             L"Enumerate: DirectInput device \"%s\" with instance GUID %s supports XInput and will not be presented to the application.",
             Infra::TemporaryString(lpddi->tszProductName).AsCString(),
             Strings::GuidToString(lpddi->guidInstance).AsCString());
@@ -380,10 +386,10 @@ namespace Xidi
     }
     else
     {
-      if (Message::WillOutputMessageOfSeverity(Message::ESeverity::Debug))
+      if (Infra::Message::WillOutputMessageOfSeverity(Infra::Message::ESeverity::Debug))
       {
-        Message::OutputFormatted(
-            Message::ESeverity::Debug,
+        Infra::Message::OutputFormatted(
+            Infra::Message::ESeverity::Debug,
             L"Enumerate: DirectInput device \"%s\" with instance GUID %s does not support XInput and may be presented to the application.",
             Infra::TemporaryString(lpddi->tszProductName).AsCString(),
             Strings::GuidToString(lpddi->guidInstance).AsCString());
@@ -402,10 +408,10 @@ namespace Xidi
     // If the device has not been seen already, add it to the set and present it to the application.
     if (0 == callbackInfo->seenInstanceIdentifiers.count(lpddi->guidInstance))
     {
-      if (Message::WillOutputMessageOfSeverity(Message::ESeverity::Info))
+      if (Infra::Message::WillOutputMessageOfSeverity(Infra::Message::ESeverity::Info))
       {
-        Message::OutputFormatted(
-            Message::ESeverity::Info,
+        Infra::Message::OutputFormatted(
+            Infra::Message::ESeverity::Info,
             L"Enumerate: Presenting DirectInput device \"%s\" (instance GUID %s) to the application.",
             Infra::TemporaryString(lpddi->tszProductName).AsCString(),
             Strings::GuidToString(lpddi->guidInstance).AsCString());
@@ -458,8 +464,9 @@ namespace Xidi
             IsEqualIID(riid, IID_IDirectInputDevice2W) ||
             IsEqualIID(riid, IID_IDirectInputDevice7W)))
       {
-        Message::Output(
-            Message::ESeverity::Warning, L"CreateDeviceEx Unicode failed due to an invalid IID.");
+        Infra::Message::Output(
+            Infra::Message::ESeverity::Warning,
+            L"CreateDeviceEx Unicode failed due to an invalid IID.");
         return DIERR_NOINTERFACE;
       }
     }
@@ -469,8 +476,9 @@ namespace Xidi
             IsEqualIID(riid, IID_IDirectInputDevice2A) ||
             IsEqualIID(riid, IID_IDirectInputDevice7A)))
       {
-        Message::Output(
-            Message::ESeverity::Warning, L"CreateDeviceEx ASCII failed due to an invalid IID.");
+        Infra::Message::Output(
+            Infra::Message::ESeverity::Warning,
+            L"CreateDeviceEx ASCII failed due to an invalid IID.");
         return DIERR_NOINTERFACE;
       }
     }

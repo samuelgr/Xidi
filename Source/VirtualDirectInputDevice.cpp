@@ -19,6 +19,8 @@
 #include <optional>
 #include <unordered_map>
 
+#include <Infra/Core/Message.h>
+
 #include "ApiDirectInput.h"
 #include "ApiGUID.h"
 #include "Configuration.h"
@@ -28,7 +30,6 @@
 #include "ForceFeedbackDevice.h"
 #include "ForceFeedbackTypes.h"
 #include "Globals.h"
-#include "Message.h"
 #include "PhysicalController.h"
 #include "Strings.h"
 #include "VirtualController.h"
@@ -39,7 +40,7 @@
   do                                                                                                       \
   {                                                                                                        \
     const HRESULT hresult = (result);                                                                      \
-    Message::OutputFormatted(                                                                              \
+    Infra::Message::OutputFormatted(                                                                       \
         severity,                                                                                          \
         L"Invoked %s on interface object %u associated with Xidi virtual controller %u, result = 0x%08x.", \
         __FUNCTIONW__ L"()",                                                                               \
@@ -55,7 +56,7 @@
   do                                                                                                                                              \
   {                                                                                                                                               \
     const HRESULT hresult = (result);                                                                                                             \
-    Message::OutputFormatted(                                                                                                                     \
+    Infra::Message::OutputFormatted(                                                                                                              \
         severity,                                                                                                                                 \
         L"Invoked function %s on interface object %u associated with Xidi virtual controller %u, result = 0x%08x, property = %s" propvalfmt L".", \
         __FUNCTIONW__ L"()",                                                                                                                      \
@@ -251,16 +252,16 @@ namespace Xidi
   {
     if (nullptr == pdiph)
     {
-      Message::OutputFormatted(
-          Message::ESeverity::Warning,
+      Infra::Message::OutputFormatted(
+          Infra::Message::ESeverity::Warning,
           L"Rejected null property header for %s.",
           PropertyGuidString(rguidProp));
       return false;
     }
     else if ((sizeof(DIPROPHEADER) != pdiph->dwHeaderSize))
     {
-      Message::OutputFormatted(
-          Message::ESeverity::Warning,
+      Infra::Message::OutputFormatted(
+          Infra::Message::ESeverity::Warning,
           L"Rejected invalid property header for %s: Incorrect size for DIPROPHEADER (expected %u, got %u).",
           PropertyGuidString(rguidProp),
           (unsigned int)sizeof(DIPROPHEADER),
@@ -269,8 +270,8 @@ namespace Xidi
     }
     else if ((DIPH_DEVICE == pdiph->dwHow) && (0 != pdiph->dwObj))
     {
-      Message::OutputFormatted(
-          Message::ESeverity::Warning,
+      Infra::Message::OutputFormatted(
+          Infra::Message::ESeverity::Warning,
           L"Rejected invalid property header for %s: Incorrect object identification value used with DIPH_DEVICE (expected %u, got %u).",
           PropertyGuidString(rguidProp),
           (unsigned int)0,
@@ -288,8 +289,8 @@ namespace Xidi
         // These properties use DIPROPDWORD.
         if (sizeof(DIPROPDWORD) != pdiph->dwSize)
         {
-          Message::OutputFormatted(
-              Message::ESeverity::Warning,
+          Infra::Message::OutputFormatted(
+              Infra::Message::ESeverity::Warning,
               L"Rejected invalid property header for %s: Incorrect size for DIPROPDWORD (expected %u, got %u).",
               PropertyGuidString(rguidProp),
               (unsigned int)sizeof(DIPROPDWORD),
@@ -310,8 +311,8 @@ namespace Xidi
         // These properties use DIPROPDWORD and are exclusively device-wide properties.
         if (DIPH_DEVICE != pdiph->dwHow)
         {
-          Message::OutputFormatted(
-              Message::ESeverity::Warning,
+          Infra::Message::OutputFormatted(
+              Infra::Message::ESeverity::Warning,
               L"Rejected invalid property header for %s: Incorrect object identification method for this property (expected %s, got %s).",
               PropertyGuidString(rguidProp),
               IdentificationMethodString(DIPH_DEVICE),
@@ -320,8 +321,8 @@ namespace Xidi
         }
         else if (sizeof(DIPROPDWORD) != pdiph->dwSize)
         {
-          Message::OutputFormatted(
-              Message::ESeverity::Warning,
+          Infra::Message::OutputFormatted(
+              Infra::Message::ESeverity::Warning,
               L"Rejected invalid property header for %s: Incorrect size for DIPROPDWORD (expected %u, got %u).",
               PropertyGuidString(rguidProp),
               (unsigned int)sizeof(DIPROPDWORD),
@@ -336,8 +337,8 @@ namespace Xidi
         // These properties use DIPROPRANGE.
         if (sizeof(DIPROPRANGE) != pdiph->dwSize)
         {
-          Message::OutputFormatted(
-              Message::ESeverity::Warning,
+          Infra::Message::OutputFormatted(
+              Infra::Message::ESeverity::Warning,
               L"Rejected invalid property header for %s: Incorrect size for DIPROPRANGE (expected %u, got %u).",
               PropertyGuidString(rguidProp),
               (unsigned int)sizeof(DIPROPRANGE),
@@ -355,8 +356,8 @@ namespace Xidi
         // These properties use DIPROPSTRING and are exclusively device-wide properties.
         if (DIPH_DEVICE != pdiph->dwHow)
         {
-          Message::OutputFormatted(
-              Message::ESeverity::Warning,
+          Infra::Message::OutputFormatted(
+              Infra::Message::ESeverity::Warning,
               L"Rejected invalid property header for %s: Incorrect object identification method for this property (expected %s, got %s).",
               PropertyGuidString(rguidProp),
               IdentificationMethodString(DIPH_DEVICE),
@@ -365,8 +366,8 @@ namespace Xidi
         }
         else if (sizeof(DIPROPSTRING) != pdiph->dwSize)
         {
-          Message::OutputFormatted(
-              Message::ESeverity::Warning,
+          Infra::Message::OutputFormatted(
+              Infra::Message::ESeverity::Warning,
               L"Rejected invalid property header for %s: Incorrect size for DIPROPSTRING (expected %u, got %u).",
               PropertyGuidString(rguidProp),
               (unsigned int)sizeof(DIPROPSTRING),
@@ -379,8 +380,8 @@ namespace Xidi
         // This property uses DIPROPGUIDANDPATH and is exclusively a device-wide property.
         if (DIPH_DEVICE != pdiph->dwHow)
         {
-          Message::OutputFormatted(
-              Message::ESeverity::Warning,
+          Infra::Message::OutputFormatted(
+              Infra::Message::ESeverity::Warning,
               L"Rejected invalid property header for %s: Incorrect object identification method for this property (expected %s, got %s).",
               PropertyGuidString(rguidProp),
               IdentificationMethodString(DIPH_DEVICE),
@@ -389,8 +390,8 @@ namespace Xidi
         }
         else if (sizeof(DIPROPGUIDANDPATH) != pdiph->dwSize)
         {
-          Message::OutputFormatted(
-              Message::ESeverity::Warning,
+          Infra::Message::OutputFormatted(
+              Infra::Message::ESeverity::Warning,
               L"Rejected invalid property header for %s: Incorrect size for DIPROPGUIDANDPATH (expected %u, got %u).",
               PropertyGuidString(rguidProp),
               (unsigned int)sizeof(DIPROPGUIDANDPATH),
@@ -401,15 +402,15 @@ namespace Xidi
 
       default:
         // Any property not listed here is not supported by Xidi and therefore not validated by it.
-        Message::OutputFormatted(
-            Message::ESeverity::Warning,
+        Infra::Message::OutputFormatted(
+            Infra::Message::ESeverity::Warning,
             L"Skipped property header validation because the property %s is not supported.",
             PropertyGuidString(rguidProp));
         return true;
     }
 
-    Message::OutputFormatted(
-        Message::ESeverity::Info,
+    Infra::Message::OutputFormatted(
+        Infra::Message::ESeverity::Info,
         L"Accepted valid property header for %s.",
         PropertyGuidString(rguidProp));
     return true;
@@ -422,38 +423,40 @@ namespace Xidi
   /// GetProperty.
   static void DumpPropertyRequest(REFGUID rguidProp, LPCDIPROPHEADER pdiph, bool requestTypeIsSet)
   {
-    constexpr Message::ESeverity kDumpSeverity = Message::ESeverity::Debug;
+    constexpr Infra::Message::ESeverity kDumpSeverity = Infra::Message::ESeverity::Debug;
 
-    if (Message::WillOutputMessageOfSeverity(kDumpSeverity))
+    if (Infra::Message::WillOutputMessageOfSeverity(kDumpSeverity))
     {
-      Message::Output(kDumpSeverity, L"Begin dump of property request.");
+      Infra::Message::Output(kDumpSeverity, L"Begin dump of property request.");
 
-      Message::Output(kDumpSeverity, L"  Metadata:");
-      Message::OutputFormatted(
+      Infra::Message::Output(kDumpSeverity, L"  Metadata:");
+      Infra::Message::OutputFormatted(
           kDumpSeverity,
           L"    operation = %sProperty",
           ((true == requestTypeIsSet) ? L"Set" : L"Get"));
-      Message::OutputFormatted(kDumpSeverity, L"    rguidProp = %s", PropertyGuidString(rguidProp));
+      Infra::Message::OutputFormatted(
+          kDumpSeverity, L"    rguidProp = %s", PropertyGuidString(rguidProp));
 
-      Message::Output(kDumpSeverity, L"  Header:");
+      Infra::Message::Output(kDumpSeverity, L"  Header:");
       if (nullptr == pdiph)
       {
-        Message::Output(kDumpSeverity, L"    (missing)");
+        Infra::Message::Output(kDumpSeverity, L"    (missing)");
       }
       else
       {
-        Message::OutputFormatted(kDumpSeverity, L"    dwSize = %u", pdiph->dwSize);
-        Message::OutputFormatted(kDumpSeverity, L"    dwHeaderSize = %u", pdiph->dwHeaderSize);
-        Message::OutputFormatted(
+        Infra::Message::OutputFormatted(kDumpSeverity, L"    dwSize = %u", pdiph->dwSize);
+        Infra::Message::OutputFormatted(
+            kDumpSeverity, L"    dwHeaderSize = %u", pdiph->dwHeaderSize);
+        Infra::Message::OutputFormatted(
             kDumpSeverity, L"    dwObj = %u (0x%08x)", pdiph->dwObj, pdiph->dwObj);
-        Message::OutputFormatted(
+        Infra::Message::OutputFormatted(
             kDumpSeverity,
             L"    dwHow = %u (%s)",
             pdiph->dwHow,
             IdentificationMethodString(pdiph->dwHow));
       }
 
-      Message::Output(kDumpSeverity, L"End dump of property request.");
+      Infra::Message::Output(kDumpSeverity, L"End dump of property request.");
     }
   }
 
@@ -1014,8 +1017,8 @@ namespace Xidi
 
     if (nullptr == forceFeedbackDevice)
     {
-      Message::OutputFormatted(
-          Message::ESeverity::Info,
+      Infra::Message::OutputFormatted(
+          Infra::Message::ESeverity::Info,
           L"Attempting to acquire Xidi virtual controller %u automatically because the application did not do so explicitly.",
           (1 + controller->GetIdentifier()));
 
@@ -1178,12 +1181,12 @@ namespace Xidi
 
   template <ECharMode charMode> HRESULT VirtualDirectInputDevice<charMode>::Acquire(void)
   {
-    constexpr Message::ESeverity kMethodSeverity = Message::ESeverity::Info;
+    constexpr Infra::Message::ESeverity kMethodSeverity = Infra::Message::ESeverity::Info;
 
     // DirectInput documentation requires that the application data format already be set before a
     // device can be acquired.
     if (false == IsApplicationDataFormatSet())
-      LOG_INVOCATION_AND_RETURN(DIERR_INVALIDPARAM, Message::ESeverity::Warning);
+      LOG_INVOCATION_AND_RETURN(DIERR_INVALIDPARAM, Infra::Message::ESeverity::Warning);
 
     switch (cooperativeLevel)
     {
@@ -1194,7 +1197,7 @@ namespace Xidi
         // at all. However, in the interest of compabitility with DirectInput, Xidi does require
         // exclusive acquisition in order for force feedback to be available.
 
-        Message::OutputFormatted(
+        Infra::Message::OutputFormatted(
             kMethodSeverity,
             L"Acquiring Xidi virtual controller %u in exclusive mode.",
             (1 + controller->GetIdentifier()));
@@ -1207,7 +1210,7 @@ namespace Xidi
 
         // Getting to this point means force feedback registration failed. This should not normally
         // occur.
-        LOG_INVOCATION_AND_RETURN(DIERR_OTHERAPPHASPRIO, Message::ESeverity::Error);
+        LOG_INVOCATION_AND_RETURN(DIERR_OTHERAPPHASPRIO, Infra::Message::ESeverity::Error);
 
       default:
         // No other cooperative level requires any action on Xidi's part for the acquisition to
@@ -1219,24 +1222,24 @@ namespace Xidi
   template <ECharMode charMode> HRESULT VirtualDirectInputDevice<charMode>::CreateEffect(
       REFGUID rguid, LPCDIEFFECT lpeff, LPDIRECTINPUTEFFECT* ppdeff, LPUNKNOWN punkOuter)
   {
-    constexpr Message::ESeverity kMethodSeverity = Message::ESeverity::Info;
+    constexpr Infra::Message::ESeverity kMethodSeverity = Infra::Message::ESeverity::Info;
 
     if (false == controller->GetCapabilities().ForceFeedbackIsSupported())
     {
-      Message::OutputFormatted(
-          Message::ESeverity::Warning,
+      Infra::Message::OutputFormatted(
+          Infra::Message::ESeverity::Warning,
           L"Application is attempting to create an effect on Xidi virtual controller %u which does not support force feedback.",
           (1 + controller->GetIdentifier()));
       LOG_INVOCATION_AND_RETURN(DIERR_UNSUPPORTED, kMethodSeverity);
     }
 
     if (nullptr != punkOuter)
-      Message::Output(
-          Message::ESeverity::Warning,
+      Infra::Message::Output(
+          Infra::Message::ESeverity::Warning,
           L"Application requested COM aggregation, which is not implemented, while creating a force feedback effect.");
 
-    Message::OutputFormatted(
-        Message::ESeverity::Debug,
+    Infra::Message::OutputFormatted(
+        Infra::Message::ESeverity::Debug,
         L"Creating effect with GUID %s.",
         ForceFeedbackEffectGuidString(rguid));
 
@@ -1269,7 +1272,7 @@ namespace Xidi
       }
     }
 
-    Message::OutputFormatted(
+    Infra::Message::OutputFormatted(
         kMethodSeverity,
         L"Created a force feedback effect and assigned it an identifier of %llu.",
         (unsigned long long)newEffect->UnderlyingEffect().Identifier());
@@ -1282,15 +1285,15 @@ namespace Xidi
       VirtualDirectInputDevice<charMode>::EnumCreatedEffectObjects(
           LPDIENUMCREATEDEFFECTOBJECTSCALLBACK lpCallback, LPVOID pvRef, DWORD fl)
   {
-    constexpr Message::ESeverity kMethodSeverity = Message::ESeverity::Info;
+    constexpr Infra::Message::ESeverity kMethodSeverity = Infra::Message::ESeverity::Info;
 
     if ((nullptr == lpCallback) || (0 != fl))
       LOG_INVOCATION_AND_RETURN(DIERR_INVALIDPARAM, kMethodSeverity);
 
     if (false == controller->GetCapabilities().ForceFeedbackIsSupported())
     {
-      Message::OutputFormatted(
-          Message::ESeverity::Warning,
+      Infra::Message::OutputFormatted(
+          Infra::Message::ESeverity::Warning,
           L"Application is attempting to enumerate created effect objects on Xidi virtual controller %u which does not support force feedback.",
           (1 + controller->GetIdentifier()));
       LOG_INVOCATION_AND_RETURN(DI_OK, kMethodSeverity);
@@ -1324,14 +1327,14 @@ namespace Xidi
       LPVOID pvRef,
       DWORD dwEffType)
   {
-    constexpr Message::ESeverity kMethodSeverity = Message::ESeverity::Info;
+    constexpr Infra::Message::ESeverity kMethodSeverity = Infra::Message::ESeverity::Info;
 
     if (nullptr == lpCallback) LOG_INVOCATION_AND_RETURN(DIERR_INVALIDPARAM, kMethodSeverity);
 
     if (false == controller->GetCapabilities().ForceFeedbackIsSupported())
     {
-      Message::OutputFormatted(
-          Message::ESeverity::Warning,
+      Infra::Message::OutputFormatted(
+          Infra::Message::ESeverity::Warning,
           L"Application is attempting to enumerate effects on Xidi virtual controller %u which does not support force feedback.",
           (1 + controller->GetIdentifier()));
       LOG_INVOCATION_AND_RETURN(DI_OK, kMethodSeverity);
@@ -1463,7 +1466,7 @@ namespace Xidi
       LPVOID pvRef,
       DWORD dwFlags)
   {
-    constexpr Message::ESeverity kMethodSeverity = Message::ESeverity::Info;
+    constexpr Infra::Message::ESeverity kMethodSeverity = Infra::Message::ESeverity::Info;
     LOG_INVOCATION_AND_RETURN(DIERR_UNSUPPORTED, kMethodSeverity);
   }
 
@@ -1478,7 +1481,7 @@ namespace Xidi
                 Strings::kStrConfigurationSectionWorkarounds,
                 Strings::kStrConfigurationSettingsWorkaroundsIgnoreEnumObjectsCallbackReturnCode)
             .value_or(false);
-    constexpr Message::ESeverity kMethodSeverity = Message::ESeverity::Info;
+    constexpr Infra::Message::ESeverity kMethodSeverity = Infra::Message::ESeverity::Info;
 
     if (nullptr == lpCallback) LOG_INVOCATION_AND_RETURN(DIERR_INVALIDPARAM, kMethodSeverity);
 
@@ -1607,14 +1610,14 @@ namespace Xidi
   template <ECharMode charMode> HRESULT VirtualDirectInputDevice<charMode>::Escape(
       LPDIEFFESCAPE pesc)
   {
-    constexpr Message::ESeverity kMethodSeverity = Message::ESeverity::Info;
+    constexpr Infra::Message::ESeverity kMethodSeverity = Infra::Message::ESeverity::Info;
     LOG_INVOCATION_AND_RETURN(DIERR_UNSUPPORTED, kMethodSeverity);
   }
 
   template <ECharMode charMode> HRESULT VirtualDirectInputDevice<charMode>::GetCapabilities(
       LPDIDEVCAPS lpDIDevCaps)
   {
-    constexpr Message::ESeverity kMethodSeverity = Message::ESeverity::Info;
+    constexpr Infra::Message::ESeverity kMethodSeverity = Infra::Message::ESeverity::Info;
 
     if (nullptr == lpDIDevCaps) LOG_INVOCATION_AND_RETURN(E_POINTER, kMethodSeverity);
 
@@ -1672,8 +1675,8 @@ namespace Xidi
   template <ECharMode charMode> HRESULT VirtualDirectInputDevice<charMode>::GetDeviceData(
       DWORD cbObjectData, LPDIDEVICEOBJECTDATA rgdod, LPDWORD pdwInOut, DWORD dwFlags)
   {
-    constexpr Message::ESeverity kMethodSeverity = Message::ESeverity::SuperDebug;
-    constexpr Message::ESeverity kMethodSeverityForError = Message::ESeverity::Info;
+    constexpr Infra::Message::ESeverity kMethodSeverity = Infra::Message::ESeverity::SuperDebug;
+    constexpr Infra::Message::ESeverity kMethodSeverityForError = Infra::Message::ESeverity::Info;
 
     // DIDEVICEOBJECTDATA and DIDEVICEOBJECTDATA_DX3 are defined identically for all DirectInput
     // versions below 8. There is therefore no need to differentiate, as the distinction between
@@ -1745,7 +1748,7 @@ namespace Xidi
   template <ECharMode charMode> HRESULT VirtualDirectInputDevice<charMode>::GetDeviceInfo(
       DirectInputDeviceType<charMode>::DeviceInstanceType* pdidi)
   {
-    constexpr Message::ESeverity kMethodSeverity = Message::ESeverity::Info;
+    constexpr Infra::Message::ESeverity kMethodSeverity = Infra::Message::ESeverity::Info;
 
     if (nullptr == pdidi) LOG_INVOCATION_AND_RETURN(E_POINTER, kMethodSeverity);
 
@@ -1766,8 +1769,8 @@ namespace Xidi
   template <ECharMode charMode> HRESULT VirtualDirectInputDevice<charMode>::GetDeviceState(
       DWORD cbData, LPVOID lpvData)
   {
-    constexpr Message::ESeverity kMethodSeverity = Message::ESeverity::SuperDebug;
-    constexpr Message::ESeverity kMethodSeverityForError = Message::ESeverity::Info;
+    constexpr Infra::Message::ESeverity kMethodSeverity = Infra::Message::ESeverity::SuperDebug;
+    constexpr Infra::Message::ESeverity kMethodSeverityForError = Infra::Message::ESeverity::Info;
 
     if ((nullptr == lpvData) || (false == IsApplicationDataFormatSet()) ||
         (cbData < dataFormat->GetPacketSizeBytes()))
@@ -1785,12 +1788,12 @@ namespace Xidi
   template <ECharMode charMode> HRESULT VirtualDirectInputDevice<charMode>::GetEffectInfo(
       DirectInputDeviceType<charMode>::EffectInfoType* pdei, REFGUID rguid)
   {
-    constexpr Message::ESeverity kMethodSeverity = Message::ESeverity::Info;
+    constexpr Infra::Message::ESeverity kMethodSeverity = Infra::Message::ESeverity::Info;
 
     if (false == controller->GetCapabilities().ForceFeedbackIsSupported())
     {
-      Message::OutputFormatted(
-          Message::ESeverity::Warning,
+      Infra::Message::OutputFormatted(
+          Infra::Message::ESeverity::Warning,
           L"Application is attempting to get force feedback effect information on Xidi virtual controller %u which does not support force feedback.",
           (1 + controller->GetIdentifier()));
       LOG_INVOCATION_AND_RETURN(DIERR_INVALIDPARAM, kMethodSeverity);
@@ -1815,12 +1818,12 @@ namespace Xidi
   template <ECharMode charMode> HRESULT VirtualDirectInputDevice<charMode>::GetForceFeedbackState(
       LPDWORD pdwOut)
   {
-    constexpr Message::ESeverity kMethodSeverity = Message::ESeverity::Info;
+    constexpr Infra::Message::ESeverity kMethodSeverity = Infra::Message::ESeverity::Info;
 
     if (false == controller->GetCapabilities().ForceFeedbackIsSupported())
     {
-      Message::OutputFormatted(
-          Message::ESeverity::Warning,
+      Infra::Message::OutputFormatted(
+          Infra::Message::ESeverity::Warning,
           L"Application is attempting to get force feedback state on Xidi virtual controller %u which does not support force feedback.",
           (1 + controller->GetIdentifier()));
       LOG_INVOCATION_AND_RETURN(DIERR_UNSUPPORTED, kMethodSeverity);
@@ -1870,7 +1873,7 @@ namespace Xidi
   template <ECharMode charMode> HRESULT VirtualDirectInputDevice<charMode>::GetObjectInfo(
       DirectInputDeviceType<charMode>::DeviceObjectInstanceType* pdidoi, DWORD dwObj, DWORD dwHow)
   {
-    constexpr Message::ESeverity kMethodSeverity = Message::ESeverity::Info;
+    constexpr Infra::Message::ESeverity kMethodSeverity = Infra::Message::ESeverity::Info;
 
     if (nullptr == pdidoi) LOG_INVOCATION_AND_RETURN(E_POINTER, kMethodSeverity);
 
@@ -1906,7 +1909,7 @@ namespace Xidi
   template <ECharMode charMode> HRESULT VirtualDirectInputDevice<charMode>::GetProperty(
       REFGUID rguidProp, LPDIPROPHEADER pdiph)
   {
-    constexpr Message::ESeverity kMethodSeverity = Message::ESeverity::Info;
+    constexpr Infra::Message::ESeverity kMethodSeverity = Infra::Message::ESeverity::Info;
 
     DumpPropertyRequest(rguidProp, pdiph, false);
 
@@ -2079,7 +2082,7 @@ namespace Xidi
     // Not required for Xidi virtual controllers as they are implemented now.
     // However, this method is needed for creating IDirectInputDevice objects via COM.
 
-    constexpr Message::ESeverity kMethodSeverity = Message::ESeverity::Info;
+    constexpr Infra::Message::ESeverity kMethodSeverity = Infra::Message::ESeverity::Info;
     LOG_INVOCATION_AND_RETURN(DI_OK, kMethodSeverity);
   }
 
@@ -2095,33 +2098,33 @@ namespace Xidi
                 Strings::kStrConfigurationSettingWorkaroundsPollReturnCode)
             .value_or(DI_NOEFFECT);
 
-    constexpr Message::ESeverity kMethodSeverity = Message::ESeverity::SuperDebug;
+    constexpr Infra::Message::ESeverity kMethodSeverity = Infra::Message::ESeverity::SuperDebug;
     LOG_INVOCATION_AND_RETURN(kPollReturnCode, kMethodSeverity);
   }
 
   template <ECharMode charMode> HRESULT VirtualDirectInputDevice<charMode>::RunControlPanel(
       HWND hwndOwner, DWORD dwFlags)
   {
-    constexpr Message::ESeverity kMethodSeverity = Message::ESeverity::Info;
+    constexpr Infra::Message::ESeverity kMethodSeverity = Infra::Message::ESeverity::Info;
     LOG_INVOCATION_AND_RETURN(DIERR_UNSUPPORTED, kMethodSeverity);
   }
 
   template <ECharMode charMode> HRESULT VirtualDirectInputDevice<charMode>::SendDeviceData(
       DWORD cbObjectData, LPCDIDEVICEOBJECTDATA rgdod, LPDWORD pdwInOut, DWORD fl)
   {
-    constexpr Message::ESeverity kMethodSeverity = Message::ESeverity::Info;
+    constexpr Infra::Message::ESeverity kMethodSeverity = Infra::Message::ESeverity::Info;
     LOG_INVOCATION_AND_RETURN(DIERR_UNSUPPORTED, kMethodSeverity);
   }
 
   template <ECharMode charMode> HRESULT
       VirtualDirectInputDevice<charMode>::SendForceFeedbackCommand(DWORD dwFlags)
   {
-    constexpr Message::ESeverity kMethodSeverity = Message::ESeverity::Info;
+    constexpr Infra::Message::ESeverity kMethodSeverity = Infra::Message::ESeverity::Info;
 
     if (false == controller->GetCapabilities().ForceFeedbackIsSupported())
     {
-      Message::OutputFormatted(
-          Message::ESeverity::Warning,
+      Infra::Message::OutputFormatted(
+          Infra::Message::ESeverity::Warning,
           L"Application is attempting to send a force feedback command on Xidi virtual controller %u which does not support force feedback.",
           (1 + controller->GetIdentifier()));
       LOG_INVOCATION_AND_RETURN(DIERR_UNSUPPORTED, kMethodSeverity);
@@ -2134,41 +2137,46 @@ namespace Xidi
     switch (dwFlags)
     {
       case DISFFC_CONTINUE:
-        Message::Output(
-            Message::ESeverity::Debug, L"Sending force feedback command DISFFC_CONTINUE.");
+        Infra::Message::Output(
+            Infra::Message::ESeverity::Debug, L"Sending force feedback command DISFFC_CONTINUE.");
         forceFeedbackDevice->SetPauseState(false);
         break;
 
       case DISFFC_PAUSE:
-        Message::Output(Message::ESeverity::Debug, L"Sending force feedback command DISFFC_PAUSE.");
+        Infra::Message::Output(
+            Infra::Message::ESeverity::Debug, L"Sending force feedback command DISFFC_PAUSE.");
         forceFeedbackDevice->SetPauseState(true);
         break;
 
       case DISFFC_RESET:
-        Message::Output(Message::ESeverity::Debug, L"Sending force feedback command DISFFC_RESET.");
+        Infra::Message::Output(
+            Infra::Message::ESeverity::Debug, L"Sending force feedback command DISFFC_RESET.");
         forceFeedbackDevice->Clear();
         break;
 
       case DISFFC_SETACTUATORSOFF:
-        Message::Output(
-            Message::ESeverity::Debug, L"Sending force feedback command DISFFC_SETACTUATORSOFF.");
+        Infra::Message::Output(
+            Infra::Message::ESeverity::Debug,
+            L"Sending force feedback command DISFFC_SETACTUATORSOFF.");
         forceFeedbackDevice->SetMutedState(true);
         break;
 
       case DISFFC_SETACTUATORSON:
-        Message::Output(
-            Message::ESeverity::Debug, L"Sending force feedback command DISFFC_SETACTUATORSON.");
+        Infra::Message::Output(
+            Infra::Message::ESeverity::Debug,
+            L"Sending force feedback command DISFFC_SETACTUATORSON.");
         forceFeedbackDevice->SetMutedState(false);
         break;
 
       case DISFFC_STOPALL:
-        Message::Output(
-            Message::ESeverity::Debug, L"Sending force feedback command DISFFC_STOPALL.");
+        Infra::Message::Output(
+            Infra::Message::ESeverity::Debug, L"Sending force feedback command DISFFC_STOPALL.");
         forceFeedbackDevice->StopAllEffects();
         break;
 
       default:
-        Message::Output(Message::ESeverity::Debug, L"Sending force feedback command (unknown).");
+        Infra::Message::Output(
+            Infra::Message::ESeverity::Debug, L"Sending force feedback command (unknown).");
         LOG_INVOCATION_AND_RETURN(DIERR_UNSUPPORTED, kMethodSeverity);
     }
 
@@ -2178,7 +2186,7 @@ namespace Xidi
   template <ECharMode charMode> HRESULT VirtualDirectInputDevice<charMode>::SetCooperativeLevel(
       HWND hwnd, DWORD dwFlags)
   {
-    constexpr Message::ESeverity kMethodSeverity = Message::ESeverity::Info;
+    constexpr Infra::Message::ESeverity kMethodSeverity = Infra::Message::ESeverity::Info;
 
     // The only piece of information Xidi needs from the cooperative level is whether shared or
     // exclusive mode is desired.
@@ -2193,7 +2201,7 @@ namespace Xidi
   template <ECharMode charMode> HRESULT VirtualDirectInputDevice<charMode>::SetDataFormat(
       LPCDIDATAFORMAT lpdf)
   {
-    constexpr Message::ESeverity kMethodSeverity = Message::ESeverity::Info;
+    constexpr Infra::Message::ESeverity kMethodSeverity = Infra::Message::ESeverity::Info;
 
     if (nullptr == lpdf) LOG_INVOCATION_AND_RETURN(DIERR_INVALIDPARAM, kMethodSeverity);
 
@@ -2236,7 +2244,7 @@ namespace Xidi
   template <ECharMode charMode> HRESULT VirtualDirectInputDevice<charMode>::SetEventNotification(
       HANDLE hEvent)
   {
-    constexpr Message::ESeverity kMethodSeverity = Message::ESeverity::Info;
+    constexpr Infra::Message::ESeverity kMethodSeverity = Infra::Message::ESeverity::Info;
 
     if (INVALID_HANDLE_VALUE == hEvent)
       LOG_INVOCATION_AND_RETURN(DIERR_INVALIDPARAM, kMethodSeverity);
@@ -2251,7 +2259,7 @@ namespace Xidi
   template <ECharMode charMode> HRESULT VirtualDirectInputDevice<charMode>::SetProperty(
       REFGUID rguidProp, LPCDIPROPHEADER pdiph)
   {
-    constexpr Message::ESeverity kMethodSeverity = Message::ESeverity::Info;
+    constexpr Infra::Message::ESeverity kMethodSeverity = Infra::Message::ESeverity::Info;
 
     DumpPropertyRequest(rguidProp, pdiph, true);
 
@@ -2429,7 +2437,7 @@ namespace Xidi
 
   template <ECharMode charMode> HRESULT VirtualDirectInputDevice<charMode>::Unacquire(void)
   {
-    constexpr Message::ESeverity kMethodSeverity = Message::ESeverity::Info;
+    constexpr Infra::Message::ESeverity kMethodSeverity = Infra::Message::ESeverity::Info;
 
     // The only possible state that would need to be undone when unacquiring a device is
     // relinquishing control over the physical device's force feedback buffer.
@@ -2444,7 +2452,7 @@ namespace Xidi
       LPDIFILEEFFECT rgDiFileEft,
       DWORD dwFlags)
   {
-    constexpr Message::ESeverity kMethodSeverity = Message::ESeverity::Info;
+    constexpr Infra::Message::ESeverity kMethodSeverity = Infra::Message::ESeverity::Info;
     LOG_INVOCATION_AND_RETURN(DIERR_UNSUPPORTED, kMethodSeverity);
   }
 
@@ -2455,14 +2463,14 @@ namespace Xidi
       DirectInputDeviceType<charMode>::ConstStringType lpszUserName,
       DWORD dwFlags)
   {
-    constexpr Message::ESeverity kMethodSeverity = Message::ESeverity::Info;
+    constexpr Infra::Message::ESeverity kMethodSeverity = Infra::Message::ESeverity::Info;
     LOG_INVOCATION_AND_RETURN(DIERR_UNSUPPORTED, kMethodSeverity);
   }
 
   template <ECharMode charMode> HRESULT VirtualDirectInputDevice<charMode>::GetImageInfo(
       DirectInputDeviceType<charMode>::DeviceImageInfoHeaderType* lpdiDevImageInfoHeader)
   {
-    constexpr Message::ESeverity kMethodSeverity = Message::ESeverity::Info;
+    constexpr Infra::Message::ESeverity kMethodSeverity = Infra::Message::ESeverity::Info;
     LOG_INVOCATION_AND_RETURN(DIERR_UNSUPPORTED, kMethodSeverity);
   }
 
@@ -2471,7 +2479,7 @@ namespace Xidi
       DirectInputDeviceType<charMode>::ConstStringType lptszUserName,
       DWORD dwFlags)
   {
-    constexpr Message::ESeverity kMethodSeverity = Message::ESeverity::Info;
+    constexpr Infra::Message::ESeverity kMethodSeverity = Infra::Message::ESeverity::Info;
     LOG_INVOCATION_AND_RETURN(DIERR_UNSUPPORTED, kMethodSeverity);
   }
 #endif

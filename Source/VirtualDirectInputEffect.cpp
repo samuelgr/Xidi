@@ -17,13 +17,13 @@
 #include <optional>
 #include <string>
 
+#include <Infra/Core/Message.h>
 #include <Infra/Core/TemporaryBuffer.h>
 
 #include "ForceFeedbackDevice.h"
 #include "ForceFeedbackEffect.h"
 #include "ForceFeedbackParameters.h"
 #include "ForceFeedbackTypes.h"
-#include "Message.h"
 #include "VirtualDirectInputDevice.h"
 
 /// Logs a DirectInput interface method invocation and returns.
@@ -31,7 +31,7 @@
   do                                                                                                                              \
   {                                                                                                                               \
     const HRESULT hresult = (result);                                                                                             \
-    Message::OutputFormatted(                                                                                                     \
+    Infra::Message::OutputFormatted(                                                                                              \
         severity,                                                                                                                 \
         L"Invoked %s on force feedback effect with identifier %llu associated with Xidi virtual controller %u, result = 0x%08x.", \
         __FUNCTIONW__ L"()",                                                                                                      \
@@ -45,7 +45,7 @@
 namespace Xidi
 {
   /// Severity to use for dumping the contents of structures to the log.
-  static constexpr Message::ESeverity kDumpSeverity = Message::ESeverity::Debug;
+  static constexpr Infra::Message::ESeverity kDumpSeverity = Infra::Message::ESeverity::Debug;
 
   /// Internal implementation of downloading a force feedback effect to a force feedback device.
   /// Called by interface methods that require this functionality.
@@ -238,30 +238,30 @@ namespace Xidi
   template <ECharMode charMode> void VirtualDirectInputEffect<charMode>::DumpEffectParameters(
       LPCDIEFFECT peff, DWORD dwFlags) const
   {
-    if (Message::WillOutputMessageOfSeverity(kDumpSeverity))
+    if (Infra::Message::WillOutputMessageOfSeverity(kDumpSeverity))
     {
-      Message::Output(kDumpSeverity, L"Begin dump of effect parameters.");
+      Infra::Message::Output(kDumpSeverity, L"Begin dump of effect parameters.");
 
-      Message::Output(kDumpSeverity, L"  Control:");
-      Message::OutputFormatted(
+      Infra::Message::Output(kDumpSeverity, L"  Control:");
+      Infra::Message::OutputFormatted(
           kDumpSeverity,
           L"    flags = 0x%08x (%s)",
           dwFlags,
           ParameterTopLevelFlagsToString(dwFlags).AsCString());
 
-      Message::Output(kDumpSeverity, L"  Basics:");
+      Infra::Message::Output(kDumpSeverity, L"  Basics:");
       if (nullptr == peff)
       {
-        Message::Output(kDumpSeverity, L"    (nullptr)");
+        Infra::Message::Output(kDumpSeverity, L"    (nullptr)");
       }
       else
       {
-        Message::OutputFormatted(
+        Infra::Message::OutputFormatted(
             kDumpSeverity,
             L"    dwSize = %u (%s)",
             peff->dwSize,
             ParameterStructSizeToString(peff->dwSize));
-        Message::OutputFormatted(
+        Infra::Message::OutputFormatted(
             kDumpSeverity,
             L"    dwFlags = 0x%08x (%s)",
             peff->dwFlags,
@@ -270,43 +270,46 @@ namespace Xidi
         if (0 != (dwFlags & DIEP_DURATION))
         {
           if (INFINITE == peff->dwDuration)
-            Message::OutputFormatted(
+            Infra::Message::OutputFormatted(
                 kDumpSeverity, L"    dwDuration = %u (INFINITE)", peff->dwDuration);
           else
-            Message::OutputFormatted(kDumpSeverity, L"    dwDuration = %u", peff->dwDuration);
+            Infra::Message::OutputFormatted(
+                kDumpSeverity, L"    dwDuration = %u", peff->dwDuration);
         }
 
         if (0 != (dwFlags & DIEP_SAMPLEPERIOD))
-          Message::OutputFormatted(kDumpSeverity, L"    dwSamplePeriod = %u", peff->dwSamplePeriod);
+          Infra::Message::OutputFormatted(
+              kDumpSeverity, L"    dwSamplePeriod = %u", peff->dwSamplePeriod);
 
         if (0 != (dwFlags & DIEP_GAIN))
-          Message::OutputFormatted(kDumpSeverity, L"    dwGain = %u", peff->dwGain);
+          Infra::Message::OutputFormatted(kDumpSeverity, L"    dwGain = %u", peff->dwGain);
 
         if (0 != (dwFlags & DIEP_STARTDELAY))
-          Message::OutputFormatted(kDumpSeverity, L"    dwStartDelay = %u", peff->dwStartDelay);
+          Infra::Message::OutputFormatted(
+              kDumpSeverity, L"    dwStartDelay = %u", peff->dwStartDelay);
 
         if (0 != (dwFlags & DIEP_TRIGGERBUTTON))
         {
           if (DIEB_NOTRIGGER == peff->dwTriggerButton)
-            Message::OutputFormatted(
+            Infra::Message::OutputFormatted(
                 kDumpSeverity, L"    dwTriggerButton = %u (DIEB_NOTRIGGER)", peff->dwTriggerButton);
           else
-            Message::OutputFormatted(
+            Infra::Message::OutputFormatted(
                 kDumpSeverity, L"    dwTriggerButton = %u", peff->dwTriggerButton);
         }
 
         if (0 != (dwFlags & DIEP_TRIGGERREPEATINTERVAL))
-          Message::OutputFormatted(
+          Infra::Message::OutputFormatted(
               kDumpSeverity, L"    dwTriggerRepeatInterval = %u", peff->dwTriggerRepeatInterval);
 
         if (0 != (dwFlags & DIEP_AXES))
         {
-          Message::Output(kDumpSeverity, L"  Axes:");
-          Message::OutputFormatted(kDumpSeverity, L"    cAxes = %u", peff->cAxes);
+          Infra::Message::Output(kDumpSeverity, L"  Axes:");
+          Infra::Message::OutputFormatted(kDumpSeverity, L"    cAxes = %u", peff->cAxes);
 
           if (nullptr == peff->rgdwAxes)
           {
-            Message::Output(kDumpSeverity, L"    rgdxAxes = (nullptr)");
+            Infra::Message::Output(kDumpSeverity, L"    rgdxAxes = (nullptr)");
           }
           else
           {
@@ -333,7 +336,7 @@ namespace Xidi
                     maybeAxisElement.value(),
                     axisElementString.Data(),
                     axisElementString.Capacity());
-                Message::OutputFormatted(
+                Infra::Message::OutputFormatted(
                     kDumpSeverity,
                     L"    rgdwAxes[%2u] = 0x%04x (%s)",
                     i,
@@ -342,7 +345,7 @@ namespace Xidi
               }
               else
               {
-                Message::OutputFormatted(
+                Infra::Message::OutputFormatted(
                     kDumpSeverity,
                     L"    rgdwAxes[%2u] = 0x%04x (unable to identify)",
                     i,
@@ -354,18 +357,18 @@ namespace Xidi
 
         if (0 != (dwFlags & DIEP_DIRECTION))
         {
-          Message::Output(kDumpSeverity, L"  Direction:");
-          Message::OutputFormatted(kDumpSeverity, L"    cAxes = %u", peff->cAxes);
+          Infra::Message::Output(kDumpSeverity, L"  Direction:");
+          Infra::Message::OutputFormatted(kDumpSeverity, L"    cAxes = %u", peff->cAxes);
 
           if (nullptr == peff->rglDirection)
           {
-            Message::Output(kDumpSeverity, L"    rglDirection = (nullptr)");
+            Infra::Message::Output(kDumpSeverity, L"    rglDirection = (nullptr)");
           }
           else
           {
             for (DWORD i = 0; i < peff->cAxes; ++i)
             {
-              Message::OutputFormatted(
+              Infra::Message::OutputFormatted(
                   kDumpSeverity, L"    rglDirection[%2u] = %u", i, peff->rglDirection[i]);
             }
           }
@@ -373,42 +376,42 @@ namespace Xidi
 
         if (0 != (dwFlags & DIEP_ENVELOPE))
         {
-          Message::Output(kDumpSeverity, L"  Envelope:");
+          Infra::Message::Output(kDumpSeverity, L"  Envelope:");
           if (nullptr == peff->lpEnvelope)
           {
-            Message::Output(kDumpSeverity, L"    (nullptr)");
+            Infra::Message::Output(kDumpSeverity, L"    (nullptr)");
           }
           else
           {
             const DIENVELOPE* const envelope = (const DIENVELOPE*)peff->lpEnvelope;
-            Message::OutputFormatted(
+            Infra::Message::OutputFormatted(
                 kDumpSeverity,
                 L"    lpEnvelope->dwSize = %u (%s)",
                 envelope->dwSize,
                 ((sizeof(DIENVELOPE) == envelope->dwSize) ? L"sizeof(DIENVELOPE)" : L"unknown"));
-            Message::OutputFormatted(
+            Infra::Message::OutputFormatted(
                 kDumpSeverity, L"    lpEnvelope->dwAttackLevel = %u", envelope->dwAttackLevel);
-            Message::OutputFormatted(
+            Infra::Message::OutputFormatted(
                 kDumpSeverity, L"    lpEnvelope->dwAttackTime = %u", envelope->dwAttackTime);
-            Message::OutputFormatted(
+            Infra::Message::OutputFormatted(
                 kDumpSeverity, L"    lpEnvelope->dwFadeLevel = %u", envelope->dwFadeLevel);
-            Message::OutputFormatted(
+            Infra::Message::OutputFormatted(
                 kDumpSeverity, L"    lpEnvelope->dwFadeTime = %u", envelope->dwFadeTime);
           }
         }
 
         if (0 != (dwFlags & DIEP_TYPESPECIFICPARAMS))
         {
-          Message::Output(kDumpSeverity, L"  Type-Specific:");
+          Infra::Message::Output(kDumpSeverity, L"  Type-Specific:");
 
           if (nullptr == peff->lpvTypeSpecificParams)
-            Message::Output(kDumpSeverity, L"    (nullptr)");
+            Infra::Message::Output(kDumpSeverity, L"    (nullptr)");
           else
             DumpTypeSpecificParameters(peff);
         }
       }
 
-      Message::Output(kDumpSeverity, L"End dump of effect parameters.");
+      Infra::Message::Output(kDumpSeverity, L"End dump of effect parameters.");
     }
   }
 
@@ -602,8 +605,8 @@ namespace Xidi
     // Final sync operation is expected to succeed.
     if (false == effect->SyncParametersFrom(*updatedEffect))
     {
-      Message::OutputFormatted(
-          Message::ESeverity::Error,
+      Infra::Message::OutputFormatted(
+          Infra::Message::ESeverity::Error,
           L"Internal error while syncing new parameters for a force feedback effect associated with Xidi virtual controller %u.",
           (1 + associatedDevice.GetVirtualController().GetIdentifier()));
       return DIERR_GENERIC;
@@ -650,8 +653,8 @@ namespace Xidi
       {
         // This should never happen. It means an effect exists on the device and yet the device is
         // somehow not acquired in exclusive mode.
-        Message::OutputFormatted(
-            Message::ESeverity::Error,
+        Infra::Message::OutputFormatted(
+            Infra::Message::ESeverity::Error,
             L"Internal error while attempting to start or restart a force feedback effect after setting its parameters on Xidi virtual controller %u.",
             (1 + associatedDevice.GetVirtualController().GetIdentifier()));
         return DIERR_GENERIC;
@@ -663,8 +666,8 @@ namespace Xidi
       {
         // This should never happen. It means an effect that in theory should be downloaded and
         // ready to play is somehow unable to be started.
-        Message::OutputFormatted(
-            Message::ESeverity::Error,
+        Infra::Message::OutputFormatted(
+            Infra::Message::ESeverity::Error,
             L"Internal error while attempting to start or restart a force feedback effect after setting its parameters on Xidi virtual controller %u.",
             (1 + associatedDevice.GetVirtualController().GetIdentifier()));
         return DIERR_GENERIC;
@@ -711,8 +714,8 @@ namespace Xidi
         forceFeedbackDevice->StartEffect(
             effect->Identifier(), (unsigned int)dwIterations, timestamp))
     {
-      Message::OutputFormatted(
-          Message::ESeverity::Error,
+      Infra::Message::OutputFormatted(
+          Infra::Message::ESeverity::Error,
           L"Internal error while starting a force feedback effect associated with Xidi virtual controller %u.",
           (1 + associatedDevice.GetVirtualController().GetIdentifier()));
       return DIERR_GENERIC;
@@ -724,9 +727,9 @@ namespace Xidi
   template <ECharMode charMode> void VirtualDirectInputEffect<charMode>::DumpTypeSpecificParameters(
       LPCDIEFFECT peff) const
   {
-    Message::OutputFormatted(
+    Infra::Message::OutputFormatted(
         kDumpSeverity, L"    cbTypeSpecificParams = %u (unknown)", peff->cbTypeSpecificParams);
-    Message::OutputFormatted(
+    Infra::Message::OutputFormatted(
         kDumpSeverity,
         L"    lpvTypeSpecificParams = (%s)",
         ((nullptr == peff->lpvTypeSpecificParams) ? L"nullptr" : L"present"));
@@ -739,11 +742,11 @@ namespace Xidi
     {
       const DICONSTANTFORCE* const typeSpecificParams =
           (const DICONSTANTFORCE*)peff->lpvTypeSpecificParams;
-      Message::OutputFormatted(
+      Infra::Message::OutputFormatted(
           kDumpSeverity,
           L"    cbTypeSpecificParams = %u (sizeof(DICONSTANTFORCE))",
           peff->cbTypeSpecificParams);
-      Message::OutputFormatted(
+      Infra::Message::OutputFormatted(
           kDumpSeverity,
           L"    lpvTypeSpecificParams->lMagnitude = %ld",
           typeSpecificParams->lMagnitude);
@@ -760,19 +763,19 @@ namespace Xidi
     if (sizeof(DIPERIODIC) == peff->cbTypeSpecificParams)
     {
       const DIPERIODIC* const typeSpecificParams = (const DIPERIODIC*)peff->lpvTypeSpecificParams;
-      Message::OutputFormatted(
+      Infra::Message::OutputFormatted(
           kDumpSeverity,
           L"    cbTypeSpecificParams = %u (sizeof(DIPERIODIC))",
           peff->cbTypeSpecificParams);
-      Message::OutputFormatted(
+      Infra::Message::OutputFormatted(
           kDumpSeverity,
           L"    lpvTypeSpecificParams->dwMagnitude = %u",
           typeSpecificParams->dwMagnitude);
-      Message::OutputFormatted(
+      Infra::Message::OutputFormatted(
           kDumpSeverity, L"    lpvTypeSpecificParams->lOffset = %ld", typeSpecificParams->lOffset);
-      Message::OutputFormatted(
+      Infra::Message::OutputFormatted(
           kDumpSeverity, L"    lpvTypeSpecificParams->dwPhase = %u", typeSpecificParams->dwPhase);
-      Message::OutputFormatted(
+      Infra::Message::OutputFormatted(
           kDumpSeverity, L"    lpvTypeSpecificParams->dwPeriod = %u", typeSpecificParams->dwPeriod);
     }
     else
@@ -787,13 +790,13 @@ namespace Xidi
     if (sizeof(DIRAMPFORCE) == peff->cbTypeSpecificParams)
     {
       const DIRAMPFORCE* const typeSpecificParams = (const DIRAMPFORCE*)peff->lpvTypeSpecificParams;
-      Message::OutputFormatted(
+      Infra::Message::OutputFormatted(
           kDumpSeverity,
           L"    cbTypeSpecificParams = %u (sizeof(DIRAMPFORCE))",
           peff->cbTypeSpecificParams);
-      Message::OutputFormatted(
+      Infra::Message::OutputFormatted(
           kDumpSeverity, L"    lpvTypeSpecificParams->lStart = %ld", typeSpecificParams->lStart);
-      Message::OutputFormatted(
+      Infra::Message::OutputFormatted(
           kDumpSeverity, L"    lpvTypeSpecificParams->lEnd = %ld", typeSpecificParams->lEnd);
     }
     else
@@ -842,14 +845,14 @@ namespace Xidi
     // Not required for Xidi virtual force feedback effects as they are implemented now.
     // However, this method is needed for creating IDirectInputDevice objects via COM.
 
-    constexpr Message::ESeverity kMethodSeverity = Message::ESeverity::Info;
+    constexpr Infra::Message::ESeverity kMethodSeverity = Infra::Message::ESeverity::Info;
     LOG_INVOCATION_AND_RETURN(DI_OK, kMethodSeverity);
   }
 
   template <ECharMode charMode> HRESULT VirtualDirectInputEffect<charMode>::GetEffectGuid(
       LPGUID pguid)
   {
-    constexpr Message::ESeverity kMethodSeverity = Message::ESeverity::Info;
+    constexpr Infra::Message::ESeverity kMethodSeverity = Infra::Message::ESeverity::Info;
 
     if (nullptr == pguid) LOG_INVOCATION_AND_RETURN(DIERR_INVALIDPARAM, kMethodSeverity);
 
@@ -860,7 +863,7 @@ namespace Xidi
   template <ECharMode charMode> HRESULT VirtualDirectInputEffect<charMode>::GetParameters(
       LPDIEFFECT peff, DWORD dwFlags)
   {
-    constexpr Message::ESeverity kMethodSeverity = Message::ESeverity::Info;
+    constexpr Infra::Message::ESeverity kMethodSeverity = Infra::Message::ESeverity::Info;
 
     if (nullptr == peff) LOG_INVOCATION_AND_RETURN(DIERR_INVALIDPARAM, kMethodSeverity);
 
@@ -909,8 +912,8 @@ namespace Xidi
               {
                 // This should never happen. It means an axis object was successfully set on a force
                 // feedback effect but it could not be mapped back to its object ID.
-                Message::OutputFormatted(
-                    Message::ESeverity::Error,
+                Infra::Message::OutputFormatted(
+                    Infra::Message::ESeverity::Error,
                     L"Internal error while mapping force feedback axes to object IDs on Xidi virtual controller %u.",
                     (1 + associatedDevice.GetVirtualController().GetIdentifier()));
                 LOG_INVOCATION_AND_RETURN(DIERR_GENERIC, kMethodSeverity);
@@ -1006,8 +1009,8 @@ namespace Xidi
           // This should never happen. It means the direction is supposedly present and the
           // coordinate system selected is supposedly valid but coordinate values were unable to be
           // retrieved.
-          Message::OutputFormatted(
-              Message::ESeverity::Error,
+          Infra::Message::OutputFormatted(
+              Infra::Message::ESeverity::Error,
               L"Internal error while retrieving direction components using coordinate system %d on Xidi virtual controller %u.",
               (int)(maybeCoordinateSystem.value()),
               (1 + associatedDevice.GetVirtualController().GetIdentifier()));
@@ -1083,20 +1086,20 @@ namespace Xidi
   template <ECharMode charMode> HRESULT VirtualDirectInputEffect<charMode>::SetParameters(
       LPCDIEFFECT peff, DWORD dwFlags)
   {
-    constexpr Message::ESeverity kMethodSeverity = Message::ESeverity::Info;
+    constexpr Infra::Message::ESeverity kMethodSeverity = Infra::Message::ESeverity::Info;
     LOG_INVOCATION_AND_RETURN(SetParametersInternal(peff, dwFlags), kMethodSeverity);
   }
 
   template <ECharMode charMode> HRESULT VirtualDirectInputEffect<charMode>::Start(
       DWORD dwIterations, DWORD dwFlags)
   {
-    constexpr Message::ESeverity kMethodSeverity = Message::ESeverity::Info;
+    constexpr Infra::Message::ESeverity kMethodSeverity = Infra::Message::ESeverity::Info;
     LOG_INVOCATION_AND_RETURN(StartInternal(dwIterations, dwFlags), kMethodSeverity);
   }
 
   template <ECharMode charMode> HRESULT VirtualDirectInputEffect<charMode>::Stop(void)
   {
-    constexpr Message::ESeverity kMethodSeverity = Message::ESeverity::Info;
+    constexpr Infra::Message::ESeverity kMethodSeverity = Infra::Message::ESeverity::Info;
 
     Controller::ForceFeedback::Device* const forceFeedbackDevice =
         associatedDevice.AutoAcquireAndGetForceFeedbackDevice();
@@ -1110,7 +1113,7 @@ namespace Xidi
   template <ECharMode charMode> HRESULT VirtualDirectInputEffect<charMode>::GetEffectStatus(
       LPDWORD pdwFlags)
   {
-    constexpr Message::ESeverity kMethodSeverity = Message::ESeverity::Info;
+    constexpr Infra::Message::ESeverity kMethodSeverity = Infra::Message::ESeverity::Info;
 
     if (nullptr == pdwFlags) LOG_INVOCATION_AND_RETURN(DIERR_INVALIDPARAM, kMethodSeverity);
 
@@ -1128,13 +1131,13 @@ namespace Xidi
 
   template <ECharMode charMode> HRESULT VirtualDirectInputEffect<charMode>::Download(void)
   {
-    constexpr Message::ESeverity kMethodSeverity = Message::ESeverity::Info;
+    constexpr Infra::Message::ESeverity kMethodSeverity = Infra::Message::ESeverity::Info;
     LOG_INVOCATION_AND_RETURN(DownloadInternal(), kMethodSeverity);
   }
 
   template <ECharMode charMode> HRESULT VirtualDirectInputEffect<charMode>::Unload(void)
   {
-    constexpr Message::ESeverity kMethodSeverity = Message::ESeverity::Info;
+    constexpr Infra::Message::ESeverity kMethodSeverity = Infra::Message::ESeverity::Info;
 
     Controller::ForceFeedback::Device* const forceFeedbackDevice =
         associatedDevice.AutoAcquireAndGetForceFeedbackDevice();
@@ -1148,7 +1151,7 @@ namespace Xidi
   template <ECharMode charMode> HRESULT VirtualDirectInputEffect<charMode>::Escape(
       LPDIEFFESCAPE pesc)
   {
-    constexpr Message::ESeverity kMethodSeverity = Message::ESeverity::Info;
+    constexpr Infra::Message::ESeverity kMethodSeverity = Infra::Message::ESeverity::Info;
     LOG_INVOCATION_AND_RETURN(DIERR_UNSUPPORTED, kMethodSeverity);
   }
 

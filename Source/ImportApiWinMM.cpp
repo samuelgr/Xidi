@@ -17,13 +17,13 @@
 #include <set>
 #include <string_view>
 
+#include <Infra/Core/Message.h>
 #include <Infra/Core/ProcessInfo.h>
 
 #include "ApiWindows.h"
 #include "ApiXidi.h"
 #include "Configuration.h"
 #include "Globals.h"
-#include "Message.h"
 #include "Strings.h"
 
 /// Computes the index of the specified named function in the pointer array of the import table.
@@ -255,8 +255,8 @@ namespace Xidi
     /// @param [in] functionName Name of the function whose import attempt failed.
     static void LogImportFailed(LPCWSTR functionName)
     {
-      Message::OutputFormatted(
-          Message::ESeverity::Warning,
+      Infra::Message::OutputFormatted(
+          Infra::Message::ESeverity::Warning,
           L"Import library is missing WinMM function \"%s\". Attempts to call it will fail.",
           functionName);
     }
@@ -266,8 +266,8 @@ namespace Xidi
     /// @param [in] functionName Name of the function that was invoked.
     static void TerminateAndLogMissingFunctionCalled(LPCWSTR functionName)
     {
-      Message::OutputFormatted(
-          Message::ESeverity::Error,
+      Infra::Message::OutputFormatted(
+          Infra::Message::ESeverity::Error,
           L"Application has attempted to call missing WinMM import function \"%s\".",
           functionName);
       TerminateProcess(Infra::ProcessInfo::GetCurrentProcessHandle(), (UINT)-1);
@@ -287,15 +287,16 @@ namespace Xidi
             std::wstring_view libraryPath = GetImportLibraryPathWinMM();
 
             // Attempt to load the library.
-            Message::OutputFormatted(
-                Message::ESeverity::Debug,
+            Infra::Message::OutputFormatted(
+                Infra::Message::ESeverity::Debug,
                 L"Attempting to import WinMM functions from %s.",
                 libraryPath.data());
             HMODULE loadedLibrary = LoadLibraryEx(libraryPath.data(), nullptr, 0);
             if (nullptr == loadedLibrary)
             {
-              Message::Output(
-                  Message::ESeverity::Error, L"Failed to initialize imported WinMM functions.");
+              Infra::Message::Output(
+                  Infra::Message::ESeverity::Error,
+                  L"Failed to initialize imported WinMM functions.");
               return;
             }
 
@@ -1160,8 +1161,9 @@ namespace Xidi
                 reinterpret_cast<decltype(importTable.named.waveOutWrite)>(procAddress);
 
             // Initialization complete.
-            Message::OutputFormatted(
-                Message::ESeverity::Info, L"Successfully initialized imported WinMM functions.");
+            Infra::Message::OutputFormatted(
+                Infra::Message::ESeverity::Info,
+                L"Successfully initialized imported WinMM functions.");
           });
     }
 
@@ -2967,8 +2969,8 @@ namespace Xidi
         {
           if (true == kReplaceableFunctions.contains(newImportFunction.first))
           {
-            Message::OutputFormatted(
-                Message::ESeverity::Debug,
+            Infra::Message::OutputFormatted(
+                Infra::Message::ESeverity::Debug,
                 L"Import function \"%s\" has been replaced.",
                 newImportFunction.first.data());
             importTable.ptr[kReplaceableFunctions.at(newImportFunction.first)] =
@@ -2978,8 +2980,8 @@ namespace Xidi
         }
 
         if (numReplaced > 0)
-          Message::OutputFormatted(
-              Message::ESeverity::Warning,
+          Infra::Message::OutputFormatted(
+              Infra::Message::ESeverity::Warning,
               L"%d function(s) previously imported from %s have been replaced. Previously imported versions will not be used.",
               (int)numReplaced,
               libraryPath.data());

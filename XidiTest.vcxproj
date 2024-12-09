@@ -127,7 +127,6 @@
     <ClInclude Include="Include\Xidi\Internal\Keyboard.h" />
     <ClInclude Include="Include\Xidi\Internal\Mapper.h" />
     <ClInclude Include="Include\Xidi\Internal\MapperBuilder.h" />
-    <ClInclude Include="Include\Xidi\Internal\Message.h" />
     <ClInclude Include="Include\Xidi\Internal\MapperParser.h" />
     <ClInclude Include="Include\Xidi\Internal\Mouse.h" />
     <ClInclude Include="Include\Xidi\Internal\PhysicalController.h" />
@@ -165,7 +164,6 @@
     <ClCompile Include="Source\Mapper.cpp" />
     <ClCompile Include="Source\MapperBuilder.cpp" />
     <ClCompile Include="Source\MapperDefinitions.cpp" />
-    <ClCompile Include="Source\Message.cpp" />
     <ClCompile Include="Source\MapperParser.cpp" />
     <ClCompile Include="Source\StateChangeEventBuffer.cpp" />
     <ClCompile Include="Source\Strings.cpp" />

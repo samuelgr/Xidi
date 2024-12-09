@@ -16,12 +16,12 @@
 #include <mutex>
 #include <string_view>
 
+#include <Infra/Core/Message.h>
 #include <Infra/Core/ProcessInfo.h>
 
 #include "ApiDirectInput.h"
 #include "Configuration.h"
 #include "Globals.h"
-#include "Message.h"
 #include "Strings.h"
 
 namespace Xidi
@@ -83,8 +83,8 @@ namespace Xidi
     /// @param [in] functionName Name of the function whose import attempt failed.
     static void LogImportFailed(LPCWSTR functionName)
     {
-      Message::OutputFormatted(
-          Message::ESeverity::Warning,
+      Infra::Message::OutputFormatted(
+          Infra::Message::ESeverity::Warning,
           L"Import library is missing DirectInput function \"%s\". Attempts to call it will fail.",
           functionName);
     }
@@ -94,8 +94,8 @@ namespace Xidi
     /// @param [in] libraryPath Path of the library that was loaded.
     static void LogInitializeLibraryPath(LPCWSTR libraryPath)
     {
-      Message::OutputFormatted(
-          Message::ESeverity::Debug,
+      Infra::Message::OutputFormatted(
+          Infra::Message::ESeverity::Debug,
           L"Attempting to import DirectInput functions from %s.",
           libraryPath);
     }
@@ -105,15 +105,18 @@ namespace Xidi
     /// @param [in] libraryPath Path of the library that was loaded.
     static void LogInitializeFailed(LPCWSTR libraryPath)
     {
-      Message::OutputFormatted(
-          Message::ESeverity::Error, L"Failed to load DirectInput import library %s.", libraryPath);
+      Infra::Message::OutputFormatted(
+          Infra::Message::ESeverity::Error,
+          L"Failed to load DirectInput import library %s.",
+          libraryPath);
     }
 
     /// Logs an informational event related to successful initialization of the import table.
     static void LogInitializeSucceeded(void)
     {
-      Message::Output(
-          Message::ESeverity::Info, L"Successfully initialized imported DirectInput functions.");
+      Infra::Message::Output(
+          Infra::Message::ESeverity::Info,
+          L"Successfully initialized imported DirectInput functions.");
     }
 
     /// Logs an error event related to a missing import function that has been invoked and then
@@ -121,8 +124,8 @@ namespace Xidi
     /// @param [in] functionName Name of the function that was invoked.
     static void TerminateAndLogMissingFunctionCalled(LPCWSTR functionName)
     {
-      Message::OutputFormatted(
-          Message::ESeverity::Error,
+      Infra::Message::OutputFormatted(
+          Infra::Message::ESeverity::Error,
           L"Application has attempted to call missing DirectInput import function \"%s\".",
           functionName);
       TerminateProcess(Infra::ProcessInfo::GetCurrentProcessHandle(), (UINT)-1);

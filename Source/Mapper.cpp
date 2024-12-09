@@ -18,6 +18,8 @@
 #include <set>
 #include <string_view>
 
+#include <Infra/Core/Message.h>
+
 #include "ApiBitSet.h"
 #include "ApiWindows.h"
 #include "Configuration.h"
@@ -26,7 +28,6 @@
 #include "ElementMapper.h"
 #include "ForceFeedbackTypes.h"
 #include "Globals.h"
-#include "Message.h"
 #include "Strings.h"
 
 namespace Xidi
@@ -50,23 +51,23 @@ namespace Xidi
       /// Dumps all mappers in this registry.
       void DumpRegisteredMappers(void)
       {
-        constexpr Message::ESeverity kDumpSeverity = Message::ESeverity::Info;
+        constexpr Infra::Message::ESeverity kDumpSeverity = Infra::Message::ESeverity::Info;
 
-        if (Message::WillOutputMessageOfSeverity(kDumpSeverity))
+        if (Infra::Message::WillOutputMessageOfSeverity(kDumpSeverity))
         {
-          Message::Output(kDumpSeverity, L"Begin dump of all known mappers.");
+          Infra::Message::Output(kDumpSeverity, L"Begin dump of all known mappers.");
 
           for (const auto& knownMapper : knownMappers)
           {
             const std::wstring_view knownMapperName = knownMapper.first;
             const SCapabilities knownMapperCapabilities = knownMapper.second->GetCapabilities();
 
-            Message::OutputFormatted(kDumpSeverity, L"  %s:", knownMapperName.data());
+            Infra::Message::OutputFormatted(kDumpSeverity, L"  %s:", knownMapperName.data());
 
-            Message::OutputFormatted(
+            Infra::Message::OutputFormatted(
                 kDumpSeverity, L"    numAxes = %u", (unsigned int)knownMapperCapabilities.numAxes);
             for (unsigned int i = 0; i < knownMapperCapabilities.numAxes; ++i)
-              Message::OutputFormatted(
+              Infra::Message::OutputFormatted(
                   kDumpSeverity,
                   L"      axisCapabilities[%u] = { type = %s, supportsForceFeedback = %s }",
                   i,
@@ -75,17 +76,17 @@ namespace Xidi
                        ? L"true"
                        : L"false"));
 
-            Message::OutputFormatted(
+            Infra::Message::OutputFormatted(
                 kDumpSeverity,
                 L"    numButtons = %u",
                 (unsigned int)knownMapperCapabilities.numButtons);
-            Message::OutputFormatted(
+            Infra::Message::OutputFormatted(
                 kDumpSeverity,
                 L"    hasPov = %s",
                 ((true == knownMapperCapabilities.hasPov) ? L"true" : L"false"));
           }
 
-          Message::Output(kDumpSeverity, L"End dump of all known mappers.");
+          Infra::Message::Output(kDumpSeverity, L"End dump of all known mappers.");
         }
       }
 
@@ -96,8 +97,8 @@ namespace Xidi
       {
         if (true == name.empty())
         {
-          Message::Output(
-              Message::ESeverity::Error,
+          Infra::Message::Output(
+              Infra::Message::ESeverity::Error,
               L"Internal error: Attempting to register a mapper without a name.");
           return;
         }
@@ -115,16 +116,16 @@ namespace Xidi
       {
         if (true == name.empty())
         {
-          Message::Output(
-              Message::ESeverity::Error,
+          Infra::Message::Output(
+              Infra::Message::ESeverity::Error,
               L"Internal error: Attempting to unregister a mapper without a name.");
           return;
         }
 
         if (false == knownMappers.contains(name))
         {
-          Message::OutputFormatted(
-              Message::ESeverity::Error,
+          Infra::Message::OutputFormatted(
+              Infra::Message::ESeverity::Error,
               L"Internal error: Attempting to unregister unknown mapper %s.",
               name.data());
           return;
@@ -132,8 +133,8 @@ namespace Xidi
 
         if (object != knownMappers.at(name))
         {
-          Message::OutputFormatted(
-              Message::ESeverity::Error,
+          Infra::Message::OutputFormatted(
+              Infra::Message::ESeverity::Error,
               L"Internal error: Object mismatch while attempting to unregister mapper %s.",
               name.data());
           return;
@@ -465,8 +466,8 @@ namespace Xidi
                 fallbackMapper = GetByName(fallbackMapperName);
 
                 if (nullptr == fallbackMapper)
-                  Message::OutputFormatted(
-                      Message::ESeverity::Warning,
+                  Infra::Message::OutputFormatted(
+                      Infra::Message::ESeverity::Warning,
                       L"Could not locate mapper \"%s\" specified in the configuration file as the default.",
                       fallbackMapperName.data());
               }
@@ -477,8 +478,8 @@ namespace Xidi
 
                 if (nullptr == fallbackMapper)
                 {
-                  Message::Output(
-                      Message::ESeverity::Error,
+                  Infra::Message::Output(
+                      Infra::Message::ESeverity::Error,
                       L"Internal error: Unable to locate the default mapper.");
                   fallbackMapper = GetNull();
                 }
@@ -497,8 +498,8 @@ namespace Xidi
 
                   if (nullptr == configuredMapper[i])
                   {
-                    Message::OutputFormatted(
-                        Message::ESeverity::Warning,
+                    Infra::Message::OutputFormatted(
+                        Infra::Message::ESeverity::Warning,
                         L"Could not locate mapper \"%s\" specified in the configuration file for controller %u.",
                         configuredMapperName.data(),
                         (unsigned int)(1 + i));
@@ -517,8 +518,8 @@ namespace Xidi
               const Mapper* defaultMapper = GetDefault();
               if (nullptr == defaultMapper)
               {
-                Message::Output(
-                    Message::ESeverity::Error,
+                Infra::Message::Output(
+                    Infra::Message::ESeverity::Error,
                     L"Internal error: Unable to locate the default mapper. Virtual controllers will not function.");
                 defaultMapper = GetNull();
               }
@@ -527,10 +528,11 @@ namespace Xidi
                 configuredMapper[i] = defaultMapper;
             }
 
-            Message::Output(Message::ESeverity::Info, L"Mappers assigned to controllers...");
+            Infra::Message::Output(
+                Infra::Message::ESeverity::Info, L"Mappers assigned to controllers...");
             for (TControllerIdentifier i = 0; i < _countof(configuredMapper); ++i)
-              Message::OutputFormatted(
-                  Message::ESeverity::Info,
+              Infra::Message::OutputFormatted(
+                  Infra::Message::ESeverity::Info,
                   L"    [%u]: %s",
                   (unsigned int)(1 + i),
                   configuredMapper[i]->GetName().data());
@@ -538,8 +540,8 @@ namespace Xidi
 
       if (controllerIdentifier >= _countof(configuredMapper))
       {
-        Message::OutputFormatted(
-            Message::ESeverity::Error,
+        Infra::Message::OutputFormatted(
+            Infra::Message::ESeverity::Error,
             L"Internal error: Requesting a mapper for out-of-bounds controller %u.",
             (unsigned int)(1 + controllerIdentifier));
         return GetNull();

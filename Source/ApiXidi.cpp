@@ -13,9 +13,9 @@
 
 #include <unordered_map>
 
+#include <Infra/Core/Message.h>
 #include <Infra/Core/ProcessInfo.h>
 
-#include "Message.h"
 #include "Strings.h"
 
 namespace Xidi

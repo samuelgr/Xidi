@@ -20,6 +20,7 @@
 #include <utility>
 #include <vector>
 
+#include <Infra/Core/Message.h>
 #include <Infra/Core/ProcessInfo.h>
 
 #include "ApiDirectInput.h"
@@ -30,26 +31,25 @@
 #include "Globals.h"
 #include "ImportApiDirectInput.h"
 #include "ImportApiWinMM.h"
-#include "Message.h"
 #include "Strings.h"
 #include "VirtualController.h"
 
 /// Logs a WinMM device-specific function invocation.
 #define LOG_INVOCATION(severity, joyID, result)                                                    \
-  Message::OutputFormatted(                                                                        \
+  Infra::Message::OutputFormatted(                                                                 \
       severity, L"Invoked %s on device %d, result = %u.", __FUNCTIONW__ L"()", joyID, result)
 
 /// Logs invocation of an unsupported WinMM operation.
 #define LOG_UNSUPPORTED_OPERATION()                                                                \
-  Message::OutputFormatted(                                                                        \
-      Message::ESeverity::Warning,                                                                 \
+  Infra::Message::OutputFormatted(                                                                 \
+      Infra::Message::ESeverity::Warning,                                                          \
       L"Application invoked %s on a Xidi virtual controller, which is not supported.",             \
       __FUNCTIONW__ L"()")
 
 /// Logs invocation of a WinMM operation with invalid parameters.
 #define LOG_INVALID_PARAMS()                                                                           \
-  Message::OutputFormatted(                                                                            \
-      Message::ESeverity::Warning,                                                                     \
+  Infra::Message::OutputFormatted(                                                                     \
+      Infra::Message::ESeverity::Warning,                                                              \
       L"Application invoked %s on a Xidi virtual controller, which failed due to invalid parameters.", \
       __FUNCTIONW__ L"()")
 
@@ -159,8 +159,9 @@ namespace Xidi
       // prevent binding both to the WinMM version and the Xidi version of the same one.
       joyIndexMap.clear();
       joyIndexMap.reserve(numDevicesTotal);
-      Message::OutputFormatted(
-          Message::ESeverity::Debug, L"Presenting the application with these WinMM devices:");
+      Infra::Message::OutputFormatted(
+          Infra::Message::ESeverity::Debug,
+          L"Presenting the application with these WinMM devices:");
 
       if ((false == joySystemDeviceInfo[0].second) && !(joySystemDeviceInfo[0].first.empty()))
       {
@@ -171,8 +172,8 @@ namespace Xidi
         {
           if ((false == joySystemDeviceInfo[i].second) && !(joySystemDeviceInfo[i].first.empty()))
           {
-            Message::OutputFormatted(
-                Message::ESeverity::Debug,
+            Infra::Message::OutputFormatted(
+                Infra::Message::ESeverity::Debug,
                 L"    [%u]: System-supplied WinMM device %u",
                 (unsigned int)joyIndexMap.size(),
                 (unsigned int)i);
@@ -184,8 +185,8 @@ namespace Xidi
         {
           if (0 != (activeVirtualControllerMask & ((uint64_t)1 << i)))
           {
-            Message::OutputFormatted(
-                Message::ESeverity::Debug,
+            Infra::Message::OutputFormatted(
+                Infra::Message::ESeverity::Debug,
                 L"    [%u]: Xidi virtual controller %u",
                 (unsigned int)joyIndexMap.size(),
                 (unsigned int)(i + 1));
@@ -202,8 +203,8 @@ namespace Xidi
         {
           if (0 != (activeVirtualControllerMask & ((uint64_t)1 << i)))
           {
-            Message::OutputFormatted(
-                Message::ESeverity::Debug,
+            Infra::Message::OutputFormatted(
+                Infra::Message::ESeverity::Debug,
                 L"    [%u]: Xidi virtual controller %u",
                 (unsigned int)joyIndexMap.size(),
                 (unsigned int)(i + 1));
@@ -215,8 +216,8 @@ namespace Xidi
         {
           if ((false == joySystemDeviceInfo[i].second) && !(joySystemDeviceInfo[i].first.empty()))
           {
-            Message::OutputFormatted(
-                Message::ESeverity::Debug,
+            Infra::Message::OutputFormatted(
+                Infra::Message::ESeverity::Debug,
                 L"    [%u]: System-supplied WinMM device %u",
                 (unsigned int)joyIndexMap.size(),
                 (unsigned int)i);
@@ -259,15 +260,18 @@ namespace Xidi
                   .value_or(false))
           {
             callbackInfo->systemDeviceInfo->at(i).second = true;
-            Message::OutputFormatted(
-                Message::ESeverity::Debug, L"    [%u]: %s", (unsigned int)i, lpddi->tszProductName);
-            Message::OutputFormatted(
-                Message::ESeverity::Debug,
+            Infra::Message::OutputFormatted(
+                Infra::Message::ESeverity::Debug,
+                L"    [%u]: %s",
+                (unsigned int)i,
+                lpddi->tszProductName);
+            Infra::Message::OutputFormatted(
+                Infra::Message::ESeverity::Debug,
                 L"    [%u]:     WinMM ID:       %s",
                 (unsigned int)i,
                 callbackInfo->systemDeviceInfo->at(i).first.c_str());
-            Message::OutputFormatted(
-                Message::ESeverity::Debug,
+            Infra::Message::OutputFormatted(
+                Infra::Message::ESeverity::Debug,
                 L"    [%u]:     DirectInput ID: %s",
                 (unsigned int)i,
                 devicePath.c_str());
@@ -283,8 +287,8 @@ namespace Xidi
     static void CreateSystemDeviceInfo(void)
     {
       const size_t numDevicesFromSystem = (size_t)ImportApiWinMM::joyGetNumDevs();
-      Message::OutputFormatted(
-          Message::ESeverity::Debug,
+      Infra::Message::OutputFormatted(
+          Infra::Message::ESeverity::Debug,
           L"System provides %u WinMM devices.",
           (unsigned int)numDevicesFromSystem);
 
@@ -297,8 +301,8 @@ namespace Xidi
       HKEY registryKey;
       if (JOYERR_NOERROR != ImportApiWinMM::joyGetDevCaps((UINT_PTR)-1, &joyCaps, sizeof(joyCaps)))
       {
-        Message::Output(
-            Message::ESeverity::Warning,
+        Infra::Message::Output(
+            Infra::Message::ESeverity::Warning,
             L"Unable to enumerate system WinMM devices because the correct registry key could not be identified by the system.");
         return;
       }
@@ -321,8 +325,8 @@ namespace Xidi
               &registryKey,
               nullptr))
       {
-        Message::OutputFormatted(
-            Message::ESeverity::Warning,
+        Infra::Message::OutputFormatted(
+            Infra::Message::ESeverity::Warning,
             L"Unable to enumerate system WinMM devices because the registry key \"%s\" could not be opened.",
             registryPath);
         return;
@@ -330,7 +334,8 @@ namespace Xidi
 
       // For each joystick device available in the system, see if it is present and, if so, get its
       // device identifier (vendor ID and product ID string).
-      Message::Output(Message::ESeverity::Debug, L"Enumerating system WinMM devices...");
+      Infra::Message::Output(
+          Infra::Message::ESeverity::Debug, L"Enumerating system WinMM devices...");
 
       for (size_t i = 0; i < numDevicesFromSystem; ++i)
       {
@@ -338,8 +343,8 @@ namespace Xidi
         if (JOYERR_NOERROR != ImportApiWinMM::joyGetDevCaps((UINT_PTR)i, &joyCaps, sizeof(joyCaps)))
         {
           joySystemDeviceInfo.push_back({L"", false});
-          Message::OutputFormatted(
-              Message::ESeverity::Debug,
+          Infra::Message::OutputFormatted(
+              Infra::Message::ESeverity::Debug,
               L"    [%u]: (not present - failed to get capabilities)",
               (unsigned int)i);
           continue;
@@ -365,8 +370,8 @@ namespace Xidi
           // If the registry value does not exist, this is past the end of the number of devices
           // WinMM sees.
           joySystemDeviceInfo.push_back({L"", false});
-          Message::OutputFormatted(
-              Message::ESeverity::Debug,
+          Infra::Message::OutputFormatted(
+              Infra::Message::ESeverity::Debug,
               L"    [%u]: (not present - failed to get vendor and product ID strings)",
               (unsigned int)i);
           continue;
@@ -374,17 +379,19 @@ namespace Xidi
 
         // Add the vendor ID and product ID string to the list.
         joySystemDeviceInfo.push_back({registryValueData, false});
-        Message::OutputFormatted(
-            Message::ESeverity::Debug, L"    [%u]: %s", (unsigned int)i, registryValueData);
+        Infra::Message::OutputFormatted(
+            Infra::Message::ESeverity::Debug, L"    [%u]: %s", (unsigned int)i, registryValueData);
       }
 
-      Message::Output(Message::ESeverity::Debug, L"Done enumerating system WinMM devices.");
+      Infra::Message::Output(
+          Infra::Message::ESeverity::Debug, L"Done enumerating system WinMM devices.");
       RegCloseKey(registryKey);
 
       // Enumerate all devices using DirectInput8 to find any XInput devices with matching vendor
       // and product identifiers. This will provide information on whether each WinMM device
       // supports XInput.
-      Message::Output(Message::ESeverity::Debug, L"Using DirectInput to detect XInput devices...");
+      Infra::Message::Output(
+          Infra::Message::ESeverity::Debug, L"Using DirectInput to detect XInput devices...");
       IDirectInput8* directInputInterface = nullptr;
       if (S_OK !=
           ImportApiDirectInput::DirectInput8Create(
@@ -394,8 +401,8 @@ namespace Xidi
               (LPVOID*)&directInputInterface,
               nullptr))
       {
-        Message::Output(
-            Message::ESeverity::Debug,
+        Infra::Message::Output(
+            Infra::Message::ESeverity::Debug,
             L"Unable to detect XInput devices because a DirectInput interface object could not be created.");
         return;
       }
@@ -407,13 +414,13 @@ namespace Xidi
           directInputInterface->EnumDevices(
               DI8DEVCLASS_GAMECTRL, CreateSystemDeviceInfoEnumCallback, (LPVOID)&callbackInfo, 0))
       {
-        Message::Output(
-            Message::ESeverity::Debug,
+        Infra::Message::Output(
+            Infra::Message::ESeverity::Debug,
             L"Unable to detect XInput devices because enumeration of DirectInput devices failed.");
         return;
       }
 
-      Message::Output(Message::ESeverity::Debug, L"Done detecting XInput devices.");
+      Infra::Message::Output(Infra::Message::ESeverity::Debug, L"Done detecting XInput devices.");
     }
 
     /// Fills in the specified buffer with the name of the registry key to use for referencing
@@ -611,15 +618,17 @@ namespace Xidi
             SetControllerNameRegistryInfo();
 
             // Initialization complete.
-            Message::Output(
-                Message::ESeverity::Info, L"Completed initialization of WinMM joystick wrapper.");
+            Infra::Message::Output(
+                Infra::Message::ESeverity::Info,
+                L"Completed initialization of WinMM joystick wrapper.");
           });
     }
 
     MMRESULT WrapperJoyWinMM::JoyConfigChanged(DWORD dwFlags)
     {
-      Message::Output(
-          Message::ESeverity::Info, L"Refreshing joystick state due to a configuration change.");
+      Infra::Message::Output(
+          Infra::Message::ESeverity::Info,
+          L"Refreshing joystick state due to a configuration change.");
       Initialize();
 
       // Redirect to the imported API so that its view of the registry can be updated.
@@ -643,7 +652,7 @@ namespace Xidi
         FillRegistryKeyString(pjc->szRegKey, _countof(pjc->szRegKey));
 
         const MMRESULT result = JOYERR_NOERROR;
-        LOG_INVOCATION(Message::ESeverity::Info, (unsigned int)uJoyID, result);
+        LOG_INVOCATION(Infra::Message::ESeverity::Info, (unsigned int)uJoyID, result);
         return result;
       }
 
@@ -660,7 +669,7 @@ namespace Xidi
         {
           const MMRESULT result = JOYERR_PARMS;
           LOG_INVALID_PARAMS();
-          LOG_INVOCATION(Message::ESeverity::Info, (unsigned int)uJoyID, result);
+          LOG_INVOCATION(Infra::Message::ESeverity::Info, (unsigned int)uJoyID, result);
           return result;
         }
 
@@ -703,7 +712,7 @@ namespace Xidi
         FillVirtualControllerName(pjc->szPname, _countof(pjc->szPname), xJoyID);
 
         const MMRESULT result = JOYERR_NOERROR;
-        LOG_INVOCATION(Message::ESeverity::Info, (unsigned int)uJoyID, result);
+        LOG_INVOCATION(Infra::Message::ESeverity::Info, (unsigned int)uJoyID, result);
         return result;
       }
       else
@@ -714,7 +723,7 @@ namespace Xidi
 
         if (JOYERR_NOERROR == result) FillRegistryKeyString(pjc->szRegKey, _countof(pjc->szRegKey));
 
-        LOG_INVOCATION(Message::ESeverity::Info, (unsigned int)uJoyID, result);
+        LOG_INVOCATION(Infra::Message::ESeverity::Info, (unsigned int)uJoyID, result);
         return result;
       }
     }
@@ -729,8 +738,11 @@ namespace Xidi
       // Number of controllers = number of XInput controllers + number of driver-reported
       // controllers.
       UINT result = (UINT)joyIndexMap.size();
-      Message::OutputFormatted(
-          Message::ESeverity::Debug, L"Invoked %s, result = %u.", __FUNCTIONW__ L"()", result);
+      Infra::Message::OutputFormatted(
+          Infra::Message::ESeverity::Debug,
+          L"Invoked %s, result = %u.",
+          __FUNCTIONW__ L"()",
+          result);
       return result;
     }
 
@@ -757,14 +769,14 @@ namespace Xidi
         if (true == joyStateData.button[3]) pji->wButtons |= JOY_BUTTON4;
 
         const MMRESULT result = JOYERR_NOERROR;
-        LOG_INVOCATION(Message::ESeverity::SuperDebug, (unsigned int)uJoyID, result);
+        LOG_INVOCATION(Infra::Message::ESeverity::SuperDebug, (unsigned int)uJoyID, result);
         return result;
       }
       else
       {
         // Querying a non-XInput controller.
         const MMRESULT result = ImportApiWinMM::joyGetPos((UINT)realJoyID, pji);
-        LOG_INVOCATION(Message::ESeverity::SuperDebug, (unsigned int)uJoyID, result);
+        LOG_INVOCATION(Infra::Message::ESeverity::SuperDebug, (unsigned int)uJoyID, result);
         return result;
       }
     }
@@ -784,7 +796,7 @@ namespace Xidi
         {
           MMRESULT result = JOYERR_PARMS;
           LOG_INVALID_PARAMS();
-          LOG_INVOCATION(Message::ESeverity::SuperDebug, (unsigned int)uJoyID, result);
+          LOG_INVOCATION(Infra::Message::ESeverity::SuperDebug, (unsigned int)uJoyID, result);
           return result;
         }
 
@@ -813,14 +825,14 @@ namespace Xidi
         }
 
         const MMRESULT result = JOYERR_NOERROR;
-        LOG_INVOCATION(Message::ESeverity::SuperDebug, (unsigned int)uJoyID, result);
+        LOG_INVOCATION(Infra::Message::ESeverity::SuperDebug, (unsigned int)uJoyID, result);
         return result;
       }
       else
       {
         // Querying a non-XInput controller.
         const MMRESULT result = ImportApiWinMM::joyGetPosEx((UINT)realJoyID, pji);
-        LOG_INVOCATION(Message::ESeverity::SuperDebug, (unsigned int)uJoyID, result);
+        LOG_INVOCATION(Infra::Message::ESeverity::SuperDebug, (unsigned int)uJoyID, result);
         return result;
       }
     }
@@ -837,14 +849,14 @@ namespace Xidi
         // Operation not supported.
         const MMRESULT result = JOYERR_NOCANDO;
         LOG_UNSUPPORTED_OPERATION();
-        LOG_INVOCATION(Message::ESeverity::Info, (unsigned int)uJoyID, result);
+        LOG_INVOCATION(Infra::Message::ESeverity::Info, (unsigned int)uJoyID, result);
         return JOYERR_NOCANDO;
       }
       else
       {
         // Querying a non-XInput controller.
         const MMRESULT result = ImportApiWinMM::joyGetThreshold((UINT)realJoyID, puThreshold);
-        LOG_INVOCATION(Message::ESeverity::Info, (unsigned int)uJoyID, result);
+        LOG_INVOCATION(Infra::Message::ESeverity::Info, (unsigned int)uJoyID, result);
         return result;
       }
     }
@@ -861,14 +873,14 @@ namespace Xidi
         // Operation not supported.
         const MMRESULT result = JOYERR_NOCANDO;
         LOG_UNSUPPORTED_OPERATION();
-        LOG_INVOCATION(Message::ESeverity::Info, (unsigned int)uJoyID, result);
+        LOG_INVOCATION(Infra::Message::ESeverity::Info, (unsigned int)uJoyID, result);
         return result;
       }
       else
       {
         // Querying a non-XInput controller.
         const MMRESULT result = ImportApiWinMM::joyReleaseCapture((UINT)realJoyID);
-        LOG_INVOCATION(Message::ESeverity::Info, (unsigned int)uJoyID, result);
+        LOG_INVOCATION(Infra::Message::ESeverity::Info, (unsigned int)uJoyID, result);
         return result;
       }
     }
@@ -885,7 +897,7 @@ namespace Xidi
         // Operation not supported.
         const MMRESULT result = JOYERR_NOCANDO;
         LOG_UNSUPPORTED_OPERATION();
-        LOG_INVOCATION(Message::ESeverity::Info, (unsigned int)uJoyID, result);
+        LOG_INVOCATION(Infra::Message::ESeverity::Info, (unsigned int)uJoyID, result);
         return result;
       }
       else
@@ -893,7 +905,7 @@ namespace Xidi
         // Querying a non-XInput controller.
         const MMRESULT result =
             ImportApiWinMM::joySetCapture(hwnd, (UINT)realJoyID, uPeriod, fChanged);
-        LOG_INVOCATION(Message::ESeverity::Info, (unsigned int)uJoyID, result);
+        LOG_INVOCATION(Infra::Message::ESeverity::Info, (unsigned int)uJoyID, result);
         return result;
       }
     }
@@ -910,14 +922,14 @@ namespace Xidi
         // Operation not supported.
         const MMRESULT result = JOYERR_NOCANDO;
         LOG_UNSUPPORTED_OPERATION();
-        LOG_INVOCATION(Message::ESeverity::Info, (unsigned int)uJoyID, result);
+        LOG_INVOCATION(Infra::Message::ESeverity::Info, (unsigned int)uJoyID, result);
         return result;
       }
       else
       {
         // Querying a non-XInput controller.
         const MMRESULT result = ImportApiWinMM::joySetThreshold((UINT)realJoyID, uThreshold);
-        LOG_INVOCATION(Message::ESeverity::Info, (unsigned int)uJoyID, result);
+        LOG_INVOCATION(Infra::Message::ESeverity::Info, (unsigned int)uJoyID, result);
         return result;
       }
     }
