@@ -134,6 +134,9 @@ Type.4                              = StandardGamepad
 [Properties]
 MouseSpeedScalingFactorPercent      = 100
 UseBuiltInProperties                = yes
+CircleToSquarePercentStickLeft      = 0
+CircleToSquarePercentStickRight     = 0
+ForceFeedbackEffectStrengthPercent  = 100
 DeadzonePercentStickLeft            = 0
 DeadzonePercentStickRight           = 0
 DeadzonePercentTriggerLT            = 0
@@ -178,6 +181,10 @@ This section allows for customization and fine-tuning of various virtual control
 - **MouseSpeedScalingFactorPercent** modifies the speed of the mouse cursor when a Xidi virtual controller element is configured to emulate mouse movement. Xidi has a built-in default mouse speed, and changing this setting allows that speed to be scaled up or down. The value is expressed as a desired percentage of the default speed. For example, `25` means that the mouse speed should be one-quarter of the default, and `400` means that the mouse speed should be four times the default.
 
 - **UseBuiltInProperties** allows certain built-in axis properties to be enabled or disabled. By default Xidi adds a small deadzone and saturation to all virtual controller axes via WinMM and to any analog sticks or triggers that are used to emulate mouse movement. This is done to ensure a better user experience where such properties are not normally exposed for customization. Setting this to `no` disables these built-in deadzone and saturation properties.
+
+- **CircleToSquarePercentStickLeft** and **CircleToSquarePercentStickRight** apply a mathematical transform to the raw physical readings from the left and right sticks, respectively. On some physical controllers, including Xbox controllers, these sticks can only move in a circular field of motion. This is unlike how some older controllers are constructed, including Logitech RumblePad, which provides a much more square-like field of motion for the analog sticks. Enabling these settings allows a circular field of motion for the analog sticks to emulate a square field of motion instead. The value for each of these settings is a number that must be between 0 and 100, inclusive. 0 means disabled, 100 means that a perfect circle is mapped to a perfect square, and everything in between applies the transform only partially.
+
+- **ForceFeedbackEffectStrengthPercent** acts as a global "volume control knob" that can reduce the strength of all the force-feedback vibration effects. The value is a number between 0 and 100 that represents the desired effect strength, as a percentage of what Xidi would normally send to the physical controller. This setting is applied at the very last step, meaning that it does not have any impact on force feedback calculations but rather just scales everything down. 
 
 - **DeadzonePercentStickLeft**, **DeadzonePercentStickRight**, **DeadzonePercentTriggerLT**, and **DeadzonePercentTriggerRT** respectively allow the analog deadzone of the left stick, right stick, left trigger, and right trigger to be customized. Deadzone is expressed as percentage of the analog range of motion; values must be between 0 and 45, inclusive. If the analog position is less than this percentage away from the neutral position then Xidi reports a neutral reading to the application. It is not generally necessary to customize deadzone because DirectInput applications often use axis properties to do so, and for WinMM, Xidi internally uses its own default properties unless these are disabled. *Any customization done via these configuration file settings is in addition to whatever deadzone the application already sets.*
 
@@ -228,6 +235,8 @@ This section is used to modify the behavior of Xidi in ways that are not general
 - **PollReturnCode** modifies the return code for a specific DirectInput API call that some applications make but Xidi does not require. By default, Xidi informs applications that invoking this API call is unnecessary, which per DirectInput documentation is considered a successful result, but some applications are hard-coded to look for a specific return code that might be different. For example, `PollReturnCode = 0` would modify the return code to 0, which indicates that the operation completed successfully.
 
 - **IgnoreEnumObjectsCallbackReturnCode** causes Xidi to ignore the return code it receives from an application while it is enumerating objects (buttons, axes, and so on) that exist on a virtual controller. Normally the application has the option to terminate the enumeration early, but this workaround causes Xidi to ignore the application's request and continue enumerating until all objects have been presented to the application.
+
+- **UseShortVirtualControllerNames** causes Xidi to replace its usual virtual controller names with shorter versions. By default, virtual controller names are of the form "Xidi Virtual Controller #" but can be shortened to the form "Xidi-##" with this option enabled. Virtual controller names are often displayed in applications to identify the virtual controllers, and applications sometimes truncate the long-form names so that the player number is hidden.
 
 
 # Mapping Controller Buttons and Axes
