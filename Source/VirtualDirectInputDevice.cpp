@@ -21,6 +21,7 @@
 
 #include <Infra/Core/Configuration.h>
 #include <Infra/Core/Message.h>
+#include <Infra/Core/ProcessInfo.h>
 
 #include "ApiDirectInput.h"
 #include "ApiGUID.h"
@@ -1982,8 +1983,8 @@ namespace Xidi
         wcsncpy_s(
             ((LPDIPROPSTRING)pdiph)->wsz,
             _countof(((LPDIPROPSTRING)pdiph)->wsz),
-            Strings::kStrProductName.data(),
-            Strings::kStrProductName.length());
+            Infra::ProcessInfo::GetProductName()->data(),
+            Infra::ProcessInfo::GetProductName()->length());
         LOG_PROPERTY_INVOCATION_DIPROPSTRING_AND_RETURN(S_FALSE, kMethodSeverity, rguidProp, pdiph);
 
       case ((size_t)&DIPROP_GRANULARITY):

@@ -20,6 +20,7 @@
 #include <optional>
 #include <string_view>
 
+#include <Infra/Core/Strings.h>
 #include <Infra/Core/ValueOrError.h>
 
 #include "ApiDirectInput.h"
@@ -29,7 +30,6 @@
 #include "Keyboard.h"
 #include "Mapper.h"
 #include "Mouse.h"
-#include "Strings.h"
 
 namespace Xidi
 {
@@ -306,7 +306,7 @@ namespace Xidi
         const std::optional<AxisEnumType> maybeAxis =
             AxisTypeFromString<AxisEnumType>(paramParts.first);
         if (false == maybeAxis.has_value())
-          return Strings::FormatString(
+          return Infra::Strings::Format(
                      L"%s: Unrecognized axis", std::wstring(paramParts.first).c_str())
               .Data();
 
@@ -324,7 +324,7 @@ namespace Xidi
           const std::optional<EAxisDirection> maybeAxisDirection =
               AxisDirectionFromString(paramParts.first);
           if (false == maybeAxisDirection.has_value())
-            return Strings::FormatString(
+            return Infra::Strings::Format(
                        L"%s: Unrecognized axis direction", std::wstring(paramParts.first).c_str())
                 .Data();
 
@@ -333,7 +333,7 @@ namespace Xidi
 
         // No further parameters allowed.
         if (false == paramParts.remaining.empty())
-          return Strings::FormatString(
+          return Infra::Strings::Format(
                      L"\"%s\" is extraneous", std::wstring(paramParts.remaining).c_str())
               .Data();
 
@@ -748,11 +748,11 @@ namespace Xidi
         const std::optional<unsigned int> maybeRecursionDepth =
             ComputeRecursionDepth(elementMapperString);
         if (false == maybeRecursionDepth.has_value())
-          return Strings::FormatString(L"Syntax error: Unbalanced parentheses").Data();
+          return Infra::Strings::Format(L"Syntax error: Unbalanced parentheses").Data();
 
         const unsigned int kRecursionDepth = ComputeRecursionDepth(elementMapperString).value();
         if (kRecursionDepth > kElementMapperMaxRecursionDepth)
-          return Strings::FormatString(
+          return Infra::Strings::Format(
                      L"Nesting depth %u exceeds limit of %u",
                      kRecursionDepth,
                      kElementMapperMaxRecursionDepth)
@@ -762,7 +762,7 @@ namespace Xidi
         if (false == parseResult.maybeElementMapper.HasValue())
           return std::move(parseResult.maybeElementMapper);
         else if (false == parseResult.remainingString.empty())
-          return Strings::FormatString(
+          return Infra::Strings::Format(
                      L"\"%s\" is extraneous", std::wstring(parseResult.remainingString).c_str())
               .Data();
 
@@ -775,7 +775,7 @@ namespace Xidi
         const std::optional<unsigned int> maybeRecursionDepth =
             ComputeRecursionDepth(ffActuatorString);
         if (false == maybeRecursionDepth.has_value())
-          return Strings::FormatString(L"Syntax error: Unbalanced parentheses").Data();
+          return Infra::Strings::Format(L"Syntax error: Unbalanced parentheses").Data();
 
         const unsigned int kRecursionDepth = ComputeRecursionDepth(ffActuatorString).value();
         if (kRecursionDepth > 1) return L"Nesting is not allowed for force feedback actuators";
@@ -952,7 +952,7 @@ namespace Xidi
       {
         const AxisParamsOrError<EAxis> maybeAxisMapperParams = ParseAxisParams<EAxis>(params);
         if (true == maybeAxisMapperParams.HasError())
-          return Strings::FormatString(L"Axis: %s", maybeAxisMapperParams.Error().c_str()).Data();
+          return Infra::Strings::Format(L"Axis: %s", maybeAxisMapperParams.Error().c_str()).Data();
 
         return std::make_unique<AxisMapper>(
             maybeAxisMapperParams.Value().axis, maybeAxisMapperParams.Value().direction);
@@ -962,7 +962,7 @@ namespace Xidi
       {
         const std::optional<unsigned int> maybeButtonNumber = ParseUnsignedInteger(params, 10);
         if (false == maybeButtonNumber.has_value())
-          return Strings::FormatString(
+          return Infra::Strings::Format(
                      L"Button: Parameter \"%s\" must be a number between 1 and %u",
                      std::wstring(params).c_str(),
                      (unsigned int)EButton::Count)
@@ -970,7 +970,7 @@ namespace Xidi
 
         const unsigned int kButtonNumber = maybeButtonNumber.value() - 1;
         if (kButtonNumber >= (unsigned int)EButton::Count)
-          return Strings::FormatString(
+          return Infra::Strings::Format(
                      L"Button: Parameter \"%s\" must be a number between 1 and %u",
                      std::wstring(params).c_str(),
                      (unsigned int)EButton::Count)
@@ -991,7 +991,7 @@ namespace Xidi
         {
           elementMapperResult = ParseSingleElementMapper(elementMapperResult.remainingString);
           if (false == elementMapperResult.maybeElementMapper.HasValue())
-            return Strings::FormatString(
+            return Infra::Strings::Format(
                        L"Compound: Parameter %u: %s",
                        (unsigned int)(1 + i),
                        elementMapperResult.maybeElementMapper.Error().c_str())
@@ -1005,7 +1005,7 @@ namespace Xidi
         // No further parameters allowed.
         // Specifying too many underlying element mappers is an error.
         if (false == elementMapperResult.remainingString.empty())
-          return Strings::FormatString(
+          return Infra::Strings::Format(
                      L"Compound: Number of parameters exceeds limit of %u",
                      (unsigned int)elementMappers.size())
               .Data();
@@ -1017,7 +1017,7 @@ namespace Xidi
       {
         const AxisParamsOrError<EAxis> maybeAxisMapperParams = ParseAxisParams<EAxis>(params);
         if (true == maybeAxisMapperParams.HasError())
-          return Strings::FormatString(L"DigitalAxis: %s", maybeAxisMapperParams.Error().c_str())
+          return Infra::Strings::Format(L"DigitalAxis: %s", maybeAxisMapperParams.Error().c_str())
               .Data();
 
         return std::make_unique<DigitalAxisMapper>(
@@ -1029,12 +1029,12 @@ namespace Xidi
         SElementMapperParseResult elementMapperResult = ParseSingleElementMapper(params);
 
         if (false == elementMapperResult.maybeElementMapper.HasValue())
-          return Strings::FormatString(
+          return Infra::Strings::Format(
                      L"Invert: Parameter 1: %s",
                      elementMapperResult.maybeElementMapper.Error().c_str())
               .Data();
         else if (false == elementMapperResult.remainingString.empty())
-          return Strings::FormatString(
+          return Infra::Strings::Format(
                      L"Invert: \"%s\" is extraneous",
                      std::wstring(elementMapperResult.remainingString).c_str())
               .Data();
@@ -1053,7 +1053,7 @@ namespace Xidi
         std::optional<unsigned int> maybeKeyScanCode = ParseKeyboardScancode(params);
         if (false == maybeKeyScanCode.has_value()) maybeKeyScanCode = ParseUnsignedInteger(params);
         if (false == maybeKeyScanCode.has_value())
-          return Strings::FormatString(
+          return Infra::Strings::Format(
                      L"Keyboard: \"%s\" must map to a scan code between 0 and %u",
                      std::wstring(params).c_str(),
                      (Keyboard::kVirtualKeyboardKeyCount - 1))
@@ -1061,7 +1061,7 @@ namespace Xidi
 
         const unsigned int kKeyScanCode = maybeKeyScanCode.value();
         if (kKeyScanCode >= Keyboard::kVirtualKeyboardKeyCount)
-          return Strings::FormatString(
+          return Infra::Strings::Format(
                      L"Keyboard: \"%s\" must map to a scan code between 0 and %u",
                      std::wstring(params).c_str(),
                      (Keyboard::kVirtualKeyboardKeyCount - 1))
@@ -1075,7 +1075,8 @@ namespace Xidi
         const AxisParamsOrError<Mouse::EMouseAxis> maybeMouseAxisMapperParams =
             ParseAxisParams<Mouse::EMouseAxis>(params);
         if (true == maybeMouseAxisMapperParams.HasError())
-          return Strings::FormatString(L"MouseAxis: %s", maybeMouseAxisMapperParams.Error().c_str())
+          return Infra::Strings::Format(
+                     L"MouseAxis: %s", maybeMouseAxisMapperParams.Error().c_str())
               .Data();
 
         return std::make_unique<MouseAxisMapper>(
@@ -1086,7 +1087,7 @@ namespace Xidi
       {
         std::optional<Mouse::EMouseButton> maybeMouseButton = ParseMouseButton(params);
         if (false == maybeMouseButton.has_value())
-          return Strings::FormatString(
+          return Infra::Strings::Format(
                      L"MouseButton: \"%s\" must map to a valid mouse button",
                      std::wstring(params).c_str())
               .Data();
@@ -1098,7 +1099,7 @@ namespace Xidi
       ElementMapperOrError MakeNullMapper(std::wstring_view params)
       {
         if (false == params.empty())
-          return Strings::FormatString(L"Null: \"%s\" is extraneous", std::wstring(params).c_str())
+          return Infra::Strings::Format(L"Null: \"%s\" is extraneous", std::wstring(params).c_str())
               .Data();
 
         return nullptr;
@@ -1130,7 +1131,7 @@ namespace Xidi
 
         const auto povDirectionIter = kPovDirectionStrings.find(params);
         if (kPovDirectionStrings.cend() == povDirectionIter)
-          return Strings::FormatString(
+          return Infra::Strings::Format(
                      L"Pov: %s: Unrecognized POV direction", std::wstring(params).c_str())
               .Data();
 
@@ -1142,7 +1143,7 @@ namespace Xidi
         // First parameter is required. It is a string that specifies the positive element mapper.
         SElementMapperParseResult positiveElementMapperResult = ParseSingleElementMapper(params);
         if (false == positiveElementMapperResult.maybeElementMapper.HasValue())
-          return Strings::FormatString(
+          return Infra::Strings::Format(
                      L"Split: Parameter 1: %s",
                      positiveElementMapperResult.maybeElementMapper.Error().c_str())
               .Data();
@@ -1151,14 +1152,14 @@ namespace Xidi
         SElementMapperParseResult negativeElementMapperResult =
             ParseSingleElementMapper(positiveElementMapperResult.remainingString);
         if (false == negativeElementMapperResult.maybeElementMapper.HasValue())
-          return Strings::FormatString(
+          return Infra::Strings::Format(
                      L"Split: Parameter 2: %s",
                      negativeElementMapperResult.maybeElementMapper.Error().c_str())
               .Data();
 
         // No further parameters allowed.
         if (false == negativeElementMapperResult.remainingString.empty())
-          return Strings::FormatString(
+          return Infra::Strings::Format(
                      L"Split: \"%s\" is extraneous",
                      std::wstring(negativeElementMapperResult.remainingString).c_str())
               .Data();
@@ -1171,7 +1172,7 @@ namespace Xidi
       ForceFeedbackActuatorOrError MakeForceFeedbackActuatorDefault(std::wstring_view params)
       {
         if (false == params.empty())
-          return Strings::FormatString(
+          return Infra::Strings::Format(
                      L"Default: \"%s\" is extraneous", std::wstring(params).c_str())
               .Data();
 
@@ -1184,7 +1185,7 @@ namespace Xidi
       ForceFeedbackActuatorOrError MakeForceFeedbackActuatorDisabled(std::wstring_view params)
       {
         if (false == params.empty())
-          return Strings::FormatString(
+          return Infra::Strings::Format(
                      L"Disabled: \"%s\" is extraneous", std::wstring(params).c_str())
               .Data();
 
@@ -1197,7 +1198,7 @@ namespace Xidi
       {
         const AxisParamsOrError<EAxis> maybeAxisMapperParams = ParseAxisParams<EAxis>(params);
         if (true == maybeAxisMapperParams.HasError())
-          return Strings::FormatString(L"SingleAxis: %s", maybeAxisMapperParams.Error().c_str())
+          return Infra::Strings::Format(L"SingleAxis: %s", maybeAxisMapperParams.Error().c_str())
               .Data();
 
         const ForceFeedback::SActuatorElement actuatorElement = {
@@ -1223,7 +1224,7 @@ namespace Xidi
 
         const std::optional<EAxis> maybeAxisFirst = AxisTypeFromString<EAxis>(paramParts.first);
         if (false == maybeAxisFirst.has_value())
-          return Strings::FormatString(
+          return Infra::Strings::Format(
                      L"MagnitudeProjection: %s: Unrecognized first axis",
                      std::wstring(paramParts.first).c_str())
               .Data();
@@ -1239,7 +1240,7 @@ namespace Xidi
 
         const std::optional<EAxis> maybeAxisSecond = AxisTypeFromString<EAxis>(paramParts.first);
         if (false == maybeAxisSecond.has_value())
-          return Strings::FormatString(
+          return Infra::Strings::Format(
                      L"MagnitudeProjection: %s: Unrecognized second axis",
                      std::wstring(paramParts.first).c_str())
               .Data();
@@ -1249,7 +1250,7 @@ namespace Xidi
 
         // No further parameters allowed.
         if (false == paramParts.remaining.empty())
-          return Strings::FormatString(
+          return Infra::Strings::Format(
                      L"\"%s\" is extraneous", std::wstring(paramParts.remaining).c_str())
               .Data();
 
@@ -1321,7 +1322,7 @@ namespace Xidi
         if (false == maybeElementMapperStringParts.has_value())
           return {
               .maybeElementMapper =
-                  Strings::FormatString(
+                  Infra::Strings::Format(
                       L"\"%s\" contains a syntax error", std::wstring(elementMapperString).c_str())
                       .Data()};
 
@@ -1333,7 +1334,7 @@ namespace Xidi
             kMakeElementMapperFunctions.find(elementMapperStringParts.type);
         if (kMakeElementMapperFunctions.cend() == makeElementMapperIter)
           return {
-              .maybeElementMapper = Strings::FormatString(
+              .maybeElementMapper = Infra::Strings::Format(
                                         L"%s: Unrecognized element mapper type",
                                         std::wstring(elementMapperStringParts.type).c_str())
                                         .Data()};
@@ -1376,7 +1377,7 @@ namespace Xidi
         const std::optional<SStringParts> maybeForceFeedbackActuatorStringParts =
             ExtractForceFeedbackActuatorStringParts(ffActuatorString);
         if (false == maybeForceFeedbackActuatorStringParts.has_value())
-          return Strings::FormatString(
+          return Infra::Strings::Format(
                      L"\"%s\" contains a syntax error", std::wstring(ffActuatorString).c_str())
               .Data();
 
@@ -1388,7 +1389,7 @@ namespace Xidi
         const auto makeForceFeedbackActuatorIter =
             kMakeForceFeedbackActuatorFunctions.find(kForceFeedbackActuatorStringParts.type);
         if (kMakeForceFeedbackActuatorFunctions.cend() == makeForceFeedbackActuatorIter)
-          return Strings::FormatString(
+          return Infra::Strings::Format(
                      L"%s: Unrecognized force feedback actuator mode",
                      std::wstring(kForceFeedbackActuatorStringParts.type).c_str())
               .Data();

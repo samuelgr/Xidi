@@ -19,6 +19,7 @@
 #include <Infra/Core/Configuration.h>
 #include <Infra/Core/Message.h>
 #include <Infra/Core/ProcessInfo.h>
+#include <Infra/Core/Strings.h>
 #include <Infra/Core/TemporaryBuffer.h>
 
 #include "ApiBitSet.h"
@@ -164,40 +165,40 @@ namespace Xidi
     static constexpr std::wstring_view kProductIdPrefix = L"PID";
 
     Infra::TemporaryVector<std::wstring_view> piecesA =
-        Strings::SplitString(controllerStringA, {L"_", L"&", L"#"});
+        Infra::Strings::Split<wchar_t>(controllerStringA, {L"_", L"&", L"#"});
     Infra::TemporaryVector<std::wstring_view> piecesB =
-        Strings::SplitString(controllerStringB, {L"_", L"&", L"#"});
+        Infra::Strings::Split<wchar_t>(controllerStringB, {L"_", L"&", L"#"});
 
     std::wstring_view vendorIdA, vendorIdB, productIdA, productIdB;
 
     for (unsigned int i = 0; i < (piecesA.Size() - 1); ++i)
     {
-      if (true == Strings::EqualsCaseInsensitive(piecesA[i], kVendorIdPrefix))
+      if (true == Infra::Strings::EqualsCaseInsensitive(piecesA[i], kVendorIdPrefix))
         vendorIdA = piecesA[++i];
-      else if (true == Strings::EqualsCaseInsensitive(piecesA[i], kProductIdPrefix))
+      else if (true == Infra::Strings::EqualsCaseInsensitive(piecesA[i], kProductIdPrefix))
         productIdA = piecesA[++i];
     }
 
     for (unsigned int i = 0; i < (piecesB.Size() - 1); ++i)
     {
-      if (true == Strings::EqualsCaseInsensitive(piecesB[i], kVendorIdPrefix))
+      if (true == Infra::Strings::EqualsCaseInsensitive(piecesB[i], kVendorIdPrefix))
         vendorIdB = piecesB[++i];
-      if (true == Strings::EqualsCaseInsensitive(piecesB[i], kProductIdPrefix))
+      if (true == Infra::Strings::EqualsCaseInsensitive(piecesB[i], kProductIdPrefix))
         productIdB = piecesB[++i];
     }
 
     if (vendorIdA.empty() || vendorIdB.empty() || productIdA.empty() || productIdB.empty())
       return std::nullopt;
 
-    if (false == Strings::EqualsCaseInsensitive(productIdA, productIdB)) return false;
+    if (false == Infra::Strings::EqualsCaseInsensitive(productIdA, productIdB)) return false;
 
     if ((vendorIdA.length() == vendorIdB.length()) && (vendorIdA == vendorIdB))
-      return Strings::EqualsCaseInsensitive(vendorIdA, vendorIdB);
+      return Infra::Strings::EqualsCaseInsensitive(vendorIdA, vendorIdB);
     else if (vendorIdA.length() < vendorIdB.length())
-      return Strings::EqualsCaseInsensitive(
+      return Infra::Strings::EqualsCaseInsensitive(
           vendorIdA, vendorIdB.substr(vendorIdB.length() - vendorIdA.length()));
     else
-      return Strings::EqualsCaseInsensitive(
+      return Infra::Strings::EqualsCaseInsensitive(
           vendorIdA.substr(vendorIdA.length() - vendorIdB.length()), vendorIdB);
   }
 

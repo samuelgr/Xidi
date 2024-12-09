@@ -22,6 +22,7 @@
 #include <string_view>
 
 #include <Infra/Core/ProcessInfo.h>
+#include <Infra/Core/Strings.h>
 #include <Infra/Core/TemporaryBuffer.h>
 
 #include "ApiWindows.h"
@@ -37,69 +38,7 @@ namespace Xidi
     /// File extension for a log file.
     static constexpr std::wstring_view kStrLogFileExtension = L".log";
 
-    /// Converts a single character to lowercase.
-    /// Default implementation does nothing useful.
-    /// @tparam CharType Character type.
-    /// @param [in] c Character to convert.
-    /// @return Null character, as the default implementation does nothing useful.
-    template <typename CharType> static inline CharType ToLowercase(CharType c)
-    {
-      return L'\0';
-    }
-
-    /// Converts a single narrow character to lowercase.
-    /// @tparam CharType Character type.
-    /// @param [in] c Character to convert.
-    /// @return Lowercase version of the input, if a conversion is possible, or the same character
-    /// as the input otherwise.
-    template <> char static inline ToLowercase(char c)
-    {
-      return std::tolower(c);
-    }
-
-    /// Converts a single wide character to lowercase.
-    /// Default implementation does nothing useful.
-    /// @tparam CharType Character type.
-    /// @param [in] c Character to convert.
-    /// @return Lowercase version of the input, if a conversion is possible, or the same character
-    /// as the input otherwise.
-    template <> wchar_t static inline ToLowercase(wchar_t c)
-    {
-      return std::towlower(c);
-    }
-
-    /// Generates the value for kStrProductName; see documentation of this run-time constant for
-    /// more information.
-    /// @return Corresponding run-time constant value.
-    static const std::wstring& GetProductName(void)
-    {
-      static std::wstring initString;
-      static std::once_flag initFlag;
-
-      std::call_once(
-          initFlag,
-          []() -> void
-          {
-            const wchar_t* stringStart = nullptr;
-            int stringLength = LoadString(
-                Infra::ProcessInfo::GetThisModuleInstanceHandle(),
-                IDS_XIDI_PRODUCT_NAME,
-                (wchar_t*)&stringStart,
-                0);
-
-            while ((stringLength > 0) && (L'\0' == stringStart[stringLength - 1]))
-              stringLength -= 1;
-
-            if (stringLength > 0) initString.assign(stringStart, &stringStart[stringLength]);
-          });
-
-      return initString;
-    }
-
-    /// Generates the value for kStrFormName; see documentation of this run-time constant for more
-    /// information.
-    /// @return Corresponding run-time constant value.
-    static const std::wstring& GetFormName(void)
+    std::wstring_view GetFormName(void)
     {
       static std::wstring initString;
       static std::once_flag initFlag;
@@ -128,155 +67,7 @@ namespace Xidi
       return initString;
     }
 
-    /// Generates the value for kStrExecutableCompleteFilename; see documentation of this run-time
-    /// constant for more information.
-    /// @return Corresponding run-time constant value.
-    static const std::wstring& GetExecutableCompleteFilename(void)
-    {
-      static std::wstring initString;
-      static std::once_flag initFlag;
-
-      std::call_once(
-          initFlag,
-          []() -> void
-          {
-            Infra::TemporaryBuffer<wchar_t> buf;
-            GetModuleFileName(nullptr, buf.Data(), (DWORD)buf.Capacity());
-
-            initString.assign(buf.Data());
-          });
-
-      return initString;
-    }
-
-    /// Generates the value for kStrExecutableBaseName; see documentation of this run-time constant
-    /// for more information.
-    /// @return Corresponding run-time constant value.
-    static const std::wstring& GetExecutableBaseName(void)
-    {
-      static std::wstring initString;
-      static std::once_flag initFlag;
-
-      std::call_once(
-          initFlag,
-          []() -> void
-          {
-            std::wstring_view executableBaseName = GetExecutableCompleteFilename();
-
-            const size_t lastBackslashPos = executableBaseName.find_last_of(L"\\");
-            if (std::wstring_view::npos != lastBackslashPos)
-              executableBaseName.remove_prefix(1 + lastBackslashPos);
-
-            initString.assign(executableBaseName);
-          });
-
-      return initString;
-    }
-
-    /// Generates the value for kStrExecutableDirectoryName; see documentation of this run-time
-    /// constant for more information.
-    /// @return Corresponding run-time constant value.
-    static const std::wstring& GetExecutableDirectoryName(void)
-    {
-      static std::wstring initString;
-      static std::once_flag initFlag;
-
-      std::call_once(
-          initFlag,
-          []() -> void
-          {
-            std::wstring_view executableDirectoryName = GetExecutableCompleteFilename();
-
-            const size_t lastBackslashPos = executableDirectoryName.find_last_of(L"\\");
-            if (std::wstring_view::npos != lastBackslashPos)
-            {
-              executableDirectoryName.remove_suffix(
-                  executableDirectoryName.length() - lastBackslashPos - 1);
-              initString.assign(executableDirectoryName);
-            }
-          });
-
-      return initString;
-    }
-
-    /// Generates the value for kStrXidiCompleteFilename; see documentation of this run-time
-    /// constant for more information.
-    /// @return Corresponding run-time constant value.
-    static const std::wstring& GetXidiCompleteFilename(void)
-    {
-      static std::wstring initString;
-      static std::once_flag initFlag;
-
-      std::call_once(
-          initFlag,
-          []() -> void
-          {
-            Infra::TemporaryBuffer<wchar_t> buf;
-            GetModuleFileName(
-                Infra::ProcessInfo::GetThisModuleInstanceHandle(),
-                buf.Data(),
-                (DWORD)buf.Capacity());
-
-            initString.assign(buf.Data());
-          });
-
-      return initString;
-    }
-
-    /// Generates the value for kStrXidiBaseName; see documentation of this run-time constant for
-    /// more information.
-    /// @return Corresponding run-time constant value.
-    static const std::wstring& GetXidiBaseName(void)
-    {
-      static std::wstring initString;
-      static std::once_flag initFlag;
-
-      std::call_once(
-          initFlag,
-          []() -> void
-          {
-            std::wstring_view executableBaseName = GetXidiCompleteFilename();
-
-            const size_t lastBackslashPos = executableBaseName.find_last_of(L"\\");
-            if (std::wstring_view::npos != lastBackslashPos)
-              executableBaseName.remove_prefix(1 + lastBackslashPos);
-
-            initString.assign(executableBaseName);
-          });
-
-      return initString;
-    }
-
-    /// Generates the value for kStrXidiDirectoryName; see documentation of this run-time constant
-    /// for more information.
-    /// @return Corresponding run-time constant value.
-    static const std::wstring& GetXidiDirectoryName(void)
-    {
-      static std::wstring initString;
-      static std::once_flag initFlag;
-
-      std::call_once(
-          initFlag,
-          []() -> void
-          {
-            std::wstring_view executableDirectoryName = GetXidiCompleteFilename();
-
-            const size_t lastBackslashPos = executableDirectoryName.find_last_of(L"\\");
-            if (std::wstring_view::npos != lastBackslashPos)
-            {
-              executableDirectoryName.remove_suffix(
-                  executableDirectoryName.length() - lastBackslashPos - 1);
-              initString.assign(executableDirectoryName);
-            }
-          });
-
-      return initString;
-    }
-
-    /// Generates the value for kStrSystemDirectoryName; see documentation of this run-time constant
-    /// for more information.
-    /// @return Corresponding run-time constant value.
-    static const std::wstring& GetSystemDirectoryName(void)
+    std::wstring_view GetSystemDirectoryName(void)
     {
       static std::wstring initString;
       static std::once_flag initFlag;
@@ -300,10 +91,7 @@ namespace Xidi
       return initString;
     }
 
-    /// Generates the value for kStrSystemLibraryFilenameDirectInput; see documentation of this
-    /// run-time constant for more information.
-    /// @return Corresponding run-time constant value.
-    static const std::wstring& GetSystemLibraryFilenameDirectInput(void)
+    std::wstring_view GetSystemLibraryFilenameDirectInput(void)
     {
       static std::wstring initString;
       static std::once_flag initFlag;
@@ -327,10 +115,7 @@ namespace Xidi
       return initString;
     }
 
-    /// Generates the value for kStrSystemLibraryFilenameDirectInput8; see documentation of this
-    /// run-time constant for more information.
-    /// @return Corresponding run-time constant value.
-    static const std::wstring& GetSystemLibraryFilenameDirectInput8(void)
+    std::wstring_view GetSystemLibraryFilenameDirectInput8(void)
     {
       static std::wstring initString;
       static std::once_flag initFlag;
@@ -354,10 +139,7 @@ namespace Xidi
       return initString;
     }
 
-    /// Generates the value for kStrSystemLibraryFilenameWinMM; see documentation of this run-time
-    /// constant for more information.
-    /// @return Corresponding run-time constant value.
-    static const std::wstring& GetSystemLibraryFilenameWinMM(void)
+    std::wstring_view GetSystemLibraryFilenameWinMM(void)
     {
       static std::wstring initString;
       static std::once_flag initFlag;
@@ -381,10 +163,7 @@ namespace Xidi
       return initString;
     }
 
-    /// Generates the value for kStrConfigurationFilename; see documentation of this run-time
-    /// constant for more information.
-    /// @return Corresponding run-time constant value.
-    static const std::wstring& GetConfigurationFilename(void)
+    std::wstring_view GetConfigurationFilename(void)
     {
       static std::wstring initString;
       static std::once_flag initFlag;
@@ -394,7 +173,10 @@ namespace Xidi
           []() -> void
           {
             std::wstring_view pieces[] = {
-                GetXidiDirectoryName(), GetProductName(), kStrConfigurationFileExtension};
+                Infra::ProcessInfo::GetThisModuleDirectoryName(),
+                L"\\",
+                *Infra::ProcessInfo::GetProductName(),
+                kStrConfigurationFileExtension};
 
             size_t totalLength = 0;
             for (int i = 0; i < _countof(pieces); ++i)
@@ -409,10 +191,7 @@ namespace Xidi
       return initString;
     }
 
-    /// Generates the value for kStrLogFilename; see documentation of this run-time constant for
-    /// more information.
-    /// @return Corresponding run-time constant value.
-    static const std::wstring& GetLogFilename(void)
+    std::wstring_view GetLogFilename(void)
     {
       static std::wstring initString;
       static std::once_flag initFlag;
@@ -433,8 +212,8 @@ namespace Xidi
               CoTaskMemFree(knownFolderPath);
             }
 
-            logFilename << GetProductName().c_str() << L'_' << GetFormName().c_str() << L'_'
-                        << GetExecutableBaseName().c_str() << L'_'
+            logFilename << *Infra::ProcessInfo::GetProductName() << L'_' << GetFormName() << L'_'
+                        << Infra::ProcessInfo::GetExecutableBaseName() << L'_'
                         << Infra::ProcessInfo::GetCurrentProcessId() << kStrLogFileExtension;
 
             initString.assign(logFilename);
@@ -442,23 +221,6 @@ namespace Xidi
 
       return initString;
     }
-
-    extern const std::wstring_view kStrProductName(GetProductName());
-    extern const std::wstring_view kStrFormName(GetFormName());
-    extern const std::wstring_view kStrExecutableCompleteFilename(GetExecutableCompleteFilename());
-    extern const std::wstring_view kStrExecutableBaseName(GetExecutableBaseName());
-    extern const std::wstring_view kStrExecutableDirectoryName(GetExecutableDirectoryName());
-    extern const std::wstring_view kStrXidiCompleteFilename(GetXidiCompleteFilename());
-    extern const std::wstring_view kStrXidiBaseName(GetXidiBaseName());
-    extern const std::wstring_view kStrXidiDirectoryName(GetXidiDirectoryName());
-    extern const std::wstring_view kStrSystemDirectoryName(GetSystemDirectoryName());
-    extern const std::wstring_view kStrSystemLibraryFilenameDirectInput(
-        GetSystemLibraryFilenameDirectInput());
-    extern const std::wstring_view kStrSystemLibraryFilenameDirectInput8(
-        GetSystemLibraryFilenameDirectInput8());
-    extern const std::wstring_view kStrSystemLibraryFilenameWinMM(GetSystemLibraryFilenameWinMM());
-    extern const std::wstring_view kStrConfigurationFilename(GetConfigurationFilename());
-    extern const std::wstring_view kStrLogFilename(GetLogFilename());
 
     const wchar_t* AxisTypeString(Controller::EAxis axis)
     {
@@ -481,39 +243,9 @@ namespace Xidi
       return L"?";
     }
 
-    template <typename CharType> bool EqualsCaseInsensitive(
-        std::basic_string_view<CharType> strA, std::basic_string_view<CharType> strB)
-    {
-      if (strA.length() != strB.length()) return false;
-
-      for (size_t i = 0; i < strA.length(); ++i)
-      {
-        if (ToLowercase(strA[i]) != ToLowercase(strB[i])) return false;
-      }
-
-      return true;
-    }
-
-    template bool EqualsCaseInsensitive<char>(std::string_view, std::string_view);
-    template bool EqualsCaseInsensitive<wchar_t>(std::wstring_view, std::wstring_view);
-
-    Infra::TemporaryString FormatString(_Printf_format_string_ const wchar_t* format, ...)
-    {
-      Infra::TemporaryString buf;
-
-      va_list args;
-      va_start(args, format);
-
-      buf.UnsafeSetSize((size_t)vswprintf_s(buf.Data(), buf.Capacity(), format, args));
-
-      va_end(args);
-
-      return buf;
-    }
-
     Infra::TemporaryString GuidToString(const GUID& guid)
     {
-      return FormatString(
+      return Infra::Strings::Format(
           L"{%08x-%04hx-%04hx-%02hhx%02hhx-%02hhx%02hhx%02hhx%02hhx%02hhx%02hhx}",
           guid.Data1,
           guid.Data2,
@@ -552,107 +284,6 @@ namespace Xidi
       if (controllerIdentifier >= Controller::kPhysicalControllerCount) return std::wstring_view();
 
       return initStrings[controllerIdentifier];
-    }
-
-    Infra::TemporaryVector<std::wstring_view> SplitString(
-        std::wstring_view stringToSplit, std::wstring_view delimiter)
-    {
-      Infra::TemporaryVector<std::wstring_view> stringPieces;
-
-      auto beginIter = stringToSplit.cbegin();
-      auto endIter = ((false == delimiter.empty()) ? beginIter : stringToSplit.cend());
-
-      while ((stringPieces.Size() < stringPieces.Capacity()) && (stringToSplit.cend() != endIter))
-      {
-        std::wstring_view remainingStringToSplit(endIter, stringToSplit.cend());
-        if (true == remainingStringToSplit.starts_with(delimiter))
-        {
-          stringPieces.EmplaceBack(beginIter, endIter);
-          endIter += delimiter.length();
-          beginIter = endIter;
-        }
-        else
-        {
-          endIter += 1;
-        }
-      }
-
-      if (stringPieces.Size() < stringPieces.Capacity())
-        stringPieces.EmplaceBack(beginIter, endIter);
-      else
-        stringPieces.Clear();
-
-      return stringPieces;
-    }
-
-    Infra::TemporaryVector<std::wstring_view> SplitString(
-        std::wstring_view stringToSplit, std::initializer_list<std::wstring_view> delimiters)
-    {
-      Infra::TemporaryVector<std::wstring_view> stringPieces;
-
-      auto beginIter = stringToSplit.cbegin();
-      auto endIter = ((false == std::empty(delimiters)) ? beginIter : stringToSplit.cend());
-
-      while ((stringPieces.Size() < stringPieces.Capacity()) && (stringToSplit.cend() != endIter))
-      {
-        bool delimiterFound = false;
-        std::wstring_view remainingStringToSplit(endIter, stringToSplit.cend());
-        for (const auto& delimiter : delimiters)
-        {
-          if (true == remainingStringToSplit.starts_with(delimiter))
-          {
-            stringPieces.EmplaceBack(beginIter, endIter);
-            endIter += delimiter.length();
-            beginIter = endIter;
-            delimiterFound = true;
-            break;
-          }
-        }
-
-        if (false == delimiterFound)
-        {
-          endIter += 1;
-        }
-      }
-
-      if (stringPieces.Size() < stringPieces.Capacity())
-        stringPieces.EmplaceBack(beginIter, endIter);
-      else
-        stringPieces.Clear();
-
-      return stringPieces;
-    }
-
-    Infra::TemporaryString SystemErrorCodeString(const unsigned long systemErrorCode)
-    {
-      Infra::TemporaryString systemErrorString;
-      DWORD systemErrorLength = FormatMessage(
-          FORMAT_MESSAGE_FROM_SYSTEM | FORMAT_MESSAGE_IGNORE_INSERTS,
-          nullptr,
-          systemErrorCode,
-          0,
-          systemErrorString.Data(),
-          systemErrorString.Capacity(),
-          nullptr);
-
-      if (0 == systemErrorLength)
-      {
-        systemErrorString = FormatString(L"System error %u.", (unsigned int)systemErrorCode);
-      }
-      else
-      {
-        for (; systemErrorLength > 0; --systemErrorLength)
-        {
-          if (L'\0' != systemErrorString[systemErrorLength] &&
-              !iswspace(systemErrorString[systemErrorLength]))
-            break;
-
-          systemErrorString[systemErrorLength] = L'\0';
-          systemErrorString.UnsafeSetSize(systemErrorLength);
-        }
-      }
-
-      return systemErrorString;
     }
   } // namespace Strings
 } // namespace Xidi

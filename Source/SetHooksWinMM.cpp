@@ -35,7 +35,8 @@ namespace Xidi
     // System joystick functions are only hooked if there exists a WinMM DLL in the same directory
     // as this hook module and it is not already loaded.
     static const std::wstring kImportLibraryFilename(
-        std::wstring(Strings::kStrXidiDirectoryName) + std::wstring(Strings::kStrLibraryNameWinMM));
+        std::wstring(Infra::ProcessInfo::GetThisModuleDirectoryName()) + L"\\" +
+        std::wstring(Strings::kStrLibraryNameWinMM));
     if (TRUE == PathFileExists(kImportLibraryFilename.c_str()))
     {
       const HMODULE importLibraryHandle = GetModuleHandle(kImportLibraryFilename.c_str());

@@ -247,7 +247,7 @@ namespace Xidi
       return Globals::GetConfigurationData()
           .GetFirstStringValue(
               Strings::kStrConfigurationSectionImport, Strings::kStrConfigurationSettingImportWinMM)
-          .value_or(Strings::kStrSystemLibraryFilenameWinMM);
+          .value_or(Strings::GetSystemLibraryFilenameWinMM());
     }
 
     /// Logs a warning event related to failure to import a particular function from the import

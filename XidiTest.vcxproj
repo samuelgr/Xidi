@@ -75,7 +75,7 @@
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" />
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>
-      <PreprocessorDefinitions>DIRECTINPUT_VERSION=0x0800;WIN32;_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>XIDI_SKIP_CONFIG;DIRECTINPUT_VERSION=0x0800;WIN32;_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -83,7 +83,7 @@
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <ClCompile>
-      <PreprocessorDefinitions>DIRECTINPUT_VERSION=0x0800;WIN32;NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>XIDI_SKIP_CONFIG;DIRECTINPUT_VERSION=0x0800;WIN32;NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -91,7 +91,7 @@
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <ClCompile>
-      <PreprocessorDefinitions>DIRECTINPUT_VERSION=0x0800;_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>XIDI_SKIP_CONFIG;DIRECTINPUT_VERSION=0x0800;_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -99,7 +99,7 @@
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <ClCompile>
-      <PreprocessorDefinitions>DIRECTINPUT_VERSION=0x0800;NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>XIDI_SKIP_CONFIG;DIRECTINPUT_VERSION=0x0800;NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -142,7 +142,6 @@
     <ClInclude Include="Include\Xidi\Internal\VirtualDirectInputDevice.h" />
     <ClInclude Include="Include\Xidi\Internal\VirtualDirectInputEffect.h" />
     <ClInclude Include="Include\Xidi\Internal\WrapperIDirectInput.h" />
-    <ClInclude Include="Include\Xidi\Internal\XidiConfigReader.h" />
     <ClInclude Include="Resources\Xidi.h" />
   </ItemGroup>
   <ItemGroup>
@@ -201,7 +200,6 @@
     <ClCompile Include="Source\VirtualDirectInputDevice.cpp" />
     <ClCompile Include="Source\VirtualDirectInputEffect.cpp" />
     <ClCompile Include="Source\WrapperIDirectInput.cpp" />
-    <ClCompile Include="Source\XidiConfigReader.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="Resources\Xidi.rc" />

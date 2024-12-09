@@ -76,7 +76,7 @@ namespace Xidi
 
       std::wstring_view GetFormName(void) const override
       {
-        return Strings::kStrFormName;
+        return Strings::GetFormName();
       }
     };
 

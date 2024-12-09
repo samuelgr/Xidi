@@ -96,9 +96,6 @@
     <ClInclude Include="Include\Xidi\Internal\ForceFeedbackMath.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="Include\Xidi\Internal\XidiConfigReader.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="Include\Xidi\Internal\ApiXidi.h">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -255,9 +252,6 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="Source\Test\Case\RampForceEffectTest.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="Source\XidiConfigReader.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="Source\ApiXidi.cpp">

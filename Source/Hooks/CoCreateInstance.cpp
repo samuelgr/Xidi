@@ -13,6 +13,7 @@
 #include <string_view>
 
 #include <Infra/Core/Message.h>
+#include <Infra/Core/ProcessInfo.h>
 
 #include "ApiDirectInput.h"
 #include "ApiWindows.h"
@@ -99,7 +100,8 @@ namespace Xidi
       LocateDllGetClassObjectProc(void)
   {
     static const std::wstring importLibraryFilename(
-        std::wstring(Strings::kStrXidiDirectoryName) + std::wstring(*moduleName));
+        std::wstring(Infra::ProcessInfo::GetThisModuleDirectoryName()) + L"\\" +
+        std::wstring(*moduleName));
     static const HMODULE moduleHandle = LoadLibrary(importLibraryFilename.c_str());
     static const FARPROC moduleDllGetClassObjectProc =
         GetProcAddress(moduleHandle, "DllGetClassObject");

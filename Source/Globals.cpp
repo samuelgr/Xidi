@@ -24,25 +24,26 @@
 
 #include "ApiWindows.h"
 #include "Strings.h"
-#include "XidiConfigReader.h"
 
 #include "GitVersionInfo.generated.h"
 
+#ifndef XIDI_SKIP_CONFIG
+#include "XidiConfigReader.h"
 #ifndef XIDI_SKIP_MAPPERS
 #include "Mapper.h"
 #include "MapperBuilder.h"
+#endif
 #endif
 
 namespace Xidi
 {
   namespace Globals
   {
+#ifndef XIDI_SKIP_CONFIG
 #ifndef XIDI_SKIP_MAPPERS
     /// Holds custom mapper blueprints produced while reading from a configuration file.
     static Controller::MapperBuilder customMapperBuilder;
-#endif
 
-#ifndef XIDI_SKIP_MAPPERS
     /// Attempts to build all custom mappers held by the custom mapper builder object.
     /// Upon completion, regardless of outcome, clears out all of the stored blueprint objects.
     static inline void BuildCustomMappers(void)
@@ -74,7 +75,7 @@ namespace Xidi
           enableLogFlag,
           [logLevel]() -> void
           {
-            Infra::Message::CreateAndEnableLogFile(Strings::kStrLogFilename);
+            Infra::Message::CreateAndEnableLogFile(Strings::GetLogFilename());
           });
 
       Infra::Message::SetMinimumSeverityForOutput(logLevel);
@@ -102,6 +103,7 @@ namespace Xidi
         EnableLog(configuredSeverity);
       }
     }
+#endif
 
     bool DoesCurrentProcessHaveInputFocus(void)
     {
@@ -115,6 +117,7 @@ namespace Xidi
     {
       static Infra::Configuration::ConfigurationData configData;
 
+#ifndef XIDI_SKIP_CONFIG
       static std::once_flag readConfigFlag;
       std::call_once(
           readConfigFlag,
@@ -126,7 +129,7 @@ namespace Xidi
             configReader.SetMapperBuilder(&customMapperBuilder);
 #endif
 
-            configData = configReader.ReadConfigurationFile(Strings::kStrConfigurationFilename);
+            configData = configReader.ReadConfigurationFile(Strings::GetConfigurationFilename());
 
             if (true == configData.HasReadErrors())
             {
@@ -144,6 +147,7 @@ namespace Xidi
                   L"Errors were encountered during configuration file reading. See log file on the Desktop for more information.");
             }
           });
+#endif
 
       return configData;
     }
@@ -155,11 +159,13 @@ namespace Xidi
           IDS_XIDI_PRODUCT_NAME,
           Infra::ProcessInfo::GitVersionInfoForCurrentProject());
 
+#ifndef XIDI_SKIP_CONFIG
       EnableLogIfConfigured();
 
 #ifndef XIDI_SKIP_MAPPERS
       BuildCustomMappers();
       Controller::Mapper::DumpRegisteredMappers();
+#endif
 #endif
     }
   } // namespace Globals

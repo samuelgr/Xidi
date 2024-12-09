@@ -233,74 +233,35 @@ namespace Xidi
     // These strings are not safe to access before run-time, and should not be used to perform
     // dynamic initialization. Views are guaranteed to be null-terminated.
 
-    /// Product name.
-    /// Use this to identify Xidi in areas of user interaction.
-    extern const std::wstring_view kStrProductName;
-
     /// Form name.
     /// Use this to identify Xidi's form (dinput, dinput8, winmm) in areas of user interaction.
-    extern const std::wstring_view kStrFormName;
-
-    /// Complete path and filename of the currently-running executable.
-    extern const std::wstring_view kStrExecutableCompleteFilename;
-
-    /// Base name of the currently-running executable.
-    extern const std::wstring_view kStrExecutableBaseName;
-
-    /// Directory name of the currently-running executable, including trailing backslash if
-    /// available.
-    extern const std::wstring_view kStrExecutableDirectoryName;
-
-    /// Complete path and filename of the currently-running form of Xidi.
-    extern const std::wstring_view kStrXidiCompleteFilename;
-
-    /// Base name of the currently-running form of Xidi.
-    extern const std::wstring_view kStrXidiBaseName;
-
-    /// Directory name of the currently-running form of Xidi, including trailing backslash if
-    /// available.
-    extern const std::wstring_view kStrXidiDirectoryName;
+    std::wstring_view GetFormName(void);
 
     /// Directory name in which system-supplied libraries are found.
-    extern const std::wstring_view kStrSystemDirectoryName;
+    std::wstring_view GetSystemDirectoryName(void);
 
     /// Complete path and filename of the system-supplied DirectInput library.
-    extern const std::wstring_view kStrSystemLibraryFilenameDirectInput;
+    std::wstring_view GetSystemLibraryFilenameDirectInput(void);
 
     /// Complete path and filename of the system-supplied DirectInput8 library.
-    extern const std::wstring_view kStrSystemLibraryFilenameDirectInput8;
+    std::wstring_view GetSystemLibraryFilenameDirectInput8(void);
 
     /// Complete path and filename of the system-supplied WinMM library.
-    extern const std::wstring_view kStrSystemLibraryFilenameWinMM;
+    std::wstring_view GetSystemLibraryFilenameWinMM(void);
 
     /// Expected filename of a configuration file.
     /// Xidi configuration filename = (Xidi directory)\Xidi.ini
-    extern const std::wstring_view kStrConfigurationFilename;
+    std::wstring_view GetConfigurationFilename(void);
 
     /// Expected filename for the log file.
     /// Xidi log filename = (current user's desktop)\Xidi_(Xidi Form)_(base name of the running
     /// executable)_(process ID).log
-    extern const std::wstring_view kStrLogFilename;
+    std::wstring_view GetLogFilename(void);
 
     /// Returns a string representing the specified axis type.
     /// @param [in] axis Axis type for which a string is requested.
     /// @return String representation of the axis type.
     const wchar_t* AxisTypeString(Controller::EAxis axis);
-
-    /// Compares two strings without regard for the case of each individual character.
-    /// @tparam CharType Type of character in each string, either narrow or wide.
-    /// @param [in] strA First string in the comparison.
-    /// @param [in] strB Second string in the comparison.
-    /// @return `true` if the strings compare equal, `false` otherwise.
-    template <typename CharType> bool EqualsCaseInsensitive(
-        std::basic_string_view<CharType> strA, std::basic_string_view<CharType> strB);
-
-    /// Formats a string and returns the result in a newly-allocated null-terminated temporary
-    /// buffer.
-    /// @param [in] format Format string, possibly with format specifiers which must be matched with
-    /// the arguments that follow.
-    /// @return Resulting string after all formatting is applied.
-    Infra::TemporaryString FormatString(_Printf_format_string_ const wchar_t* format, ...);
 
     /// Generates a string representation of a GUID, in the format
     /// "{XXXXXXXX-XXXX-XXXX-XXXX-XXXXXXXXXXXX}" where X is a hexadecimal digit.
@@ -316,34 +277,5 @@ namespace Xidi
     /// identifier is out of range.
     std::wstring_view MapperTypeConfigurationNameString(
         Controller::TControllerIdentifier controllerIdentifier);
-
-    /// Splits a string using the specified delimiter string and returns a list of views each
-    /// corresponding to a part of the input string. If there are too many delimiters present such
-    /// that not all of the pieces can fit into the returned container type then the returned
-    /// container will be empty. Otherwise the returned container will contain at least one element.
-    /// @param [in] stringToSplit Input string to be split.
-    /// @param [in] delimiter Delimiter character sequence that identifies boundaries between pieces
-    /// of the input string.
-    /// @return Container that holds views referring to pieces of the input string split using the
-    /// specified delimiter.
-    Infra::TemporaryVector<std::wstring_view> SplitString(
-        std::wstring_view stringToSplit, std::wstring_view delimiter);
-
-    /// Splits a string using the specified delimiter strings and returns a list of views each
-    /// corresponding to a part of the input string. If there are too many delimiters present such
-    /// that not all of the pieces can fit into the returned container type then the returned
-    /// container will be empty. Otherwise the returned container will contain at least one element.
-    /// @param [in] stringToSplit Input string to be split.
-    /// @param [in] delimiters Delimiter character sequences each of which identifies a boundary
-    /// between pieces of the input string.
-    /// @return Container that holds views referring to pieces of the input string split using the
-    /// specified delimiter.
-    Infra::TemporaryVector<std::wstring_view> SplitString(
-        std::wstring_view stringToSplit, std::initializer_list<std::wstring_view> delimiters);
-
-    /// Generates a string representation of a system error code.
-    /// @param [in] systemErrorCode System error code for which to generate a string.
-    /// @return String representation of the system error code.
-    Infra::TemporaryString SystemErrorCodeString(const unsigned long systemErrorCode);
   } // namespace Strings
 } // namespace Xidi
