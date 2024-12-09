@@ -18,11 +18,11 @@
 #include <string>
 #include <string_view>
 
+#include <Infra/Core/Configuration.h>
 #include <Infra/Core/Message.h>
 #include <Infra/Core/ProcessInfo.h>
 
 #include "ApiWindows.h"
-#include "Configuration.h"
 #include "Strings.h"
 #include "XidiConfigReader.h"
 
@@ -47,7 +47,8 @@ namespace Xidi
     /// Upon completion, regardless of outcome, clears out all of the stored blueprint objects.
     static inline void BuildCustomMappers(void)
     {
-      if ((false == customMapperBuilder.Build()) && (false == GetConfigurationData().HasErrors()))
+      if ((false == customMapperBuilder.Build()) &&
+          (false == GetConfigurationData().HasReadErrors()))
       {
         if (true == Infra::Message::IsLogFileEnabled())
           Infra::Message::Output(
@@ -110,9 +111,9 @@ namespace Xidi
       return (GetCurrentProcessId() == foregroundProcess);
     }
 
-    const Configuration::ConfigurationData& GetConfigurationData(void)
+    const Infra::Configuration::ConfigurationData& GetConfigurationData(void)
     {
-      static Configuration::ConfigurationData configData;
+      static Infra::Configuration::ConfigurationData configData;
 
       static std::once_flag readConfigFlag;
       std::call_once(
@@ -127,14 +128,14 @@ namespace Xidi
 
             configData = configReader.ReadConfigurationFile(Strings::kStrConfigurationFilename);
 
-            if (true == configReader.HasReadErrors())
+            if (true == configData.HasReadErrors())
             {
               EnableLog(Infra::Message::ESeverity::Error);
 
               Infra::Message::Output(
                   Infra::Message::ESeverity::Error,
                   L"Errors were encountered during configuration file reading.");
-              for (const auto& readError : configReader.GetReadErrors())
+              for (const auto& readError : configData.GetReadErrorMessages())
                 Infra::Message::OutputFormatted(
                     Infra::Message::ESeverity::Error, L"    %s", readError.c_str());
 

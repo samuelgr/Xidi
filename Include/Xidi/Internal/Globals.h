@@ -15,8 +15,9 @@
 #include <string>
 #include <string_view>
 
+#include <Infra/Core/Configuration.h>
+
 #include "ApiWindows.h"
-#include "Configuration.h"
 
 namespace Xidi
 {
@@ -29,7 +30,7 @@ namespace Xidi
 
     /// Retrieves the configuration object that represents the data read from a configuration file.
     /// @return Read-only configuration object reference.
-    const Configuration::ConfigurationData& GetConfigurationData(void);
+    const Infra::Configuration::ConfigurationData& GetConfigurationData(void);
 
     /// Performs run-time initialization.
     /// This function only performs operations that are safe to perform within a DLL entry point.

@@ -16,11 +16,11 @@
 #include <mutex>
 #include <string_view>
 
+#include <Infra/Core/Configuration.h>
 #include <Infra/Core/Message.h>
 #include <Infra/Core/ProcessInfo.h>
 
 #include "ApiDirectInput.h"
-#include "Configuration.h"
 #include "Globals.h"
 #include "Strings.h"
 

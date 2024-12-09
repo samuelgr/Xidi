@@ -16,10 +16,10 @@
 #include <optional>
 #include <string_view>
 
+#include <Infra/Core/Configuration.h>
 #include <Infra/Core/TemporaryBuffer.h>
 
 #include "ApiWindows.h"
-#include "Configuration.h"
 #include "Strings.h"
 
 #ifndef XIDI_SKIP_MAPPERS
@@ -32,7 +32,7 @@
 
 namespace Xidi
 {
-  using namespace ::Xidi::Configuration;
+  using namespace ::Infra::Configuration;
 
 #ifndef XIDI_SKIP_MAPPERS
   /// Default name for a custom mapper whose name is not specified.
@@ -230,7 +230,7 @@ namespace Xidi
 
       if (false == customMapperBuilder->CreateBlueprint(customMapperName.value()))
       {
-        SetErrorMessage(Strings::FormatString(
+        SetLastErrorMessage(Strings::FormatString(
             L"%s: A mapper with this name already exists.", customMapperName.value().data()));
         return EAction::Error;
       }
@@ -319,7 +319,7 @@ namespace Xidi
               Controller::MapperParser::ElementMapperFromString(value);
           if (false == maybeElementMapper.HasValue())
           {
-            SetErrorMessage(Strings::FormatString(
+            SetLastErrorMessage(Strings::FormatString(
                 L"%s: Failed to parse element mapper: %s.",
                 name.data(),
                 maybeElementMapper.Error().c_str()));
@@ -331,7 +331,7 @@ namespace Xidi
               customMapperBuilder->SetBlueprintElementMapper(
                   customMapperName, name, std::move(maybeElementMapper.Value())))
           {
-            SetErrorMessage(Strings::FormatString(
+            SetLastErrorMessage(Strings::FormatString(
                 L"%s: Internal error: Successfully parsed element mapper but failed to set it on the blueprint.",
                 name.data()));
             customMapperBuilder->InvalidateBlueprint(customMapperName);
@@ -346,7 +346,7 @@ namespace Xidi
               Controller::MapperParser::ForceFeedbackActuatorFromString(value);
           if (false == maybeForceFeedbackActuator.HasValue())
           {
-            SetErrorMessage(Strings::FormatString(
+            SetLastErrorMessage(Strings::FormatString(
                 L"%s: Failed to parse force feedback actuator: %s.",
                 name.data(),
                 maybeForceFeedbackActuator.Error().c_str()));
@@ -358,7 +358,7 @@ namespace Xidi
               customMapperBuilder->SetBlueprintForceFeedbackActuator(
                   customMapperName, name, maybeForceFeedbackActuator.Value()))
           {
-            SetErrorMessage(Strings::FormatString(
+            SetLastErrorMessage(Strings::FormatString(
                 L"%s: Internal error: Successfully parsed force feedback actuator but failed to set it on the blueprint.",
                 name.data()));
             customMapperBuilder->InvalidateBlueprint(customMapperName);
@@ -371,7 +371,7 @@ namespace Xidi
         {
           if (false == customMapperBuilder->SetBlueprintTemplate(customMapperName, value))
           {
-            SetErrorMessage(Strings::FormatString(
+            SetLastErrorMessage(Strings::FormatString(
                 L"Internal error: Failed to set template for %s to %s.",
                 customMapperName.data(),
                 value.data()));

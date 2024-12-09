@@ -16,13 +16,13 @@
 #include <memory>
 #include <optional>
 
+#include <Infra/Core/Configuration.h>
 #include <Infra/Core/Message.h>
 #include <Infra/Core/ProcessInfo.h>
 #include <Infra/Core/TemporaryBuffer.h>
 
 #include "ApiBitSet.h"
 #include "ApiDirectInput.h"
-#include "Configuration.h"
 #include "ControllerTypes.h"
 #include "Globals.h"
 #include "Mapper.h"

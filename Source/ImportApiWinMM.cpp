@@ -17,12 +17,12 @@
 #include <set>
 #include <string_view>
 
+#include <Infra/Core/Configuration.h>
 #include <Infra/Core/Message.h>
 #include <Infra/Core/ProcessInfo.h>
 
 #include "ApiWindows.h"
 #include "ApiXidi.h"
-#include "Configuration.h"
 #include "Globals.h"
 #include "Strings.h"
 

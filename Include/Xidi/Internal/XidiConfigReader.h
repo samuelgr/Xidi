@@ -11,7 +11,7 @@
 
 #pragma once
 
-#include "Configuration.h"
+#include <Infra/Core/Configuration.h>
 
 #ifndef XIDI_SKIP_MAPPERS
 #include "MapperBuilder.h"
@@ -21,7 +21,7 @@
 
 namespace Xidi
 {
-  using namespace ::Xidi::Configuration;
+  using namespace ::Infra::Configuration;
 
   class XidiConfigReader : public ConfigurationFileReader
   {

@@ -19,11 +19,11 @@
 #include <optional>
 #include <unordered_map>
 
+#include <Infra/Core/Configuration.h>
 #include <Infra/Core/Message.h>
 
 #include "ApiDirectInput.h"
 #include "ApiGUID.h"
-#include "Configuration.h"
 #include "ControllerIdentification.h"
 #include "ControllerTypes.h"
 #include "DataFormat.h"

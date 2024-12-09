@@ -117,7 +117,6 @@
     <ClCompile Include="Source\ApiDirectInput.cpp" />
     <ClCompile Include="Source\ApiGUID.cpp" />
     <ClCompile Include="Source\ApiXidi.cpp" />
-    <ClCompile Include="Source\Configuration.cpp" />
     <ClCompile Include="Source\DllMain.cpp" />
     <ClCompile Include="Source\Globals.cpp" />
     <ClCompile Include="Source\SetHooks.cpp" />
@@ -133,7 +132,6 @@
     <ClInclude Include="Include\Xidi\Internal\ApiGUID.h" />
     <ClInclude Include="Include\Xidi\Internal\ApiWindows.h" />
     <ClInclude Include="Include\Xidi\Internal\ApiXidi.h" />
-    <ClInclude Include="Include\Xidi\Internal\Configuration.h" />
     <ClInclude Include="Include\Xidi\Internal\Globals.h" />
     <ClInclude Include="Include\Xidi\Internal\SetHooks.h" />
     <ClInclude Include="Include\Xidi\Internal\Strings.h" />

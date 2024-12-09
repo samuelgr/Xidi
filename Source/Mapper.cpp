@@ -18,11 +18,11 @@
 #include <set>
 #include <string_view>
 
+#include <Infra/Core/Configuration.h>
 #include <Infra/Core/Message.h>
 
 #include "ApiBitSet.h"
 #include "ApiWindows.h"
-#include "Configuration.h"
 #include "ControllerMath.h"
 #include "ControllerTypes.h"
 #include "ElementMapper.h"
@@ -446,7 +446,7 @@ namespace Xidi
           configuredMapperFlag,
           []() -> void
           {
-            const Configuration::ConfigurationData& configData = Globals::GetConfigurationData();
+            const auto& configData = Globals::GetConfigurationData();
 
             if (true == configData.SectionExists(Strings::kStrConfigurationSectionMapper))
             {
@@ -461,7 +461,7 @@ namespace Xidi
               {
                 std::wstring_view fallbackMapperName =
                     mapperConfigData[Strings::kStrConfigurationSettingMapperType]
-                        .FirstValue()
+                        .GetFirstValue()
                         .GetStringValue();
                 fallbackMapper = GetByName(fallbackMapperName);
 
@@ -492,7 +492,7 @@ namespace Xidi
                 {
                   std::wstring_view configuredMapperName =
                       mapperConfigData[Strings::MapperTypeConfigurationNameString(i)]
-                          .FirstValue()
+                          .GetFirstValue()
                           .GetStringValue();
                   configuredMapper[i] = GetByName(configuredMapperName.data());
 
