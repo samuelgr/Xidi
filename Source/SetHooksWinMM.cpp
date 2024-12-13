@@ -9,8 +9,6 @@
  *   Implementation of all functionality for setting WinMM hooks.
  **************************************************************************************************/
 
-#include <shlwapi.h>
-
 #include <map>
 #include <string>
 #include <string_view>

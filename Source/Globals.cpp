@@ -35,6 +35,10 @@
 #endif
 #endif
 
+INFRA_DEFINE_PRODUCT_NAME_FROM_RESOURCE(
+    Infra::ProcessInfo::GetThisModuleInstanceHandle(), IDS_XIDI_PRODUCT_NAME);
+INFRA_DEFINE_PRODUCT_VERSION_FROM_GIT_VERSION_INFO();
+
 namespace Xidi
 {
   namespace Globals
@@ -154,11 +158,6 @@ namespace Xidi
 
     void Initialize(void)
     {
-      Infra::ProcessInfo::SetProductInformation(
-          Infra::ProcessInfo::GetThisModuleInstanceHandle(),
-          IDS_XIDI_PRODUCT_NAME,
-          Infra::ProcessInfo::GitVersionInfoForCurrentProject());
-
 #ifndef XIDI_SKIP_CONFIG
       EnableLogIfConfigured();
 

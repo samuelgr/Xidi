@@ -25,3 +25,4 @@
 
 #include <psapi.h>
 #include <shlobj.h>
+#include <shlwapi.h>

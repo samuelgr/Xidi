@@ -1983,8 +1983,8 @@ namespace Xidi
         wcsncpy_s(
             ((LPDIPROPSTRING)pdiph)->wsz,
             _countof(((LPDIPROPSTRING)pdiph)->wsz),
-            Infra::ProcessInfo::GetProductName()->data(),
-            Infra::ProcessInfo::GetProductName()->length());
+            Infra::ProcessInfo::GetProductName().data(),
+            Infra::ProcessInfo::GetProductName().length());
         LOG_PROPERTY_INVOCATION_DIPROPSTRING_AND_RETURN(S_FALSE, kMethodSeverity, rguidProp, pdiph);
 
       case ((size_t)&DIPROP_GRANULARITY):

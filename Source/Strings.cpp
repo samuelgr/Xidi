@@ -175,7 +175,7 @@ namespace Xidi
             std::wstring_view pieces[] = {
                 Infra::ProcessInfo::GetThisModuleDirectoryName(),
                 L"\\",
-                *Infra::ProcessInfo::GetProductName(),
+                Infra::ProcessInfo::GetProductName(),
                 kStrConfigurationFileExtension};
 
             size_t totalLength = 0;
@@ -212,7 +212,7 @@ namespace Xidi
               CoTaskMemFree(knownFolderPath);
             }
 
-            logFilename << *Infra::ProcessInfo::GetProductName() << L'_' << GetFormName() << L'_'
+            logFilename << Infra::ProcessInfo::GetProductName() << L'_' << GetFormName() << L'_'
                         << Infra::ProcessInfo::GetExecutableBaseName() << L'_'
                         << Infra::ProcessInfo::GetCurrentProcessId() << kStrLogFileExtension;
 

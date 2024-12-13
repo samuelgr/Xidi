@@ -71,7 +71,7 @@ namespace Xidi
       // IMetadata
       Infra::ProcessInfo::SVersionInfo GetVersion(void) const override
       {
-        return *Infra::ProcessInfo::GetProductVersion();
+        return Infra::ProcessInfo::GetProductVersion();
       }
 
       std::wstring_view GetFormName(void) const override
