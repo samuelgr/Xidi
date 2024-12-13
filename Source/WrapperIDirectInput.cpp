@@ -125,8 +125,9 @@ namespace Xidi
     {
       // Not a virtual controller GUID, so just create the device as requested by the application.
       // However, first dump some information about the device.
+      typename DirectInputType<charMode>::EarliestIDirectInputDeviceType* createdDevice = nullptr;
       const HRESULT createDeviceResult =
-          underlyingDIObject->CreateDevice(rguid, lplpDirectInputDevice, pUnkOuter);
+          underlyingDIObject->CreateDevice(rguid, &createdDevice, pUnkOuter);
       if (DI_OK == createDeviceResult)
       {
         if (GUID_SysKeyboard == rguid)
@@ -145,7 +146,25 @@ namespace Xidi
         {
           typename DirectInputType<charMode>::DeviceInstanceType deviceInfo = {
               .dwSize = sizeof(typename DirectInputType<charMode>::DeviceInstanceType)};
-          const HRESULT deviceInfoResult = (*lplpDirectInputDevice)->GetDeviceInfo(&deviceInfo);
+          const HRESULT deviceInfoResult = createdDevice->GetDeviceInfo(&deviceInfo);
+
+          const bool deviceSupportsXInput = DoesDirectInputControllerSupportXInput<
+              typename DirectInputType<charMode>::EarliestIDirectInputType,
+              typename DirectInputType<charMode>::EarliestIDirectInputDeviceType>(
+              underlyingDIObject, rguid);
+          if (true == deviceSupportsXInput)
+          {
+            if (Infra::Message::WillOutputMessageOfSeverity(Infra::Message::ESeverity::Info))
+            {
+              Infra::Message::OutputFormatted(
+                  Infra::Message::ESeverity::Info,
+                  L"Attempting to bind directly to XInput device \"%s\" with instance GUID %s. Xidi hides XInput devices and therefore is rejecting this request.",
+                  Infra::TemporaryString(deviceInfo.tszProductName).AsCString(),
+                  Strings::GuidToString(deviceInfo.guidInstance).AsCString());
+            }
+            createdDevice->Release();
+            return DIERR_DEVICENOTREG;
+          }
 
           if (Infra::Message::WillOutputMessageOfSeverity(Infra::Message::ESeverity::Info))
           {
@@ -175,6 +194,7 @@ namespace Xidi
             static_cast<unsigned int>(createDeviceResult));
       }
 
+      if (nullptr != createdDevice) *lplpDirectInputDevice = createdDevice;
       return createDeviceResult;
     }
     else

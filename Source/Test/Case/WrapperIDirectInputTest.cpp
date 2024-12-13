@@ -395,6 +395,23 @@ namespace XidiTest
         (DirectInputType<kDirectInputTestCharMode>::LatestIDirectInputType*)&mockDirectInput);
   }
 
+  // Verifies that Xidi rejects attempts to create a device object directly by GUID when the device
+  // in question supports XInput. These devices are not enumerated and, for all intents and
+  // purposes, do not exist in the system when Xidi is in use.
+  TEST_CASE(WrapperIDirectInput_CreateDevice_DirectlyRequestByGuidSupportsXInput)
+  {
+    MockDirectInput mockDirectInput({kXboxOneWirelessXInputController});
+    auto testDirectInput = MakeTestWrapperIDirectInput(mockDirectInput);
+
+    EarliestIDirectInputDeviceW* testDirectInputDevice = nullptr;
+    TEST_ASSERT(
+        DIERR_DEVICENOTREG ==
+        testDirectInput.CreateDevice(
+            kXboxOneWirelessXInputController.instance.guidInstance,
+            &testDirectInputDevice,
+            nullptr));
+  }
+
   // No devices attached to the system.
   // Only Xidi virtual controllers should be enumerated, and all of them should be enumerated.
   TEST_CASE(WrapperIDirectInput_EnumDevices_NoSystemDevices)
