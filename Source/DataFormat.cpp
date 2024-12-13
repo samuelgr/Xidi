@@ -147,7 +147,7 @@ namespace Xidi
     /// Retrieves a specific element that an application has requested for selection.
     /// @param [in] element Identifier of the requested element.
     /// @return Identifier of the selected element (which will be the same as the identifier passed
-    /// aas a parameter), if it is available.
+    /// as a parameter), if it is available.
     std::optional<Controller::SElementIdentifier> GetSpecificElement(
         Controller::SElementIdentifier element)
     {
@@ -522,15 +522,11 @@ namespace Xidi
           {
             // Only one axis of each type is available on the virtual controller.
             // For there to be a successful element selection, the application must be requesting
-            // either the first instance or any instance of an axis of the specified type. Note
-            // that this behavior is based on the assumption that an axis instance number
-            // specified along with a GUID type is a relative constraint rather than an absolute
-            // constraint. For example, suppose the GUID is `GUID_XAxis` and the instance is
-            // number is `N`. A relative constraint says "match the Nth X axis" whereas an
-            // absolute constraint says "match the Nth axis on the controller, but only if it
-            // happens to be an X axis."
+            // either the specific index of that axis or any instance of an axis of the specified
+            // type.
             const int requestedInstanceIndex = DIDFT_GETINSTANCE(objectFormatSpec.dwType);
-            if (0 == requestedInstanceIndex || kWildcardInstanceIndex == requestedInstanceIndex)
+            if ((kWildcardInstanceIndex == requestedInstanceIndex) ||
+                (controllerCapabilities.FindAxis(*maybeAxisType) == requestedInstanceIndex))
               maybeSelectedElement = buildHelper.GetSpecificElement(
                   {.type = Controller::EElementType::Axis, .axis = maybeAxisType.value()});
           }
