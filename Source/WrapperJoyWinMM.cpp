@@ -763,10 +763,12 @@ namespace Xidi
         pji->wYpos = (WORD)joyStateData[Controller::EAxis::Y];
         pji->wZpos = (WORD)joyStateData[Controller::EAxis::Z];
         pji->wButtons = 0;
-        if (true == joyStateData.button[0]) pji->wButtons |= JOY_BUTTON1;
-        if (true == joyStateData.button[1]) pji->wButtons |= JOY_BUTTON2;
-        if (true == joyStateData.button[2]) pji->wButtons |= JOY_BUTTON3;
-        if (true == joyStateData.button[3]) pji->wButtons |= JOY_BUTTON4;
+
+        constexpr size_t maxButtonIndex = 8 * sizeof(pji->wButtons);
+        for (size_t i = 0; ((i < joyStateData.button.size()) && (i < maxButtonIndex)); ++i)
+        {
+          if (true == joyStateData.button[i]) pji->wButtons |= (1 << i);
+        }
 
         const MMRESULT result = JOYERR_NOERROR;
         LOG_INVOCATION(Infra::Message::ESeverity::SuperDebug, (unsigned int)uJoyID, result);
@@ -819,7 +821,8 @@ namespace Xidi
         pji->dwVpos = joyStateData[Controller::EAxis::RotX];
         pji->dwButtons = 0;
 
-        for (size_t i = 0; i < joyStateData.button.size(); ++i)
+        constexpr size_t maxButtonIndex = 8 * sizeof(pji->dwButtons);
+        for (size_t i = 0; ((i < joyStateData.button.size()) && (i < maxButtonIndex)); ++i)
         {
           if (true == joyStateData.button[i]) pji->dwButtons |= (1 << i);
         }
