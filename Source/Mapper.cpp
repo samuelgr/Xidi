@@ -448,7 +448,7 @@ namespace Xidi
           {
             const auto& configData = Globals::GetConfigurationData();
 
-            if (true == configData.SectionExists(Strings::kStrConfigurationSectionMapper))
+            if (true == configData.Contains(Strings::kStrConfigurationSectionMapper))
             {
               // Mapper section exists in the configuration file.
               // If the controller-independent type setting exists, it will be used as the fallback
@@ -457,12 +457,10 @@ namespace Xidi
               const auto& mapperConfigData = configData[Strings::kStrConfigurationSectionMapper];
 
               const Mapper* fallbackMapper = nullptr;
-              if (true == mapperConfigData.NameExists(Strings::kStrConfigurationSettingMapperType))
+              if (true == mapperConfigData.Contains(Strings::kStrConfigurationSettingMapperType))
               {
                 std::wstring_view fallbackMapperName =
-                    mapperConfigData[Strings::kStrConfigurationSettingMapperType]
-                        .GetFirstValue()
-                        .GetStringValue();
+                    mapperConfigData[Strings::kStrConfigurationSettingMapperType]->GetString();
                 fallbackMapper = GetByName(fallbackMapperName);
 
                 if (nullptr == fallbackMapper)
@@ -488,12 +486,10 @@ namespace Xidi
               for (TControllerIdentifier i = 0; i < _countof(configuredMapper); ++i)
               {
                 if (true ==
-                    mapperConfigData.NameExists(Strings::MapperTypeConfigurationNameString(i)))
+                    mapperConfigData.Contains(Strings::MapperTypeConfigurationNameString(i)))
                 {
                   std::wstring_view configuredMapperName =
-                      mapperConfigData[Strings::MapperTypeConfigurationNameString(i)]
-                          .GetFirstValue()
-                          .GetStringValue();
+                      mapperConfigData[Strings::MapperTypeConfigurationNameString(i)]->GetString();
                   configuredMapper[i] = GetByName(configuredMapperName.data());
 
                   if (nullptr == configuredMapper[i])
@@ -585,67 +581,57 @@ namespace Xidi
       static const double kCircleToSquareFractionStickLeft =
           static_cast<double>(
               Globals::GetConfigurationData()
-                  .GetFirstIntegerValue(
-                      Strings::kStrConfigurationSectionProperties,
-                      Strings::kStrConfigurationSettingsPropertiesCircleToSquarePercentStickLeft)
-                  .value_or(0)) /
+                  [Strings::kStrConfigurationSectionProperties]
+                  [Strings::kStrConfigurationSettingsPropertiesCircleToSquarePercentStickLeft]
+                      .ValueOr(0)) /
           100.0;
       static const double kCircleToSquareFractionStickRight =
           static_cast<double>(
               Globals::GetConfigurationData()
-                  .GetFirstIntegerValue(
-                      Strings::kStrConfigurationSectionProperties,
-                      Strings::kStrConfigurationSettingsPropertiesCircleToSquarePercentStickRight)
-                  .value_or(0)) /
+                  [Strings::kStrConfigurationSectionProperties]
+                  [Strings::kStrConfigurationSettingsPropertiesCircleToSquarePercentStickRight]
+                      .ValueOr(0)) /
           100.0;
       static const unsigned int kDeadzonePercentStickLeft = static_cast<unsigned int>(
           Globals::GetConfigurationData()
-              .GetFirstIntegerValue(
-                  Strings::kStrConfigurationSectionProperties,
-                  Strings::kStrConfigurationSettingsPropertiesDeadzonePercentStickLeft)
-              .value_or(0));
+              [Strings::kStrConfigurationSectionProperties]
+              [Strings::kStrConfigurationSettingsPropertiesDeadzonePercentStickLeft]
+                  .ValueOr(0));
       static const unsigned int kDeadzonePercentStickRight = static_cast<unsigned int>(
           Globals::GetConfigurationData()
-              .GetFirstIntegerValue(
-                  Strings::kStrConfigurationSectionProperties,
-                  Strings::kStrConfigurationSettingsPropertiesDeadzonePercentStickRight)
-              .value_or(0));
+              [Strings::kStrConfigurationSectionProperties]
+              [Strings::kStrConfigurationSettingsPropertiesDeadzonePercentStickRight]
+                  .ValueOr(0));
       static const unsigned int kDeadzonePercentTriggerLT = static_cast<unsigned int>(
           Globals::GetConfigurationData()
-              .GetFirstIntegerValue(
-                  Strings::kStrConfigurationSectionProperties,
-                  Strings::kStrConfigurationSettingsPropertiesDeadzonePercentTriggerLT)
-              .value_or(0));
+              [Strings::kStrConfigurationSectionProperties]
+              [Strings::kStrConfigurationSettingsPropertiesDeadzonePercentTriggerLT]
+                  .ValueOr(0));
       static const unsigned int kDeadzonePercentTriggerRT = static_cast<unsigned int>(
           Globals::GetConfigurationData()
-              .GetFirstIntegerValue(
-                  Strings::kStrConfigurationSectionProperties,
-                  Strings::kStrConfigurationSettingsPropertiesDeadzonePercentTriggerRT)
-              .value_or(0));
+              [Strings::kStrConfigurationSectionProperties]
+              [Strings::kStrConfigurationSettingsPropertiesDeadzonePercentTriggerRT]
+                  .ValueOr(0));
       static const unsigned int kSaturationPercentStickLeft = static_cast<unsigned int>(
           Globals::GetConfigurationData()
-              .GetFirstIntegerValue(
-                  Strings::kStrConfigurationSectionProperties,
-                  Strings::kStrConfigurationSettingsPropertiesSaturationPercentStickLeft)
-              .value_or(100));
+              [Strings::kStrConfigurationSectionProperties]
+              [Strings::kStrConfigurationSettingsPropertiesSaturationPercentStickLeft]
+                  .ValueOr(100));
       static const unsigned int kSaturationPercentStickRight = static_cast<unsigned int>(
           Globals::GetConfigurationData()
-              .GetFirstIntegerValue(
-                  Strings::kStrConfigurationSectionProperties,
-                  Strings::kStrConfigurationSettingsPropertiesSaturationPercentStickRight)
-              .value_or(100));
+              [Strings::kStrConfigurationSectionProperties]
+              [Strings::kStrConfigurationSettingsPropertiesSaturationPercentStickRight]
+                  .ValueOr(100));
       static const unsigned int kSaturationPercentTriggerLT = static_cast<unsigned int>(
           Globals::GetConfigurationData()
-              .GetFirstIntegerValue(
-                  Strings::kStrConfigurationSectionProperties,
-                  Strings::kStrConfigurationSettingsPropertiesSaturationPercentTriggerLT)
-              .value_or(100));
+              [Strings::kStrConfigurationSectionProperties]
+              [Strings::kStrConfigurationSettingsPropertiesSaturationPercentTriggerLT]
+                  .ValueOr(100));
       static const unsigned int kSaturationPercentTriggerRT = static_cast<unsigned int>(
           Globals::GetConfigurationData()
-              .GetFirstIntegerValue(
-                  Strings::kStrConfigurationSectionProperties,
-                  Strings::kStrConfigurationSettingsPropertiesSaturationPercentTriggerRT)
-              .value_or(100));
+              [Strings::kStrConfigurationSectionProperties]
+              [Strings::kStrConfigurationSettingsPropertiesSaturationPercentTriggerRT]
+                  .ValueOr(100));
 
       // If requested by the user, left and right stick values need to be transformed so that a
       // circular field of physical motion is transformed into a square field of virtual motion.

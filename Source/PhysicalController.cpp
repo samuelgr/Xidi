@@ -151,10 +151,9 @@ namespace Xidi
       static const double kForceFeedbackEffectStrengthScalingFactor =
           static_cast<double>(
               Globals::GetConfigurationData()
-                  .GetFirstIntegerValue(
-                      Strings::kStrConfigurationSectionProperties,
-                      Strings::kStrConfigurationSettingPropertiesForceFeedbackEffectStrengthPercent)
-                  .value_or(100)) /
+                  [Strings::kStrConfigurationSectionProperties]
+                  [Strings::kStrConfigurationSettingPropertiesForceFeedbackEffectStrengthPercent]
+                      .ValueOr(100)) /
           100.0;
 
       // Impulse triggers are ignored because the XInput API does not support them.

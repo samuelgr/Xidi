@@ -52,8 +52,7 @@ namespace Xidi
     /// Upon completion, regardless of outcome, clears out all of the stored blueprint objects.
     static inline void BuildCustomMappers(void)
     {
-      if ((false == customMapperBuilder.Build()) &&
-          (false == GetConfigurationData().HasReadErrors()))
+      if (false == customMapperBuilder.Build())
       {
         if (true == Infra::Message::IsLogFileEnabled())
           Infra::Message::Output(
@@ -88,16 +87,12 @@ namespace Xidi
     /// Enables the log, if it is configured in the configuration file.
     static void EnableLogIfConfigured(void)
     {
-      const bool logEnabled =
-          GetConfigurationData()
-              .GetFirstBooleanValue(
-                  Strings::kStrConfigurationSectionLog, Strings::kStrConfigurationSettingLogEnabled)
-              .value_or(false);
-      const int64_t logLevel =
-          GetConfigurationData()
-              .GetFirstIntegerValue(
-                  Strings::kStrConfigurationSectionLog, Strings::kStrConfigurationSettingLogLevel)
-              .value_or(0);
+      const bool logEnabled = GetConfigurationData()[Strings::kStrConfigurationSectionLog]
+                                                    [Strings::kStrConfigurationSettingLogEnabled]
+                                                        .ValueOr(false);
+      const int64_t logLevel = GetConfigurationData()[Strings::kStrConfigurationSectionLog]
+                                                     [Strings::kStrConfigurationSettingLogLevel]
+                                                         .ValueOr(0);
 
       if ((true == logEnabled) && (logLevel > 0))
       {
@@ -135,20 +130,30 @@ namespace Xidi
 
             configData = configReader.ReadConfigurationFile(Strings::GetConfigurationFilename());
 
-            if (true == configData.HasReadErrors())
+            if (false == configReader.HasErrorMessages())
+            {
+#ifndef XIDI_SKIP_MAPPERS
+              BuildCustomMappers();
+#endif
+            }
+            else
             {
               EnableLog(Infra::Message::ESeverity::Error);
-
               Infra::Message::Output(
                   Infra::Message::ESeverity::Error,
                   L"Errors were encountered during configuration file reading.");
-              for (const auto& readError : configData.GetReadErrorMessages())
+              for (const auto& errorMessage : configReader.GetErrorMessages())
                 Infra::Message::OutputFormatted(
-                    Infra::Message::ESeverity::Error, L"    %s", readError.c_str());
+                    Infra::Message::ESeverity::Error, L"    %s", errorMessage.c_str());
+              Infra::Message::Output(
+                  Infra::Message::ESeverity::Error,
+                  L"None of the settings in the configuration file were applied. Fix the errors and restart the application.");
 
               Infra::Message::Output(
                   Infra::Message::ESeverity::ForcedInteractiveWarning,
                   L"Errors were encountered during configuration file reading. See log file on the Desktop for more information.");
+
+              configData.Clear();
             }
           });
 #endif
@@ -162,7 +167,6 @@ namespace Xidi
       EnableLogIfConfigured();
 
 #ifndef XIDI_SKIP_MAPPERS
-      BuildCustomMappers();
       Controller::Mapper::DumpRegisteredMappers();
 #endif
 #endif

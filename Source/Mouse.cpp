@@ -300,10 +300,9 @@ namespace Xidi
         static const double kSpeedScalingFactor =
             static_cast<double>(
                 Globals::GetConfigurationData()
-                    .GetFirstIntegerValue(
-                        Strings::kStrConfigurationSectionProperties,
-                        Strings::kStrConfigurationSettingPropertiesMouseSpeedScalingFactorPercent)
-                    .value_or(100)) /
+                    [Strings::kStrConfigurationSectionProperties]
+                    [Strings::kStrConfigurationSettingPropertiesMouseSpeedScalingFactorPercent]
+                        .ValueOr(100)) /
             100.0;
 
         constexpr double kMillisecondsPerSecond = 1000.0;

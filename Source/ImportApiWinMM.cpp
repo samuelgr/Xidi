@@ -244,10 +244,9 @@ namespace Xidi
     /// @return Library path.
     static std::wstring_view GetImportLibraryPathWinMM(void)
     {
-      return Globals::GetConfigurationData()
-          .GetFirstStringValue(
-              Strings::kStrConfigurationSectionImport, Strings::kStrConfigurationSettingImportWinMM)
-          .value_or(Strings::GetSystemLibraryFilenameWinMM());
+      return Globals::GetConfigurationData()[Strings::kStrConfigurationSectionImport]
+                                            [Strings::kStrConfigurationSettingImportWinMM]
+                                                .ValueOr(Strings::GetSystemLibraryFilenameWinMM());
     }
 
     /// Logs a warning event related to failure to import a particular function from the import

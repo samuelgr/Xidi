@@ -1478,10 +1478,9 @@ namespace Xidi
   {
     static const bool kAlwaysContinueEnumerating =
         Globals::GetConfigurationData()
-            .GetFirstBooleanValue(
-                Strings::kStrConfigurationSectionWorkarounds,
-                Strings::kStrConfigurationSettingsWorkaroundsIgnoreEnumObjectsCallbackReturnCode)
-            .value_or(false);
+            [Strings::kStrConfigurationSectionWorkarounds]
+            [Strings::kStrConfigurationSettingsWorkaroundsIgnoreEnumObjectsCallbackReturnCode]
+                .ValueOr(false);
     constexpr Infra::Message::ESeverity kMethodSeverity = Infra::Message::ESeverity::Info;
 
     if (nullptr == lpCallback) LOG_INVOCATION_AND_RETURN(DIERR_INVALIDPARAM, kMethodSeverity);
@@ -2092,12 +2091,10 @@ namespace Xidi
     // Not required for Xidi virtual controllers as they are implemented now.
     // However, some applications explicitly check for return codes like `DI_OK`, which is why a
     // workaround is allowed to change the return code.
-    static const DWORD kPollReturnCode =
-        (DWORD)Globals::GetConfigurationData()
-            .GetFirstIntegerValue(
-                Strings::kStrConfigurationSectionWorkarounds,
-                Strings::kStrConfigurationSettingWorkaroundsPollReturnCode)
-            .value_or(DI_NOEFFECT);
+    static const DWORD kPollReturnCode = static_cast<DWORD>(
+        Globals::GetConfigurationData()[Strings::kStrConfigurationSectionWorkarounds]
+                                       [Strings::kStrConfigurationSettingWorkaroundsPollReturnCode]
+                                           .ValueOr(DI_NOEFFECT));
 
     constexpr Infra::Message::ESeverity kMethodSeverity = Infra::Message::ESeverity::SuperDebug;
     LOG_INVOCATION_AND_RETURN(kPollReturnCode, kMethodSeverity);

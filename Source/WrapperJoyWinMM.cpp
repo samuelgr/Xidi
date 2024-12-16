@@ -145,10 +145,9 @@ namespace Xidi
     {
       const uint64_t activeVirtualControllerMask =
           Globals::GetConfigurationData()
-              .GetFirstIntegerValue(
-                  Strings::kStrConfigurationSectionWorkarounds,
-                  Strings::kStrConfigurationSettingWorkaroundsActiveVirtualControllerMask)
-              .value_or(UINT64_MAX);
+              [Strings::kStrConfigurationSectionWorkarounds]
+              [Strings::kStrConfigurationSettingWorkaroundsActiveVirtualControllerMask]
+                  .ValueOr(UINT64_MAX);
 
       const size_t numDevicesFromSystem = joySystemDeviceInfo.size();
       const size_t numXInputVirtualDevices = _countof(controllers);
@@ -580,16 +579,14 @@ namespace Xidi
           {
             const bool enableAxisProperites =
                 Globals::GetConfigurationData()
-                    .GetFirstBooleanValue(
-                        Strings::kStrConfigurationSectionProperties,
-                        Strings::kStrConfigurationSettingsPropertiesUseBuiltinProperties)
-                    .value_or(true);
+                    [Strings::kStrConfigurationSectionProperties]
+                    [Strings::kStrConfigurationSettingsPropertiesUseBuiltinProperties]
+                        .ValueOr(true);
             const uint64_t activeVirtualControllerMask =
                 Globals::GetConfigurationData()
-                    .GetFirstIntegerValue(
-                        Strings::kStrConfigurationSectionWorkarounds,
-                        Strings::kStrConfigurationSettingWorkaroundsActiveVirtualControllerMask)
-                    .value_or(UINT64_MAX);
+                    [Strings::kStrConfigurationSectionWorkarounds]
+                    [Strings::kStrConfigurationSettingWorkaroundsActiveVirtualControllerMask]
+                        .ValueOr(UINT64_MAX);
 
             for (Controller::TControllerIdentifier i = 0; i < _countof(controllers); ++i)
             {

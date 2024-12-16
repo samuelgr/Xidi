@@ -221,33 +221,32 @@ namespace Xidi
   }
 #endif
 
-  EAction XidiConfigReader::ActionForSection(std::wstring_view section)
+  Action XidiConfigReader::ActionForSection(std::wstring_view section)
   {
 #ifndef XIDI_SKIP_MAPPERS
     if ((nullptr != customMapperBuilder) && (true == IsCustomMapperSectionName(section)))
     {
       std::optional<std::wstring_view> customMapperName = ExtractCustomMapperName(section);
-      if (false == customMapperName.has_value()) return EAction::Error;
+      if (false == customMapperName.has_value()) return Action::Error();
 
       if (false == customMapperBuilder->CreateBlueprint(customMapperName.value()))
       {
-        SetLastErrorMessage(Infra::Strings::Format(
+        return Action::ErrorWithMessage(Infra::Strings::Format(
             L"%s: A mapper with this name already exists.", customMapperName.value().data()));
-        return EAction::Error;
       }
 
-      return EAction::Process;
+      return Action::Process();
     }
 #else
-    if (true == IsCustomMapperSectionName(section)) return EAction::Skip;
+    if (true == IsCustomMapperSectionName(section)) return Action::Skip();
 #endif
 
-    if (0 != configurationFileLayout.count(section)) return EAction::Process;
+    if (0 != configurationFileLayout.count(section)) return Action::Process();
 
-    return EAction::Error;
+    return Action::Error();
   }
 
-  EAction XidiConfigReader::ActionForValue(
+  Action XidiConfigReader::ActionForValue(
       std::wstring_view section, std::wstring_view name, TIntegerView value)
   {
 #ifndef XIDI_SKIP_MAPPERS
@@ -258,7 +257,7 @@ namespace Xidi
         // Mouse speed scaling factor percent must not be negative but it is allowed to exceed 100,
         // which would simply mean that the mouse speed should be scaled up rather than down.
 
-        if (value < 0) return EAction::Error;
+        if (value < 0) return Action::Error();
       }
       else if (name.starts_with(XIDI_CONFIG_PROPERTIES_PREFIX_DEADZONE_PERCENT))
       {
@@ -267,9 +266,9 @@ namespace Xidi
         // percentage.
 
         if ((value < 0) || (value > 45))
-          return EAction::Error;
+          return Action::Error();
         else
-          return EAction::Process;
+          return Action::Process();
       }
       else if (name.starts_with(XIDI_CONFIG_PROPERTIES_PREFIX_SATURATION_PERCENT))
       {
@@ -278,33 +277,33 @@ namespace Xidi
         // percentage.
 
         if ((value < 55) || (value > 100))
-          return EAction::Error;
+          return Action::Error();
         else
-          return EAction::Process;
+          return Action::Process();
       }
       else if (name.contains(L"Percent"))
       {
         // All other percentages must be between 0 and 100 inclusive.
         if ((value < 0) || (value > 100))
-          return EAction::Error;
+          return Action::Error();
         else
-          return EAction::Process;
+          return Action::Process();
       }
     }
 #endif
 
-    if (value >= 0) return EAction::Process;
+    if (value >= 0) return Action::Process();
 
-    return EAction::Error;
+    return Action::Error();
   }
 
-  EAction XidiConfigReader::ActionForValue(
+  Action XidiConfigReader::ActionForValue(
       std::wstring_view section, std::wstring_view name, TBooleanView value)
   {
-    return EAction::Process;
+    return Action::Process();
   }
 
-  EAction XidiConfigReader::ActionForValue(
+  Action XidiConfigReader::ActionForValue(
       std::wstring_view section, std::wstring_view name, TStringView value)
   {
 #ifndef XIDI_SKIP_MAPPERS
@@ -320,23 +319,21 @@ namespace Xidi
               Controller::MapperParser::ElementMapperFromString(value);
           if (false == maybeElementMapper.HasValue())
           {
-            SetLastErrorMessage(Infra::Strings::Format(
+            return Action::ErrorWithMessage(Infra::Strings::Format(
                 L"%s: Failed to parse element mapper: %s.",
                 name.data(),
                 maybeElementMapper.Error().c_str()));
             customMapperBuilder->InvalidateBlueprint(customMapperName);
-            return EAction::Error;
           }
 
           if (false ==
               customMapperBuilder->SetBlueprintElementMapper(
                   customMapperName, name, std::move(maybeElementMapper.Value())))
           {
-            SetLastErrorMessage(Infra::Strings::Format(
+            return Action::ErrorWithMessage(Infra::Strings::Format(
                 L"%s: Internal error: Successfully parsed element mapper but failed to set it on the blueprint.",
                 name.data()));
             customMapperBuilder->InvalidateBlueprint(customMapperName);
-            return EAction::Error;
           }
           break;
         }
@@ -347,23 +344,21 @@ namespace Xidi
               Controller::MapperParser::ForceFeedbackActuatorFromString(value);
           if (false == maybeForceFeedbackActuator.HasValue())
           {
-            SetLastErrorMessage(Infra::Strings::Format(
+            return Action::ErrorWithMessage(Infra::Strings::Format(
                 L"%s: Failed to parse force feedback actuator: %s.",
                 name.data(),
                 maybeForceFeedbackActuator.Error().c_str()));
             customMapperBuilder->InvalidateBlueprint(customMapperName);
-            return EAction::Error;
           }
 
           if (false ==
               customMapperBuilder->SetBlueprintForceFeedbackActuator(
                   customMapperName, name, maybeForceFeedbackActuator.Value()))
           {
-            SetLastErrorMessage(Infra::Strings::Format(
+            return Action::ErrorWithMessage(Infra::Strings::Format(
                 L"%s: Internal error: Successfully parsed force feedback actuator but failed to set it on the blueprint.",
                 name.data()));
             customMapperBuilder->InvalidateBlueprint(customMapperName);
-            return EAction::Error;
           }
           break;
         }
@@ -372,27 +367,26 @@ namespace Xidi
         {
           if (false == customMapperBuilder->SetBlueprintTemplate(customMapperName, value))
           {
-            SetLastErrorMessage(Infra::Strings::Format(
+            return Action::ErrorWithMessage(Infra::Strings::Format(
                 L"Internal error: Failed to set template for %s to %s.",
                 customMapperName.data(),
                 value.data()));
             customMapperBuilder->InvalidateBlueprint(customMapperName);
-            return EAction::Error;
           }
           break;
         }
 
         default:
-          return EAction::Error;
+          return Action::Error();
       }
 
       // Custom mapper configuration settings are processed using the mapper builder.
       // They do not need to be inserted into the configuration data structure.
-      return EAction::Skip;
+      return Action::Skip();
     }
 #endif
 
-    return EAction::Process;
+    return Action::Process();
   }
 
   void XidiConfigReader::BeginRead(void)

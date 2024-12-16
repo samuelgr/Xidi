@@ -390,10 +390,9 @@ namespace Xidi
     {
       static const bool kEnableMouseAxisProperites =
           Globals::GetConfigurationData()
-              .GetFirstBooleanValue(
-                  Strings::kStrConfigurationSectionProperties,
-                  Strings::kStrConfigurationSettingsPropertiesUseBuiltinProperties)
-              .value_or(true);
+              [Strings::kStrConfigurationSectionProperties]
+              [Strings::kStrConfigurationSettingsPropertiesUseBuiltinProperties]
+                  .ValueOr(true);
 
       constexpr double kAnalogToMouseScalingFactor =
           (double)(Mouse::kMouseMovementUnitsMax - Mouse::kMouseMovementUnitsMin) /
@@ -476,10 +475,9 @@ namespace Xidi
     {
       static const bool kEnableMouseAxisProperites =
           Globals::GetConfigurationData()
-              .GetFirstBooleanValue(
-                  Strings::kStrConfigurationSectionProperties,
-                  Strings::kStrConfigurationSettingsPropertiesUseBuiltinProperties)
-              .value_or(true);
+              [Strings::kStrConfigurationSectionProperties]
+              [Strings::kStrConfigurationSettingsPropertiesUseBuiltinProperties]
+                  .ValueOr(true);
 
       constexpr double kBidirectionalStepSize =
           (double)(Mouse::kMouseMovementUnitsMax - Mouse::kMouseMovementUnitsMin) /

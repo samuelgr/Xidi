@@ -151,10 +151,9 @@ namespace Xidi
   {
     static const bool useShortVirtualControllerNames =
         Globals::GetConfigurationData()
-            .GetFirstBooleanValue(
-                Strings::kStrConfigurationSectionWorkarounds,
-                Strings::kStrConfigurationSettingsWorkaroundsUseShortVirtualControllerNames)
-            .value_or(false);
+            [Strings::kStrConfigurationSectionWorkarounds]
+            [Strings::kStrConfigurationSettingsWorkaroundsUseShortVirtualControllerNames]
+                .ValueOr(false);
     return useShortVirtualControllerNames;
   }
 
@@ -325,10 +324,9 @@ namespace Xidi
 
     const uint64_t activeVirtualControllerMask =
         Globals::GetConfigurationData()
-            .GetFirstIntegerValue(
-                Strings::kStrConfigurationSectionWorkarounds,
-                Strings::kStrConfigurationSettingWorkaroundsActiveVirtualControllerMask)
-            .value_or(UINT64_MAX);
+            [Strings::kStrConfigurationSectionWorkarounds]
+            [Strings::kStrConfigurationSettingWorkaroundsActiveVirtualControllerMask]
+                .ValueOr(UINT64_MAX);
 
     for (uint32_t idx = 0; idx < numControllersToEnumerate; ++idx)
     {

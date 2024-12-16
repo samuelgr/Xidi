@@ -59,11 +59,10 @@ namespace Xidi
     /// @return Library path.
     static std::wstring_view GetImportLibraryPathDirectInput(void)
     {
-      return Globals::GetConfigurationData()
-          .GetFirstStringValue(
-              Strings::kStrConfigurationSectionImport,
-              Strings::kStrConfigurationSettingImportDirectInput)
-          .value_or(Strings::GetSystemLibraryFilenameDirectInput());
+      return Globals::GetConfigurationData()[Strings::kStrConfigurationSectionImport]
+                                            [Strings::kStrConfigurationSettingImportDirectInput]
+                                                .ValueOr(
+                                                    Strings::GetSystemLibraryFilenameDirectInput());
     }
 
     /// Retrieves the library path for the DirectInput8 library that should be used for importing
@@ -72,10 +71,9 @@ namespace Xidi
     static std::wstring_view GetImportLibraryPathDirectInput8(void)
     {
       return Globals::GetConfigurationData()
-          .GetFirstStringValue(
-              Strings::kStrConfigurationSectionImport,
-              Strings::kStrConfigurationSettingImportDirectInput8)
-          .value_or(Strings::GetSystemLibraryFilenameDirectInput8());
+          [Strings::kStrConfigurationSectionImport]
+          [Strings::kStrConfigurationSettingImportDirectInput8]
+              .ValueOr(Strings::GetSystemLibraryFilenameDirectInput8());
     }
 
     /// Logs a warning event related to failure to import a particular function from the import
