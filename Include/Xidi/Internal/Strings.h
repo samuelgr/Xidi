@@ -249,15 +249,6 @@ namespace Xidi
     /// Complete path and filename of the system-supplied WinMM library.
     std::wstring_view GetSystemLibraryFilenameWinMM(void);
 
-    /// Expected filename of a configuration file.
-    /// Xidi configuration filename = (Xidi directory)\Xidi.ini
-    std::wstring_view GetConfigurationFilename(void);
-
-    /// Expected filename for the log file.
-    /// Xidi log filename = (current user's desktop)\Xidi_(Xidi Form)_(base name of the running
-    /// executable)_(process ID).log
-    std::wstring_view GetLogFilename(void);
-
     /// Returns a string representing the specified axis type.
     /// @param [in] axis Axis type for which a string is requested.
     /// @return String representation of the axis type.

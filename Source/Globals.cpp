@@ -78,7 +78,7 @@ namespace Xidi
           enableLogFlag,
           [logLevel]() -> void
           {
-            Infra::Message::CreateAndEnableLogFile(Strings::GetLogFilename());
+            Infra::Message::CreateAndEnableLogFile();
           });
 
       Infra::Message::SetMinimumSeverityForOutput(logLevel);
@@ -128,7 +128,7 @@ namespace Xidi
             configReader.SetMapperBuilder(&customMapperBuilder);
 #endif
 
-            configData = configReader.ReadConfigurationFile(Strings::GetConfigurationFilename());
+            configData = configReader.ReadConfigurationFile();
 
             if (false == configReader.HasErrorMessages())
             {

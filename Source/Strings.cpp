@@ -163,65 +163,6 @@ namespace Xidi
       return initString;
     }
 
-    std::wstring_view GetConfigurationFilename(void)
-    {
-      static std::wstring initString;
-      static std::once_flag initFlag;
-
-      std::call_once(
-          initFlag,
-          []() -> void
-          {
-            std::wstring_view pieces[] = {
-                Infra::ProcessInfo::GetThisModuleDirectoryName(),
-                L"\\",
-                Infra::ProcessInfo::GetProductName(),
-                kStrConfigurationFileExtension};
-
-            size_t totalLength = 0;
-            for (int i = 0; i < _countof(pieces); ++i)
-              totalLength += pieces[i].length();
-
-            initString.reserve(1 + totalLength);
-
-            for (int i = 0; i < _countof(pieces); ++i)
-              initString.append(pieces[i]);
-          });
-
-      return initString;
-    }
-
-    std::wstring_view GetLogFilename(void)
-    {
-      static std::wstring initString;
-      static std::once_flag initFlag;
-
-      std::call_once(
-          initFlag,
-          []() -> void
-          {
-            Infra::TemporaryString logFilename;
-
-            PWSTR knownFolderPath;
-            const HRESULT result =
-                SHGetKnownFolderPath(FOLDERID_Desktop, 0, nullptr, &knownFolderPath);
-
-            if (S_OK == result)
-            {
-              logFilename << knownFolderPath << L'\\';
-              CoTaskMemFree(knownFolderPath);
-            }
-
-            logFilename << Infra::ProcessInfo::GetProductName() << L'_' << GetFormName() << L'_'
-                        << Infra::ProcessInfo::GetExecutableBaseName() << L'_'
-                        << Infra::ProcessInfo::GetCurrentProcessId() << kStrLogFileExtension;
-
-            initString.assign(logFilename);
-          });
-
-      return initString;
-    }
-
     const wchar_t* AxisTypeString(Controller::EAxis axis)
     {
       switch (axis)
