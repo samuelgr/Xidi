@@ -139,12 +139,11 @@ namespace Xidi
             else
             {
               EnableLog(Infra::Message::ESeverity::Error);
+
               Infra::Message::Output(
                   Infra::Message::ESeverity::Error,
                   L"Errors were encountered during configuration file reading.");
-              for (const auto& errorMessage : configReader.GetErrorMessages())
-                Infra::Message::OutputFormatted(
-                    Infra::Message::ESeverity::Error, L"    %s", errorMessage.c_str());
+              configReader.LogAllErrorMessages();
               Infra::Message::Output(
                   Infra::Message::ESeverity::Error,
                   L"None of the settings in the configuration file were applied. Fix the errors and restart the application.");
