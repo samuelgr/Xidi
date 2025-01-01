@@ -3,7 +3,7 @@
  *   DirectInput interface for XInput controllers.
  ***************************************************************************************************
  * Authored by Samuel Grossman
- * Copyright (c) 2016-2024
+ * Copyright (c) 2016-2025
  ***********************************************************************************************//**
  * @file ApiBitSet.h
  *   Type aliases for bit set objects that provide improved readability.

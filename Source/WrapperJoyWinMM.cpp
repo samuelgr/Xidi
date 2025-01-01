@@ -3,7 +3,7 @@
  *   DirectInput interface for XInput controllers.
  ***************************************************************************************************
  * Authored by Samuel Grossman
- * Copyright (c) 2016-2024
+ * Copyright (c) 2016-2025
  ***********************************************************************************************//**
  * @file WrapperJoyWinMM.cpp
  *   Implementation of the wrapper for all WinMM joystick functions.

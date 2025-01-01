@@ -3,7 +3,7 @@
  *   General-purpose library for injecting DLLs and hooking function calls.
  ***************************************************************************************************
  * Authored by Samuel Grossman
- * Copyright (c) 2019-2024
+ * Copyright (c) 2019-2025
  ***********************************************************************************************//**
  * @file StaticHook.h
  *   Convenience wrapper types and definitions for creating static hooks. A static hook is one

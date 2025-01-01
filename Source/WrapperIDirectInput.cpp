@@ -4,7 +4,7 @@
  *   Fixes issues associated with certain XInput-based controllers.
  ***************************************************************************************************
  * Authored by Samuel Grossman
- * Copyright (c) 2016-2024
+ * Copyright (c) 2016-2025
  ***********************************************************************************************//**
  * @file WrapperIDirectInput.cpp
  *   Implementation of the wrapper class for IDirectInput.
