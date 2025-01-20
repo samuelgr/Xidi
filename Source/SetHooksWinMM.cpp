@@ -125,7 +125,7 @@ namespace Xidi
 
     const auto& replaceableImportFunctionNames = importFunctions->GetReplaceable();
     std::map<std::wstring_view, const void*> replacementImportFunctions;
-    for (auto importFunctionName : replaceableImportFunctionNames)
+    for (const auto& importFunctionName : replaceableImportFunctionNames)
     {
       Infra::TemporaryBuffer<char> importFunctionNameAscii;
       wcstombs_s(
