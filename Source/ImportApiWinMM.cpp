@@ -141,13 +141,13 @@ namespace Xidi
         MMRESULT(__stdcall* mixerClose)(HMIXER);
         MMRESULT(__stdcall* mixerGetControlDetailsA)(HMIXEROBJ, LPMIXERCONTROLDETAILS, DWORD);
         MMRESULT(__stdcall* mixerGetControlDetailsW)(HMIXEROBJ, LPMIXERCONTROLDETAILS, DWORD);
-        MMRESULT(__stdcall* mixerGetDevCapsA)(UINT_PTR, LPMIXERCAPS, UINT);
-        MMRESULT(__stdcall* mixerGetDevCapsW)(UINT_PTR, LPMIXERCAPS, UINT);
+        MMRESULT(__stdcall* mixerGetDevCapsA)(UINT_PTR, LPMIXERCAPSA, UINT);
+        MMRESULT(__stdcall* mixerGetDevCapsW)(UINT_PTR, LPMIXERCAPSW, UINT);
         MMRESULT(__stdcall* mixerGetID)(HMIXEROBJ, UINT*, DWORD);
-        MMRESULT(__stdcall* mixerGetLineControlsA)(HMIXEROBJ, LPMIXERLINECONTROLS, DWORD);
-        MMRESULT(__stdcall* mixerGetLineControlsW)(HMIXEROBJ, LPMIXERLINECONTROLS, DWORD);
-        MMRESULT(__stdcall* mixerGetLineInfoA)(HMIXEROBJ, LPMIXERLINE, DWORD);
-        MMRESULT(__stdcall* mixerGetLineInfoW)(HMIXEROBJ, LPMIXERLINE, DWORD);
+        MMRESULT(__stdcall* mixerGetLineControlsA)(HMIXEROBJ, LPMIXERLINECONTROLSA, DWORD);
+        MMRESULT(__stdcall* mixerGetLineControlsW)(HMIXEROBJ, LPMIXERLINECONTROLSW, DWORD);
+        MMRESULT(__stdcall* mixerGetLineInfoA)(HMIXEROBJ, LPMIXERLINEA, DWORD);
+        MMRESULT(__stdcall* mixerGetLineInfoW)(HMIXEROBJ, LPMIXERLINEW, DWORD);
         UINT(__stdcall* mixerGetNumDevs)(void);
         DWORD(__stdcall* mixerMessage)(HMIXER, UINT, DWORD_PTR, DWORD_PTR);
         MMRESULT(__stdcall* mixerOpen)(LPHMIXER, UINT, DWORD_PTR, DWORD_PTR, DWORD);
@@ -2113,7 +2113,7 @@ namespace Xidi
       return importTable.named.mixerGetControlDetailsW(hmxobj, pmxcd, fdwDetails);
     }
 
-    MMRESULT mixerGetDevCapsA(UINT_PTR uMxId, LPMIXERCAPS pmxcaps, UINT cbmxcaps)
+    MMRESULT mixerGetDevCapsA(UINT_PTR uMxId, LPMIXERCAPSA pmxcaps, UINT cbmxcaps)
     {
       Initialize();
 
@@ -2123,7 +2123,7 @@ namespace Xidi
       return importTable.named.mixerGetDevCapsA(uMxId, pmxcaps, cbmxcaps);
     }
 
-    MMRESULT mixerGetDevCapsW(UINT_PTR uMxId, LPMIXERCAPS pmxcaps, UINT cbmxcaps)
+    MMRESULT mixerGetDevCapsW(UINT_PTR uMxId, LPMIXERCAPSW pmxcaps, UINT cbmxcaps)
     {
       Initialize();
 
@@ -2143,7 +2143,7 @@ namespace Xidi
       return importTable.named.mixerGetID(hmxobj, puMxId, fdwId);
     }
 
-    MMRESULT mixerGetLineControlsA(HMIXEROBJ hmxobj, LPMIXERLINECONTROLS pmxlc, DWORD fdwControls)
+    MMRESULT mixerGetLineControlsA(HMIXEROBJ hmxobj, LPMIXERLINECONTROLSA pmxlc, DWORD fdwControls)
     {
       Initialize();
 
@@ -2153,7 +2153,7 @@ namespace Xidi
       return importTable.named.mixerGetLineControlsA(hmxobj, pmxlc, fdwControls);
     }
 
-    MMRESULT mixerGetLineControlsW(HMIXEROBJ hmxobj, LPMIXERLINECONTROLS pmxlc, DWORD fdwControls)
+    MMRESULT mixerGetLineControlsW(HMIXEROBJ hmxobj, LPMIXERLINECONTROLSW pmxlc, DWORD fdwControls)
     {
       Initialize();
 
@@ -2163,7 +2163,7 @@ namespace Xidi
       return importTable.named.mixerGetLineControlsW(hmxobj, pmxlc, fdwControls);
     }
 
-    MMRESULT mixerGetLineInfoA(HMIXEROBJ hmxobj, LPMIXERLINE pmxl, DWORD fdwInfo)
+    MMRESULT mixerGetLineInfoA(HMIXEROBJ hmxobj, LPMIXERLINEA pmxl, DWORD fdwInfo)
     {
       Initialize();
 
@@ -2173,7 +2173,7 @@ namespace Xidi
       return importTable.named.mixerGetLineInfoA(hmxobj, pmxl, fdwInfo);
     }
 
-    MMRESULT mixerGetLineInfoW(HMIXEROBJ hmxobj, LPMIXERLINE pmxl, DWORD fdwInfo)
+    MMRESULT mixerGetLineInfoW(HMIXEROBJ hmxobj, LPMIXERLINEW pmxl, DWORD fdwInfo)
     {
       Initialize();
 

@@ -534,13 +534,13 @@ extern "C"
   }
 
   MMRESULT __stdcall ExportApiWinMMMixerGetDevCapsA(
-      UINT_PTR uMxId, LPMIXERCAPS pmxcaps, UINT cbmxcaps)
+      UINT_PTR uMxId, LPMIXERCAPSA pmxcaps, UINT cbmxcaps)
   {
     return ImportApiWinMM::mixerGetDevCapsA(uMxId, pmxcaps, cbmxcaps);
   }
 
   MMRESULT __stdcall ExportApiWinMMMixerGetDevCapsW(
-      UINT_PTR uMxId, LPMIXERCAPS pmxcaps, UINT cbmxcaps)
+      UINT_PTR uMxId, LPMIXERCAPSW pmxcaps, UINT cbmxcaps)
   {
     return ImportApiWinMM::mixerGetDevCapsW(uMxId, pmxcaps, cbmxcaps);
   }
@@ -551,25 +551,25 @@ extern "C"
   }
 
   MMRESULT __stdcall ExportApiWinMMMixerGetLineControlsA(
-      HMIXEROBJ hmxobj, LPMIXERLINECONTROLS pmxlc, DWORD fdwControls)
+      HMIXEROBJ hmxobj, LPMIXERLINECONTROLSA pmxlc, DWORD fdwControls)
   {
     return ImportApiWinMM::mixerGetLineControlsA(hmxobj, pmxlc, fdwControls);
   }
 
   MMRESULT __stdcall ExportApiWinMMMixerGetLineControlsW(
-      HMIXEROBJ hmxobj, LPMIXERLINECONTROLS pmxlc, DWORD fdwControls)
+      HMIXEROBJ hmxobj, LPMIXERLINECONTROLSW pmxlc, DWORD fdwControls)
   {
     return ImportApiWinMM::mixerGetLineControlsW(hmxobj, pmxlc, fdwControls);
   }
 
   MMRESULT __stdcall ExportApiWinMMMixerGetLineInfoA(
-      HMIXEROBJ hmxobj, LPMIXERLINE pmxl, DWORD fdwInfo)
+      HMIXEROBJ hmxobj, LPMIXERLINEA pmxl, DWORD fdwInfo)
   {
     return ImportApiWinMM::mixerGetLineInfoA(hmxobj, pmxl, fdwInfo);
   }
 
   MMRESULT __stdcall ExportApiWinMMMixerGetLineInfoW(
-      HMIXEROBJ hmxobj, LPMIXERLINE pmxl, DWORD fdwInfo)
+      HMIXEROBJ hmxobj, LPMIXERLINEW pmxl, DWORD fdwInfo)
   {
     return ImportApiWinMM::mixerGetLineInfoW(hmxobj, pmxl, fdwInfo);
   }
