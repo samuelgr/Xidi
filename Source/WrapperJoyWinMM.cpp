@@ -121,16 +121,16 @@ namespace Xidi
     /// Templated wrapper around the `LoadString` Windows API function, which ordinarily exists in a
     /// Unicode and non-Unicode version separately.
     /// @tparam StringType Either LPSTR or LPWSTR depending on whether ASCII or Unicode is desired.
-    template <typename StringType> static inline int LoadStringT(
+    template <typename StringType> static inline int LoadResourceString(
         HINSTANCE hInstance, UINT uID, StringType lpBuffer, int cchBufferMax);
 
-    template <> static inline int LoadStringT<LPSTR>(
+    template <> static inline int LoadResourceString<LPSTR>(
         HINSTANCE hInstance, UINT uID, LPSTR lpBuffer, int cchBufferMax)
     {
       return LoadStringA(hInstance, uID, lpBuffer, cchBufferMax);
     }
 
-    template <> static inline int LoadStringT<LPWSTR>(
+    template <> static inline int LoadResourceString<LPWSTR>(
         HINSTANCE hInstance, UINT uID, LPWSTR lpBuffer, int cchBufferMax)
     {
       return LoadStringW(hInstance, uID, lpBuffer, cchBufferMax);
@@ -431,7 +431,7 @@ namespace Xidi
     template <typename StringType> static inline int FillRegistryKeyString(
         StringType buf, const size_t bufcount)
     {
-      return LoadStringT(
+      return LoadResourceString(
           Infra::ProcessInfo::GetThisModuleInstanceHandle(),
           IDS_XIDI_PRODUCT_NAME,
           buf,
@@ -572,6 +572,12 @@ namespace Xidi
     /// Initializes all WinMM functionality.
     static void Initialize(void)
     {
+      // There is overhead to using call_once, even after the operation is completed, and WinMM
+      // wrapper functions are called frequently. Using this additional flag avoids that overhead in
+      // the common case.
+      static bool isInitialized = false;
+      if (true == isInitialized) return;
+
       static std::once_flag initializationFlag;
       std::call_once(
           initializationFlag,
@@ -618,28 +624,14 @@ namespace Xidi
             Infra::Message::Output(
                 Infra::Message::ESeverity::Info,
                 L"Completed initialization of WinMM joystick wrapper.");
+
+            isInitialized = true;
           });
     }
 
-    MMRESULT WrapperJoyWinMM::JoyConfigChanged(DWORD dwFlags)
-    {
-      Infra::Message::Output(
-          Infra::Message::ESeverity::Info,
-          L"Refreshing joystick state due to a configuration change.");
-      Initialize();
-
-      // Redirect to the imported API so that its view of the registry can be updated.
-      HRESULT result = ImportApiWinMM::joyConfigChanged(dwFlags);
-
-      // Update Xidi's view of devices.
-      CreateSystemDeviceInfo();
-      CreateJoyIndexMap();
-      SetControllerNameRegistryInfo();
-
-      return result;
-    }
-
-    template <typename JoyCapsType> MMRESULT JoyGetDevCaps(
+    /// Templated implementation of the `joyGetDevCaps` function, allowing an "A" version and a "W"
+    /// version to be exported separately.
+    template <typename JoyCapsType> static inline MMRESULT JoyGetDevCapsInternal(
         UINT_PTR uJoyID, JoyCapsType* pjc, UINT cbjc)
     {
       // Special case: index is specified as -1, which the API says just means fill in the registry
@@ -653,7 +645,6 @@ namespace Xidi
         return result;
       }
 
-      Initialize();
       const int realJoyID = TranslateApplicationJoyIndex((UINT)uJoyID);
 
       if (realJoyID < 0)
@@ -725,10 +716,37 @@ namespace Xidi
       }
     }
 
-    template MMRESULT JoyGetDevCaps(UINT_PTR uJoyID, LPJOYCAPSA pjc, UINT cbjc);
-    template MMRESULT JoyGetDevCaps(UINT_PTR uJoyID, LPJOYCAPSW pjc, UINT cbjc);
+    MMRESULT __stdcall joyConfigChanged(DWORD dwFlags)
+    {
+      Infra::Message::Output(
+          Infra::Message::ESeverity::Info,
+          L"Refreshing joystick state due to a configuration change.");
+      Initialize();
 
-    UINT JoyGetNumDevs(void)
+      // Redirect to the imported API so that its view of the registry can be updated.
+      HRESULT result = ImportApiWinMM::joyConfigChanged(dwFlags);
+
+      // Update Xidi's view of devices.
+      CreateSystemDeviceInfo();
+      CreateJoyIndexMap();
+      SetControllerNameRegistryInfo();
+
+      return result;
+    }
+
+    MMRESULT __stdcall joyGetDevCapsA(UINT_PTR uJoyID, LPJOYCAPSA pjc, UINT cbjc)
+    {
+      Initialize();
+      return JoyGetDevCapsInternal(uJoyID, pjc, cbjc);
+    }
+
+    MMRESULT __stdcall joyGetDevCapsW(UINT_PTR uJoyID, LPJOYCAPSW pjc, UINT cbjc)
+    {
+      Initialize();
+      return JoyGetDevCapsInternal(uJoyID, pjc, cbjc);
+    }
+
+    UINT __stdcall joyGetNumDevs(void)
     {
       Initialize();
 
@@ -743,7 +761,7 @@ namespace Xidi
       return result;
     }
 
-    MMRESULT JoyGetPos(UINT uJoyID, LPJOYINFO pji)
+    MMRESULT __stdcall joyGetPos(UINT uJoyID, LPJOYINFO pji)
     {
       Initialize();
       const int realJoyID = TranslateApplicationJoyIndex(uJoyID);
@@ -780,7 +798,7 @@ namespace Xidi
       }
     }
 
-    MMRESULT JoyGetPosEx(UINT uJoyID, LPJOYINFOEX pji)
+    MMRESULT __stdcall joyGetPosEx(UINT uJoyID, LPJOYINFOEX pji)
     {
       Initialize();
       const int realJoyID = TranslateApplicationJoyIndex(uJoyID);
@@ -804,9 +822,9 @@ namespace Xidi
             DataFormat::DirectInputPovValue(joyStateData.povDirection);
 
         // Fill in the provided structure.
-        // WinMM uses only 16 bits to indicate that the dpad is centered, whereas it is safe to use
-        // all 32 in DirectInput, hence the conversion (forgetting this can introduce bugs into
-        // games).
+        // WinMM uses only 16 bits to indicate that the dpad is centered, whereas it is safe to
+        // use all 32 in DirectInput, hence the conversion (forgetting this can introduce bugs
+        // into games).
         pji->dwPOV =
             (EPovValue::Center == joyStateDataPovValue ? (DWORD)(JOY_POVCENTERED)
                                                        : (DWORD)joyStateDataPovValue);
@@ -837,7 +855,7 @@ namespace Xidi
       }
     }
 
-    MMRESULT JoyGetThreshold(UINT uJoyID, LPUINT puThreshold)
+    MMRESULT __stdcall joyGetThreshold(UINT uJoyID, LPUINT puThreshold)
     {
       Initialize();
       const int realJoyID = TranslateApplicationJoyIndex(uJoyID);
@@ -861,7 +879,7 @@ namespace Xidi
       }
     }
 
-    MMRESULT JoyReleaseCapture(UINT uJoyID)
+    MMRESULT __stdcall joyReleaseCapture(UINT uJoyID)
     {
       Initialize();
       const int realJoyID = TranslateApplicationJoyIndex(uJoyID);
@@ -885,7 +903,7 @@ namespace Xidi
       }
     }
 
-    MMRESULT JoySetCapture(HWND hwnd, UINT uJoyID, UINT uPeriod, BOOL fChanged)
+    MMRESULT __stdcall joySetCapture(HWND hwnd, UINT uJoyID, UINT uPeriod, BOOL fChanged)
     {
       Initialize();
       const int realJoyID = TranslateApplicationJoyIndex(uJoyID);
@@ -910,7 +928,7 @@ namespace Xidi
       }
     }
 
-    MMRESULT JoySetThreshold(UINT uJoyID, UINT uThreshold)
+    MMRESULT __stdcall joySetThreshold(UINT uJoyID, UINT uThreshold)
     {
       Initialize();
       const int realJoyID = TranslateApplicationJoyIndex(uJoyID);

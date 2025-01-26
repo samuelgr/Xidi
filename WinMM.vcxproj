@@ -28,8 +28,8 @@
     <ClInclude Include="Include\Xidi\Internal\ControllerMath.h" />
     <ClInclude Include="Include\Xidi\Internal\ControllerTypes.h" />
     <ClInclude Include="Include\Xidi\Internal\DataFormat.h" />
+    <ClInclude Include="Include\Xidi\Internal\DllFunctions.h" />
     <ClInclude Include="Include\Xidi\Internal\ElementMapper.h" />
-    <ClInclude Include="Include\Xidi\Internal\ExportApiWinMM.h" />
     <ClInclude Include="Include\Xidi\Internal\ForceFeedbackDevice.h" />
     <ClInclude Include="Include\Xidi\Internal\ForceFeedbackEffect.h" />
     <ClInclude Include="Include\Xidi\Internal\ForceFeedbackMath.h" />
@@ -60,11 +60,12 @@
     <ClCompile Include="Source\ApiXidi.cpp" />
     <ClCompile Include="Source\ControllerMath.cpp" />
     <ClCompile Include="Source\DataFormat.cpp" />
+    <ClCompile Include="Source\DllFunctions.cpp" />
     <ClCompile Include="Source\ElementMapper.cpp" />
-    <ClCompile Include="Source\ExportApiWinMM.cpp" />
     <ClCompile Include="Source\ForceFeedbackDevice.cpp" />
     <ClCompile Include="Source\ForceFeedbackEffect.cpp" />
     <ClCompile Include="Source\ForceFeedbackParameters.cpp" />
+    <ClCompile Include="Source\ForwardedApiWinMM.cpp" />
     <ClCompile Include="Source\Globals.cpp" />
     <ClCompile Include="Source\ImportApiDirectInput.cpp" />
     <ClCompile Include="Source\ImportApiWinMM.cpp" />
@@ -85,6 +86,7 @@
     <ClCompile Include="Source\XidiConfigReader.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <None Include="Include\Xidi\Internal\DllExportForward.inc" />
     <None Include="winmm.def" />
   </ItemGroup>
   <ItemGroup>
@@ -95,6 +97,9 @@
     <ProjectReference Include="Modules\Infra\CoreInfra.vcxproj">
       <Project>{5af31c51-1646-4bda-9407-12273b2da870}</Project>
     </ProjectReference>
+  </ItemGroup>
+  <ItemGroup>
+    <MASM Include="Source\ForwardedApiWinMM.asm" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <ProjectGuid>{97F255C7-24CE-44F1-A897-75EDB97BC541}</ProjectGuid>
@@ -131,7 +136,9 @@
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
   <ImportGroup Label="ExtensionSettings">
+    <Import Project="$(VCTargetsPath)\BuildCustomizations\masm.props" />
   </ImportGroup>
+  <Import Project="$(MSBuildProjectDirectory)\Modules\Infra\Build\Properties\AssemblyBuild.props" />
   <ImportGroup Label="Shared">
   </ImportGroup>
   <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="PropertySheets">
@@ -193,5 +200,6 @@
   </ItemDefinitionGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
+    <Import Project="$(VCTargetsPath)\BuildCustomizations\masm.targets" />
   </ImportGroup>
 </Project>

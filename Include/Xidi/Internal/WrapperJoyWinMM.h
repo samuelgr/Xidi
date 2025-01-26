@@ -17,15 +17,16 @@ namespace Xidi
 {
   namespace WrapperJoyWinMM
   {
-    MMRESULT JoyConfigChanged(DWORD dwFlags);
-    template <typename JoyCapsType> MMRESULT JoyGetDevCaps(
-        UINT_PTR uJoyID, JoyCapsType* pjc, UINT cbjc);
-    UINT JoyGetNumDevs(void);
-    MMRESULT JoyGetPos(UINT uJoyID, LPJOYINFO pji);
-    MMRESULT JoyGetPosEx(UINT uJoyID, LPJOYINFOEX pji);
-    MMRESULT JoyGetThreshold(UINT uJoyID, LPUINT puThreshold);
-    MMRESULT JoyReleaseCapture(UINT uJoyID);
-    MMRESULT JoySetCapture(HWND hwnd, UINT uJoyID, UINT uPeriod, BOOL fChanged);
-    MMRESULT JoySetThreshold(UINT uJoyID, UINT uThreshold);
-  }; // namespace WrapperJoyWinMM
+    extern "C" MMRESULT __stdcall joyConfigChanged(DWORD dwFlags);
+    extern "C" MMRESULT __stdcall joyGetDevCapsA(UINT_PTR uJoyID, JOYCAPSA* pjc, UINT cbjc);
+    extern "C" MMRESULT __stdcall joyGetDevCapsW(UINT_PTR uJoyID, JOYCAPSW* pjc, UINT cbjc);
+    extern "C" UINT __stdcall joyGetNumDevs(void);
+    extern "C" MMRESULT __stdcall joyGetPos(UINT uJoyID, LPJOYINFO pji);
+    extern "C" MMRESULT __stdcall joyGetPosEx(UINT uJoyID, LPJOYINFOEX pji);
+    extern "C" MMRESULT __stdcall joyGetThreshold(UINT uJoyID, LPUINT puThreshold);
+    extern "C" MMRESULT __stdcall joyReleaseCapture(UINT uJoyID);
+    extern "C" MMRESULT __stdcall joySetCapture(
+        HWND hwnd, UINT uJoyID, UINT uPeriod, BOOL fChanged);
+    extern "C" MMRESULT __stdcall joySetThreshold(UINT uJoyID, UINT uThreshold);
+  } // namespace WrapperJoyWinMM
 } // namespace Xidi
