@@ -13,22 +13,28 @@
 
 #include "ApiDirectInput.h"
 
-extern "C"
+namespace Xidi
 {
-  // clang-format off
-
+  namespace ExportApiDirectInput
+  {
+    extern "C"
+    {
 #if DIRECTINPUT_VERSION >= 0x0800
-  HRESULT __stdcall ExportApiDirectInputDirectInput8Create(HINSTANCE hinst, DWORD dwVersion, REFIID riidltf, LPVOID* ppvOut, LPUNKNOWN punkOuter);
+      HRESULT __stdcall DirectInput8Create(
+          HINSTANCE hinst, DWORD dwVersion, REFIID riidltf, LPVOID* ppvOut, LPUNKNOWN punkOuter);
 #else
-  HRESULT __stdcall ExportApiDirectInputDirectInputCreateA(HINSTANCE hinst, DWORD dwVersion, LPDIRECTINPUTA* ppDI, LPUNKNOWN punkOuter);
-  HRESULT __stdcall ExportApiDirectInputDirectInputCreateW(HINSTANCE hinst, DWORD dwVersion, LPDIRECTINPUTW* ppDI, LPUNKNOWN punkOuter);
-  HRESULT __stdcall ExportApiDirectInputDirectInputCreateEx(HINSTANCE hinst, DWORD dwVersion, REFIID riidltf, LPVOID* ppvOut, LPUNKNOWN punkOuter);
+      HRESULT __stdcall DirectInputCreateA(
+          HINSTANCE hinst, DWORD dwVersion, LPDIRECTINPUTA* ppDI, LPUNKNOWN punkOuter);
+      HRESULT __stdcall DirectInputCreateW(
+          HINSTANCE hinst, DWORD dwVersion, LPDIRECTINPUTW* ppDI, LPUNKNOWN punkOuter);
+      HRESULT __stdcall DirectInputCreateEx(
+          HINSTANCE hinst, DWORD dwVersion, REFIID riidltf, LPVOID* ppvOut, LPUNKNOWN punkOuter);
 #endif
 
-  HRESULT __stdcall ExportApiDirectInputDllRegisterServer(void);
-  HRESULT __stdcall ExportApiDirectInputDllUnregisterServer(void);
-  HRESULT __stdcall ExportApiDirectInputDllCanUnloadNow(void);
-  HRESULT __stdcall ExportApiDirectInputDllGetClassObject(REFCLSID rclsid, REFIID riid, LPVOID* ppv);
-
-  // clang-format on
-}
+      HRESULT __stdcall DllRegisterServer(void);
+      HRESULT __stdcall DllUnregisterServer(void);
+      HRESULT __stdcall DllCanUnloadNow(void);
+      HRESULT __stdcall DllGetClassObject(REFCLSID rclsid, REFIID riid, LPVOID* ppv);
+    }
+  } // namespace ExportApiDirectInput
+} // namespace Xidi
