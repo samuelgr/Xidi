@@ -31,6 +31,14 @@
 #define IMPORT_TABLE_INDEX_OF(name)                                                                \
   (offsetof(UImportTable, named.##name) / sizeof(UImportTable::ptr[0]))
 
+/// Attempts to import a single function and save it into the import table.
+#define TRY_IMPORT(libraryPath, libraryHandle, functionName)                                       \
+  DllFunctions::TryImport(                                                                         \
+      libraryPath,                                                                                 \
+      loadedLibrary,                                                                               \
+      #functionName,                                                                               \
+      &importTable.ptr[IMPORT_TABLE_INDEX_OF(functionName)])
+
 namespace Xidi
 {
   namespace ImportApiWinMM
@@ -107,71 +115,19 @@ namespace Xidi
             // Attempt to obtain the addresses of all imported API functions.
             FARPROC procAddress = nullptr;
 
-            DllFunctions::TryImport(
-                libraryPath,
-                loadedLibrary,
-                "joyConfigChanged",
-                &importTable.ptr[IMPORT_TABLE_INDEX_OF(joyConfigChanged)]);
-            DllFunctions::TryImport(
-                libraryPath,
-                loadedLibrary,
-                "joyGetDevCapsA",
-                &importTable.ptr[IMPORT_TABLE_INDEX_OF(joyGetDevCapsA)]);
-            DllFunctions::TryImport(
-                libraryPath,
-                loadedLibrary,
-                "joyGetDevCapsW",
-                &importTable.ptr[IMPORT_TABLE_INDEX_OF(joyGetDevCapsW)]);
-            DllFunctions::TryImport(
-                libraryPath,
-                loadedLibrary,
-                "joyGetNumDevs",
-                &importTable.ptr[IMPORT_TABLE_INDEX_OF(joyGetNumDevs)]);
-            DllFunctions::TryImport(
-                libraryPath,
-                loadedLibrary,
-                "joyGetPos",
-                &importTable.ptr[IMPORT_TABLE_INDEX_OF(joyGetPos)]);
-            DllFunctions::TryImport(
-                libraryPath,
-                loadedLibrary,
-                "joyGetPosEx",
-                &importTable.ptr[IMPORT_TABLE_INDEX_OF(joyGetPosEx)]);
-            DllFunctions::TryImport(
-                libraryPath,
-                loadedLibrary,
-                "joyGetThreshold",
-                &importTable.ptr[IMPORT_TABLE_INDEX_OF(joyGetThreshold)]);
-            DllFunctions::TryImport(
-                libraryPath,
-                loadedLibrary,
-                "joyReleaseCapture",
-                &importTable.ptr[IMPORT_TABLE_INDEX_OF(joyReleaseCapture)]);
-            DllFunctions::TryImport(
-                libraryPath,
-                loadedLibrary,
-                "joySetCapture",
-                &importTable.ptr[IMPORT_TABLE_INDEX_OF(joySetCapture)]);
-            DllFunctions::TryImport(
-                libraryPath,
-                loadedLibrary,
-                "joySetThreshold",
-                &importTable.ptr[IMPORT_TABLE_INDEX_OF(joySetThreshold)]);
-            DllFunctions::TryImport(
-                libraryPath,
-                loadedLibrary,
-                "timeBeginPeriod",
-                &importTable.ptr[IMPORT_TABLE_INDEX_OF(timeBeginPeriod)]);
-            DllFunctions::TryImport(
-                libraryPath,
-                loadedLibrary,
-                "timeGetDevCaps",
-                &importTable.ptr[IMPORT_TABLE_INDEX_OF(timeGetDevCaps)]);
-            DllFunctions::TryImport(
-                libraryPath,
-                loadedLibrary,
-                "timeGetTime",
-                &importTable.ptr[IMPORT_TABLE_INDEX_OF(timeGetTime)]);
+            TRY_IMPORT(libraryPath, loadedLibrary, joyConfigChanged);
+            TRY_IMPORT(libraryPath, loadedLibrary, joyGetDevCapsA);
+            TRY_IMPORT(libraryPath, loadedLibrary, joyGetDevCapsW);
+            TRY_IMPORT(libraryPath, loadedLibrary, joyGetNumDevs);
+            TRY_IMPORT(libraryPath, loadedLibrary, joyGetPos);
+            TRY_IMPORT(libraryPath, loadedLibrary, joyGetPosEx);
+            TRY_IMPORT(libraryPath, loadedLibrary, joyGetThreshold);
+            TRY_IMPORT(libraryPath, loadedLibrary, joyReleaseCapture);
+            TRY_IMPORT(libraryPath, loadedLibrary, joySetCapture);
+            TRY_IMPORT(libraryPath, loadedLibrary, joySetThreshold);
+            TRY_IMPORT(libraryPath, loadedLibrary, timeBeginPeriod);
+            TRY_IMPORT(libraryPath, loadedLibrary, timeGetDevCaps);
+            TRY_IMPORT(libraryPath, loadedLibrary, timeGetTime);
 
             // Initialization complete.
             Infra::Message::OutputFormatted(

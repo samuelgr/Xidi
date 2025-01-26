@@ -29,6 +29,7 @@
     <ClInclude Include="Include\Xidi\Internal\ControllerTypes.h" />
     <ClInclude Include="Include\Xidi\Internal\DataFormat.h" />
     <ClInclude Include="Include\Xidi\Internal\DirectInputClassFactory.h" />
+    <ClInclude Include="Include\Xidi\Internal\DllFunctions.h" />
     <ClInclude Include="Include\Xidi\Internal\ElementMapper.h" />
     <ClInclude Include="Include\Xidi\Internal\ExportApiDirectInput.h" />
     <ClInclude Include="Include\Xidi\Internal\ForceFeedbackDevice.h" />
@@ -64,6 +65,7 @@
     <ClCompile Include="Source\ControllerMath.cpp" />
     <ClCompile Include="Source\DataFormat.cpp" />
     <ClCompile Include="Source\DirectInputClassFactory.cpp" />
+    <ClCompile Include="Source\DllFunctions.cpp" />
     <ClCompile Include="Source\ElementMapper.cpp" />
     <ClCompile Include="Source\ForceFeedbackDevice.cpp" />
     <ClCompile Include="Source\ForceFeedbackEffect.cpp" />

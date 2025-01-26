@@ -126,6 +126,9 @@
     <ClInclude Include="Include\Xidi\Test\MockMouse.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="Include\Xidi\Internal\DllFunctions.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Source\Test\Case\AxisMapperTest.cpp">
@@ -291,6 +294,9 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="Source\Test\TestMain.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\DllFunctions.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

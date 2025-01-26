@@ -339,6 +339,12 @@ namespace Xidi
     /// Idempotent and concurrency-safe.
     static void Initialize(void)
     {
+      // There is overhead to using call_once, even after the operation is completed, and physical
+      // controller functions are called frequently. Using this additional flag avoids that overhead
+      // in the common case.
+      static bool isInitialized = false;
+      if (true == isInitialized) return;
+
       static std::once_flag initFlag;
       std::call_once(
           initFlag,
@@ -428,6 +434,8 @@ namespace Xidi
                     (unsigned int)(1 + controllerIdentifier));
               }
             }
+
+            isInitialized = true;
           });
     }
 
