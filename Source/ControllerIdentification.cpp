@@ -251,19 +251,20 @@ namespace Xidi
     return std::nullopt;
   }
 
-  template <typename EarliestIDirectInputType, typename EarliestIDirectInputDeviceType> bool
-      DoesDirectInputControllerSupportXInput(
-          EarliestIDirectInputType* dicontext, REFGUID instanceGUID, std::wstring* devicePath)
+  template <EDirectInputVersion diVersion> bool DoesDirectInputControllerSupportXInput(
+      typename DirectInputTypes<diVersion>::IDirectInputCompatType* dicontext,
+      REFGUID instanceGUID,
+      std::wstring* devicePath)
   {
     bool deviceSupportsXInput = false;
 
-    EarliestIDirectInputDeviceType* didevice = nullptr;
+    typename DirectInputTypes<diVersion>::IDirectInputDeviceCompatType* didevice = nullptr;
     HRESULT result = dicontext->CreateDevice(instanceGUID, &didevice, nullptr);
 
     if (DI_OK != result)
     {
       Infra::Message::OutputFormatted(
-          Infra::Message::ESeverity::Error,
+          Infra::Message::ESeverity::Warning,
           L"Unable to check if device with instance GUID %s supports XInput: Failed to create the device (result = 0x%08x).",
           Strings::GuidToString(instanceGUID).AsCString(),
           static_cast<unsigned int>(result));
@@ -282,7 +283,7 @@ namespace Xidi
     if (DI_OK != result)
     {
       Infra::Message::OutputFormatted(
-          Infra::Message::ESeverity::Error,
+          Infra::Message::ESeverity::Warning,
           L"Unable to check if device with instance GUID %s supports XInput: Failed to query for property DIPROP_GUIDANDPATH (result = 0x%08x).",
           Strings::GuidToString(instanceGUID).AsCString(),
           static_cast<unsigned int>(result));
@@ -307,19 +308,23 @@ namespace Xidi
     return deviceSupportsXInput;
   }
 
-  template bool DoesDirectInputControllerSupportXInput<
-      typename EarliestIDirectInputA,
-      typename EarliestIDirectInputDeviceA>(EarliestIDirectInputA*, REFGUID, std::wstring*);
-  template bool DoesDirectInputControllerSupportXInput<
-      typename EarliestIDirectInputW,
-      typename EarliestIDirectInputDeviceW>(EarliestIDirectInputW*, REFGUID, std::wstring*);
+  template bool DoesDirectInputControllerSupportXInput<EDirectInputVersion::k8A>(
+      IDirectInput8A*, REFGUID, std::wstring*);
+  template bool DoesDirectInputControllerSupportXInput<EDirectInputVersion::k8W>(
+      IDirectInput8W*, REFGUID, std::wstring*);
+  template bool DoesDirectInputControllerSupportXInput<EDirectInputVersion::kLegacyA>(
+      IDirectInputA*, REFGUID, std::wstring*);
+  template bool DoesDirectInputControllerSupportXInput<EDirectInputVersion::kLegacyW>(
+      IDirectInputW*, REFGUID, std::wstring*);
 
-  template <typename DeviceInstanceType> BOOL EnumerateVirtualControllers(
-      BOOL(FAR PASCAL* lpCallback)(const DeviceInstanceType*, LPVOID),
+  template <EDirectInputVersion diVersion> BOOL EnumerateVirtualControllers(
+      BOOL(FAR PASCAL* lpCallback)(
+          const typename DirectInputTypes<diVersion>::DeviceInstanceType*, LPVOID),
       LPVOID pvRef,
       bool forceFeedbackRequired)
   {
-    std::unique_ptr<DeviceInstanceType> instanceInfo = std::make_unique<DeviceInstanceType>();
+    std::unique_ptr<typename DirectInputTypes<diVersion>::DeviceInstanceType> instanceInfo =
+        std::make_unique<typename DirectInputTypes<diVersion>::DeviceInstanceType>();
     uint32_t numControllersToEnumerate = Controller::kPhysicalControllerCount;
 
     const uint64_t activeVirtualControllerMask =
@@ -334,7 +339,7 @@ namespace Xidi
         continue;
 
       *instanceInfo = {.dwSize = sizeof(*instanceInfo)};
-      FillVirtualControllerInfo(*instanceInfo, idx);
+      FillVirtualControllerInfo<diVersion>(*instanceInfo, idx);
 
       if (0 != (activeVirtualControllerMask & ((uint64_t)1 << idx)))
       {
@@ -354,8 +359,14 @@ namespace Xidi
     return DIENUM_CONTINUE;
   }
 
-  template BOOL EnumerateVirtualControllers(LPDIENUMDEVICESCALLBACKA, LPVOID, bool);
-  template BOOL EnumerateVirtualControllers(LPDIENUMDEVICESCALLBACKW, LPVOID, bool);
+  template BOOL EnumerateVirtualControllers<EDirectInputVersion::k8A>(
+      LPDIENUMDEVICESCALLBACKA, LPVOID, bool);
+  template BOOL EnumerateVirtualControllers<EDirectInputVersion::k8W>(
+      LPDIENUMDEVICESCALLBACKW, LPVOID, bool);
+  template BOOL EnumerateVirtualControllers<EDirectInputVersion::kLegacyA>(
+      LPDIENUMDEVICESCALLBACKA, LPVOID, bool);
+  template BOOL EnumerateVirtualControllers<EDirectInputVersion::kLegacyW>(
+      LPDIENUMDEVICESCALLBACKW, LPVOID, bool);
 
   template <> int FillHidCollectionName<LPSTR>(
       LPSTR buf, size_t bufcount, uint16_t hidCollectionNumber)
@@ -407,12 +418,13 @@ namespace Xidi
         (unsigned int)hidCollectionNumber);
   }
 
-  template <typename DeviceInstanceType> void FillVirtualControllerInfo(
-      DeviceInstanceType& instanceInfo, Controller::TControllerIdentifier controllerId)
+  template <EDirectInputVersion diVersion> void FillVirtualControllerInfo(
+      typename DirectInputTypes<diVersion>::DeviceInstanceType& instanceInfo,
+      Controller::TControllerIdentifier controllerId)
   {
     instanceInfo.guidInstance = VirtualControllerGuid(controllerId);
     instanceInfo.guidProduct = VirtualControllerGuid(controllerId);
-    instanceInfo.dwDevType = DINPUT_DEVTYPE_XINPUT_GAMEPAD;
+    instanceInfo.dwDevType = DirectInputTypes<diVersion>::XinputGamepadDeviceType();
     FillVirtualControllerName(
         instanceInfo.tszInstanceName, _countof(instanceInfo.tszInstanceName), controllerId);
     FillVirtualControllerName(
@@ -421,7 +433,8 @@ namespace Xidi
     // DirectInput versions 5 and higher include extra members in this structure, and this is
     // indicated on input using the size member of the structure.
     if (instanceInfo.dwSize >
-        offsetof(DeviceInstanceType, tszProductName) + sizeof(DeviceInstanceType::tszProductName))
+        offsetof(typename DirectInputTypes<diVersion>::DeviceInstanceType, tszProductName) +
+            sizeof(DirectInputTypes<diVersion>::DeviceInstanceType::tszProductName))
     {
       if (true == DoesControllerSupportForceFeedback(controllerId))
         instanceInfo.guidFFDriver = kVirtualControllerForceFeedbackDriverGuid;
@@ -434,8 +447,14 @@ namespace Xidi
     }
   }
 
-  template void FillVirtualControllerInfo(DIDEVICEINSTANCEA&, Controller::TControllerIdentifier);
-  template void FillVirtualControllerInfo(DIDEVICEINSTANCEW&, Controller::TControllerIdentifier);
+  template void FillVirtualControllerInfo<EDirectInputVersion::k8A>(
+      DIDEVICEINSTANCEA&, Controller::TControllerIdentifier);
+  template void FillVirtualControllerInfo<EDirectInputVersion::k8W>(
+      DIDEVICEINSTANCEW&, Controller::TControllerIdentifier);
+  template void FillVirtualControllerInfo<EDirectInputVersion::kLegacyA>(
+      DIDEVICEINSTANCEA&, Controller::TControllerIdentifier);
+  template void FillVirtualControllerInfo<EDirectInputVersion::kLegacyW>(
+      DIDEVICEINSTANCEW&, Controller::TControllerIdentifier);
 
   template <> int FillVirtualControllerName<LPSTR>(
       LPSTR buf, size_t bufcount, Controller::TControllerIdentifier controllerIndex)

@@ -241,7 +241,7 @@ namespace XidiTest
         .dwHow = dwHow};
 
     MockPhysicalController physicalController(kTestControllerIdentifier, kTestMapper);
-    VirtualDirectInputDevice<ECharMode::W> diController(CreateTestVirtualController());
+    VirtualDirectInputDevice<EDirectInputVersion::k8W> diController(CreateTestVirtualController());
 
     // Check that the default value is correct.
     DIPROPDWORD unusedPropertyValue = {.diph = unusedPropertyDwordHeader};
@@ -266,7 +266,7 @@ namespace XidiTest
   TEST_CASE(VirtualDirectInputDevice_Acquire)
   {
     MockPhysicalController physicalController(kTestControllerIdentifier, kTestMapper);
-    VirtualDirectInputDevice<ECharMode::W> diController(CreateTestVirtualController());
+    VirtualDirectInputDevice<EDirectInputVersion::k8W> diController(CreateTestVirtualController());
     TEST_ASSERT(DIERR_INVALIDPARAM == diController.Acquire());
     TEST_ASSERT(DI_OK == diController.SetDataFormat(&kTestFormatSpec));
     TEST_ASSERT(DI_OK == diController.Acquire());
@@ -277,7 +277,7 @@ namespace XidiTest
   TEST_CASE(VirtualDirectInputDevice_Unacquire)
   {
     MockPhysicalController physicalController(kTestControllerIdentifier, kTestMapper);
-    VirtualDirectInputDevice<ECharMode::W> diController(CreateTestVirtualController());
+    VirtualDirectInputDevice<EDirectInputVersion::k8W> diController(CreateTestVirtualController());
     TEST_ASSERT(DI_OK == diController.Unacquire());
     TEST_ASSERT(DI_OK == diController.SetDataFormat(&kTestFormatSpec));
     TEST_ASSERT(DI_OK == diController.Acquire());
@@ -301,7 +301,7 @@ namespace XidiTest
     } seen;
 
     MockPhysicalController physicalController(kTestControllerIdentifier, kTestMapper);
-    VirtualDirectInputDevice<ECharMode::W> diController(CreateTestVirtualController());
+    VirtualDirectInputDevice<EDirectInputVersion::k8W> diController(CreateTestVirtualController());
     const HRESULT enumObjectsResult = diController.EnumObjects(
         [](LPCDIDEVICEOBJECTINSTANCE lpddoi, LPVOID pvRef) -> BOOL
         {
@@ -361,7 +361,7 @@ namespace XidiTest
   TEST_CASE(VirtualDirectInputDevice_EnumObjects_OnlyAxes_WithDataFormat)
   {
     MockPhysicalController physicalController(kTestControllerIdentifier, kTestMapper);
-    VirtualDirectInputDevice<ECharMode::W> diController(CreateTestVirtualController());
+    VirtualDirectInputDevice<EDirectInputVersion::k8W> diController(CreateTestVirtualController());
     TEST_ASSERT(DI_OK == diController.SetDataFormat(&kTestFormatSpec));
 
     const HRESULT enumObjectsResult = diController.EnumObjects(
@@ -396,7 +396,7 @@ namespace XidiTest
     std::set<EButton> seenButtons;
 
     MockPhysicalController physicalController(kTestControllerIdentifier, kTestMapper);
-    VirtualDirectInputDevice<ECharMode::W> diController(CreateTestVirtualController());
+    VirtualDirectInputDevice<EDirectInputVersion::k8W> diController(CreateTestVirtualController());
     const HRESULT enumObjectsResult = diController.EnumObjects(
         [](LPCDIDEVICEOBJECTINSTANCE lpddoi, LPVOID pvRef) -> BOOL
         {
@@ -436,7 +436,7 @@ namespace XidiTest
   TEST_CASE(VirtualDirectInputDevice_EnumObjects_OnlyButtons_WithDataFormat)
   {
     MockPhysicalController physicalController(kTestControllerIdentifier, kTestMapper);
-    VirtualDirectInputDevice<ECharMode::W> diController(CreateTestVirtualController());
+    VirtualDirectInputDevice<EDirectInputVersion::k8W> diController(CreateTestVirtualController());
     TEST_ASSERT(DI_OK == diController.SetDataFormat(&kTestFormatSpec));
     const HRESULT enumObjectsResult = diController.EnumObjects(
         [](LPCDIDEVICEOBJECTINSTANCE lpddoi, LPVOID pvRef) -> BOOL
@@ -471,7 +471,7 @@ namespace XidiTest
     bool seenPov = false;
 
     MockPhysicalController physicalController(kTestControllerIdentifier, kTestMapper);
-    VirtualDirectInputDevice<ECharMode::W> diController(CreateTestVirtualController());
+    VirtualDirectInputDevice<EDirectInputVersion::k8W> diController(CreateTestVirtualController());
     const HRESULT enumObjectsResult = diController.EnumObjects(
         [](LPCDIDEVICEOBJECTINSTANCE lpddoi, LPVOID pvRef) -> BOOL
         {
@@ -510,7 +510,7 @@ namespace XidiTest
   TEST_CASE(VirtualDirectInputDevice_EnumObjects_OnlyPov_WithDataFormat)
   {
     MockPhysicalController physicalController(kTestControllerIdentifier, kTestMapper);
-    VirtualDirectInputDevice<ECharMode::W> diController(CreateTestVirtualController());
+    VirtualDirectInputDevice<EDirectInputVersion::k8W> diController(CreateTestVirtualController());
     TEST_ASSERT(DI_OK == diController.SetDataFormat(&kTestFormatSpec));
 
     const HRESULT enumObjectsResult = diController.EnumObjects(
@@ -538,7 +538,7 @@ namespace XidiTest
     TEST_ASSERT(false == expectedSeenAxes.empty());
 
     MockPhysicalController physicalController(kTestControllerIdentifier, kTestMapper);
-    VirtualDirectInputDevice<ECharMode::W> diController(CreateTestVirtualController());
+    VirtualDirectInputDevice<EDirectInputVersion::k8W> diController(CreateTestVirtualController());
     TEST_ASSERT(DI_OK == diController.SetDataFormat(&kTestFormatSpec));
 
     std::set<EAxis> actualSeenAxes;
@@ -580,7 +580,7 @@ namespace XidiTest
   TEST_CASE(VirtualDirectInputDevice_EnumObjects_NoMatchingObjects)
   {
     MockPhysicalController physicalController(kTestControllerIdentifier, kTestMapper);
-    VirtualDirectInputDevice<ECharMode::W> diController(CreateTestVirtualController());
+    VirtualDirectInputDevice<EDirectInputVersion::k8W> diController(CreateTestVirtualController());
     const HRESULT enumObjectsResult = diController.EnumObjects(
         [](LPCDIDEVICEOBJECTINSTANCE lpddoi, LPVOID pvRef) -> BOOL
         {
@@ -603,7 +603,7 @@ namespace XidiTest
     int actualNumCallbacks = 0;
 
     MockPhysicalController physicalController(kTestControllerIdentifier, kTestMapper);
-    VirtualDirectInputDevice<ECharMode::W> diController(CreateTestVirtualController());
+    VirtualDirectInputDevice<EDirectInputVersion::k8W> diController(CreateTestVirtualController());
     const HRESULT enumObjectsResult = diController.EnumObjects(
         [](LPCDIDEVICEOBJECTINSTANCE lpddoi, LPVOID pvRef) -> BOOL
         {
@@ -628,7 +628,7 @@ namespace XidiTest
     int actualNumCallbacks = 0;
 
     MockPhysicalController physicalController(kTestControllerIdentifier, kTestMapper);
-    VirtualDirectInputDevice<ECharMode::W> diController(CreateTestVirtualController());
+    VirtualDirectInputDevice<EDirectInputVersion::k8W> diController(CreateTestVirtualController());
     const HRESULT enumObjectsResult = diController.EnumObjects(
         [](LPCDIDEVICEOBJECTINSTANCE lpddoi, LPVOID pvRef) -> BOOL
         {
@@ -649,7 +649,7 @@ namespace XidiTest
     int actualNumCallbacks = 0;
 
     MockPhysicalController physicalController(kTestControllerIdentifier, kTestMapper);
-    VirtualDirectInputDevice<ECharMode::W> diController(CreateTestVirtualController());
+    VirtualDirectInputDevice<EDirectInputVersion::k8W> diController(CreateTestVirtualController());
     const HRESULT enumObjectsResult = diController.EnumObjects(
         [](LPCDIDEVICEOBJECTINSTANCE lpddoi, LPVOID pvRef) -> BOOL
         {
@@ -676,7 +676,7 @@ namespace XidiTest
     int actualNumCallbacks = 0;
 
     MockPhysicalController physicalController(kTestControllerIdentifier, kTestMapper);
-    VirtualDirectInputDevice<ECharMode::W> diController(CreateTestVirtualController());
+    VirtualDirectInputDevice<EDirectInputVersion::k8W> diController(CreateTestVirtualController());
     const HRESULT enumObjectsResult = diController.EnumObjects(
         [](LPCDIDEVICEOBJECTINSTANCE lpddoi, LPVOID pvRef) -> BOOL
         {
@@ -695,14 +695,14 @@ namespace XidiTest
   TEST_CASE(VirtualDirectInputDevice_GetCapabilities_Nominal)
   {
     MockPhysicalController physicalController(kTestControllerIdentifier, kTestMapper);
-    VirtualDirectInputDevice<ECharMode::W> diController(CreateTestVirtualController());
+    VirtualDirectInputDevice<EDirectInputVersion::k8W> diController(CreateTestVirtualController());
 
     const DIDEVCAPS expectedCapabilities = {
         .dwSize = sizeof(DIDEVCAPS),
         .dwFlags =
             (DIDC_ATTACHED | DIDC_EMULATED | DIDC_FORCEFEEDBACK | DIDC_FFFADE | DIDC_FFATTACK |
              DIDC_STARTDELAY),
-        .dwDevType = DINPUT_DEVTYPE_XINPUT_GAMEPAD,
+        .dwDevType = DirectInputTypes<EDirectInputVersion::k8W>::XinputGamepadDeviceType(),
         .dwAxes = kTestMapper.GetCapabilities().numAxes,
         .dwButtons = kTestMapper.GetCapabilities().numButtons,
         .dwPOVs = (DWORD)((true == kTestMapper.GetCapabilities().HasPov()) ? 1 : 0),
@@ -719,13 +719,13 @@ namespace XidiTest
     TEST_ASSERT(
         0 ==
         (actualCapabilities.dwFFMinTimeResolution %
-         VirtualDirectInputEffect<ECharMode::W>::kTimeScalingFactor));
+         VirtualDirectInputEffect<EDirectInputVersion::k8W>::kTimeScalingFactor));
 
     TEST_ASSERT(0 != actualCapabilities.dwFFSamplePeriod);
     TEST_ASSERT(
         0 ==
         (actualCapabilities.dwFFSamplePeriod %
-         VirtualDirectInputEffect<ECharMode::W>::kTimeScalingFactor));
+         VirtualDirectInputEffect<EDirectInputVersion::k8W>::kTimeScalingFactor));
   }
 
   // Same as above, except the structure is an older version which is supported for compatibility.
@@ -735,7 +735,7 @@ namespace XidiTest
     constexpr uint8_t kPoisonByte = 0xcd;
 
     MockPhysicalController physicalController(kTestControllerIdentifier, kTestMapper);
-    VirtualDirectInputDevice<ECharMode::W> diController(CreateTestVirtualController());
+    VirtualDirectInputDevice<EDirectInputVersion::k8W> diController(CreateTestVirtualController());
 
     DIDEVCAPS expectedCapabilities;
     FillMemory(&expectedCapabilities, sizeof(expectedCapabilities), kPoisonByte);
@@ -744,7 +744,7 @@ namespace XidiTest
         .dwFlags =
             (DIDC_ATTACHED | DIDC_EMULATED | DIDC_FORCEFEEDBACK | DIDC_FFFADE | DIDC_FFATTACK |
              DIDC_STARTDELAY),
-        .dwDevType = DINPUT_DEVTYPE_XINPUT_GAMEPAD,
+        .dwDevType = DirectInputTypes<EDirectInputVersion::k8W>::XinputGamepadDeviceType(),
         .dwAxes = kTestMapper.GetCapabilities().numAxes,
         .dwButtons = kTestMapper.GetCapabilities().numButtons,
         .dwPOVs = (DWORD)((true == kTestMapper.GetCapabilities().HasPov()) ? 1 : 0)};
@@ -762,7 +762,7 @@ namespace XidiTest
   TEST_CASE(VirtualDirectInputDevice_GetCapabilities_BadPointer)
   {
     MockPhysicalController physicalController(kTestControllerIdentifier, kTestMapper);
-    VirtualDirectInputDevice<ECharMode::W> diController(CreateTestVirtualController());
+    VirtualDirectInputDevice<EDirectInputVersion::k8W> diController(CreateTestVirtualController());
     TEST_ASSERT(FAILED(diController.GetCapabilities(nullptr)));
   }
 
@@ -771,7 +771,7 @@ namespace XidiTest
   TEST_CASE(VirtualDirectInputDevice_GetCapabilities_InvalidSize)
   {
     MockPhysicalController physicalController(kTestControllerIdentifier, kTestMapper);
-    VirtualDirectInputDevice<ECharMode::W> diController(CreateTestVirtualController());
+    VirtualDirectInputDevice<EDirectInputVersion::k8W> diController(CreateTestVirtualController());
     DIDEVCAPS capabilities;
     ZeroMemory(&capabilities, sizeof(capabilities));
     TEST_ASSERT(FAILED(diController.GetCapabilities(&capabilities)));
@@ -784,12 +784,13 @@ namespace XidiTest
     constexpr uint8_t kPoisonByte = 0xcd;
 
     MockPhysicalController physicalController(kTestControllerIdentifier, kTestMapper);
-    VirtualDirectInputDevice<ECharMode::W> diController(CreateTestVirtualController());
+    VirtualDirectInputDevice<EDirectInputVersion::k8W> diController(CreateTestVirtualController());
 
     DIDEVICEINSTANCE expectedDeviceInfo;
     FillMemory(&expectedDeviceInfo, sizeof(expectedDeviceInfo), kPoisonByte);
     expectedDeviceInfo.dwSize = sizeof(expectedDeviceInfo);
-    FillVirtualControllerInfo(expectedDeviceInfo, kTestControllerIdentifier);
+    FillVirtualControllerInfo<EDirectInputVersion::k8W>(
+        expectedDeviceInfo, kTestControllerIdentifier);
 
     DIDEVICEINSTANCE actualDeviceInfo;
     FillMemory(&actualDeviceInfo, sizeof(actualDeviceInfo), kPoisonByte);
@@ -806,12 +807,13 @@ namespace XidiTest
     constexpr uint8_t kPoisonByte = 0xcd;
 
     MockPhysicalController physicalController(kTestControllerIdentifier, kTestMapper);
-    VirtualDirectInputDevice<ECharMode::W> diController(CreateTestVirtualController());
+    VirtualDirectInputDevice<EDirectInputVersion::k8W> diController(CreateTestVirtualController());
 
     DIDEVICEINSTANCE expectedDeviceInfo;
     FillMemory(&expectedDeviceInfo, sizeof(expectedDeviceInfo), kPoisonByte);
     expectedDeviceInfo.dwSize = sizeof(DIDEVICEINSTANCE_DX3);
-    FillVirtualControllerInfo(expectedDeviceInfo, kTestControllerIdentifier);
+    FillVirtualControllerInfo<EDirectInputVersion::k8W>(
+        expectedDeviceInfo, kTestControllerIdentifier);
 
     DIDEVICEINSTANCE actualDeviceInfo;
     FillMemory(&actualDeviceInfo, sizeof(actualDeviceInfo), kPoisonByte);
@@ -825,7 +827,7 @@ namespace XidiTest
   TEST_CASE(VirtualDirectInputDevice_GetDeviceInfo_BadPointer)
   {
     MockPhysicalController physicalController(kTestControllerIdentifier, kTestMapper);
-    VirtualDirectInputDevice<ECharMode::W> diController(CreateTestVirtualController());
+    VirtualDirectInputDevice<EDirectInputVersion::k8W> diController(CreateTestVirtualController());
     TEST_ASSERT(FAILED(diController.GetDeviceInfo(nullptr)));
   }
 
@@ -834,7 +836,7 @@ namespace XidiTest
   TEST_CASE(VirtualDirectInputDevice_GetDeviceInfo_InvalidSize)
   {
     MockPhysicalController physicalController(kTestControllerIdentifier, kTestMapper);
-    VirtualDirectInputDevice<ECharMode::W> diController(CreateTestVirtualController());
+    VirtualDirectInputDevice<EDirectInputVersion::k8W> diController(CreateTestVirtualController());
     DIDEVICEINSTANCE deviceInfo;
     ZeroMemory(&deviceInfo, sizeof(deviceInfo));
     TEST_ASSERT(FAILED(diController.GetDeviceInfo(&deviceInfo)));
@@ -863,7 +865,7 @@ namespace XidiTest
     constexpr DWORD kExpectedNumEvents = 3;
 
     MockPhysicalController physicalController(kTestControllerIdentifier, kTestMapper);
-    VirtualDirectInputDevice<ECharMode::W> diController(CreateTestVirtualController());
+    VirtualDirectInputDevice<EDirectInputVersion::k8W> diController(CreateTestVirtualController());
     TEST_ASSERT(DI_OK == diController.SetDataFormat(&kTestFormatSpec));
     TEST_ASSERT(
         DI_OK ==
@@ -955,7 +957,7 @@ namespace XidiTest
     constexpr DWORD kExpectedNumEvents = 3;
 
     MockPhysicalController physicalController(kTestControllerIdentifier, kTestMapper);
-    VirtualDirectInputDevice<ECharMode::W> diController(CreateTestVirtualController());
+    VirtualDirectInputDevice<EDirectInputVersion::k8W> diController(CreateTestVirtualController());
     TEST_ASSERT(DI_OK == diController.SetDataFormat(&kTestFormatSpec));
     TEST_ASSERT(
         DI_OK ==
@@ -1011,7 +1013,7 @@ namespace XidiTest
   TEST_CASE(VirtualDirectInputDevice_GetDeviceData_DataFormatNotSet)
   {
     MockPhysicalController physicalController(kTestControllerIdentifier, kTestMapper);
-    VirtualDirectInputDevice<ECharMode::W> diController(CreateTestVirtualController());
+    VirtualDirectInputDevice<EDirectInputVersion::k8W> diController(CreateTestVirtualController());
     DWORD numObjectDataElements = INFINITE;
     TEST_ASSERT(FAILED(diController.GetDeviceData(
         sizeof(DIDEVICEOBJECTDATA), nullptr, &numObjectDataElements, 0)));
@@ -1022,7 +1024,7 @@ namespace XidiTest
   TEST_CASE(VirtualDirectInputDevice_GetDeviceData_BufferingNotEnabled)
   {
     MockPhysicalController physicalController(kTestControllerIdentifier, kTestMapper);
-    VirtualDirectInputDevice<ECharMode::W> diController(CreateTestVirtualController());
+    VirtualDirectInputDevice<EDirectInputVersion::k8W> diController(CreateTestVirtualController());
     DWORD numObjectDataElements = INFINITE;
     TEST_ASSERT(DI_OK == diController.SetDataFormat(&kTestFormatSpec));
     TEST_ASSERT(
@@ -1050,7 +1052,7 @@ namespace XidiTest
             DataFormat::kButtonValueNotPressed}};
 
     MockPhysicalController physicalController(kTestControllerIdentifier, kTestMapper);
-    VirtualDirectInputDevice<ECharMode::W> diController(CreateTestVirtualController());
+    VirtualDirectInputDevice<EDirectInputVersion::k8W> diController(CreateTestVirtualController());
     diController.GetVirtualController().RefreshState(
         kTestMapper.MapStatePhysicalToVirtual(kPhysicalState, kTestControllerIdentifier));
     TEST_ASSERT(DI_OK == diController.SetDataFormat(&kTestFormatSpec));
@@ -1073,7 +1075,7 @@ namespace XidiTest
   TEST_CASE(VirtualDirectInputDevice_GetDeviceState_DataFormatNotSet)
   {
     MockPhysicalController physicalController(kTestControllerIdentifier, kTestMapper);
-    VirtualDirectInputDevice<ECharMode::W> diController(CreateTestVirtualController());
+    VirtualDirectInputDevice<EDirectInputVersion::k8W> diController(CreateTestVirtualController());
     STestDataPacket dataPacket;
     TEST_ASSERT(FAILED(diController.GetDeviceState(sizeof(dataPacket), &dataPacket)));
   }
@@ -1083,7 +1085,7 @@ namespace XidiTest
   TEST_CASE(VirtualDirectInputDevice_GetDeviceState_BadPointer)
   {
     MockPhysicalController physicalController(kTestControllerIdentifier, kTestMapper);
-    VirtualDirectInputDevice<ECharMode::W> diController(CreateTestVirtualController());
+    VirtualDirectInputDevice<EDirectInputVersion::k8W> diController(CreateTestVirtualController());
     TEST_ASSERT(DI_OK == diController.SetDataFormat(&kTestFormatSpec));
     TEST_ASSERT(FAILED(diController.GetDeviceState(sizeof(STestDataPacket), nullptr)));
   }
@@ -1098,7 +1100,7 @@ namespace XidiTest
         .button = ButtonSet({EPhysicalButton::A, EPhysicalButton::X})};
 
     MockPhysicalController physicalController(kTestControllerIdentifier, kTestMapper);
-    VirtualDirectInputDevice<ECharMode::W> diController(CreateTestVirtualController());
+    VirtualDirectInputDevice<EDirectInputVersion::k8W> diController(CreateTestVirtualController());
     diController.GetVirtualController().RefreshState(
         kTestMapper.MapStatePhysicalToVirtual(kPhysicalState, kTestControllerIdentifier));
     TEST_ASSERT(DI_OK == diController.SetDataFormat(&kTestFormatSpec));
@@ -1134,7 +1136,7 @@ namespace XidiTest
   TEST_CASE(VirtualDirectInputDevice_GetDeviceState_SizeTooSmall)
   {
     MockPhysicalController physicalController(kTestControllerIdentifier, kTestMapper);
-    VirtualDirectInputDevice<ECharMode::W> diController(CreateTestVirtualController());
+    VirtualDirectInputDevice<EDirectInputVersion::k8W> diController(CreateTestVirtualController());
     STestDataPacket dataPacket;
     TEST_ASSERT(DI_OK == diController.SetDataFormat(&kTestFormatSpec));
     TEST_ASSERT(FAILED(diController.GetDeviceState(sizeof(dataPacket) - 1, &dataPacket)));
@@ -1147,14 +1149,14 @@ namespace XidiTest
   TEST_CASE(VirtualDirectInputDevice_GetObjectInfo_Nominal)
   {
     MockPhysicalController physicalController(kTestControllerIdentifier, kTestMapper);
-    VirtualDirectInputDevice<ECharMode::W> diController(CreateTestVirtualController());
+    VirtualDirectInputDevice<EDirectInputVersion::k8W> diController(CreateTestVirtualController());
 
     TEST_ASSERT(DI_OK == diController.SetDataFormat(&kTestFormatSpec));
     const HRESULT enumObjectsResult = diController.EnumObjects(
         [](LPCDIDEVICEOBJECTINSTANCE lpddoi, LPVOID pvRef) -> BOOL
         {
-          VirtualDirectInputDevice<ECharMode::W>& diController =
-              *((VirtualDirectInputDevice<ECharMode::W>*)pvRef);
+          VirtualDirectInputDevice<EDirectInputVersion::k8W>& diController =
+              *((VirtualDirectInputDevice<EDirectInputVersion::k8W>*)pvRef);
 
           const DIDEVICEOBJECTINSTANCE& expectedObjectInstance = *lpddoi;
           DIDEVICEOBJECTINSTANCE actualObjectInstance;
@@ -1221,14 +1223,14 @@ namespace XidiTest
     constexpr uint8_t kPoisonByte = 0xcd;
 
     MockPhysicalController physicalController(kTestControllerIdentifier, kTestMapper);
-    VirtualDirectInputDevice<ECharMode::W> diController(CreateTestVirtualController());
+    VirtualDirectInputDevice<EDirectInputVersion::k8W> diController(CreateTestVirtualController());
 
     TEST_ASSERT(DI_OK == diController.SetDataFormat(&kTestFormatSpec));
     const HRESULT enumObjectsResult = diController.EnumObjects(
         [](LPCDIDEVICEOBJECTINSTANCE lpddoi, LPVOID pvRef) -> BOOL
         {
-          VirtualDirectInputDevice<ECharMode::W>& diController =
-              *((VirtualDirectInputDevice<ECharMode::W>*)pvRef);
+          VirtualDirectInputDevice<EDirectInputVersion::k8W>& diController =
+              *((VirtualDirectInputDevice<EDirectInputVersion::k8W>*)pvRef);
 
           DIDEVICEOBJECTINSTANCE expectedObjectInstance;
           FillMemory(&expectedObjectInstance, sizeof(expectedObjectInstance), kPoisonByte);
@@ -1282,7 +1284,7 @@ namespace XidiTest
   TEST_CASE(VirtualDirectInputDevice_GetObjectInfo_BadPointer)
   {
     MockPhysicalController physicalController(kTestControllerIdentifier, kTestMapper);
-    VirtualDirectInputDevice<ECharMode::W> diController(CreateTestVirtualController());
+    VirtualDirectInputDevice<EDirectInputVersion::k8W> diController(CreateTestVirtualController());
     TEST_ASSERT(FAILED(
         diController.GetObjectInfo(nullptr, DIDFT_MAKEINSTANCE(0) | DIDFT_PSHBUTTON, DIPH_BYID)));
   }
@@ -1292,7 +1294,7 @@ namespace XidiTest
   TEST_CASE(VirtualDirectInputDevice_GetObjectInfo_InvalidSize)
   {
     MockPhysicalController physicalController(kTestControllerIdentifier, kTestMapper);
-    VirtualDirectInputDevice<ECharMode::W> diController(CreateTestVirtualController());
+    VirtualDirectInputDevice<EDirectInputVersion::k8W> diController(CreateTestVirtualController());
     DIDEVICEOBJECTINSTANCE objectInstance;
     ZeroMemory(&objectInstance, sizeof(objectInstance));
     TEST_ASSERT(FAILED(diController.GetObjectInfo(
@@ -1303,7 +1305,7 @@ namespace XidiTest
   TEST_CASE(VirtualDirectInputDevice_GetObjectInfo_ObjectNotFound)
   {
     MockPhysicalController physicalController(kTestControllerIdentifier, kTestMapper);
-    VirtualDirectInputDevice<ECharMode::W> diController(CreateTestVirtualController());
+    VirtualDirectInputDevice<EDirectInputVersion::k8W> diController(CreateTestVirtualController());
     DIDEVICEOBJECTINSTANCE objectInstance = {.dwSize = sizeof(DIDEVICEOBJECTINSTANCE)};
 
     // One axis beyond the maximum.
@@ -1349,7 +1351,7 @@ namespace XidiTest
   TEST_CASE(VirtualDirectInputDevice_Properties_Nominal)
   {
     MockPhysicalController physicalController(kTestControllerIdentifier, kTestMapper);
-    VirtualDirectInputDevice<ECharMode::W> diController(CreateTestVirtualController());
+    VirtualDirectInputDevice<EDirectInputVersion::k8W> diController(CreateTestVirtualController());
 
     // Buffer size
     {
@@ -1637,7 +1639,7 @@ namespace XidiTest
     MockPhysicalController physicalController(
         kTestControllerIdentifier, kTestMapper, &kPhysicalState, 1);
 
-    VirtualDirectInputDevice<ECharMode::W> diController(CreateTestVirtualController());
+    VirtualDirectInputDevice<EDirectInputVersion::k8W> diController(CreateTestVirtualController());
 
     TEST_ASSERT(
         DI_OK == diController.SetCooperativeLevel(nullptr, DISCL_EXCLUSIVE | DISCL_FOREGROUND));
@@ -1671,7 +1673,7 @@ namespace XidiTest
         .dwHow = DIPH_DEVICE};
 
     MockPhysicalController physicalController(kTestControllerIdentifier, kTestMapper);
-    VirtualDirectInputDevice<ECharMode::W> diController(CreateTestVirtualController());
+    VirtualDirectInputDevice<EDirectInputVersion::k8W> diController(CreateTestVirtualController());
     DIPROPDWORD propertyValue;
 
     // Set axis mode to absolute. This has no effect and should succeed, but the return code could
@@ -1694,7 +1696,7 @@ namespace XidiTest
   TEST_CASE(VirtualDirectInputDevice_Properties_DefaultValues)
   {
     MockPhysicalController physicalController(kTestControllerIdentifier, kTestMapper);
-    VirtualDirectInputDevice<ECharMode::W> diController(CreateTestVirtualController());
+    VirtualDirectInputDevice<EDirectInputVersion::k8W> diController(CreateTestVirtualController());
 
     // Buffer size
     {
@@ -1798,7 +1800,7 @@ namespace XidiTest
   TEST_CASE(VirtualDirectInputDevice_Properties_WrongStruct)
   {
     MockPhysicalController physicalController(kTestControllerIdentifier, kTestMapper);
-    VirtualDirectInputDevice<ECharMode::W> diController(CreateTestVirtualController());
+    VirtualDirectInputDevice<EDirectInputVersion::k8W> diController(CreateTestVirtualController());
 
     // Buffer size
     {
@@ -1982,7 +1984,7 @@ namespace XidiTest
   TEST_CASE(VirtualDirectInputDevice_Properties_BadPointer)
   {
     MockPhysicalController physicalController(kTestControllerIdentifier, kTestMapper);
-    VirtualDirectInputDevice<ECharMode::W> diController(CreateTestVirtualController());
+    VirtualDirectInputDevice<EDirectInputVersion::k8W> diController(CreateTestVirtualController());
 
     // Buffer size
     TEST_ASSERT(FAILED(diController.SetProperty(DIPROP_BUFFERSIZE, nullptr)));
@@ -2058,18 +2060,19 @@ namespace XidiTest
     {
       TEST_ASSERT(
           true ==
-          VirtualDirectInputDevice<ECharMode::A>::ForceFeedbackEffectCanCreateObject(
-              expectedSupportedGuid));
+          VirtualDirectInputDevice<EDirectInputVersion::kLegacyA>::
+              ForceFeedbackEffectCanCreateObject(expectedSupportedGuid));
       TEST_ASSERT(
           true ==
-          VirtualDirectInputDevice<ECharMode::W>::ForceFeedbackEffectCanCreateObject(
+          VirtualDirectInputDevice<EDirectInputVersion::k8W>::ForceFeedbackEffectCanCreateObject(
               expectedSupportedGuid));
     }
 
     for (const auto& expectedSupportedGuid : kExpectedSupportedGuids)
     {
       MockPhysicalController physicalController(kTestControllerIdentifier, kTestMapper);
-      VirtualDirectInputDevice<ECharMode::W> diController(CreateTestVirtualController());
+      VirtualDirectInputDevice<EDirectInputVersion::k8W> diController(
+          CreateTestVirtualController());
       IDirectInputEffect* createdEffect = nullptr;
 
       TEST_ASSERT(
@@ -2094,7 +2097,7 @@ namespace XidiTest
     Controller::ForceFeedback::Device* const forceFeedbackDevice =
         &physicalController.GetForceFeedbackDevice();
 
-    VirtualDirectInputDevice<ECharMode::W> diController(CreateTestVirtualController());
+    VirtualDirectInputDevice<EDirectInputVersion::k8W> diController(CreateTestVirtualController());
     TEST_ASSERT(DI_OK == diController.SetDataFormat(&kTestFormatSpec));
     TEST_ASSERT(
         DI_OK == diController.SetCooperativeLevel(nullptr, DISCL_EXCLUSIVE | DISCL_FOREGROUND));
@@ -2114,7 +2117,7 @@ namespace XidiTest
         .cbTypeSpecificParams = sizeof(DICONSTANTFORCE),
         .lpvTypeSpecificParams = (LPVOID)&constantForceParams};
 
-    VirtualDirectInputEffect<ECharMode::W>* diEffect = nullptr;
+    VirtualDirectInputEffect<EDirectInputVersion::k8W>* diEffect = nullptr;
     TEST_ASSERT(
         DI_OK ==
         diController.CreateEffect(
@@ -2134,7 +2137,7 @@ namespace XidiTest
     Controller::ForceFeedback::Device* const forceFeedbackDevice =
         &physicalController.GetForceFeedbackDevice();
 
-    VirtualDirectInputDevice<ECharMode::W> diController(CreateTestVirtualController());
+    VirtualDirectInputDevice<EDirectInputVersion::k8W> diController(CreateTestVirtualController());
     TEST_ASSERT(DI_OK == diController.SetDataFormat(&kTestFormatSpec));
     TEST_ASSERT(
         DI_OK == diController.SetCooperativeLevel(nullptr, DISCL_NONEXCLUSIVE | DISCL_FOREGROUND));
@@ -2154,7 +2157,7 @@ namespace XidiTest
         .cbTypeSpecificParams = sizeof(DICONSTANTFORCE),
         .lpvTypeSpecificParams = (LPVOID)&constantForceParams};
 
-    VirtualDirectInputEffect<ECharMode::W>* diEffect = nullptr;
+    VirtualDirectInputEffect<EDirectInputVersion::k8W>* diEffect = nullptr;
     TEST_ASSERT(
         DI_OK ==
         diController.CreateEffect(
@@ -2181,7 +2184,7 @@ namespace XidiTest
     for (const auto& expectedSeenGuid : kExpectedSeenGuids)
     {
       if (false ==
-          VirtualDirectInputDevice<ECharMode::W>::ForceFeedbackEffectCanCreateObject(
+          VirtualDirectInputDevice<EDirectInputVersion::k8W>::ForceFeedbackEffectCanCreateObject(
               expectedSeenGuid))
         actualSeenGuids.insert(expectedSeenGuid);
     }
@@ -2192,7 +2195,7 @@ namespace XidiTest
          DIEP_SAMPLEPERIOD | DIEP_STARTDELAY | DIEP_TYPESPECIFICPARAMS);
 
     MockPhysicalController physicalController(kTestControllerIdentifier, kTestMapper);
-    VirtualDirectInputDevice<ECharMode::W> diController(CreateTestVirtualController());
+    VirtualDirectInputDevice<EDirectInputVersion::k8W> diController(CreateTestVirtualController());
     const HRESULT enumEffectsResult = diController.EnumEffects(
         [](LPCDIEFFECTINFO pdei, LPVOID pvRef) -> BOOL
         {
@@ -2222,13 +2225,13 @@ namespace XidiTest
   TEST_CASE(VirtualDirectInputDevice_ForceFeedback_GetInfoAll)
   {
     MockPhysicalController physicalController(kTestControllerIdentifier, kTestMapper);
-    VirtualDirectInputDevice<ECharMode::W> diController(CreateTestVirtualController());
+    VirtualDirectInputDevice<EDirectInputVersion::k8W> diController(CreateTestVirtualController());
 
     const HRESULT enumEffectsResult = diController.EnumEffects(
         [](LPCDIEFFECTINFO pdei, LPVOID pvRef) -> BOOL
         {
-          VirtualDirectInputDevice<ECharMode::W>& diController =
-              *((VirtualDirectInputDevice<ECharMode::W>*)pvRef);
+          VirtualDirectInputDevice<EDirectInputVersion::k8W>& diController =
+              *((VirtualDirectInputDevice<EDirectInputVersion::k8W>*)pvRef);
           TEST_ASSERT((nullptr != pdei) && (nullptr != pvRef));
 
           DIEFFECTINFO effectInfo = {.dwSize = sizeof(DIEFFECTINFO)};
@@ -2248,7 +2251,7 @@ namespace XidiTest
   TEST_CASE(VirtualDirectInputDevice_ForceFeedback_GetInfoUnsupported)
   {
     MockPhysicalController physicalController(kTestControllerIdentifier, kTestMapper);
-    VirtualDirectInputDevice<ECharMode::W> diController(CreateTestVirtualController());
+    VirtualDirectInputDevice<EDirectInputVersion::k8W> diController(CreateTestVirtualController());
     DIEFFECTINFO effectInfo = {.dwSize = sizeof(DIEFFECTINFO)};
     TEST_ASSERT(DI_OK != diController.GetEffectInfo(&effectInfo, {}));
   }
@@ -2262,7 +2265,7 @@ namespace XidiTest
     for (const auto& expectedSeenGuid : kExpectedSeenGuids)
     {
       if (false ==
-          VirtualDirectInputDevice<ECharMode::W>::ForceFeedbackEffectCanCreateObject(
+          VirtualDirectInputDevice<EDirectInputVersion::k8W>::ForceFeedbackEffectCanCreateObject(
               expectedSeenGuid))
         actualSeenGuids.insert(expectedSeenGuid);
     }
@@ -2270,7 +2273,7 @@ namespace XidiTest
     constexpr DWORD kExpectedEffectType = DIEFT_CONSTANTFORCE;
 
     MockPhysicalController physicalController(kTestControllerIdentifier, kTestMapper);
-    VirtualDirectInputDevice<ECharMode::W> diController(CreateTestVirtualController());
+    VirtualDirectInputDevice<EDirectInputVersion::k8W> diController(CreateTestVirtualController());
     const HRESULT enumEffectsResult = diController.EnumEffects(
         [](LPCDIEFFECTINFO pdei, LPVOID pvRef) -> BOOL
         {
@@ -2302,7 +2305,7 @@ namespace XidiTest
     for (const auto& expectedSeenGuid : kExpectedSeenGuids)
     {
       if (false ==
-          VirtualDirectInputDevice<ECharMode::W>::ForceFeedbackEffectCanCreateObject(
+          VirtualDirectInputDevice<EDirectInputVersion::k8W>::ForceFeedbackEffectCanCreateObject(
               expectedSeenGuid))
         actualSeenGuids.insert(expectedSeenGuid);
     }
@@ -2310,7 +2313,7 @@ namespace XidiTest
     constexpr DWORD kExpectedEffectType = DIEFT_RAMPFORCE;
 
     MockPhysicalController physicalController(kTestControllerIdentifier, kTestMapper);
-    VirtualDirectInputDevice<ECharMode::W> diController(CreateTestVirtualController());
+    VirtualDirectInputDevice<EDirectInputVersion::k8W> diController(CreateTestVirtualController());
     const HRESULT enumEffectsResult = diController.EnumEffects(
         [](LPCDIEFFECTINFO pdei, LPVOID pvRef) -> BOOL
         {
@@ -2343,7 +2346,7 @@ namespace XidiTest
     for (const auto& expectedSeenGuid : kExpectedSeenGuids)
     {
       if (false ==
-          VirtualDirectInputDevice<ECharMode::W>::ForceFeedbackEffectCanCreateObject(
+          VirtualDirectInputDevice<EDirectInputVersion::k8W>::ForceFeedbackEffectCanCreateObject(
               expectedSeenGuid))
         actualSeenGuids.insert(expectedSeenGuid);
     }
@@ -2351,7 +2354,7 @@ namespace XidiTest
     constexpr DWORD kExpectedEffectType = DIEFT_PERIODIC;
 
     MockPhysicalController physicalController(kTestControllerIdentifier, kTestMapper);
-    VirtualDirectInputDevice<ECharMode::W> diController(CreateTestVirtualController());
+    VirtualDirectInputDevice<EDirectInputVersion::k8W> diController(CreateTestVirtualController());
     const HRESULT enumEffectsResult = diController.EnumEffects(
         [](LPCDIEFFECTINFO pdei, LPVOID pvRef) -> BOOL
         {
@@ -2383,7 +2386,7 @@ namespace XidiTest
     for (const auto& expectedSeenGuid : kExpectedSeenGuids)
     {
       if (false ==
-          VirtualDirectInputDevice<ECharMode::W>::ForceFeedbackEffectCanCreateObject(
+          VirtualDirectInputDevice<EDirectInputVersion::k8W>::ForceFeedbackEffectCanCreateObject(
               expectedSeenGuid))
         actualSeenGuids.insert(expectedSeenGuid);
     }
@@ -2391,7 +2394,7 @@ namespace XidiTest
     constexpr DWORD kExpectedEffectType = DIEFT_CUSTOMFORCE;
 
     MockPhysicalController physicalController(kTestControllerIdentifier, kTestMapper);
-    VirtualDirectInputDevice<ECharMode::W> diController(CreateTestVirtualController());
+    VirtualDirectInputDevice<EDirectInputVersion::k8W> diController(CreateTestVirtualController());
     const HRESULT enumEffectsResult = diController.EnumEffects(
         [](LPCDIEFFECTINFO pdei, LPVOID pvRef) -> BOOL
         {
@@ -2421,7 +2424,7 @@ namespace XidiTest
     constexpr DWORD kExpectedEffectType = DIEFT_STARTDELAY;
 
     MockPhysicalController physicalController(kTestControllerIdentifier, kTestMapper);
-    VirtualDirectInputDevice<ECharMode::W> diController(CreateTestVirtualController());
+    VirtualDirectInputDevice<EDirectInputVersion::k8W> diController(CreateTestVirtualController());
     const HRESULT enumEffectsResult = diController.EnumEffects(
         [](LPCDIEFFECTINFO pdei, LPVOID pvRef) -> BOOL
         {
@@ -2444,7 +2447,7 @@ namespace XidiTest
     const GUID kEffectGuid = GUID_ConstantForce;
 
     MockPhysicalController physicalController(kTestControllerIdentifier, kTestMapper);
-    VirtualDirectInputDevice<ECharMode::W> diController(CreateTestVirtualController());
+    VirtualDirectInputDevice<EDirectInputVersion::k8W> diController(CreateTestVirtualController());
 
     for (int i = 0; i < kNumTestEffects; ++i)
     {
@@ -2480,7 +2483,7 @@ namespace XidiTest
     const GUID kEffectGuid = GUID_ConstantForce;
 
     MockPhysicalController physicalController(kTestControllerIdentifier, kTestMapper);
-    VirtualDirectInputDevice<ECharMode::W> diController(CreateTestVirtualController());
+    VirtualDirectInputDevice<EDirectInputVersion::k8W> diController(CreateTestVirtualController());
 
     for (int i = 0; i < kNumTestEffects; ++i)
     {
@@ -2521,7 +2524,7 @@ namespace XidiTest
     const GUID kEffectGuid = GUID_ConstantForce;
 
     MockPhysicalController physicalController(kTestControllerIdentifier, kTestMapper);
-    VirtualDirectInputDevice<ECharMode::W> diController(CreateTestVirtualController());
+    VirtualDirectInputDevice<EDirectInputVersion::k8W> diController(CreateTestVirtualController());
 
     for (int i = 0; i < kNumTestEffects; ++i)
     {
@@ -2561,7 +2564,7 @@ namespace XidiTest
     const GUID kEffectGuid = GUID_ConstantForce;
 
     MockPhysicalController physicalController(kTestControllerIdentifier, kTestMapper);
-    VirtualDirectInputDevice<ECharMode::W> diController(CreateTestVirtualController());
+    VirtualDirectInputDevice<EDirectInputVersion::k8W> diController(CreateTestVirtualController());
 
     for (int i = 0; i < kNumTestEffects; ++i)
     {
@@ -2611,7 +2614,7 @@ namespace XidiTest
     Controller::ForceFeedback::Device* const forceFeedbackDevice =
         &physicalController.GetForceFeedbackDevice();
 
-    VirtualDirectInputDevice<ECharMode::W> diController(CreateTestVirtualController());
+    VirtualDirectInputDevice<EDirectInputVersion::k8W> diController(CreateTestVirtualController());
     TEST_ASSERT(DI_OK == diController.SetDataFormat(&kTestFormatSpec));
 
     // Non-exclusive acquisition.
@@ -2642,7 +2645,7 @@ namespace XidiTest
     Controller::ForceFeedback::Device* const forceFeedbackDevice =
         &physicalController.GetForceFeedbackDevice();
 
-    VirtualDirectInputDevice<ECharMode::W> diController(CreateTestVirtualController());
+    VirtualDirectInputDevice<EDirectInputVersion::k8W> diController(CreateTestVirtualController());
     TEST_ASSERT(DI_OK == diController.SetDataFormat(&kTestFormatSpec));
 
     DWORD ffState = 0;

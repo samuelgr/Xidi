@@ -22,6 +22,14 @@ namespace Xidi
 {
   namespace ExportApiDirectInput
   {
+    static constexpr DWORD dinputVersion8Min = 0x0800;
+    static constexpr DWORD dinputVersion8Max = 0x08ff;
+
+    static constexpr DWORD dinputVersionLegacyMin = 0x0200;
+    static constexpr DWORD dinputVersionLegacyMax = 0x07ff;
+
+    static constexpr DWORD dinputVersionLegacy = 0x0700;
+
     /// Logs an error event indicating that an instance of IDirectInput(8) could not be created due
     /// to a version out-of-range error.
     /// @param [in] minVersion Minimum allowed version.
@@ -66,15 +74,14 @@ namespace Xidi
           Infra::Message::ESeverity::Info, L"Successfully created a DirectInput interface object.");
     }
 
-#if DIRECTINPUT_VERSION >= 0x0800
     HRESULT __stdcall DirectInput8Create(
         HINSTANCE hinst, DWORD dwVersion, REFIID riidltf, LPVOID* ppvOut, LPUNKNOWN punkOuter)
     {
       void* diObject = nullptr;
 
-      if (dwVersion < DINPUT_VER_MIN || dwVersion > DINPUT_VER_MAX)
+      if (dwVersion < dinputVersion8Min || dwVersion > dinputVersion8Max)
       {
-        LogVersionOutOfRange(DINPUT_VER_MIN, DINPUT_VER_MAX, dwVersion);
+        LogVersionOutOfRange(dinputVersion8Min, dinputVersion8Max, dwVersion);
         return DIERR_INVALIDPARAM;
       }
 
@@ -84,8 +91,8 @@ namespace Xidi
         return DIERR_INVALIDPARAM;
       }
 
-      HRESULT result =
-          ImportApiDirectInput::DirectInput8Create(hinst, dwVersion, riidltf, &diObject, punkOuter);
+      HRESULT result = ImportApiDirectInput::Version8::DirectInput8Create(
+          hinst, dwVersion, riidltf, &diObject, punkOuter);
       if (DI_OK != result)
       {
         LogSystemCreateError(result);
@@ -93,36 +100,39 @@ namespace Xidi
       }
 
       if (IID_IDirectInput8W == riidltf)
-        diObject = new WrapperIDirectInput<ECharMode::W>((IDirectInput8W*)diObject);
+        diObject = new WrapperIDirectInput<EDirectInputVersion::k8W>(
+            reinterpret_cast<IDirectInput8W*>(diObject));
       else
-        diObject = new WrapperIDirectInput<ECharMode::A>((IDirectInput8A*)diObject);
+        diObject = new WrapperIDirectInput<EDirectInputVersion::k8A>(
+            reinterpret_cast<IDirectInput8A*>(diObject));
 
       *ppvOut = (LPVOID)diObject;
 
       LogSystemCreateSuccess();
       return result;
     }
-#else
+
     HRESULT __stdcall DirectInputCreateA(
         HINSTANCE hinst, DWORD dwVersion, LPDIRECTINPUTA* ppDI, LPUNKNOWN punkOuter)
     {
       IDirectInputA* diObject = nullptr;
 
-      if (dwVersion < DINPUT_VER_MIN || dwVersion > DINPUT_VER_MAX)
+      if (dwVersion < dinputVersionLegacyMin || dwVersion > dinputVersionLegacyMax)
       {
-        LogVersionOutOfRange(DINPUT_VER_MIN, DINPUT_VER_MAX, dwVersion);
+        LogVersionOutOfRange(dinputVersionLegacyMin, dinputVersionLegacyMax, dwVersion);
         return E_FAIL;
       }
 
-      HRESULT result = ImportApiDirectInput::DirectInputCreateA(
-          hinst, DIRECTINPUT_VERSION, (LPDIRECTINPUTA*)&diObject, punkOuter);
+      HRESULT result = ImportApiDirectInput::VersionLegacy::DirectInputCreateA(
+          hinst, dinputVersionLegacy, reinterpret_cast<LPDIRECTINPUTA*>(&diObject), punkOuter);
       if (DI_OK != result)
       {
         LogSystemCreateError(result);
         return result;
       }
 
-      diObject = new WrapperIDirectInput<ECharMode::A>((LatestIDirectInputA*)diObject);
+      diObject = new WrapperIDirectInput<EDirectInputVersion::kLegacyA>(
+          reinterpret_cast<IDirectInput7A*>(diObject));
       *ppDI = (LPDIRECTINPUTA)diObject;
 
       LogSystemCreateSuccess();
@@ -134,21 +144,22 @@ namespace Xidi
     {
       IDirectInput* diObject = nullptr;
 
-      if (dwVersion < DINPUT_VER_MIN || dwVersion > DINPUT_VER_MAX)
+      if (dwVersion < dinputVersionLegacyMin || dwVersion > dinputVersionLegacyMax)
       {
-        LogVersionOutOfRange(DINPUT_VER_MIN, DINPUT_VER_MAX, dwVersion);
+        LogVersionOutOfRange(dinputVersionLegacyMin, dinputVersionLegacyMax, dwVersion);
         return E_FAIL;
       }
 
-      HRESULT result = ImportApiDirectInput::DirectInputCreateW(
-          hinst, DIRECTINPUT_VERSION, (LPDIRECTINPUTW*)&diObject, punkOuter);
+      HRESULT result = ImportApiDirectInput::VersionLegacy::DirectInputCreateW(
+          hinst, dinputVersionLegacy, reinterpret_cast<LPDIRECTINPUTW*>(&diObject), punkOuter);
       if (DI_OK != result)
       {
         LogSystemCreateError(result);
         return result;
       }
 
-      diObject = new WrapperIDirectInput<ECharMode::W>((LatestIDirectInputW*)diObject);
+      diObject = new WrapperIDirectInput<EDirectInputVersion::kLegacyW>(
+          reinterpret_cast<IDirectInput7W*>(diObject));
       *ppDI = (LPDIRECTINPUTW)diObject;
 
       LogSystemCreateSuccess();
@@ -160,9 +171,9 @@ namespace Xidi
     {
       void* diObject = nullptr;
 
-      if (dwVersion < DINPUT_VER_MIN || dwVersion > DINPUT_VER_MAX)
+      if (dwVersion < dinputVersionLegacyMin || dwVersion > dinputVersionLegacyMax)
       {
-        LogVersionOutOfRange(DINPUT_VER_MIN, DINPUT_VER_MAX, dwVersion);
+        LogVersionOutOfRange(dinputVersionLegacyMin, dinputVersionLegacyMax, dwVersion);
         return E_FAIL;
       }
 
@@ -181,13 +192,13 @@ namespace Xidi
           IID_IDirectInput7W == riidltf)
       {
         useUnicode = TRUE;
-        result = ImportApiDirectInput::DirectInputCreateEx(
-            hinst, DIRECTINPUT_VERSION, IID_IDirectInput7W, (LPVOID*)&diObject, punkOuter);
+        result = ImportApiDirectInput::VersionLegacy::DirectInputCreateEx(
+            hinst, dinputVersionLegacy, riidltf, &diObject, punkOuter);
       }
       else
       {
-        result = ImportApiDirectInput::DirectInputCreateEx(
-            hinst, DIRECTINPUT_VERSION, IID_IDirectInput7A, (LPVOID*)&diObject, punkOuter);
+        result = ImportApiDirectInput::VersionLegacy::DirectInputCreateEx(
+            hinst, dinputVersionLegacy, riidltf, &diObject, punkOuter);
       }
 
       if (DI_OK != result)
@@ -197,25 +208,26 @@ namespace Xidi
       }
 
       if (TRUE == useUnicode)
-        diObject = new WrapperIDirectInput<ECharMode::W>((LatestIDirectInputW*)diObject);
+        diObject = new WrapperIDirectInput<EDirectInputVersion::kLegacyW>(
+            reinterpret_cast<IDirectInput7W*>(diObject));
       else
-        diObject = new WrapperIDirectInput<ECharMode::A>((LatestIDirectInputA*)diObject);
+        diObject = new WrapperIDirectInput<EDirectInputVersion::kLegacyA>(
+            reinterpret_cast<IDirectInput7A*>(diObject));
 
       *ppvOut = diObject;
 
       LogSystemCreateSuccess();
       return result;
     }
-#endif
 
     HRESULT __stdcall DllRegisterServer(void)
     {
-      return ImportApiDirectInput::DllRegisterServer();
+      return ImportApiDirectInput::Version8::DllRegisterServer();
     }
 
     HRESULT __stdcall DllUnregisterServer(void)
     {
-      return ImportApiDirectInput::DllUnregisterServer();
+      return ImportApiDirectInput::Version8::DllUnregisterServer();
     }
 
     HRESULT __stdcall DllCanUnloadNow(void)
@@ -248,7 +260,44 @@ namespace Xidi
       Infra::Message::Output(
           Infra::Message::ESeverity::Info,
           L"DllGetClassObject is not intercepting the class object request because the class ID is unsupported.");
-      return ImportApiDirectInput::DllGetClassObject(rclsid, riid, ppv);
+      return ImportApiDirectInput::Version8::DllGetClassObject(rclsid, riid, ppv);
+    }
+
+    HRESULT __stdcall LegacyDllRegisterServer(void)
+    {
+      return ImportApiDirectInput::VersionLegacy::DllRegisterServer();
+    }
+
+    HRESULT __stdcall LegacyDllUnregisterServer(void)
+    {
+      return ImportApiDirectInput::VersionLegacy::DllUnregisterServer();
+    }
+
+    HRESULT __stdcall LegacyDllGetClassObject(REFCLSID rclsid, REFIID riid, LPVOID* ppv)
+    {
+      if (DirectInputClassFactory::CanCreateObjectsOfClass(rclsid))
+      {
+        if (IsEqualIID(IID_IClassFactory, riid))
+        {
+          Infra::Message::Output(
+              Infra::Message::ESeverity::Info,
+              L"DllGetClassObject is intercepting the class object request because the class ID is supported and the interface ID is correct.");
+          *ppv = DirectInputClassFactory::GetInstance();
+          return S_OK;
+        }
+        else
+        {
+          Infra::Message::Output(
+              Infra::Message::ESeverity::Warning,
+              L"DllGetClassObject failed to intercept the class object request because the class ID is supported but the interface ID is incorrect.");
+          return E_NOINTERFACE;
+        }
+      }
+
+      Infra::Message::Output(
+          Infra::Message::ESeverity::Info,
+          L"DllGetClassObject is not intercepting the class object request because the class ID is unsupported.");
+      return ImportApiDirectInput::VersionLegacy::DllGetClassObject(rclsid, riid, ppv);
     }
 
   } // namespace ExportApiDirectInput

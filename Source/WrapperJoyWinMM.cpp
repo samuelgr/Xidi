@@ -83,7 +83,7 @@ namespace Xidi
     struct SWinMMEnumCallbackInfo
     {
       std::vector<std::pair<std::wstring, bool>>* systemDeviceInfo;
-      IDirectInput8* directInputInterface;
+      IDirectInput8W* directInputInterface;
     };
 
     /// Fixed set of virtual controllers.
@@ -234,9 +234,8 @@ namespace Xidi
       SWinMMEnumCallbackInfo* callbackInfo = (SWinMMEnumCallbackInfo*)pvRef;
 
       std::wstring devicePath;
-      bool deviceSupportsXInput =
-          DoesDirectInputControllerSupportXInput<LatestIDirectInput, LatestIDirectInputDevice>(
-              callbackInfo->directInputInterface, lpddi->guidInstance, &devicePath);
+      bool deviceSupportsXInput = DoesDirectInputControllerSupportXInput<EDirectInputVersion::k8W>(
+          callbackInfo->directInputInterface, lpddi->guidInstance, &devicePath);
 
       if (deviceSupportsXInput)
       {
@@ -391,9 +390,9 @@ namespace Xidi
       // supports XInput.
       Infra::Message::Output(
           Infra::Message::ESeverity::Debug, L"Using DirectInput to detect XInput devices...");
-      IDirectInput8* directInputInterface = nullptr;
+      IDirectInput8W* directInputInterface = nullptr;
       if (S_OK !=
-          ImportApiDirectInput::DirectInput8Create(
+          ImportApiDirectInput::Version8::DirectInput8Create(
               Infra::ProcessInfo::GetThisModuleInstanceHandle(),
               DIRECTINPUT_VERSION,
               IID_IDirectInput8,

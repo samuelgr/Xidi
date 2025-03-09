@@ -47,18 +47,18 @@ namespace XidiTest
   /// Internally uses the mock force feedback effect type and does not require any type conversion
   /// between internal and DirectInput type-specific parameter structures.
   class TestVirtualDirectInputEffect : public VirtualDirectInputEffectWithTypeSpecificParameters<
-                                           ECharMode::W,
+                                           EDirectInputVersion::kLegacyW,
                                            SMockTypeSpecificParameters,
                                            SMockTypeSpecificParameters>
   {
   public:
 
     inline TestVirtualDirectInputEffect(
-        VirtualDirectInputDevice<ECharMode::W>& associatedDevice,
+        VirtualDirectInputDevice<EDirectInputVersion::kLegacyW>& associatedDevice,
         const MockEffectWithTypeSpecificParameters& effect,
         const GUID& effectGuid)
         : VirtualDirectInputEffectWithTypeSpecificParameters<
-              ECharMode::W,
+              EDirectInputVersion::kLegacyW,
               SMockTypeSpecificParameters,
               SMockTypeSpecificParameters>(associatedDevice, effect, effectGuid)
     {}
@@ -188,10 +188,11 @@ namespace XidiTest
   /// @param [in] controllerIdentifier Identifier of the controller to use when creating the
   /// underlying virtual controller object, defaults to the identifier at the top of this file.
   /// @return Smart pointer to a new virtual DirectInput device object.
-  static inline std::unique_ptr<VirtualDirectInputDevice<ECharMode::W>> CreateTestDirectInputDevice(
-      TControllerIdentifier controllerIdentifier = kTestControllerIdentifier)
+  static inline std::unique_ptr<VirtualDirectInputDevice<EDirectInputVersion::kLegacyW>>
+      CreateTestDirectInputDevice(
+          TControllerIdentifier controllerIdentifier = kTestControllerIdentifier)
   {
-    return std::make_unique<VirtualDirectInputDevice<ECharMode::W>>(
+    return std::make_unique<VirtualDirectInputDevice<EDirectInputVersion::kLegacyW>>(
         std::make_unique<VirtualController>(controllerIdentifier));
   }
 
@@ -203,12 +204,12 @@ namespace XidiTest
   /// @param [in] dataFormatSpec Pointer to a read-only DirectInput data packet format
   /// specification, defaults to using the data packet structure at the top of this file.
   /// @return Smart pointer to a new virtual DirectInput device object.
-  static inline std::unique_ptr<VirtualDirectInputDevice<ECharMode::W>>
+  static inline std::unique_ptr<VirtualDirectInputDevice<EDirectInputVersion::kLegacyW>>
       CreateAndAcquireTestDirectInputDevice(
           const MockPhysicalController& mockPhysicalController,
           LPCDIDATAFORMAT dataFormatSpec = &kTestFormatSpec)
   {
-    std::unique_ptr<VirtualDirectInputDevice<ECharMode::W>> newDirectInputDevice =
+    std::unique_ptr<VirtualDirectInputDevice<EDirectInputVersion::kLegacyW>> newDirectInputDevice =
         CreateTestDirectInputDevice(mockPhysicalController.GetControllerIdentifier());
     TEST_ASSERT(DI_OK == newDirectInputDevice->SetDataFormat(dataFormatSpec));
     TEST_ASSERT(
@@ -224,7 +225,7 @@ namespace XidiTest
   /// top of this file.
   /// @return Smart pointer to a new force feedback effect object.
   static inline std::unique_ptr<TestVirtualDirectInputEffect> CreateTestDirectInputEffect(
-      VirtualDirectInputDevice<ECharMode::W>& associatedDevice,
+      VirtualDirectInputDevice<EDirectInputVersion::kLegacyW>& associatedDevice,
       const GUID& effectGuid = kTestEffectGuid)
   {
     return std::make_unique<TestVirtualDirectInputEffect>(

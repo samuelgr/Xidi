@@ -19,22 +19,21 @@ namespace Xidi
   {
     extern "C"
     {
-#if DIRECTINPUT_VERSION >= 0x0800
       HRESULT __stdcall DirectInput8Create(
           HINSTANCE hinst, DWORD dwVersion, REFIID riidltf, LPVOID* ppvOut, LPUNKNOWN punkOuter);
-#else
       HRESULT __stdcall DirectInputCreateA(
           HINSTANCE hinst, DWORD dwVersion, LPDIRECTINPUTA* ppDI, LPUNKNOWN punkOuter);
       HRESULT __stdcall DirectInputCreateW(
           HINSTANCE hinst, DWORD dwVersion, LPDIRECTINPUTW* ppDI, LPUNKNOWN punkOuter);
       HRESULT __stdcall DirectInputCreateEx(
           HINSTANCE hinst, DWORD dwVersion, REFIID riidltf, LPVOID* ppvOut, LPUNKNOWN punkOuter);
-#endif
-
       HRESULT __stdcall DllRegisterServer(void);
       HRESULT __stdcall DllUnregisterServer(void);
       HRESULT __stdcall DllCanUnloadNow(void);
       HRESULT __stdcall DllGetClassObject(REFCLSID rclsid, REFIID riid, LPVOID* ppv);
+      HRESULT __stdcall LegacyDllRegisterServer(void);
+      HRESULT __stdcall LegacyDllUnregisterServer(void);
+      HRESULT __stdcall LegacyDllGetClassObject(REFCLSID rclsid, REFIID riid, LPVOID* ppv);
     }
   } // namespace ExportApiDirectInput
 } // namespace Xidi

@@ -31,13 +31,13 @@
 namespace Xidi
 {
   /// Contains all information required to intercept callbacks to EnumDevices.
-  template <ECharMode charMode> struct SEnumDevicesCallbackInfo
+  template <EDirectInputVersion diVersion> struct SEnumDevicesCallbackInfo
   {
-    /// #WrapperIDirectInput instance that invoked the enumeration.
-    WrapperIDirectInput<charMode>* instance;
+    /// #WrapperIDirectInputBase instance that invoked the enumeration.
+    WrapperIDirectInputBase<diVersion>* instance;
 
     /// Application-specified callback that should be invoked.
-    typename DirectInputType<charMode>::EnumDevicesCallbackType lpCallback;
+    typename DirectInputTypes<diVersion>::EnumDevicesCallbackType lpCallback;
 
     /// Application-specified argument to be provided to the application-specified callback.
     LPVOID pvRef;
@@ -49,47 +49,20 @@ namespace Xidi
     std::unordered_set<GUID> seenInstanceIdentifiers;
   };
 
-  template <ECharMode charMode> WrapperIDirectInput<charMode>::WrapperIDirectInput(
-      DirectInputType<charMode>::LatestIDirectInputType* underlyingDIObject)
+  template <EDirectInputVersion diVersion> WrapperIDirectInputBase<diVersion>::
+      WrapperIDirectInputBase(DirectInputTypes<diVersion>::IDirectInputType* underlyingDIObject)
       : underlyingDIObject(underlyingDIObject)
   {}
 
-  template <ECharMode charMode> HRESULT __stdcall WrapperIDirectInput<charMode>::QueryInterface(
-      REFIID riid, LPVOID* ppvObj)
+  template <EDirectInputVersion diVersion> HRESULT __stdcall WrapperIDirectInputBase<
+      diVersion>::QueryInterface(REFIID riid, LPVOID* ppvObj)
   {
     void* interfacePtr = nullptr;
     const HRESULT result = underlyingDIObject->QueryInterface(riid, &interfacePtr);
 
     if (S_OK == result)
     {
-      bool shouldWrapInterface = false;
-
-      if (ECharMode::W == charMode)
-      {
-#if DIRECTINPUT_VERSION >= 0x0800
-        if (IsEqualIID(riid, IID_IUnknown) || IsEqualIID(riid, IID_IDirectInput8W))
-#else
-        if (IsEqualIID(riid, IID_IUnknown) || IsEqualIID(riid, IID_IDirectInput7W) ||
-            IsEqualIID(riid, IID_IDirectInput2W) || IsEqualIID(riid, IID_IDirectInputW))
-#endif
-        {
-          shouldWrapInterface = true;
-        }
-      }
-      else
-      {
-#if DIRECTINPUT_VERSION >= 0x0800
-        if (IsEqualIID(riid, IID_IUnknown) || IsEqualIID(riid, IID_IDirectInput8A))
-#else
-        if (IsEqualIID(riid, IID_IUnknown) || IsEqualIID(riid, IID_IDirectInput7A) ||
-            IsEqualIID(riid, IID_IDirectInput2A) || IsEqualIID(riid, IID_IDirectInputA))
-#endif
-        {
-          shouldWrapInterface = true;
-        }
-      }
-
-      if (true == shouldWrapInterface)
+      if (true == DirectInputTypes<diVersion>::IsCompatibleDirectInputIID(riid))
         *ppvObj = this;
       else
         *ppvObj = interfacePtr;
@@ -98,12 +71,14 @@ namespace Xidi
     return result;
   }
 
-  template <ECharMode charMode> ULONG __stdcall WrapperIDirectInput<charMode>::AddRef(void)
+  template <EDirectInputVersion diVersion> ULONG __stdcall WrapperIDirectInputBase<
+      diVersion>::AddRef(void)
   {
     return underlyingDIObject->AddRef();
   }
 
-  template <ECharMode charMode> ULONG __stdcall WrapperIDirectInput<charMode>::Release(void)
+  template <EDirectInputVersion diVersion> ULONG __stdcall WrapperIDirectInputBase<
+      diVersion>::Release(void)
   {
     const ULONG numRemainingRefs = underlyingDIObject->Release();
 
@@ -112,10 +87,11 @@ namespace Xidi
     return numRemainingRefs;
   }
 
-  template <ECharMode charMode> HRESULT __stdcall WrapperIDirectInput<charMode>::CreateDevice(
-      REFGUID rguid,
-      DirectInputType<charMode>::EarliestIDirectInputDeviceType** lplpDirectInputDevice,
-      LPUNKNOWN pUnkOuter)
+  template <EDirectInputVersion diVersion> HRESULT __stdcall WrapperIDirectInputBase<diVersion>::
+      CreateDevice(
+          REFGUID rguid,
+          DirectInputTypes<diVersion>::IDirectInputDeviceCompatType** lplpDirectInputDevice,
+          LPUNKNOWN pUnkOuter)
   {
     // Check if the specified instance GUID is an Xidi virtual controller GUID.
     const std::optional<Controller::TControllerIdentifier> maybeVirtualControllerId =
@@ -125,7 +101,7 @@ namespace Xidi
     {
       // Not a virtual controller GUID, so just create the device as requested by the application.
       // However, first dump some information about the device.
-      typename DirectInputType<charMode>::EarliestIDirectInputDeviceType* createdDevice = nullptr;
+      typename DirectInputTypes<diVersion>::IDirectInputDeviceCompatType* createdDevice = nullptr;
       const HRESULT createDeviceResult =
           underlyingDIObject->CreateDevice(rguid, &createdDevice, pUnkOuter);
       if (DI_OK == createDeviceResult)
@@ -144,14 +120,12 @@ namespace Xidi
         }
         else
         {
-          typename DirectInputType<charMode>::DeviceInstanceType deviceInfo = {
-              .dwSize = sizeof(typename DirectInputType<charMode>::DeviceInstanceType)};
+          typename DirectInputTypes<diVersion>::DeviceInstanceType deviceInfo = {
+              .dwSize = sizeof(typename DirectInputTypes<diVersion>::DeviceInstanceType)};
           const HRESULT deviceInfoResult = createdDevice->GetDeviceInfo(&deviceInfo);
 
-          const bool deviceSupportsXInput = DoesDirectInputControllerSupportXInput<
-              typename DirectInputType<charMode>::EarliestIDirectInputType,
-              typename DirectInputType<charMode>::EarliestIDirectInputDeviceType>(
-              underlyingDIObject, rguid);
+          const bool deviceSupportsXInput =
+              DoesDirectInputControllerSupportXInput<diVersion>(underlyingDIObject, rguid);
           if (true == deviceSupportsXInput)
           {
             if (Infra::Message::WillOutputMessageOfSeverity(Infra::Message::ESeverity::Info))
@@ -204,8 +178,8 @@ namespace Xidi
 
       // Is a virtual controller GUID, so create a virtual controller wrapped with a DirectInput
       // interface.
-      VirtualDirectInputDevice<charMode>* const newDirectInputDeviceInterfaceObject =
-          new VirtualDirectInputDevice<charMode>(
+      VirtualDirectInputDevice<diVersion>* const newDirectInputDeviceInterfaceObject =
+          new VirtualDirectInputDevice<diVersion>(
               std::make_unique<Controller::VirtualController>(virtualControllerId));
       *lplpDirectInputDevice = newDirectInputDeviceInterfaceObject;
 
@@ -223,24 +197,21 @@ namespace Xidi
     }
   }
 
-  template <ECharMode charMode> HRESULT __stdcall WrapperIDirectInput<charMode>::EnumDevices(
-      DWORD dwDevType,
-      DirectInputType<charMode>::EnumDevicesCallbackType lpCallback,
-      LPVOID pvRef,
-      DWORD dwFlags)
+  template <EDirectInputVersion diVersion> HRESULT __stdcall WrapperIDirectInputBase<diVersion>::
+      EnumDevices(
+          DWORD dwDevType,
+          DirectInputTypes<diVersion>::EnumDevicesCallbackType lpCallback,
+          LPVOID pvRef,
+          DWORD dwFlags)
   {
-#if DIRECTINPUT_VERSION >= 0x0800
+    const DWORD gameControllerDevClass = 4; // DI8DEVCLASS_GAMECTRL, DIDEVTYPE_JOYSTICK
+    const DWORD allDevicesDevClass = 0;     // DI8DEVCLASS_ALL, undefined for legacy
     const BOOL gameControllersRequested =
-        (DI8DEVCLASS_ALL == dwDevType || DI8DEVCLASS_GAMECTRL == dwDevType);
-    const DWORD gameControllerDevClass = DI8DEVCLASS_GAMECTRL;
-#else
-    const BOOL gameControllersRequested = (0 == dwDevType || DIDEVTYPE_JOYSTICK == dwDevType);
-    const DWORD gameControllerDevClass = DIDEVTYPE_JOYSTICK;
-#endif
+        ((allDevicesDevClass == dwDevType) || (gameControllerDevClass == dwDevType));
 
     const bool forceFeedbackControllersOnly = (0 != (dwFlags & DIEDFL_FORCEFEEDBACK));
 
-    SEnumDevicesCallbackInfo<charMode> callbackInfo;
+    SEnumDevicesCallbackInfo<diVersion> callbackInfo;
     callbackInfo.instance = this;
     callbackInfo.lpCallback = lpCallback;
     callbackInfo.pvRef = pvRef;
@@ -266,7 +237,7 @@ namespace Xidi
       // scan for XInput devices.
       enumResult = underlyingDIObject->EnumDevices(
           dwDevType,
-          &WrapperIDirectInput<charMode>::CallbackEnumGameControllersXInputScan,
+          &WrapperIDirectInputBase<diVersion>::CallbackEnumGameControllersXInputScan,
           (LPVOID)&callbackInfo,
           (dwFlags & ~(DIEDFL_FORCEFEEDBACK)));
       if (DI_OK != enumResult) return enumResult;
@@ -287,7 +258,7 @@ namespace Xidi
       if (systemHasXInputDevices)
       {
         callbackInfo.callbackReturnCode =
-            EnumerateVirtualControllers(lpCallback, pvRef, forceFeedbackControllersOnly);
+            EnumerateVirtualControllers<diVersion>(lpCallback, pvRef, forceFeedbackControllersOnly);
 
         if (DIENUM_STOP == callbackInfo.callbackReturnCode)
         {
@@ -315,7 +286,7 @@ namespace Xidi
       if (!systemHasXInputDevices)
       {
         callbackInfo.callbackReturnCode =
-            EnumerateVirtualControllers(lpCallback, pvRef, forceFeedbackControllersOnly);
+            EnumerateVirtualControllers<diVersion>(lpCallback, pvRef, forceFeedbackControllersOnly);
 
         if (DIENUM_STOP == callbackInfo.callbackReturnCode)
         {
@@ -344,14 +315,17 @@ namespace Xidi
     return enumResult;
   }
 
-  template <ECharMode charMode> HRESULT __stdcall WrapperIDirectInput<charMode>::FindDevice(
-      REFGUID rguidClass, DirectInputType<charMode>::ConstStringType ptszName, LPGUID pguidInstance)
+  template <EDirectInputVersion diVersion> HRESULT __stdcall WrapperIDirectInputBase<diVersion>::
+      FindDevice(
+          REFGUID rguidClass,
+          DirectInputTypes<diVersion>::ConstStringType ptszName,
+          LPGUID pguidInstance)
   {
     return underlyingDIObject->FindDevice(rguidClass, ptszName, pguidInstance);
   }
 
-  template <ECharMode charMode> HRESULT __stdcall WrapperIDirectInput<charMode>::GetDeviceStatus(
-      REFGUID rguidInstance)
+  template <EDirectInputVersion diVersion> HRESULT __stdcall WrapperIDirectInputBase<
+      diVersion>::GetDeviceStatus(REFGUID rguidInstance)
   {
     // Check if the specified instance GUID is an XInput GUID.
     const std::optional<Controller::TControllerIdentifier> maybeVirtualControllerId =
@@ -369,29 +343,27 @@ namespace Xidi
     }
   }
 
-  template <ECharMode charMode> HRESULT __stdcall WrapperIDirectInput<charMode>::Initialize(
-      HINSTANCE hinst, DWORD dwVersion)
+  template <EDirectInputVersion diVersion> HRESULT __stdcall WrapperIDirectInputBase<
+      diVersion>::Initialize(HINSTANCE hinst, DWORD dwVersion)
   {
     return underlyingDIObject->Initialize(hinst, dwVersion);
   }
 
-  template <ECharMode charMode> HRESULT __stdcall WrapperIDirectInput<charMode>::RunControlPanel(
-      HWND hwndOwner, DWORD dwFlags)
+  template <EDirectInputVersion diVersion> HRESULT __stdcall WrapperIDirectInputBase<
+      diVersion>::RunControlPanel(HWND hwndOwner, DWORD dwFlags)
   {
     return underlyingDIObject->RunControlPanel(hwndOwner, dwFlags);
   }
 
-  template <ECharMode charMode> BOOL __stdcall WrapperIDirectInput<charMode>::
+  template <EDirectInputVersion diVersion> BOOL __stdcall WrapperIDirectInputBase<diVersion>::
       CallbackEnumGameControllersXInputScan(
-          const DirectInputType<charMode>::DeviceInstanceType* lpddi, LPVOID pvRef)
+          const DirectInputTypes<diVersion>::DeviceInstanceType* lpddi, LPVOID pvRef)
   {
-    SEnumDevicesCallbackInfo<charMode>* callbackInfo = (SEnumDevicesCallbackInfo<charMode>*)pvRef;
+    SEnumDevicesCallbackInfo<diVersion>* callbackInfo = (SEnumDevicesCallbackInfo<diVersion>*)pvRef;
 
     // If the present controller supports XInput, indicate such by adding it to the set of instance
     // identifiers of interest.
-    if (DoesDirectInputControllerSupportXInput<
-            DirectInputType<charMode>::EarliestIDirectInputType,
-            DirectInputType<charMode>::EarliestIDirectInputDeviceType>(
+    if (DoesDirectInputControllerSupportXInput<diVersion>(
             callbackInfo->instance->underlyingDIObject, lpddi->guidInstance))
     {
       callbackInfo->seenInstanceIdentifiers.insert(lpddi->guidInstance);
@@ -419,11 +391,11 @@ namespace Xidi
     return DIENUM_CONTINUE;
   }
 
-  template <ECharMode charMode> BOOL __stdcall WrapperIDirectInput<charMode>::
+  template <EDirectInputVersion diVersion> BOOL __stdcall WrapperIDirectInputBase<diVersion>::
       CallbackEnumDevicesFiltered(
-          const DirectInputType<charMode>::DeviceInstanceType* lpddi, LPVOID pvRef)
+          const DirectInputTypes<diVersion>::DeviceInstanceType* lpddi, LPVOID pvRef)
   {
-    SEnumDevicesCallbackInfo<charMode>* callbackInfo = (SEnumDevicesCallbackInfo<charMode>*)pvRef;
+    SEnumDevicesCallbackInfo<diVersion>* callbackInfo = (SEnumDevicesCallbackInfo<diVersion>*)pvRef;
 
     // If the device has not been seen already, add it to the set and present it to the application.
     if (0 == callbackInfo->seenInstanceIdentifiers.count(lpddi->guidInstance))
@@ -439,7 +411,7 @@ namespace Xidi
 
       callbackInfo->seenInstanceIdentifiers.insert(lpddi->guidInstance);
       callbackInfo->callbackReturnCode =
-          ((BOOL(FAR PASCAL*)(const DirectInputType<charMode>::DeviceInstanceType*, LPVOID))(
+          ((BOOL(FAR PASCAL*)(const DirectInputTypes<diVersion>::DeviceInstanceType*, LPVOID))(
               callbackInfo->lpCallback))(lpddi, callbackInfo->pvRef);
       return callbackInfo->callbackReturnCode;
     }
@@ -450,67 +422,60 @@ namespace Xidi
     }
   }
 
-#if DIRECTINPUT_VERSION >= 0x0800
-
-  template <ECharMode charMode> HRESULT __stdcall WrapperIDirectInput<charMode>::ConfigureDevices(
+  template <EDirectInputVersion diVersion>
+    requires (DirectInputVersionIs8<diVersion>)
+  HRESULT __stdcall WrapperIDirectInputVersion8Only<diVersion>::ConfigureDevices(
       LPDICONFIGUREDEVICESCALLBACK lpdiCallback,
-      DirectInputType<charMode>::ConfigureDevicesParamsType lpdiCDParams,
+      DirectInputTypes<diVersion>::ConfigureDevicesParamsType* lpdiCDParams,
       DWORD dwFlags,
       LPVOID pvRefData)
   {
-    return underlyingDIObject->ConfigureDevices(lpdiCallback, lpdiCDParams, dwFlags, pvRefData);
+    return this->underlyingDIObject->ConfigureDevices(
+        lpdiCallback, lpdiCDParams, dwFlags, pvRefData);
   }
 
-  template <ECharMode charMode> HRESULT __stdcall WrapperIDirectInput<charMode>::
-      EnumDevicesBySemantics(
-          DirectInputType<charMode>::ConstStringType ptszUserName,
-          DirectInputType<charMode>::ActionFormatType lpdiActionFormat,
-          DirectInputType<charMode>::EnumDevicesBySemanticsCallbackType lpCallback,
-          LPVOID pvRef,
-          DWORD dwFlags)
+  template <EDirectInputVersion diVersion>
+    requires (DirectInputVersionIs8<diVersion>)
+  HRESULT __stdcall WrapperIDirectInputVersion8Only<diVersion>::EnumDevicesBySemantics(
+      DirectInputTypes<diVersion>::ConstStringType ptszUserName,
+      DirectInputTypes<diVersion>::ActionFormatType* lpdiActionFormat,
+      DirectInputTypes<diVersion>::EnumDevicesBySemanticsCallbackType lpCallback,
+      LPVOID pvRef,
+      DWORD dwFlags)
   {
     // Operation not supported.
     return DIERR_UNSUPPORTED;
   }
-#else
 
-  template <ECharMode charMode> HRESULT __stdcall WrapperIDirectInput<charMode>::CreateDeviceEx(
+  template <EDirectInputVersion diVersion>
+    requires (DirectInputVersionIsLegacy<diVersion>)
+  HRESULT __stdcall WrapperIDirectInputVersionLegacyOnly<diVersion>::CreateDeviceEx(
       REFGUID rguid, REFIID riid, LPVOID* lplpDirectInputDevice, LPUNKNOWN pUnkOuter)
   {
-    // Make sure the supplied IID is valid.
-    if (ECharMode::W == charMode)
+    if (false == DirectInputTypes<diVersion>::IsCompatibleDirectInputDeviceIID(riid))
     {
-      if (!(IsEqualIID(riid, IID_IDirectInputDeviceW) ||
-            IsEqualIID(riid, IID_IDirectInputDevice2W) ||
-            IsEqualIID(riid, IID_IDirectInputDevice7W)))
-      {
-        Infra::Message::Output(
-            Infra::Message::ESeverity::Warning,
-            L"CreateDeviceEx Unicode failed due to an invalid IID.");
-        return DIERR_NOINTERFACE;
-      }
-    }
-    else
-    {
-      if (!(IsEqualIID(riid, IID_IDirectInputDeviceA) ||
-            IsEqualIID(riid, IID_IDirectInputDevice2A) ||
-            IsEqualIID(riid, IID_IDirectInputDevice7A)))
-      {
-        Infra::Message::Output(
-            Infra::Message::ESeverity::Warning,
-            L"CreateDeviceEx ASCII failed due to an invalid IID.");
-        return DIERR_NOINTERFACE;
-      }
+      Infra::Message::Output(
+          Infra::Message::ESeverity::Warning, L"CreateDeviceEx failed due to an invalid IID.");
+      return DIERR_NOINTERFACE;
     }
 
-    // Create a device the normal way.
-    return CreateDevice(
+    return this->CreateDevice(
         rguid,
-        (typename DirectInputType<charMode>::EarliestIDirectInputDeviceType**)lplpDirectInputDevice,
+        reinterpret_cast<typename DirectInputTypes<diVersion>::IDirectInputDeviceCompatType**>(
+            lplpDirectInputDevice),
         pUnkOuter);
   }
-#endif
 
-  template class WrapperIDirectInput<ECharMode::A>;
-  template class WrapperIDirectInput<ECharMode::W>;
+  template class WrapperIDirectInputBase<EDirectInputVersion::k8A>;
+  template class WrapperIDirectInputBase<EDirectInputVersion::k8W>;
+  template class WrapperIDirectInputBase<EDirectInputVersion::kLegacyA>;
+  template class WrapperIDirectInputBase<EDirectInputVersion::kLegacyW>;
+  template class WrapperIDirectInputVersion8Only<EDirectInputVersion::k8A>;
+  template class WrapperIDirectInputVersion8Only<EDirectInputVersion::k8W>;
+  template class WrapperIDirectInputVersionLegacyOnly<EDirectInputVersion::kLegacyA>;
+  template class WrapperIDirectInputVersionLegacyOnly<EDirectInputVersion::kLegacyW>;
+  template class WrapperIDirectInput<EDirectInputVersion::k8A>;
+  template class WrapperIDirectInput<EDirectInputVersion::k8W>;
+  template class WrapperIDirectInput<EDirectInputVersion::kLegacyA>;
+  template class WrapperIDirectInput<EDirectInputVersion::kLegacyW>;
 } // namespace Xidi

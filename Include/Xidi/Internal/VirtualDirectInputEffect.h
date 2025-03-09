@@ -25,9 +25,9 @@ namespace Xidi
 {
   /// Generic base implementation of the DirectInput force feedback effect interface. Suitable for
   /// use with force feedback effects that do not have any type-specific parameters.
-  /// @tparam charMode Selects between ASCII ("A" suffix) and Unicode ("W") suffix versions of types
-  /// and interfaces.
-  template <ECharMode charMode> class VirtualDirectInputEffect : public IDirectInputEffect
+  /// @tparam diVersion DirectInput version enumerator.
+  template <EDirectInputVersion diVersion> class VirtualDirectInputEffect
+      : public IDirectInputEffect
   {
   public:
 
@@ -37,7 +37,7 @@ namespace Xidi
     static constexpr DWORD kTimeScalingFactor = 1000;
 
     VirtualDirectInputEffect(
-        VirtualDirectInputDevice<charMode>& associatedDevice,
+        VirtualDirectInputDeviceBase<diVersion>& associatedDevice,
         const Controller::ForceFeedback::Effect& effect,
         const GUID& effectGuid);
 
@@ -148,7 +148,7 @@ namespace Xidi
   private:
 
     /// Associated DirectInput device object.
-    VirtualDirectInputDevice<charMode>& associatedDevice;
+    VirtualDirectInputDeviceBase<diVersion>& associatedDevice;
 
     /// Underlying force feedback effect object.
     std::unique_ptr<Controller::ForceFeedback::Effect> effect;
@@ -167,20 +167,20 @@ namespace Xidi
   /// type-specific parameters.
   /// @tparam TypeSpecificParameterType Internal type used to represent type-specific parameters.
   template <
-      ECharMode charMode,
+      EDirectInputVersion diVersion,
       typename DirectInputTypeSpecificParameterType,
       typename TypeSpecificParameterType>
   class VirtualDirectInputEffectWithTypeSpecificParameters
-      : public VirtualDirectInputEffect<charMode>
+      : public VirtualDirectInputEffect<diVersion>
   {
   protected:
 
     inline VirtualDirectInputEffectWithTypeSpecificParameters(
-        VirtualDirectInputDevice<charMode>& associatedDevice,
+        VirtualDirectInputDeviceBase<diVersion>& associatedDevice,
         const Controller::ForceFeedback::EffectWithTypeSpecificParameters<
             TypeSpecificParameterType>& effect,
         const GUID& effectGuid)
-        : VirtualDirectInputEffect<charMode>(associatedDevice, effect, effectGuid)
+        : VirtualDirectInputEffect<diVersion>(associatedDevice, effect, effectGuid)
     {}
 
     /// Type-casts and returns a reference to the underlying effect.
@@ -192,7 +192,7 @@ namespace Xidi
     {
       return static_cast<
           Controller::ForceFeedback::EffectWithTypeSpecificParameters<TypeSpecificParameterType>&>(
-          VirtualDirectInputEffect<charMode>::UnderlyingEffect());
+          VirtualDirectInputEffect<diVersion>::UnderlyingEffect());
     }
 
     // VirtualDirectInputEffect
@@ -255,20 +255,20 @@ namespace Xidi
   /// Concrete DirectInput force feedback effect object type for constant force effects.
   /// @tparam charMode Selects between ASCII ("A" suffix) and Unicode ("W") suffix versions of types
   /// and interfaces.
-  template <ECharMode charMode> class ConstantForceDirectInputEffect
+  template <EDirectInputVersion diVersion> class ConstantForceDirectInputEffect
       : public VirtualDirectInputEffectWithTypeSpecificParameters<
-            charMode,
+            diVersion,
             DICONSTANTFORCE,
             Controller::ForceFeedback::SConstantForceParameters>
   {
   public:
 
     inline ConstantForceDirectInputEffect(
-        VirtualDirectInputDevice<charMode>& associatedDevice,
+        VirtualDirectInputDeviceBase<diVersion>& associatedDevice,
         const Controller::ForceFeedback::ConstantForceEffect& effect,
         const GUID& effectGuid)
         : VirtualDirectInputEffectWithTypeSpecificParameters<
-              charMode,
+              diVersion,
               DICONSTANTFORCE,
               Controller::ForceFeedback::SConstantForceParameters>(
               associatedDevice, effect, effectGuid)
@@ -298,20 +298,20 @@ namespace Xidi
   /// Concrete DirectInput force feedback effect object type for periodic effects effects.
   /// @tparam charMode Selects between ASCII ("A" suffix) and Unicode ("W") suffix versions of types
   /// and interfaces.
-  template <ECharMode charMode> class PeriodicDirectInputEffect
+  template <EDirectInputVersion diVersion> class PeriodicDirectInputEffect
       : public VirtualDirectInputEffectWithTypeSpecificParameters<
-            charMode,
+            diVersion,
             DIPERIODIC,
             Controller::ForceFeedback::SPeriodicParameters>
   {
   public:
 
     inline PeriodicDirectInputEffect(
-        VirtualDirectInputDevice<charMode>& associatedDevice,
+        VirtualDirectInputDeviceBase<diVersion>& associatedDevice,
         const Controller::ForceFeedback::PeriodicEffect& effect,
         const GUID& effectGuid)
         : VirtualDirectInputEffectWithTypeSpecificParameters<
-              charMode,
+              diVersion,
               DIPERIODIC,
               Controller::ForceFeedback::SPeriodicParameters>(associatedDevice, effect, effectGuid)
     {}
@@ -346,20 +346,20 @@ namespace Xidi
   /// Concrete DirectInput force feedback effect object type for ramp force effects.
   /// @tparam charMode Selects between ASCII ("A" suffix) and Unicode ("W") suffix versions of types
   /// and interfaces.
-  template <ECharMode charMode> class RampForceDirectInputEffect
+  template <EDirectInputVersion diVersion> class RampForceDirectInputEffect
       : public VirtualDirectInputEffectWithTypeSpecificParameters<
-            charMode,
+            diVersion,
             DIRAMPFORCE,
             Controller::ForceFeedback::SRampForceParameters>
   {
   public:
 
     inline RampForceDirectInputEffect(
-        VirtualDirectInputDevice<charMode>& associatedDevice,
+        VirtualDirectInputDeviceBase<diVersion>& associatedDevice,
         const Controller::ForceFeedback::RampForceEffect& effect,
         const GUID& effectGuid)
         : VirtualDirectInputEffectWithTypeSpecificParameters<
-              charMode,
+              diVersion,
               DIRAMPFORCE,
               Controller::ForceFeedback::SRampForceParameters>(associatedDevice, effect, effectGuid)
     {}

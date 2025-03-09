@@ -21,58 +21,6 @@
 
 namespace Xidi
 {
-  /// Helper types for differentiating between Unicode and ASCII interface versions.
-  template <ECharMode charMode> struct DirectInputDeviceType
-  {
-    using StringType = LPTSTR;
-    using ConstStringType = LPCTSTR;
-    using DeviceInstanceType = DIDEVICEINSTANCE;
-    using DeviceInstanceCompatType = DIDEVICEINSTANCE_DX3;
-    using DeviceObjectInstanceType = DIDEVICEOBJECTINSTANCE;
-    using DeviceObjectInstanceCompatType = DIDEVICEOBJECTINSTANCE_DX3;
-    using EffectInfoType = DIEFFECTINFO;
-    using EnumEffectsCallbackType = LPDIENUMEFFECTSCALLBACK;
-    using EnumObjectsCallbackType = LPDIENUMDEVICEOBJECTSCALLBACK;
-#if DIRECTINPUT_VERSION >= 0x0800
-    using ActionFormatType = DIACTIONFORMAT;
-    using DeviceImageInfoHeaderType = DIDEVICEIMAGEINFOHEADER;
-#endif
-  };
-
-  template <> struct DirectInputDeviceType<ECharMode::A> : public LatestIDirectInputDeviceA
-  {
-    using StringType = LPSTR;
-    using ConstStringType = LPCSTR;
-    using DeviceInstanceType = DIDEVICEINSTANCEA;
-    using DeviceInstanceCompatType = DIDEVICEINSTANCE_DX3A;
-    using DeviceObjectInstanceType = DIDEVICEOBJECTINSTANCEA;
-    using DeviceObjectInstanceCompatType = DIDEVICEOBJECTINSTANCE_DX3A;
-    using EffectInfoType = DIEFFECTINFOA;
-    using EnumEffectsCallbackType = LPDIENUMEFFECTSCALLBACKA;
-    using EnumObjectsCallbackType = LPDIENUMDEVICEOBJECTSCALLBACKA;
-#if DIRECTINPUT_VERSION >= 0x0800
-    using ActionFormatType = DIACTIONFORMATA;
-    using DeviceImageInfoHeaderType = DIDEVICEIMAGEINFOHEADERA;
-#endif
-  };
-
-  template <> struct DirectInputDeviceType<ECharMode::W> : public LatestIDirectInputDeviceW
-  {
-    using StringType = LPWSTR;
-    using ConstStringType = LPCWSTR;
-    using DeviceInstanceType = DIDEVICEINSTANCEW;
-    using DeviceInstanceCompatType = DIDEVICEINSTANCE_DX3W;
-    using DeviceObjectInstanceType = DIDEVICEOBJECTINSTANCEW;
-    using DeviceObjectInstanceCompatType = DIDEVICEOBJECTINSTANCE_DX3W;
-    using EffectInfoType = DIEFFECTINFOW;
-    using EnumEffectsCallbackType = LPDIENUMEFFECTSCALLBACKW;
-    using EnumObjectsCallbackType = LPDIENUMDEVICEOBJECTSCALLBACKW;
-#if DIRECTINPUT_VERSION >= 0x0800
-    using ActionFormatType = DIACTIONFORMATW;
-    using DeviceImageInfoHeaderType = DIDEVICEIMAGEINFOHEADERW;
-#endif
-  };
-
   /// Enumerates possible access modes for DirectInput devices.
   enum class ECooperativeLevel
   {
@@ -86,17 +34,17 @@ namespace Xidi
     Exclusive
   };
 
-  /// Inherits from whatever IDirectInputDevice version is appropriate.
-  /// @tparam charMode Selects between ASCII ("A" suffix) and Unicode ("W") suffix versions of types
-  /// and interfaces.
-  template <ECharMode charMode> class VirtualDirectInputDevice
-      : public DirectInputDeviceType<charMode>
+  /// Implements the IDirectInputDevice interface for all supported versions of DirectInput. This
+  /// base class only implements methods common to all versions of the interface.
+  /// @tparam diVersion DirectInput version enumerator.
+  template <EDirectInputVersion diVersion> class VirtualDirectInputDeviceBase
+      : public DirectInputTypes<diVersion>::IDirectInputDeviceType
   {
   public:
 
-    VirtualDirectInputDevice(std::unique_ptr<Controller::VirtualController>&& controller);
+    VirtualDirectInputDeviceBase(std::unique_ptr<Controller::VirtualController>&& controller);
 
-    ~VirtualDirectInputDevice(void);
+    virtual ~VirtualDirectInputDeviceBase(void);
 
     /// Fills the specified buffer with a friendly string representation of the specified controller
     /// element. Intended for internal use, primarily for log message generation.
@@ -105,7 +53,7 @@ namespace Xidi
     /// @param [in] bufcount Buffer size in number of characters.
     static void ElementToString(
         Controller::SElementIdentifier element,
-        DirectInputDeviceType<charMode>::StringType buf,
+        DirectInputTypes<diVersion>::StringType buf,
         int bufcount);
 
     /// Determines if the specified GUID is supported for creating a force feedback effect object.
@@ -192,7 +140,7 @@ namespace Xidi
       return kObjectId;
     }
 
-    // IDirectInputDevice
+    // IDirectInputDevice (legacy and 8)
     HRESULT __stdcall Acquire(void) override;
     HRESULT __stdcall CreateEffect(
         REFGUID rguid,
@@ -202,16 +150,16 @@ namespace Xidi
     HRESULT __stdcall EnumCreatedEffectObjects(
         LPDIENUMCREATEDEFFECTOBJECTSCALLBACK lpCallback, LPVOID pvRef, DWORD fl) override;
     HRESULT __stdcall EnumEffects(
-        DirectInputDeviceType<charMode>::EnumEffectsCallbackType lpCallback,
+        DirectInputTypes<diVersion>::EnumEffectsCallbackType lpCallback,
         LPVOID pvRef,
         DWORD dwEffType) override;
     HRESULT __stdcall EnumEffectsInFile(
-        DirectInputDeviceType<charMode>::ConstStringType lptszFileName,
+        DirectInputTypes<diVersion>::ConstStringType lptszFileName,
         LPDIENUMEFFECTSINFILECALLBACK pec,
         LPVOID pvRef,
         DWORD dwFlags) override;
     HRESULT __stdcall EnumObjects(
-        DirectInputDeviceType<charMode>::EnumObjectsCallbackType lpCallback,
+        DirectInputTypes<diVersion>::EnumObjectsCallbackType lpCallback,
         LPVOID pvRef,
         DWORD dwFlags) override;
     HRESULT __stdcall Escape(LPDIEFFESCAPE pesc) override;
@@ -219,13 +167,13 @@ namespace Xidi
     HRESULT __stdcall GetDeviceData(
         DWORD cbObjectData, LPDIDEVICEOBJECTDATA rgdod, LPDWORD pdwInOut, DWORD dwFlags) override;
     HRESULT __stdcall GetDeviceInfo(
-        DirectInputDeviceType<charMode>::DeviceInstanceType* pdidi) override;
+        DirectInputTypes<diVersion>::DeviceInstanceType* pdidi) override;
     HRESULT __stdcall GetDeviceState(DWORD cbData, LPVOID lpvData) override;
     HRESULT __stdcall GetEffectInfo(
-        DirectInputDeviceType<charMode>::EffectInfoType* pdei, REFGUID rguid) override;
+        DirectInputTypes<diVersion>::EffectInfoType* pdei, REFGUID rguid) override;
     HRESULT __stdcall GetForceFeedbackState(LPDWORD pdwOut) override;
     HRESULT __stdcall GetObjectInfo(
-        DirectInputDeviceType<charMode>::DeviceObjectInstanceType* pdidoi,
+        DirectInputTypes<diVersion>::DeviceObjectInstanceType* pdidoi,
         DWORD dwObj,
         DWORD dwHow) override;
     HRESULT __stdcall GetProperty(REFGUID rguidProp, LPDIPROPHEADER pdiph) override;
@@ -241,30 +189,17 @@ namespace Xidi
     HRESULT __stdcall SetProperty(REFGUID rguidProp, LPCDIPROPHEADER pdiph) override;
     HRESULT __stdcall Unacquire(void) override;
     HRESULT __stdcall WriteEffectToFile(
-        DirectInputDeviceType<charMode>::ConstStringType lptszFileName,
+        DirectInputTypes<diVersion>::ConstStringType lptszFileName,
         DWORD dwEntries,
         LPDIFILEEFFECT rgDiFileEft,
         DWORD dwFlags) override;
-#if DIRECTINPUT_VERSION >= 0x0800
-    HRESULT __stdcall BuildActionMap(
-        DirectInputDeviceType<charMode>::ActionFormatType* lpdiaf,
-        DirectInputDeviceType<charMode>::ConstStringType lpszUserName,
-        DWORD dwFlags) override;
-    HRESULT __stdcall GetImageInfo(
-        DirectInputDeviceType<charMode>::DeviceImageInfoHeaderType* lpdiDevImageInfoHeader)
-        override;
-    HRESULT __stdcall SetActionMap(
-        DirectInputDeviceType<charMode>::ActionFormatType* lpdiActionFormat,
-        DirectInputDeviceType<charMode>::ConstStringType lptszUserName,
-        DWORD dwFlags) override;
-#endif
 
     // IUnknown
     HRESULT __stdcall QueryInterface(REFIID riid, LPVOID* ppvObj) override;
     ULONG __stdcall AddRef(void) override;
     ULONG __stdcall Release(void) override;
 
-  private:
+  protected:
 
     /// Unique internal object identifier. Used for logging purposes to distinguish between multiple
     /// objects associated with the same virtual controller.
@@ -295,5 +230,92 @@ namespace Xidi
     {
       DWORD autocenter = DIPROPAUTOCENTER_OFF;
     } unusedProperties;
+  };
+
+  /// Subclass for methods only present in version 8 of the IDirectInputDevice interface.
+  /// @tparam diVersion DirectInput version enumerator. Must identify version 8.
+  template <EDirectInputVersion diVersion>
+    requires (DirectInputVersionIs8<diVersion>)
+  class VirtualDirectInputDeviceVersion8Only : public VirtualDirectInputDeviceBase<diVersion>
+  {
+  public:
+
+    inline VirtualDirectInputDeviceVersion8Only(
+        std::unique_ptr<Controller::VirtualController>&& controller)
+        : VirtualDirectInputDeviceBase<diVersion>(std::move(controller))
+    {}
+
+    // IDirectInputDevice8
+    HRESULT __stdcall BuildActionMap(
+        DirectInputTypes<diVersion>::ActionFormatType* lpdiaf,
+        DirectInputTypes<diVersion>::ConstStringType lpszUserName,
+        DWORD dwFlags) override;
+    HRESULT __stdcall GetImageInfo(
+        DirectInputTypes<diVersion>::DeviceImageInfoHeaderType* lpdiDevImageInfoHeader) override;
+    HRESULT __stdcall SetActionMap(
+        DirectInputTypes<diVersion>::ActionFormatType* lpdiActionFormat,
+        DirectInputTypes<diVersion>::ConstStringType lptszUserName,
+        DWORD dwFlags) override;
+  };
+
+  /// Subclass for methods only present in legacy versions of the IDirectInputDevice interface.
+  /// @tparam diVersion DirectInput version enumerator. Must identify a legacy version.
+  template <EDirectInputVersion diVersion>
+    requires (DirectInputVersionIsLegacy<diVersion>)
+  class VirtualDirectInputDeviceVersionLegacyOnly : public VirtualDirectInputDeviceBase<diVersion>
+  {
+  public:
+
+    inline VirtualDirectInputDeviceVersionLegacyOnly(
+        std::unique_ptr<Controller::VirtualController>&& controller)
+        : VirtualDirectInputDeviceBase<diVersion>(std::move(controller))
+    {}
+  };
+
+  /// Templated interface implementation for all supported versions of the IDirectInputDevice
+  /// interface. The unspecialized version does nothing, but individual specialized versions exist
+  /// for all possible enumerators.
+  /// @tparam diVersion DirectInput version enumerator.
+  template <EDirectInputVersion diVersion> class VirtualDirectInputDevice
+  {};
+
+  template <> class VirtualDirectInputDevice<EDirectInputVersion::k8A>
+      : public VirtualDirectInputDeviceVersion8Only<EDirectInputVersion::k8A>
+  {
+  public:
+
+    inline VirtualDirectInputDevice(std::unique_ptr<Controller::VirtualController>&& controller)
+        : VirtualDirectInputDeviceVersion8Only(std::move(controller))
+    {}
+  };
+
+  template <> class VirtualDirectInputDevice<EDirectInputVersion::k8W>
+      : public VirtualDirectInputDeviceVersion8Only<EDirectInputVersion::k8W>
+  {
+  public:
+
+    inline VirtualDirectInputDevice(std::unique_ptr<Controller::VirtualController>&& controller)
+        : VirtualDirectInputDeviceVersion8Only(std::move(controller))
+    {}
+  };
+
+  template <> class VirtualDirectInputDevice<EDirectInputVersion::kLegacyA>
+      : public VirtualDirectInputDeviceVersionLegacyOnly<EDirectInputVersion::kLegacyA>
+  {
+  public:
+
+    inline VirtualDirectInputDevice(std::unique_ptr<Controller::VirtualController>&& controller)
+        : VirtualDirectInputDeviceVersionLegacyOnly(std::move(controller))
+    {}
+  };
+
+  template <> class VirtualDirectInputDevice<EDirectInputVersion::kLegacyW>
+      : public VirtualDirectInputDeviceVersionLegacyOnly<EDirectInputVersion::kLegacyW>
+  {
+  public:
+
+    inline VirtualDirectInputDevice(std::unique_ptr<Controller::VirtualController>&& controller)
+        : VirtualDirectInputDeviceVersionLegacyOnly(std::move(controller))
+    {}
   };
 } // namespace Xidi

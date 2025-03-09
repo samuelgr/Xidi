@@ -38,7 +38,7 @@ namespace XidiTest
 
   HRESULT __stdcall MockDirectInput::CreateDevice(
       REFGUID rguid,
-      DirectInputType<kDirectInputTestCharMode>::EarliestIDirectInputDeviceType**
+      DirectInputTypes<EDirectInputVersion::k8W>::IDirectInputDeviceCompatType**
           lplpDirectInputDevice,
       LPUNKNOWN pUnkOuter)
   {
@@ -56,7 +56,7 @@ namespace XidiTest
 
   HRESULT __stdcall MockDirectInput::EnumDevices(
       DWORD dwDevType,
-      DirectInputType<kDirectInputTestCharMode>::EnumDevicesCallbackType lpCallback,
+      DirectInputTypes<EDirectInputVersion::k8W>::EnumDevicesCallbackType lpCallback,
       LPVOID pvRef,
       DWORD dwFlags)
   {
@@ -78,7 +78,7 @@ namespace XidiTest
 
   HRESULT __stdcall MockDirectInput::FindDevice(
       REFGUID rguidClass,
-      DirectInputType<kDirectInputTestCharMode>::ConstStringType ptszName,
+      DirectInputTypes<EDirectInputVersion::k8W>::ConstStringType ptszName,
       LPGUID pguidInstance)
   {
     TEST_FAILED_UNIMPLEMENTED_METHOD;
@@ -99,11 +99,9 @@ namespace XidiTest
     TEST_FAILED_UNIMPLEMENTED_METHOD;
   }
 
-#if DIRECTINPUT_VERSION >= 0x0800
-
   HRESULT __stdcall MockDirectInput::ConfigureDevices(
       LPDICONFIGUREDEVICESCALLBACK lpdiCallback,
-      DirectInputType<kDirectInputTestCharMode>::ConfigureDevicesParamsType lpdiCDParams,
+      DirectInputTypes<EDirectInputVersion::k8W>::ConfigureDevicesParamsType* lpdiCDParams,
       DWORD dwFlags,
       LPVOID pvRefData)
   {
@@ -111,20 +109,12 @@ namespace XidiTest
   }
 
   HRESULT __stdcall MockDirectInput::EnumDevicesBySemantics(
-      DirectInputType<kDirectInputTestCharMode>::ConstStringType ptszUserName,
-      DirectInputType<kDirectInputTestCharMode>::ActionFormatType lpdiActionFormat,
-      DirectInputType<kDirectInputTestCharMode>::EnumDevicesBySemanticsCallbackType lpCallback,
+      DirectInputTypes<EDirectInputVersion::k8W>::ConstStringType ptszUserName,
+      DirectInputTypes<EDirectInputVersion::k8W>::ActionFormatType* lpdiActionFormat,
+      DirectInputTypes<EDirectInputVersion::k8W>::EnumDevicesBySemanticsCallbackType lpCallback,
       LPVOID pvRef,
       DWORD dwFlags)
   {
     TEST_FAILED_UNIMPLEMENTED_METHOD;
   }
-#else
-
-  HRESULT __stdcall MockDirectInput::CreateDeviceEx(
-      REFGUID rguid, REFIID riid, LPVOID* lplpDirectInputDevice, LPUNKNOWN pUnkOuter)
-  {
-    TEST_FAILED_UNIMPLEMENTED_METHOD;
-  }
-#endif
 } // namespace XidiTest

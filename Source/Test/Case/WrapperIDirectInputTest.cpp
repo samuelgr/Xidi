@@ -242,7 +242,7 @@ namespace XidiTest
     /// @param [in] enumerationStatePtr Typeless pointer to the enumeration state structure.
     /// @return Always `DIENUM_CONTINUE` so that more devices are enumerated.
     static BOOL __stdcall CheckEnumeratedDeviceCallback(
-        const DirectInputType<kDirectInputTestCharMode>::DeviceInstanceType* deviceInstancePtr,
+        const DirectInputTypes<EDirectInputVersion::k8W>::DeviceInstanceType* deviceInstancePtr,
         LPVOID enumerationStatePtr)
     {
       ((EnumerationState*)enumerationStatePtr)->CheckEnumeratedDevice(*deviceInstancePtr);
@@ -254,7 +254,7 @@ namespace XidiTest
     /// @param [in] deviceInstance Device instance to check.
     /// @return `true` if the instance is a Xidi virtual controller, `false` otherwise.
     static bool IsValidXidiVirtualControllerInstance(
-        const DirectInputType<kDirectInputTestCharMode>::DeviceInstanceType& deviceInstance)
+        const DirectInputTypes<EDirectInputVersion::k8W>::DeviceInstanceType& deviceInstance)
     {
       const auto maybeVirtualControllerId =
           VirtualControllerIdFromInstanceGuid(deviceInstance.guidInstance);
@@ -305,7 +305,7 @@ namespace XidiTest
     /// internal state accordingly. If the order is incorrect a test failure is flagged.
     /// @param [in] deviceInstance Pointer to the device instance structure.
     void CheckEnumeratedDevice(
-        const DirectInputType<kDirectInputTestCharMode>::DeviceInstanceType& deviceInstance)
+        const DirectInputTypes<EDirectInputVersion::k8W>::DeviceInstanceType& deviceInstance)
     {
       switch (kExpectedOrder)
       {
@@ -388,11 +388,13 @@ namespace XidiTest
   /// @param [in] mockDirectInput Mock DirectInput interface object to use as the underlying
   /// DirectInput interface object.
   /// @return Newly-constructed wrapper object.
-  static inline WrapperIDirectInput<kDirectInputTestCharMode> MakeTestWrapperIDirectInput(
+  template <EDirectInputVersion diVersion = EDirectInputVersion::k8W>
+  static inline WrapperIDirectInput<diVersion> MakeTestWrapperIDirectInput(
       MockDirectInput& mockDirectInput)
   {
-    return WrapperIDirectInput<kDirectInputTestCharMode>(
-        (DirectInputType<kDirectInputTestCharMode>::LatestIDirectInputType*)&mockDirectInput);
+    return WrapperIDirectInput<EDirectInputVersion::k8W>(
+        reinterpret_cast<DirectInputTypes<EDirectInputVersion::k8W>::IDirectInputType*>(
+            &mockDirectInput));
   }
 
   // Verifies that Xidi rejects attempts to create a device object directly by GUID when the device
@@ -403,7 +405,8 @@ namespace XidiTest
     MockDirectInput mockDirectInput({kXboxOneWirelessXInputController});
     auto testDirectInput = MakeTestWrapperIDirectInput(mockDirectInput);
 
-    EarliestIDirectInputDeviceW* testDirectInputDevice = nullptr;
+    DirectInputTypes<EDirectInputVersion::k8W>::IDirectInputDeviceCompatType*
+        testDirectInputDevice = nullptr;
     TEST_ASSERT(
         DIERR_DEVICENOTREG ==
         testDirectInput.CreateDevice(

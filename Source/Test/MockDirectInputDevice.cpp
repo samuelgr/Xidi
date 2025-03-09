@@ -56,7 +56,7 @@ namespace XidiTest
   }
 
   HRESULT __stdcall MockDirectInputDevice::EnumEffects(
-      DirectInputDeviceType<kDirectInputTestCharMode>::EnumEffectsCallbackType lpCallback,
+      DirectInputTypes<EDirectInputVersion::k8W>::EnumEffectsCallbackType lpCallback,
       LPVOID pvRef,
       DWORD dwEffType)
   {
@@ -64,7 +64,7 @@ namespace XidiTest
   }
 
   HRESULT __stdcall MockDirectInputDevice::EnumEffectsInFile(
-      DirectInputDeviceType<kDirectInputTestCharMode>::ConstStringType lptszFileName,
+      DirectInputTypes<EDirectInputVersion::k8W>::ConstStringType lptszFileName,
       LPDIENUMEFFECTSINFILECALLBACK pec,
       LPVOID pvRef,
       DWORD dwFlags)
@@ -73,7 +73,7 @@ namespace XidiTest
   }
 
   HRESULT __stdcall MockDirectInputDevice::EnumObjects(
-      DirectInputDeviceType<kDirectInputTestCharMode>::EnumObjectsCallbackType lpCallback,
+      DirectInputTypes<EDirectInputVersion::k8W>::EnumObjectsCallbackType lpCallback,
       LPVOID pvRef,
       DWORD dwFlags)
   {
@@ -103,7 +103,7 @@ namespace XidiTest
   }
 
   HRESULT __stdcall MockDirectInputDevice::GetDeviceInfo(
-      DirectInputDeviceType<kDirectInputTestCharMode>::DeviceInstanceType* pdidi)
+      DirectInputTypes<EDirectInputVersion::k8W>::DeviceInstanceType* pdidi)
   {
     if (nullptr == pdidi) return E_POINTER;
 
@@ -117,7 +117,7 @@ namespace XidiTest
   }
 
   HRESULT __stdcall MockDirectInputDevice::GetEffectInfo(
-      DirectInputDeviceType<kDirectInputTestCharMode>::EffectInfoType* pdei, REFGUID rguid)
+      DirectInputTypes<EDirectInputVersion::k8W>::EffectInfoType* pdei, REFGUID rguid)
   {
     TEST_FAILED_UNIMPLEMENTED_METHOD;
   }
@@ -128,7 +128,7 @@ namespace XidiTest
   }
 
   HRESULT __stdcall MockDirectInputDevice::GetObjectInfo(
-      DirectInputDeviceType<kDirectInputTestCharMode>::DeviceObjectInstanceType* pdidoi,
+      DirectInputTypes<EDirectInputVersion::k8W>::DeviceObjectInstanceType* pdidoi,
       DWORD dwObj,
       DWORD dwHow)
   {
@@ -198,7 +198,7 @@ namespace XidiTest
   }
 
   HRESULT __stdcall MockDirectInputDevice::WriteEffectToFile(
-      DirectInputDeviceType<kDirectInputTestCharMode>::ConstStringType lptszFileName,
+      DirectInputTypes<EDirectInputVersion::k8W>::ConstStringType lptszFileName,
       DWORD dwEntries,
       LPDIFILEEFFECT rgDiFileEft,
       DWORD dwFlags)
@@ -206,29 +206,25 @@ namespace XidiTest
     TEST_FAILED_UNIMPLEMENTED_METHOD;
   }
 
-#if DIRECTINPUT_VERSION >= 0x0800
-
   HRESULT MockDirectInputDevice::BuildActionMap(
-      DirectInputDeviceType<kDirectInputTestCharMode>::ActionFormatType* lpdiaf,
-      DirectInputDeviceType<kDirectInputTestCharMode>::ConstStringType lpszUserName,
+      DirectInputTypes<EDirectInputVersion::k8W>::ActionFormatType* lpdiaf,
+      DirectInputTypes<EDirectInputVersion::k8W>::ConstStringType lpszUserName,
       DWORD dwFlags)
   {
     TEST_FAILED_UNIMPLEMENTED_METHOD;
   }
 
   HRESULT MockDirectInputDevice::GetImageInfo(
-      DirectInputDeviceType<kDirectInputTestCharMode>::DeviceImageInfoHeaderType*
-          lpdiDevImageInfoHeader)
+      DirectInputTypes<EDirectInputVersion::k8W>::DeviceImageInfoHeaderType* lpdiDevImageInfoHeader)
   {
     TEST_FAILED_UNIMPLEMENTED_METHOD;
   }
 
   HRESULT MockDirectInputDevice::SetActionMap(
-      DirectInputDeviceType<kDirectInputTestCharMode>::ActionFormatType* lpdiActionFormat,
-      DirectInputDeviceType<kDirectInputTestCharMode>::ConstStringType lptszUserName,
+      DirectInputTypes<EDirectInputVersion::k8W>::ActionFormatType* lpdiActionFormat,
+      DirectInputTypes<EDirectInputVersion::k8W>::ConstStringType lptszUserName,
       DWORD dwFlags)
   {
     TEST_FAILED_UNIMPLEMENTED_METHOD;
   }
-#endif
 } // namespace XidiTest

@@ -19,12 +19,6 @@
 
 namespace XidiTest
 {
-  using ::Xidi::DirectInputDeviceType;
-  using ::Xidi::DirectInputType;
-
-  /// Character mode used for all DirectInput testing functionality.
-  inline constexpr ECharMode kDirectInputTestCharMode = ECharMode::W;
-
   /// Record type for holding information about a single DirectInpout device property.
   /// Each field holds a representation for a different type of property, with the header being
   /// common to all of them.
@@ -46,7 +40,7 @@ namespace XidiTest
   struct SDirectInputDeviceInfo
   {
     bool supportsXInput; ///< Whether or not this device is supposed to be an XInput device.
-    DirectInputType<kDirectInputTestCharMode>::DeviceInstanceType
+    DirectInputTypes<EDirectInputVersion::k8W>::DeviceInstanceType
         instance; ///< Device instance record, in the same format as used for device enumeration.
     DIDEVCAPS capabilities; ///< Device capabilities record.
     std::unordered_map<const GUID*, UDirectInputDeviceProperty>
@@ -106,7 +100,7 @@ namespace XidiTest
   /// creation calls to #MockDirectInput. Not all methods are fully implemented based on the
   /// requirements of the test cases that exist.
   class MockDirectInputDevice
-      : public DirectInputType<kDirectInputTestCharMode>::EarliestIDirectInputDeviceType
+      : public DirectInputTypes<EDirectInputVersion::k8W>::IDirectInputDeviceCompatType
   {
   public:
 
@@ -124,16 +118,16 @@ namespace XidiTest
     HRESULT __stdcall EnumCreatedEffectObjects(
         LPDIENUMCREATEDEFFECTOBJECTSCALLBACK lpCallback, LPVOID pvRef, DWORD fl) override;
     HRESULT __stdcall EnumEffects(
-        DirectInputDeviceType<kDirectInputTestCharMode>::EnumEffectsCallbackType lpCallback,
+        DirectInputTypes<EDirectInputVersion::k8W>::EnumEffectsCallbackType lpCallback,
         LPVOID pvRef,
         DWORD dwEffType) override;
     HRESULT __stdcall EnumEffectsInFile(
-        DirectInputDeviceType<kDirectInputTestCharMode>::ConstStringType lptszFileName,
+        DirectInputTypes<EDirectInputVersion::k8W>::ConstStringType lptszFileName,
         LPDIENUMEFFECTSINFILECALLBACK pec,
         LPVOID pvRef,
         DWORD dwFlags) override;
     HRESULT __stdcall EnumObjects(
-        DirectInputDeviceType<kDirectInputTestCharMode>::EnumObjectsCallbackType lpCallback,
+        DirectInputTypes<EDirectInputVersion::k8W>::EnumObjectsCallbackType lpCallback,
         LPVOID pvRef,
         DWORD dwFlags) override;
     HRESULT __stdcall Escape(LPDIEFFESCAPE pesc) override;
@@ -141,14 +135,13 @@ namespace XidiTest
     HRESULT __stdcall GetDeviceData(
         DWORD cbObjectData, LPDIDEVICEOBJECTDATA rgdod, LPDWORD pdwInOut, DWORD dwFlags) override;
     HRESULT __stdcall GetDeviceInfo(
-        DirectInputDeviceType<kDirectInputTestCharMode>::DeviceInstanceType* pdidi) override;
+        DirectInputTypes<EDirectInputVersion::k8W>::DeviceInstanceType* pdidi) override;
     HRESULT __stdcall GetDeviceState(DWORD cbData, LPVOID lpvData) override;
     HRESULT __stdcall GetEffectInfo(
-        DirectInputDeviceType<kDirectInputTestCharMode>::EffectInfoType* pdei,
-        REFGUID rguid) override;
+        DirectInputTypes<EDirectInputVersion::k8W>::EffectInfoType* pdei, REFGUID rguid) override;
     HRESULT __stdcall GetForceFeedbackState(LPDWORD pdwOut) override;
     HRESULT __stdcall GetObjectInfo(
-        DirectInputDeviceType<kDirectInputTestCharMode>::DeviceObjectInstanceType* pdidoi,
+        DirectInputTypes<EDirectInputVersion::k8W>::DeviceObjectInstanceType* pdidoi,
         DWORD dwObj,
         DWORD dwHow) override;
     HRESULT __stdcall GetProperty(REFGUID rguidProp, LPDIPROPHEADER pdiph) override;
@@ -164,23 +157,21 @@ namespace XidiTest
     HRESULT __stdcall SetProperty(REFGUID rguidProp, LPCDIPROPHEADER pdiph) override;
     HRESULT __stdcall Unacquire(void) override;
     HRESULT __stdcall WriteEffectToFile(
-        DirectInputDeviceType<kDirectInputTestCharMode>::ConstStringType lptszFileName,
+        DirectInputTypes<EDirectInputVersion::k8W>::ConstStringType lptszFileName,
         DWORD dwEntries,
         LPDIFILEEFFECT rgDiFileEft,
         DWORD dwFlags) override;
-#if DIRECTINPUT_VERSION >= 0x0800
     HRESULT __stdcall BuildActionMap(
-        DirectInputDeviceType<kDirectInputTestCharMode>::ActionFormatType* lpdiaf,
-        DirectInputDeviceType<kDirectInputTestCharMode>::ConstStringType lpszUserName,
+        DirectInputTypes<EDirectInputVersion::k8W>::ActionFormatType* lpdiaf,
+        DirectInputTypes<EDirectInputVersion::k8W>::ConstStringType lpszUserName,
         DWORD dwFlags) override;
     HRESULT __stdcall GetImageInfo(
-        DirectInputDeviceType<kDirectInputTestCharMode>::DeviceImageInfoHeaderType*
+        DirectInputTypes<EDirectInputVersion::k8W>::DeviceImageInfoHeaderType*
             lpdiDevImageInfoHeader) override;
     HRESULT __stdcall SetActionMap(
-        DirectInputDeviceType<kDirectInputTestCharMode>::ActionFormatType* lpdiActionFormat,
-        DirectInputDeviceType<kDirectInputTestCharMode>::ConstStringType lptszUserName,
+        DirectInputTypes<EDirectInputVersion::k8W>::ActionFormatType* lpdiActionFormat,
+        DirectInputTypes<EDirectInputVersion::k8W>::ConstStringType lptszUserName,
         DWORD dwFlags) override;
-#endif
 
     // IUnknown
     HRESULT __stdcall QueryInterface(REFIID riid, LPVOID* ppvObj) override;

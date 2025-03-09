@@ -168,33 +168,21 @@
     <TargetName>dinput</TargetName>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
-    <ClCompile>
-      <PreprocessorDefinitions>DIRECTINPUT_VERSION=0x0700;WIN32;_DEBUG;_WINDOWS;_USRDLL;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-    </ClCompile>
     <Link>
       <ModuleDefinitionFile>$(ProjectDir)$(TargetName).def</ModuleDefinitionFile>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
-    <ClCompile>
-      <PreprocessorDefinitions>DIRECTINPUT_VERSION=0x0700;_DEBUG;_WINDOWS;_USRDLL;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-    </ClCompile>
     <Link>
       <ModuleDefinitionFile>$(ProjectDir)$(TargetName).def</ModuleDefinitionFile>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
-    <ClCompile>
-      <PreprocessorDefinitions>DIRECTINPUT_VERSION=0x0700;WIN32;NDEBUG;_WINDOWS;_USRDLL;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-    </ClCompile>
     <Link>
       <ModuleDefinitionFile>$(ProjectDir)$(TargetName).def</ModuleDefinitionFile>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
-    <ClCompile>
-      <PreprocessorDefinitions>DIRECTINPUT_VERSION=0x0700;NDEBUG;_WINDOWS;_USRDLL;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-    </ClCompile>
     <Link>
       <ModuleDefinitionFile>$(ProjectDir)$(TargetName).def</ModuleDefinitionFile>
     </Link>

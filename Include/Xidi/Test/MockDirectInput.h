@@ -22,12 +22,10 @@
 
 namespace XidiTest
 {
-  using ::Xidi::DirectInputType;
-
   /// Mock version of the IDirectInput interface, used to test interaction with system-supplied
   /// DirectInput objects. Not all methods are fully implemented based on the requirements of the
   /// test cases that exist.
-  class MockDirectInput : public DirectInputType<kDirectInputTestCharMode>::LatestIDirectInputType
+  class MockDirectInput : public DirectInputTypes<EDirectInputVersion::k8W>::IDirectInputType
   {
   public:
 
@@ -63,37 +61,32 @@ namespace XidiTest
     // IDirectInput
     HRESULT __stdcall CreateDevice(
         REFGUID rguid,
-        DirectInputType<kDirectInputTestCharMode>::EarliestIDirectInputDeviceType**
+        DirectInputTypes<EDirectInputVersion::k8W>::IDirectInputDeviceCompatType**
             lplpDirectInputDevice,
         LPUNKNOWN pUnkOuter) override;
     HRESULT __stdcall EnumDevices(
         DWORD dwDevType,
-        DirectInputType<kDirectInputTestCharMode>::EnumDevicesCallbackType lpCallback,
+        DirectInputTypes<EDirectInputVersion::k8W>::EnumDevicesCallbackType lpCallback,
         LPVOID pvRef,
         DWORD dwFlags) override;
     HRESULT __stdcall FindDevice(
         REFGUID rguidClass,
-        DirectInputType<kDirectInputTestCharMode>::ConstStringType ptszName,
+        DirectInputTypes<EDirectInputVersion::k8W>::ConstStringType ptszName,
         LPGUID pguidInstance) override;
     HRESULT __stdcall GetDeviceStatus(REFGUID rguidInstance) override;
     HRESULT __stdcall Initialize(HINSTANCE hinst, DWORD dwVersion) override;
     HRESULT __stdcall RunControlPanel(HWND hwndOwner, DWORD dwFlags) override;
-#if DIRECTINPUT_VERSION >= 0x0800
     HRESULT __stdcall ConfigureDevices(
         LPDICONFIGUREDEVICESCALLBACK lpdiCallback,
-        DirectInputType<kDirectInputTestCharMode>::ConfigureDevicesParamsType lpdiCDParams,
+        DirectInputTypes<EDirectInputVersion::k8W>::ConfigureDevicesParamsType* lpdiCDParams,
         DWORD dwFlags,
         LPVOID pvRefData) override;
     HRESULT __stdcall EnumDevicesBySemantics(
-        DirectInputType<kDirectInputTestCharMode>::ConstStringType ptszUserName,
-        DirectInputType<kDirectInputTestCharMode>::ActionFormatType lpdiActionFormat,
-        DirectInputType<kDirectInputTestCharMode>::EnumDevicesBySemanticsCallbackType lpCallback,
+        DirectInputTypes<EDirectInputVersion::k8W>::ConstStringType ptszUserName,
+        DirectInputTypes<EDirectInputVersion::k8W>::ActionFormatType* lpdiActionFormat,
+        DirectInputTypes<EDirectInputVersion::k8W>::EnumDevicesBySemanticsCallbackType lpCallback,
         LPVOID pvRef,
         DWORD dwFlags) override;
-#else
-    HRESULT __stdcall CreateDeviceEx(
-        REFGUID rguid, REFIID riid, LPVOID* lplpDirectInputDevice, LPUNKNOWN pUnkOuter) override;
-#endif
 
     // IUnknown
     HRESULT __stdcall QueryInterface(REFIID riid, LPVOID* ppvObj) override;

@@ -11,6 +11,10 @@
 
 #pragma once
 
+// Even for legacy versions of DirectInput the version 8 header is used. This is to allow a binary
+// to be built that supports both the version 8 interfaces and the legacy interfaces.
+#define DIRECTINPUT_VERSION 0x0800
+
 // DirectInput header files depend on Windows header files, which are are sensitive to include
 // order. See "ApiWindows.h" for more information.
 
@@ -31,70 +35,206 @@
 #define DIDFT_OPTIONAL 0x80000000
 #endif
 
-/// Enumerates supported character type modes for DirectInput interfaces.
-enum class ECharMode
+/// Enumerates supported DirectInput interface version classes.
+enum class EDirectInputVersion
 {
-  /// ASCII mode, denoted with an "A" suffix in Microsoft documentation.
-  A,
+  /// DirectInput 8, with ANSI characters.
+  k8A,
 
-  /// Wide-character (Unicode) mode, denoted with a "W" suffix in Microsoft documentation.
-  W
+  /// DirectInput 8, with wide (Unicode) characters.
+  k8W,
+
+  /// DirectInput 7 and below, with ANSI characters.
+  kLegacyA,
+
+  /// DirectInput 7 and below, with wide (Unicode) characters.
+  kLegacyW
 };
 
-#if DIRECTINPUT_VERSION >= 0x0800
+/// Determines if the specified DirectInput version enumerator is for version 8.
+template <EDirectInputVersion diVersion> concept DirectInputVersionIs8 =
+    ((EDirectInputVersion::k8A == diVersion) || (EDirectInputVersion::k8W == diVersion));
 
-#define DINPUT_VER_MIN 0x0800
-#define DINPUT_VER_MAX 0x08ff
+/// Determines if the specified DirectInput version enumerator is for a legacy version, 7 or older.
+template <EDirectInputVersion diVersion> concept DirectInputVersionIsLegacy =
+    ((EDirectInputVersion::kLegacyA == diVersion) || (EDirectInputVersion::kLegacyW == diVersion));
 
-#define DINPUT_DEVTYPE_XINPUT_GAMEPAD                                                              \
-  ((DIDEVTYPE_HID) | (DI8DEVTYPE_GAMEPAD) | ((DI8DEVTYPEGAMEPAD_STANDARD) << 8))
+/// Defines helper functions and type aliases specific to a DirectInput version.
+/// The unspecialized version is empty and does nothing useful.
+/// @tparam diVersion DirectInput version enumerator.
+template <EDirectInputVersion diVersion> struct DirectInputTypes
+{};
 
-using EarliestIDirectInput = IDirectInput8;
-using LatestIDirectInput = IDirectInput8;
-using EarliestIDirectInputA = IDirectInput8A;
-using LatestIDirectInputA = IDirectInput8A;
-using EarliestIDirectInputW = IDirectInput8W;
-using LatestIDirectInputW = IDirectInput8W;
-using EarliestIDirectInputDevice = IDirectInputDevice8;
-using LatestIDirectInputDevice = IDirectInputDevice8;
-using EarliestIDirectInputDeviceA = IDirectInputDevice8A;
-using LatestIDirectInputDeviceA = IDirectInputDevice8A;
-using EarliestIDirectInputDeviceW = IDirectInputDevice8W;
-using LatestIDirectInputDeviceW = IDirectInputDevice8W;
+/// Defines helper functions and type aliases specific to DirectInput 8 with ANSI characters.
+template <> struct DirectInputTypes<EDirectInputVersion::k8A>
+{
+  using StringType = LPSTR;
+  using ConstStringType = LPCSTR;
 
-#define IID_LatestIDirectInput        IID_IDirectInput8
-#define IID_LatestIDirectInputA       IID_IDirectInput8A
-#define IID_LatestIDirectInputW       IID_IDirectInput8W
-#define IID_LatestIDirectInputDevice  IID_IDirectInputDevice8
-#define IID_LatestIDirectInputDeviceA IID_IDirectInputDevice8A
-#define IID_LatestIDirectInputDeviceW IID_IDirectInputDevice8W
+  using IDirectInputType = IDirectInput8A;
+  using IDirectInputCompatType = IDirectInput8A;
+  using IDirectInputDeviceType = IDirectInputDevice8A;
+  using IDirectInputDeviceCompatType = IDirectInputDevice8A;
 
-#else
+  using DeviceInstanceType = DIDEVICEINSTANCEA;
+  using DeviceInstanceCompatType = DIDEVICEINSTANCE_DX3A;
+  using DeviceObjectInstanceType = DIDEVICEOBJECTINSTANCEA;
+  using DeviceObjectInstanceCompatType = DIDEVICEOBJECTINSTANCE_DX3A;
 
-#define DINPUT_VER_MIN 0x0200
-#define DINPUT_VER_MAX 0x07ff
+  using EnumDevicesCallbackType = LPDIENUMDEVICESCALLBACKA;
+  using EnumEffectsCallbackType = LPDIENUMEFFECTSCALLBACKA;
+  using EnumObjectsCallbackType = LPDIENUMDEVICEOBJECTSCALLBACKA;
+  using EnumDevicesBySemanticsCallbackType = LPDIENUMDEVICESBYSEMANTICSCBA;
 
-#define DINPUT_DEVTYPE_XINPUT_GAMEPAD                                                              \
-  ((DIDEVTYPE_HID) | (DIDEVTYPE_JOYSTICK) | ((DIDEVTYPEJOYSTICK_GAMEPAD) << 8))
+  using ActionFormatType = DIACTIONFORMATA;
+  using ConfigureDevicesParamsType = DICONFIGUREDEVICESPARAMSA;
+  using DeviceImageInfoHeaderType = DIDEVICEIMAGEINFOHEADERA;
+  using EffectInfoType = DIEFFECTINFOA;
 
-using EarliestIDirectInput = IDirectInput;
-using LatestIDirectInput = IDirectInput7;
-using EarliestIDirectInputA = IDirectInputA;
-using LatestIDirectInputA = IDirectInput7A;
-using EarliestIDirectInputW = IDirectInputW;
-using LatestIDirectInputW = IDirectInput7W;
-using EarliestIDirectInputDevice = IDirectInputDevice;
-using LatestIDirectInputDevice = IDirectInputDevice7;
-using EarliestIDirectInputDeviceA = IDirectInputDeviceA;
-using LatestIDirectInputDeviceA = IDirectInputDevice7A;
-using EarliestIDirectInputDeviceW = IDirectInputDeviceW;
-using LatestIDirectInputDeviceW = IDirectInputDevice7W;
+  static inline bool IsCompatibleDirectInputIID(const IID& iid)
+  {
+    return (IsEqualIID(iid, IID_IUnknown) || IsEqualIID(iid, IID_IDirectInput8A));
+  }
 
-#define IID_LatestIDirectInput        IID_IDirectInput7
-#define IID_LatestIDirectInputA       IID_IDirectInput7A
-#define IID_LatestIDirectInputW       IID_IDirectInput7W
-#define IID_LatestIDirectInputDevice  IID_IDirectInputDevice7
-#define IID_LatestIDirectInputDeviceA IID_IDirectInputDevice7A
-#define IID_LatestIDirectInputDeviceW IID_IDirectInputDevice7W
+  static inline bool IsCompatibleDirectInputDeviceIID(const IID& iid)
+  {
+    return (IsEqualIID(iid, IID_IUnknown) || IsEqualIID(iid, IID_IDirectInputDevice8A));
+  }
 
-#endif
+  static inline DWORD XinputGamepadDeviceType(void)
+  {
+    return ((DIDEVTYPE_HID) | (DI8DEVTYPE_GAMEPAD) | ((DI8DEVTYPEGAMEPAD_STANDARD) << 8));
+  }
+};
+
+/// Defines helper functions and type aliases specific to DirectInput 8 with Unicode characters.
+template <> struct DirectInputTypes<EDirectInputVersion::k8W>
+{
+  using StringType = LPWSTR;
+  using ConstStringType = LPCWSTR;
+
+  using IDirectInputType = IDirectInput8W;
+  using IDirectInputCompatType = IDirectInput8W;
+  using IDirectInputDeviceType = IDirectInputDevice8W;
+  using IDirectInputDeviceCompatType = IDirectInputDevice8W;
+
+  using DeviceInstanceType = DIDEVICEINSTANCEW;
+  using DeviceInstanceCompatType = DIDEVICEINSTANCE_DX3W;
+  using DeviceObjectInstanceType = DIDEVICEOBJECTINSTANCEW;
+  using DeviceObjectInstanceCompatType = DIDEVICEOBJECTINSTANCE_DX3W;
+
+  using EnumDevicesCallbackType = LPDIENUMDEVICESCALLBACKW;
+  using EnumEffectsCallbackType = LPDIENUMEFFECTSCALLBACKW;
+  using EnumObjectsCallbackType = LPDIENUMDEVICEOBJECTSCALLBACKW;
+  using EnumDevicesBySemanticsCallbackType = LPDIENUMDEVICESBYSEMANTICSCBW;
+
+  using ActionFormatType = DIACTIONFORMATW;
+  using ConfigureDevicesParamsType = DICONFIGUREDEVICESPARAMSW;
+  using DeviceImageInfoHeaderType = DIDEVICEIMAGEINFOHEADERW;
+  using EffectInfoType = DIEFFECTINFOW;
+
+  static inline bool IsCompatibleDirectInputIID(const IID& iid)
+  {
+    return (IsEqualIID(iid, IID_IUnknown) || IsEqualIID(iid, IID_IDirectInput8W));
+  }
+
+  static inline bool IsCompatibleDirectInputDeviceIID(const IID& iid)
+  {
+    return (IsEqualIID(iid, IID_IUnknown) || IsEqualIID(iid, IID_IDirectInputDevice8W));
+  }
+
+  static inline DWORD XinputGamepadDeviceType(void)
+  {
+    return ((DIDEVTYPE_HID) | (DI8DEVTYPE_GAMEPAD) | ((DI8DEVTYPEGAMEPAD_STANDARD) << 8));
+  }
+};
+
+/// Defines helper functions and type aliases specific to DirectInput 7 and older with ANSI
+/// characters.
+template <> struct DirectInputTypes<EDirectInputVersion::kLegacyA>
+{
+  using StringType = LPSTR;
+  using ConstStringType = LPCSTR;
+
+  using IDirectInputType = IDirectInput7A;
+  using IDirectInputCompatType = IDirectInputA;
+  using IDirectInputDeviceType = IDirectInputDevice7A;
+  using IDirectInputDeviceCompatType = IDirectInputDeviceA;
+
+  using DeviceInstanceType = DIDEVICEINSTANCEA;
+  using DeviceInstanceCompatType = DIDEVICEINSTANCE_DX3A;
+  using DeviceObjectInstanceType = DIDEVICEOBJECTINSTANCEA;
+  using DeviceObjectInstanceCompatType = DIDEVICEOBJECTINSTANCE_DX3A;
+
+  using EnumDevicesCallbackType = LPDIENUMDEVICESCALLBACKA;
+  using EnumEffectsCallbackType = LPDIENUMEFFECTSCALLBACKA;
+  using EnumObjectsCallbackType = LPDIENUMDEVICEOBJECTSCALLBACKA;
+
+  using EffectInfoType = DIEFFECTINFOA;
+
+  static inline bool IsCompatibleDirectInputIID(const IID& iid)
+  {
+    return (
+        IsEqualIID(iid, IID_IUnknown) || IsEqualIID(iid, IID_IDirectInput7A) ||
+        IsEqualIID(iid, IID_IDirectInput2A) || IsEqualIID(iid, IID_IDirectInputA));
+  }
+
+  static inline bool IsCompatibleDirectInputDeviceIID(const IID& iid)
+  {
+    return (
+        IsEqualIID(iid, IID_IUnknown) || IsEqualIID(iid, IID_IDirectInputDevice7A) ||
+        IsEqualIID(iid, IID_IDirectInputDevice2A) || IsEqualIID(iid, IID_IDirectInputDeviceA));
+  }
+
+  static inline DWORD XinputGamepadDeviceType(void)
+  {
+    return (
+        (DIDEVTYPE_HID) | (4 /* DIDEVTYPE_JOYSTICK */) |
+        ((4 /* DIDEVTYPEJOYSTICK_GAMEPAD */) << 8));
+  }
+};
+
+/// Defines helper functions and type aliases specific to DirectInput 7 and older with Unicode
+/// characters.
+template <> struct DirectInputTypes<EDirectInputVersion::kLegacyW>
+{
+  using StringType = LPWSTR;
+  using ConstStringType = LPCWSTR;
+
+  using IDirectInputType = IDirectInput7W;
+  using IDirectInputCompatType = IDirectInputW;
+  using IDirectInputDeviceType = IDirectInputDevice7W;
+  using IDirectInputDeviceCompatType = IDirectInputDeviceW;
+
+  using DeviceInstanceType = DIDEVICEINSTANCEW;
+  using DeviceInstanceCompatType = DIDEVICEINSTANCE_DX3W;
+  using DeviceObjectInstanceType = DIDEVICEOBJECTINSTANCEW;
+  using DeviceObjectInstanceCompatType = DIDEVICEOBJECTINSTANCE_DX3W;
+
+  using EnumDevicesCallbackType = LPDIENUMDEVICESCALLBACKW;
+  using EnumEffectsCallbackType = LPDIENUMEFFECTSCALLBACKW;
+  using EnumObjectsCallbackType = LPDIENUMDEVICEOBJECTSCALLBACKW;
+
+  using EffectInfoType = DIEFFECTINFOW;
+
+  static inline bool IsCompatibleDirectInputIID(const IID& iid)
+  {
+    return (
+        IsEqualIID(iid, IID_IUnknown) || IsEqualIID(iid, IID_IDirectInput7W) ||
+        IsEqualIID(iid, IID_IDirectInput2W) || IsEqualIID(iid, IID_IDirectInputW));
+  }
+
+  static inline bool IsCompatibleDirectInputDeviceIID(const IID& iid)
+  {
+    return (
+        IsEqualIID(iid, IID_IUnknown) || IsEqualIID(iid, IID_IDirectInputDevice7W) ||
+        IsEqualIID(iid, IID_IDirectInputDevice2W) || IsEqualIID(iid, IID_IDirectInputDeviceW));
+  }
+
+  static inline DWORD XinputGamepadDeviceType(void)
+  {
+    return (
+        (DIDEVTYPE_HID) | (4 /* DIDEVTYPE_JOYSTICK */) |
+        ((4 /* DIDEVTYPEJOYSTICK_GAMEPAD */) << 8));
+  }
+};
