@@ -78,7 +78,7 @@ namespace Xidi
     }
 
     void AxisMapper::ContributeFromTriggerValue(
-        SState& controllerState, uint8_t triggerValue, uint32_t sourceIdentifier) const
+        SState& controllerState, int16_t triggerValue, uint32_t sourceIdentifier) const
     {
       constexpr double kBidirectionalStepSize = (double)(kAnalogValueMax - kAnalogValueMin) /
           (double)(kTriggerValueMax - kTriggerValueMin);
@@ -140,7 +140,7 @@ namespace Xidi
     }
 
     void ButtonMapper::ContributeFromTriggerValue(
-        SState& controllerState, uint8_t triggerValue, uint32_t sourceIdentifier) const
+        SState& controllerState, int16_t triggerValue, uint32_t sourceIdentifier) const
     {
       controllerState[button] = (controllerState[button] || Math::IsTriggerPressed(triggerValue));
     }
@@ -184,7 +184,7 @@ namespace Xidi
     }
 
     void CompoundMapper::ContributeFromTriggerValue(
-        SState& controllerState, uint8_t triggerValue, uint32_t sourceIdentifier) const
+        SState& controllerState, int16_t triggerValue, uint32_t sourceIdentifier) const
     {
       for (const auto& elementMapper : elementMappers)
       {
@@ -267,7 +267,7 @@ namespace Xidi
     }
 
     void DigitalAxisMapper::ContributeFromTriggerValue(
-        SState& controllerState, uint8_t triggerValue, uint32_t sourceIdentifier) const
+        SState& controllerState, int16_t triggerValue, uint32_t sourceIdentifier) const
     {
       ContributeFromButtonValue(
           controllerState, Math::IsTriggerPressed(triggerValue), sourceIdentifier);
@@ -302,14 +302,14 @@ namespace Xidi
     }
 
     void InvertMapper::ContributeFromTriggerValue(
-        SState& controllerState, uint8_t triggerValue, uint32_t sourceIdentifier) const
+        SState& controllerState, int16_t triggerValue, uint32_t sourceIdentifier) const
     {
       if (nullptr != elementMapper)
       {
         const int32_t invertedTriggerValue =
             (kTriggerValueMax + kTriggerValueMin) - (int32_t)triggerValue;
         elementMapper->ContributeFromTriggerValue(
-            controllerState, (uint8_t)invertedTriggerValue, sourceIdentifier);
+            controllerState, (int16_t)invertedTriggerValue, sourceIdentifier);
       }
     }
 
@@ -357,7 +357,7 @@ namespace Xidi
     }
 
     void KeyboardMapper::ContributeFromTriggerValue(
-        SState& controllerState, uint8_t triggerValue, uint32_t sourceIdentifier) const
+        SState& controllerState, int16_t triggerValue, uint32_t sourceIdentifier) const
     {
       if (true == Math::IsTriggerPressed(triggerValue))
         Keyboard::SubmitKeyPressedState(key);
@@ -471,7 +471,7 @@ namespace Xidi
     }
 
     void MouseAxisMapper::ContributeFromTriggerValue(
-        SState& controllerState, uint8_t triggerValue, uint32_t sourceIdentifier) const
+        SState& controllerState, int16_t triggerValue, uint32_t sourceIdentifier) const
     {
       static const bool kEnableMouseAxisProperites =
           Globals::GetConfigurationData()
@@ -489,7 +489,7 @@ namespace Xidi
 
       constexpr unsigned int kTriggerMouseDeadzonePercent = 8;
       constexpr unsigned int kTriggerMouseSaturationPercent = 92;
-      const uint8_t triggerValueForContribution =
+      const int16_t triggerValueForContribution =
           (kEnableMouseAxisProperites
                ? Math::ApplyRawTriggerTransform(
                      triggerValue, kTriggerMouseDeadzonePercent, kTriggerMouseSaturationPercent)
@@ -561,7 +561,7 @@ namespace Xidi
     }
 
     void MouseButtonMapper::ContributeFromTriggerValue(
-        SState& controllerState, uint8_t triggerValue, uint32_t sourceIdentifier) const
+        SState& controllerState, int16_t triggerValue, uint32_t sourceIdentifier) const
     {
       if (true == Math::IsTriggerPressed(triggerValue))
         Mouse::SubmitMouseButtonPressedState(mouseButton);
@@ -604,7 +604,7 @@ namespace Xidi
     }
 
     void PovMapper::ContributeFromTriggerValue(
-        SState& controllerState, uint8_t triggerValue, uint32_t sourceIdentifier) const
+        SState& controllerState, int16_t triggerValue, uint32_t sourceIdentifier) const
     {
       if (true == Math::IsTriggerPressed(triggerValue))
         controllerState.povDirection.components[(int)povDirection] = true;
@@ -670,7 +670,7 @@ namespace Xidi
     }
 
     void SplitMapper::ContributeFromTriggerValue(
-        SState& controllerState, uint8_t triggerValue, uint32_t sourceIdentifier) const
+        SState& controllerState, int16_t triggerValue, uint32_t sourceIdentifier) const
     {
       if ((int32_t)triggerValue >= kTriggerValueMid)
       {

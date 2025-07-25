@@ -89,7 +89,7 @@ namespace Xidi
   /// @param [out] devicePath If present, will be filled with the device identifying path, which was
   /// used to determine whether or not the controller supports XInput.
   /// @return `true` if the controller supports XInput, `false` otherwise.
-  template <EDirectInputVersion diVersion> bool DoesDirectInputControllerSupportXInput(
+  template <EDirectInputVersion diVersion> bool DoesDirectInputControllerSupportSdlGamepad(
       typename DirectInputTypes<diVersion>::IDirectInputCompatType* dicontext,
       REFGUID instanceGUID,
       std::wstring* devicePath = nullptr);

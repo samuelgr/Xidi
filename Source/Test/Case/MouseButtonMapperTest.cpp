@@ -279,8 +279,8 @@ namespace XidiTest
   // button mapper pressing, then unpressing, a mouse button.
   TEST_CASE(MouseButtonMapper_ContributeFromTriggerValue_PressUnpressSequence)
   {
-    constexpr uint8_t kTriggerValuePress = kTriggerValueMax;
-    constexpr uint8_t kTriggerValueRelease = kTriggerValueMin;
+    constexpr int16_t kTriggerValuePress = kTriggerValueMax;
+    constexpr int16_t kTriggerValueRelease = kTriggerValueMin;
 
     MockMouse expectedMouseStateUnpressed;
 

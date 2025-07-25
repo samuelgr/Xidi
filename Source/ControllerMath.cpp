@@ -46,19 +46,19 @@ namespace Xidi
         return kAnalogValueNeutral + (int16_t)(transformedAnalogBase * transformationScaleFactor);
       }
 
-      uint8_t ApplyRawTriggerTransform(
-          uint8_t triggerValue, unsigned int deadzonePercent, unsigned int saturationPercent)
+      int16_t ApplyRawTriggerTransform(
+          int16_t triggerValue, unsigned int deadzonePercent, unsigned int saturationPercent)
       {
         if ((0 == deadzonePercent) && (100 == saturationPercent)) return triggerValue;
 
-        const uint8_t deadzoneCutoff =
-            (uint8_t)((((unsigned int)kTriggerValueMax - (unsigned int)kTriggerValueMin) *
+        const int16_t deadzoneCutoff =
+            (int16_t)((((unsigned int)kTriggerValueMax - (unsigned int)kTriggerValueMin) *
                        deadzonePercent) /
                       100);
         if (triggerValue <= deadzoneCutoff) return kTriggerValueMin;
 
-        const uint8_t saturationCutoff =
-            (uint8_t)((((unsigned int)kTriggerValueMax - (unsigned int)kTriggerValueMin) *
+        const int16_t saturationCutoff =
+            (int16_t)((((unsigned int)kTriggerValueMax - (unsigned int)kTriggerValueMin) *
                        saturationPercent) /
                       100);
         if (triggerValue >= saturationCutoff) return kTriggerValueMax;
@@ -67,7 +67,7 @@ namespace Xidi
         const float transformationScaleFactor = ((float)(kTriggerValueMax - kTriggerValueMin)) /
             ((float)(saturationCutoff - deadzoneCutoff));
 
-        return kTriggerValueMin + (uint8_t)(transformedTriggerBase * transformationScaleFactor);
+        return kTriggerValueMin + (int16_t)(transformedTriggerBase * transformationScaleFactor);
       }
 
       SAnalogStickCoordinates TransformCoordinatesCircleToSquare(

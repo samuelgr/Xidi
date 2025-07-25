@@ -152,7 +152,16 @@ namespace XidiTest
     constexpr unsigned int kDeadzonePercent = 0;
     constexpr unsigned int kSaturationPercent = 100;
 
-    constexpr uint8_t kTestValues[] = {0, 31, 63, 127, 159, 191, 223, 255};
+    constexpr int16_t kTestValues[] = {
+        0,
+        (32767 * 1 / 8),
+        (32767 * 1 / 4),
+        (32767 * 1 / 2),
+        (32767 * 5 / 8),
+        (32767 * 3 / 4),
+        (32767 * 7 / 8),
+        32767
+    };
 
     for (const auto& testValue : kTestValues)
     {
@@ -169,16 +178,16 @@ namespace XidiTest
 
     constexpr struct
     {
-      uint8_t rawInput;
-      uint8_t expectedOutput;
+      int16_t rawInput;
+      int16_t expectedOutput;
     } kTestValues[] = {
         {.rawInput = 0, .expectedOutput = 0},
-        {.rawInput = 255, .expectedOutput = 255},
-        {.rawInput = (255 * 1 / 8), .expectedOutput = 0},
-        {.rawInput = (255 * 1 / 4), .expectedOutput = 0},
-        {.rawInput = (255 * 1 / 2), .expectedOutput = 0},
-        {.rawInput = (255 * 3 / 4), .expectedOutput = (255 * 1 / 2)},
-        {.rawInput = (255 * 7 / 8), .expectedOutput = (255 * 3 / 4)},
+        {.rawInput = 32767, .expectedOutput = 32767},
+        {.rawInput = (32767 * 1 / 8), .expectedOutput = 0},
+        {.rawInput = (32767 * 1 / 4), .expectedOutput = 0},
+        {.rawInput = (32767 * 1 / 2), .expectedOutput = 0},
+        {.rawInput = (32767 * 3 / 4), .expectedOutput = (32767 * 1 / 2)},
+        {.rawInput = (32767 * 7 / 8), .expectedOutput = (32767 * 3 / 4)},
     };
 
     for (const auto& testValue : kTestValues)
@@ -197,16 +206,16 @@ namespace XidiTest
 
     constexpr struct
     {
-      uint8_t rawInput;
-      uint8_t expectedOutput;
+      int16_t rawInput;
+      int16_t expectedOutput;
     } kTestValues[] = {
         {.rawInput = 0, .expectedOutput = 0},
-        {.rawInput = 255, .expectedOutput = 255},
-        {.rawInput = (255 * 1 / 8), .expectedOutput = (255 * 1 / 4)},
-        {.rawInput = (255 * 1 / 4), .expectedOutput = (255 * 1 / 2)},
-        {.rawInput = (255 * 1 / 2), .expectedOutput = 255},
-        {.rawInput = (255 * 3 / 4), .expectedOutput = 255},
-        {.rawInput = (255 * 7 / 8), .expectedOutput = 255},
+        {.rawInput = 32767, .expectedOutput = 32767},
+        {.rawInput = (32767 * 1 / 8), .expectedOutput = (32767 * 1 / 4)},
+        {.rawInput = (32767 * 1 / 4), .expectedOutput = (32767 * 1 / 2)},
+        {.rawInput = (32767 * 1 / 2), .expectedOutput = 32767},
+        {.rawInput = (32767 * 3 / 4), .expectedOutput = 32767},
+        {.rawInput = (32767 * 7 / 8), .expectedOutput = 32767},
     };
 
     for (const auto& testValue : kTestValues)
@@ -226,16 +235,16 @@ namespace XidiTest
 
     constexpr struct
     {
-      uint8_t rawInput;
-      uint8_t expectedOutput;
+      int16_t rawInput;
+      int16_t expectedOutput;
     } kTestValues[] = {
         {.rawInput = 0, .expectedOutput = 0},
-        {.rawInput = 255, .expectedOutput = 255},
-        {.rawInput = (255 * 1 / 8), .expectedOutput = 0},
-        {.rawInput = (255 * 1 / 4), .expectedOutput = 0},
-        {.rawInput = (255 * 1 / 2), .expectedOutput = (255 * 1 / 2)},
-        {.rawInput = (255 * 3 / 4), .expectedOutput = 255},
-        {.rawInput = (255 * 7 / 8), .expectedOutput = 255},
+        {.rawInput = 32767, .expectedOutput = 32767},
+        {.rawInput = (32767 * 1 / 8), .expectedOutput = 0},
+        {.rawInput = (32767 * 1 / 4), .expectedOutput = 0},
+        {.rawInput = (32767 * 1 / 2), .expectedOutput = (32767 * 1 / 2)},
+        {.rawInput = (32767 * 3 / 4), .expectedOutput = 32767},
+        {.rawInput = (32767 * 7 / 8), .expectedOutput = 32767},
     };
 
     for (const auto& testValue : kTestValues)

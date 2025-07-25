@@ -280,8 +280,8 @@ namespace XidiTest
   {
     constexpr struct
     {
-      uint8_t positive;
-      uint8_t negative;
+      int16_t positive;
+      int16_t negative;
     } kTestValues[] = {
         {.positive = kTriggerValueMax, .negative = kTriggerValueMin},
         {.positive = kTriggerValueMax / 2, .negative = kTriggerValueMin / 2},
@@ -319,8 +319,8 @@ namespace XidiTest
   {
     constexpr struct
     {
-      uint8_t positive;
-      uint8_t negative;
+      int16_t positive;
+      int16_t negative;
     } kTestValues[] = {
         {.positive = kTriggerValueMax, .negative = kTriggerValueMin},
         {.positive = kTriggerValueMax / 2, .negative = kTriggerValueMin / 2},

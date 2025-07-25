@@ -668,7 +668,7 @@ namespace Xidi
         elements.named.stickLeftY->ContributeFromAnalogValue(
             controllerState,
             Math::ApplyRawAnalogTransform(
-                FilterAndInvertAnalogStickValue(stickLeftCoordinates.y),
+                FilterAnalogStickValue(stickLeftCoordinates.y),
                 kDeadzonePercentStickLeft,
                 kSaturationPercentStickLeft),
             SourceIdentifierForElementMapper(
@@ -687,7 +687,7 @@ namespace Xidi
         elements.named.stickRightY->ContributeFromAnalogValue(
             controllerState,
             Math::ApplyRawAnalogTransform(
-                FilterAndInvertAnalogStickValue(stickRightCoordinates.y),
+                FilterAnalogStickValue(stickRightCoordinates.y),
                 kDeadzonePercentStickRight,
                 kSaturationPercentStickRight),
             SourceIdentifierForElementMapper(

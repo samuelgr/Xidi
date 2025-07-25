@@ -21,10 +21,10 @@ namespace Xidi
 {
   namespace Controller
   {
-    /// Number of physical controllers that the underlying system supports.
+    /// Number of physical controllers currently supported by Xidi.
     /// Not all will necessarily be physically present at any given time.
     /// Maximum allowable controller identifier is one less than this value.
-    inline constexpr uint16_t kPhysicalControllerCount = 4;
+    inline constexpr int32_t kPhysicalControllerCount = 4;
 
     /// Maximum possible reading from an XInput controller's analog stick.
     /// Value taken from XInput documentation.
@@ -42,7 +42,7 @@ namespace Xidi
 
     /// Maximum possible reading from an XInput controller's trigger.
     /// Value taken from XInput documentation.
-    inline constexpr int32_t kTriggerValueMax = 255;
+    inline constexpr int32_t kTriggerValueMax = 32767;
 
     /// Maximum possible reading from an XInput controller's trigger.
     /// Value taken from XInput documentation.
@@ -469,26 +469,26 @@ namespace Xidi
 
     /// Enumerates all digital buttons that might be present on a physical controller. As an
     /// implementation simplification, the order of enumerators corresponds to the ordering used in
-    /// XInput. One enumerator exists per possible button. Guide and Share buttons are not actually
+    /// SDL3. One enumerator exists per possible button. Guide and Share buttons are not actually
     /// used, but they still have space allocated for them on a speculative basis.
     enum class EPhysicalButton : uint8_t
     {
-      DpadUp,
-      DpadDown,
-      DpadLeft,
-      DpadRight,
-      Start,
-      Back,
-      LS,
-      RS,
-      LB,
-      RB,
-      UnusedGuide,
-      UnusedShare,
       A,
       B,
       X,
       Y,
+      Back,
+      UnusedGuide,
+      Start,
+      LS,
+      RS,
+      LB,
+      RB,
+      DpadUp,
+      DpadDown,
+      DpadLeft,
+      DpadRight,
+      UnusedShare,
 
       /// Sentinel value, total number of enumerators
       Count
@@ -507,7 +507,7 @@ namespace Xidi
       std::array<int16_t, static_cast<int>(EPhysicalStick::Count)> stick;
 
       /// Analog trigger values read from the physical controller, one element per possible trigger.
-      std::array<uint8_t, static_cast<int>(EPhysicalTrigger::Count)> trigger;
+      std::array<int16_t, static_cast<int>(EPhysicalTrigger::Count)> trigger;
 
       /// Digital button values read from the physical controller, one element per possible digital
       /// button.
@@ -520,7 +520,7 @@ namespace Xidi
         return stick[static_cast<int>(desiredStick)];
       }
 
-      constexpr uint8_t operator[](EPhysicalTrigger desiredTrigger) const
+      constexpr int16_t operator[](EPhysicalTrigger desiredTrigger) const
       {
         return trigger[static_cast<int>(desiredTrigger)];
       }
@@ -546,6 +546,6 @@ namespace Xidi
       }
     };
 
-    static_assert(sizeof(SPhysicalState) <= 16, "Data structure size constraint violation.");
+    static_assert(sizeof(SPhysicalState) <= 20, "Data structure size constraint violation.");
   } // namespace Controller
 } // namespace Xidi
