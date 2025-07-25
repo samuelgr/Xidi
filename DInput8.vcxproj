@@ -103,7 +103,7 @@
     <ProjectReference Include="Modules\Infra\CoreInfra.vcxproj">
       <Project>{5af31c51-1646-4bda-9407-12273b2da870}</Project>
     </ProjectReference>
-    <ProjectReference Include="ThirdParty\SDL3\VisualC\SDL\SDL.vcxproj">
+    <ProjectReference Include="ThirdParty\SDL3\SDL.vcxproj">
       <Project>{81ce8daf-ebb2-4761-8e45-b71abcca8c68}</Project>
     </ProjectReference>
   </ItemGroup>

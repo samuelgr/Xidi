@@ -2,5 +2,5 @@
 	path = Modules/Infra
 	url = https://github.com/samuelgr/Infra.git
 [submodule "ThirdParty/SDL3"]
-	path = ThirdParty/SDL3
+	path = ThirdParty/SDL3/Files
 	url = https://github.com/libsdl-org/SDL
