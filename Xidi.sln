@@ -19,6 +19,8 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "CoreInfra", "Modules\Infra\
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "TestInfra", "Modules\Infra\TestInfra.vcxproj", "{6ABF224B-C252-4876-B2E1-8CA88E93610A}"
 EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "SDL3", "ThirdParty\SDL3\VisualC\SDL\SDL.vcxproj", "{81CE8DAF-EBB2-4761-8E45-B71ABCCA8C68}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Win32 = Debug|Win32
@@ -83,6 +85,14 @@ Global
 		{6ABF224B-C252-4876-B2E1-8CA88E93610A}.Release|Win32.Build.0 = Release|Win32
 		{6ABF224B-C252-4876-B2E1-8CA88E93610A}.Release|x64.ActiveCfg = Release|x64
 		{6ABF224B-C252-4876-B2E1-8CA88E93610A}.Release|x64.Build.0 = Release|x64
+		{81CE8DAF-EBB2-4761-8E45-B71ABCCA8C68}.Debug|Win32.ActiveCfg = Debug|Win32
+		{81CE8DAF-EBB2-4761-8E45-B71ABCCA8C68}.Debug|Win32.Build.0 = Debug|Win32
+		{81CE8DAF-EBB2-4761-8E45-B71ABCCA8C68}.Debug|x64.ActiveCfg = Debug|x64
+		{81CE8DAF-EBB2-4761-8E45-B71ABCCA8C68}.Debug|x64.Build.0 = Debug|x64
+		{81CE8DAF-EBB2-4761-8E45-B71ABCCA8C68}.Release|Win32.ActiveCfg = Release|Win32
+		{81CE8DAF-EBB2-4761-8E45-B71ABCCA8C68}.Release|Win32.Build.0 = Release|Win32
+		{81CE8DAF-EBB2-4761-8E45-B71ABCCA8C68}.Release|x64.ActiveCfg = Release|x64
+		{81CE8DAF-EBB2-4761-8E45-B71ABCCA8C68}.Release|x64.Build.0 = Release|x64
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -90,6 +100,7 @@ Global
 	GlobalSection(NestedProjects) = preSolution
 		{5AF31C51-1646-4BDA-9407-12273B2DA870} = {314218EC-8403-44F6-B02F-4493E59C2BE0}
 		{6ABF224B-C252-4876-B2E1-8CA88E93610A} = {314218EC-8403-44F6-B02F-4493E59C2BE0}
+		{81CE8DAF-EBB2-4761-8E45-B71ABCCA8C68} = {314218EC-8403-44F6-B02F-4493E59C2BE0}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {6806A1BD-FB15-41EB-97A5-C74B7EAE21DA}
