@@ -17,6 +17,8 @@
 #include <set>
 #include <string_view>
 
+#include <SDL3/SDL.h>
+
 #include <Infra/Core/Configuration.h>
 #include <Infra/Core/Message.h>
 #include <Infra/Core/ProcessInfo.h>
@@ -92,6 +94,10 @@ namespace Xidi
           initializeFlag,
           []() -> void
           {
+            // Initialize SDL3.
+            SDL_SetHint(SDL_HINT_JOYSTICK_ALLOW_BACKGROUND_EVENTS, "1");
+            SDL_Init(SDL_INIT_GAMEPAD | SDL_INIT_HAPTIC);
+
             // Initialize the import table.
             ZeroMemory(&importTable, sizeof(importTable));
 

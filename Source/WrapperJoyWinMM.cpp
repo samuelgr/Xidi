@@ -234,7 +234,7 @@ namespace Xidi
       SWinMMEnumCallbackInfo* callbackInfo = (SWinMMEnumCallbackInfo*)pvRef;
 
       std::wstring devicePath;
-      bool deviceSupportsXInput = DoesDirectInputControllerSupportXInput<EDirectInputVersion::k8W>(
+      bool deviceSupportsXInput = DoesDirectInputControllerSupportSdlGamepad<EDirectInputVersion::k8W>(
           callbackInfo->directInputInterface, lpddi->guidInstance, &devicePath);
 
       if (deviceSupportsXInput)

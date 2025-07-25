@@ -16,6 +16,8 @@
 #include <memory>
 #include <optional>
 
+#include <SDL3/SDL.h>
+
 #include <Infra/Core/Configuration.h>
 #include <Infra/Core/Message.h>
 #include <Infra/Core/ProcessInfo.h>
@@ -251,12 +253,12 @@ namespace Xidi
     return std::nullopt;
   }
 
-  template <EDirectInputVersion diVersion> bool DoesDirectInputControllerSupportXInput(
+  template <EDirectInputVersion diVersion> bool DoesDirectInputControllerSupportSdlGamepad(
       typename DirectInputTypes<diVersion>::IDirectInputCompatType* dicontext,
       REFGUID instanceGUID,
       std::wstring* devicePath)
   {
-    bool deviceSupportsXInput = false;
+    bool deviceSupportsSdlGamepad = false;
 
     typename DirectInputTypes<diVersion>::IDirectInputDeviceCompatType* didevice = nullptr;
     HRESULT result = dicontext->CreateDevice(instanceGUID, &didevice, nullptr);
@@ -265,56 +267,62 @@ namespace Xidi
     {
       Infra::Message::OutputFormatted(
           Infra::Message::ESeverity::Warning,
-          L"Unable to check if device with instance GUID %s supports XInput: Failed to create the device (result = 0x%08x).",
+          L"Unable to check if device with instance GUID %s supports SDL3 Gamepad: Failed to create the device (result = 0x%08x).",
           Strings::GuidToString(instanceGUID).AsCString(),
           static_cast<unsigned int>(result));
       return false;
     }
 
-    DIPROPGUIDANDPATH devinfo = {
-        .diph = {
-            .dwSize = sizeof(DIPROPGUIDANDPATH),
-            .dwHeaderSize = sizeof(DIPROPGUIDANDPATH::diph),
-            .dwHow = DIPH_DEVICE}};
+    DIPROPDWORD devPidVid;
+    devPidVid.diph.dwSize = sizeof(DIPROPDWORD);
+    devPidVid.diph.dwHeaderSize = sizeof(DIPROPHEADER);
+    devPidVid.diph.dwObj = 0;
+    devPidVid.diph.dwHow = DIPH_DEVICE;
 
-    result = didevice->GetProperty(DIPROP_GUIDANDPATH, &devinfo.diph);
+    result = didevice->GetProperty(DIPROP_VIDPID, &devPidVid.diph);
     didevice->Release();
 
     if (DI_OK != result)
     {
       Infra::Message::OutputFormatted(
           Infra::Message::ESeverity::Warning,
-          L"Unable to check if device with instance GUID %s supports XInput: Failed to query for property DIPROP_GUIDANDPATH (result = 0x%08x).",
+          L"Unable to check if device with instance GUID %s supports SDL3 Gamepad: Failed to query for property DIPROP_VIDPID (result = 0x%08x).",
           Strings::GuidToString(instanceGUID).AsCString(),
           static_cast<unsigned int>(result));
       return false;
-    }
+    }   
 
-    // The documented "best" way of determining if a device supports XInput is to look for
-    // "&IG_" in the device path string.
-    if (nullptr != wcsstr(devinfo.wszPath, L"&IG_") || nullptr != wcsstr(devinfo.wszPath, L"&ig_"))
+    uint16_t wVendorID = LOWORD(devPidVid.dwData);
+    uint16_t wProductID = HIWORD(devPidVid.dwData);
+
+    int sdlJoystickCount;
+    SDL_JoystickID* sdlJoysticks = SDL_GetJoysticks(&sdlJoystickCount);
+    for (int i = 0; i < sdlJoystickCount; i++)
     {
-      deviceSupportsXInput = true;
-      if (nullptr != devicePath) *devicePath = devinfo.wszPath;
+      if (wVendorID == SDL_GetJoystickVendorForID(sdlJoysticks[i]) &&
+          wProductID == SDL_GetJoystickProductForID(sdlJoysticks[i]) &&
+          SDL_IsGamepad(sdlJoysticks[i]))
+      {
+        deviceSupportsSdlGamepad = true;
+      }
     }
 
     Infra::Message::OutputFormatted(
         Infra::Message::ESeverity::Debug,
-        L"Device with instance GUID %s and path \"%s\" %s XInput.",
+        L"Device with instance GUID %s %s SDL3 Gamepad.",
         Strings::GuidToString(instanceGUID).AsCString(),
-        devinfo.wszPath,
-        (deviceSupportsXInput ? L"supports" : L"does not support"));
+        (deviceSupportsSdlGamepad ? L"supports" : L"does not support"));
 
-    return deviceSupportsXInput;
+    return deviceSupportsSdlGamepad;
   }
 
-  template bool DoesDirectInputControllerSupportXInput<EDirectInputVersion::k8A>(
+  template bool DoesDirectInputControllerSupportSdlGamepad<EDirectInputVersion::k8A>(
       IDirectInput8A*, REFGUID, std::wstring*);
-  template bool DoesDirectInputControllerSupportXInput<EDirectInputVersion::k8W>(
+  template bool DoesDirectInputControllerSupportSdlGamepad<EDirectInputVersion::k8W>(
       IDirectInput8W*, REFGUID, std::wstring*);
-  template bool DoesDirectInputControllerSupportXInput<EDirectInputVersion::kLegacyA>(
+  template bool DoesDirectInputControllerSupportSdlGamepad<EDirectInputVersion::kLegacyA>(
       IDirectInputA*, REFGUID, std::wstring*);
-  template bool DoesDirectInputControllerSupportXInput<EDirectInputVersion::kLegacyW>(
+  template bool DoesDirectInputControllerSupportSdlGamepad<EDirectInputVersion::kLegacyW>(
       IDirectInputW*, REFGUID, std::wstring*);
 
   template <EDirectInputVersion diVersion> BOOL EnumerateVirtualControllers(

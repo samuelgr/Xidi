@@ -70,7 +70,7 @@ namespace Xidi
       /// @param [in] sourceIdentifier Opaque identifier for the specific controller element that is
       /// triggering the contribution.
       virtual void ContributeFromTriggerValue(
-          SState& controllerState, uint8_t triggerValue, uint32_t sourceIdentifier) const = 0;
+          SState& controllerState, int16_t triggerValue, uint32_t sourceIdentifier) const = 0;
 
       /// Specifies that the element mapper should make a neutral state contribution to the virtual
       /// controller. Primarily intended for element mappers that have side effects so that they can
@@ -136,7 +136,7 @@ namespace Xidi
           uint32_t sourceIdentifier = 0) const override;
       void ContributeFromTriggerValue(
           SState& controllerState,
-          uint8_t triggerValue,
+          int16_t triggerValue,
           uint32_t sourceIdentifier = 0) const override;
       int GetTargetElementCount(void) const override;
       std::optional<SElementIdentifier> GetTargetElementAt(int index) const override;
@@ -176,7 +176,7 @@ namespace Xidi
           uint32_t sourceIdentifier = 0) const override;
       void ContributeFromTriggerValue(
           SState& controllerState,
-          uint8_t triggerValue,
+          int16_t triggerValue,
           uint32_t sourceIdentifier = 0) const override;
       int GetTargetElementCount(void) const override;
       std::optional<SElementIdentifier> GetTargetElementAt(int index) const override;
@@ -227,7 +227,7 @@ namespace Xidi
           uint32_t sourceIdentifier = 0) const override;
       void ContributeFromTriggerValue(
           SState& controllerState,
-          uint8_t triggerValue,
+          int16_t triggerValue,
           uint32_t sourceIdentifier = 0) const override;
       void ContributeNeutral(SState& controllerState, uint32_t sourceIdentifier = 0) const override;
       int GetTargetElementCount(void) const override;
@@ -284,7 +284,7 @@ namespace Xidi
           uint32_t sourceIdentifier = 0) const override;
       void ContributeFromTriggerValue(
           SState& controllerState,
-          uint8_t triggerValue,
+          int16_t triggerValue,
           uint32_t sourceIdentifier = 0) const override;
     };
 
@@ -322,7 +322,7 @@ namespace Xidi
           uint32_t sourceIdentifier = 0) const override;
       void ContributeFromTriggerValue(
           SState& controllerState,
-          uint8_t triggerValue,
+          int16_t triggerValue,
           uint32_t sourceIdentifier = 0) const override;
       void ContributeNeutral(SState& controllerState, uint32_t sourceIdentifier = 0) const override;
       int GetTargetElementCount(void) const override;
@@ -365,7 +365,7 @@ namespace Xidi
           uint32_t sourceIdentifier = 0) const override;
       void ContributeFromTriggerValue(
           SState& controllerState,
-          uint8_t triggerValue,
+          int16_t triggerValue,
           uint32_t sourceIdentifier = 0) const override;
       void ContributeNeutral(SState& controllerState, uint32_t sourceIdentifier = 0) const override;
       int GetTargetElementCount(void) const override;
@@ -416,7 +416,7 @@ namespace Xidi
       void ContributeFromButtonValue(
           SState& controllerState, bool buttonPressed, uint32_t sourceIdentifier) const override;
       void ContributeFromTriggerValue(
-          SState& controllerState, uint8_t triggerValue, uint32_t sourceIdentifier) const override;
+          SState& controllerState, int16_t triggerValue, uint32_t sourceIdentifier) const override;
       void ContributeNeutral(SState& controllerState, uint32_t sourceIdentifier) const override;
       int GetTargetElementCount(void) const override;
       std::optional<SElementIdentifier> GetTargetElementAt(int index) const override;
@@ -464,7 +464,7 @@ namespace Xidi
           uint32_t sourceIdentifier = 0) const override;
       void ContributeFromTriggerValue(
           SState& controllerState,
-          uint8_t triggerValue,
+          int16_t triggerValue,
           uint32_t sourceIdentifier = 0) const override;
       void ContributeNeutral(SState& controllerState, uint32_t sourceIdentifier = 0) const override;
       int GetTargetElementCount(void) const override;
@@ -505,7 +505,7 @@ namespace Xidi
           uint32_t sourceIdentifier = 0) const override;
       void ContributeFromTriggerValue(
           SState& controllerState,
-          uint8_t triggerValue,
+          int16_t triggerValue,
           uint32_t sourceIdentifier = 0) const override;
       int GetTargetElementCount(void) const override;
       std::optional<SElementIdentifier> GetTargetElementAt(int index) const override;
@@ -570,7 +570,7 @@ namespace Xidi
           uint32_t sourceIdentifier = 0) const override;
       void ContributeFromTriggerValue(
           SState& controllerState,
-          uint8_t triggerValue,
+          int16_t triggerValue,
           uint32_t sourceIdentifier = 0) const override;
       void ContributeNeutral(SState& controllerState, uint32_t sourceIdentifier = 0) const override;
       int GetTargetElementCount(void) const override;

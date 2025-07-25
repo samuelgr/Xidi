@@ -13,6 +13,8 @@
 
 #include <stop_token>
 
+#include <SDL3/SDL_gamepad.h>
+
 #include "ApiWindows.h"
 #include "ControllerTypes.h"
 #include "ForceFeedbackDevice.h"

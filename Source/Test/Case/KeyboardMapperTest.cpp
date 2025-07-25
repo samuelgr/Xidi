@@ -265,8 +265,8 @@ namespace XidiTest
   // mapper pressing, then unpressing, a keyboard key.
   TEST_CASE(KeyboardMapper_ContributeFromTriggerValue_PressUnpressSequence)
   {
-    constexpr uint8_t kTriggerValuePress = kTriggerValueMax;
-    constexpr uint8_t kTriggerValueRelease = kTriggerValueMin;
+    constexpr int16_t kTriggerValuePress = kTriggerValueMax;
+    constexpr int16_t kTriggerValueRelease = kTriggerValueMin;
 
     MockKeyboard expectedKeyboardStateUnpressed;
 

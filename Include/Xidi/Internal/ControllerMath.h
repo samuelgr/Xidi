@@ -37,7 +37,7 @@ namespace Xidi
 
       /// Threshold value used to determine if a trigger is considered "pressed" or not as a digital
       /// button.
-      inline constexpr uint8_t kTriggerPressedThreshold = (kTriggerValueMax - kTriggerValueMin) / 6;
+      inline constexpr int16_t kTriggerPressedThreshold = (kTriggerValueMax - kTriggerValueMin) / 6;
 
       /// Threshold negative direction value used to determine if an analog stick is considered
       /// "pressed" or not as a digital button.
@@ -60,8 +60,8 @@ namespace Xidi
       /// @param [in] analogValue Analog value for which a deadzone should be applied.
       /// @param [in] deadzoneHudnredthsOfPercent Hundredths of a percent of the analog range for
       /// which the deadzone should be applied.
-      uint8_t ApplyRawTriggerTransform(
-          uint8_t triggerValue, unsigned int deadzonePercent, unsigned int saturationPercent);
+      int16_t ApplyRawTriggerTransform(
+          int16_t triggerValue, unsigned int deadzonePercent, unsigned int saturationPercent);
 
       /// Determines if an analog reading is considered "pressed" as a digital button in the
       /// negative direction.
@@ -92,7 +92,7 @@ namespace Xidi
       /// Determines if a trigger reading is considered "pressed" as a digital button.
       /// @param [in] triggerValue Trigger reading from the XInput controller.
       /// @return `true` if the virtual button is considered pressed, `false` otherwise.
-      constexpr bool IsTriggerPressed(uint8_t triggerValue)
+      constexpr bool IsTriggerPressed(int16_t triggerValue)
       {
         return (triggerValue >= kTriggerPressedThreshold);
       }

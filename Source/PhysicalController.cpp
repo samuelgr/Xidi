@@ -17,6 +17,8 @@
 #include <stop_token>
 #include <thread>
 
+#include <SDL3/SDL.h>
+
 #include <Infra/Core/Message.h>
 
 #include "ApiWindows.h"
@@ -34,6 +36,9 @@ namespace Xidi
 {
   namespace Controller
   {
+    /// Underlying SDL joystick ID for controller.
+    static SDL_Gamepad* physicalControllerSdlIdentifier[kPhysicalControllerCount];
+
     /// Raw physical state data for each of the possible physical controllers.
     static ConcurrencyWrapper<SPhysicalState> physicalControllerState[kPhysicalControllerCount];
 
@@ -73,49 +78,56 @@ namespace Xidi
       constexpr uint16_t kUnusedButtonMask =
           ~((uint16_t)((1u << (unsigned int)EPhysicalButton::UnusedGuide) |
                        (1u << (unsigned int)EPhysicalButton::UnusedShare)));
+      SDL_Gamepad* gamepad = physicalControllerSdlIdentifier[controllerIdentifier];
+      if (gamepad == nullptr)
+        return {.deviceStatus = EPhysicalDeviceStatus::Error}; 
 
-      XINPUT_STATE xinputState;
-      DWORD xinputGetStateResult =
-          ImportApiXInput::XInputGetState(controllerIdentifier, &xinputState);
-
-      switch (xinputGetStateResult)
+      if (!SDL_GamepadConnected(gamepad))
       {
-        case ERROR_SUCCESS:
-          // Directly using wButtons assumes that the bit layout is the same between the internal
-          // bitset and the XInput data structure. The static assertions below this function verify
-          // this assumption and will cause a compiler error if it is wrong.
-          return {
-              .deviceStatus = EPhysicalDeviceStatus::Ok,
-              .stick =
-                  {xinputState.Gamepad.sThumbLX,
-                   xinputState.Gamepad.sThumbLY,
-                   xinputState.Gamepad.sThumbRX,
-                   xinputState.Gamepad.sThumbRY},
-              .trigger = {xinputState.Gamepad.bLeftTrigger, xinputState.Gamepad.bRightTrigger},
-              .button = (uint16_t)(xinputState.Gamepad.wButtons & kUnusedButtonMask)};
-
-        case ERROR_DEVICE_NOT_CONNECTED:
-          return {.deviceStatus = EPhysicalDeviceStatus::NotConnected};
-
-        default:
-          return {.deviceStatus = EPhysicalDeviceStatus::Error};
+        SDL_CloseGamepad(gamepad);
+        return {.deviceStatus = EPhysicalDeviceStatus::NotConnected};
       }
+        
+      return {
+        .deviceStatus = EPhysicalDeviceStatus::Ok,
+        .stick =
+            {SDL_GetGamepadAxis(gamepad, SDL_GAMEPAD_AXIS_LEFTX),
+            SDL_GetGamepadAxis(gamepad, SDL_GAMEPAD_AXIS_LEFTY),
+            SDL_GetGamepadAxis(gamepad, SDL_GAMEPAD_AXIS_RIGHTX),
+            SDL_GetGamepadAxis(gamepad, SDL_GAMEPAD_AXIS_RIGHTY)},
+        .trigger =
+            {SDL_GetGamepadAxis(gamepad, SDL_GAMEPAD_AXIS_LEFT_TRIGGER),
+            SDL_GetGamepadAxis(gamepad, SDL_GAMEPAD_AXIS_RIGHT_TRIGGER)},
+        .button = [&]() -> std::bitset<16>
+          {
+            std::bitset<16> button;
+            for (int sdlButton = SDL_GAMEPAD_BUTTON_INVALID + 1;
+                    sdlButton <= SDL_GAMEPAD_BUTTON_MISC1;
+                    sdlButton++)
+            {
+              button.set(
+                sdlButton,
+                SDL_GetGamepadButton(gamepad, static_cast<SDL_GamepadButton>(sdlButton)));
+            }
+            return button;
+          }()
+      };
     }
 
-    static_assert(1u << (unsigned int)EPhysicalButton::DpadUp == XINPUT_GAMEPAD_DPAD_UP);
-    static_assert(1u << (unsigned int)EPhysicalButton::DpadDown == XINPUT_GAMEPAD_DPAD_DOWN);
-    static_assert(1u << (unsigned int)EPhysicalButton::DpadLeft == XINPUT_GAMEPAD_DPAD_LEFT);
-    static_assert(1u << (unsigned int)EPhysicalButton::DpadRight == XINPUT_GAMEPAD_DPAD_RIGHT);
-    static_assert(1u << (unsigned int)EPhysicalButton::Start == XINPUT_GAMEPAD_START);
-    static_assert(1u << (unsigned int)EPhysicalButton::Back == XINPUT_GAMEPAD_BACK);
-    static_assert(1u << (unsigned int)EPhysicalButton::LS == XINPUT_GAMEPAD_LEFT_THUMB);
-    static_assert(1u << (unsigned int)EPhysicalButton::RS == XINPUT_GAMEPAD_RIGHT_THUMB);
-    static_assert(1u << (unsigned int)EPhysicalButton::LB == XINPUT_GAMEPAD_LEFT_SHOULDER);
-    static_assert(1u << (unsigned int)EPhysicalButton::RB == XINPUT_GAMEPAD_RIGHT_SHOULDER);
-    static_assert(1u << (unsigned int)EPhysicalButton::A == XINPUT_GAMEPAD_A);
-    static_assert(1u << (unsigned int)EPhysicalButton::B == XINPUT_GAMEPAD_B);
-    static_assert(1u << (unsigned int)EPhysicalButton::X == XINPUT_GAMEPAD_X);
-    static_assert(1u << (unsigned int)EPhysicalButton::Y == XINPUT_GAMEPAD_Y);
+    static_assert((unsigned int)EPhysicalButton::A == SDL_GAMEPAD_BUTTON_SOUTH);
+    static_assert((unsigned int)EPhysicalButton::B == SDL_GAMEPAD_BUTTON_EAST);
+    static_assert((unsigned int)EPhysicalButton::X == SDL_GAMEPAD_BUTTON_WEST);
+    static_assert((unsigned int)EPhysicalButton::Y == SDL_GAMEPAD_BUTTON_NORTH);
+    static_assert((unsigned int)EPhysicalButton::Back == SDL_GAMEPAD_BUTTON_BACK);
+    static_assert((unsigned int)EPhysicalButton::Start == SDL_GAMEPAD_BUTTON_START);
+    static_assert((unsigned int)EPhysicalButton::LS == SDL_GAMEPAD_BUTTON_LEFT_STICK);
+    static_assert((unsigned int)EPhysicalButton::RS == SDL_GAMEPAD_BUTTON_RIGHT_STICK);
+    static_assert((unsigned int)EPhysicalButton::LB == SDL_GAMEPAD_BUTTON_LEFT_SHOULDER);
+    static_assert((unsigned int)EPhysicalButton::RB == SDL_GAMEPAD_BUTTON_RIGHT_SHOULDER);
+    static_assert((unsigned int)EPhysicalButton::DpadUp == SDL_GAMEPAD_BUTTON_DPAD_UP);
+    static_assert((unsigned int)EPhysicalButton::DpadDown == SDL_GAMEPAD_BUTTON_DPAD_DOWN);
+    static_assert((unsigned int)EPhysicalButton::DpadLeft == SDL_GAMEPAD_BUTTON_DPAD_LEFT);
+    static_assert((unsigned int)EPhysicalButton::DpadRight == SDL_GAMEPAD_BUTTON_DPAD_RIGHT);
 
     /// Scales a vibration strength value by the specified scaling factor. If the resulting strength
     /// exceeds the maximum possible strength it is saturated at the maximum possible strength.
@@ -156,15 +168,13 @@ namespace Xidi
                       .ValueOr(100)) /
           100.0;
 
-      // Impulse triggers are ignored because the XInput API does not support them.
-      XINPUT_VIBRATION xinputVibration = {
-          .wLeftMotorSpeed = ScaledVibrationStrength(
+      return SDL_RumbleGamepad(
+          physicalControllerSdlIdentifier[controllerIdentifier],
+          ScaledVibrationStrength(
               vibration.leftMotor, kForceFeedbackEffectStrengthScalingFactor),
-          .wRightMotorSpeed = ScaledVibrationStrength(
-              vibration.rightMotor, kForceFeedbackEffectStrengthScalingFactor)};
-      return (
-          ERROR_SUCCESS ==
-          ImportApiXInput::XInputSetState((DWORD)controllerIdentifier, &xinputVibration));
+          ScaledVibrationStrength(
+              vibration.rightMotor, kForceFeedbackEffectStrengthScalingFactor),
+          250);
     }
 
     /// Periodically plays force feedback effects on the physical controller actuators.
@@ -246,7 +256,8 @@ namespace Xidi
           Sleep(kPhysicalPollingPeriodMilliseconds);
         else
           Sleep(kPhysicalErrorBackoffPeriodMilliseconds);
-
+       
+        SDL_UpdateGamepads();
         newPhysicalState = ReadPhysicalControllerState(controllerIdentifier);
 
         if (true == physicalControllerState[controllerIdentifier].Update(newPhysicalState))
@@ -350,11 +361,22 @@ namespace Xidi
           initFlag,
           []() -> void
           {
+            int gamepadCount;
+            SDL_JoystickID* gamepads = SDL_GetGamepads(&gamepadCount);
+
             // Initialize controller state data structures.
             for (auto controllerIdentifier = 0;
                  controllerIdentifier < _countof(physicalControllerState);
                  ++controllerIdentifier)
             {
+              if (controllerIdentifier <= gamepadCount)
+              {
+                physicalControllerSdlIdentifier[controllerIdentifier] =
+                    SDL_OpenGamepad(gamepads[controllerIdentifier]);
+              }
+              else
+                physicalControllerSdlIdentifier[controllerIdentifier] = nullptr;
+
               const SPhysicalState initialPhysicalState =
                   ReadPhysicalControllerState(controllerIdentifier);
               const SState initialRawVirtualState =

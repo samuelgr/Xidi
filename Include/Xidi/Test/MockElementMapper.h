@@ -141,7 +141,7 @@ namespace XidiTest
     }
 
     void ContributeFromTriggerValue(
-        SState& controllerState, uint8_t triggerValue, uint32_t sourceIdentifier) const override
+        SState& controllerState, int16_t triggerValue, uint32_t sourceIdentifier) const override
     {
       if (EExpectedSource::Trigger != maybeExpectedSource.value_or(EExpectedSource::Trigger))
         TEST_FAILED_BECAUSE(

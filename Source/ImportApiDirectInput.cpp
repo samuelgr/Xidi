@@ -16,6 +16,8 @@
 #include <mutex>
 #include <string_view>
 
+#include <SDL3/SDL.h>
+
 #include <Infra/Core/Configuration.h>
 #include <Infra/Core/Message.h>
 #include <Infra/Core/ProcessInfo.h>
@@ -127,7 +129,7 @@ namespace Xidi
           libraryPath);
     }
 
-    /// Dynamically loads the DirectInput 8 and sets up all imported function calls.
+    /// Dynamically loads DirectInput 8 and sets up all imported function calls.
     static void InitializeVersion8(void)
     {
       static std::once_flag initializeFlag;
@@ -135,6 +137,10 @@ namespace Xidi
           initializeFlag,
           []() -> void
           {
+            // Initialize SDL3.
+            SDL_SetHint(SDL_HINT_JOYSTICK_ALLOW_BACKGROUND_EVENTS, "1");
+            SDL_Init(SDL_INIT_GAMEPAD | SDL_INIT_HAPTIC);
+
             ZeroMemory(&importTableVersion8, sizeof(importTableVersion8));
 
             std::wstring_view libraryPath = GetImportLibraryPathDirectInput8();
@@ -162,7 +168,7 @@ namespace Xidi
           });
     }
 
-    /// Dynamically loads the DirectInput 8 and sets up all imported function calls.
+    /// Dynamically loads DirectInput and sets up all imported function calls.
     static void InitializeVersionLegacy(void)
     {
       static std::once_flag initializeFlag;
@@ -170,6 +176,10 @@ namespace Xidi
           initializeFlag,
           []() -> void
           {
+            // Initialize SDL3.
+            SDL_SetHint(SDL_HINT_JOYSTICK_ALLOW_BACKGROUND_EVENTS, "1");
+            SDL_Init(SDL_INIT_GAMEPAD | SDL_INIT_HAPTIC);
+
             ZeroMemory(&importTableVersionLegacy, sizeof(importTableVersionLegacy));
 
             std::wstring_view libraryPath = GetImportLibraryPathDirectInput();
