@@ -70,20 +70,6 @@ namespace Xidi
     /// Base name of the WinMM library to import.
     inline constexpr std::wstring_view kStrLibraryNameWinMM = L"winmm.dll";
 
-    /// Configuration file section name for overriding import libraries.
-    inline constexpr std::wstring_view kStrConfigurationSectionImport = L"Import";
-
-    /// Configuration file setting for overriding import for DirectInput.
-    inline constexpr std::wstring_view kStrConfigurationSettingImportDirectInput =
-        kStrLibraryNameDirectInput;
-
-    /// Configuration file setting for overriding import for DirectInput8.
-    inline constexpr std::wstring_view kStrConfigurationSettingImportDirectInput8 =
-        kStrLibraryNameDirectInput8;
-
-    /// Configuration file setting for overriding import for WinMM.
-    inline constexpr std::wstring_view kStrConfigurationSettingImportWinMM = kStrLibraryNameWinMM;
-
     /// Configuration file setting separator for generating per-controller setting strings.
     inline constexpr wchar_t kCharConfigurationSettingSeparator = L'.';
 
@@ -248,6 +234,9 @@ namespace Xidi
 
     /// Complete path and filename of the system-supplied WinMM library.
     std::wstring_view GetSystemLibraryFilenameWinMM(void);
+
+    /// Complete path and filename of the main Xidi library.
+    std::wstring_view GetXidiMainLibraryFilename(void);
 
     /// Returns a string representing the specified axis type.
     /// @param [in] axis Axis type for which a string is requested.

@@ -83,28 +83,6 @@ namespace Xidi
     /// Holds the imported DirectInput legacy API function addresses.
     static UImportTableVersionLegacy importTableVersionLegacy;
 
-    /// Retrieves the library path for the DirectInput library that should be used for importing
-    /// functions.
-    /// @return Library path.
-    static std::wstring_view GetImportLibraryPathDirectInput(void)
-    {
-      return Globals::GetConfigurationData()[Strings::kStrConfigurationSectionImport]
-                                            [Strings::kStrConfigurationSettingImportDirectInput]
-                                                .ValueOr(
-                                                    Strings::GetSystemLibraryFilenameDirectInput());
-    }
-
-    /// Retrieves the library path for the DirectInput8 library that should be used for importing
-    /// functions.
-    /// @return Library path.
-    static std::wstring_view GetImportLibraryPathDirectInput8(void)
-    {
-      return Globals::GetConfigurationData()
-          [Strings::kStrConfigurationSectionImport]
-          [Strings::kStrConfigurationSettingImportDirectInput8]
-              .ValueOr(Strings::GetSystemLibraryFilenameDirectInput8());
-    }
-
     /// Logs a debug event related to attempting to load the system-provided library for importing
     /// functions.
     /// @param [in] libraryPath Path of the library that was loaded.
@@ -137,7 +115,7 @@ namespace Xidi
           {
             ZeroMemory(&importTableVersion8, sizeof(importTableVersion8));
 
-            std::wstring_view libraryPath = GetImportLibraryPathDirectInput8();
+            std::wstring_view libraryPath = Strings::GetSystemLibraryFilenameDirectInput8();
             Infra::Message::OutputFormatted(
                 Infra::Message::ESeverity::Debug,
                 L"Attempting to import DirectInput 8 functions from %s.",
@@ -172,7 +150,7 @@ namespace Xidi
           {
             ZeroMemory(&importTableVersionLegacy, sizeof(importTableVersionLegacy));
 
-            std::wstring_view libraryPath = GetImportLibraryPathDirectInput();
+            std::wstring_view libraryPath = Strings::GetSystemLibraryFilenameDirectInput();
             Infra::Message::OutputFormatted(
                 Infra::Message::ESeverity::Debug,
                 L"Attempting to import DirectInput legacy functions from %s.",

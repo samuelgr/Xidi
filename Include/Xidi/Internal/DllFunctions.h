@@ -16,11 +16,12 @@
 
 #include "ApiWindows.h"
 
-/// Defines a destination DLL for forwarding exported API calls.
+/// Defines a destination DLL for forwarding exported API calls. Library name should not include the
+/// ".dll" extension.
 #define DLL_EXPORT_FORWARD_DEFINE_DLL(libraryName)                                                 \
   static std::wstring_view _Xidi_DllFunctionsInternal_GetLibraryPath_##libraryName(void)           \
   {                                                                                                \
-    return _CRT_WIDE(#libraryName);                                                                \
+    return _CRT_WIDE(#libraryName) L".dll";                                                        \
   }
 
 /// Defines a destination DLL for forwarding exported API calls whose path is returned as a

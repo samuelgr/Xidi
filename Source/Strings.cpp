@@ -60,7 +60,7 @@ namespace Xidi
 
             if (stringLength > 0) initString.assign(stringStart, &stringStart[stringLength]);
 #else
-            initString.assign(L"");
+            initString.assign(Infra::ProcessInfo::GetProductName());
 #endif
           });
 
@@ -149,6 +149,34 @@ namespace Xidi
           []() -> void
           {
             std::wstring_view pieces[] = {GetSystemDirectoryName(), kStrLibraryNameWinMM};
+
+            size_t totalLength = 0;
+            for (int i = 0; i < _countof(pieces); ++i)
+              totalLength += pieces[i].length();
+
+            initString.reserve(1 + totalLength);
+
+            for (int i = 0; i < _countof(pieces); ++i)
+              initString.append(pieces[i]);
+          });
+
+      return initString;
+    }
+
+    std::wstring_view GetXidiMainLibraryFilename(void)
+    {
+      static std::wstring initString;
+      static std::once_flag initFlag;
+
+      std::call_once(
+          initFlag,
+          []() -> void
+          {
+            std::wstring_view pieces[] = {
+                Infra::ProcessInfo::GetThisModuleDirectoryName(),
+                L"\\",
+                Infra::ProcessInfo::GetProductName(),
+                L".dll"};
 
             size_t totalLength = 0;
             for (int i = 0; i < _countof(pieces); ++i)

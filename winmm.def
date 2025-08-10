@@ -15,16 +15,16 @@ EXPORTS
     auxGetVolume
     auxOutMessage
     auxSetVolume
-    joyConfigChanged
-    joyGetDevCapsA
-    joyGetDevCapsW
-    joyGetNumDevs
-    joyGetPos
-    joyGetPosEx
-    joyGetThreshold
-    joyReleaseCapture
-    joySetCapture
-    joySetThreshold
+    joyConfigChanged=winmm_joyConfigChanged
+    joyGetDevCapsA=winmm_joyGetDevCapsA
+    joyGetDevCapsW=winmm_joyGetDevCapsW
+    joyGetNumDevs=winmm_joyGetNumDevs
+    joyGetPos=winmm_joyGetPos
+    joyGetPosEx=winmm_joyGetPosEx
+    joyGetThreshold=winmm_joyGetThreshold
+    joyReleaseCapture=winmm_joyReleaseCapture
+    joySetCapture=winmm_joySetCapture
+    joySetThreshold=winmm_joySetThreshold
     mciDriverNotify
     mciDriverYield
     mciExecute

@@ -14,6 +14,7 @@
 
 #include <map>
 #include <mutex>
+#include <string_view>
 #include <unordered_map>
 
 #include "ApiWindows.h"
@@ -62,10 +63,41 @@ namespace Xidi
           Infra::Strings::ConvertNarrowToWide(functionName.data());
       Infra::Message::OutputFormatted(
           Infra::Message::ESeverity::Warning,
-          L"Library \"%.*s\" is missing function %s. Attempts to call it will fail.",
+          L"Library %.*s is missing entry point %s. Attempts to call it will fail.",
           static_cast<int>(libraryPath.length()),
           libraryPath.data(),
           functionNameWide.AsCString());
+    }
+
+    /// Shows an error and terminates the process in the event of failure to load a particular
+    /// library dependency from which functions are to be imported.
+    /// @param [in] libraryName Name of the library from which the import is being attempted.
+    static void TerminateProcessBecauseLibraryNotLoaded(std::wstring_view libraryName)
+    {
+      Infra::Message::OutputFormatted(
+          Infra::Message::ESeverity::ForcedInteractiveError,
+          L"Library %.*s could not be loaded.\n\nXidi is terminating the application because calls to this library will otherwise cause it to crash.",
+          static_cast<int>(libraryName.length()),
+          libraryName.data());
+      TerminateProcess(Infra::ProcessInfo::GetCurrentProcessHandle(), (UINT)-1);
+    }
+
+    /// Shows an error and terminates the process in the event of failure to import a particular
+    /// function from a library dependency.
+    /// @param [in] libraryName Name of the library from which the import is being attempted.
+    /// @param [in] functionName Name of the function whose import attempt failed.
+    static void TerminateProcessBecauseImportFailed(
+        std::wstring_view libraryName, std::string_view functionName)
+    {
+      Infra::TemporaryString functionNameWideCharacterString = functionName;
+      Infra::Message::OutputFormatted(
+          Infra::Message::ESeverity::ForcedInteractiveError,
+          L"Library %.*s is missing entry point %.*s.\n\nXidi is terminating the application because calls to this entry point will otherwise cause it to crash.",
+          static_cast<int>(libraryName.length()),
+          libraryName.data(),
+          static_cast<int>(functionNameWideCharacterString.AsStringView().length()),
+          functionNameWideCharacterString.AsStringView().data());
+      TerminateProcess(Infra::ProcessInfo::GetCurrentProcessHandle(), (UINT)-1);
     }
 
     bool TryImport(
@@ -110,7 +142,9 @@ extern "C" void DllForwardedFunctionsInitialize(void)
                 LoadLibrary(dllForwardedFunction.mapped()->GetLibraryPath().data());
             if (nullptr == loadedLibraryHandle)
             {
-              continue;
+              TerminateProcessBecauseLibraryNotLoaded(
+                  dllForwardedFunction.mapped()->GetLibraryPath());
+              return;
             }
             libraryHandleIter = libraryHandles.emplace(libraryPath, loadedLibraryHandle).first;
           }
@@ -120,10 +154,10 @@ extern "C" void DllForwardedFunctionsInitialize(void)
               libraryHandle, dllForwardedFunction.mapped()->GetFunctionName().data());
           if (nullptr == procAddress)
           {
-            LogImportFailed(
+            TerminateProcessBecauseImportFailed(
                 dllForwardedFunction.mapped()->GetLibraryPath(),
                 dllForwardedFunction.mapped()->GetFunctionName());
-            continue;
+            return;
           }
 
           dllForwardedFunction.mapped()->SetProcAddress(procAddress);

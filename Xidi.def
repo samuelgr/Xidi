@@ -1,0 +1,12 @@
+LIBRARY Xidi
+EXPORTS
+    winmm_joyConfigChanged=joyConfigChanged
+    winmm_joyGetDevCapsA=joyGetDevCapsA
+    winmm_joyGetDevCapsW=joyGetDevCapsW
+    winmm_joyGetNumDevs=joyGetNumDevs
+    winmm_joyGetPos=joyGetPos
+    winmm_joyGetPosEx=joyGetPosEx
+    winmm_joyGetThreshold=joyGetThreshold
+    winmm_joyReleaseCapture=joyReleaseCapture
+    winmm_joySetCapture=joySetCapture
+    winmm_joySetThreshold=joySetThreshold

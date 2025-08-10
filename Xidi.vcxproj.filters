@@ -128,6 +128,9 @@
     <ClInclude Include="Include\Xidi\Internal\XidiConfigReader.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="Include\Xidi\Internal\WrapperJoyWinMM.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Source\ApiDirectInput.cpp">
@@ -221,6 +224,9 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="Source\DllFunctions.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\WrapperJoyWinMM.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

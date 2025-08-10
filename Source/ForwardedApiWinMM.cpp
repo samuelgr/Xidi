@@ -6,20 +6,32 @@
  * Copyright (c) 2016-2025
  ***********************************************************************************************//**
  * @file ForwardedApiWinMM.cpp
- *   Partial implementation of exported function entry points for WinMM that should be forwarded
- *   perfectly to the system version of the same.
+ *   Partial implementation of exported function entry points for WinMM.
  **************************************************************************************************/
 
 #include "DllFunctions.h"
 #include "Globals.h"
 #include "Strings.h"
 
+DLL_EXPORT_FORWARD_DEFINE_DLL_WITH_CUSTOM_PATH(Xidi)
+{
+  return Xidi::Strings::GetXidiMainLibraryFilename();
+}
+
+DLL_EXPORT_FORWARD(Xidi, winmm_joyConfigChanged);
+DLL_EXPORT_FORWARD(Xidi, winmm_joyGetDevCapsA);
+DLL_EXPORT_FORWARD(Xidi, winmm_joyGetDevCapsW);
+DLL_EXPORT_FORWARD(Xidi, winmm_joyGetNumDevs);
+DLL_EXPORT_FORWARD(Xidi, winmm_joyGetPos);
+DLL_EXPORT_FORWARD(Xidi, winmm_joyGetPosEx);
+DLL_EXPORT_FORWARD(Xidi, winmm_joyGetThreshold);
+DLL_EXPORT_FORWARD(Xidi, winmm_joyReleaseCapture);
+DLL_EXPORT_FORWARD(Xidi, winmm_joySetCapture);
+DLL_EXPORT_FORWARD(Xidi, winmm_joySetThreshold);
+
 DLL_EXPORT_FORWARD_DEFINE_DLL_WITH_CUSTOM_PATH(winmm)
 {
-  using namespace Xidi;
-  return Globals::GetConfigurationData()[Strings::kStrConfigurationSectionImport]
-                                        [Strings::kStrConfigurationSettingImportWinMM]
-                                            .ValueOr(Strings::GetSystemLibraryFilenameWinMM());
+  return Xidi::Strings::GetSystemLibraryFilenameWinMM();
 }
 
 DLL_EXPORT_FORWARD(winmm, CloseDriver);

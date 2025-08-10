@@ -59,16 +59,6 @@ namespace Xidi
   /// Holds the layout of the Xidi configuration file that is known statically.
   static TConfigurationFileLayout configurationFileLayout = {
       ConfigurationFileLayoutSection(
-          Strings::kStrConfigurationSectionImport,
-          {
-              ConfigurationFileLayoutNameAndValueType(
-                  Strings::kStrConfigurationSettingImportDirectInput, EValueType::String),
-              ConfigurationFileLayoutNameAndValueType(
-                  Strings::kStrConfigurationSettingImportDirectInput8, EValueType::String),
-              ConfigurationFileLayoutNameAndValueType(
-                  Strings::kStrConfigurationSettingImportWinMM, EValueType::String),
-          }),
-      ConfigurationFileLayoutSection(
           Strings::kStrConfigurationSectionLog,
           {
               ConfigurationFileLayoutNameAndValueType(

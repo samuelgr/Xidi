@@ -74,16 +74,6 @@ namespace Xidi
     /// Holds the imported WinMM API function addresses.
     static UImportTable importTable;
 
-    /// Retrieves the library path for the WinMM library that should be used for importing
-    /// functions.
-    /// @return Library path.
-    static std::wstring_view GetImportLibraryPathWinMM(void)
-    {
-      return Globals::GetConfigurationData()[Strings::kStrConfigurationSectionImport]
-                                            [Strings::kStrConfigurationSettingImportWinMM]
-                                                .ValueOr(Strings::GetSystemLibraryFilenameWinMM());
-    }
-
     void Initialize(void)
     {
       static std::once_flag initializeFlag;
@@ -96,7 +86,7 @@ namespace Xidi
             ZeroMemory(&importTable, sizeof(importTable));
 
             // Obtain the full library path string.
-            std::wstring_view libraryPath = GetImportLibraryPathWinMM();
+            std::wstring_view libraryPath = Strings::GetSystemLibraryFilenameWinMM();
 
             // Attempt to load the library.
             Infra::Message::OutputFormatted(
@@ -246,7 +236,7 @@ namespace Xidi
       {
         Initialize();
 
-        std::wstring_view libraryPath = GetImportLibraryPathWinMM();
+        std::wstring_view libraryPath = Strings::GetSystemLibraryFilenameWinMM();
         size_t numReplaced = 0;
 
         for (const auto& newImportFunction : importFunctionTable)

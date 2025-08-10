@@ -16,6 +16,17 @@ INCLUDE DllExportForward.inc
 _TEXT                                       SEGMENT
 
 
+DllExportForward Xidi, winmm_joyConfigChanged
+DllExportForward Xidi, winmm_joyGetDevCapsA
+DllExportForward Xidi, winmm_joyGetDevCapsW
+DllExportForward Xidi, winmm_joyGetNumDevs
+DllExportForward Xidi, winmm_joyGetPos
+DllExportForward Xidi, winmm_joyGetPosEx
+DllExportForward Xidi, winmm_joyGetThreshold
+DllExportForward Xidi, winmm_joyReleaseCapture
+DllExportForward Xidi, winmm_joySetCapture
+DllExportForward Xidi, winmm_joySetThreshold
+
 DllExportForward winmm, CloseDriver
 DllExportForward winmm, DefDriverProc
 DllExportForward winmm, DriverCallback
