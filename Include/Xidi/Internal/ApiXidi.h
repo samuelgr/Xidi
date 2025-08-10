@@ -97,5 +97,8 @@ namespace Xidi
 
     /// Pointer type definition for the XidiApiGetInterface exported function.
     using TGetInterfaceFunc = IXidi* (*)(EClass apiClass);
+
+    /// Constant for the name of the XidiApiGetInterface exported function.
+    inline constexpr const char* const kGetInterfaceFuncName = "XidiApiGetInterface";
   } // namespace Api
 } // namespace Xidi

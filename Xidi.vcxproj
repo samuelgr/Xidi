@@ -1,0 +1,168 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup Label="ProjectConfigurations">
+    <ProjectConfiguration Include="Debug|Win32">
+      <Configuration>Debug</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Release|Win32">
+      <Configuration>Release</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Debug|x64">
+      <Configuration>Debug</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Release|x64">
+      <Configuration>Release</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
+  </ItemGroup>
+  <PropertyGroup Label="Globals">
+    <VCProjectVersion>17.0</VCProjectVersion>
+    <Keyword>Win32Proj</Keyword>
+    <ProjectGuid>{09c6ce1f-080a-4afc-ac9c-10a61f08785a}</ProjectGuid>
+    <RootNamespace>Xidi</RootNamespace>
+    <WindowsTargetPlatformVersion>10.0</WindowsTargetPlatformVersion>
+  </PropertyGroup>
+  <Import Project="$(MSBuildProjectDirectory)\Modules\Infra\Build\Properties\NativeBuild.props" />
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
+    <ConfigurationType>DynamicLibrary</ConfigurationType>
+    <UseDebugLibraries>true</UseDebugLibraries>
+    <PlatformToolset>v143</PlatformToolset>
+    <CharacterSet>Unicode</CharacterSet>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
+    <ConfigurationType>DynamicLibrary</ConfigurationType>
+    <UseDebugLibraries>false</UseDebugLibraries>
+    <PlatformToolset>v143</PlatformToolset>
+    <WholeProgramOptimization>true</WholeProgramOptimization>
+    <CharacterSet>Unicode</CharacterSet>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="Configuration">
+    <ConfigurationType>DynamicLibrary</ConfigurationType>
+    <UseDebugLibraries>true</UseDebugLibraries>
+    <PlatformToolset>v143</PlatformToolset>
+    <CharacterSet>Unicode</CharacterSet>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="Configuration">
+    <ConfigurationType>DynamicLibrary</ConfigurationType>
+    <UseDebugLibraries>false</UseDebugLibraries>
+    <PlatformToolset>v143</PlatformToolset>
+    <WholeProgramOptimization>true</WholeProgramOptimization>
+    <CharacterSet>Unicode</CharacterSet>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
+  <ImportGroup Label="ExtensionSettings">
+  </ImportGroup>
+  <ImportGroup Label="Shared">
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <PropertyGroup Label="UserMacros" />
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <ClCompile />
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <ClCompile />
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+    <ClCompile />
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+    <ClCompile />
+  </ItemDefinitionGroup>
+  <ItemGroup>
+    <ProjectReference Include="Modules\Infra\CoreInfra.vcxproj">
+      <Project>{5af31c51-1646-4bda-9407-12273b2da870}</Project>
+    </ProjectReference>
+  </ItemGroup>
+  <ItemGroup>
+    <ResourceCompile Include="Resources\Xidi.rc" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="Include\Xidi\Internal\ApiBitSet.h" />
+    <ClInclude Include="Include\Xidi\Internal\ApiDirectInput.h" />
+    <ClInclude Include="Include\Xidi\Internal\ApiGUID.h" />
+    <ClInclude Include="Include\Xidi\Internal\ApiWindows.h" />
+    <ClInclude Include="Include\Xidi\Internal\ApiXidi.h" />
+    <ClInclude Include="Include\Xidi\Internal\ConcurrencyWrapper.h" />
+    <ClInclude Include="Include\Xidi\Internal\ControllerIdentification.h" />
+    <ClInclude Include="Include\Xidi\Internal\ControllerMath.h" />
+    <ClInclude Include="Include\Xidi\Internal\ControllerTypes.h" />
+    <ClInclude Include="Include\Xidi\Internal\DataFormat.h" />
+    <ClInclude Include="Include\Xidi\Internal\DirectInputClassFactory.h" />
+    <ClInclude Include="Include\Xidi\Internal\DllFunctions.h" />
+    <ClInclude Include="Include\Xidi\Internal\ElementMapper.h" />
+    <ClInclude Include="Include\Xidi\Internal\ForceFeedbackDevice.h" />
+    <ClInclude Include="Include\Xidi\Internal\ForceFeedbackEffect.h" />
+    <ClInclude Include="Include\Xidi\Internal\ForceFeedbackMath.h" />
+    <ClInclude Include="Include\Xidi\Internal\ForceFeedbackParameters.h" />
+    <ClInclude Include="Include\Xidi\Internal\ForceFeedbackTypes.h" />
+    <ClInclude Include="Include\Xidi\Internal\Globals.h" />
+    <ClInclude Include="Include\Xidi\Internal\ImportApiDirectInput.h" />
+    <ClInclude Include="Include\Xidi\Internal\ImportApiWinMM.h" />
+    <ClInclude Include="Include\Xidi\Internal\ImportApiXInput.h" />
+    <ClInclude Include="Include\Xidi\Internal\Keyboard.h" />
+    <ClInclude Include="Include\Xidi\Internal\Mapper.h" />
+    <ClInclude Include="Include\Xidi\Internal\MapperBuilder.h" />
+    <ClInclude Include="Include\Xidi\Internal\MapperParser.h" />
+    <ClInclude Include="Include\Xidi\Internal\Mouse.h" />
+    <ClInclude Include="Include\Xidi\Internal\PhysicalController.h" />
+    <ClInclude Include="Include\Xidi\Internal\StateChangeEventBuffer.h" />
+    <ClInclude Include="Include\Xidi\Internal\Strings.h" />
+    <ClInclude Include="Include\Xidi\Internal\VirtualController.h" />
+    <ClInclude Include="Include\Xidi\Internal\VirtualDirectInputDevice.h" />
+    <ClInclude Include="Include\Xidi\Internal\VirtualDirectInputEffect.h" />
+    <ClInclude Include="Include\Xidi\Internal\WrapperIDirectInput.h" />
+    <ClInclude Include="Include\Xidi\Internal\XidiConfigReader.h" />
+    <ClInclude Include="Resources\Xidi.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="Source\ApiDirectInput.cpp" />
+    <ClCompile Include="Source\ApiGUID.cpp" />
+    <ClCompile Include="Source\ApiXidi.cpp" />
+    <ClCompile Include="Source\ControllerIdentification.cpp" />
+    <ClCompile Include="Source\ControllerMath.cpp" />
+    <ClCompile Include="Source\DataFormat.cpp" />
+    <ClCompile Include="Source\DirectInputClassFactory.cpp" />
+    <ClCompile Include="Source\DllFunctions.cpp" />
+    <ClCompile Include="Source\DllMain.cpp" />
+    <ClCompile Include="Source\ElementMapper.cpp" />
+    <ClCompile Include="Source\ForceFeedbackDevice.cpp" />
+    <ClCompile Include="Source\ForceFeedbackEffect.cpp" />
+    <ClCompile Include="Source\ForceFeedbackParameters.cpp" />
+    <ClCompile Include="Source\Globals.cpp" />
+    <ClCompile Include="Source\ImportApiDirectInput.cpp" />
+    <ClCompile Include="Source\ImportApiWinMM.cpp" />
+    <ClCompile Include="Source\ImportApiXInput.cpp" />
+    <ClCompile Include="Source\Keyboard.cpp" />
+    <ClCompile Include="Source\Mapper.cpp" />
+    <ClCompile Include="Source\MapperBuilder.cpp" />
+    <ClCompile Include="Source\MapperDefinitions.cpp" />
+    <ClCompile Include="Source\MapperParser.cpp" />
+    <ClCompile Include="Source\Mouse.cpp" />
+    <ClCompile Include="Source\PhysicalController.cpp" />
+    <ClCompile Include="Source\StateChangeEventBuffer.cpp" />
+    <ClCompile Include="Source\Strings.cpp" />
+    <ClCompile Include="Source\VirtualController.cpp" />
+    <ClCompile Include="Source\VirtualDirectInputDevice.cpp" />
+    <ClCompile Include="Source\VirtualDirectInputEffect.cpp" />
+    <ClCompile Include="Source\WrapperIDirectInput.cpp" />
+    <ClCompile Include="Source\XidiConfigReader.cpp" />
+  </ItemGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
+  <ImportGroup Label="ExtensionTargets">
+  </ImportGroup>
+</Project>

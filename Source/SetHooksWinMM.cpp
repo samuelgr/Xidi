@@ -100,7 +100,8 @@ namespace Xidi
     }
 
     const Xidi::Api::TGetInterfaceFunc funcXidiApiGetInterface =
-        (Xidi::Api::TGetInterfaceFunc)GetProcAddress(importLibraryHandle, "XidiApiGetInterface");
+        (Xidi::Api::TGetInterfaceFunc)GetProcAddress(
+            importLibraryHandle, Xidi::Api::kGetInterfaceFuncName);
     if (nullptr == funcXidiApiGetInterface)
     {
       Infra::Message::OutputFormatted(
