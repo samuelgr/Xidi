@@ -74,7 +74,7 @@ namespace Xidi
           Infra::Message::ESeverity::Info, L"Successfully created a DirectInput interface object.");
     }
 
-    HRESULT __stdcall DirectInput8Create(
+    HRESULT __stdcall Version8DirectInput8Create(
         HINSTANCE hinst, DWORD dwVersion, REFIID riidltf, LPVOID* ppvOut, LPUNKNOWN punkOuter)
     {
       void* diObject = nullptr;
@@ -112,7 +112,7 @@ namespace Xidi
       return result;
     }
 
-    HRESULT __stdcall DirectInputCreateA(
+    HRESULT __stdcall VersionLegacyDirectInputCreateA(
         HINSTANCE hinst, DWORD dwVersion, LPDIRECTINPUTA* ppDI, LPUNKNOWN punkOuter)
     {
       IDirectInputA* diObject = nullptr;
@@ -139,7 +139,7 @@ namespace Xidi
       return result;
     }
 
-    HRESULT __stdcall DirectInputCreateW(
+    HRESULT __stdcall VersionLegacyDirectInputCreateW(
         HINSTANCE hinst, DWORD dwVersion, LPDIRECTINPUTW* ppDI, LPUNKNOWN punkOuter)
     {
       IDirectInput* diObject = nullptr;
@@ -166,7 +166,7 @@ namespace Xidi
       return result;
     }
 
-    HRESULT __stdcall DirectInputCreateEx(
+    HRESULT __stdcall VersionLegacyDirectInputCreateEx(
         HINSTANCE hinst, DWORD dwVersion, REFIID riidltf, LPVOID* ppvOut, LPUNKNOWN punkOuter)
     {
       void* diObject = nullptr;
@@ -220,23 +220,37 @@ namespace Xidi
       return result;
     }
 
-    HRESULT __stdcall DllRegisterServer(void)
+    HRESULT __stdcall Version8DllRegisterServer(void)
     {
       return ImportApiDirectInput::Version8::DllRegisterServer();
     }
 
-    HRESULT __stdcall DllUnregisterServer(void)
+    HRESULT __stdcall VersionLegacyDllRegisterServer(void)
+    {
+      return ImportApiDirectInput::VersionLegacy::DllRegisterServer();
+    }
+
+    HRESULT __stdcall Version8DllUnregisterServer(void)
     {
       return ImportApiDirectInput::Version8::DllUnregisterServer();
     }
 
-    HRESULT __stdcall DllCanUnloadNow(void)
+    HRESULT __stdcall VersionLegacyDllUnregisterServer(void)
     {
-      // In practice, there should not be a need to unload Xidi or DirectInput DLLs.
-      return S_FALSE;
+      return ImportApiDirectInput::VersionLegacy::DllUnregisterServer();
     }
 
-    HRESULT __stdcall DllGetClassObject(REFCLSID rclsid, REFIID riid, LPVOID* ppv)
+    HRESULT __stdcall Version8DllCanUnloadNow(void)
+    {
+      return ImportApiDirectInput::Version8::DllCanUnloadNow();
+    }
+
+    HRESULT __stdcall VersionLegacyDllCanUnloadNow(void)
+    {
+      return ImportApiDirectInput::VersionLegacy::DllCanUnloadNow();
+    }
+
+    HRESULT __stdcall Version8DllGetClassObject(REFCLSID rclsid, REFIID riid, LPVOID* ppv)
     {
       if (DirectInputClassFactory::CanCreateObjectsOfClass(rclsid))
       {
@@ -263,17 +277,7 @@ namespace Xidi
       return ImportApiDirectInput::Version8::DllGetClassObject(rclsid, riid, ppv);
     }
 
-    HRESULT __stdcall LegacyDllRegisterServer(void)
-    {
-      return ImportApiDirectInput::VersionLegacy::DllRegisterServer();
-    }
-
-    HRESULT __stdcall LegacyDllUnregisterServer(void)
-    {
-      return ImportApiDirectInput::VersionLegacy::DllUnregisterServer();
-    }
-
-    HRESULT __stdcall LegacyDllGetClassObject(REFCLSID rclsid, REFIID riid, LPVOID* ppv)
+    HRESULT __stdcall VersionLegacyDllGetClassObject(REFCLSID rclsid, REFIID riid, LPVOID* ppv)
     {
       if (DirectInputClassFactory::CanCreateObjectsOfClass(rclsid))
       {

@@ -19,21 +19,23 @@ namespace Xidi
   {
     extern "C"
     {
-      HRESULT __stdcall DirectInput8Create(
+      HRESULT __stdcall Version8DirectInput8Create(
           HINSTANCE hinst, DWORD dwVersion, REFIID riidltf, LPVOID* ppvOut, LPUNKNOWN punkOuter);
-      HRESULT __stdcall DirectInputCreateA(
+      HRESULT __stdcall VersionLegacyDirectInputCreateA(
           HINSTANCE hinst, DWORD dwVersion, LPDIRECTINPUTA* ppDI, LPUNKNOWN punkOuter);
-      HRESULT __stdcall DirectInputCreateW(
+      HRESULT __stdcall VersionLegacyDirectInputCreateW(
           HINSTANCE hinst, DWORD dwVersion, LPDIRECTINPUTW* ppDI, LPUNKNOWN punkOuter);
-      HRESULT __stdcall DirectInputCreateEx(
+      HRESULT __stdcall VersionLegacyDirectInputCreateEx(
           HINSTANCE hinst, DWORD dwVersion, REFIID riidltf, LPVOID* ppvOut, LPUNKNOWN punkOuter);
-      HRESULT __stdcall DllRegisterServer(void);
-      HRESULT __stdcall DllUnregisterServer(void);
-      HRESULT __stdcall DllCanUnloadNow(void);
-      HRESULT __stdcall DllGetClassObject(REFCLSID rclsid, REFIID riid, LPVOID* ppv);
-      HRESULT __stdcall LegacyDllRegisterServer(void);
-      HRESULT __stdcall LegacyDllUnregisterServer(void);
-      HRESULT __stdcall LegacyDllGetClassObject(REFCLSID rclsid, REFIID riid, LPVOID* ppv);
+      HRESULT __stdcall Version8DllRegisterServer(void);
+      HRESULT __stdcall VersionLegacyDllRegisterServer(void);
+      HRESULT __stdcall Version8DllUnregisterServer(void);
+      HRESULT __stdcall VersionLegacyDllUnregisterServer(void);
+      HRESULT __stdcall Version8DllCanUnloadNow(void);
+      HRESULT __stdcall VersionLegacyDllCanUnloadNow(void);
+      HRESULT __stdcall Version8DllGetClassObject(REFCLSID rclsid, REFIID riid, LPVOID* ppv);
+      
+      HRESULT __stdcall VersionLegacyDllGetClassObject(REFCLSID rclsid, REFIID riid, LPVOID* ppv);
     }
   } // namespace ExportApiDirectInput
 } // namespace Xidi

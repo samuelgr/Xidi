@@ -1,9 +1,9 @@
 LIBRARY dinput
 EXPORTS
-    DirectInputCreateA                              @1
-    DirectInputCreateW                              @2
-    DirectInputCreateEx                             @3
-    DllRegisterServer=LegacyDllRegisterServer       PRIVATE
-    DllUnregisterServer=LegacyDllUnregisterServer   PRIVATE
-    DllCanUnloadNow                                 PRIVATE
-    DllGetClassObject=LegacyDllGetClassObject       PRIVATE
+    DirectInputCreateA=dinput_DirectInputCreateA                @1
+    DirectInputCreateW=dinput_DirectInputCreateW                @2
+    DirectInputCreateEx=dinput_DirectInputCreateEx              @3
+    DllRegisterServer=dinput_DllRegisterServer                  PRIVATE
+    DllUnregisterServer=dinput_DllUnregisterServer              PRIVATE
+    DllCanUnloadNow=dinput_DllCanUnloadNow                      PRIVATE
+    DllGetClassObject=dinput_DllGetClassObject                  PRIVATE

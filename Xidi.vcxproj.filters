@@ -131,6 +131,9 @@
     <ClInclude Include="Include\Xidi\Internal\WrapperJoyWinMM.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="Include\Xidi\Internal\ExportApiDirectInput.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Source\ApiDirectInput.cpp">
@@ -227,6 +230,9 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="Source\WrapperJoyWinMM.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\ExportApiDirectInput.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

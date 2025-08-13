@@ -1,5 +1,17 @@
 LIBRARY Xidi
 EXPORTS
+    dinput_DirectInputCreateA=VersionLegacyDirectInputCreateA
+    dinput_DirectInputCreateW=VersionLegacyDirectInputCreateW
+    dinput_DirectInputCreateEx=VersionLegacyDirectInputCreateEx
+    dinput_DllRegisterServer=VersionLegacyDllRegisterServer
+    dinput_DllUnregisterServer=VersionLegacyDllUnregisterServer
+    dinput_DllCanUnloadNow=VersionLegacyDllCanUnloadNow
+    dinput_DllGetClassObject=VersionLegacyDllGetClassObject
+    dinput8_DirectInput8Create=Version8DirectInput8Create
+    dinput8_DllRegisterServer=Version8DllRegisterServer
+    dinput8_DllUnregisterServer=Version8DllUnregisterServer
+    dinput8_DllCanUnloadNow=Version8DllCanUnloadNow
+    dinput8_DllGetClassObject=Version8DllGetClassObject
     winmm_joyConfigChanged=joyConfigChanged
     winmm_joyGetDevCapsA=joyGetDevCapsA
     winmm_joyGetDevCapsW=joyGetDevCapsW

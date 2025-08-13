@@ -1,7 +1,7 @@
 LIBRARY dinput8
 EXPORTS
-    DirectInput8Create                      @1
-    DllRegisterServer                       PRIVATE
-    DllUnregisterServer                     PRIVATE
-    DllCanUnloadNow                         PRIVATE
-    DllGetClassObject                       PRIVATE
+    DirectInput8Create=dinput8_DirectInput8Create               @1
+    DllRegisterServer=dinput8_DllRegisterServer                 PRIVATE
+    DllUnregisterServer=dinput8_DllUnregisterServer             PRIVATE
+    DllCanUnloadNow=dinput8_DllCanUnloadNow                     PRIVATE
+    DllGetClassObject=dinput8_DllGetClassObject                 PRIVATE
