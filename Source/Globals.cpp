@@ -68,6 +68,44 @@ namespace Xidi
     }
 #endif
 
+    /// Generates and returns the file path for a Xidi log file. This is a combination of the
+    /// product name, Xidi form name, PID, executable base name, and the .log extension,
+    /// placed in the current user's desktop directory.
+    /// @return Recommended log filename.
+    std::wstring_view GetLogFilePath(void)
+    {
+      static std::wstring logFilePath;
+      static std::once_flag initFlag;
+
+      std::call_once(
+          initFlag,
+          []() -> void
+          {
+            Infra::TemporaryString logFilename;
+
+            PWSTR knownFolderPath;
+            const HRESULT result =
+                SHGetKnownFolderPath(FOLDERID_Desktop, 0, nullptr, &knownFolderPath);
+
+            if (S_OK == result)
+            {
+              logFilename << knownFolderPath << L'\\';
+              CoTaskMemFree(knownFolderPath);
+            }
+
+            logFilename << Infra::ProcessInfo::GetProductName();
+            if (Strings::GetFormName() != Infra::ProcessInfo::GetProductName())
+              logFilename << L'.' << Strings::GetFormName();
+
+            logFilename << L'_' << Infra::ProcessInfo::GetExecutableBaseName() << L'_'
+                        << Infra::ProcessInfo::GetCurrentProcessId() << L".log";
+
+            logFilePath.assign(logFilename);
+          });
+
+      return logFilePath;
+    }
+
     /// Enables the log if it is not already enabled.
     /// Regardless, the minimum severity for output is set based on the parameter.
     /// @param [in] logLevel Logging level to configure as the minimum severity for output.
@@ -78,7 +116,7 @@ namespace Xidi
           enableLogFlag,
           [logLevel]() -> void
           {
-            Infra::Message::CreateAndEnableLogFile();
+            Infra::Message::CreateAndEnableLogFile(GetLogFilePath());
           });
 
       Infra::Message::SetMinimumSeverityForOutput(logLevel);
