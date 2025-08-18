@@ -35,7 +35,27 @@ DllExportForward MACRO libraryName, funcName
     funcName PROC PUBLIC
         cmp SIZE_T PTR [@catstr(_ptr_export, _, libraryName, _, funcName)], 0
         jne $initialized
+
+        push sbp
+IFDEF _WIN64
+        ; 64-bit function arguments are passed in these registers.
+        ; The initialization function might overwrite them because it intercepts what is otherwise expected to be a function call.
+        push rcx
+        push rdx
+        push r8
+        push r9
+ENDIF
+
         call DllForwardedFunctionsInitialize
+
+IFDEF _WIN64
+        pop r9
+        pop r8
+        pop rdx
+        pop rcx
+ENDIF
+        pop sbp
+
     $initialized:
         jmp SIZE_T PTR [@catstr(_ptr_export, _, libraryName, _, funcName)]
     funcName ENDP
