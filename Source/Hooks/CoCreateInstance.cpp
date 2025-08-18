@@ -91,81 +91,62 @@ namespace Xidi
     *ppv = newObject;
     return S_OK;
   }
-
-  /// Retrieves the address of the DllGetClassObject function exported by the specified module,
-  /// which should be located in the same directory as this hook module.
-  /// @tparam moduleName Compile-time constant string of the base name of the module.
-  /// @return Address of the desired procedure, or `nullptr` on failure.
-  template <const std::wstring_view* moduleName> static decltype(&DllGetClassObject)
-      LocateDllGetClassObjectProc(void)
-  {
-    static const std::wstring importLibraryFilename(
-        std::wstring(Infra::ProcessInfo::GetThisModuleDirectoryName()) + L"\\" +
-        std::wstring(*moduleName));
-    static const HMODULE moduleHandle = LoadLibrary(importLibraryFilename.c_str());
-    static const FARPROC moduleDllGetClassObjectProc =
-        GetProcAddress(moduleHandle, "DllGetClassObject");
-
-    Infra::Message::OutputFormatted(
-        Infra::Message::ESeverity::Debug,
-        L"LocateDllGetClassObjectProc is attempting to locate procedure DllGetClassObject in library %s.",
-        importLibraryFilename.c_str());
-
-    if (nullptr == moduleHandle)
-      Infra::Message::OutputFormatted(
-          Infra::Message::ESeverity::Warning,
-          L"LocateDllGetClassObjectProc is unable to load library %s.",
-          importLibraryFilename.c_str());
-    else if (nullptr == moduleDllGetClassObjectProc)
-      Infra::Message::OutputFormatted(
-          Infra::Message::ESeverity::Warning,
-          L"LocateDllGetClassObjectProc is unable to locate DllGetClassObject procedure in library %s.",
-          importLibraryFilename.c_str());
-
-    return (decltype(&DllGetClassObject))moduleDllGetClassObjectProc;
-  }
 } // namespace Xidi
 
 HRESULT StaticHook_CoCreateInstance::Hook(
     REFCLSID rclsid, LPUNKNOWN pUnkOuter, DWORD dwClsContext, REFIID riid, LPVOID* ppv)
 {
+  static const HMODULE xidiLibraryHandle =
+      LoadLibraryW(Xidi::Strings::GetXidiMainLibraryFilename().data());
+  if (nullptr == xidiLibraryHandle)
+  {
+    Infra::Message::OutputFormatted(
+        Infra::Message::ESeverity::Error,
+        L"CoCreateInstance failed to intercept object creation because the library \"%.*s\" could not be loaded.",
+        static_cast<int>(Xidi::Strings::GetXidiMainLibraryFilename().length()),
+        Xidi::Strings::GetXidiMainLibraryFilename().data());
+    return Original(rclsid, pUnkOuter, dwClsContext, riid, ppv);
+  }
+
   if (IsEqualCLSID(CLSID_DirectInput8, rclsid))
   {
     static const decltype(&DllGetClassObject) procDllGetClassObject =
-        Xidi::LocateDllGetClassObjectProc<&Xidi::Strings::kStrLibraryNameDirectInput8>();
+        reinterpret_cast<decltype(&DllGetClassObject)>(
+            GetProcAddress(xidiLibraryHandle, "dinput8_DllGetClassObject"));
+    if (nullptr == procDllGetClassObject)
+    {
+      Infra::Message::OutputFormatted(
+          Infra::Message::ESeverity::Error,
+          L"CoCreateInstance failed to intercept object creation because library \"%.*s\" is missing the required entry point.",
+          static_cast<int>(Xidi::Strings::GetXidiMainLibraryFilename().length()),
+          Xidi::Strings::GetXidiMainLibraryFilename().data());
+      return Original(rclsid, pUnkOuter, dwClsContext, riid, ppv);
+    }
 
-    if (nullptr != procDllGetClassObject)
-    {
-      Infra::Message::Output(
-          Infra::Message::ESeverity::Info,
-          L"CoCreateInstance is intercepting creation of object of type CLSID_DirectInput8.");
-      return Xidi::CreateInstance(procDllGetClassObject, rclsid, pUnkOuter, riid, ppv);
-    }
-    else
-    {
-      Infra::Message::Output(
-          Infra::Message::ESeverity::Warning,
-          L"CoCreateInstance failed to intercept creation of object of type CLSID_DirectInput8 because a required procedure could not be located.");
-    }
+    Infra::Message::Output(
+        Infra::Message::ESeverity::Info,
+        L"CoCreateInstance is intercepting creation of object of type CLSID_DirectInput8.");
+    return Xidi::CreateInstance(procDllGetClassObject, rclsid, pUnkOuter, riid, ppv);
   }
   else if (IsEqualCLSID(CLSID_DirectInput, rclsid))
   {
     static const decltype(&DllGetClassObject) procDllGetClassObject =
-        Xidi::LocateDllGetClassObjectProc<&Xidi::Strings::kStrLibraryNameDirectInput>();
+        reinterpret_cast<decltype(&DllGetClassObject)>(
+            GetProcAddress(xidiLibraryHandle, "dinput_DllGetClassObject"));
+    if (nullptr == procDllGetClassObject)
+    {
+      Infra::Message::OutputFormatted(
+          Infra::Message::ESeverity::Error,
+          L"CoCreateInstance failed to intercept object creation because library \"%.*s\" is missing the required entry point.",
+          static_cast<int>(Xidi::Strings::GetXidiMainLibraryFilename().length()),
+          Xidi::Strings::GetXidiMainLibraryFilename().data());
+      return Original(rclsid, pUnkOuter, dwClsContext, riid, ppv);
+    }
 
-    if (nullptr != procDllGetClassObject)
-    {
-      Infra::Message::Output(
-          Infra::Message::ESeverity::Info,
-          L"CoCreateInstance is intercepting creation of object of type CLSID_DirectInput.");
-      return Xidi::CreateInstance(procDllGetClassObject, rclsid, pUnkOuter, riid, ppv);
-    }
-    else
-    {
-      Infra::Message::Output(
-          Infra::Message::ESeverity::Warning,
-          L"CoCreateInstance failed to intercept creation of object of type CLSID_DirectInput because a required procedure could not be located.");
-    }
+    Infra::Message::Output(
+        Infra::Message::ESeverity::Info,
+        L"CoCreateInstance is intercepting creation of object of type CLSID_DirectInput.");
+    return Xidi::CreateInstance(procDllGetClassObject, rclsid, pUnkOuter, riid, ppv);
   }
   else if (
       IsEqualCLSID(CLSID_DirectInputDevice8, rclsid) ||

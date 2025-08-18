@@ -72,10 +72,11 @@ namespace Xidi
     {
       IClassFactory* underlyingObjectFactory = nullptr;
       const HRESULT underlyingObjectFactoryCreateResult =
-          (version8Requested ? ImportApiDirectInput::Version8::DllGetClassObject(
-                                   riid, IID_IClassFactory, (LPVOID*)&underlyingObjectFactory)
-                             : ImportApiDirectInput::VersionLegacy::DllGetClassObject(
-                                   riid, IID_IClassFactory, (LPVOID*)&underlyingObjectFactory));
+          (version8Requested
+               ? ImportApiDirectInput::Version8::DllGetClassObject(
+                     CLSID_DirectInput8, IID_IClassFactory, (LPVOID*)&underlyingObjectFactory)
+               : ImportApiDirectInput::VersionLegacy::DllGetClassObject(
+                     CLSID_DirectInput, IID_IClassFactory, (LPVOID*)&underlyingObjectFactory));
 
       if (S_OK == underlyingObjectFactoryCreateResult)
       {
