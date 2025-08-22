@@ -20,7 +20,6 @@ INCLUDE Infra/Core/Registers.inc
 
 IFDEF _WIN32
 DllForwardedFunctionsInitialize TEXTEQU <_DllForwardedFunctionsInitialize>
-_ptr_export TEXTEQU <__ptr_export_>
 ENDIF
 
 
@@ -29,11 +28,18 @@ EXTRN DllForwardedFunctionsInitialize:PROC
 
 DllExportForward MACRO libraryName, funcName
 
-    LOCAL $initialized
-    EXTRN @catstr(_ptr_export, _, libraryName, _, funcName):PROC
+    LOCAL $ptr_export, $initialized
+
+IFDEF _WIN32
+    $ptr_export TEXTEQU @catstr(__ptr_export, _, libraryName, _, funcName)
+ELSE
+    $ptr_export TEXTEQU @catstr(_ptr_export, _, libraryName, _, funcName)
+ENDIF
+
+    EXTRN $ptr_export:PROC
 
     funcName PROC PUBLIC
-        cmp SIZE_T PTR [@catstr(_ptr_export, _, libraryName, _, funcName)], 0
+        cmp SIZE_T PTR [$ptr_export], 0
         jne $initialized
 
         push sbp
@@ -57,7 +63,7 @@ ENDIF
         pop sbp
 
     $initialized:
-        jmp SIZE_T PTR [@catstr(_ptr_export, _, libraryName, _, funcName)]
+        jmp SIZE_T PTR [$ptr_export]
     funcName ENDP
         
 ENDM
