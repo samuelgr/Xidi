@@ -204,8 +204,7 @@ namespace Xidi
       return importTable.named.timeGetTime();
     }
 
-    /// Implements the Xidi API interface #IImportFunctions.
-    /// Allows joystick WinMM functions to be replaced.
+    /// Implements the WinMM-specific version of the Xidi API interface #IImportFunctions.
     class JoystickFunctionReplacer : public Api::IImportFunctions
     {
     private:
@@ -214,6 +213,10 @@ namespace Xidi
       static const std::map<std::wstring_view, size_t> kReplaceableFunctions;
 
     public:
+
+      inline JoystickFunctionReplacer(void)
+          : Api::IImportFunctions(Api::EClass::ImportFunctionsWinMM)
+      {}
 
       const std::set<std::wstring_view>& GetReplaceable(void) const override
       {

@@ -32,7 +32,17 @@ namespace Xidi
       Metadata,
 
       /// IImportFunctions
-      ImportFunctions
+      /// Deprecated in favor of the library-specific enumerators below.
+      ImportFunctions,
+
+      /// IImportFunctionsDInput
+      ImportFunctionsDInput,
+
+      /// IImportFunctionsDInput8
+      ImportFunctionsDInput8,
+
+      /// IImportFunctionsWinMM
+      ImportFunctionsWinMM
     };
 
     /// Xidi API base class. All API classes must inherit from this class.
@@ -67,7 +77,8 @@ namespace Xidi
       inline IMetadata(void) : IXidi(EClass::Metadata) {}
     };
 
-    /// Xidi API class for manipulating the functions Xidi imports from the system.
+    /// Xidi API class for manipulating the functions Xidi imports from the system. Used as a base
+    /// class for library-specific subclasses.
     class IImportFunctions : public IXidi
     {
     public:
@@ -92,7 +103,7 @@ namespace Xidi
 
     protected:
 
-      inline IImportFunctions(void) : IXidi(EClass::ImportFunctions) {}
+      inline IImportFunctions(EClass apiClass) : IXidi(apiClass) {}
     };
 
     /// Pointer type definition for the XidiApiGetInterface exported function.

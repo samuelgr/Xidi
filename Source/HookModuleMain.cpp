@@ -19,7 +19,7 @@
 
 namespace Xidi
 {
-  static HMODULE GetMainLibraryHandle(void)
+  static HMODULE GetMainLibraryHandleOrDie(void)
   {
     static HMODULE xidiLibraryHandle = LoadLibraryW(Strings::GetXidiMainLibraryFilename().data());
     if (NULL == xidiLibraryHandle)
@@ -36,9 +36,12 @@ namespace Xidi
     return xidiLibraryHandle;
   }
 
-  static Api::IImportFunctions* GetImportFunctionsApi(void)
+  /// Obtains an interface pointer from the main Xidi library for the specified class.
+  /// @param [in] apiClass API class for which an interface pointer is requested.
+  /// @return Pointer to the desired API interface.
+  static Api::IImportFunctions* GetApiInterfaceOrDie(Api::EClass apiClass)
   {
-    HMODULE xidiLibraryHandle = GetMainLibraryHandle();
+    HMODULE xidiLibraryHandle = GetMainLibraryHandleOrDie();
     if (NULL == xidiLibraryHandle)
     {
       Infra::Message::OutputFormatted(
@@ -64,12 +67,12 @@ namespace Xidi
     }
 
     Api::IImportFunctions* xidiImportFunctions = reinterpret_cast<Xidi::Api::IImportFunctions*>(
-        funcXidiApiGetInterface(Xidi::Api::EClass::ImportFunctions));
+        funcXidiApiGetInterface(apiClass));
     if (nullptr == xidiImportFunctions)
     {
       Infra::Message::OutputFormatted(
           Infra::Message::ESeverity::ForcedInteractiveError,
-          L"Main Xidi library \"%.*s\" is missing a required interface for replacing imported system functions.\n\nXidi failed to initialize and is therefore terminating the application to avoid unexpected behavior.",
+          L"Main Xidi library \"%.*s\" is missing a required interface.\n\nThis could indicate a version mismatch between this library and the main Xidi library.\n\nXidi failed to initialize and is therefore terminating the application to avoid unexpected behavior.",
           static_cast<int>(Strings::GetXidiMainLibraryFilename().length()),
           Strings::GetXidiMainLibraryFilename().data());
       TerminateProcess(Infra::ProcessInfo::GetCurrentProcessHandle(), (UINT)-1);
@@ -138,7 +141,10 @@ HOOKSHOT_HOOK_MODULE_ENTRY(hookshot)
               L"Notification received from Hookshot: OnLibraryLoad: \"%s\" for WinMM.",
               modulePath);
           Xidi::SetHooksWinMM(
-              hookshot, Xidi::GetImportFunctionsApi(), Xidi::GetMainLibraryHandle(), modulePath);
+              hookshot,
+              Xidi::GetApiInterfaceOrDie(Xidi::Api::EClass::ImportFunctionsWinMM),
+              Xidi::GetMainLibraryHandleOrDie(),
+              modulePath);
         });
     if (false == Hookshot::SuccessfulResult(notifyOnLibraryLoadResult))
     {
