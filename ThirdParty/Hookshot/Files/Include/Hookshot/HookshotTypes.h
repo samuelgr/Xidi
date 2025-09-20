@@ -12,6 +12,8 @@
 
 #pragma once
 
+#include <functional>
+
 namespace Hookshot
 {
   /// Enumeration of possible results from Hookshot functions.
@@ -19,6 +21,7 @@ namespace Hookshot
   {
     /// Operation was successful.
     Success,
+
     /// Operation did not generate an error but had no effect.
     NoEffect,
 
@@ -35,7 +38,7 @@ namespace Hookshot
     /// Failed to set the hook.
     FailCannotSetHook,
 
-    /// Specified function is already hooked.
+    /// Operation was already performed and cannot be performed again.
     FailDuplicate,
 
     /// An argument that was supplied is invalid.
@@ -108,5 +111,23 @@ namespace Hookshot
     /// @return Result of the operation.
     virtual EResult __fastcall ReplaceHookFunction(
         const void* originalOrHookFunc, const void* newHookFunc) = 0;
+
+    /// Subscribes to notifications when a specific library is loaded. The handler is invoked either
+    /// immediately (if the library is already loaded at the time of the call) or at some point in
+    /// the future (if the library is not loaded at the time of the call but is loaded in the future
+    /// via a call to the `LoadLibrary` family of API functions). During the execution of the
+    /// handler function it is safe to set hooks in the library to which the notification applies,
+    /// but it is not safe to set hooks anywhere else.
+    /// @param [in] libraryPath Case-insensitive library path. This will be passed directly to
+    /// Windows API functions like `GetModuleHandle` and so the same rules apply to this parameter
+    /// as apply to parameters to that Windows API function.
+    /// @param [in] handlerFunc Function to be called to notify the caller when the library is
+    /// loaded. As a convenience, the handler function is directly supplied with a Hookshot
+    /// interface pointer. The module path is the full, absolute path of the module for which the
+    /// notification is generated. Call the `GetModuleHandle` family of functions to get the
+    /// associated module handle.
+    virtual EResult __fastcall NotifyOnLibraryLoad(
+        const wchar_t* libraryPath,
+        std::function<void(IHookshot* hookshot, const wchar_t* modulePath)> handlerFunc) = 0;
   };
 } // namespace Hookshot

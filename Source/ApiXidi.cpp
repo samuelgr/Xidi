@@ -40,10 +40,8 @@ namespace Xidi
     static inline IXidi* LookupInterfaceObjectForClass(EClass apiClass)
     {
       std::unordered_map<EClass, IXidi*>& interfaceObjectRegistry = GetInterfaceObjectRegistry();
-
       if (false == interfaceObjectRegistry.contains(apiClass)) return nullptr;
-
-      return interfaceObjectRegistry[apiClass];
+      return interfaceObjectRegistry.at(apiClass);
     }
 
     /// Registers an interface object as the implementing object for the Xidi API of the specified

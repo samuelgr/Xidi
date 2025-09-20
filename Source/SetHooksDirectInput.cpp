@@ -16,10 +16,8 @@
 
 namespace Xidi
 {
-  void SetHooksDirectInput(Hookshot::IHookshot* hookshot)
+  void SetHookCoCreateInstance(Hookshot::IHookshot* hookshot)
   {
-    Infra::Message::Output(
-        Infra::Message::ESeverity::Info, L"Beginning to set hooks for DirectInput.");
     OutputSetHookResult(L"CoCreateInstance", StaticHook_CoCreateInstance::SetHook(hookshot));
   }
 } // namespace Xidi

@@ -25,78 +25,25 @@
 
 namespace Xidi
 {
-  /// Handle for the main Xidi library.
-  static HMODULE xidiLibraryHandle = NULL;
-
-  /// Handle for the system WinMM library.
-  static HMODULE winmmLibraryHandle = NULL;
-
-  /// Frees all loaded library handles. Used in case of an error when setting hooks.
-  static void FreeLibraryHandles(void)
-  {
-    if (NULL != xidiLibraryHandle) FreeLibrary(xidiLibraryHandle);
-    if (NULL != winmmLibraryHandle) FreeLibrary(winmmLibraryHandle);
-  }
-
-  /// Attempts to obtain the interface pointer from the main Xidi library for replacing import
-  /// functions.
-  /// @param [in] xidiMainLibraryFilename Filename for the main Xidi library. Used for logging.
-  /// @param [in] xidiLibraryHandle Handle for the main Xidi library to be queried.
-  /// @return Interface pointer on success, or `nullptr` on failure.
-  static Xidi::Api::IImportFunctions* GetXidiImportFunctionsApi(
-      std::wstring_view xidiMainLibraryFilename, HMODULE xidiLibraryHandle)
-  {
-    const Xidi::Api::TGetInterfaceFunc funcXidiApiGetInterface =
-        reinterpret_cast<Xidi::Api::TGetInterfaceFunc>(
-            GetProcAddress(xidiLibraryHandle, Xidi::Api::kGetInterfaceFuncName));
-    if (nullptr == funcXidiApiGetInterface) return nullptr;
-    return reinterpret_cast<Xidi::Api::IImportFunctions*>(
-        funcXidiApiGetInterface(Xidi::Api::EClass::ImportFunctions));
-  }
-
-  void SetHooksWinMM(Hookshot::IHookshot* hookshot)
+  void SetHooksWinMM(
+      Hookshot::IHookshot* hookshot,
+      Api::IImportFunctions* apiImportFunctions,
+      HMODULE xidiLibraryHandle,
+      const wchar_t* winmmLibraryFilename)
   {
     Infra::Message::Output(Infra::Message::ESeverity::Info, L"Beginning to set hooks for WinMM.");
 
-    const std::wstring_view xidiMainLibraryFilename = Strings::GetXidiMainLibraryFilename();
-    HMODULE xidiLibraryHandle = LoadLibraryW(xidiMainLibraryFilename.data());
-    if (NULL == xidiLibraryHandle)
-    {
-      Infra::Message::OutputFormatted(
-          Infra::Message::ESeverity::Warning,
-          L"Failed to set hooks for WinMM: Library \"%.*s\" could not be loaded.",
-          static_cast<int>(xidiMainLibraryFilename.length()),
-          xidiMainLibraryFilename.data());
-      FreeLibraryHandles();
-      return;
-    }
-
-    Xidi::Api::IImportFunctions* xidiImportFunctions =
-        GetXidiImportFunctionsApi(xidiMainLibraryFilename, xidiLibraryHandle);
-    if (nullptr == xidiImportFunctions)
-    {
-      Infra::Message::OutputFormatted(
-          Infra::Message::ESeverity::Warning,
-          L"Failed to set hooks for WinMM: Library \"%.*s\" is missing one or more required Xidi API entry points.",
-          static_cast<int>(xidiMainLibraryFilename.length()),
-          xidiMainLibraryFilename.data());
-      FreeLibraryHandles();
-      return;
-    }
-
-    const std::wstring_view winmmLibraryFilename = Strings::GetSystemLibraryFilenameWinMM();
-    HMODULE winmmLibraryHandle = LoadLibraryW(winmmLibraryFilename.data());
+    HMODULE winmmLibraryHandle = GetModuleHandleW(winmmLibraryFilename);
     if (NULL == winmmLibraryHandle)
     {
       Infra::Message::OutputFormatted(
-          Infra::Message::ESeverity::Warning,
-          L"Failed to set hooks for WinMM: Library \"%.*s\" could not be loaded.",
-          static_cast<int>(winmmLibraryFilename.length()),
-          winmmLibraryFilename.data());
+          Infra::Message::ESeverity::Error,
+          L"Failed to set hooks for WinMM: Handle for library \"%s\" could not be located.",
+          winmmLibraryFilename);
       return;
     }
 
-    const auto& replaceableImportFunctionNames = xidiImportFunctions->GetReplaceable();
+    const auto& replaceableImportFunctionNames = apiImportFunctions->GetReplaceable();
     std::map<std::wstring_view, const void*> replacementImportFunctions;
     for (const auto& systemFunctionName : replaceableImportFunctionNames)
     {
@@ -162,7 +109,7 @@ namespace Xidi
     }
 
     const size_t numSuccessfullyReplaced =
-        xidiImportFunctions->SetReplaceable(replacementImportFunctions);
+        apiImportFunctions->SetReplaceable(replacementImportFunctions);
     if (replacementImportFunctions.size() == numSuccessfullyReplaced)
     {
       // Every hooked function has its original version successfully submitted to Xidi.
