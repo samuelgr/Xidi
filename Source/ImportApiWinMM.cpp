@@ -33,11 +33,14 @@
 
 /// Attempts to import a single function and save it into the import table.
 #define TRY_IMPORT(libraryPath, libraryHandle, functionName)                                       \
-  DllFunctions::TryImport(                                                                         \
-      libraryPath,                                                                                 \
-      loadedLibrary,                                                                               \
-      #functionName,                                                                               \
-      &importTable.ptr[IMPORT_TABLE_INDEX_OF(functionName)])
+  if (nullptr == importTable.ptr[IMPORT_TABLE_INDEX_OF(functionName)])                             \
+  {                                                                                                \
+    DllFunctions::TryImport(                                                                       \
+        libraryPath,                                                                               \
+        loadedLibrary,                                                                             \
+        #functionName,                                                                             \
+        &importTable.ptr[IMPORT_TABLE_INDEX_OF(functionName)]);                                    \
+  }
 
 namespace Xidi
 {
@@ -121,17 +124,12 @@ namespace Xidi
           initializeFlag,
           []() -> void
           {
-            // Initialize the import table.
-            ZeroMemory(&importTable, sizeof(importTable));
-
-            // Obtain the full library path string.
             std::wstring_view libraryPath = Strings::GetSystemLibraryFilenameWinMM();
-
-            // Attempt to load the library.
             Infra::Message::OutputFormatted(
                 Infra::Message::ESeverity::Debug,
                 L"Attempting to import WinMM functions from %s.",
                 libraryPath.data());
+
             HMODULE loadedLibrary = LoadLibraryEx(libraryPath.data(), nullptr, 0);
             if (nullptr == loadedLibrary)
             {
@@ -140,9 +138,6 @@ namespace Xidi
                   L"Failed to initialize imported WinMM functions.");
               return;
             }
-
-            // Attempt to obtain the addresses of all imported API functions.
-            FARPROC procAddress = nullptr;
 
             TRY_IMPORT(libraryPath, loadedLibrary, joyConfigChanged);
             TRY_IMPORT(libraryPath, loadedLibrary, joyGetDevCapsA);

@@ -142,7 +142,7 @@ namespace Xidi
     HRESULT __stdcall VersionLegacyDirectInputCreateW(
         HINSTANCE hinst, DWORD dwVersion, LPDIRECTINPUTW* ppDI, LPUNKNOWN punkOuter)
     {
-      IDirectInput* diObject = nullptr;
+      IDirectInputW* diObject = nullptr;
 
       if (dwVersion < dinputVersionLegacyMin || dwVersion > dinputVersionLegacyMax)
       {

@@ -32,11 +32,14 @@
 
 /// Attempts to import a single function and save it into the import table.
 #define TRY_IMPORT(importTable, libraryPath, libraryHandle, functionName)                          \
-  DllFunctions::TryImport(                                                                         \
-      libraryPath,                                                                                 \
-      loadedLibrary,                                                                               \
-      #functionName,                                                                               \
-      &importTable.ptr[IMPORT_TABLE_INDEX_OF(importTable, functionName)])
+  if (nullptr == importTable.ptr[IMPORT_TABLE_INDEX_OF(importTable, functionName)])                \
+  {                                                                                                \
+    DllFunctions::TryImport(                                                                       \
+        libraryPath,                                                                               \
+        loadedLibrary,                                                                             \
+        #functionName,                                                                             \
+        &importTable.ptr[IMPORT_TABLE_INDEX_OF(importTable, functionName)]);                       \
+  }
 
 namespace Xidi
 {
@@ -177,8 +180,6 @@ namespace Xidi
           initializeFlag,
           []() -> void
           {
-            ZeroMemory(&importTableVersion8, sizeof(importTableVersion8));
-
             std::wstring_view libraryPath = Strings::GetSystemLibraryFilenameDirectInput8();
             Infra::Message::OutputFormatted(
                 Infra::Message::ESeverity::Debug,
@@ -211,8 +212,6 @@ namespace Xidi
           initializeFlag,
           []() -> void
           {
-            ZeroMemory(&importTableVersionLegacy, sizeof(importTableVersionLegacy));
-
             std::wstring_view libraryPath = Strings::GetSystemLibraryFilenameDirectInput();
             Infra::Message::OutputFormatted(
                 Infra::Message::ESeverity::Debug,
@@ -285,8 +284,8 @@ namespace Xidi
     {
       Api::IMutableImportTable* GetMutableImportTable(void)
       {
-        static MutableImportTableDInput8 mutableImportTableDInput8;
-        return &mutableImportTableDInput8;
+        static MutableImportTableDInput mutableImportTableDInput;
+        return &mutableImportTableDInput;
       }
 
       HRESULT DirectInputCreateA(
