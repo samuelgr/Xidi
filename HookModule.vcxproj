@@ -125,10 +125,8 @@
     <ClCompile Include="Source\DllMain.cpp" />
     <ClCompile Include="Source\Globals.cpp" />
     <ClCompile Include="Source\SetHooks.cpp" />
-    <ClCompile Include="Source\SetHooksDirectInput.cpp" />
     <ClCompile Include="Source\HookModuleMain.cpp" />
     <ClCompile Include="Source\Hooks\CoCreateInstance.cpp" />
-    <ClCompile Include="Source\SetHooksWinMM.cpp" />
     <ClCompile Include="Source\Strings.cpp" />
     <ClCompile Include="Source\XidiConfigReader.cpp" />
   </ItemGroup>

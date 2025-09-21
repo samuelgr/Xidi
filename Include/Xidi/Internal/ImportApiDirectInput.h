@@ -13,14 +13,17 @@
 #pragma once
 
 #include "ApiDirectInput.h"
+#include "ApiXidi.h"
 
 namespace Xidi
 {
   namespace ImportApiDirectInput
   {
-
     namespace Version8
     {
+      /// Retrieves a pointer to the interface that allows some imported functions to be replaced.
+      Api::IMutableImportTable* GetMutableImportTable(void);
+
       HRESULT DirectInput8Create(
           HINSTANCE hinst, DWORD dwVersion, REFIID riidltf, LPVOID* ppvOut, LPUNKNOWN punkOuter);
       HRESULT DllRegisterServer(void);
@@ -31,6 +34,9 @@ namespace Xidi
 
     namespace VersionLegacy
     {
+      /// Retrieves a pointer to the interface that allows some imported functions to be replaced.
+      Api::IMutableImportTable* GetMutableImportTable(void);
+
       HRESULT DirectInputCreateA(
           HINSTANCE hinst, DWORD dwVersion, LPDIRECTINPUTA* ppDI, LPUNKNOWN punkOuter);
       HRESULT DirectInputCreateW(

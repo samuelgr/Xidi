@@ -80,8 +80,7 @@ namespace Xidi
       {
         DInput,
         DInput8,
-        WinMM,
-        XInput
+        WinMM
       };
 
       /// Retrieves a list of names of imported functions whose import addresses can be replaced.

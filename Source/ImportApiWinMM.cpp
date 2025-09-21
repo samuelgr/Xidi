@@ -100,7 +100,7 @@ namespace Xidi
 
       bool SetReplaceable(size_t replaceableFunctionIndex, const void* newAddress) override
       {
-        if (replaceableFunctionIndex >= _countof(UImportTable::ptr)) return false;
+        if (replaceableFunctionIndex >= _countof(importTable.ptr)) return false;
         importTable.ptr[replaceableFunctionIndex] = newAddress;
         return true;
       }
@@ -112,7 +112,8 @@ namespace Xidi
       return &mutableImportTableWinMM;
     }
 
-    void Initialize(void)
+    /// Dynamically loads the WinMM library and sets up all imported function calls.
+    static void Initialize(void)
     {
       static std::once_flag initializeFlag;
 

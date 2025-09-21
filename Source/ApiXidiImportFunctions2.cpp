@@ -12,6 +12,7 @@
 #include <unordered_map>
 
 #include "ApiXidi.h"
+#include "ImportApiDirectInput.h"
 #include "ImportApiWinMM.h"
 
 namespace Xidi
@@ -60,6 +61,10 @@ namespace Xidi
 
     const std::unordered_map<IImportFunctions2::ELibrary, IMutableImportTable*>
         ImportFunctionsReplacer::mutableImportTablesByLibrary = {
+            {IImportFunctions2::ELibrary::DInput,
+             ImportApiDirectInput::VersionLegacy::GetMutableImportTable()},
+            {IImportFunctions2::ELibrary::DInput8,
+             ImportApiDirectInput::Version8::GetMutableImportTable()},
             {IImportFunctions2::ELibrary::WinMM, ImportApiWinMM::GetMutableImportTable()}};
 
     // Singleton Xidi API implementation object.

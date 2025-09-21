@@ -97,6 +97,14 @@ HOOKSHOT_HOOK_MODULE_ENTRY(hookshot)
               Infra::Message::ESeverity::Debug,
               L"Notification received from Hookshot: OnLibraryLoad: \"%s\" for DInput.",
               modulePath);
+          Xidi::SetHooksForLibrary(
+              hookshot,
+              Xidi::GetImportFunctionsApi(),
+              Xidi::GetMainLibraryHandle(),
+              Xidi::Api::IImportFunctions2::ELibrary::DInput,
+              L"DInput",
+              modulePath,
+              L"dinput_");
         });
     if (false == Hookshot::SuccessfulResult(notifyOnLibraryLoadResult))
     {
@@ -117,6 +125,14 @@ HOOKSHOT_HOOK_MODULE_ENTRY(hookshot)
               Infra::Message::ESeverity::Debug,
               L"Notification received from Hookshot: OnLibraryLoad: \"%s\" for DInput8.",
               modulePath);
+          Xidi::SetHooksForLibrary(
+              hookshot,
+              Xidi::GetImportFunctionsApi(),
+              Xidi::GetMainLibraryHandle(),
+              Xidi::Api::IImportFunctions2::ELibrary::DInput8,
+              L"DInput8",
+              modulePath,
+              L"dinput8_");
         });
     if (false == Hookshot::SuccessfulResult(notifyOnLibraryLoadResult))
     {
@@ -137,8 +153,14 @@ HOOKSHOT_HOOK_MODULE_ENTRY(hookshot)
               Infra::Message::ESeverity::Debug,
               L"Notification received from Hookshot: OnLibraryLoad: \"%s\" for WinMM.",
               modulePath);
-          Xidi::SetHooksWinMM(
-              hookshot, Xidi::GetImportFunctionsApi(), Xidi::GetMainLibraryHandle(), modulePath);
+          Xidi::SetHooksForLibrary(
+              hookshot,
+              Xidi::GetImportFunctionsApi(),
+              Xidi::GetMainLibraryHandle(),
+              Xidi::Api::IImportFunctions2::ELibrary::WinMM,
+              L"WinMM",
+              modulePath,
+              L"winmm_");
         });
     if (false == Hookshot::SuccessfulResult(notifyOnLibraryLoadResult))
     {

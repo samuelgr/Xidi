@@ -23,22 +23,30 @@ namespace Xidi
   /// @param [in] setHookResult Result returned from Hookshot of the attempt to set the hook.
   void OutputSetHookResult(const wchar_t* functionName, Hookshot::EResult setHookResult);
 
-  /// Top-level function for setting all hooks related to DirectInput.
-  /// @param [in] hookshot Hookshot interface pointer.
-  void SetHookCoCreateInstance(Hookshot::IHookshot* hookshot);
-
-  /// Top-level function for setting all hooks related to WinMM.
+  /// Sets all hooks and replaces Xidi import functions for the specified library.
   /// @param [in] hookshot Hookshot interface pointer.
   /// @param [in] apiImportFunctions Xidi API interface pointer for replacing Xidi's imported
   /// functions.
   /// @param [in] xidiLibraryhandle Handle for the main Xidi library.
-  /// @param [in] winmmLibraryPath Path to the WinMM library that was already loaded and for which
-  /// hooks should be set.
-  void SetHooksWinMM(
+  /// @param [in] libraryIdentifier Xidi API library identifier for the library for which hooks
+  /// should be set and import functions replaced.
+  /// @param [in] libraryName Printable name of the library. Used for logging.
+  /// @param [in] libraryFilename Path to the library that was already loaded and for which hooks
+  /// should be set.
+  /// @param [in] replacementFunctionPrefix Prefix to add to the import function name in order to
+  /// find it in the main Xidi library.
+  void SetHooksForLibrary(
       Hookshot::IHookshot* hookshot,
       Api::IImportFunctions2* apiImportFunctions,
       HMODULE xidiLibraryHandle,
-      const wchar_t* winmmLibraryFilename);
+      Api::IImportFunctions2::ELibrary libraryIdentifier,
+      const wchar_t* libraryName,
+      const wchar_t* libraryFilename,
+      const wchar_t* replacementFunctionPrefix);
+
+  /// Sets a hook on the COM function `CoCreateInstance`.
+  /// @param [in] hookshot Hookshot interface pointer.
+  void SetHookCoCreateInstance(Hookshot::IHookshot* hookshot);
 } // namespace Xidi
 
 // Windows API: CoCreateInstance

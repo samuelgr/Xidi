@@ -15,6 +15,7 @@
 #include <exception>
 #include <mutex>
 #include <string_view>
+#include <unordered_map>
 
 #include <Infra/Core/Configuration.h>
 #include <Infra/Core/Message.h>
@@ -83,6 +84,69 @@ namespace Xidi
     /// Holds the imported DirectInput legacy API function addresses.
     static UImportTableVersionLegacy importTableVersionLegacy;
 
+    /// Holds a mapping of all replaceable imported functions to their index in the import table for
+    /// DirectInput 8.
+    static const std::unordered_map<std::wstring_view, size_t> kReplaceableFunctionsVersion8 = {
+        {L"DirectInput8Create", IMPORT_TABLE_INDEX_OF(importTableVersion8, DirectInput8Create)},
+        {L"DllRegisterServer", IMPORT_TABLE_INDEX_OF(importTableVersion8, DllRegisterServer)},
+        {L"DllUnregisterServer", IMPORT_TABLE_INDEX_OF(importTableVersion8, DllUnregisterServer)},
+        {L"DllCanUnloadNow", IMPORT_TABLE_INDEX_OF(importTableVersion8, DllCanUnloadNow)},
+        {L"DllGetClassObject", IMPORT_TABLE_INDEX_OF(importTableVersion8, DllGetClassObject)}};
+
+    /// Holds a mapping of all replaceable imported functions to their index in the import table for
+    /// DirectInput legacy.
+    static const std::unordered_map<std::wstring_view, size_t> kReplaceableFunctionsVersionLegacy =
+        {{L"DirectInputCreateA",
+          IMPORT_TABLE_INDEX_OF(importTableVersionLegacy, DirectInputCreateA)},
+         {L"DirectInputCreateW",
+          IMPORT_TABLE_INDEX_OF(importTableVersionLegacy, DirectInputCreateW)},
+         {L"DirectInputCreateEx",
+          IMPORT_TABLE_INDEX_OF(importTableVersionLegacy, DirectInputCreateEx)},
+         {L"DllRegisterServer", IMPORT_TABLE_INDEX_OF(importTableVersionLegacy, DllRegisterServer)},
+         {L"DllUnregisterServer",
+          IMPORT_TABLE_INDEX_OF(importTableVersionLegacy, DllUnregisterServer)},
+         {L"DllCanUnloadNow", IMPORT_TABLE_INDEX_OF(importTableVersionLegacy, DllCanUnloadNow)},
+         {L"DllGetClassObject",
+          IMPORT_TABLE_INDEX_OF(importTableVersionLegacy, DllGetClassObject)}};
+
+    /// Implements import function replacement for the DInput8 import table.
+    class MutableImportTableDInput8 : public Api::IMutableImportTable
+    {
+    public:
+
+      // IMutableImportTable
+      const std::unordered_map<std::wstring_view, size_t>& GetReplaceable(void) const override
+      {
+        return kReplaceableFunctionsVersion8;
+      }
+
+      bool SetReplaceable(size_t replaceableFunctionIndex, const void* newAddress) override
+      {
+        if (replaceableFunctionIndex >= _countof(importTableVersion8.ptr)) return false;
+        importTableVersion8.ptr[replaceableFunctionIndex] = newAddress;
+        return true;
+      }
+    };
+
+    /// Implements import function replacement for the DInput import table.
+    class MutableImportTableDInput : public Api::IMutableImportTable
+    {
+    public:
+
+      // IMutableImportTable
+      const std::unordered_map<std::wstring_view, size_t>& GetReplaceable(void) const override
+      {
+        return kReplaceableFunctionsVersionLegacy;
+      }
+
+      bool SetReplaceable(size_t replaceableFunctionIndex, const void* newAddress) override
+      {
+        if (replaceableFunctionIndex >= _countof(importTableVersionLegacy.ptr)) return false;
+        importTableVersionLegacy.ptr[replaceableFunctionIndex] = newAddress;
+        return true;
+      }
+    };
+
     /// Logs a debug event related to attempting to load the system-provided library for importing
     /// functions.
     /// @param [in] libraryPath Path of the library that was loaded.
@@ -135,8 +199,7 @@ namespace Xidi
             TRY_IMPORT(importTableVersion8, libraryPath, loadedLibrary, DllGetClassObject);
 
             Infra::Message::Output(
-                Infra::Message::ESeverity::Info,
-                L"Finished importing DirectInput 8 functions.");
+                Infra::Message::ESeverity::Info, L"Finished importing DirectInput 8 functions.");
           });
     }
 
@@ -179,6 +242,12 @@ namespace Xidi
 
     namespace Version8
     {
+      Api::IMutableImportTable* GetMutableImportTable(void)
+      {
+        static MutableImportTableDInput8 mutableImportTableDInput8;
+        return &mutableImportTableDInput8;
+      }
+
       HRESULT DirectInput8Create(
           HINSTANCE hinst, DWORD dwVersion, REFIID riidltf, LPVOID* ppvOut, LPUNKNOWN punkOuter)
       {
@@ -214,6 +283,12 @@ namespace Xidi
 
     namespace VersionLegacy
     {
+      Api::IMutableImportTable* GetMutableImportTable(void)
+      {
+        static MutableImportTableDInput8 mutableImportTableDInput8;
+        return &mutableImportTableDInput8;
+      }
+
       HRESULT DirectInputCreateA(
           HINSTANCE hinst, DWORD dwVersion, LPDIRECTINPUTA* ppDI, LPUNKNOWN punkOuter)
       {
