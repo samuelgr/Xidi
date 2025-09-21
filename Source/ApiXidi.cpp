@@ -13,11 +13,6 @@
 
 #include <unordered_map>
 
-#include <Infra/Core/Message.h>
-#include <Infra/Core/ProcessInfo.h>
-
-#include "Strings.h"
-
 namespace Xidi
 {
   namespace Api
@@ -60,26 +55,6 @@ namespace Xidi
     {
       RegisterInterfaceObject(apiClass, this);
     }
-
-    /// Implements the Xidi API interface #IMetadata.
-    class MetadataProvider : public IMetadata
-    {
-    public:
-
-      // IMetadata
-      Infra::ProcessInfo::SVersionInfo GetVersion(void) const override
-      {
-        return Infra::ProcessInfo::GetProductVersion();
-      }
-
-      std::wstring_view GetFormName(void) const override
-      {
-        return Strings::GetFormName();
-      }
-    };
-
-    /// Singleton Xidi API implementation object.
-    static MetadataProvider metadataProvider;
   } // namespace Api
 } // namespace Xidi
 

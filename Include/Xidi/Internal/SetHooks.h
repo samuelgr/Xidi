@@ -36,7 +36,7 @@ namespace Xidi
   /// hooks should be set.
   void SetHooksWinMM(
       Hookshot::IHookshot* hookshot,
-      Api::IImportFunctions* apiImportFunctions,
+      Api::IImportFunctions2* apiImportFunctions,
       HMODULE xidiLibraryHandle,
       const wchar_t* winmmLibraryFilename);
 } // namespace Xidi

@@ -12,10 +12,10 @@
 
 #include "ImportApiWinMM.h"
 
-#include <map>
 #include <mutex>
 #include <set>
 #include <string_view>
+#include <unordered_map>
 
 #include <Infra/Core/Configuration.h>
 #include <Infra/Core/Message.h>
@@ -73,6 +73,44 @@ namespace Xidi
 
     /// Holds the imported WinMM API function addresses.
     static UImportTable importTable;
+
+    /// Holds a mapping of all replaceable imported functions to their index in the import table.
+    static const std::unordered_map<std::wstring_view, size_t> kReplaceableFunctions = {
+        {L"joyConfigChanged", IMPORT_TABLE_INDEX_OF(joyConfigChanged)},
+        {L"joyGetDevCapsA", IMPORT_TABLE_INDEX_OF(joyGetDevCapsA)},
+        {L"joyGetDevCapsW", IMPORT_TABLE_INDEX_OF(joyGetDevCapsW)},
+        {L"joyGetNumDevs", IMPORT_TABLE_INDEX_OF(joyGetNumDevs)},
+        {L"joyGetPos", IMPORT_TABLE_INDEX_OF(joyGetPos)},
+        {L"joyGetPosEx", IMPORT_TABLE_INDEX_OF(joyGetPosEx)},
+        {L"joyGetThreshold", IMPORT_TABLE_INDEX_OF(joyGetThreshold)},
+        {L"joyReleaseCapture", IMPORT_TABLE_INDEX_OF(joyReleaseCapture)},
+        {L"joySetCapture", IMPORT_TABLE_INDEX_OF(joySetCapture)},
+        {L"joySetThreshold", IMPORT_TABLE_INDEX_OF(joySetThreshold)}};
+
+    /// Implements import function replacement for the WinMM import table.
+    class MutableImportTableWinMM : public Api::IMutableImportTable
+    {
+    public:
+
+      // IMutableImportTable
+      const std::unordered_map<std::wstring_view, size_t>& GetReplaceable(void) const override
+      {
+        return kReplaceableFunctions;
+      }
+
+      bool SetReplaceable(size_t replaceableFunctionIndex, const void* newAddress) override
+      {
+        if (replaceableFunctionIndex >= _countof(UImportTable::ptr)) return false;
+        importTable.ptr[replaceableFunctionIndex] = newAddress;
+        return true;
+      }
+    };
+
+    Api::IMutableImportTable* GetMutableImportTable(void)
+    {
+      static MutableImportTableWinMM mutableImportTableWinMM;
+      return &mutableImportTableWinMM;
+    }
 
     void Initialize(void)
     {
@@ -203,85 +241,5 @@ namespace Xidi
       if (nullptr == importTable.named.timeGetTime) Initialize();
       return importTable.named.timeGetTime();
     }
-
-    /// Implements the WinMM-specific version of the Xidi API interface #IImportFunctions.
-    class JoystickFunctionReplacer : public Api::IImportFunctions
-    {
-    private:
-
-      /// Maps from replaceable joystick function name to array index in the import table.
-      static const std::map<std::wstring_view, size_t> kReplaceableFunctions;
-
-    public:
-
-      inline JoystickFunctionReplacer(void)
-          : Api::IImportFunctions(Api::EClass::ImportFunctionsWinMM)
-      {}
-
-      const std::set<std::wstring_view>& GetReplaceable(void) const override
-      {
-        static std::set<std::wstring_view> initSet;
-        static std::once_flag initFlag;
-
-        std::call_once(
-            initFlag,
-            []() -> void
-            {
-              for (const auto& replaceableFunction : kReplaceableFunctions)
-                initSet.insert(replaceableFunction.first);
-            });
-
-        return initSet;
-      }
-
-      size_t SetReplaceable(
-          const std::map<std::wstring_view, const void*>& importFunctionTable) override
-      {
-        Initialize();
-
-        std::wstring_view libraryPath = Strings::GetSystemLibraryFilenameWinMM();
-        size_t numReplaced = 0;
-
-        for (const auto& newImportFunction : importFunctionTable)
-        {
-          if (true == kReplaceableFunctions.contains(newImportFunction.first))
-          {
-            Infra::Message::OutputFormatted(
-                Infra::Message::ESeverity::Debug,
-                L"Import function \"%s\" has been replaced.",
-                newImportFunction.first.data());
-            importTable.ptr[kReplaceableFunctions.at(newImportFunction.first)] =
-                newImportFunction.second;
-            numReplaced += 1;
-          }
-        }
-
-        if (numReplaced > 0)
-          Infra::Message::OutputFormatted(
-              Infra::Message::ESeverity::Warning,
-              L"%d function(s) previously imported from %s have been replaced. Previously imported versions will not be used.",
-              (int)numReplaced,
-              libraryPath.data());
-
-        return numReplaced;
-      }
-    };
-
-    /// Maps from replaceable import function name to its pointer's positional index in the import
-    /// table.
-    const std::map<std::wstring_view, size_t> JoystickFunctionReplacer::kReplaceableFunctions = {
-        {L"joyConfigChanged", IMPORT_TABLE_INDEX_OF(joyConfigChanged)},
-        {L"joyGetDevCapsA", IMPORT_TABLE_INDEX_OF(joyGetDevCapsA)},
-        {L"joyGetDevCapsW", IMPORT_TABLE_INDEX_OF(joyGetDevCapsW)},
-        {L"joyGetNumDevs", IMPORT_TABLE_INDEX_OF(joyGetNumDevs)},
-        {L"joyGetPos", IMPORT_TABLE_INDEX_OF(joyGetPos)},
-        {L"joyGetPosEx", IMPORT_TABLE_INDEX_OF(joyGetPosEx)},
-        {L"joyGetThreshold", IMPORT_TABLE_INDEX_OF(joyGetThreshold)},
-        {L"joyReleaseCapture", IMPORT_TABLE_INDEX_OF(joyReleaseCapture)},
-        {L"joySetCapture", IMPORT_TABLE_INDEX_OF(joySetCapture)},
-        {L"joySetThreshold", IMPORT_TABLE_INDEX_OF(joySetThreshold)}};
-
-    /// Singleton Xidi API implementation object.
-    static JoystickFunctionReplacer joystickFunctionReplacer;
   } // namespace ImportApiWinMM
 } // namespace Xidi

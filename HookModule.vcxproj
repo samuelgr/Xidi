@@ -121,6 +121,7 @@
     <ClCompile Include="Source\ApiDirectInput.cpp" />
     <ClCompile Include="Source\ApiGUID.cpp" />
     <ClCompile Include="Source\ApiXidi.cpp" />
+    <ClCompile Include="Source\ApiXidiMetadata.cpp" />
     <ClCompile Include="Source\DllMain.cpp" />
     <ClCompile Include="Source\Globals.cpp" />
     <ClCompile Include="Source\SetHooks.cpp" />

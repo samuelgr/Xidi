@@ -9,9 +9,9 @@
  *   Implementation of all functionality for setting WinMM hooks.
  **************************************************************************************************/
 
-#include <map>
 #include <string>
 #include <string_view>
+#include <unordered_map>
 
 #include <Hookshot/Hookshot.h>
 #include <Infra/Core/Message.h>
@@ -27,7 +27,7 @@ namespace Xidi
 {
   void SetHooksWinMM(
       Hookshot::IHookshot* hookshot,
-      Api::IImportFunctions* apiImportFunctions,
+      Api::IImportFunctions2* apiImportFunctions,
       HMODULE xidiLibraryHandle,
       const wchar_t* winmmLibraryFilename)
   {
@@ -43,10 +43,20 @@ namespace Xidi
       return;
     }
 
-    const auto& replaceableImportFunctionNames = apiImportFunctions->GetReplaceable();
-    std::map<std::wstring_view, const void*> replacementImportFunctions;
-    for (const auto& systemFunctionName : replaceableImportFunctionNames)
+    const std::unordered_map<std::wstring_view, size_t>* replaceableImportFunctions =
+        apiImportFunctions->GetReplaceable(Api::IImportFunctions2::ELibrary::WinMM);
+    if (nullptr == replaceableImportFunctions)
     {
+      Infra::Message::Output(
+          Infra::Message::ESeverity::Error,
+          L"Failed to set hooks for WinMM: Main Xidi library does not support this operation.");
+      return;
+    }
+
+    std::unordered_map<std::wstring_view, const void*> replacementImportFunctions;
+    for (const auto& systemFunction : *replaceableImportFunctions)
+    {
+      const std::wstring_view systemFunctionName = systemFunction.first;
       auto systemFunctionNameAscii = Infra::Strings::ConvertWideToNarrow(systemFunctionName.data());
       void* const systemFunc = GetProcAddress(winmmLibraryHandle, systemFunctionNameAscii.Data());
       if (nullptr == systemFunc)
@@ -83,8 +93,8 @@ namespace Xidi
     }
 
     const size_t numUnsuccessfullyHooked =
-        replaceableImportFunctionNames.size() - replacementImportFunctions.size();
-    if (replaceableImportFunctionNames.size() == numUnsuccessfullyHooked)
+        replaceableImportFunctions->size() - replacementImportFunctions.size();
+    if (replaceableImportFunctions->size() == numUnsuccessfullyHooked)
     {
       // Not even a single function was successfully hooked.
       // There are no import functions to replace. The application is in a consistent state and can
@@ -104,12 +114,12 @@ namespace Xidi
           Infra::Message::ESeverity::ForcedInteractiveError,
           L"Failed to hook %d function(s) out of a total of %d attempted. The application will not function correctly in this state and is therefore being terminated.",
           static_cast<int>(numUnsuccessfullyHooked),
-          static_cast<int>(replaceableImportFunctionNames.size()));
+          static_cast<int>(replaceableImportFunctions->size()));
       TerminateProcess(Infra::ProcessInfo::GetCurrentProcessHandle(), (UINT)-1);
     }
 
-    const size_t numSuccessfullyReplaced =
-        apiImportFunctions->SetReplaceable(replacementImportFunctions);
+    const size_t numSuccessfullyReplaced = apiImportFunctions->SetReplaceable(
+        Api::IImportFunctions2::ELibrary::WinMM, replacementImportFunctions);
     if (replacementImportFunctions.size() == numSuccessfullyReplaced)
     {
       // Every hooked function has its original version successfully submitted to Xidi.

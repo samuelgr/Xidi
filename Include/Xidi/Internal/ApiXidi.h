@@ -13,9 +13,9 @@
 
 #include <cstddef>
 #include <cstdint>
-#include <map>
-#include <set>
 #include <string_view>
+#include <unordered_map>
+#include <unordered_set>
 
 #include <Infra/Core/ProcessInfo.h>
 
@@ -31,18 +31,11 @@ namespace Xidi
       /// IMetadata
       Metadata,
 
-      /// IImportFunctions
-      /// Deprecated in favor of the library-specific enumerators below.
+      /// IImportFunctions - deprecated
       ImportFunctions,
 
-      /// IImportFunctionsDInput
-      ImportFunctionsDInput,
-
-      /// IImportFunctionsDInput8
-      ImportFunctionsDInput8,
-
-      /// IImportFunctionsWinMM
-      ImportFunctionsWinMM
+      /// IImportFunctions2
+      ImportFunctions2
     };
 
     /// Xidi API base class. All API classes must inherit from this class.
@@ -77,33 +70,77 @@ namespace Xidi
       inline IMetadata(void) : IXidi(EClass::Metadata) {}
     };
 
-    /// Xidi API class for manipulating the functions Xidi imports from the system. Used as a base
-    /// class for library-specific subclasses.
-    class IImportFunctions : public IXidi
+    /// Xidi API class for manipulating the functions Xidi imports from the system.
+    class IImportFunctions2 : public IXidi
     {
     public:
+
+      /// Enumeration of libraries for which import function replacement is supported.
+      enum class ELibrary
+      {
+        DInput,
+        DInput8,
+        WinMM,
+        XInput
+      };
 
       /// Retrieves a list of names of imported functions whose import addresses can be replaced.
       /// Xidi imports some of its functionality from the system, but in some cases these import
       /// locations need to be changed. Function names returned in the read-only view are also
       /// exported by Xidi, and their addresses can be retrieved using `GetProcAddress` directly.
-      /// @return Read-only reference to a set of function names.
-      virtual const std::set<std::wstring_view>& GetReplaceable(void) const = 0;
+      /// @param [in] library Library for which replaceable functions are requested.
+      /// @return Read-only pointer to a map from function names to internal import table indices,
+      /// or `nullptr` if the specified library does not have replaceable imported functions.
+      virtual const std::unordered_map<std::wstring_view, size_t>* GetReplaceable(
+          ELibrary library) const = 0;
 
       /// Submits to Xidi a set of replacement import function addresses as a map from name to
       /// address. Xidi imports some of its functionality from the system, but in some cases these
       /// import locations need to be changed. Valid function names are obtained using the
-      /// #GetReplaceableImportFunctions API function.
+      /// #GetReplaceable API function.
+      /// @param [in] library Library for which functions are to be replaced.
       /// @param [in] importFunctionTable Read-only reference to a map from function name to
-      /// replcaement import address.
+      /// replacement import address.
       /// @return Number of functions whose addresses were successfully replaced using the provided
       /// import function table.
       virtual size_t SetReplaceable(
-          const std::map<std::wstring_view, const void*>& importFunctionTable) = 0;
+          ELibrary library,
+          const std::unordered_map<std::wstring_view, const void*>& importFunctionTable) = 0;
 
     protected:
 
-      inline IImportFunctions(EClass apiClass) : IXidi(apiClass) {}
+      inline IImportFunctions2(void) : IXidi(EClass::ImportFunctions2) {}
+    };
+
+    /// Interface for accessing and replacing the functions for a single library's import table.
+    class IMutableImportTable
+    {
+    public:
+
+      /// Retrieves all replaceable imported functions, mapped from name to index in the internal
+      /// import table.
+      /// @return Read-only reference to replaceable imported functions.
+      virtual const std::unordered_map<std::wstring_view, size_t>& GetReplaceable(void) const = 0;
+
+      /// Replaces the specified imported function with a new one, identified by name.
+      /// @param [in] replaceableFunctionName Name of the function whose import address is to be
+      /// replaced.
+      /// @param [in] newAddress New address to use for the imported function.
+      /// @return `true` if the replacement was successful, `false` otherwise.
+      inline bool SetReplaceable(std::wstring_view replaceableFunctionName, const void* newAddress)
+      {
+        const auto replaceableFunction = GetReplaceable().find(replaceableFunctionName);
+        if (GetReplaceable().cend() == replaceableFunction) return false;
+        return SetReplaceable(replaceableFunction->second, newAddress);
+      }
+
+      /// Replaces the specified imported function with a new one, identified by index into the
+      /// import table.
+      /// @param [in] replaceableFunctionIndex Index in the internal import table of the function
+      /// whose import address is to be replaced.
+      /// @param [in] newAddress New address to use for the imported function.
+      /// @return `true` if the replacement was successful, `false` otherwise.
+      virtual bool SetReplaceable(size_t replaceableFunctionIndex, const void* newAddress) = 0;
     };
 
     /// Pointer type definition for the XidiApiGetInterface exported function.

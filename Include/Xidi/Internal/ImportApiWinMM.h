@@ -12,12 +12,19 @@
 
 #pragma once
 
+#include <string_view>
+#include <unordered_map>
+
 #include "ApiWindows.h"
+#include "ApiXidi.h"
 
 namespace Xidi
 {
   namespace ImportApiWinMM
   {
+    /// Retrieves a pointer to the interface that allows some imported functions to be replaced.
+    Api::IMutableImportTable* GetMutableImportTable(void);
+
     /// Dynamically loads the WinMM library and sets up all imported function calls.
     void Initialize(void);
 
