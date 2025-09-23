@@ -93,6 +93,14 @@ namespace Xidi
           DirectInputTypes<diVersion>::IDirectInputDeviceCompatType** lplpDirectInputDevice,
           LPUNKNOWN pUnkOuter)
   {
+    // WinMM's internal implementation depends on the DInput version of `CreateDevice`. When using
+    // the HookModule form of Xidi, calls to the system version of WinMM will end up calling this
+    // function. If called on an XInput controller, this function will fail, which prevents WinMM
+    // from enumerating it. Using the WinMM wrapper directly, however, results in the XInput
+    // controller being enumerated in WinMM and then ultimately being filtered out in the WinMM
+    // wrapper. Ultimately the outcome is the same, the distiction is just whether the filtering
+    // happens in DirectInput or in the WinMM wrapper.
+
     // Check if the specified instance GUID is an Xidi virtual controller GUID.
     const std::optional<Controller::TControllerIdentifier> maybeVirtualControllerId =
         VirtualControllerIdFromInstanceGuid(rguid);

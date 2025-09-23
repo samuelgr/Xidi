@@ -640,7 +640,6 @@ namespace Xidi
         FillRegistryKeyString(pjc->szRegKey, _countof(pjc->szRegKey));
 
         const MMRESULT result = JOYERR_NOERROR;
-        LOG_INVOCATION(Infra::Message::ESeverity::Info, (unsigned int)uJoyID, result);
         return result;
       }
 
@@ -656,7 +655,6 @@ namespace Xidi
         {
           const MMRESULT result = JOYERR_PARMS;
           LOG_INVALID_PARAMS();
-          LOG_INVOCATION(Infra::Message::ESeverity::Info, (unsigned int)uJoyID, result);
           return result;
         }
 
@@ -699,7 +697,6 @@ namespace Xidi
         FillVirtualControllerName(pjc->szPname, _countof(pjc->szPname), xJoyID);
 
         const MMRESULT result = JOYERR_NOERROR;
-        LOG_INVOCATION(Infra::Message::ESeverity::Info, (unsigned int)uJoyID, result);
         return result;
       }
       else
@@ -736,13 +733,17 @@ namespace Xidi
     MMRESULT __stdcall joyGetDevCapsA(UINT_PTR uJoyID, LPJOYCAPSA pjc, UINT cbjc)
     {
       Initialize();
-      return JoyGetDevCapsInternal(uJoyID, pjc, cbjc);
+      MMRESULT result = JoyGetDevCapsInternal(uJoyID, pjc, cbjc);
+      LOG_INVOCATION(Infra::Message::ESeverity::Info, static_cast<unsigned int>(uJoyID), result);
+      return result;
     }
 
     MMRESULT __stdcall joyGetDevCapsW(UINT_PTR uJoyID, LPJOYCAPSW pjc, UINT cbjc)
     {
       Initialize();
-      return JoyGetDevCapsInternal(uJoyID, pjc, cbjc);
+      MMRESULT result = JoyGetDevCapsInternal(uJoyID, pjc, cbjc);
+      LOG_INVOCATION(Infra::Message::ESeverity::Info, static_cast<unsigned int>(uJoyID), result);
+      return result;
     }
 
     UINT __stdcall joyGetNumDevs(void)
