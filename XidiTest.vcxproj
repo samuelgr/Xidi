@@ -183,6 +183,7 @@
     <ClCompile Include="Source\Test\Case\MapperParserTest.cpp" />
     <ClCompile Include="Source\Test\Case\MouseAxisMapperTest.cpp" />
     <ClCompile Include="Source\Test\Case\MouseButtonMapperTest.cpp" />
+    <ClCompile Include="Source\Test\Case\MouseSpeedModifierMapperTest.cpp" />
     <ClCompile Include="Source\Test\Case\PeriodicEffectTest.cpp" />
     <ClCompile Include="Source\Test\Case\PovMapperTest.cpp" />
     <ClCompile Include="Source\Test\Case\RampForceEffectTest.cpp" />

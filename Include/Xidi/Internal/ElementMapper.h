@@ -476,6 +476,48 @@ namespace Xidi
       const Mouse::EMouseButton mouseButton;
     };
 
+    /// Maps a single XInput controller element to a modifier that changes the mouse speed scaling
+    /// factor for other element mappers that affect the sysetm mouse.
+    class MouseSpeedModifierMapper : public IElementMapper
+    {
+    public:
+
+      inline constexpr MouseSpeedModifierMapper(unsigned int mouseSpeedScalingFactor)
+          : mouseSpeedScalingFactor(mouseSpeedScalingFactor)
+      {}
+
+      /// Retrieves and returns the target mouse button to which this object contributes.
+      /// @return Target mouse button identifier.
+      inline unsigned int GetMouseSpeedScalingFactor(void) const
+      {
+        return mouseSpeedScalingFactor;
+      }
+
+      // IElementMapper
+      std::unique_ptr<IElementMapper> Clone(void) const override;
+      void ContributeFromAnalogValue(
+          SState& controllerState,
+          int16_t analogValue,
+          uint32_t sourceIdentifier = 0) const override;
+      void ContributeFromButtonValue(
+          SState& controllerState,
+          bool buttonPressed,
+          uint32_t sourceIdentifier = 0) const override;
+      void ContributeFromTriggerValue(
+          SState& controllerState,
+          uint8_t triggerValue,
+          uint32_t sourceIdentifier = 0) const override;
+      void ContributeNeutral(SState& controllerState, uint32_t sourceIdentifier = 0) const override;
+      int GetTargetElementCount(void) const override;
+      std::optional<SElementIdentifier> GetTargetElementAt(int index) const override;
+
+    private:
+
+      /// Holds the mouse speed scaling factor that this element mapper will use as an override when
+      /// this modifier is active.
+      const unsigned int mouseSpeedScalingFactor;
+    };
+
     /// Maps a single XInput controller element such that it contributes to a POV on a virtual
     /// controller.
     class PovMapper : public IElementMapper

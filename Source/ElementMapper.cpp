@@ -585,6 +585,54 @@ namespace Xidi
       return std::nullopt;
     }
 
+    std::unique_ptr<IElementMapper> MouseSpeedModifierMapper::Clone(void) const
+    {
+      return std::make_unique<MouseSpeedModifierMapper>(*this);
+    }
+
+    void MouseSpeedModifierMapper::ContributeFromAnalogValue(
+        SState& controllerState, int16_t analogValue, uint32_t sourceIdentifier) const
+    {
+      if (true == Math::IsAnalogPressed(analogValue))
+        Mouse::SubmitMouseSpeedOverride(mouseSpeedScalingFactor, sourceIdentifier);
+      else
+        Mouse::SubmitMouseSpeedOverride(std::nullopt, sourceIdentifier);
+    }
+
+    void MouseSpeedModifierMapper::ContributeFromButtonValue(
+        SState& controllerState, bool buttonPressed, uint32_t sourceIdentifier) const
+    {
+      if (true == buttonPressed)
+        Mouse::SubmitMouseSpeedOverride(mouseSpeedScalingFactor, sourceIdentifier);
+      else
+        Mouse::SubmitMouseSpeedOverride(std::nullopt, sourceIdentifier);
+    }
+
+    void MouseSpeedModifierMapper::ContributeFromTriggerValue(
+        SState& controllerState, uint8_t triggerValue, uint32_t sourceIdentifier) const
+    {
+      if (true == Math::IsTriggerPressed(triggerValue))
+        Mouse::SubmitMouseSpeedOverride(mouseSpeedScalingFactor, sourceIdentifier);
+      else
+        Mouse::SubmitMouseSpeedOverride(std::nullopt, sourceIdentifier);
+    }
+
+    void MouseSpeedModifierMapper::ContributeNeutral(
+        SState& controllerState, uint32_t sourceIdentifier) const
+    {
+      Mouse::SubmitMouseSpeedOverride(std::nullopt, sourceIdentifier);
+    }
+
+    int MouseSpeedModifierMapper::GetTargetElementCount(void) const
+    {
+      return 0;
+    }
+
+    std::optional<SElementIdentifier> MouseSpeedModifierMapper::GetTargetElementAt(int index) const
+    {
+      return std::nullopt;
+    }
+
     std::unique_ptr<IElementMapper> PovMapper::Clone(void) const
     {
       return std::make_unique<PovMapper>(*this);

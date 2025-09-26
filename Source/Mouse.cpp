@@ -24,6 +24,7 @@
 #include <vector>
 
 #include <Infra/Core/Message.h>
+#include <Infra/Core/Mutex.h>
 
 #include "ApiBitSet.h"
 #include "ApiWindows.h"
@@ -83,7 +84,7 @@ namespace Xidi
       /// The returned lock object is scoped and, as a result, will automatically unlock upon its
       /// destruction.
       /// @return Scoped lock object that has acquired this object's concurrency control mutex.
-      inline std::unique_lock<std::mutex> LockButtonState(void)
+      inline std::unique_lock<Infra::Mutex> LockButtonState(void)
       {
         return std::unique_lock(mouseButtonStateGuard);
       }
@@ -193,7 +194,7 @@ namespace Xidi
 
       /// For ensuring proper concurrency control of accesses to the virtual mouse button state
       /// represented by this object.
-      std::mutex mouseButtonStateGuard;
+      Infra::Mutex mouseButtonStateGuard;
 
       /// Individually-sourced mouse movement contributions, one per mouse axis. Since mouse
       /// movements are always relative, only one state data structure is needed for each mouse
@@ -327,11 +328,11 @@ namespace Xidi
       static int MouseMovementUnitsToPixels(
           int mouseMovementUnits, std::optional<unsigned int> mouseSpeedScalingFactorOverride)
       {
-        static const int kDefaultSpeedScalingFactor =
+        static const int kDefaultSpeedScalingFactor = static_cast<const int>(
             Globals::GetConfigurationData()
                 [Strings::kStrConfigurationSectionProperties]
                 [Strings::kStrConfigurationSettingPropertiesMouseSpeedScalingFactorPercent]
-                    .ValueOr(100);
+                    .ValueOr(100));
 
         constexpr double kMillisecondsPerSecond = 1000.0;
         constexpr double kPollingPeriodsPerSecond =
