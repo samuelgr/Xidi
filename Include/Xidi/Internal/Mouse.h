@@ -13,6 +13,7 @@
 #pragma once
 
 #include <cstdint>
+#include <optional>
 
 namespace Xidi
 {
@@ -93,5 +94,12 @@ namespace Xidi
     /// mouse axis.
     /// @param [in] sourceIdentifier Opaque identifier for the source of the mouse movement event.
     void SubmitMouseMovement(EMouseAxis axis, int mouseMovementUnits, uint32_t sourceIdentifier);
+
+    /// Submits a mouse speed override.
+    /// @param [in] mouseSpeedScalingFactor Optional scaling factor. A lack of value means that the
+    /// contribution is cleared.
+    /// @param [in] sourceIdentifier Opaque identifier for the source of the scaling factor.
+    void SubmitMouseSpeedOverride(
+        std::optional<unsigned int> mouseSpeedScalingFactor, uint32_t sourceIdentifier);
   } // namespace Mouse
 } // namespace Xidi

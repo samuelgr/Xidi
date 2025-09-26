@@ -63,12 +63,13 @@ namespace XidiTest
     std::optional<int> GetMovementContributionFromSource(
         EMouseAxis axis, uint32_t sourceIdentifier) const;
 
-    /// Submits a mouse movement.
-    /// @param [in] axis Mouse axis that is affected.
-    /// @param [in] mouseMovementUnits Number of internal mouse movement units along the target
-    /// mouse axis.
-    /// @param [in] sourceIdentifier Opaque identifier for the source of the mouse movement event.
-    void SubmitMouseMovement(EMouseAxis axis, int mouseMovementUnits, uint32_t sourceIdentifier);
+    /// Retrieves the most recent mouse speed contribution that was submitted from the specified
+    /// source.
+    /// @param [in] sourceIdentifier Opaque identifier for the source of the mouse speed
+    /// contribution.
+    /// @return Most recent speed scaling factor override contribution from the specified source, if
+    /// such a contribution exists.
+    std::optional<unsigned int> GetSpeedContributionFromSource(uint32_t sourceIdentifier) const;
 
     /// Submits a mouse button state of pressed.
     /// @param [in] button Mouse button that is affected.
@@ -77,6 +78,20 @@ namespace XidiTest
     /// Submits a mouse button state of released.
     /// @param [in] button Mouse button that is affected.
     void SubmitMouseButtonReleasedState(EMouseButton button);
+
+    /// Submits a mouse movement.
+    /// @param [in] axis Mouse axis that is affected.
+    /// @param [in] mouseMovementUnits Number of internal mouse movement units along the target
+    /// mouse axis.
+    /// @param [in] sourceIdentifier Opaque identifier for the source of the mouse movement event.
+    void SubmitMouseMovement(EMouseAxis axis, int mouseMovementUnits, uint32_t sourceIdentifier);
+
+    /// Submits a mouse speed override.
+    /// @param [in] mouseSpeedScalingFactor Optional scaling factor. A lack of value means that the
+    /// contribution is cleared.
+    /// @param [in] sourceIdentifier Opaque identifier for the source of the scaling factor.
+    void SubmitMouseSpeedOverride(
+        std::optional<unsigned int> mouseSpeedScalingFactor, uint32_t sourceIdentifier);
 
   private:
 
@@ -87,5 +102,10 @@ namespace XidiTest
     /// source identifier, one map per mouse axis.
     std::array<std::unordered_map<uint32_t, int>, (unsigned int)EMouseAxis::Count>
         virtualMouseMovementContributionBySource;
+
+    /// Holds the most recent mouse speed scaling factor override contribution received from each
+    /// opaque source identifier.
+    std::unordered_map<uint32_t, std::optional<unsigned int>>
+        virtualMouseSpeedContributionsBySource;
   };
 } // namespace XidiTest

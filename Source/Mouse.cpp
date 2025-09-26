@@ -18,6 +18,7 @@
 #include <bitset>
 #include <cstdint>
 #include <mutex>
+#include <optional>
 #include <stop_token>
 #include <thread>
 #include <vector>
@@ -37,9 +38,16 @@ namespace Xidi
     /// Type used to represent the state of a virtual mouse's buttons.
     using TButtonState = BitSetEnum<EMouseButton>;
 
-    /// Type used to represent the individually-sourced mouse movement contributions.
-    /// Operations allowed are read, append, and update.
+    /// Type used to represent individually-sourced mouse movement contributions. Operations allowed
+    /// are read, append, and update.
     using TMouseMovementContributions = concurrency::concurrent_unordered_map<uint32_t, int>;
+
+    /// Type used to represent individually-sourced mouse speed contributions, which override the
+    /// global default mouse speed scaling factor. Only one contribution is actually effective at
+    /// any given time, and there is no guarantee as to which it will be if multiple exist.
+    /// Operations allowed are read, append, and update.
+    using TMouseSpeedContributions =
+        concurrency::concurrent_unordered_map<uint32_t, std::optional<unsigned int>>;
 
     /// Tracks mouse state contributions and generates mouse state snapshots.
     class StateContributionTracker
@@ -128,6 +136,21 @@ namespace Xidi
         return ButtonSnapshotRelativeTo(TButtonState());
       }
 
+      /// Determines the effective mouse speed scaling factor override, given all of the
+      /// contributions. If multiple different contributions are present then there is no guarantee
+      /// as to which is effective.
+      /// @return Mouse speed scaling factor override, if a temporary override is in effect.
+      inline std::optional<unsigned int> GetMouseSpeedScalingFactorOverride(void)
+      {
+        for (const auto& maybeMouseSpeedContribution : mouseSpeedContributions)
+        {
+          if (maybeMouseSpeedContribution.second.has_value())
+            return *maybeMouseSpeedContribution.second;
+        }
+
+        return std::nullopt;
+      }
+
       /// Resets all marked button contributions back to empty.
       inline void ResetButtons(void)
       {
@@ -135,19 +158,8 @@ namespace Xidi
         notReleasedButtons.fill();
       }
 
-      /// Resets all movement contributions back to motionless.
-      inline void ResetMovementContributions(void)
-      {
-        for (auto& axisMovementContributions : mouseMovementContributions)
-        {
-          for (auto& contribution : axisMovementContributions)
-            contribution.second = 0;
-        }
-      }
-
-      /// Submits a mouse movement.
-      /// Either inserts a contribution from a new source or updates the contribution from an
-      /// existing source.
+      /// Submits a mouse movement. Either inserts a contribution from a new source or updates the
+      /// contribution from an existing source.
       /// @param [in] axis Mouse axis that is affected.
       /// @param [in] mouseMovementUnits Number of internal mouse movement units along the target
       /// mouse axis.
@@ -156,6 +168,18 @@ namespace Xidi
           EMouseAxis axis, int mouseMovementUnits, uint32_t sourceIdentifier)
       {
         mouseMovementContributions[(unsigned int)axis][sourceIdentifier] = mouseMovementUnits;
+      }
+
+      /// Submits a mouse speed override. Either inserts a contribution from a new source or updates
+      /// the contribution from an existing source.
+      /// @param [in] mouseSpeedScalingFactor Scaling factor to submit, or empty to clear the
+      /// submission from the specified source.
+      /// @param [in] sourceIdentifier Opaque identifier for the source of the mouse speed
+      /// contribution.
+      inline void SubmitMouseSpeedOverride(
+          std::optional<unsigned int> mouseSpeedScalingFactor, uint32_t sourceIdentifier)
+      {
+        mouseSpeedContributions[sourceIdentifier] = mouseSpeedScalingFactor;
       }
 
     private:
@@ -171,11 +195,14 @@ namespace Xidi
       /// represented by this object.
       std::mutex mouseButtonStateGuard;
 
-      /// Individually-sourced mouse movement contributions.
-      /// Since mouse movements are always relative, only one state data structure is needed, one
-      /// per mouse axis.
+      /// Individually-sourced mouse movement contributions, one per mouse axis. Since mouse
+      /// movements are always relative, only one state data structure is needed for each mouse
+      /// axis.
       std::array<TMouseMovementContributions, (unsigned int)EMouseAxis::Count>
           mouseMovementContributions;
+
+      /// Individually-sourced mouse speed contributions. Holds override contributions.
+      TMouseSpeedContributions mouseSpeedContributions;
     };
 
     /// Manages a thread that continuously runs and updates the physical mouse state from virtual
@@ -294,21 +321,28 @@ namespace Xidi
 
       /// Converts internal mouse movement units to pixels.
       /// @param [in] mouseMovementUnits Number of internal mouse movement units to be converted.
+      /// @param [in] mouseSpeedScalingFactorOverride Mouse speed scaling factor override in effect.
+      /// If not present, then the configured mouse speed scaling factor is used.
       /// @return Appropriate number of pixels represented by the mouse movement units.
-      static int MouseMovementUnitsToPixels(int mouseMovementUnits)
+      static int MouseMovementUnitsToPixels(
+          int mouseMovementUnits, std::optional<unsigned int> mouseSpeedScalingFactorOverride)
       {
-        static const double kSpeedScalingFactor =
-            static_cast<double>(
-                Globals::GetConfigurationData()
-                    [Strings::kStrConfigurationSectionProperties]
-                    [Strings::kStrConfigurationSettingPropertiesMouseSpeedScalingFactorPercent]
-                        .ValueOr(100)) /
-            100.0;
+        static const int kDefaultSpeedScalingFactor =
+            Globals::GetConfigurationData()
+                [Strings::kStrConfigurationSectionProperties]
+                [Strings::kStrConfigurationSettingPropertiesMouseSpeedScalingFactorPercent]
+                    .ValueOr(100);
 
         constexpr double kMillisecondsPerSecond = 1000.0;
         constexpr double kPollingPeriodsPerSecond =
             (kMillisecondsPerSecond / (double)kMouseUpdatePeriodMilliseconds);
-        const double fastestPixelsPerSecond = 2000.0 * kSpeedScalingFactor;
+
+        const double speedScalingFactor =
+            static_cast<double>(
+                mouseSpeedScalingFactorOverride.value_or(kDefaultSpeedScalingFactor)) /
+            100.0;
+
+        const double fastestPixelsPerSecond = 2000.0 * speedScalingFactor;
         const double fastestPixelsPerPollingPeriod =
             fastestPixelsPerSecond / kPollingPeriodsPerSecond;
         const double conversionScalingFactor = fastestPixelsPerPollingPeriod /
@@ -395,7 +429,8 @@ namespace Xidi
                 else if (axisMovementUnits < kMouseMovementUnitsMin)
                   axisMovementUnits = kMouseMovementUnitsMin;
 
-                const int axisMovementPixels = MouseMovementUnitsToPixels(axisMovementUnits);
+                const int axisMovementPixels = MouseMovementUnitsToPixels(
+                    axisMovementUnits, mouseTracker->GetMouseSpeedScalingFactorOverride());
                 if (0 != axisMovementPixels)
                   mouseEvents.emplace_back(INPUT(
                       {.type = INPUT_MOUSE,
@@ -476,6 +511,13 @@ namespace Xidi
     {
       InitializeAndBeginUpdating();
       mouseTracker.SubmitMouseMovement(axis, mouseMovementUnits, sourceIdentifier);
+    }
+
+    void SubmitMouseSpeedOverride(
+        std::optional<unsigned int> mouseSpeedScalingFactor, uint32_t sourceIdentifier)
+    {
+      InitializeAndBeginUpdating();
+      mouseTracker.SubmitMouseSpeedOverride(mouseSpeedScalingFactor, sourceIdentifier);
     }
   } // namespace Mouse
 } // namespace Xidi

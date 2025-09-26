@@ -65,7 +65,14 @@ namespace XidiTest
         virtualMouseMovementContributionBySource[(unsigned int)axis].find(sourceIdentifier);
     if (virtualMouseMovementContributionBySource[(unsigned int)axis].cend() == contributionIter)
       return std::nullopt;
+    return contributionIter->second;
+  }
 
+  std::optional<unsigned int> MockMouse::GetSpeedContributionFromSource(
+      uint32_t sourceIdentifier) const
+  {
+    const auto contributionIter = virtualMouseSpeedContributionsBySource.find(sourceIdentifier);
+    if (virtualMouseSpeedContributionsBySource.cend() == contributionIter) return std::nullopt;
     return contributionIter->second;
   }
 
@@ -109,6 +116,12 @@ namespace XidiTest
     virtualMouseMovementContributionBySource[(unsigned int)axis][sourceIdentifier] =
         mouseMovementUnits;
   }
+
+  void MockMouse::SubmitMouseSpeedOverride(
+      std::optional<unsigned int> mouseSpeedScalingFactor, uint32_t sourceIdentifier)
+  {
+    virtualMouseSpeedContributionsBySource[sourceIdentifier] = mouseSpeedScalingFactor;
+  }
 } // namespace XidiTest
 
 namespace Xidi
@@ -150,6 +163,19 @@ namespace Xidi
             L"%s: No mock mouse is installed to capture a mouse movement event.", __FUNCTIONW__);
 
       capturingVirtualMouse->SubmitMouseMovement(axis, mouseMovementUnits, sourceIdentifier);
+    }
+
+    void SubmitMouseSpeedOverride(
+        std::optional<unsigned int> mouseSpeedScalingFactor, uint32_t sourceIdentifier)
+    {
+      std::scoped_lock lock(captureGuard);
+
+      if (nullptr == capturingVirtualMouse)
+        TEST_FAILED_BECAUSE(
+            L"%s: No mock mouse is installed to capture a mouse speed contribution event.",
+            __FUNCTIONW__);
+
+      capturingVirtualMouse->SubmitMouseSpeedOverride(mouseSpeedScalingFactor, sourceIdentifier);
     }
   } // namespace Mouse
 } // namespace Xidi
