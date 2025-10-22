@@ -8,9 +8,9 @@ set project_has_sdk=no
 set project_has_third_party_license=yes
 
 set files_release=LICENSE README.md
-set files_release_build=dinput.dll dinput8.dll winmm.dll Xidi.dll
-set files_release_build_Win32=Xidi.HookModule.32.dll
-set files_release_build_x64=Xidi.HookModule.64.dll
+set files_release_build=dinput.dll dinput8.dll winmm.dll
+set files_release_build_Win32=Xidi.32.dll Xidi.HookModule.32.dll
+set files_release_build_x64=Xidi.64.dll Xidi.HookModule.64.dll
 
 set third_party_license=Hookshot Boost XstdBitSet
 

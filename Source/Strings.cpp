@@ -176,6 +176,12 @@ namespace Xidi
                 Infra::ProcessInfo::GetThisModuleDirectoryName(),
                 L"\\",
                 Infra::ProcessInfo::GetProductName(),
+                L".",
+#ifdef _WIN64
+                L"64",
+#else
+                L"32",
+#endif
                 L".dll"};
 
             size_t totalLength = 0;
