@@ -137,7 +137,7 @@ namespace Hookshot
 /// conventions are automatically extracted based on the supplied function. Parameters are just
 /// different syntactic representations of calling conventions, which are used to create one
 /// template specialization for calling convention.
-#define HOOKSHOT_STATIC_HOOK_TEMPLATE(callingConvention, callingConventionInBrackets)              \
+#define HOOKSHOT_STATIC_HOOK_TEMPLATE(callingConvention, callingConventionInBrackets, cantThrow)   \
   template <                                                                                       \
       const wchar_t* kOriginalFunctionName,                                                        \
       void* const kOriginalFunctionAddress,                                                        \
@@ -146,15 +146,15 @@ namespace Hookshot
   class StaticHook<                                                                                \
       kOriginalFunctionName,                                                                       \
       kOriginalFunctionAddress,                                                                    \
-      ReturnType callingConventionInBrackets(ArgumentTypes...)>                                    \
+      ReturnType callingConventionInBrackets(ArgumentTypes...) noexcept(cantThrow)>                \
       : public StaticHookBase<kOriginalFunctionName, kOriginalFunctionAddress>                     \
   {                                                                                                \
   public:                                                                                          \
                                                                                                    \
     typedef ReturnType callingConvention TFunction(ArgumentTypes...);                              \
     typedef ReturnType(callingConvention* TFunctionPtr)(ArgumentTypes...);                         \
-    static ReturnType callingConvention Hook(ArgumentTypes...);                                    \
-    static ReturnType callingConvention Original(ArgumentTypes... args)                            \
+    static ReturnType callingConvention Hook(ArgumentTypes...) noexcept(cantThrow);                \
+    static ReturnType callingConvention Original(ArgumentTypes... args) noexcept(cantThrow)        \
     {                                                                                              \
       return ((ReturnType(callingConvention*)(                                                     \
           ArgumentTypes...))StaticHookBase<kOriginalFunctionName, kOriginalFunctionAddress>::      \
@@ -244,11 +244,16 @@ namespace Hookshot
   };
 
 #ifdef _WIN64
-  HOOKSHOT_STATIC_HOOK_TEMPLATE(, );
+  HOOKSHOT_STATIC_HOOK_TEMPLATE(, , true);
+  HOOKSHOT_STATIC_HOOK_TEMPLATE(, , false);
 #else
-  HOOKSHOT_STATIC_HOOK_TEMPLATE(__cdecl, (__cdecl));
-  HOOKSHOT_STATIC_HOOK_TEMPLATE(__fastcall, (__fastcall));
-  HOOKSHOT_STATIC_HOOK_TEMPLATE(__stdcall, (__stdcall));
-  HOOKSHOT_STATIC_HOOK_TEMPLATE(__vectorcall, (__vectorcall));
+  HOOKSHOT_STATIC_HOOK_TEMPLATE(__cdecl, (__cdecl), true);
+  HOOKSHOT_STATIC_HOOK_TEMPLATE(__cdecl, (__cdecl), false);
+  HOOKSHOT_STATIC_HOOK_TEMPLATE(__fastcall, (__fastcall), true);
+  HOOKSHOT_STATIC_HOOK_TEMPLATE(__fastcall, (__fastcall), false);
+  HOOKSHOT_STATIC_HOOK_TEMPLATE(__stdcall, (__stdcall), true);
+  HOOKSHOT_STATIC_HOOK_TEMPLATE(__stdcall, (__stdcall), false);
+  HOOKSHOT_STATIC_HOOK_TEMPLATE(__vectorcall, (__vectorcall), true);
+  HOOKSHOT_STATIC_HOOK_TEMPLATE(__vectorcall, (__vectorcall), false);
 #endif
 } // namespace Hookshot

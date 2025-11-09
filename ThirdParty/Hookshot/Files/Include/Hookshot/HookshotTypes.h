@@ -12,6 +12,16 @@
 
 #pragma once
 
+// clang-format off
+
+#ifndef NOMINMAX
+#define NOMINMAX
+#endif
+#include <sdkddkver.h>
+#include <windows.h>
+
+// clang-format on
+
 #include <functional>
 
 namespace Hookshot
@@ -126,8 +136,21 @@ namespace Hookshot
     /// interface pointer. The module path is the full, absolute path of the module for which the
     /// notification is generated. Call the `GetModuleHandle` family of functions to get the
     /// associated module handle.
+    /// @return Result of the operation.
     virtual EResult __fastcall NotifyOnLibraryLoad(
         const wchar_t* libraryPath,
         std::function<void(IHookshot* hookshot, const wchar_t* modulePath)> handlerFunc) = 0;
+
+    /// Attempts to inject a process that is newly-created and in suspended state (for example, by
+    /// calling `CreateProcess` with the `CREATE_SUSPENDED` flag). The caller must have appropriate
+    /// security permissions on the target process, which it typically will if it is the creator of
+    /// the target process. This function spawns a new Hookshot executable process and then requests
+    /// that the target process be injected using inter-process communication. On return, the
+    /// process remains suspended and will not run until the caller resumes it.
+    /// @param [in] processInfo Process information structure that identifies the process to inject.
+    /// This structure would be supplied by Windows upon return from the `CreateProcess` family of
+    /// functions.
+    /// @return Result of the operation.
+    virtual EResult __fastcall InjectNewSuspendedProcess(const PROCESS_INFORMATION& processInfo);
   };
 } // namespace Hookshot
