@@ -23,6 +23,7 @@
 // clang-format on
 
 #include <functional>
+#include <string_view>
 
 namespace Hookshot
 {
@@ -64,12 +65,21 @@ namespace Hookshot
     UpperBoundValue
   };
 
-  /// Convenience function used to determine if a hook operation succeeded.
+  /// Convenience function used to determine if a Hookshot operation succeeded.
   /// @param [in] result Result code returned from most Hookshot functions.
   /// @return `true` if the identifier represents success, `false` otherwise.
   inline bool SuccessfulResult(const EResult result)
   {
     return (result < EResult::BoundaryValue);
+  }
+
+  /// Convenience function used to determine if a Hookshot operation succeeded, overloaded for those
+  /// operations that return an error message rather than a result enumerator.
+  /// @param [in] result Result error message returned from certain Hookshot functions.
+  /// @return `true` if the result indicates success, `false` otherwise.
+  inline bool SuccessfulResult(std::wstring_view result)
+  {
+    return (true == result.empty());
   }
 
   /// Main interface used to access all Hookshot functionality. During initialization, Hookshot
@@ -151,6 +161,7 @@ namespace Hookshot
     /// This structure would be supplied by Windows upon return from the `CreateProcess` family of
     /// functions.
     /// @return Result of the operation.
-    virtual EResult __fastcall InjectNewSuspendedProcess(const PROCESS_INFORMATION& processInfo);
+    virtual std::wstring_view __fastcall InjectNewSuspendedProcess(
+        const PROCESS_INFORMATION& processInfo);
   };
 } // namespace Hookshot
