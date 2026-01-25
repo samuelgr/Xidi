@@ -13,3 +13,4 @@
 
 #include "HookshotFunctions.h"
 #include "HookshotTypes.h"
+#include "HookshotInterface.h"

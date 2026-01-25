@@ -12,7 +12,7 @@
 
 #pragma once
 
-#include "HookshotTypes.h"
+#include "HookshotInterface.h"
 
 // Define this preprocessor symbol if linking directly with the Hookshot library and loading it by
 // normal means. Projects that build hook modules and projects that load the Hookshot library at

@@ -82,6 +82,18 @@ namespace Xidi
 
 HOOKSHOT_HOOK_MODULE_ENTRY(hookshot)
 {
+  auto hookshot2 = Hookshot::RequestNewerHookshotInterface<Hookshot::IHookshot2>(hookshot);
+  if (nullptr == hookshot2)
+  {
+    Infra::Message::OutputFormatted(
+        Infra::Message::ESeverity::ForcedInteractiveError,
+        L"%.*s depends on Hookshot interface version %u, which is not supported by the loaded Hookshot library.",
+        static_cast<int>(Infra::ProcessInfo::GetProductName().length()),
+        Infra::ProcessInfo::GetProductName().data(),
+        Hookshot::IHookshot2::kHookshotInterfaceVersion);
+    TerminateProcess(Infra::ProcessInfo::GetCurrentProcessHandle(), (UINT)-1);
+  }
+
   // CoCreateInstance
   {
     Xidi::SetHookCoCreateInstance(hookshot);
@@ -89,7 +101,7 @@ HOOKSHOT_HOOK_MODULE_ENTRY(hookshot)
 
   // DInput
   {
-    Hookshot::EResult notifyOnLibraryLoadResult = hookshot->NotifyOnLibraryLoad(
+    Hookshot::EResult notifyOnLibraryLoadResult = hookshot2->NotifyOnLibraryLoad(
         Xidi::Strings::GetSystemLibraryFilenameDirectInput().data(),
         [](Hookshot::IHookshot* hookshot, const wchar_t* modulePath) -> void
         {
@@ -117,7 +129,7 @@ HOOKSHOT_HOOK_MODULE_ENTRY(hookshot)
 
   // DInput8
   {
-    Hookshot::EResult notifyOnLibraryLoadResult = hookshot->NotifyOnLibraryLoad(
+    Hookshot::EResult notifyOnLibraryLoadResult = hookshot2->NotifyOnLibraryLoad(
         Xidi::Strings::GetSystemLibraryFilenameDirectInput8().data(),
         [](Hookshot::IHookshot* hookshot, const wchar_t* modulePath) -> void
         {
@@ -145,7 +157,7 @@ HOOKSHOT_HOOK_MODULE_ENTRY(hookshot)
 
   // WinMM
   {
-    Hookshot::EResult notifyOnLibraryLoadResult = hookshot->NotifyOnLibraryLoad(
+    Hookshot::EResult notifyOnLibraryLoadResult = hookshot2->NotifyOnLibraryLoad(
         Xidi::Strings::GetSystemLibraryFilenameWinMM().data(),
         [](Hookshot::IHookshot* hookshot, const wchar_t* modulePath) -> void
         {
