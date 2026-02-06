@@ -803,7 +803,7 @@ namespace XidiTest
               {.type = EAxis::Z},
               {.type = EAxis::RotZ}},
          .numAxes = 4,
-         .numButtons = 12,
+         .numButtons = 14,
          .hasPov = true});
 
     const Mapper* const mapper = Mapper::GetByName(L"StandardGamepad");
@@ -823,7 +823,7 @@ namespace XidiTest
               {.type = EAxis::Z},
               {.type = EAxis::RotZ}},
          .numAxes = 4,
-         .numButtons = 12,
+         .numButtons = 14,
          .hasPov = false});
 
     const Mapper* const mapper = Mapper::GetByName(L"DigitalGamepad");
@@ -845,7 +845,7 @@ namespace XidiTest
               {.type = EAxis::RotY},
               {.type = EAxis::RotZ}},
          .numAxes = 6,
-         .numButtons = 10,
+         .numButtons = 12,
          .hasPov = true});
 
     const Mapper* const mapper = Mapper::GetByName(L"ExtendedGamepad");
@@ -867,7 +867,7 @@ namespace XidiTest
               {.type = EAxis::RotY},
               {.type = EAxis::RotZ}},
          .numAxes = 6,
-         .numButtons = 10,
+         .numButtons = 12,
          .hasPov = true});
 
     const Mapper* const mapper = Mapper::GetByName(L"XInputNative");
@@ -888,7 +888,7 @@ namespace XidiTest
               {.type = EAxis::RotX},
               {.type = EAxis::RotY}},
          .numAxes = 5,
-         .numButtons = 10,
+         .numButtons = 12,
          .hasPov = true});
 
     const Mapper* const mapper = Mapper::GetByName(L"XInputSharedTriggers");
@@ -911,7 +911,7 @@ namespace XidiTest
               {.type = EAxis::Z},
               {.type = EAxis::RotZ}},
          .numAxes = 4,
-         .numButtons = 12,
+         .numButtons = 14,
          .hasPov = true});
 
     Mapper::UElementMap clonedElementMap = Mapper::GetByName(L"StandardGamepad")->CloneElementMap();
@@ -934,7 +934,7 @@ namespace XidiTest
              {{.type = EAxis::X, .supportsForceFeedback = true},
               {.type = EAxis::Y, .supportsForceFeedback = true}},
          .numAxes = 2,
-         .numButtons = 12,
+         .numButtons = 14,
          .hasPov = false});
 
     Mapper::UElementMap clonedElementMap = Mapper::GetByName(L"DigitalGamepad")->CloneElementMap();
@@ -959,7 +959,7 @@ namespace XidiTest
               {.type = EAxis::Z},
               {.type = EAxis::RotZ}},
          .numAxes = 4,
-         .numButtons = 10,
+         .numButtons = 12,
          .hasPov = true});
 
     Mapper::UElementMap clonedElementMap = Mapper::GetByName(L"ExtendedGamepad")->CloneElementMap();
@@ -986,7 +986,7 @@ namespace XidiTest
               {.type = EAxis::RotY},
               {.type = EAxis::RotZ}},
          .numAxes = 6,
-         .numButtons = 10,
+         .numButtons = 12,
          .hasPov = false});
 
     Mapper::UElementMap clonedElementMap = Mapper::GetByName(L"XInputNative")->CloneElementMap();
@@ -1013,7 +1013,7 @@ namespace XidiTest
               {.type = EAxis::RotX},
               {.type = EAxis::RotY}},
          .numAxes = 4,
-         .numButtons = 10,
+         .numButtons = 12,
          .hasPov = true});
 
     Mapper::UElementMap clonedElementMap =
