@@ -30,6 +30,9 @@
 #include "Strings.h"
 #include "VirtualController.h"
 
+const int XINPUT_GAMEPAD_GUIDE = 0x0400;
+const int XINPUT_GAMEPAD_SHARE = 0x0800;
+
 namespace Xidi
 {
   namespace Controller
@@ -70,10 +73,6 @@ namespace Xidi
     /// @return Physical state of the identified controller.
     static SPhysicalState ReadPhysicalControllerState(TControllerIdentifier controllerIdentifier)
     {
-      constexpr uint16_t kUnusedButtonMask =
-          ~((uint16_t)((1u << (unsigned int)EPhysicalButton::UnusedGuide) |
-                       (1u << (unsigned int)EPhysicalButton::UnusedShare)));
-
       XINPUT_STATE xinputState;
       DWORD xinputGetStateResult =
           ImportApiXInput::XInputGetState(controllerIdentifier, &xinputState);
@@ -92,7 +91,7 @@ namespace Xidi
                    xinputState.Gamepad.sThumbRX,
                    xinputState.Gamepad.sThumbRY},
               .trigger = {xinputState.Gamepad.bLeftTrigger, xinputState.Gamepad.bRightTrigger},
-              .button = (uint16_t)(xinputState.Gamepad.wButtons & kUnusedButtonMask)};
+              .button = (uint16_t)(xinputState.Gamepad.wButtons)};
 
         case ERROR_DEVICE_NOT_CONNECTED:
           return {.deviceStatus = EPhysicalDeviceStatus::NotConnected};
@@ -112,6 +111,8 @@ namespace Xidi
     static_assert(1u << (unsigned int)EPhysicalButton::RS == XINPUT_GAMEPAD_RIGHT_THUMB);
     static_assert(1u << (unsigned int)EPhysicalButton::LB == XINPUT_GAMEPAD_LEFT_SHOULDER);
     static_assert(1u << (unsigned int)EPhysicalButton::RB == XINPUT_GAMEPAD_RIGHT_SHOULDER);
+    static_assert(1u << (unsigned int)EPhysicalButton::Guide == XINPUT_GAMEPAD_GUIDE);
+    static_assert(1u << (unsigned int)EPhysicalButton::Share == XINPUT_GAMEPAD_SHARE);
     static_assert(1u << (unsigned int)EPhysicalButton::A == XINPUT_GAMEPAD_A);
     static_assert(1u << (unsigned int)EPhysicalButton::B == XINPUT_GAMEPAD_B);
     static_assert(1u << (unsigned int)EPhysicalButton::X == XINPUT_GAMEPAD_X);

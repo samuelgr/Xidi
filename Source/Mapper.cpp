@@ -800,6 +800,18 @@ namespace Xidi
             physicalState[EPhysicalButton::RS],
             SourceIdentifierForElementMapper(
                 sourceControllerIdentifier, ELEMENT_MAP_INDEX_OF(buttonRS)));
+      if (nullptr != elements.named.buttonGuide)
+        elements.named.buttonGuide->ContributeFromButtonValue(
+            controllerState,
+            physicalState[EPhysicalButton::Guide],
+            SourceIdentifierForElementMapper(
+                sourceControllerIdentifier, ELEMENT_MAP_INDEX_OF(buttonGuide)));
+      if (nullptr != elements.named.buttonShare)
+        elements.named.buttonShare->ContributeFromButtonValue(
+            controllerState,
+            physicalState[EPhysicalButton::Share],
+            SourceIdentifierForElementMapper(
+                sourceControllerIdentifier, ELEMENT_MAP_INDEX_OF(buttonShare)));
 
       // Once all contributions have been committed, saturate all axis values at the extreme ends of
       // the allowed range. Doing this at the end means that intermediate contributions are computed
