@@ -43,7 +43,9 @@ namespace Xidi
              .buttonBack = std::make_unique<ButtonMapper>(EButton::B9),
              .buttonStart = std::make_unique<ButtonMapper>(EButton::B10),
              .buttonLS = std::make_unique<ButtonMapper>(EButton::B11),
-             .buttonRS = std::make_unique<ButtonMapper>(EButton::B12)}),
+             .buttonRS = std::make_unique<ButtonMapper>(EButton::B12),
+             .buttonGuide = std::make_unique<ButtonMapper>(EButton::B13),
+             .buttonShare = std::make_unique<ButtonMapper>(EButton::B14)}),
         Mapper(
             L"DigitalGamepad",
             {.stickLeftX = std::make_unique<DigitalAxisMapper>(EAxis::X),
@@ -65,7 +67,9 @@ namespace Xidi
              .buttonBack = std::make_unique<ButtonMapper>(EButton::B9),
              .buttonStart = std::make_unique<ButtonMapper>(EButton::B10),
              .buttonLS = std::make_unique<ButtonMapper>(EButton::B11),
-             .buttonRS = std::make_unique<ButtonMapper>(EButton::B12)}),
+             .buttonRS = std::make_unique<ButtonMapper>(EButton::B12),
+             .buttonGuide = std::make_unique<ButtonMapper>(EButton::B13),
+             .buttonShare = std::make_unique<ButtonMapper>(EButton::B14)}),
         Mapper(
             L"ExtendedGamepad",
             {.stickLeftX = std::make_unique<AxisMapper>(EAxis::X),
@@ -87,7 +91,9 @@ namespace Xidi
              .buttonBack = std::make_unique<ButtonMapper>(EButton::B7),
              .buttonStart = std::make_unique<ButtonMapper>(EButton::B8),
              .buttonLS = std::make_unique<ButtonMapper>(EButton::B9),
-             .buttonRS = std::make_unique<ButtonMapper>(EButton::B10)}),
+             .buttonRS = std::make_unique<ButtonMapper>(EButton::B10),
+             .buttonGuide = std::make_unique<ButtonMapper>(EButton::B11),
+             .buttonShare = std::make_unique<ButtonMapper>(EButton::B12)}),
 
         Mapper(
             L"XInputNative",
@@ -110,7 +116,9 @@ namespace Xidi
              .buttonBack = std::make_unique<ButtonMapper>(EButton::B7),
              .buttonStart = std::make_unique<ButtonMapper>(EButton::B8),
              .buttonLS = std::make_unique<ButtonMapper>(EButton::B9),
-             .buttonRS = std::make_unique<ButtonMapper>(EButton::B10)}),
+             .buttonRS = std::make_unique<ButtonMapper>(EButton::B10),
+             .buttonGuide = std::make_unique<ButtonMapper>(EButton::B11),
+             .buttonShare = std::make_unique<ButtonMapper>(EButton::B12)}),
         Mapper(
             L"XInputSharedTriggers",
             {.stickLeftX = std::make_unique<AxisMapper>(EAxis::X),
@@ -132,6 +140,8 @@ namespace Xidi
              .buttonBack = std::make_unique<ButtonMapper>(EButton::B7),
              .buttonStart = std::make_unique<ButtonMapper>(EButton::B8),
              .buttonLS = std::make_unique<ButtonMapper>(EButton::B9),
-             .buttonRS = std::make_unique<ButtonMapper>(EButton::B10)})};
+             .buttonRS = std::make_unique<ButtonMapper>(EButton::B10),
+             .buttonGuide = std::make_unique<ButtonMapper>(EButton::B11),
+             .buttonShare = std::make_unique<ButtonMapper>(EButton::B12)})};
   } // namespace Controller
 } // namespace Xidi
