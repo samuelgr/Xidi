@@ -30,6 +30,14 @@
 #include "Strings.h"
 #include "VirtualController.h"
 
+#include <hidsdi.h>  // For HID APIs
+#include <hidpi.h>   // For HID parsing
+#include <hidclass.h>  // For GUID_DEVCLASS_HIDCLASS
+#include <setupapi.h>
+
+#include <fstream>  // For std::ofstream
+#include <iomanip>  // For std::hex, std::setw, std::setfill
+
 const int XINPUT_GAMEPAD_GUIDE = 0x0400;
 const int XINPUT_GAMEPAD_SHARE = 0x0800;
 
@@ -58,14 +66,111 @@ namespace Xidi
     /// feedback registration data.
     static std::mutex physicalControllerForceFeedbackMutex[kPhysicalControllerCount];
 
+    /// Shared share button states for each controller, updated by HID threads.
+    static ConcurrencyWrapper<bool> shareButtonState[kPhysicalControllerCount];
+
+    /// HID device handles and threads for each controller.
+    static HANDLE hHidDevice[kPhysicalControllerCount] = {INVALID_HANDLE_VALUE};
+    static std::thread hidReadThread[kPhysicalControllerCount];
+
     /// Computes an opaque source identifier from a given controller identifier.
-    /// @param [in] controllerIdentifier Identifier of the physical controller for which an
+    /// @param [in] controllerIdentifier Identifier of the controller for which an
     /// identifier is needed.
     /// @return Opaque identifier that can be passed to mappers.
     static inline uint32_t OpaqueControllerSourceIdentifier(
         TControllerIdentifier controllerIdentifier)
     {
       return (uint32_t)controllerIdentifier;
+    }
+
+    /// Background thread to poll HID for share button.
+    /// @param [in] controllerIdentifier Identifier of the controller to poll.
+    static void PollHidForShareButton(TControllerIdentifier controllerIdentifier)
+    {
+      while (true)
+      {
+        Sleep(1); // Poll at 1000Hz (1ms) for responsiveness
+        if (hHidDevice[controllerIdentifier] == INVALID_HANDLE_VALUE)
+        {
+          // Dynamically find and open the HID device for this controller
+          GUID hidGuid;
+          HidD_GetHidGuid(&hidGuid);
+          HDEVINFO hDevInfo = SetupDiGetClassDevs(
+              &hidGuid, nullptr, nullptr, DIGCF_PRESENT | DIGCF_DEVICEINTERFACE);
+          if (hDevInfo != INVALID_HANDLE_VALUE)
+          {
+            SP_DEVICE_INTERFACE_DATA interfaceData = {};
+            interfaceData.cbSize = sizeof(SP_DEVICE_INTERFACE_DATA);
+            for (DWORD index = 0;
+                 SetupDiEnumDeviceInterfaces(hDevInfo, nullptr, &hidGuid, index, &interfaceData);
+                 ++index)
+            {
+              DWORD requiredSize = 0;
+              SetupDiGetDeviceInterfaceDetail(
+                  hDevInfo, &interfaceData, nullptr, 0, &requiredSize, nullptr);
+              PSP_DEVICE_INTERFACE_DETAIL_DATA detailData =
+                  (PSP_DEVICE_INTERFACE_DETAIL_DATA) new BYTE[requiredSize];
+              detailData->cbSize = sizeof(SP_DEVICE_INTERFACE_DETAIL_DATA);
+              if (SetupDiGetDeviceInterfaceDetail(
+                      hDevInfo, &interfaceData, detailData, requiredSize, nullptr, nullptr))
+              {
+                HANDLE hDevice = CreateFile(
+                    detailData->DevicePath,
+                    GENERIC_READ,
+                    FILE_SHARE_READ | FILE_SHARE_WRITE,
+                    nullptr,
+                    OPEN_EXISTING,
+                    0,
+                    nullptr); // FIXED: Removed FILE_FLAG_OVERLAPPED, back to synchronous for
+                              // reliable read
+                if (hDevice != INVALID_HANDLE_VALUE)
+                {
+                  HIDD_ATTRIBUTES attributes = {};
+                  attributes.Size = sizeof(HIDD_ATTRIBUTES);
+                  if (HidD_GetAttributes(hDevice, &attributes))
+                  {
+                    if (attributes.VendorID == 0x045E) // Microsoft VID
+                    {
+                      // Check for Xbox PIDs (0x02FD for One, 0x0B13 for Series BT, 0x02FF for
+                      // Series USB)
+                      if (attributes.ProductID == 0x02FD || attributes.ProductID == 0x0B13 ||
+                          attributes.ProductID == 0x02FF)
+                      {
+                        hHidDevice[controllerIdentifier] = hDevice; // Save handle
+                        Infra::Message::OutputFormatted(
+                            Infra::Message::ESeverity::Info,
+                            L"Opened HID device for controller %u with PID 0x%04X.",
+                            controllerIdentifier,
+                            attributes.ProductID);
+                        delete[] detailData;
+                        break; // Found and opened
+                      }
+                    }
+                  }
+                  CloseHandle(hDevice);
+                }
+              }
+              delete[] detailData;
+            }
+            SetupDiDestroyDeviceInfoList(hDevInfo);
+          }
+        }
+        if (hHidDevice[controllerIdentifier] != INVALID_HANDLE_VALUE)
+        {
+          BYTE reportBuffer[32] = {};
+          DWORD bytesRead = 0;
+          if (ReadFile(
+                  hHidDevice[controllerIdentifier],
+                  reportBuffer,
+                  sizeof(reportBuffer),
+                  &bytesRead,
+                  nullptr))
+          {
+            bool sharePressed = (reportBuffer[0] == 0x00 && (reportBuffer[12] & 0x08));
+            shareButtonState[controllerIdentifier].Update(sharePressed);
+          }
+        }
+      }
     }
 
     /// Reads physical controller state.
@@ -76,13 +181,15 @@ namespace Xidi
       XINPUT_STATE xinputState;
       DWORD xinputGetStateResult =
           ImportApiXInput::XInputGetState(controllerIdentifier, &xinputState);
-
       switch (xinputGetStateResult)
       {
         case ERROR_SUCCESS:
           // Directly using wButtons assumes that the bit layout is the same between the internal
           // bitset and the XInput data structure. The static assertions below this function verify
           // this assumption and will cause a compiler error if it is wrong.
+          // Set share bit from shared state (updated by background thread)
+          if (shareButtonState[controllerIdentifier].Get())
+            xinputState.Gamepad.wButtons |= XINPUT_GAMEPAD_SHARE;
           return {
               .deviceStatus = EPhysicalDeviceStatus::Ok,
               .stick =
@@ -92,10 +199,18 @@ namespace Xidi
                    xinputState.Gamepad.sThumbRY},
               .trigger = {xinputState.Gamepad.bLeftTrigger, xinputState.Gamepad.bRightTrigger},
               .button = (uint16_t)(xinputState.Gamepad.wButtons)};
-
         case ERROR_DEVICE_NOT_CONNECTED:
+          // Close and reset HID handle on disconnection to re-open on reconnect
+          if (hHidDevice[controllerIdentifier] != INVALID_HANDLE_VALUE)
+          {
+            CloseHandle(hHidDevice[controllerIdentifier]);
+            hHidDevice[controllerIdentifier] = INVALID_HANDLE_VALUE;
+            Infra::Message::OutputFormatted(
+                Infra::Message::ESeverity::Info,
+                L"Closed HID device for controller %u on disconnection.",
+                controllerIdentifier);
+          }
           return {.deviceStatus = EPhysicalDeviceStatus::NotConnected};
-
         default:
           return {.deviceStatus = EPhysicalDeviceStatus::Error};
       }
@@ -404,6 +519,19 @@ namespace Xidi
                   L"Initialized the physical controller state polling thread for controller %u. Desired polling period is %u ms.",
                   (unsigned int)(1 + controllerIdentifier),
                   kPhysicalPollingPeriodMilliseconds);
+            }
+
+            // Create and start the HID polling threads for the share button.
+            for (auto controllerIdentifier = 0; controllerIdentifier < kPhysicalControllerCount;
+                 ++controllerIdentifier)
+            {
+              hidReadThread[controllerIdentifier] =
+                  std::thread(PollHidForShareButton, controllerIdentifier);
+              hidReadThread[controllerIdentifier].detach();
+              Infra::Message::OutputFormatted(
+                  Infra::Message::ESeverity::Info,
+                  L"Initialized HID polling thread for controller %u.",
+                  (unsigned int)(1 + controllerIdentifier));
             }
 
             // Allocate the force feedback device buffers, then create and start the force feedback

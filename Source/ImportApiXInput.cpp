@@ -120,10 +120,26 @@ namespace Xidi
               }
 
               // Attempt to obtain the addresses of all imported API functions.
-              FARPROC procAddress = nullptr;
-
               IMPORT_OR_TERMINATE(xinputLibraryName, loadedLibrary, XInputGetState);
               IMPORT_OR_TERMINATE(xinputLibraryName, loadedLibrary, XInputSetState);
+
+              // NEW: Attempt to load the undocumented ordinal 100 (XInputGetStateEx) and override
+              // XInputGetState if successful
+              FARPROC procAddress = GetProcAddress(loadedLibrary, (LPCSTR)100);
+              if (nullptr != procAddress)
+              {
+                importTable.named.XInputGetState =
+                    (decltype(importTable.named.XInputGetState))procAddress;
+                Infra::Message::Output(
+                    Infra::Message::ESeverity::Info,
+                    L"Successfully loaded undocumented XInputGetStateEx (ordinal 100) and assigned to XInputGetState.");
+              }
+              else
+              {
+                Infra::Message::Output(
+                    Infra::Message::ESeverity::Warning,
+                    L"Failed to load undocumented ordinal 100 - using standard XInputGetState.");
+              }
 
               // Initialization complete.
               Infra::Message::OutputFormatted(
